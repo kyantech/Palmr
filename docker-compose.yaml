@@ -19,6 +19,7 @@ services:
       - MINIO_BUCKET_NAME=files # MinIO bucket name - This is needed for MinIO to work properly, dont change it if you don't know what you are doing
       - FRONTEND_URL=${APP_URL:-http://${SERVER_IP:-localhost}:${APP_EXTERNAL_PORT:-5487}} # Frontend URL - Make sure to use the correct frontend URL, depends on where the frontend is running, its prepared for localhost, but you can change it to your frontend URL if needed
       - SERVER_IP=${SERVER_IP:-localhost} # Server IP - Make sure to use the correct server IP if you running on a cloud provider or a virtual machine. This prepared for localhost, but you can change it to your server IP if needed
+      - MAX_FILESIZE=${MAX_FILESIZE:-1073741824} # Max Filesize for upload - Declared in Bytes. Default is 1GiB
     ports:
       - "${API_EXTERNAL_PORT:-3333}:${API_INTERNAL_PORT:-3333}" # Backend port mapping 
     restart: unless-stopped

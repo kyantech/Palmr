@@ -1,6 +1,7 @@
 import { prisma } from "../src/shared/prisma";
 import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
+import { env } from '../src/env';
 
 const defaultConfigs = [
   // General Configurations
@@ -31,7 +32,7 @@ const defaultConfigs = [
   // Storage Configurations
   {
     key: "maxFileSize",
-    value: "1073741824", // 1GB in bytes
+    value: env.MAX_FILESIZE, // default 1GiB in bytes - 1073741824
     type: "bigint",
     group: "storage",
   },

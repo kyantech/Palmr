@@ -12,6 +12,7 @@ const envSchema = z.object({
   PORT: z.string().min(1),
   DATABASE_URL: z.string().min(1),
   SERVER_IP: z.string().min(1),
+  MAX_FILESIZE: z.string().min(1),
 });
 
 export const env = envSchema.parse(process.env);
