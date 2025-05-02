@@ -231,8 +231,10 @@ curl -fsSL https://gist.githubusercontent.com/danielalves96/5a68913d70e5e31b68b7
 Basically, by paying attention to these points, you can quickly execute the project with the same command we used for localhost:
 
 ```bash
-docker compose up -d
+docker compose pull && docker compose up -d
 ```
+
+⚠️ This makes sure you're always running the latest beta version of the image, otherwise, Docker might reuse an outdated one from cache.
 
 At this stage, if you encounter any errors, it's worth reviewing your `docker-compose.yaml` and trying again, paying close attention to the points mentioned above.
 
