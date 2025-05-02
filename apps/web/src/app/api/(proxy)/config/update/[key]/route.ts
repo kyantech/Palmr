@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(req: NextRequest, { params }: { params: { key: string } }) {
-  const { key } = params;
+  const key = params.key;
   const body = await req.text();
   const cookieHeader = req.headers.get("cookie");
 

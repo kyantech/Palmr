@@ -260,6 +260,26 @@
     "notifySuccess": "受信者に正常に通知しました",
     "notifyError": "受信者への通知に失敗しました"
   },
+  "register": {
+    "validation": {
+      "firstNameRequired": "名前は必須です",
+      "lastNameRequired": "姓は必須です",
+      "usernameMinLength": "ユーザー名は3文字以上である必要があります",
+      "invalidEmail": "無効なメールアドレスです",
+      "passwordMinLength": "パスワードは6文字以上である必要があります"
+    },
+    "labels": {
+      "firstName": "名",
+      "lastName": "姓",
+      "username": "ユーザー名",
+      "email": "メールアドレス",
+      "password": "パスワード"
+    },
+    "buttons": {
+      "creating": "作成中...",
+      "createAdmin": "管理者アカウントを作成"
+    }
+  },
   "resetPassword": {
     "pageTitle": "パスワードリセット",
     "header": {

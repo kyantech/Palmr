@@ -1,3 +1,4 @@
+import { prisma } from "shared/prisma";
 import { createPasswordSchema } from "../auth/dto";
 import { UserController } from "./controller";
 import { UpdateUserSchema, UserResponseSchema } from "./dto";
@@ -10,12 +11,16 @@ export async function userRoutes(app: FastifyInstance) {
 
   const preValidation = async (request: any, reply: any) => {
     try {
-      await request.jwtVerify();
-      if (!request.user.isAdmin) {
-        return reply
-          .status(403)
-          .send({ error: "Access restricted to administrators" })
-          .description("Access restricted to administrators");
+      const usersCount = await prisma.user.count();
+
+      if (usersCount > 0 ) {
+        await request.jwtVerify();
+        if (!request.user.isAdmin) {
+          return reply
+            .status(403)
+            .send({ error: "Access restricted to administrators" })
+            .description("Access restricted to administrators");
+        }
       }
     } catch (err) {
       console.error(err);

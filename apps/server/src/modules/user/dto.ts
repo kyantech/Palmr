@@ -23,6 +23,7 @@ export const createRegisterUserSchema = async () => {
 
 export type RegisterUserInput = BaseRegisterUserInput & {
   password: string;
+  isAdmin?: boolean;
 };
 
 export const UpdateUserSchema = z.object({

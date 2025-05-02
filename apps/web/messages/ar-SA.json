@@ -260,6 +260,26 @@
     "notifySuccess": "تم إعلام المستلمين بنجاح",
     "notifyError": "فشل في إعلام المستلمين"
   },
+  "register": {
+    "validation": {
+      "firstNameRequired": "الاسم الأول مطلوب",
+      "lastNameRequired": "اسم العائلة مطلوب",
+      "usernameMinLength": "يجب أن يحتوي اسم المستخدم على 3 أحرف على الأقل",
+      "invalidEmail": "البريد الإلكتروني غير صالح",
+      "passwordMinLength": "يجب أن تحتوي كلمة المرور على 6 أحرف على الأقل"
+    },
+    "labels": {
+      "firstName": "الاسم الأول",
+      "lastName": "اسم العائلة",
+      "username": "اسم المستخدم",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور"
+    },
+    "buttons": {
+      "creating": "جاري الإنشاء...",
+      "createAdmin": "إنشاء حساب المسؤول"
+    }
+  },
   "resetPassword": {
     "pageTitle": "إعادة تعيين كلمة المرور",
     "header": {

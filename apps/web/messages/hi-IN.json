@@ -260,6 +260,26 @@
     "notifySuccess": "प्राप्तकर्ताओं को सफलतापूर्वक सूचित किया गया",
     "notifyError": "प्राप्तकर्ताओं को सूचित करने में विफल"
   },
+  "register": {
+    "validation": {
+      "firstNameRequired": "पहला नाम आवश्यक है",
+      "lastNameRequired": "अंतिम नाम आवश्यक है",
+      "usernameMinLength": "उपयोगकर्ता नाम कम से कम 3 अक्षर का होना चाहिए",
+      "invalidEmail": "अमान्य ईमेल",
+      "passwordMinLength": "पासवर्ड कम से कम 6 अक्षर का होना चाहिए"
+    },
+    "labels": {
+      "firstName": "पहला नाम",
+      "lastName": "अंतिम नाम",
+      "username": "उपयोगकर्ता नाम",
+      "email": "ईमेल",
+      "password": "पासवर्ड"
+    },
+    "buttons": {
+      "creating": "बनाया जा रहा है...",
+      "createAdmin": "व्यवस्थापक खाता बनाएं"
+    }
+  },
   "resetPassword": {
     "pageTitle": "पासवर्ड रीसेट करें",
     "header": {

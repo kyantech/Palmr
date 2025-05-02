@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { useAppInfo } from "@/contexts/app-info-context";
 
-export function LoginHeader() {
+export function LoginHeader({ firstAccess }: { firstAccess: boolean }) {
   const t = useTranslations();
   const { appName, refreshAppInfo } = useAppInfo();
 
@@ -22,7 +22,7 @@ export function LoginHeader() {
       <h1 className="text-2xl font-semibold tracking-tight text-center">
         {t("login.welcome")} {appName}
       </h1>
-      <p className="text-default-500 text-sm">{t("login.signInToContinue")}</p>
+      {!firstAccess && <p className="text-default-500 text-sm">{t("login.signInToContinue")}</p>}
     </motion.div>
   );
 }

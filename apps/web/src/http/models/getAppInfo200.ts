@@ -13,4 +13,6 @@ export type GetAppInfo200 = {
   appDescription: string;
   /** The application logo */
   appLogo: string;
+  /** The application first Access */
+  firstUserAccess: boolean;
 };

@@ -5,16 +5,18 @@ export class AppService {
   private configService = new ConfigService();
 
   async getAppInfo() {
-    const [appName, appDescription, appLogo] = await Promise.all([
+    const [appName, appDescription, appLogo, firstUserAccess] = await Promise.all([
       this.configService.getValue("appName"),
       this.configService.getValue("appDescription"),
       this.configService.getValue("appLogo"),
+      this.configService.getValue("firstUserAccess"),
     ]);
 
     return {
       appName,
       appDescription,
       appLogo,
+      firstUserAccess :  firstUserAccess === "true",
     };
   }
 

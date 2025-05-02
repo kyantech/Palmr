@@ -5,13 +5,16 @@ import { motion } from "framer-motion";
 import { LanguageSwitcher } from "@/components/general/language-switcher";
 import { LoadingScreen } from "@/components/layout/loading-screen";
 import { DefaultFooter } from "@/components/ui/default-footer";
+import { useAppInfo } from "@/contexts/app-info-context";
 import { LoginForm } from "./components/login-form";
 import { LoginHeader } from "./components/login-header";
+import { RegisterForm } from "./components/register-form";
 import { StaticBackgroundLights } from "./components/static-background-lights";
 import { useLogin } from "./hooks/use-login";
 
 export default function LoginPage() {
   const login = useLogin();
+  const { firstAccess } = useAppInfo();
 
   if (login.isAuthenticated === null) {
     return <LoadingScreen />;
@@ -32,13 +35,17 @@ export default function LoginPage() {
             initial={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.5 }}
           >
-            <LoginHeader />
-            <LoginForm
-              error={login.error}
-              isVisible={login.isVisible}
-              onSubmit={login.onSubmit}
-              onToggleVisibility={login.toggleVisibility}
-            />
+            <LoginHeader firstAccess={firstAccess as boolean} />
+            {firstAccess ? (
+              <RegisterForm isVisible={login.isVisible} onToggleVisibility={login.toggleVisibility} />
+            ) : (
+              <LoginForm
+                error={login.error}
+                isVisible={login.isVisible}
+                onSubmit={login.onSubmit}
+                onToggleVisibility={login.toggleVisibility}
+              />
+            )}
           </motion.div>
         </div>
       </div>

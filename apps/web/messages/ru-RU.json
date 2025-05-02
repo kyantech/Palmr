@@ -260,6 +260,26 @@
     "notifySuccess": "Получатели успешно уведомлены",
     "notifyError": "Не удалось уведомить получателей"
   },
+  "register": {
+    "validation": {
+      "firstNameRequired": "Имя обязательно",
+      "lastNameRequired": "Фамилия обязательна",
+      "usernameMinLength": "Имя пользователя должно содержать минимум 3 символа",
+      "invalidEmail": "Неверный email",
+      "passwordMinLength": "Пароль должен содержать минимум 6 символов"
+    },
+    "labels": {
+      "firstName": "Имя",
+      "lastName": "Фамилия",
+      "username": "Имя пользователя",
+      "email": "Email",
+      "password": "Пароль"
+    },
+    "buttons": {
+      "creating": "Создание...",
+      "createAdmin": "Создать учетную запись администратора"
+    }
+  },
   "resetPassword": {
     "pageTitle": "Сбросить пароль",
     "header": {

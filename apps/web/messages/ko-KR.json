@@ -260,6 +260,26 @@
     "notifySuccess": "수신자에게 성공적으로 알렸습니다",
     "notifyError": "수신자 알림 전송에 실패했습니다"
   },
+  "register": {
+    "validation": {
+      "firstNameRequired": "이름을 입력해주세요",
+      "lastNameRequired": "성을 입력해주세요",
+      "usernameMinLength": "사용자 이름은 최소 3자 이상이어야 합니다",
+      "invalidEmail": "유효하지 않은 이메일입니다",
+      "passwordMinLength": "비밀번호는 최소 6자 이상이어야 합니다"
+    },
+    "labels": {
+      "firstName": "이름",
+      "lastName": "성",
+      "username": "사용자 이름",
+      "email": "이메일",
+      "password": "비밀번호"
+    },
+    "buttons": {
+      "creating": "생성 중...",
+      "createAdmin": "관리자 계정 생성"
+    }
+  },
   "resetPassword": {
     "pageTitle": "비밀번호 재설정",
     "header": {

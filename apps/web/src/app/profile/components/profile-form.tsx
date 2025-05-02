@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ProfileFormProps } from "../types";
 
 export function ProfileForm({ form, onSubmit }: ProfileFormProps) {
@@ -23,6 +24,7 @@ export function ProfileForm({ form, onSubmit }: ProfileFormProps) {
         <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
+              <Label>{t("profile.form.firstName")}</Label>
               <Input
                 {...register("firstName")}
                 className={errors.firstName ? "border-red-500" : ""}
@@ -33,6 +35,7 @@ export function ProfileForm({ form, onSubmit }: ProfileFormProps) {
               {errors.firstName && <span className="text-sm text-red-500">{errors.firstName.message}</span>}
             </div>
             <div className="flex flex-col gap-2">
+              <Label>{t("profile.form.lastName")}</Label>
               <Input
                 {...register("lastName")}
                 className={errors.lastName ? "border-red-500" : ""}
@@ -44,6 +47,7 @@ export function ProfileForm({ form, onSubmit }: ProfileFormProps) {
             </div>
           </div>
           <div className="flex flex-col gap-2">
+            <Label>{t("profile.form.username")}</Label>
             <Input
               {...register("username")}
               className={errors.username ? "border-red-500" : ""}
@@ -54,6 +58,7 @@ export function ProfileForm({ form, onSubmit }: ProfileFormProps) {
             {errors.username && <span className="text-sm text-red-500">{errors.username.message}</span>}
           </div>
           <div className="flex flex-col gap-2">
+            <Label>{t("profile.form.email")}</Label>
             <Input
               {...register("email")}
               type="email"

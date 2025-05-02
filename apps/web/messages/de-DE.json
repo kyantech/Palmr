@@ -260,6 +260,26 @@
     "notifySuccess": "Empfänger erfolgreich benachrichtigt",
     "notifyError": "Fehler beim Benachrichtigen der Empfänger"
   },
+  "register": {
+    "validation": {
+      "firstNameRequired": "Vorname ist erforderlich",
+      "lastNameRequired": "Nachname ist erforderlich",
+      "usernameMinLength": "Benutzername muss mindestens 3 Zeichen lang sein",
+      "invalidEmail": "Ungültige E-Mail-Adresse",
+      "passwordMinLength": "Passwort muss mindestens 6 Zeichen lang sein"
+    },
+    "labels": {
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "username": "Benutzername",
+      "email": "E-Mail",
+      "password": "Passwort"
+    },
+    "buttons": {
+      "creating": "Wird erstellt...",
+      "createAdmin": "Administratorkonto erstellen"
+    }
+  },
   "resetPassword": {
     "pageTitle": "Passwort zurücksetzen",
     "header": {

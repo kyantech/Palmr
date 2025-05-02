@@ -260,6 +260,26 @@
     "notifySuccess": "Destinatários notificados com sucesso",
     "notifyError": "Falha ao notificar destinatários"
   },
+  "register": {
+    "validation": {
+      "firstNameRequired": "Nome é obrigatório",
+      "lastNameRequired": "Sobrenome é obrigatório",
+      "usernameMinLength": "Nome de usuário deve ter no mínimo 3 caracteres",
+      "invalidEmail": "Email inválido",
+      "passwordMinLength": "Senha deve ter no mínimo 6 caracteres"
+    },
+    "labels": {
+      "firstName": "Nome",
+      "lastName": "Sobrenome",
+      "username": "Nome de Usuário",
+      "email": "Email",
+      "password": "Senha"
+    },
+    "buttons": {
+      "creating": "Criando conta...",
+      "createAdmin": "Criar conta de administrador"
+    }
+  },
   "resetPassword": {
     "pageTitle": "Redefinir Senha",
     "header": {

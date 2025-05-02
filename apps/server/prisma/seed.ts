@@ -1,5 +1,5 @@
 import { prisma } from "../src/shared/prisma";
-import bcrypt from "bcryptjs";
+// import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
 import { env } from '../src/env';
 
@@ -27,6 +27,12 @@ const defaultConfigs = [
     key: "appLogo",
     value: "https://i.ibb.co/V0hdRtjV/logo.png",
     type: "string",
+    group: "general",
+  },
+  {
+    key: "firstUserAccess",
+    value: "true",
+    type: "boolean",
     group: "general",
   },
   // Storage Configurations
@@ -115,35 +121,35 @@ const defaultConfigs = [
     value: "3600",
     type: "number",
     group: "security",
-  },
+  }
 ];
 
 async function main() {
-  const existingUsers = await prisma.user.count();
+  // const existingUsers = await prisma.user.count();
 
-  if (existingUsers === 0) {
-    const adminEmail = "admin@example.com";
-    const adminPassword = "admin123";
-    const hashedPassword = await bcrypt.hash(adminPassword, 10);
+  // if (existingUsers === 0) {
+  //   const adminEmail = "admin@example.com";
+  //   const adminPassword = "admin123";
+  //   const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
-    const adminUser = await prisma.user.upsert({
-      where: { email: adminEmail },
-      update: {},
-      create: {
-        firstName: "Admin",
-        lastName: "User",
-        username: "admin",
-        email: adminEmail,
-        password: hashedPassword,
-        isAdmin: true,
-        isActive: true,
-      },
-    });
+  //   const adminUser = await prisma.user.upsert({
+  //     where: { email: adminEmail },
+  //     update: {},
+  //     create: {
+  //       firstName: "Admin",
+  //       lastName: "User",
+  //       username: "admin",
+  //       email: adminEmail,
+  //       password: hashedPassword,
+  //       isAdmin: true,
+  //       isActive: true,
+  //     },
+  //   });
 
-    console.log("Admin user seeded:", adminUser);
-  } else {
-    console.log("Users already exist, skipping admin user creation...");
-  }
+  //   console.log("Admin user seeded:", adminUser);
+  // } else {
+  //   console.log("Users already exist, skipping admin user creation...");
+  // }
 
   console.log("Seeding app configurations...");
 

@@ -260,6 +260,26 @@
     "notifySuccess": "Alıcılar başarıyla bildirildi",
     "notifyError": "Alıcılara bildirim gönderilemedi"
   },
+  "register": {
+    "validation": {
+      "firstNameRequired": "Ad gereklidir",
+      "lastNameRequired": "Soyad gereklidir",
+      "usernameMinLength": "Kullanıcı adı en az 3 karakter olmalıdır",
+      "invalidEmail": "Geçersiz e-posta",
+      "passwordMinLength": "Şifre en az 6 karakter olmalıdır"
+    },
+    "labels": {
+      "firstName": "Ad",
+      "lastName": "Soyad",
+      "username": "Kullanıcı Adı",
+      "email": "E-posta",
+      "password": "Şifre"
+    },
+    "buttons": {
+      "creating": "Oluşturuluyor...",
+      "createAdmin": "Yönetici Hesabı Oluştur"
+    }
+  },
   "resetPassword": {
     "pageTitle": "Şifreyi Sıfırla",
     "header": {

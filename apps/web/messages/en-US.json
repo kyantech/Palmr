@@ -260,6 +260,26 @@
     "notifySuccess": "Recipients notified successfully",
     "notifyError": "Failed to notify recipients"
   },
+  "register": {
+    "validation": {
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "usernameMinLength": "Username must be at least 3 characters",
+      "invalidEmail": "Invalid email",
+      "passwordMinLength": "Password must be at least 6 characters"
+    },
+    "labels": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "username": "Username",
+      "email": "Email",
+      "password": "Password"
+    },
+    "buttons": {
+      "creating": "Creating...",
+      "createAdmin": "Create Admin Account"
+    }
+  },
   "resetPassword": {
     "pageTitle": "Reset Password",
     "header": {

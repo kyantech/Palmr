@@ -260,6 +260,26 @@
     "notifySuccess": "Destinataires notifiés avec succès",
     "notifyError": "Échec de la notification des destinataires"
   },
+  "register": {
+    "validation": {
+      "firstNameRequired": "Le prénom est requis",
+      "lastNameRequired": "Le nom est requis",
+      "usernameMinLength": "Le nom d'utilisateur doit contenir au moins 3 caractères",
+      "invalidEmail": "Email invalide",
+      "passwordMinLength": "Le mot de passe doit contenir au moins 6 caractères"
+    },
+    "labels": {
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "username": "Nom d'utilisateur",
+      "email": "Email",
+      "password": "Mot de passe"
+    },
+    "buttons": {
+      "creating": "Création en cours...",
+      "createAdmin": "Créer un Compte Administrateur"
+    }
+  },
   "resetPassword": {
     "pageTitle": "Réinitialiser le Mot de Passe",
     "header": {
