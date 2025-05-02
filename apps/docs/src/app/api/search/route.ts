@@ -2,9 +2,6 @@ import { source } from '@/lib/source';
 import { createFromSource } from 'fumadocs-core/search/server';
  
 export const { GET } = createFromSource(source, (page) => {
-  // Log the page URL for debugging
-  console.log('Page URL:', page.url);
-  
   return {
     title: page.data.title,
     description: page.data.description,

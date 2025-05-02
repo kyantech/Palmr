@@ -28,12 +28,6 @@ export const useAppInfo = create<AppInfoStore>((set) => {
     if (typeof window !== "undefined") {
       try {
         const response = await getAppInfo();
-        console.log(
-          "firstUserAccess value:",
-          response.data.firstUserAccess,
-          "type:",
-          typeof response.data.firstUserAccess
-        );
         set({
           appName: response.data.appName,
           appLogo: response.data.appLogo,

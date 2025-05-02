@@ -8,7 +8,6 @@ import { formatStorageSize } from "../utils/format-storage-size";
 
 export function StorageUsage({ diskSpace }: StorageUsageProps) {
   const t = useTranslations();
-  console.log("diskSpace:", diskSpace);
 
   return (
     <Card className="w-full">

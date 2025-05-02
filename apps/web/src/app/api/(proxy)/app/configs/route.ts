@@ -24,7 +24,5 @@ export async function GET(req: NextRequest) {
     res.headers.set("Set-Cookie", setCookie.join(","));
   }
 
-  console.log(res);
-
   return res;
 }
