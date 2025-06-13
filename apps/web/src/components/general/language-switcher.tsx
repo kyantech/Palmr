@@ -22,6 +22,7 @@ const languages = {
   "de-DE": "Deutsch",
   "it-IT": "Italiano",
   "nl-NL": "Nederlands",
+  "pl-PL": "Polski",
   "tr-TR": "Türkçe (Turkish)",
   "ru-RU": "Русский (Russian)",
   "hi-IN": "हिन्दी (Hindi)",
