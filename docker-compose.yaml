@@ -9,8 +9,8 @@ services:
       - "5487:5487" # Web port
       - "3333:3333" # API port (OPTIONAL EXPOSED - ONLY IF YOU WANT TO ACCESS THE API DIRECTLY)
     volumes:
-      - palmr_data:/app/server # Volume for the application data
+      - ./palmr_data:/app/server/uploads # Volume for storing uploads
+      - ./palmr_db:/app/server/db #Volume for storing the palmr database
+      - ./palmr_temp:/app/server/temp-chunks # OPTIONAL Volume for storing temporary chunks
     restart: unless-stopped # Restart the container unless it is stopped
 
-volumes:
-  palmr_data:
