@@ -9,7 +9,7 @@ services:
       - "5487:5487" # Web port
       - "3333:3333" # API port (OPTIONAL EXPOSED - ONLY IF YOU WANT TO ACCESS THE API DIRECTLY)
     volumes:
-      - palmr_data:/app/server # Volume for the application data
+      - palmr_data:/data # Volume for the application data
     restart: unless-stopped # Restart the container unless it is stopped
 
 volumes:

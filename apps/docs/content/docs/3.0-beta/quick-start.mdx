@@ -42,7 +42,7 @@ services:
       - "5487:5487" # Web port
       - "3333:3333" # API port (OPTIONAL EXPOSED - ONLY IF YOU WANT TO ACCESS THE API DIRECTLY, IF YOU DONT WANT TO EXPOSE THE API, JUST REMOVE THIS LINE )
     volumes:
-      - palmr_data:/app/server # Volume for the application data
+      - palmr_data:/data # Volume for the application data
     restart: unless-stopped # Restart the container unless it is stopped
 
 volumes:
@@ -84,6 +84,11 @@ To ensure your data sticks around even if the container restarts, we use a persi
 | ------------ | ------------------------------------- |
 | `palmr_data` | Stores all the data of Palmr. service |
 
+Alternatively, you can use a bind-mount to map a Directory from your Host-System to the Palmr container.
+```
+    volumes:
+      - /path/on/your/host/system:/data # Volume for the application data
+```
 ---
 
 ## Launching Palmr.
@@ -138,7 +143,7 @@ docker run -d \
   -e ENCRYPTION_KEY=change-this-key-in-production-min-32-chars \
   -p 5487:5487 \
   -p 3333:3333 \
-  -v palmr_data:/app/server \
+  -v palmr_data:/data \
   --restart unless-stopped \
   kyantech/palmr:latest
 ```

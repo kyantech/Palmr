@@ -34,7 +34,7 @@ docker run -d \
   -e ENCRYPTION_KEY=change-this-key-in-production-min-32-chars \
   -p 5487:5487 \
   -p 3333:3333 \
-  -v palmr_data:/app/server \
+  -v palmr_data:/data \
   --restart unless-stopped \
   kyantech/palmr:latest
 ```

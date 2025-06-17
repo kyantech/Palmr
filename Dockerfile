@@ -86,8 +86,7 @@ RUN mkdir -p /app/server /app/web /home/palmr/.npm /home/palmr/.cache \
   /data/server/uploads /data/server/temp-chunks /data/server/uploads/logo \
   /app/server/prisma && \
   ln -s /data/server/uploads /app/server/uploads && \
-  ln -s /data/server/temp-chunks /app/server/temp-chunks && \
-  ln -s /data/server/uploads/logo /app/server/uploads/logo 
+  ln -s /data/server/temp-chunks /app/server/temp-chunks
 
 RUN chown -R palmr:nodejs /app /home/palmr /data
 
