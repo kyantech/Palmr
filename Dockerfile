@@ -83,9 +83,13 @@ RUN adduser --system --uid ${PALMR_UID} --ingroup nodejs palmr
 # Create application directories and set permissions
 # Include storage directories for filesystem mode and SQLite database directory
 RUN mkdir -p /app/server /app/web /home/palmr/.npm /home/palmr/.cache \
-  /app/server/uploads /app/server/temp-chunks /app/server/uploads/logo \
-  /app/server/prisma
-RUN chown -R palmr:nodejs /app /home/palmr
+  /data/server/uploads /data/server/temp-chunks /data/server/uploads/logo \
+  /app/server/prisma && \
+  ln -s /data/server/uploads /app/server/uploads && \
+  ln -s /data/server/temp-chunks /app/server/temp-chunks && \
+  ln -s /data/server/uploads/logo /app/server/uploads/logo 
+
+RUN chown -R palmr:nodejs /app /home/palmr /data
 
 # === Copy Server Files ===
 WORKDIR /app/server
@@ -211,18 +215,26 @@ else
     echo "No runtime UID/GID configuration provided, using defaults"
 fi
 
+## Check if Data Directories Exist and Create if Not
 # Ensure storage directories exist with correct permissions
-mkdir -p /app/server/uploads /app/server/temp-chunks /app/server/uploads/logo /app/server/prisma
-chown -R palmr:nodejs /app/server/uploads /app/server/temp-chunks /app/server/prisma 2>/dev/null || echo "Warning: Could not set permissions on storage directories"
+ mkdir -p /app/server/prisma
+ chown -R palmr:nodejs /app/server/prisma 2>/dev/null || echo "Warning: Could not set permissions on /app/server/prisma"
+
+# Ensure data directories exist and create symlinks if needed
+for dir in /data/server/uploads /data/server/temp-chunks /data/server/uploads/logo /data/server/prisma; do
+  if [ ! -d "\$dir" ]; then
+    mkdir -p "\$dir" && echo "✅ Created directory: \$dir"
+  fi
+done
+# Ensure correct ownership for data and app directories
+chown -R palmr:nodejs /data/server/uploads /data/server/temp-chunks /data/server/uploads/logo /data/server/prisma || echo "Warning: Could not set permissions on data directories"
+##
 
 # Start supervisor
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
 EOF
 
 RUN chmod +x /app/start.sh
-
-# Create volume mount points for persistent storage (filesystem mode and SQLite database)
-VOLUME ["/app/server/uploads", "/app/server/temp-chunks", "/app/server/prisma"]
 
 # Expose ports
 EXPOSE 3333 5487
