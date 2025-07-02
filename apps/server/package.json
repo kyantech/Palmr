@@ -43,7 +43,7 @@
     "@types/crypto-js": "^4.2.2",
     "bcryptjs": "^2.4.3",
     "crypto-js": "^4.2.0",
-    "fastify": "^5.2.1",
+    "fastify": "^5.3.2",
     "fastify-type-provider-zod": "^4.0.2",
     "jose": "^5.10.0",
     "node-fetch": "^3.3.2",
