@@ -2,15 +2,25 @@ import type { AxiosRequestConfig } from "axios";
 
 import apiInstance from "@/config/api";
 import type {
+  AuthProvider,
+  CreateProviderResult,
+  DeleteProviderResult,
+  // Auth Providers types
+  GetAllProvidersResult,
   GetCurrentUserResult,
+  GetEnabledProvidersResult,
   LoginBody,
   LoginResult,
   LogoutResult,
+  NewProvider,
   OIDCConfigResult,
   RequestPasswordResetBody,
   RequestPasswordResetResult,
   ResetPasswordBody,
   ResetPasswordResult,
+  UpdateProviderResult,
+  UpdateProvidersOrderBody,
+  UpdateProvidersOrderResult,
 } from "./types";
 
 export const login = <TData = LoginResult>(loginBody: LoginBody, options?: AxiosRequestConfig): Promise<TData> => {
@@ -50,4 +60,44 @@ export const initiateOIDCLogin = (state?: string, redirectUri?: string): string 
 
   const queryString = params.toString();
   return `/api/auth/oidc/authorize${queryString ? `?${queryString}` : ""}`;
+};
+
+// Auth Providers endpoints
+export const getEnabledProviders = <TData = GetEnabledProvidersResult>(
+  options?: AxiosRequestConfig
+): Promise<TData> => {
+  return apiInstance.get(`/api/auth/providers`, options);
+};
+
+export const getAllProviders = <TData = GetAllProvidersResult>(options?: AxiosRequestConfig): Promise<TData> => {
+  return apiInstance.get(`/api/auth/providers/all`, options);
+};
+
+export const createProvider = <TData = CreateProviderResult>(
+  newProvider: NewProvider,
+  options?: AxiosRequestConfig
+): Promise<TData> => {
+  return apiInstance.post(`/api/auth/providers`, newProvider, options);
+};
+
+export const updateProvider = <TData = UpdateProviderResult>(
+  id: string,
+  updates: Partial<AuthProvider>,
+  options?: AxiosRequestConfig
+): Promise<TData> => {
+  return apiInstance.put(`/api/auth/providers/manage/${id}`, updates, options);
+};
+
+export const deleteProvider = <TData = DeleteProviderResult>(
+  id: string,
+  options?: AxiosRequestConfig
+): Promise<TData> => {
+  return apiInstance.delete(`/api/auth/providers/manage/${id}`, options);
+};
+
+export const updateProvidersOrder = <TData = UpdateProvidersOrderResult>(
+  updateProvidersOrderBody: UpdateProvidersOrderBody,
+  options?: AxiosRequestConfig
+): Promise<TData> => {
+  return apiInstance.put(`/api/auth/providers/order`, updateProvidersOrderBody, options);
 };

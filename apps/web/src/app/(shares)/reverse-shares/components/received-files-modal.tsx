@@ -61,6 +61,10 @@ interface HoverState {
   field: string;
 }
 
+const getFileNameWithoutExtension = (fileName: string) => {
+  return fileName.replace(/\.[^/.]+$/, "");
+};
+
 function useFileEdit() {
   const [editingFile, setEditingFile] = useState<EditingState | null>(null);
   const [editValue, setEditValue] = useState("");
@@ -110,7 +114,7 @@ const formatFileSize = (sizeString: string) => {
 const formatDate = (dateString: string) => {
   try {
     return format(new Date(dateString), "dd/MM/yyyy HH:mm", { locale: ptBR });
-  } catch (error) {
+  } catch {
     return "Data inválida";
   }
 };
@@ -118,10 +122,6 @@ const formatDate = (dateString: string) => {
 const getFileExtension = (fileName: string) => {
   const match = fileName.match(/\.[^/.]+$/);
   return match ? match[0] : "";
-};
-
-const getFileNameWithoutExtension = (fileName: string) => {
-  return fileName.replace(/\.[^/.]+$/, "");
 };
 
 const getSenderDisplay = (file: ReverseShareFile, t: any) => {

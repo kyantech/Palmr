@@ -17,6 +17,7 @@ interface FilePreviewModalProps {
     objectName: string;
     type?: string;
     id?: string;
+    description?: string;
   };
   isReverseShare?: boolean;
 }
@@ -48,6 +49,8 @@ export function FilePreviewModal({ isOpen, onClose, file, isReverseShare = false
             pdfAsBlob={previewState.pdfAsBlob}
             pdfLoadFailed={previewState.pdfLoadFailed}
             onPdfLoadError={previewState.handlePdfLoadError}
+            description={file.description}
+            onDownload={previewState.handleDownload}
           />
         </div>
         <DialogFooter>

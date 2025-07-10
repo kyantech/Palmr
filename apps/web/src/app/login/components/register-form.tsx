@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
@@ -12,8 +12,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useAppInfo } from "@/contexts/app-info-context";
 import { registerUser, updateConfig } from "@/http/endpoints";
+import { MultiProviderButtons } from "./multi-provider-buttons";
 import { PasswordVisibilityToggle } from "./password-visibility-toggle";
-import { SSOButton } from "./sso-button";
 
 interface RegisterFormProps {
   isVisible: boolean;
@@ -23,6 +23,7 @@ interface RegisterFormProps {
 export function RegisterForm({ isVisible, onToggleVisibility }: RegisterFormProps) {
   const t = useTranslations();
   const { refreshAppInfo } = useAppInfo();
+  const [error, setError] = useState<string | null>(null);
 
   const registerSchema = z.object({
     firstName: z.string().min(1, t("register.validation.firstNameRequired")),
@@ -44,6 +45,7 @@ export function RegisterForm({ isVisible, onToggleVisibility }: RegisterFormProp
   });
 
   const onSubmit = async (data: z.infer<typeof registerSchema>) => {
+    setError(null);
     try {
       await registerUser({
         ...data,
@@ -55,15 +57,14 @@ export function RegisterForm({ isVisible, onToggleVisibility }: RegisterFormProp
 
       await refreshAppInfo();
       toast.success(t("register.validation.success"));
-    } catch (error) {
+    } catch {
+      setError(t("register.validation.error"));
       toast.error(t("register.validation.error"));
     }
   };
 
   const renderErrorMessage = () => (
-    <p className="text-destructive text-sm text-center bg-destructive/10 p-2 rounded-md">
-      {t("register.validation.error")}
-    </p>
+    <p className="text-destructive text-sm text-center bg-destructive/10 p-2 rounded-md">{error}</p>
   );
 
   const renderForm = () => (
@@ -178,8 +179,9 @@ export function RegisterForm({ isVisible, onToggleVisibility }: RegisterFormProp
 
   return (
     <>
+      {error && renderErrorMessage()}
       {renderForm()}
-      <SSOButton />
+      <MultiProviderButtons />
     </>
   );
 }

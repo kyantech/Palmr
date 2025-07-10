@@ -1,5 +1,3 @@
-import { ListUserShares200SharesItem } from "@/http/models";
-
 export interface SharesSearchProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;

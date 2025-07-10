@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { IconCheck, IconEye, IconEyeOff, IconLock, IconLockOpen, IconX } from "@tabler/icons-react";
+import { IconEye, IconEyeOff, IconLock, IconLockOpen } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 

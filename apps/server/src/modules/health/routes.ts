@@ -1,6 +1,7 @@
-import { HealthController } from "./controller";
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
+
+import { HealthController } from "./controller";
 
 export async function healthRoutes(app: FastifyInstance) {
   const healthController = new HealthController();

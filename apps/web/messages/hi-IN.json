@@ -1,4 +1,132 @@
 {
+  "auth": {
+    "errors": {
+      "account_inactive": "खाता निष्क्रिय है। कृपया व्यवस्थापक से संपर्क करें।",
+      "registration_disabled": "SSO के माध्यम से पंजीकरण अक्षम है।",
+      "token_expired": "टोकन समाप्त हो गया है। कृपया पुनः प्रयास करें।",
+      "config_error": "कॉन्फ़िगरेशन त्रुटि। कृपया सहायता से संपर्क करें।",
+      "auth_failed": "प्रमाणीकरण विफल। कृपया पुनः प्रयास करें।"
+    }
+  },
+  "authProviders": {
+    "title": "प्रमाणीकरण प्रदाता",
+    "description": "एसएसओ के लिए बाहरी प्रमाणीकरण प्रदाताओं को कॉन्फ़िगर करें",
+    "enabledCount": "{count} सक्षम",
+    "loadingProviders": "प्रदाताओं को लोड कर रहा है...",
+    "providersConfigured": "{count} प्रदाता कॉन्फ़िगर किए गए",
+    "enabledOfTotal": "{total} प्रदाताओं में से {enabled} सक्षम",
+    "hideDisabledProviders": "अक्षम प्रदाताओं को छिपाएं",
+    "addProvider": "प्रदाता जोड़ें",
+    "addProviderTitle": "प्रदाता जोड़ें",
+    "editProvider": "प्रदाता संपादित करें",
+    "deleteProvider": "प्रदाता हटाएं",
+    "enabled": "सक्षम",
+    "disabled": "अक्षम",
+    "officialProvider": "आधिकारिक प्रदाता",
+    "dragToReorder": "पुनर्क्रमित करने के लिए खींचें",
+    "dragDisabledMessage": "प्रदाताओं को फ़िल्टर करते समय ड्रैग और ड्रॉप अक्षम है। उन्हें पुनर्क्रमित करने के लिए सभी प्रदाताओं को दिखाएं।",
+    "dragEnabledMessage": "प्रदाताओं को पुनर्क्रमित करने के लिए खींचें। यह क्रम लॉगिन पृष्ठ पर प्रतिबिंबित होगा।",
+    "noProvidersEnabled": "कोई सक्षम प्रमाणीकरण प्रदाता नहीं",
+    "noProvidersConfigured": "कोई प्रमाणीकरण प्रदाता कॉन्फ़िगर नहीं किया गया",
+    "form": {
+      "providerName": "प्रदाता का नाम",
+      "providerNamePlaceholder": "उदा., मेरीकंपनी",
+      "displayName": "प्रदर्शन नाम",
+      "displayNamePlaceholder": "उदा., मेरी कंपनी एसएसओ",
+      "type": "प्रकार",
+      "typeOidc": "ओआईडीसी (OpenID Connect)",
+      "typeOauth2": "OAuth 2.0",
+      "icon": "आइकन",
+      "iconPlaceholder": "एक आइकन चुनें",
+      "clientId": "क्लाइंट आईडी",
+      "clientIdPlaceholder": "आपकी OAuth क्लाइंट आईडी",
+      "clientSecret": "क्लाइंट सीक्रेट",
+      "clientSecretPlaceholder": "आपका OAuth क्लाइंट सीक्रेट",
+      "oauthScopes": "OAuth स्कोप्स",
+      "scopesPlaceholder": "स्कोप्स दर्ज करें (उदा., openid, profile, email)",
+      "scopesHelpOidc": "प्रदाता URL के आधार पर स्कोप्स स्वतः सुझाए गए। सामान्य OIDC स्कोप्स: openid, profile, email, groups",
+      "scopesHelpOauth2": "प्रदाता URL के आधार पर स्कोप्स स्वतः सुझाए गए। सामान्य OAuth2 स्कोप्स प्रदाता पर निर्भर करते हैं",
+      "providerUrl": "प्रदाता URL",
+      "providerUrlPlaceholder": "https://auth.example.com",
+      "providerUrlAutoPlaceholder": "https://your-provider.com (एंडपॉइंट्स स्वचालित रूप से खोजे जाएंगे)",
+      "providerUrlManualPlaceholder": "https://your-provider.com",
+      "autoDiscoveryHelp": "सिस्टम स्वचालित रूप से प्राधिकरण, टोकन और यूजरइन्फो एंडपॉइंट्स की खोज करेगा",
+      "manualConfigurationHelp": "आपके प्रदाता का बेस URL (एंडपॉइंट्स इससे सापेक्ष होंगे)",
+      "authorizationEndpoint": "प्राधिकरण एंडपॉइंट",
+      "authorizationEndpointPlaceholder": "https://auth.example.com/auth",
+      "tokenEndpoint": "टोकन एंडपॉइंट",
+      "tokenEndpointPlaceholder": "https://auth.example.com/token",
+      "userInfoEndpoint": "यूजर इन्फो एंडपॉइंट",
+      "userInfoEndpointPlaceholder": "https://auth.example.com/userinfo",
+      "configurationMethod": "कॉन्फ़िगरेशन विधि",
+      "autoDiscovery": "स्वचालित खोज",
+      "autoDiscoveryDescription": "प्रदाता URL से स्वचालित रूप से एंडपॉइंट्स खोजें",
+      "manualEndpoints": "मैनुअल एंडपॉइंट्स (अनुशंसित)",
+      "manualEndpointsDescription": "प्राधिकरण, टोकन और यूजर इन्फो एंडपॉइंट्स को मैनुअल रूप से कॉन्फ़िगर करें",
+      "callbackUrl": "कॉलबैक URL",
+      "callbackUrlDescription": "अपने OAuth प्रदाता कॉन्फ़िगरेशन में इस URL का उपयोग करें",
+      "copyCallbackUrl": "कॉलबैक URL कॉपी करें",
+      "callbackUrlCopied": "कॉलबैक URL क्लिपबोर्ड पर कॉपी किया गया!",
+      "adminEmailDomains": "व्यवस्थापक ईमेल डोमेन",
+      "adminEmailDomainsPlaceholder": "डोमेन दर्ज करें (उदा., admin.company.com)",
+      "adminEmailDomainsHelp": "इन डोमेन से ईमेल वाले उपयोगकर्ताओं को व्यवस्थापक अधिकार दिए जाएंगे",
+      "autoRegister": "नए उपयोगकर्ताओं को स्वतः पंजीकृत करें",
+      "officialProviderUrlPlaceholder": "प्लेसहोल्डर को अपने {displayName} URL से बदलें",
+      "officialProviderHelp": "यह एक आधिकारिक प्रदाता है। एंडपॉइंट्स पूर्व-कॉन्फ़िगर किए गए हैं। आप केवल इस URL को संपादित कर सकते हैं।",
+      "officialProviderIconHelp": "आप इस आधिकारिक प्रदाता के लिए आइकन को अनुकूलित कर सकते हैं।"
+    },
+    "buttons": {
+      "cancel": "रद्द करें",
+      "save": "सहेजें",
+      "saving": "सहेज रहा है...",
+      "adding": "जोड़ रहा है...",
+      "updating": "अपडेट कर रहा है...",
+      "saveProvider": "प्रदाता सहेजें",
+      "delete": "हटाएं",
+      "deleting": "हटा रहा है...",
+      "edit": "संपादित करें",
+      "enable": "सक्षम करें",
+      "disable": "अक्षम करें"
+    },
+    "messages": {
+      "providerAdded": "प्रदाता सफलतापूर्वक जोड़ा गया",
+      "providerUpdated": "प्रदाता सफलतापूर्वक अपडेट किया गया",
+      "providerDeleted": "प्रदाता सफलतापूर्वक हटाया गया",
+      "providerOrderUpdated": "प्रदाता क्रम सफलतापूर्वक अपडेट किया गया",
+      "fillRequiredFields": "कृपया सभी आवश्यक फ़ील्ड भरें (नाम, प्रदर्शन नाम, क्लाइंट आईडी, क्लाइंट सीक्रेट)",
+      "provideUrlOrEndpoints": "स्वचालित खोज के लिए प्रदाता URL या सभी तीन कस्टम एंडपॉइंट्स प्रदान करें",
+      "chooseDiscoveryOrManual": "या तो स्वचालित खोज (प्रदाता URL) या मैनुअल एंडपॉइंट्स चुनें, दोनों नहीं",
+      "loadFailed": "प्रदाताओं को लोड करने में विफल",
+      "addFailed": "प्रदाता जोड़ने में विफल",
+      "updateFailed": "प्रदाता अपडेट करने में विफल",
+      "deleteFailed": "प्रदाता हटाने में विफल",
+      "orderUpdateFailed": "प्रदाता क्रम अपडेट करने में विफल"
+    },
+    "info": {
+      "title": "जानकारी",
+      "officialProvidersRecommended": "बेहतर कार्यक्षमता के लिए, आधिकारिक प्रदाताओं का उपयोग करने पर विचार करें। यदि आपको किसी कस्टम प्रदाता के साथ समस्या है, तो इस पर एक मुद्दा खोलने पर विचार करें",
+      "github": "GitHub",
+      "officialProvider": "आधिकारिक प्रदाता",
+      "officialProviderDescription": "यह प्रदाता Palmr द्वारा अनुकूलित है। केवल क्रेडेंशियल्स और कॉन्फ़िगरेशन को संशोधित किया जा सकता है।",
+      "manualConfigTitle": "मैनुअल कॉन्फ़िगरेशन",
+      "manualConfigDescription": "आप सभी एंडपॉइंट्स मैनुअल रूप से प्रदान कर रहे हैं। सुनिश्चित करें कि वे आपके प्रदाता के लिए सही हैं।"
+    },
+    "deleteModal": {
+      "title": "प्रमाणीकरण प्रदाता हटाएं",
+      "confirmMessage": "क्या आप वाकई \"{displayName}\" प्रदाता को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
+      "providerId": "प्रदाता आईडी: {name}",
+      "cancel": "रद्द करें",
+      "delete": "प्रदाता हटाएं",
+      "deleting": "हटा रहा है..."
+    }
+  },
+  "bulkDownload": {
+    "title": "बल्क डाउनलोड",
+    "zipNameLabel": "ZIP फाइल नाम",
+    "zipNamePlaceholder": "फाइल नाम दर्ज करें",
+    "description": "{count, plural, =1 {1 फाइल संपीड़ित की जाएगी} other {# फाइलें संपीड़ित की जाएंगी}}",
+    "download": "ZIP डाउनलोड करें"
+  },
   "common": {
     "loading": "लोड हो रहा है, कृपया प्रतीक्षा करें...",
     "cancel": "रद्द करें",
@@ -41,6 +169,10 @@
       "description": "आपकी हाल ही में अपलोड की गई फ़ाइलें",
       "title": "हाल की फ़ाइलें"
     }
+  },
+  "deleteConfirmation": {
+    "filesToDelete": "हटाई जाने वाली फाइलें",
+    "sharesToDelete": "साझाकरण जो हटाए जाएंगे"
   },
   "emptyState": {
     "noFiles": "अभी तक कोई फाइल अपलोड नहीं हुई",
@@ -389,628 +521,6 @@
     "errors": {
       "serverError": "पासवर्ड रीसेट करने में विफल। कृपया पुनः प्रयास करें।",
       "invalidToken": "अमान्य या गायब रीसेट टोकन"
-    }
-  },
-  "searchBar": {
-    "placeholder": "फाइलें खोजें...",
-    "results": "{total} में से {filtered} फाइलें मिलीं"
-  },
-  "settings": {
-    "groups": {
-      "defaultDescription": "कॉन्फ़िगरेशन विकल्प",
-      "general": {
-        "title": "सामान्य",
-        "description": "एप्लिकेशन की बुनियादी सेटिंग्स"
-      },
-      "email": {
-        "title": "ईमेल",
-        "description": "ईमेल सर्वर कॉन्फ़िगरेशन"
-      },
-      "security": {
-        "title": "सुरक्षा",
-        "description": "सुरक्षा और प्रमाणीकरण सेटिंग्स"
-      },
-      "storage": {
-        "title": "स्टोरेज",
-        "description": "फाइल स्टोरेज कॉन्फ़िगरेशन"
-      },
-      "oidc": {
-        "title": "OpenID Connect (SSO)",
-        "description": "OpenID Connect के माध्यम से SSO प्रमाणीकरण कॉन्फ़िगरेशन"
-      }
-    },
-    "fields": {
-      "noDescription": "कोई विवरण उपलब्ध नहीं",
-      "appLogo": {
-        "title": "एप्लिकेशन लोगो",
-        "description": "एप्लिकेशन का लोगो चित्र"
-      },
-      "appName": {
-        "title": "एप्लिकेशन नाम",
-        "description": "उपयोगकर्ताओं को दिखाया जाने वाला एप्लिकेशन नाम"
-      },
-      "appDescription": {
-        "title": "एप्लिकेशन विवरण",
-        "description": "एप्लिकेशन का संक्षिप्त विवरण"
-      },
-      "showHomePage": {
-        "title": "होम पेज दिखाएं",
-        "description": "इंस्टॉलेशन के बाद होम पेज दिखाएं"
-      },
-      "smtpEnabled": {
-        "title": "SMTP सक्षम",
-        "description": "SMTP ईमेल कार्यक्षमता सक्षम या अक्षम करें"
-      },
-      "smtpHost": {
-        "title": "SMTP सर्वर",
-        "description": "SMTP सर्वर पता"
-      },
-      "smtpPort": {
-        "title": "SMTP पोर्ट",
-        "description": "SMTP सर्वर पोर्ट"
-      },
-      "smtpUser": {
-        "title": "SMTP उपयोगकर्ता",
-        "description": "SMTP प्रमाणीकरण के लिए उपयोगकर्ता नाम"
-      },
-      "smtpPass": {
-        "title": "SMTP पासवर्ड",
-        "description": "SMTP प्रमाणीकरण के लिए पासवर्ड"
-      },
-      "smtpFromName": {
-        "title": "प्रेषक का नाम",
-        "description": "भेजे गए ईमेल के लिए डिस्प्ले नाम"
-      },
-      "smtpFromEmail": {
-        "title": "प्रेषक का ईमेल",
-        "description": "प्रेषक का ईमेल पता"
-      },
-      "maxLoginAttempts": {
-        "title": "अधिकतम लॉगिन प्रयास",
-        "description": "ब्लॉक करने से पहले अधिकतम लॉगिन प्रयासों की संख्या"
-      },
-      "loginBlockDuration": {
-        "title": "लॉगिन ब्लॉक अवधि",
-        "description": "प्रयासों की सीमा पार करने पर ब्लॉक की अवधि (सेकंड में)"
-      },
-      "passwordMinLength": {
-        "title": "न्यूनतम पासवर्ड लंबाई",
-        "description": "पासवर्ड के लिए न्यूनतम अक्षरों की संख्या"
-      },
-      "passwordResetTokenExpiration": {
-        "title": "रीसेट टोकन समाप्ति",
-        "description": "पासवर्ड रीसेट टोकन की वैधता (सेकंड में)"
-      },
-      "maxFileSize": {
-        "title": "अधिकतम फाइल आकार",
-        "description": "अपलोड के लिए अधिकतम अनुमत फाइल आकार"
-      },
-      "maxTotalStoragePerUser": {
-        "title": "प्रति उपयोगकर्ता अधिकतम स्टोरेज",
-        "description": "प्रति उपयोगकर्ता कुल स्टोरेज सीमा"
-      },
-      "firstUserAccess": {
-        "description": "नए उपयोगकर्ताओं की पहली पहुंच के लिए सेटिंग्स",
-        "title": "पहली उपयोगकर्ता पहुंच"
-      },
-      "serverUrl": {
-        "title": "सर्वर URL",
-        "description": "Palmr सर्वर का आधार URL (उदाहरण: https://palmr.example.com)"
-      },
-      "oidcEnabled": {
-        "title": "OIDC सक्षम",
-        "description": "OpenID Connect के माध्यम से प्रमाणीकरण सक्षम या अक्षम करें"
-      },
-      "oidcIssuerUrl": {
-        "title": "प्रदाता URL",
-        "description": "OpenID Connect प्रदाता का URL (उदाहरण: https://auth.example.com/auth/realms/master)"
-      },
-      "oidcClientId": {
-        "title": "क्लाइंट ID",
-        "description": "प्रदाता में पंजीकृत OIDC क्लाइंट का पहचानकर्ता"
-      },
-      "oidcClientSecret": {
-        "title": "क्लाइंट सीक्रेट",
-        "description": "प्रमाणीकरण के लिए OIDC क्लाइंट का सीक्रेट"
-      },
-      "oidcRedirectUri": {
-        "title": "रीडायरेक्ट URI",
-        "description": "प्रमाणीकरण के बाद उपयोगकर्ता को रीडायरेक्ट करने के लिए URI। केवल आधार URL दर्ज करें (उदाहरण: https://mysite.com)। पथ /api/auth/oidc/callback स्वचालित रूप से जोड़ा जाएगा।"
-      },
-      "oidcScope": {
-        "title": "स्कोप",
-        "description": "अनुरोधित OIDC स्कोप (उदाहरण: openid profile email)"
-      },
-      "oidcAutoRegister": {
-        "title": "स्वचालित पंजीकरण",
-        "description": "पहले लॉगिन पर मौजूद नहीं होने वाले उपयोगकर्ताओं को स्वचालित रूप से पंजीकृत करें"
-      },
-      "oidcAdminEmailDomains": {
-        "title": "एडमिन ईमेल डोमेन",
-        "description": "जिन ईमेल डोमेन को स्वचालित रूप से व्यवस्थापक विशेषाधिकार प्राप्त होंगे"
-      },
-      "testSmtp": {
-        "title": "SMTP कनेक्शन का परीक्षण करें",
-        "description": "जांचें कि SMTP कॉन्फ़िगरेशन मान्य है"
-      },
-      "smtpNoAuth": {
-        "title": "कोई प्रमाणीकरण नहीं",
-        "description": "आंतरिक सर्वर के लिए सक्षम करें जिन्हें उपयोगकर्ता नाम/पासवर्ड की आवश्यकता नहीं होती है (प्रमाणीकरण फ़ील्ड छिपाता है)"
-      },
-      "smtpSecure": {
-        "title": "कनेक्शन सुरक्षा",
-        "description": "SMTP कनेक्शन सुरक्षा विधि - स्वचालित (अनुशंसित), SSL, STARTTLS, या कोई नहीं (असुरक्षित)",
-        "options": {
-          "auto": "स्वचालित (अनुशंसित)",
-          "ssl": "SSL (पोर्ट 465)",
-          "tls": "STARTTLS (पोर्ट 587)",
-          "none": "कोई नहीं (असुरक्षित)"
-        }
-      }
-    },
-    "buttons": {
-      "save": "{group} सहेजें",
-      "testSmtp": "कनेक्शन का परीक्षण करें",
-      "testing": "परीक्षण किया जा रहा है..."
-    },
-    "errors": {
-      "loadFailed": "सेटिंग्स लोड करने में विफल",
-      "updateFailed": "सेटिंग्स अपडेट करने में विफल"
-    },
-    "messages": {
-      "noChanges": "सहेजने के लिए कोई परिवर्तन नहीं",
-      "updateSuccess": "{group} सेटिंग्स सफलतापूर्वक अपडेट हुईं",
-      "smtpTestFailed": "SMTP कनेक्शन विफल: {error}",
-      "smtpTestGenericError": "SMTP कनेक्शन का परीक्षण करने में विफल। कृपया अपनी सेटिंग्स जांचें और पुनः प्रयास करें।",
-      "smtpTestSuccess": "SMTP कनेक्शन सफल! आपका ईमेल कॉन्फ़िगरेशन सही ढंग से काम कर रहा है।",
-      "smtpMissingAuth": "कृपया SMTP उपयोगकर्ता नाम और पासवर्ड भरें, या 'कोई प्रमाणीकरण नहीं' विकल्प सक्षम करें।",
-      "smtpMissingHostPort": "परीक्षण से पहले कृपया SMTP होस्ट और पोर्ट भरें।",
-      "smtpNotEnabled": "SMTP सक्षम नहीं है। कृपया पहले SMTP सक्षम करें।"
-    },
-    "title": "सेटिंग्स",
-    "breadcrumb": "सेटिंग्स",
-    "pageTitle": "सेटिंग्स",
-    "tooltips": {
-      "oidcScope": "स्कोप जोड़ने के लिए एक स्कोप दर्ज करें और Enter दबाएं",
-      "oidcAdminEmailDomains": "डोमेन जोड़ने के लिए एक डोमेन दर्ज करें और Enter दबाएं",
-      "testSmtp": "फॉर्म में वर्तमान में दर्ज मानों के साथ SMTP कनेक्शन का परीक्षण करता है। परिवर्तनों को स्थायी बनाने के लिए, परीक्षण के बाद अपनी सेटिंग्स को सहेजना याद रखें।",
-      "defaultPlaceholder": "दर्ज करें और Enter दबाएं"
-    },
-    "redirectUri": {
-      "placeholder": "https://mysite.com",
-      "previewLabel": "पूर्ण URL जो सहेजा जाएगा:"
-    }
-  },
-  "share": {
-    "errors": {
-      "invalidPassword": "अमान्य पासवर्ड। कृपया पुनः प्रयास करें।",
-      "loadFailed": "साझाकरण लोड करने में विफल",
-      "downloadFailed": "फाइल डाउनलोड करने में विफल"
-    },
-    "messages": {
-      "downloadStarted": "डाउनलोड शुरू हुआ"
-    },
-    "password": {
-      "title": "पासवर्ड संरक्षित साझाकरण",
-      "protected": "यह साझाकरण पासवर्ड द्वारा संरक्षित है",
-      "incorrect": "गलत पासवर्ड। कृपया पुनः प्रयास करें।",
-      "label": "पासवर्ड",
-      "placeholder": "साझाकरण का पासवर्ड दर्ज करें",
-      "submit": "सबमिट करें"
-    },
-    "details": {
-      "untitled": "बिना शीर्षक के",
-      "created": "बनाया गया: {date}",
-      "expires": "समाप्त होता है: {date}"
-    },
-    "notFound": {
-      "title": "साझाकरण नहीं मिला",
-      "description": "यह साझाकरण हटा दिया गया हो सकता है या समाप्त हो चुका है।"
-    },
-    "pageTitle": "साझाकरण",
-    "downloadAll": "सभी डाउनलोड करें"
-  },
-  "shareActions": {
-    "deleteTitle": "साझाकरण हटाएं",
-    "deleteConfirmation": "क्या आप वाकई इस साझाकरण को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
-    "editTitle": "साझाकरण संपादित करें",
-    "nameLabel": "साझाकरण नाम",
-    "descriptionLabel": "विवरण",
-    "descriptionPlaceholder": "विवरण दर्ज करें (वैकल्पिक)",
-    "expirationLabel": "समाप्ति तिथि",
-    "expirationPlaceholder": "DD/MM/YYYY HH:MM",
-    "maxViewsLabel": "अधिकतम दृश्य",
-    "maxViewsPlaceholder": "असीमित के लिए खाली छोड़ें",
-    "passwordProtection": "पासवर्ड संरक्षित",
-    "passwordLabel": "पासवर्ड",
-    "passwordPlaceholder": "पासवर्ड दर्ज करें",
-    "newPasswordLabel": "नया पासवर्ड (वर्तमान रखने के लिए खाली छोड़ें)",
-    "newPasswordPlaceholder": "नया पासवर्ड दर्ज करें",
-    "manageFilesTitle": "फाइलें प्रबंधित करें",
-    "manageRecipientsTitle": "प्राप्तकर्ता प्रबंधित करें",
-    "editSuccess": "साझाकरण सफलतापूर्वक अपडेट किया गया",
-    "editError": "साझाकरण अपडेट करने में विफल",
-    "bulkDeleteConfirmation": "क्या आप वाकई {count, plural, =1 {1 साझाकरण} other {# साझाकरण}} हटाना चाहते हैं? इस क्रिया को पूर्ववत नहीं किया जा सकता।",
-    "bulkDeleteTitle": "चयनित साझाकरण हटाएं"
-  },
-  "shareDetails": {
-    "title": "साझाकरण विवरण",
-    "subtitle": "इस साझाकरण के बारे में विस्तृत जानकारी",
-    "basicInfo": "मूलभूत जानकारी",
-    "name": "नाम",
-    "description": "विवरण",
-    "noDescription": "कोई विवरण प्रदान नहीं किया गया",
-    "untitled": "बिना शीर्षक",
-    "shareLink": "साझाकरण लिंक",
-    "editLink": "लिंक संपादित करें",
-    "generateLink": "लिंक जेनरेट करें",
-    "noLink": "अभी तक कोई लिंक जेनरेट नहीं किया गया",
-    "copyLink": "लिंक कॉपी करें",
-    "openLink": "नए टैब में खोलें",
-    "linkCopied": "लिंक क्लिपबोर्ड में कॉपी कर दिया गया",
-    "views": "दृश्य",
-    "dates": "तिथियां",
-    "created": "बनाया गया",
-    "expires": "समाप्त होता है",
-    "never": "कभी नहीं",
-    "security": "सुरक्षा",
-    "passwordProtected": "पासवर्ड संरक्षित",
-    "publicAccess": "सार्वजनिक पहुंच",
-    "maxViews": "अधिकतम दृश्य:",
-    "files": "फाइलें",
-    "recipients": "प्राप्तकर्ता",
-    "notAvailable": "उप/नहीं",
-    "invalidDate": "अमान्य तिथि",
-    "loadError": "साझाकरण विवरण लोड करने में विफल",
-    "editSecurity": "सुरक्षा संपादित करें",
-    "editExpiration": "समाप्ति संपादित करें"
-  },
-  "shareManager": {
-    "deleteSuccess": "साझाकरण सफलतापूर्वक हटाया गया",
-    "deleteError": "साझाकरण हटाने में त्रुटि",
-    "updateSuccess": "साझाकरण सफलतापूर्वक अपडेट हुआ",
-    "updateError": "साझाकरण अपडेट करने में त्रुटि",
-    "filesUpdateSuccess": "फाइलें सफलतापूर्वक अपडेट हुईं",
-    "filesUpdateError": "फाइलें अपडेट करने में त्रुटि",
-    "recipientsUpdateSuccess": "प्राप्तकर्ता सफलतापूर्वक अपडेट हुए",
-    "recipientsUpdateError": "प्राप्तकर्ता अपडेट करने में त्रुटि",
-    "linkGenerateSuccess": "साझाकरण लिंक सफलतापूर्वक उत्पन्न हुआ",
-    "linkGenerateError": "साझाकरण लिंक उत्पन्न करने में त्रुटि",
-    "notifyLoading": "सूचनाएँ भेजी जा रही हैं...",
-    "notifySuccess": "प्राप्तकर्ताओं को सफलतापूर्वक सूचित किया गया",
-    "notifyError": "प्राप्तकर्ताओं को सूचित करने में त्रुटि",
-    "bulkDeleteError": "साझाकरण हटाने में विफल",
-    "bulkDeleteLoading": "{count, plural, =1 {1 साझाकरण} other {# साझाकरण}} हटाया जा रहा है...",
-    "bulkDeleteSuccess": "{count, plural, =1 {1 साझाकरण सफलतापूर्वक हटाया गया} other {# साझाकरण सफलतापूर्वक हटाए गए}}",
-    "securityUpdateError": "सुरक्षा सेटिंग्स अपडेट करने में विफल",
-    "expirationUpdateError": "समाप्ति सेटिंग्स अपडेट करने में विफल",
-    "securityUpdateSuccess": "सुरक्षा सेटिंग्स सफलतापूर्वक अपडेट हुईं",
-    "expirationUpdateSuccess": "समाप्ति सेटिंग्स सफलतापूर्वक अपडेट हुईं",
-    "creatingZip": "ज़िप फ़ाइल बनाना ...",
-    "defaultShareName": "शेयर करना",
-    "downloadError": "शेयर फ़ाइलें डाउनलोड करने में विफल",
-    "downloadSuccess": "डाउनलोड सफलतापूर्वक शुरू हुआ",
-    "multipleSharesZipName": "{गिनती} _shares_files.zip",
-    "noFilesToDownload": "डाउनलोड करने के लिए कोई फाइलें उपलब्ध नहीं हैं",
-    "singleShareZipName": "{Sharename} _files.zip",
-    "zipDownloadError": "ज़िप फ़ाइल बनाने में विफल",
-    "zipDownloadSuccess": "ज़िप फ़ाइल सफलतापूर्वक डाउनलोड की गई"
-  },
-  "shares": {
-    "errors": {
-      "loadFailed": "साझाकरण लोड करने में विफल",
-      "notifyFailed": "प्राप्तकर्ताओं को सूचित करने में विफल",
-      "smtpConfigFailed": "SMTP कॉन्फ़िगरेशन लोड करने में विफल"
-    },
-    "messages": {
-      "linkCopied": "लिंक क्लिपबोर्ड में कॉपी किया गया",
-      "recipientsNotified": "प्राप्तकर्ताओं को सफलतापूर्वक सूचित किया गया"
-    },
-    "empty": {
-      "message": "अभी तक कोई साझाकरण नहीं बनाया गया",
-      "createButton": "साझाकरण बनाएं"
-    },
-    "header": {
-      "title": "मेरे साझाकरण",
-      "myShares": "मेरे साझाकरण"
-    },
-    "search": {
-      "title": "सभी साझाकरण",
-      "createButton": "साझाकरण बनाएं",
-      "placeholder": "साझाकरण खोजें...",
-      "results": "{total} में से {filtered} साझाकरण मिले"
-    },
-    "pageTitle": "साझाकरण"
-  },
-  "sharesTable": {
-    "ariaLabel": "साझाकरण तालिका",
-    "never": "कभी नहीं",
-    "columns": {
-      "name": "नाम",
-      "description": "विवरण",
-      "createdAt": "बनाया गया",
-      "expiresAt": "समाप्त होता है",
-      "status": "स्थिति",
-      "security": "सुरक्षा",
-      "files": "फाइलें",
-      "recipients": "प्राप्तकर्ता",
-      "actions": "क्रियाएं"
-    },
-    "status": {
-      "neverExpires": "कभी समाप्त नहीं होता",
-      "active": "सक्रिय",
-      "expired": "समाप्त"
-    },
-    "security": {
-      "protected": "संरक्षित",
-      "public": "सार्वजनिक"
-    },
-    "filesCount": "फाइलें",
-    "recipientsCount": "प्राप्तकर्ता",
-    "actions": {
-      "menu": "साझाकरण क्रिया मेनू",
-      "edit": "संपादित करें",
-      "manageFiles": "फाइलें प्रबंधित करें",
-      "manageRecipients": "प्राप्तकर्ता प्रबंधित करें",
-      "viewDetails": "विवरण देखें",
-      "generateLink": "लिंक जेनरेट करें",
-      "editLink": "लिंक संपादित करें",
-      "copyLink": "लिंक कॉपी करें",
-      "notifyRecipients": "प्राप्तकर्ताओं को सूचित करें",
-      "delete": "हटाएं",
-      "downloadShareFiles": "सभी फ़ाइलें डाउनलोड करें"
-    },
-    "bulkActions": {
-      "delete": "हटाएं",
-      "selected": "{count, plural, =1 {1 साझाकरण चयनित} other {# साझाकरण चयनित}}",
-      "actions": "कार्रवाई",
-      "download": "चयनित डाउनलोड करें"
-    },
-    "selectAll": "सभी चुनें",
-    "selectShare": "साझाकरण {shareName} चुनें"
-  },
-  "storageUsage": {
-    "title": "स्टोरेज उपयोग",
-    "ariaLabel": "स्टोरेज उपयोग प्रगति पट्टी",
-    "used": "उपयोग किया गया",
-    "available": "उपलब्ध",
-    "loading": "लोड हो रहा है...",
-    "retry": "पुनः प्रयास करें",
-    "errors": {
-      "title": "स्टोरेज जानकारी अनुपलब्ध",
-      "detectionFailed": "डिस्क स्पेस का पता लगाने में असमर्थ। यह सिस्टम कॉन्फ़िगरेशन समस्याओं या अपर्याप्त अनुमतियों के कारण हो सकता है।",
-      "serverError": "स्टोरेज जानकारी प्राप्त करते समय सर्वर त्रुटि हुई। कृपया बाद में पुनः प्रयास करें।",
-      "unknown": "स्टोरेज जानकारी लोड करते समय एक अनपेक्षित त्रुटि हुई।"
-    }
-  },
-  "theme": {
-    "toggle": "थीम टॉगल करें",
-    "light": "लाइट",
-    "dark": "डार्क",
-    "system": "सिस्टम"
-  },
-  "uploadFile": {
-    "title": "फ़ाइल अपलोड करें",
-    "multipleTitle": "कई फ़ाइलें अपलोड करें",
-    "selectFile": "फ़ाइल चुनने के लिए क्लिक करें",
-    "selectMultipleFiles": "एक या कई फ़ाइलें चुनने के लिए क्लिक करें",
-    "dragAndDrop": "या फ़ाइलों को यहाँ खींचें और छोड़ें",
-    "preview": "पूर्वावलोकन",
-    "uploadProgress": "अपलोड प्रगति",
-    "upload": "अपलोड",
-    "startUploads": "अपलोड शुरू करें",
-    "retry": "पुनः प्रयास करें",
-    "finish": "समाप्त",
-    "success": "फ़ाइल सफलतापूर्वक अपलोड की गई",
-    "allSuccess": "{count, plural, =1 {फ़ाइल सफलतापूर्वक अपलोड की गई} other {# फ़ाइलें सफलतापूर्वक अपलोड की गईं}}",
-    "partialSuccess": "{success} फ़ाइलें सफलतापूर्वक अपलोड की गईं, {error} असफल",
-    "error": "फ़ाइल अपलोड करने में विफल",
-    "fileSizeExceeded": "फ़ाइल का आकार {maxsizemb}MB की सीमा से अधिक है।",
-    "insufficientStorage": "अपर्याप्त संग्रहण स्थान। आपके पास {availablespace}MB उपलब्ध है।",
-    "unauthorized": "अनधिकृत: इस संसाधन तक पहुंचने के लिए एक वैध टोकन आवश्यक है।",
-    "confirmCancel": {
-      "title": "अपलोड रद्द करें",
-      "messageSingle": "एक अपलोड प्रगति में है।",
-      "messageMultiple": "{count} अपलोड प्रगति में हैं।",
-      "warning": "यदि आप अभी बंद करते हैं, तो अपलोड रद्द हो जाएंगे और कोई भी प्रगति खो जाएगी।",
-      "continue": "अपलोड जारी रखें",
-      "cancel": "अपलोड रद्द करें"
-    }
-  },
-  "users": {
-    "modes": {
-      "create": "बनाएं",
-      "edit": "संपादित करें"
-    },
-    "errors": {
-      "loadFailed": "उपयोगकर्ता लोड करने में विफल",
-      "submitFailed": "{mode} करने में विफल",
-      "deleteFailed": "उपयोगकर्ता हटाने में विफल",
-      "statusUpdateFailed": "उपयोगकर्ता की स्थिति अपडेट करने में विफल"
-    },
-    "messages": {
-      "createSuccess": "उपयोगकर्ता सफलतापूर्वक बनाया गया",
-      "updateSuccess": "उपयोगकर्ता सफलतापूर्वक अपडेट हुआ",
-      "deleteSuccess": "उपयोगकर्ता सफलतापूर्वक हटाया गया",
-      "activateSuccess": "उपयोगकर्ता सफलतापूर्वक सक्रिय हुआ",
-      "deactivateSuccess": "उपयोगकर्ता सफलतापूर्वक निष्क्रिय हुआ"
-    },
-    "actions": {
-      "edit": "संपादित करें",
-      "activate": "सक्रिय करें",
-      "deactivate": "निष्क्रिय करें",
-      "delete": "हटाएं"
-    },
-    "delete": {
-      "title": "उपयोगकर्ता हटाने की पुष्टि करें",
-      "confirmation": "क्या आप वाकई {firstName} {lastName} को हटाना चाहते हैं? यह क्रिया अपरिवर्तनीय है।",
-      "confirm": "उपयोगकर्ता हटाएं"
-    },
-    "form": {
-      "titleCreate": "नया उपयोगकर्ता जोड़ें",
-      "titleEdit": "उपयोगकर्ता संपादित करें",
-      "firstName": "पहला नाम",
-      "lastName": "अंतिम नाम",
-      "username": "उपयोगकर्ता नाम",
-      "email": "ईमेल",
-      "password": "पासवर्ड",
-      "newPassword": "नया पासवर्ड (वैकल्पिक)",
-      "passwordPlaceholder": "वर्तमान पासवर्ड रखने के लिए खाली छोड़ें",
-      "role": "भूमिका",
-      "roleUser": "उपयोगकर्ता",
-      "roleAdmin": "व्यवस्थापक",
-      "create": "बनाएं",
-      "save": "सहेजें"
-    },
-    "status": {
-      "title": "स्थिति परिवर्तन की पुष्टि करें",
-      "confirmation": "क्या आप वाकई {firstName} {lastName} को {action} करना चाहते हैं?",
-      "activate": "सक्रिय करें",
-      "deactivate": "निष्क्रिय करें",
-      "user": "उपयोगकर्ता"
-    },
-    "header": {
-      "title": "उपयोगकर्ता प्रबंधन",
-      "addUser": "उपयोगकर्ता जोड़ें",
-      "management": "उपयोगकर्ता प्रबंधन"
-    },
-    "table": {
-      "user": "उपयोगकर्ता",
-      "email": "ईमेल",
-      "status": "स्थिति",
-      "role": "भूमिका",
-      "actions": "क्रियाएं",
-      "active": "सक्रिय",
-      "inactive": "निष्क्रिय",
-      "admin": "व्यवस्थापक",
-      "userr": "उपयोगकर्ता"
-    }
-  },
-  "validation": {
-    "invalidEmail": "अमान्य ईमेल पता",
-    "passwordMinLength": "पासवर्ड कम से कम 6 अक्षर का होना चाहिए",
-    "firstNameRequired": "पहला नाम आवश्यक है",
-    "lastNameRequired": "अंतिम नाम आवश्यक है",
-    "usernameLength": "उपयोगकर्ता नाम कम से कम 3 अक्षर का होना चाहिए",
-    "usernameSpaces": "उपयोगकर्ता नाम में रिक्त स्थान नहीं हो सकते",
-    "passwordLength": "पासवर्ड कम से कम 8 अक्षर का होना चाहिए",
-    "passwordsMatch": "पासवर्ड मेल नहीं खाते",
-    "emailRequired": "ईमेल आवश्यक है",
-    "emailOrUsernameRequired": "ईमेल या उपयोगकर्ता नाम आवश्यक है",
-    "passwordRequired": "पासवर्ड आवश्यक है",
-    "nameRequired": "नाम आवश्यक है",
-    "required": "यह फ़ील्ड आवश्यक है"
-  },
-  "shareFile": {
-    "title": "फाइल साझा करें",
-    "linkTitle": "लिंक जेनरेट करें",
-    "nameLabel": "साझाकरण नाम",
-    "namePlaceholder": "साझाकरण नाम दर्ज करें",
-    "descriptionLabel": "विवरण",
-    "descriptionPlaceholder": "विवरण दर्ज करें (वैकल्पिक)",
-    "expirationLabel": "समाप्ति तिथि",
-    "expirationPlaceholder": "DD/MM/YYYY HH:MM",
-    "maxViewsLabel": "अधिकतम दृश्य",
-    "maxViewsPlaceholder": "असीमित के लिए खाली छोड़ें",
-    "passwordProtection": "पासवर्ड संरक्षित",
-    "passwordLabel": "पासवर्ड",
-    "passwordPlaceholder": "पासवर्ड दर्ज करें",
-    "linkDescription": "फाइल साझा करने के लिए कस्टम लिंक जेनरेट करें",
-    "aliasLabel": "लिंक उपनाम",
-    "aliasPlaceholder": "कस्टम उपनाम दर्ज करें",
-    "linkReady": "आपका साझाकरण लिंक तैयार है:",
-    "createShare": "साझाकरण बनाएं",
-    "generateLink": "लिंक जेनरेट करें",
-    "copyLink": "लिंक कॉपी करें"
-  },
-  "bulkDownload": {
-    "title": "बल्क डाउनलोड",
-    "zipNameLabel": "ZIP फाइल नाम",
-    "zipNamePlaceholder": "फाइल नाम दर्ज करें",
-    "description": "{count, plural, =1 {1 फाइल संपीड़ित की जाएगी} other {# फाइलें संपीड़ित की जाएंगी}}",
-    "download": "ZIP डाउनलोड करें"
-  },
-  "deleteConfirmation": {
-    "filesToDelete": "हटाई जाने वाली फाइलें",
-    "sharesToDelete": "साझाकरण जो हटाए जाएंगे"
-  },
-  "shareMultipleFiles": {
-    "title": "कई फाइलें साझा करें",
-    "shareNameLabel": "साझाकरण नाम",
-    "shareNamePlaceholder": "साझाकरण नाम दर्ज करें",
-    "descriptionLabel": "विवरण",
-    "descriptionPlaceholder": "विवरण दर्ज करें (वैकल्पिक)",
-    "filesToShare": "साझा करने के लिए फाइलें",
-    "files": "फाइलें",
-    "totalSize": "कुल आकार",
-    "creating": "बनाया जा रहा है...",
-    "create": "साझाकरण बनाएं"
-  },
-  "shareSecurity": {
-    "subtitle": "इस साझाकरण के लिए पासवर्ड सुरक्षा और सुरक्षा विकल्प कॉन्फ़िगर करें",
-    "info": {
-      "title": "यह कैसे काम करता है:",
-      "withoutPassword": "लिंक वाला कोई भी व्यक्ति बिना पासवर्ड के इस साझाकरण तक पहुंच सकता है।",
-      "withPassword": "उपयोगकर्ताओं को इस साझाकरण तक पहुंचने के लिए पासवर्ड दर्ज करना होगा।"
-    },
-    "existingPasswordMessage": "इस साझाकरण में पहले से ही एक पासवर्ड है। यदि आप इसे अपडेट करना चाहते हैं, तो नीचे दिए गए फील्ड में नया पासवर्ड दर्ज करें और सहेजें।",
-    "passwordProtection": "पासवर्ड सुरक्षा",
-    "error": {
-      "updateFailed": "सुरक्षा सेटिंग्स अपडेट करने में विफल"
-    },
-    "passwordRequirements": {
-      "title": "पासवर्ड आवश्यकताएं:",
-      "minLength": "कम से कम 2 अक्षर"
-    },
-    "newPassword": "नया पासवर्ड",
-    "success": {
-      "passwordUpdated": "पासवर्ड सफलतापूर्वक अपडेट हुआ",
-      "passwordRemoved": "पासवर्ड सुरक्षा सफलतापूर्वक हटाई गई",
-      "passwordSet": "पासवर्ड सुरक्षा सफलतापूर्वक सक्षम की गई"
-    },
-    "password": "पासवर्ड",
-    "validation": {
-      "passwordRequired": "पासवर्ड आवश्यक है",
-      "passwordTooShort": "पासवर्ड कम से कम 2 अक्षर का होना चाहिए"
-    },
-    "currentStatus": "वर्तमान स्थिति",
-    "passwordPlaceholder": "एक सुरक्षित पासवर्ड दर्ज करें",
-    "title": "साझाकरण सुरक्षा सेटिंग्स"
-  },
-  "shareExpiration": {
-    "neverExpires": "कभी समाप्त नहीं होता",
-    "success": {
-      "expirationUpdated": "समाप्ति तिथि सफलतापूर्वक अपडेट हुई",
-      "expirationRemoved": "समाप्ति सफलतापूर्वक हटाई गई - साझाकरण अब स्थायी है",
-      "expirationSet": "समाप्ति तिथि सफलतापूर्वक सेट की गई"
-    },
-    "info": {
-      "canBeChanged": "आप समाप्ति तिथि को कभी भी बदल या हटा सकते हैं",
-      "willBeInaccessible": "इस तिथि के बाद साझाकरण अगम्य हो जाएगा",
-      "noExpiration": "यह साझाकरण कभी समाप्त नहीं होगा और अनिश्चित काल तक पहुंच योग्य रहेगा।",
-      "title": "समाप्ति के बारे में:"
-    },
-    "enableExpiration": "समाप्ति सक्षम करें",
-    "title": "साझाकरण समाप्ति सेटिंग्स",
-    "subtitle": "कॉन्फ़िगर करें कि यह साझाकरण कब समाप्त होगा",
-    "validation": {
-      "dateMustBeFuture": "समाप्ति तिथि भविष्य में होनी चाहिए",
-      "dateRequired": "कृपया एक समाप्ति तिथि चुनें"
-    },
-    "currentStatus": "वर्तमान स्थिति",
-    "error": {
-      "updateFailed": "समाप्ति सेटिंग्स अपडेट करने में विफल"
-    },
-    "expires": "समाप्त होता है:",
-    "expirationDate": "समाप्ति तिथि"
-  },
-  "auth": {
-    "errors": {
-      "account_inactive": "खाता निष्क्रिय है। कृपया व्यवस्थापक से संपर्क करें।",
-      "registration_disabled": "SSO के माध्यम से पंजीकरण अक्षम है।",
-      "token_expired": "टोकन समाप्त हो गया है। कृपया पुनः प्रयास करें।",
-      "config_error": "कॉन्फ़िगरेशन त्रुटि। कृपया सहायता से संपर्क करें।",
-      "auth_failed": "प्रमाणीकरण विफल। कृपया पुनः प्रयास करें।"
     }
   },
   "reverseShares": {
@@ -1447,5 +957,598 @@
       }
     },
     "defaultLinkName": "प्राप्त फ़ाइलें"
+  },
+  "searchBar": {
+    "placeholder": "फाइलें खोजें...",
+    "results": "{total} में से {filtered} फाइलें मिलीं"
+  },
+  "settings": {
+    "groups": {
+      "defaultDescription": "कॉन्फ़िगरेशन विकल्प",
+      "general": {
+        "title": "सामान्य",
+        "description": "एप्लिकेशन की बुनियादी सेटिंग्स"
+      },
+      "email": {
+        "title": "ईमेल",
+        "description": "ईमेल सर्वर कॉन्फ़िगरेशन"
+      },
+      "security": {
+        "title": "सुरक्षा",
+        "description": "सुरक्षा और प्रमाणीकरण सेटिंग्स"
+      },
+      "storage": {
+        "title": "स्टोरेज",
+        "description": "फाइल स्टोरेज कॉन्फ़िगरेशन"
+      },
+      "oidc": {
+        "title": "OpenID Connect (SSO)",
+        "description": "OpenID Connect के माध्यम से SSO प्रमाणीकरण कॉन्फ़िगरेशन"
+      }
+    },
+    "fields": {
+      "noDescription": "कोई विवरण उपलब्ध नहीं",
+      "appLogo": {
+        "title": "एप्लिकेशन लोगो",
+        "description": "एप्लिकेशन का लोगो चित्र"
+      },
+      "appName": {
+        "title": "एप्लिकेशन नाम",
+        "description": "उपयोगकर्ताओं को दिखाया जाने वाला एप्लिकेशन नाम"
+      },
+      "appDescription": {
+        "title": "एप्लिकेशन विवरण",
+        "description": "एप्लिकेशन का संक्षिप्त विवरण"
+      },
+      "showHomePage": {
+        "title": "होम पेज दिखाएं",
+        "description": "इंस्टॉलेशन के बाद होम पेज दिखाएं"
+      },
+      "smtpEnabled": {
+        "title": "SMTP सक्षम",
+        "description": "SMTP ईमेल कार्यक्षमता सक्षम या अक्षम करें"
+      },
+      "smtpHost": {
+        "title": "SMTP सर्वर",
+        "description": "SMTP सर्वर पता"
+      },
+      "smtpPort": {
+        "title": "SMTP पोर्ट",
+        "description": "SMTP सर्वर पोर्ट"
+      },
+      "smtpUser": {
+        "title": "SMTP उपयोगकर्ता",
+        "description": "SMTP प्रमाणीकरण के लिए उपयोगकर्ता नाम"
+      },
+      "smtpPass": {
+        "title": "SMTP पासवर्ड",
+        "description": "SMTP प्रमाणीकरण के लिए पासवर्ड"
+      },
+      "smtpFromName": {
+        "title": "प्रेषक का नाम",
+        "description": "भेजे गए ईमेल के लिए डिस्प्ले नाम"
+      },
+      "smtpFromEmail": {
+        "title": "प्रेषक का ईमेल",
+        "description": "प्रेषक का ईमेल पता"
+      },
+      "maxLoginAttempts": {
+        "title": "अधिकतम लॉगिन प्रयास",
+        "description": "ब्लॉक करने से पहले अधिकतम लॉगिन प्रयासों की संख्या"
+      },
+      "loginBlockDuration": {
+        "title": "लॉगिन ब्लॉक अवधि",
+        "description": "प्रयासों की सीमा पार करने पर ब्लॉक की अवधि (सेकंड में)"
+      },
+      "passwordMinLength": {
+        "title": "न्यूनतम पासवर्ड लंबाई",
+        "description": "पासवर्ड के लिए न्यूनतम अक्षरों की संख्या"
+      },
+      "passwordResetTokenExpiration": {
+        "title": "रीसेट टोकन समाप्ति",
+        "description": "पासवर्ड रीसेट टोकन की वैधता (सेकंड में)"
+      },
+      "maxFileSize": {
+        "title": "अधिकतम फाइल आकार",
+        "description": "अपलोड के लिए अधिकतम अनुमत फाइल आकार"
+      },
+      "maxTotalStoragePerUser": {
+        "title": "प्रति उपयोगकर्ता अधिकतम स्टोरेज",
+        "description": "प्रति उपयोगकर्ता कुल स्टोरेज सीमा"
+      },
+      "firstUserAccess": {
+        "description": "नए उपयोगकर्ताओं की पहली पहुंच के लिए सेटिंग्स",
+        "title": "पहली उपयोगकर्ता पहुंच"
+      },
+      "serverUrl": {
+        "title": "सर्वर URL",
+        "description": "Palmr सर्वर का आधार URL (उदाहरण: https://palmr.example.com)"
+      },
+      "testSmtp": {
+        "title": "SMTP कनेक्शन का परीक्षण करें",
+        "description": "जांचें कि SMTP कॉन्फ़िगरेशन मान्य है"
+      },
+      "smtpNoAuth": {
+        "title": "कोई प्रमाणीकरण नहीं",
+        "description": "आंतरिक सर्वर के लिए सक्षम करें जिन्हें उपयोगकर्ता नाम/पासवर्ड की आवश्यकता नहीं होती है (प्रमाणीकरण फ़ील्ड छिपाता है)"
+      },
+      "smtpSecure": {
+        "title": "कनेक्शन सुरक्षा",
+        "description": "SMTP कनेक्शन सुरक्षा विधि - स्वचालित (अनुशंसित), SSL, STARTTLS, या कोई नहीं (असुरक्षित)",
+        "options": {
+          "auto": "स्वचालित (अनुशंसित)",
+          "ssl": "SSL (पोर्ट 465)",
+          "tls": "STARTTLS (पोर्ट 587)",
+          "none": "कोई नहीं (असुरक्षित)"
+        }
+      },
+      "smtpTrustSelfSigned": {
+        "title": "स्व-हस्ताक्षरित प्रमाणपत्रों पर विश्वास करें",
+        "description": "स्व-हस्ताक्षरित SSL/TLS प्रमाणपत्रों पर विश्वास करने के लिए इसे सक्षम करें (विकास वातावरण के लिए उपयोगी)"
+      }
+    },
+    "buttons": {
+      "save": "{group} सहेजें",
+      "testSmtp": "कनेक्शन का परीक्षण करें",
+      "testing": "परीक्षण किया जा रहा है..."
+    },
+    "errors": {
+      "loadFailed": "सेटिंग्स लोड करने में विफल",
+      "updateFailed": "सेटिंग्स अपडेट करने में विफल"
+    },
+    "messages": {
+      "noChanges": "सहेजने के लिए कोई परिवर्तन नहीं",
+      "updateSuccess": "{group} सेटिंग्स सफलतापूर्वक अपडेट हुईं",
+      "smtpTestFailed": "SMTP कनेक्शन विफल: {error}",
+      "smtpTestGenericError": "SMTP कनेक्शन का परीक्षण करने में विफल। कृपया अपनी सेटिंग्स जांचें और पुनः प्रयास करें।",
+      "smtpTestSuccess": "SMTP कनेक्शन सफल! आपका ईमेल कॉन्फ़िगरेशन सही ढंग से काम कर रहा है।",
+      "smtpMissingAuth": "कृपया SMTP उपयोगकर्ता नाम और पासवर्ड भरें, या 'कोई प्रमाणीकरण नहीं' विकल्प सक्षम करें।",
+      "smtpMissingHostPort": "परीक्षण से पहले कृपया SMTP होस्ट और पोर्ट भरें।",
+      "smtpNotEnabled": "SMTP सक्षम नहीं है। कृपया पहले SMTP सक्षम करें।"
+    },
+    "title": "सेटिंग्स",
+    "breadcrumb": "सेटिंग्स",
+    "pageTitle": "सेटिंग्स",
+    "tooltips": {
+      "testSmtp": "फॉर्म में वर्तमान में दर्ज मानों के साथ SMTP कनेक्शन का परीक्षण करता है। परिवर्तनों को स्थायी बनाने के लिए, परीक्षण के बाद अपनी सेटिंग्स को सहेजना याद रखें।",
+      "defaultPlaceholder": "दर्ज करें और Enter दबाएं"
+    },
+    "redirectUri": {
+      "placeholder": "https://mysite.com",
+      "previewLabel": "पूर्ण URL जो सहेजा जाएगा:"
+    }
+  },
+  "share": {
+    "errors": {
+      "invalidPassword": "अमान्य पासवर्ड। कृपया पुनः प्रयास करें।",
+      "loadFailed": "साझाकरण लोड करने में विफल",
+      "downloadFailed": "फाइल डाउनलोड करने में विफल"
+    },
+    "messages": {
+      "downloadStarted": "डाउनलोड शुरू हुआ"
+    },
+    "password": {
+      "title": "पासवर्ड संरक्षित साझाकरण",
+      "protected": "यह साझाकरण पासवर्ड द्वारा संरक्षित है",
+      "incorrect": "गलत पासवर्ड। कृपया पुनः प्रयास करें।",
+      "label": "पासवर्ड",
+      "placeholder": "साझाकरण का पासवर्ड दर्ज करें",
+      "submit": "सबमिट करें"
+    },
+    "details": {
+      "untitled": "बिना शीर्षक के",
+      "created": "बनाया गया: {date}",
+      "expires": "समाप्त होता है: {date}"
+    },
+    "notFound": {
+      "title": "साझाकरण नहीं मिला",
+      "description": "यह साझाकरण हटा दिया गया हो सकता है या समाप्त हो चुका है।"
+    },
+    "pageTitle": "साझाकरण",
+    "downloadAll": "सभी डाउनलोड करें"
+  },
+  "shareActions": {
+    "deleteTitle": "साझाकरण हटाएं",
+    "deleteConfirmation": "क्या आप वाकई इस साझाकरण को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
+    "editTitle": "साझाकरण संपादित करें",
+    "nameLabel": "साझाकरण नाम",
+    "descriptionLabel": "विवरण",
+    "descriptionPlaceholder": "विवरण दर्ज करें (वैकल्पिक)",
+    "expirationLabel": "समाप्ति तिथि",
+    "expirationPlaceholder": "DD/MM/YYYY HH:MM",
+    "maxViewsLabel": "अधिकतम दृश्य",
+    "maxViewsPlaceholder": "असीमित के लिए खाली छोड़ें",
+    "passwordProtection": "पासवर्ड संरक्षित",
+    "passwordLabel": "पासवर्ड",
+    "passwordPlaceholder": "पासवर्ड दर्ज करें",
+    "newPasswordLabel": "नया पासवर्ड (वर्तमान रखने के लिए खाली छोड़ें)",
+    "newPasswordPlaceholder": "नया पासवर्ड दर्ज करें",
+    "manageFilesTitle": "फाइलें प्रबंधित करें",
+    "manageRecipientsTitle": "प्राप्तकर्ता प्रबंधित करें",
+    "editSuccess": "साझाकरण सफलतापूर्वक अपडेट किया गया",
+    "editError": "साझाकरण अपडेट करने में विफल",
+    "bulkDeleteConfirmation": "क्या आप वाकई {count, plural, =1 {1 साझाकरण} other {# साझाकरण}} हटाना चाहते हैं? इस क्रिया को पूर्ववत नहीं किया जा सकता।",
+    "bulkDeleteTitle": "चयनित साझाकरण हटाएं"
+  },
+  "shareDetails": {
+    "title": "साझाकरण विवरण",
+    "subtitle": "इस साझाकरण के बारे में विस्तृत जानकारी",
+    "basicInfo": "मूलभूत जानकारी",
+    "name": "नाम",
+    "description": "विवरण",
+    "noDescription": "कोई विवरण प्रदान नहीं किया गया",
+    "untitled": "बिना शीर्षक",
+    "shareLink": "साझाकरण लिंक",
+    "editLink": "लिंक संपादित करें",
+    "generateLink": "लिंक जेनरेट करें",
+    "noLink": "अभी तक कोई लिंक जेनरेट नहीं किया गया",
+    "copyLink": "लिंक कॉपी करें",
+    "openLink": "नए टैब में खोलें",
+    "linkCopied": "लिंक क्लिपबोर्ड में कॉपी कर दिया गया",
+    "views": "दृश्य",
+    "dates": "तिथियां",
+    "created": "बनाया गया",
+    "expires": "समाप्त होता है",
+    "never": "कभी नहीं",
+    "security": "सुरक्षा",
+    "passwordProtected": "पासवर्ड संरक्षित",
+    "publicAccess": "सार्वजनिक पहुंच",
+    "maxViews": "अधिकतम दृश्य:",
+    "files": "फाइलें",
+    "recipients": "प्राप्तकर्ता",
+    "notAvailable": "उप/नहीं",
+    "invalidDate": "अमान्य तिथि",
+    "loadError": "साझाकरण विवरण लोड करने में विफल",
+    "editSecurity": "सुरक्षा संपादित करें",
+    "editExpiration": "समाप्ति संपादित करें"
+  },
+  "shareExpiration": {
+    "neverExpires": "कभी समाप्त नहीं होता",
+    "success": {
+      "expirationUpdated": "समाप्ति तिथि सफलतापूर्वक अपडेट हुई",
+      "expirationRemoved": "समाप्ति सफलतापूर्वक हटाई गई - साझाकरण अब स्थायी है",
+      "expirationSet": "समाप्ति तिथि सफलतापूर्वक सेट की गई"
+    },
+    "info": {
+      "canBeChanged": "आप समाप्ति तिथि को कभी भी बदल या हटा सकते हैं",
+      "willBeInaccessible": "इस तिथि के बाद साझाकरण अगम्य हो जाएगा",
+      "noExpiration": "यह साझाकरण कभी समाप्त नहीं होगा और अनिश्चित काल तक पहुंच योग्य रहेगा।",
+      "title": "समाप्ति के बारे में:"
+    },
+    "enableExpiration": "समाप्ति सक्षम करें",
+    "title": "साझाकरण समाप्ति सेटिंग्स",
+    "subtitle": "कॉन्फ़िगर करें कि यह साझाकरण कब समाप्त होगा",
+    "validation": {
+      "dateMustBeFuture": "समाप्ति तिथि भविष्य में होनी चाहिए",
+      "dateRequired": "कृपया एक समाप्ति तिथि चुनें"
+    },
+    "currentStatus": "वर्तमान स्थिति",
+    "error": {
+      "updateFailed": "समाप्ति सेटिंग्स अपडेट करने में विफल"
+    },
+    "expires": "समाप्त होता है:",
+    "expirationDate": "समाप्ति तिथि"
+  },
+  "shareFile": {
+    "title": "फाइल साझा करें",
+    "linkTitle": "लिंक जेनरेट करें",
+    "nameLabel": "साझाकरण नाम",
+    "namePlaceholder": "साझाकरण नाम दर्ज करें",
+    "descriptionLabel": "विवरण",
+    "descriptionPlaceholder": "विवरण दर्ज करें (वैकल्पिक)",
+    "expirationLabel": "समाप्ति तिथि",
+    "expirationPlaceholder": "DD/MM/YYYY HH:MM",
+    "maxViewsLabel": "अधिकतम दृश्य",
+    "maxViewsPlaceholder": "असीमित के लिए खाली छोड़ें",
+    "passwordProtection": "पासवर्ड संरक्षित",
+    "passwordLabel": "पासवर्ड",
+    "passwordPlaceholder": "पासवर्ड दर्ज करें",
+    "linkDescription": "फाइल साझा करने के लिए कस्टम लिंक जेनरेट करें",
+    "aliasLabel": "लिंक उपनाम",
+    "aliasPlaceholder": "कस्टम उपनाम दर्ज करें",
+    "linkReady": "आपका साझाकरण लिंक तैयार है:",
+    "createShare": "साझाकरण बनाएं",
+    "generateLink": "लिंक जेनरेट करें",
+    "copyLink": "लिंक कॉपी करें"
+  },
+  "shareManager": {
+    "deleteSuccess": "साझाकरण सफलतापूर्वक हटाया गया",
+    "deleteError": "साझाकरण हटाने में त्रुटि",
+    "updateSuccess": "साझाकरण सफलतापूर्वक अपडेट हुआ",
+    "updateError": "साझाकरण अपडेट करने में त्रुटि",
+    "filesUpdateSuccess": "फाइलें सफलतापूर्वक अपडेट हुईं",
+    "filesUpdateError": "फाइलें अपडेट करने में त्रुटि",
+    "recipientsUpdateSuccess": "प्राप्तकर्ता सफलतापूर्वक अपडेट हुए",
+    "recipientsUpdateError": "प्राप्तकर्ता अपडेट करने में त्रुटि",
+    "linkGenerateSuccess": "साझाकरण लिंक सफलतापूर्वक उत्पन्न हुआ",
+    "linkGenerateError": "साझाकरण लिंक उत्पन्न करने में त्रुटि",
+    "notifyLoading": "सूचनाएँ भेजी जा रही हैं...",
+    "notifySuccess": "प्राप्तकर्ताओं को सफलतापूर्वक सूचित किया गया",
+    "notifyError": "प्राप्तकर्ताओं को सूचित करने में त्रुटि",
+    "bulkDeleteError": "साझाकरण हटाने में विफल",
+    "bulkDeleteLoading": "{count, plural, =1 {1 साझाकरण} other {# साझाकरण}} हटाया जा रहा है...",
+    "bulkDeleteSuccess": "{count, plural, =1 {1 साझाकरण सफलतापूर्वक हटाया गया} other {# साझाकरण सफलतापूर्वक हटाए गए}}",
+    "securityUpdateError": "सुरक्षा सेटिंग्स अपडेट करने में विफल",
+    "expirationUpdateError": "समाप्ति सेटिंग्स अपडेट करने में विफल",
+    "securityUpdateSuccess": "सुरक्षा सेटिंग्स सफलतापूर्वक अपडेट हुईं",
+    "expirationUpdateSuccess": "समाप्ति सेटिंग्स सफलतापूर्वक अपडेट हुईं",
+    "creatingZip": "ज़िप फ़ाइल बनाना ...",
+    "defaultShareName": "शेयर करना",
+    "downloadError": "शेयर फ़ाइलें डाउनलोड करने में विफल",
+    "downloadSuccess": "डाउनलोड सफलतापूर्वक शुरू हुआ",
+    "multipleSharesZipName": "{गिनती} _shares_files.zip",
+    "noFilesToDownload": "डाउनलोड करने के लिए कोई फाइलें उपलब्ध नहीं हैं",
+    "singleShareZipName": "{Sharename} _files.zip",
+    "zipDownloadError": "ज़िप फ़ाइल बनाने में विफल",
+    "zipDownloadSuccess": "ज़िप फ़ाइल सफलतापूर्वक डाउनलोड की गई"
+  },
+  "shareMultipleFiles": {
+    "title": "कई फाइलें साझा करें",
+    "shareNameLabel": "साझाकरण नाम",
+    "shareNamePlaceholder": "साझाकरण नाम दर्ज करें",
+    "descriptionLabel": "विवरण",
+    "descriptionPlaceholder": "विवरण दर्ज करें (वैकल्पिक)",
+    "filesToShare": "साझा करने के लिए फाइलें",
+    "files": "फाइलें",
+    "totalSize": "कुल आकार",
+    "creating": "बनाया जा रहा है...",
+    "create": "साझाकरण बनाएं"
+  },
+  "shareSecurity": {
+    "subtitle": "इस साझाकरण के लिए पासवर्ड सुरक्षा और सुरक्षा विकल्प कॉन्फ़िगर करें",
+    "info": {
+      "title": "यह कैसे काम करता है:",
+      "withoutPassword": "लिंक वाला कोई भी व्यक्ति बिना पासवर्ड के इस साझाकरण तक पहुंच सकता है।",
+      "withPassword": "उपयोगकर्ताओं को इस साझाकरण तक पहुंचने के लिए पासवर्ड दर्ज करना होगा।"
+    },
+    "existingPasswordMessage": "इस साझाकरण में पहले से ही एक पासवर्ड है। यदि आप इसे अपडेट करना चाहते हैं, तो नीचे दिए गए फील्ड में नया पासवर्ड दर्ज करें और सहेजें।",
+    "passwordProtection": "पासवर्ड सुरक्षा",
+    "error": {
+      "updateFailed": "सुरक्षा सेटिंग्स अपडेट करने में विफल"
+    },
+    "passwordRequirements": {
+      "title": "पासवर्ड आवश्यकताएं:",
+      "minLength": "कम से कम 2 अक्षर"
+    },
+    "newPassword": "नया पासवर्ड",
+    "success": {
+      "passwordUpdated": "पासवर्ड सफलतापूर्वक अपडेट हुआ",
+      "passwordRemoved": "पासवर्ड सुरक्षा सफलतापूर्वक हटाई गई",
+      "passwordSet": "पासवर्ड सुरक्षा सफलतापूर्वक सक्षम की गई"
+    },
+    "password": "पासवर्ड",
+    "validation": {
+      "passwordRequired": "पासवर्ड आवश्यक है",
+      "passwordTooShort": "पासवर्ड कम से कम 2 अक्षर का होना चाहिए"
+    },
+    "currentStatus": "वर्तमान स्थिति",
+    "passwordPlaceholder": "एक सुरक्षित पासवर्ड दर्ज करें",
+    "title": "साझाकरण सुरक्षा सेटिंग्स"
+  },
+  "shares": {
+    "errors": {
+      "loadFailed": "साझाकरण लोड करने में विफल",
+      "notifyFailed": "प्राप्तकर्ताओं को सूचित करने में विफल",
+      "smtpConfigFailed": "SMTP कॉन्फ़िगरेशन लोड करने में विफल"
+    },
+    "messages": {
+      "linkCopied": "लिंक क्लिपबोर्ड में कॉपी किया गया",
+      "recipientsNotified": "प्राप्तकर्ताओं को सफलतापूर्वक सूचित किया गया"
+    },
+    "empty": {
+      "message": "अभी तक कोई साझाकरण नहीं बनाया गया",
+      "createButton": "साझाकरण बनाएं"
+    },
+    "header": {
+      "title": "मेरे साझाकरण",
+      "myShares": "मेरे साझाकरण"
+    },
+    "search": {
+      "title": "सभी साझाकरण",
+      "createButton": "साझाकरण बनाएं",
+      "placeholder": "साझाकरण खोजें...",
+      "results": "{total} में से {filtered} साझाकरण मिले"
+    },
+    "pageTitle": "साझाकरण"
+  },
+  "sharesTable": {
+    "ariaLabel": "साझाकरण तालिका",
+    "never": "कभी नहीं",
+    "columns": {
+      "name": "नाम",
+      "description": "विवरण",
+      "createdAt": "बनाया गया",
+      "expiresAt": "समाप्त होता है",
+      "status": "स्थिति",
+      "security": "सुरक्षा",
+      "files": "फाइलें",
+      "recipients": "प्राप्तकर्ता",
+      "actions": "क्रियाएं"
+    },
+    "status": {
+      "neverExpires": "कभी समाप्त नहीं होता",
+      "active": "सक्रिय",
+      "expired": "समाप्त"
+    },
+    "security": {
+      "protected": "संरक्षित",
+      "public": "सार्वजनिक"
+    },
+    "filesCount": "फाइलें",
+    "recipientsCount": "प्राप्तकर्ता",
+    "actions": {
+      "menu": "साझाकरण क्रिया मेनू",
+      "edit": "संपादित करें",
+      "manageFiles": "फाइलें प्रबंधित करें",
+      "manageRecipients": "प्राप्तकर्ता प्रबंधित करें",
+      "viewDetails": "विवरण देखें",
+      "generateLink": "लिंक जेनरेट करें",
+      "editLink": "लिंक संपादित करें",
+      "copyLink": "लिंक कॉपी करें",
+      "notifyRecipients": "प्राप्तकर्ताओं को सूचित करें",
+      "delete": "हटाएं",
+      "downloadShareFiles": "सभी फ़ाइलें डाउनलोड करें"
+    },
+    "bulkActions": {
+      "delete": "हटाएं",
+      "selected": "{count, plural, =1 {1 साझाकरण चयनित} other {# साझाकरण चयनित}}",
+      "actions": "कार्रवाई",
+      "download": "चयनित डाउनलोड करें"
+    },
+    "selectAll": "सभी चुनें",
+    "selectShare": "साझाकरण {shareName} चुनें"
+  },
+  "storageUsage": {
+    "title": "स्टोरेज उपयोग",
+    "ariaLabel": "स्टोरेज उपयोग प्रगति पट्टी",
+    "used": "उपयोग किया गया",
+    "available": "उपलब्ध",
+    "total": "कुल",
+    "loading": "लोड हो रहा है...",
+    "retry": "पुनः प्रयास करें",
+    "errors": {
+      "title": "स्टोरेज जानकारी अनुपलब्ध",
+      "detectionFailed": "डिस्क स्पेस का पता लगाने में असमर्थ। यह सिस्टम कॉन्फ़िगरेशन समस्याओं या अपर्याप्त अनुमतियों के कारण हो सकता है।",
+      "serverError": "स्टोरेज जानकारी प्राप्त करते समय सर्वर त्रुटि हुई। कृपया बाद में पुनः प्रयास करें।",
+      "unknown": "स्टोरेज जानकारी लोड करते समय एक अनपेक्षित त्रुटि हुई।"
+    }
+  },
+  "theme": {
+    "toggle": "थीम टॉगल करें",
+    "light": "लाइट",
+    "dark": "डार्क",
+    "system": "सिस्टम"
+  },
+  "uploadFile": {
+    "title": "फ़ाइल अपलोड करें",
+    "multipleTitle": "कई फ़ाइलें अपलोड करें",
+    "selectFile": "फ़ाइल चुनने के लिए क्लिक करें",
+    "selectMultipleFiles": "एक या कई फ़ाइलें चुनने के लिए क्लिक करें",
+    "dragAndDrop": "या फ़ाइलों को यहाँ खींचें और छोड़ें",
+    "preview": "पूर्वावलोकन",
+    "uploadProgress": "अपलोड प्रगति",
+    "upload": "अपलोड",
+    "startUploads": "अपलोड शुरू करें",
+    "retry": "पुनः प्रयास करें",
+    "finish": "समाप्त",
+    "success": "फ़ाइल सफलतापूर्वक अपलोड की गई",
+    "allSuccess": "{count, plural, =1 {फ़ाइल सफलतापूर्वक अपलोड की गई} other {# फ़ाइलें सफलतापूर्वक अपलोड की गईं}}",
+    "partialSuccess": "{success} फ़ाइलें सफलतापूर्वक अपलोड की गईं, {error} असफल",
+    "error": "फ़ाइल अपलोड करने में विफल",
+    "fileSizeExceeded": "फ़ाइल का आकार {maxsizemb}MB की सीमा से अधिक है।",
+    "insufficientStorage": "अपर्याप्त संग्रहण स्थान। आपके पास {availablespace}MB उपलब्ध है।",
+    "unauthorized": "अनधिकृत: इस संसाधन तक पहुंचने के लिए एक वैध टोकन आवश्यक है।",
+    "confirmCancel": {
+      "title": "अपलोड रद्द करें",
+      "messageSingle": "एक अपलोड प्रगति में है।",
+      "messageMultiple": "{count} अपलोड प्रगति में हैं।",
+      "warning": "यदि आप अभी बंद करते हैं, तो अपलोड रद्द हो जाएंगे और कोई भी प्रगति खो जाएगी।",
+      "continue": "अपलोड जारी रखें",
+      "cancel": "अपलोड रद्द करें"
+    },
+    "globalDrop": {
+      "title": "अपलोड करने के लिए फ़ाइलें छोड़ें",
+      "description": "अपनी फ़ाइलें अपलोड करने के लिए छोड़ें"
+    },
+    "pasteSuccess": "{count, plural, =1 {छवि सफलतापूर्वक चिपकाई और अपलोड की गई} other {# छवियाँ सफलतापूर्वक चिपकाई और अपलोड की गईं}}"
+  },
+  "users": {
+    "modes": {
+      "create": "बनाएं",
+      "edit": "संपादित करें"
+    },
+    "errors": {
+      "loadFailed": "उपयोगकर्ता लोड करने में विफल",
+      "submitFailed": "{mode} करने में विफल",
+      "deleteFailed": "उपयोगकर्ता हटाने में विफल",
+      "statusUpdateFailed": "उपयोगकर्ता की स्थिति अपडेट करने में विफल"
+    },
+    "messages": {
+      "createSuccess": "उपयोगकर्ता सफलतापूर्वक बनाया गया",
+      "updateSuccess": "उपयोगकर्ता सफलतापूर्वक अपडेट हुआ",
+      "deleteSuccess": "उपयोगकर्ता सफलतापूर्वक हटाया गया",
+      "activateSuccess": "उपयोगकर्ता सफलतापूर्वक सक्रिय हुआ",
+      "deactivateSuccess": "उपयोगकर्ता सफलतापूर्वक निष्क्रिय हुआ"
+    },
+    "actions": {
+      "edit": "संपादित करें",
+      "activate": "सक्रिय करें",
+      "deactivate": "निष्क्रिय करें",
+      "delete": "हटाएं"
+    },
+    "delete": {
+      "title": "उपयोगकर्ता हटाने की पुष्टि करें",
+      "confirmation": "क्या आप वाकई {firstName} {lastName} को हटाना चाहते हैं? यह क्रिया अपरिवर्तनीय है।",
+      "confirm": "उपयोगकर्ता हटाएं"
+    },
+    "form": {
+      "titleCreate": "नया उपयोगकर्ता जोड़ें",
+      "titleEdit": "उपयोगकर्ता संपादित करें",
+      "firstName": "पहला नाम",
+      "lastName": "अंतिम नाम",
+      "username": "उपयोगकर्ता नाम",
+      "email": "ईमेल",
+      "password": "पासवर्ड",
+      "newPassword": "नया पासवर्ड (वैकल्पिक)",
+      "passwordPlaceholder": "वर्तमान पासवर्ड रखने के लिए खाली छोड़ें",
+      "role": "भूमिका",
+      "roleUser": "उपयोगकर्ता",
+      "roleAdmin": "व्यवस्थापक",
+      "create": "बनाएं",
+      "save": "सहेजें"
+    },
+    "status": {
+      "title": "स्थिति परिवर्तन की पुष्टि करें",
+      "confirmation": "क्या आप वाकई {firstName} {lastName} को {action} करना चाहते हैं?",
+      "activate": "सक्रिय करें",
+      "deactivate": "निष्क्रिय करें",
+      "user": "उपयोगकर्ता"
+    },
+    "header": {
+      "title": "उपयोगकर्ता प्रबंधन",
+      "addUser": "उपयोगकर्ता जोड़ें",
+      "management": "उपयोगकर्ता प्रबंधन"
+    },
+    "table": {
+      "user": "उपयोगकर्ता",
+      "email": "ईमेल",
+      "status": "स्थिति",
+      "role": "भूमिका",
+      "actions": "क्रियाएं",
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय",
+      "admin": "व्यवस्थापक",
+      "userr": "उपयोगकर्ता"
+    }
+  },
+  "validation": {
+    "invalidEmail": "अमान्य ईमेल पता",
+    "passwordMinLength": "पासवर्ड कम से कम 6 अक्षर का होना चाहिए",
+    "firstNameRequired": "पहला नाम आवश्यक है",
+    "lastNameRequired": "अंतिम नाम आवश्यक है",
+    "usernameLength": "उपयोगकर्ता नाम कम से कम 3 अक्षर का होना चाहिए",
+    "usernameSpaces": "उपयोगकर्ता नाम में रिक्त स्थान नहीं हो सकते",
+    "passwordLength": "पासवर्ड कम से कम 8 अक्षर का होना चाहिए",
+    "passwordsMatch": "पासवर्ड मेल नहीं खाते",
+    "emailRequired": "ईमेल आवश्यक है",
+    "emailOrUsernameRequired": "ईमेल या उपयोगकर्ता नाम आवश्यक है",
+    "passwordRequired": "पासवर्ड आवश्यक है",
+    "nameRequired": "नाम आवश्यक है",
+    "required": "यह फ़ील्ड आवश्यक है"
+  },
+  "iconPicker": {
+    "title": "आइकन चुनें",
+    "placeholder": "एक आइकन चुनें",
+    "searchPlaceholder": "आइकन खोजें...",
+    "loadingMore": "अधिक आइकन लोड हो रहे हैं...",
+    "allIconsLoaded": "सभी {count} आइकन लोड हो गए",
+    "noIconsFound": "\"{search}\" के लिए कोई आइकन नहीं मिला",
+    "tabs": {
+      "all": "सभी आइकन",
+      "popular": "लोकप्रिय",
+      "auth": "प्रमाणीकरण प्रदाता"
+    },
+    "stats": "{libraryCount} लाइब्रेरी से {iconCount} आइकन",
+    "categoryBadge": "{category} ({count} आइकन)"
   }
 }

@@ -21,11 +21,9 @@ export default function SharesPage() {
     searchQuery,
     setSearchQuery,
     filteredShares,
-    shareToViewDetails,
     shareToGenerateLink,
     handleCopyLink,
     loadShares,
-    setShareToViewDetails,
     setShareToGenerateLink,
     smtpEnabled,
   } = useShares();
@@ -71,11 +69,11 @@ export default function SharesPage() {
               shareManager={shareManager}
               fileManager={fileManager}
               shareToGenerateLink={shareToGenerateLink}
-              shareToViewDetails={shareToViewDetails}
+              shareToViewDetails={shareManager.shareToViewDetails}
               smtpEnabled={smtpEnabled}
               onCloseCreateModal={onCloseCreateModal}
               onCloseGenerateLink={() => setShareToGenerateLink(null)}
-              onCloseViewDetails={() => setShareToViewDetails(null)}
+              onCloseViewDetails={() => shareManager.setShareToViewDetails(null)}
               onSuccess={loadShares}
             />
           </div>

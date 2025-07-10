@@ -1,0 +1,438 @@
+---
+title: Translation Management
+icon: Languages
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
+Palmr includes a comprehensive translation key management system that automates synchronization and validation of the application's internationalization files.
+
+## Overview
+
+The translation management system consists of Python scripts that help maintain consistency across all supported languages:
+
+- **Synchronization**: Automatically add missing translation keys
+- **Validation**: Check translation status and completeness
+- **Key Management**: Manage translation keys structure and consistency
+- **Reporting**: Generate detailed translation reports
+
+## Quick Start
+
+<Tabs items={['npm/pnpm', 'Python Direct']}>
+  <Tab value="npm/pnpm">
+    ```bash
+    # Complete workflow (recommended)
+    pnpm run translations
+
+    # Check translation status
+    pnpm run translations:check
+
+    # Synchronize missing keys
+    pnpm run translations:sync
+
+    # Test workflow without changes (dry run)
+    pnpm run translations:dry-run
+
+    # Show help
+    pnpm run translations:help
+    ```
+
+  </Tab>
+  <Tab value="Python Direct">
+    ```bash
+    cd apps/web/scripts
+
+    # Complete workflow (recommended)
+    python3 run_translations.py all
+
+    # Individual commands
+    python3 run_translations.py check
+    python3 run_translations.py sync
+    python3 run_translations.py all --dry-run
+    python3 run_translations.py help
+    ```
+
+  </Tab>
+</Tabs>
+
+## Available Scripts
+
+### Main Commands (npm/pnpm)
+
+| Command                         | Description                               |
+| ------------------------------- | ----------------------------------------- |
+| `pnpm run translations`         | Complete workflow: sync + check           |
+| `pnpm run translations:check`   | Check translation status and completeness |
+| `pnpm run translations:sync`    | Synchronize missing keys from en-US.json  |
+| `pnpm run translations:dry-run` | Test workflow without making changes      |
+| `pnpm run translations:help`    | Show detailed help and examples           |
+
+## Workflow
+
+### 1. Adding New Translation Keys
+
+When you add new text to the application:
+
+1. **Add to English**: Update `apps/web/messages/en-US.json` with your new keys
+2. **Sync translations**: Run `pnpm run translations:sync` to add missing keys to all languages
+3. **Manual translation**: Translate strings marked with `[TO_TRANSLATE]` manually
+4. **Test in UI**: Verify translations work correctly in the application interface
+
+<Callout type="important">
+  **Manual translation required**: All strings marked with `[TO_TRANSLATE]` must be manually translated by native
+  speakers or professional translators for accuracy.
+</Callout>
+
+### 2. Checking Translation Status
+
+<Callout>Always run `pnpm run translations:check` before releases to ensure completeness.</Callout>
+
+```bash
+# Generate detailed translation report
+pnpm run translations:check
+```
+
+The report shows:
+
+- **Completeness percentage** for each language
+- **Untranslated strings** marked with `[TO_TRANSLATE]`
+- **Identical strings** that may need localization
+- **Missing keys** compared to English reference
+
+### 3. Manual Translation Process
+
+For all translation strings:
+
+1. **Find untranslated strings**: Look for `[TO_TRANSLATE] Original text` in language files
+2. **Replace with translation**: Remove the prefix and add proper translation
+3. **Validate**: Run `pnpm run translations:check` to verify completeness
+
+## File Structure
+
+```
+apps/web/
+├── messages/           # Translation files
+│   ├── en-US.json     # Reference language (English)
+│   ├── pt-BR.json     # Portuguese (Brazil)
+│   ├── es-ES.json     # Spanish
+│   └── ...            # Other languages
+│
+└── scripts/           # Management scripts
+    ├── run_translations.py     # Main wrapper
+    ├── sync_translations.py    # Synchronization
+    ├── check_translations.py   # Status checking
+    └── clean_translations.py   # Cleanup utilities
+```
+
+## Prerequisites
+
+- **Python 3.6 or higher** - Required for running the translation scripts
+- **No external dependencies** - Scripts use only Python standard libraries
+- **UTF-8 support** - Ensure your terminal supports UTF-8 for proper display of translations
+
+## Script Details
+
+### Main Wrapper (`run_translations.py`)
+
+The main script provides a unified interface for all translation operations:
+
+#### Available Commands
+
+- `check` - Check translation status and generate reports
+- `sync` - Synchronize missing keys from reference language
+- `all` - Run complete workflow (sync + check)
+- `help` - Show detailed help with examples
+
+#### How it Works
+
+1. Validates parameters and working directory
+2. Calls appropriate individual scripts with passed parameters
+3. Provides unified error handling and progress reporting
+4. Supports all parameters from individual scripts
+
+### Synchronization Script (`sync_translations.py`)
+
+Maintains consistency across all language files:
+
+#### Process
+
+1. **Load reference**: Reads `en-US.json` as source of truth
+2. **Scan languages**: Finds all `*.json` files in messages directory
+3. **Compare keys**: Identifies missing keys in each language file
+4. **Add missing keys**: Copies structure from reference with `[TO_TRANSLATE]` prefix
+5. **Save updates**: Maintains JSON formatting and UTF-8 encoding
+
+#### Key Features
+
+- **Recursive key detection**: Handles nested JSON objects
+- **Safe updates**: Preserves existing translations
+- **Consistent formatting**: Maintains proper JSON structure
+- **Progress reporting**: Shows detailed sync results
+
+### Status Check Script (`check_translations.py`)
+
+Provides comprehensive translation analysis:
+
+#### Generated Reports
+
+- **Completion percentage**: How much of each language is translated
+- **Untranslated count**: Strings still marked with `[TO_TRANSLATE]`
+- **Identical strings**: Text identical to English (may need localization)
+- **Missing keys**: Keys present in reference but not in target language
+
+#### Analysis Features
+
+- **Visual indicators**: Icons show completion status (✅ 🟡 🔴)
+- **Detailed breakdowns**: Per-language analysis with specific keys
+- **Quality insights**: Identifies potential translation issues
+- **Export friendly**: Output can be redirected to files for reports
+
+## Advanced Usage
+
+### Custom Parameters
+
+You can pass additional parameters to the underlying Python scripts for more control:
+
+#### Synchronization Parameters (`sync`)
+
+```bash
+# Sync without marking new keys as [TO_TRANSLATE]
+python3 scripts/run_translations.py sync --no-mark-untranslated
+
+# Use a different reference file (default: en-US.json)
+python3 scripts/run_translations.py sync --reference pt-BR.json
+
+# Specify custom messages directory
+python3 scripts/run_translations.py sync --messages-dir /path/to/messages
+
+# Dry run mode - see what would be changed
+python3 scripts/run_translations.py sync --dry-run
+```
+
+#### Check Parameters (`check`)
+
+```bash
+# Use different reference file for comparison
+python3 scripts/run_translations.py check --reference pt-BR.json
+
+# Check translations in custom directory
+python3 scripts/run_translations.py check --messages-dir /path/to/messages
+```
+
+### Parameter Reference
+
+| Parameter                | Commands        | Description                                   |
+| ------------------------ | --------------- | --------------------------------------------- |
+| `--dry-run`              | `sync`, `all`   | Preview changes without modifying files       |
+| `--messages-dir`         | All             | Custom directory containing translation files |
+| `--reference`            | `sync`, `check` | Reference file to use (default: en-US.json)   |
+| `--no-mark-untranslated` | `sync`          | Don't add [TO_TRANSLATE] prefix to new keys   |
+
+### Dry Run Mode
+
+Always test changes first:
+
+```bash
+# Test complete workflow (recommended)
+pnpm run translations:dry-run
+
+# Alternative: Direct Python commands
+python3 scripts/run_translations.py all --dry-run
+python3 scripts/run_translations.py sync --dry-run
+```
+
+### Common Use Cases
+
+#### Scenario 1: Adding Keys Without Marking for Translation
+
+```bash
+# Sync new keys without auto-marking for translation
+python3 scripts/run_translations.py sync --no-mark-untranslated
+
+# Manually mark specific keys that need translation
+# Edit files to add [TO_TRANSLATE] prefix where needed
+```
+
+#### Scenario 2: Custom Project Structure
+
+```bash
+# Work with translations in different directory
+python3 scripts/run_translations.py all --messages-dir ../custom-translations
+```
+
+#### Scenario 3: Quality Assurance
+
+```bash
+# Use different language as reference for comparison
+python3 scripts/run_translations.py check --reference pt-BR.json
+
+# This helps identify inconsistencies when you have high-quality translations
+```
+
+## Translation Keys Format
+
+Translation files use nested JSON structure:
+
+```json
+{
+  "common": {
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "messages": {
+      "success": "Operation completed successfully",
+      "error": "An error occurred"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome to Palmr"
+  }
+}
+```
+
+## Manual Translation
+
+<Callout type="warning">
+  **Professional translation recommended**: For production applications, consider using professional translation
+  services or native speakers to ensure high-quality, culturally appropriate translations.
+</Callout>
+
+The system marks strings that need translation with the `[TO_TRANSLATE]` prefix:
+
+```json
+{
+  "key": "[TO_TRANSLATE] Original English text"
+}
+```
+
+After manual translation:
+
+```json
+{
+  "key": "Texto original em inglês"
+}
+```
+
+### Translation Review Process
+
+1. **Identify**: Use `pnpm run translations:check` to find untranslated strings
+2. **Translate**: Replace `[TO_TRANSLATE]` strings with proper translations
+3. **Review**: Check each translation for:
+   - **Context accuracy**: Does it make sense in the UI?
+   - **Technical terms**: Are they correctly translated?
+   - **Tone consistency**: Matches the application's voice?
+   - **Cultural appropriateness**: Suitable for target audience?
+4. **Test**: Verify translations in the actual application interface
+5. **Document**: Note any translation decisions for future reference
+
+### Common Review Points
+
+- **Button labels**: Ensure they fit within UI constraints
+- **Error messages**: Must be clear and helpful to users
+- **Navigation items**: Should be intuitive in target language
+- **Technical terms**: Some may be better left in English
+- **Placeholders**: Maintain formatting and variable names
+
+## Development Guidelines
+
+<Callout type="important">
+  **Primary Language**: Always use `en-US.json` as the parent language for development. All new translation keys must be
+  added to English first.
+</Callout>
+
+### Translation Workflow for Development
+
+1. **English First**: Add all new text to `apps/web/messages/en-US.json`
+2. **Sync keys**: Use scripts to generate key structure for other languages
+3. **Manual translation**: All strings must be manually translated for accuracy
+4. **Quality Check**: Run translation validation before merging PRs
+
+### Why English as Parent Language?
+
+- **Consistency**: Ensures all languages have the same keys structure
+- **Reference**: English serves as the source of truth for meaning
+- **Key management**: Scripts use English as source for key synchronization
+- **Documentation**: Most technical documentation is in English
+
+## Best Practices
+
+### For Developers
+
+1. **Always use English as reference**: Add new keys to `en-US.json` first - never add keys directly to other languages
+2. **Use semantic key names**: `dashboard.welcome` instead of `text1`
+3. **Test key sync**: Run `pnpm run translations:dry-run` before committing
+4. **Coordinate with translators**: Ensure translation team is aware of new keys
+5. **Maintain consistency**: Use existing patterns for similar UI elements
+
+### For Translators
+
+1. **Focus on [TO_TRANSLATE] strings**: These need immediate attention
+2. **Check identical strings**: May need localization even if identical to English
+3. **Use proper formatting**: Maintain HTML tags and placeholders
+4. **Test in context**: Verify translations work in the actual UI
+5. **Maintain glossary**: Keep consistent terminology across translations
+
+## Troubleshooting
+
+### Common Issues
+
+**Python not found**: Ensure Python 3.6+ is installed and in PATH
+
+**Permission errors**: Ensure write permissions to message files
+
+**Encoding issues**: Ensure your terminal supports UTF-8
+
+### Getting Help
+
+- Run `pnpm run translations:help` for detailed command examples
+- Review generated translation reports for specific issues
+- Check the official documentation for complete reference
+
+## Output Examples
+
+### Synchronization Output
+
+```
+Loading reference file: en-US.json
+Reference file contains 980 keys
+Processing 14 translation files...
+
+Processing: pt-BR.json
+  🔍 Found 12 missing keys
+  ✅ Updated successfully (980/980 keys)
+
+============================================================
+SUMMARY
+============================================================
+✅ ar-SA.json      - 980/980 keys
+🔄 pt-BR.json      - 980/980 keys (+12 added)
+```
+
+### Translation Status Report
+
+```
+📊 TRANSLATION REPORT
+Reference: en-US.json (980 strings)
+================================================================================
+LANGUAGE        COMPLETENESS STRINGS         UNTRANSLATED    POSSIBLE MATCHES
+--------------------------------------------------------------------------------
+✅ pt-BR         100.0%       980/980         0 (0.0%)        5
+⚠️  fr-FR         100.0%       980/980         12 (2.5%)       3
+🟡 de-DE         95.2%        962/980         0 (0.0%)        8
+================================================================================
+```
+
+## Contributing
+
+When contributing translations:
+
+1. **Follow the workflow**: Use the provided scripts for consistency
+2. **Test thoroughly**: Run complete checks before submitting
+3. **Document changes**: Note any significant translation decisions
+4. **Maintain quality**: Ensure manual translations are accurate and appropriate
+
+The translation management system ensures consistency and makes it easy to maintain high-quality localization across all supported languages.

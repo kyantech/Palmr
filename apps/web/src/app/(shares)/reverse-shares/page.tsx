@@ -65,6 +65,8 @@ export default function ReverseSharesPage() {
                     totalReverseShares={reverseShares.length}
                     onCreateReverseShare={() => setIsCreateModalOpen(true)}
                     onSearchChange={setSearchQuery}
+                    onRefresh={loadReverseShares}
+                    isRefreshing={isLoading}
                   />
 
                   <ReverseSharesCardsContainer

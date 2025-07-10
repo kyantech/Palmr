@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { checkFile, getPresignedUrl, registerFile } from "@/http/endpoints";
 import { getFileIcon } from "@/utils/file-icons";
 import { generateSafeFileName } from "@/utils/file-utils";
+import { formatFileSize } from "@/utils/format-file-size";
 import getErrorData from "@/utils/getErrorData";
 
 interface UploadFileModalProps {
@@ -84,6 +85,7 @@ export function UploadFileModal({ isOpen, onClose, onSuccess }: UploadFileModalP
   const [fileUploads, setFileUploads] = useState<FileUpload[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [hasShownSuccessToast, setHasShownSuccessToast] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -94,7 +96,7 @@ export function UploadFileModal({ isOpen, onClose, onSuccess }: UploadFileModalP
         }
       });
     };
-  }, []);
+  }, [fileUploads]);
 
   const generateFileId = () => {
     return Date.now().toString() + Math.random().toString(36).substr(2, 9);
@@ -122,6 +124,7 @@ export function UploadFileModal({ isOpen, onClose, onSuccess }: UploadFileModalP
 
     const newUploads = Array.from(files).map(createFileUpload);
     setFileUploads((prev) => [...prev, ...newUploads]);
+    setHasShownSuccessToast(false);
   };
 
   const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -295,6 +298,9 @@ export function UploadFileModal({ isOpen, onClose, onSuccess }: UploadFileModalP
   const startUploads = async () => {
     const pendingUploads = fileUploads.filter((u) => u.status === UploadStatus.PENDING);
 
+    // Reset the toast flag when starting new uploads
+    setHasShownSuccessToast(false);
+
     const uploadPromises = pendingUploads.map((upload) => uploadFile(upload));
     await Promise.all(uploadPromises);
 
@@ -305,7 +311,7 @@ export function UploadFileModal({ isOpen, onClose, onSuccess }: UploadFileModalP
             u.status === UploadStatus.SUCCESS || u.status === UploadStatus.ERROR || u.status === UploadStatus.CANCELLED
         );
 
-        if (allComplete) {
+        if (allComplete && !hasShownSuccessToast) {
           const successCount = currentUploads.filter((u) => u.status === UploadStatus.SUCCESS).length;
           const errorCount = currentUploads.filter((u) => u.status === UploadStatus.ERROR).length;
 
@@ -315,6 +321,7 @@ export function UploadFileModal({ isOpen, onClose, onSuccess }: UploadFileModalP
                 ? t("uploadFile.partialSuccess", { success: successCount, error: errorCount })
                 : t("uploadFile.allSuccess", { count: successCount })
             );
+            setHasShownSuccessToast(true);
             onSuccess?.();
           }
         }
@@ -322,16 +329,6 @@ export function UploadFileModal({ isOpen, onClose, onSuccess }: UploadFileModalP
         return currentUploads;
       });
     }, 100);
-  };
-
-  const handleClose = () => {
-    const uploadsInProgress = fileUploads.filter((u) => u.status === UploadStatus.UPLOADING).length;
-
-    if (uploadsInProgress > 0) {
-      setShowConfirmation(true);
-    } else {
-      handleConfirmClose();
-    }
   };
 
   const handleConfirmClose = () => {
@@ -349,7 +346,18 @@ export function UploadFileModal({ isOpen, onClose, onSuccess }: UploadFileModalP
 
     setFileUploads([]);
     setShowConfirmation(false);
+    setHasShownSuccessToast(false); // Reset toast flag when closing
     onClose();
+  };
+
+  const handleClose = () => {
+    const uploadsInProgress = fileUploads.filter((u) => u.status === UploadStatus.UPLOADING).length;
+
+    if (uploadsInProgress > 0) {
+      setShowConfirmation(true);
+    } else {
+      handleConfirmClose();
+    }
   };
 
   const handleContinueUploads = () => {
@@ -417,7 +425,7 @@ export function UploadFileModal({ isOpen, onClose, onSuccess }: UploadFileModalP
                         <p className="text-sm font-medium truncate text-foreground">{upload.file.name}</p>
                         {getStatusIcon(upload.status)}
                       </div>
-                      <p className="text-xs text-muted-foreground">{(upload.file.size / 1024).toFixed(1)} KB</p>
+                      <p className="text-xs text-muted-foreground">{formatFileSize(upload.file.size)}</p>
 
                       {upload.status === UploadStatus.UPLOADING && (
                         <div className="mt-1">

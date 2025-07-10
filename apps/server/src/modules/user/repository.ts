@@ -1,6 +1,7 @@
+import type { User } from "@prisma/client";
+
 import { prisma } from "../../shared/prisma";
 import type { RegisterUserInput, UpdateUserInput } from "./dto";
-import type { User } from "@prisma/client";
 
 export interface IUserRepository {
   createUser(data: RegisterUserInput & { password: string }): Promise<User>;

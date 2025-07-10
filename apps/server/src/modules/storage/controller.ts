@@ -1,5 +1,6 @@
+import { FastifyReply, FastifyRequest } from "fastify";
+
 import { StorageService } from "./service";
-import { FastifyRequest, FastifyReply } from "fastify";
 
 export class StorageController {
   private storageService = new StorageService();

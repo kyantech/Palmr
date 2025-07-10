@@ -106,7 +106,7 @@ export function ShareActionsModals({
       onSuccess();
       onCloseEdit();
       toast.success(t("shareActions.editSuccess"));
-    } catch (error) {
+    } catch {
       toast.error(t("shareActions.editError"));
     } finally {
       setIsLoading(false);

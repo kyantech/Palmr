@@ -92,6 +92,7 @@ export interface TestSmtpConnectionBody {
     smtpPass: string;
     smtpSecure: string;
     smtpNoAuth: string;
+    smtpTrustSelfSigned: string;
   };
 }
 

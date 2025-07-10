@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3333";
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ shareId: string }> }) {
   const cookieHeader = req.headers.get("cookie");
   const url = new URL(req.url);
   const searchParams = url.searchParams.toString();
   const { shareId } = await params;
+  const fetchUrl = `${API_BASE_URL}/shares/${shareId}${searchParams ? `?${searchParams}` : ""}`;
 
-  const apiRes = await fetch(`${process.env.API_BASE_URL}/shares/${shareId}${searchParams ? `?${searchParams}` : ""}`, {
+  const apiRes = await fetch(fetchUrl, {
     method: "GET",
     headers: {
       cookie: cookieHeader || "",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
@@ -35,7 +35,7 @@ export function useReverseShares() {
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const loadReverseShares = async () => {
+  const loadReverseShares = useCallback(async () => {
     try {
       const response = await listUserReverseShares();
       const allReverseShares = response.data.reverseShares || [];
@@ -44,12 +44,12 @@ export function useReverseShares() {
       );
 
       setReverseShares(sortedReverseShares);
-    } catch (error) {
+    } catch {
       toast.error(t("reverseShares.errors.loadFailed"));
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [t]);
 
   const refreshReverseShare = async (id: string) => {
     try {
@@ -70,7 +70,7 @@ export function useReverseShares() {
           setReverseShareToViewDetails(updatedReverseShare as ReverseShare);
         }
       }
-    } catch (error) {
+    } catch {
       toast.error(t("reverseShares.errors.loadFailed"));
     }
   };
@@ -89,9 +89,8 @@ export function useReverseShares() {
       setReverseShareToGenerateLink(newReverseShare as ReverseShare);
 
       return newReverseShare;
-    } catch (error) {
+    } catch {
       toast.error(t("reverseShares.errors.createFailed"));
-      throw error;
     } finally {
       setIsCreating(false);
     }
@@ -128,9 +127,8 @@ export function useReverseShares() {
       }
 
       toast.success(t("reverseShares.messages.aliasCreated"));
-    } catch (error) {
+    } catch {
       toast.error(t("reverseShares.errors.aliasCreateFailed"));
-      throw error;
     }
   };
 
@@ -143,7 +141,7 @@ export function useReverseShares() {
 
       toast.success(t("reverseShares.messages.deleteSuccess"));
       setReverseShareToDelete(null);
-    } catch (error) {
+    } catch {
       toast.error(t("reverseShares.errors.deleteFailed"));
     } finally {
       setIsDeleting(false);
@@ -164,9 +162,8 @@ export function useReverseShares() {
       setReverseShareToEdit(null);
 
       return updatedReverseShare;
-    } catch (error) {
+    } catch {
       toast.error(t("reverseShares.errors.updateFailed"));
-      throw error;
     } finally {
       setIsUpdating(false);
     }
@@ -187,8 +184,8 @@ export function useReverseShares() {
       }
 
       return updatedReverseShare;
-    } catch (error) {
-      throw error;
+    } catch {
+      toast.error(t("reverseShares.errors.updateFailed"));
     }
   };
 
@@ -208,9 +205,8 @@ export function useReverseShares() {
 
       toast.success(t("reverseShares.messages.updateSuccess"));
       return updatedReverseShare;
-    } catch (error) {
+    } catch {
       toast.error(t("reverseShares.errors.updateFailed"));
-      throw error;
     }
   };
 
@@ -232,15 +228,14 @@ export function useReverseShares() {
         isActive ? t("reverseShares.messages.activateSuccess") : t("reverseShares.messages.deactivateSuccess")
       );
       return updatedReverseShare;
-    } catch (error) {
+    } catch {
       toast.error(t("reverseShares.errors.updateFailed"));
-      throw error;
     }
   };
 
   useEffect(() => {
     loadReverseShares();
-  }, []);
+  }, [loadReverseShares]);
 
   useEffect(() => {
     if (reverseShareToViewDetails) {
@@ -249,7 +244,7 @@ export function useReverseShares() {
         setReverseShareToViewDetails(updatedReverseShare);
       }
     }
-  }, [reverseShares, reverseShareToViewDetails?.id]);
+  }, [reverseShares, reverseShareToViewDetails]);
 
   useEffect(() => {
     if (reverseShareToViewFiles) {
@@ -258,7 +253,7 @@ export function useReverseShares() {
         setReverseShareToViewFiles(updatedReverseShare);
       }
     }
-  }, [reverseShares, reverseShareToViewFiles?.id]);
+  }, [reverseShares, reverseShareToViewFiles]);
 
   const filteredReverseShares = reverseShares.filter(
     (reverseShare) => reverseShare.name?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false

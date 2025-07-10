@@ -1,12 +1,13 @@
+import { PrismaClient } from "@prisma/client";
+
 import { FileService } from "../file/service";
 import {
   CreateReverseShareInput,
+  ReverseShareResponseSchema,
   UpdateReverseShareInput,
   UploadToReverseShareInput,
-  ReverseShareResponseSchema,
 } from "./dto";
 import { ReverseShareRepository } from "./repository";
-import { PrismaClient } from "@prisma/client";
 
 interface ReverseShareData {
   id: string;
@@ -532,8 +533,23 @@ export class ReverseShareService {
       const { FilesystemStorageProvider } = await import("../../providers/filesystem-storage.provider.js");
       const provider = FilesystemStorageProvider.getInstance();
 
-      const sourceBuffer = await provider.downloadFile(file.objectName);
-      await provider.uploadFile(newObjectName, sourceBuffer);
+      // Use streaming copy for filesystem mode
+      const sourcePath = provider.getFilePath(file.objectName);
+      const fs = await import("fs");
+      const { pipeline } = await import("stream/promises");
+
+      const sourceStream = fs.createReadStream(sourcePath);
+      const decryptStream = provider.createDecryptStream();
+
+      // Create a passthrough stream to get the decrypted content
+      const { PassThrough } = await import("stream");
+      const passThrough = new PassThrough();
+
+      // First, decrypt the source file into the passthrough stream
+      await pipeline(sourceStream, decryptStream, passThrough);
+
+      // Then upload the decrypted content
+      await provider.uploadFileFromStream(newObjectName, passThrough);
     } else {
       const downloadUrl = await this.fileService.getPresignedGetUrl(file.objectName, 300);
       const uploadUrl = await this.fileService.getPresignedPutUrl(newObjectName, 300);
@@ -543,11 +559,13 @@ export class ReverseShareService {
         throw new Error(`Failed to download file: ${response.statusText}`);
       }
 
-      const fileBuffer = Buffer.from(await response.arrayBuffer());
+      if (!response.body) {
+        throw new Error("No response body received");
+      }
 
       const uploadResponse = await fetch(uploadUrl, {
         method: "PUT",
-        body: fileBuffer,
+        body: response.body,
         headers: {
           "Content-Type": "application/octet-stream",
         },

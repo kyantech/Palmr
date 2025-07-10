@@ -1,7 +1,5 @@
 {
-  "title": "v2.0.0-beta",
   "description": "(Deprecated)",
-  "root": true,
   "icon": "Trash2",
   "pages": [
     "---Introduction---",
@@ -25,5 +23,7 @@
     "gh-star",
     "gh-sponsor",
     "..."
-  ]
+  ],
+  "root": true,
+  "title": "v2.0.0-beta"
 }

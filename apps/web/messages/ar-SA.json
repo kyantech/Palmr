@@ -1,4 +1,132 @@
 {
+  "auth": {
+    "errors": {
+      "account_inactive": "الحساب غير نشط. اتصل بالمشرف.",
+      "registration_disabled": "التسجيل عبر تسجيل الدخول الموحد معطل.",
+      "token_expired": "انتهت صلاحية الرمز المميز. حاول مرة أخرى.",
+      "config_error": "خطأ في التكوين. اتصل بالدعم الفني.",
+      "auth_failed": "فشل في المصادقة. حاول مرة أخرى."
+    }
+  },
+  "authProviders": {
+    "title": "مزودي المصادقة",
+    "description": "تكوين مزودي المصادقة الخارجيين لتسجيل الدخول الموحد",
+    "enabledCount": "{count} مفعل",
+    "loadingProviders": "جاري تحميل المزودين...",
+    "providersConfigured": "{count} مزود تم تكوينه",
+    "enabledOfTotal": "{enabled} مفعل من {total} مزود",
+    "hideDisabledProviders": "إخفاء المزودين غير المفعلين",
+    "addProvider": "إضافة مزود",
+    "addProviderTitle": "إضافة مزود",
+    "editProvider": "تحرير المزود",
+    "deleteProvider": "حذف المزود",
+    "enabled": "مفعل",
+    "disabled": "معطل",
+    "officialProvider": "مزود رسمي",
+    "dragToReorder": "اسحب لإعادة الترتيب",
+    "dragDisabledMessage": "السحب والإفلات معطل عند تصفية المزودين. اعرض جميع المزودين لإعادة ترتيبهم.",
+    "dragEnabledMessage": "اسحب المزودين لإعادة ترتيبهم. سينعكس هذا الترتيب على صفحة تسجيل الدخول.",
+    "noProvidersEnabled": "لا توجد مزودي مصادقة مفعلين",
+    "noProvidersConfigured": "لم يتم تكوين أي مزودي مصادقة",
+    "form": {
+      "providerName": "اسم المزود",
+      "providerNamePlaceholder": "مثال: شركتي",
+      "displayName": "الاسم المعروض",
+      "displayNamePlaceholder": "مثال: تسجيل دخول موحد لشركتي",
+      "type": "النوع",
+      "typeOidc": "OIDC (OpenID Connect)",
+      "typeOauth2": "OAuth 2.0",
+      "icon": "الأيقونة",
+      "iconPlaceholder": "اختر أيقونة",
+      "clientId": "معرف العميل",
+      "clientIdPlaceholder": "معرف عميل OAuth الخاص بك",
+      "clientSecret": "سر العميل",
+      "clientSecretPlaceholder": "سر عميل OAuth الخاص بك",
+      "oauthScopes": "نطاقات OAuth",
+      "scopesPlaceholder": "أدخل النطاقات (مثل: openid, profile, email)",
+      "scopesHelpOidc": "النطاقات مقترحة تلقائياً بناءً على رابط المزود. نطاقات OIDC الشائعة: openid, profile, email, groups",
+      "scopesHelpOauth2": "النطاقات مقترحة تلقائياً بناءً على رابط المزود. نطاقات OAuth2 الشائعة تعتمد على المزود",
+      "providerUrl": "رابط المزود",
+      "providerUrlPlaceholder": "https://auth.example.com",
+      "providerUrlAutoPlaceholder": "https://your-provider.com (سيتم اكتشاف نقاط النهاية تلقائياً)",
+      "providerUrlManualPlaceholder": "https://your-provider.com",
+      "autoDiscoveryHelp": "سيكتشف النظام تلقائياً نقاط نهاية التفويض والرمز ومعلومات المستخدم",
+      "manualConfigurationHelp": "الرابط الأساسي للمزود الخاص بك (ستكون نقاط النهاية نسبية لهذا)",
+      "authorizationEndpoint": "نقطة نهاية التفويض",
+      "authorizationEndpointPlaceholder": "https://auth.example.com/auth",
+      "tokenEndpoint": "نقطة نهاية الرمز",
+      "tokenEndpointPlaceholder": "https://auth.example.com/token",
+      "userInfoEndpoint": "نقطة نهاية معلومات المستخدم",
+      "userInfoEndpointPlaceholder": "https://auth.example.com/userinfo",
+      "configurationMethod": "طريقة التكوين",
+      "autoDiscovery": "اكتشاف تلقائي (موصى به)",
+      "autoDiscoveryDescription": "اكتشاف نقاط النهاية تلقائياً من رابط المزود",
+      "manualEndpoints": "نقاط نهاية يدوية",
+      "manualEndpointsDescription": "تكوين نقاط نهاية التفويض والرمز ومعلومات المستخدم يدوياً",
+      "callbackUrl": "رابط الاستجابة",
+      "callbackUrlDescription": "استخدم هذا الرابط في تكوين مزود OAuth الخاص بك",
+      "copyCallbackUrl": "نسخ رابط الاستجابة",
+      "callbackUrlCopied": "تم نسخ رابط الاستجابة إلى الحافظة!",
+      "adminEmailDomains": "نطاقات البريد الإلكتروني للمسؤولين",
+      "adminEmailDomainsPlaceholder": "أدخل النطاقات (مثل: admin.company.com)",
+      "adminEmailDomainsHelp": "سيتم منح المستخدمين الذين لديهم بريد إلكتروني من هذه النطاقات صلاحيات المسؤول",
+      "autoRegister": "تسجيل المستخدمين الجدد تلقائياً",
+      "officialProviderUrlPlaceholder": "استبدل العنصر النائب برابط {displayName} الخاص بك",
+      "officialProviderHelp": "هذا مزود رسمي. نقاط النهاية مكونة مسبقاً. يمكنك تحرير هذا الرابط فقط.",
+      "officialProviderIconHelp": "يمكنك تخصيص الأيقونة لهذا المزود الرسمي."
+    },
+    "buttons": {
+      "cancel": "إلغاء",
+      "save": "حفظ",
+      "saving": "جاري الحفظ...",
+      "adding": "جاري الإضافة...",
+      "updating": "جاري التحديث...",
+      "saveProvider": "حفظ المزود",
+      "delete": "حذف",
+      "deleting": "جاري الحذف...",
+      "edit": "تحرير",
+      "enable": "تفعيل",
+      "disable": "تعطيل"
+    },
+    "messages": {
+      "providerAdded": "تمت إضافة المزود بنجاح",
+      "providerUpdated": "تم تحديث المزود بنجاح",
+      "providerDeleted": "تم حذف المزود بنجاح",
+      "providerOrderUpdated": "تم تحديث ترتيب المزود بنجاح",
+      "fillRequiredFields": "يرجى ملء جميع الحقول المطلوبة (الاسم، الاسم المعروض، معرف العميل، سر العميل)",
+      "provideUrlOrEndpoints": "قم بتوفير رابط المزود للاكتشاف التلقائي أو جميع نقاط النهاية الثلاث المخصصة",
+      "chooseDiscoveryOrManual": "اختر إما الاكتشاف التلقائي (رابط المزود) أو نقاط النهاية اليدوية، وليس كليهما",
+      "loadFailed": "فشل تحميل المزودين",
+      "addFailed": "فشل إضافة المزود",
+      "updateFailed": "فشل تحديث المزود",
+      "deleteFailed": "فشل حذف المزود",
+      "orderUpdateFailed": "فشل تحديث ترتيب المزود"
+    },
+    "info": {
+      "title": "معلومات",
+      "officialProvidersRecommended": "للحصول على وظائف أفضل، نوصي باستخدام المزودين الرسميين. إذا واجهت مشاكل مع مزود مخصص، فكر في فتح مشكلة على",
+      "github": "GitHub",
+      "officialProvider": "مزود رسمي",
+      "officialProviderDescription": "هذا المزود محسن من قبل Palmr. يمكن تعديل بيانات الاعتماد والتكوين فقط.",
+      "manualConfigTitle": "التكوين اليدوي",
+      "manualConfigDescription": "أنت تقوم بتوفير جميع نقاط النهاية يدوياً. تأكد من صحتها لمزودك."
+    },
+    "deleteModal": {
+      "title": "حذف مزود المصادقة",
+      "confirmMessage": "هل أنت متأكد أنك تريد حذف مزود \"{displayName}\"؟ لا يمكن التراجع عن هذا الإجراء.",
+      "providerId": "معرف المزود: {name}",
+      "cancel": "إلغاء",
+      "delete": "حذف المزود",
+      "deleting": "جاري الحذف..."
+    }
+  },
+  "bulkDownload": {
+    "title": "التحميل بالجملة",
+    "zipNameLabel": "اسم ملف ZIP",
+    "zipNamePlaceholder": "أدخل اسم الملف",
+    "description": "{count, plural, =1 {سيتم ضغط ملف واحد} other {سيتم ضغط # ملفات}}",
+    "download": "تحميل ZIP"
+  },
   "common": {
     "loading": "جاري التحميل، يرجى الانتظار...",
     "cancel": "إلغاء",
@@ -41,6 +169,10 @@
       "description": "ملفاتك المرفوعة مؤخراً",
       "title": "الملفات الحديثة"
     }
+  },
+  "deleteConfirmation": {
+    "filesToDelete": "الملفات المراد حذفها",
+    "sharesToDelete": "المشاركات التي سيتم حذفها"
   },
   "emptyState": {
     "noFiles": "لم يتم رفع أي ملفات بعد",
@@ -389,628 +521,6 @@
     "errors": {
       "serverError": "فشل في إعادة تعيين كلمة المرور. يرجى المحاولة مرة أخرى.",
       "invalidToken": "رمز إعادة التعيين غير صالح أو مفقود"
-    }
-  },
-  "searchBar": {
-    "placeholder": "ابحث عن الملفات...",
-    "results": "تم العثور على {filtered} من {total} ملف"
-  },
-  "settings": {
-    "groups": {
-      "defaultDescription": "خيارات التكوين",
-      "general": {
-        "title": "عام",
-        "description": "إعدادات التطبيق الأساسية"
-      },
-      "email": {
-        "title": "البريد الإلكتروني",
-        "description": "تكوين خادم البريد الإلكتروني"
-      },
-      "security": {
-        "title": "الأمان",
-        "description": "إعدادات الأمان والمصادقة"
-      },
-      "storage": {
-        "title": "التخزين",
-        "description": "تكوين تخزين الملفات"
-      },
-      "oidc": {
-        "title": "OpenID Connect (SSO)",
-        "description": "تكوين المصادقة SSO عبر OpenID Connect"
-      }
-    },
-    "fields": {
-      "noDescription": "لا يوجد وصف متاح",
-      "appLogo": {
-        "title": "شعار التطبيق",
-        "description": "صورة شعار التطبيق"
-      },
-      "appName": {
-        "title": "اسم التطبيق",
-        "description": "اسم التطبيق الذي يظهر للمستخدمين"
-      },
-      "appDescription": {
-        "title": "وصف التطبيق",
-        "description": "وصف مختصر للتطبيق"
-      },
-      "showHomePage": {
-        "title": "عرض الصفحة الرئيسية",
-        "description": "عرض الصفحة الرئيسية بعد التثبيت"
-      },
-      "smtpEnabled": {
-        "title": "تمكين SMTP",
-        "description": "تمكين أو تعطيل وظيفة البريد الإلكتروني عبر SMTP"
-      },
-      "smtpHost": {
-        "title": "خادم SMTP",
-        "description": "عنوان خادم SMTP"
-      },
-      "smtpPort": {
-        "title": "منفذ SMTP",
-        "description": "منفذ خادم SMTP"
-      },
-      "smtpUser": {
-        "title": "مستخدم SMTP",
-        "description": "اسم المستخدم لمصادقة SMTP"
-      },
-      "smtpPass": {
-        "title": "كلمة مرور SMTP",
-        "description": "كلمة المرور لمصادقة SMTP"
-      },
-      "smtpFromName": {
-        "title": "اسم المرسل",
-        "description": "الاسم الظاهر في الرسائل المرسلة"
-      },
-      "smtpFromEmail": {
-        "title": "البريد الإلكتروني للمرسل",
-        "description": "عنوان البريد الإلكتروني للمرسل"
-      },
-      "maxLoginAttempts": {
-        "title": "أقصى محاولات تسجيل دخول",
-        "description": "الحد الأقصى لمحاولات تسجيل الدخول قبل الحظر"
-      },
-      "loginBlockDuration": {
-        "title": "مدة حظر تسجيل الدخول",
-        "description": "مدة الحظر (بالثواني) بعد تجاوز الحد الأقصى للمحاولات"
-      },
-      "passwordMinLength": {
-        "title": "الحد الأدنى لطول كلمة المرور",
-        "description": "الحد الأدنى لعدد الأحرف في كلمة المرور"
-      },
-      "passwordResetTokenExpiration": {
-        "title": "انتهاء صلاحية رمز إعادة التعيين",
-        "description": "مدة صلاحية رمز إعادة تعيين كلمة المرور (بالثواني)"
-      },
-      "maxFileSize": {
-        "title": "أقصى حجم للملف",
-        "description": "الحد الأقصى لحجم الملف المسموح به للرفع "
-      },
-      "maxTotalStoragePerUser": {
-        "title": "أقصى تخزين لكل مستخدم",
-        "description": "الحد الإجمالي للتخزين لكل مستخدم "
-      },
-      "firstUserAccess": {
-        "description": "إعدادات الوصول الأول للمستخدمين الجدد",
-        "title": "الوصول الأول للمستخدم"
-      },
-      "serverUrl": {
-        "title": "رابط الخادم",
-        "description": "الرابط الأساسي لخادم Palmr (مثال: https://palmr.example.com)"
-      },
-      "oidcEnabled": {
-        "title": "OIDC مفعل",
-        "description": "تفعيل أو إلغاء تفعيل المصادقة عبر OpenID Connect"
-      },
-      "oidcIssuerUrl": {
-        "title": "رابط المزود",
-        "description": "رابط مزود OpenID Connect (مثال: https://auth.example.com/auth/realms/master)"
-      },
-      "oidcClientId": {
-        "title": "معرف العميل",
-        "description": "معرف عميل OIDC المسجل لدى المزود"
-      },
-      "oidcClientSecret": {
-        "title": "سر العميل",
-        "description": "سر عميل OIDC للمصادقة"
-      },
-      "oidcRedirectUri": {
-        "title": "رابط إعادة التوجيه",
-        "description": "الرابط الذي سيتم توجيه المستخدم إليه بعد المصادقة. أدخل الرابط الأساسي فقط (مثال: https://mysite.com). سيتم إضافة المسار /api/auth/oidc/callback تلقائياً."
-      },
-      "oidcScope": {
-        "title": "النطاقات",
-        "description": "نطاقات OIDC المطلوبة (مثال: openid profile email)"
-      },
-      "oidcAutoRegister": {
-        "title": "التسجيل التلقائي",
-        "description": "تسجيل المستخدمين الذين لا يوجدون تلقائياً في أول تسجيل دخول"
-      },
-      "oidcAdminEmailDomains": {
-        "title": "نطاقات البريد الإلكتروني للمشرف",
-        "description": "نطاقات البريد الإلكتروني التي تحصل على صلاحيات المشرف تلقائياً"
-      },
-      "testSmtp": {
-        "title": "اختبار اتصال SMTP",
-        "description": "اختبار ما إذا كان تكوين SMTP صالحًا"
-      },
-      "smtpNoAuth": {
-        "title": "بدون مصادقة",
-        "description": "قم بتمكين هذا للخوادم الداخلية التي لا تتطلب اسم مستخدم/كلمة مرور (يخفي حقول المصادقة)"
-      },
-      "smtpSecure": {
-        "title": "أمان الاتصال",
-        "description": "طريقة أمان اتصال SMTP - تلقائي (موصى به)، SSL، STARTTLS، أو بدون (غير آمن)",
-        "options": {
-          "auto": "تلقائي (موصى به)",
-          "ssl": "SSL (منفذ 465)",
-          "tls": "STARTTLS (منفذ 587)",
-          "none": "بدون (غير آمن)"
-        }
-      }
-    },
-    "buttons": {
-      "save": "احفظ {group}",
-      "testSmtp": "اختبار الاتصال",
-      "testing": "جاري الاختبار..."
-    },
-    "errors": {
-      "loadFailed": "فشل في تحميل الإعدادات",
-      "updateFailed": "فشل في تحديث الإعدادات"
-    },
-    "messages": {
-      "noChanges": "لا توجد تغييرات للحفظ",
-      "updateSuccess": "تم تحديث إعدادات {group} بنجاح",
-      "smtpTestFailed": "فشل اتصال SMTP: {error}",
-      "smtpTestGenericError": "فشل اختبار اتصال SMTP. يرجى التحقق من إعداداتك والمحاولة مرة أخرى.",
-      "smtpTestSuccess": "تم اتصال SMTP بنجاح! تكوين البريد الإلكتروني الخاص بك يعمل بشكل صحيح.",
-      "smtpMissingAuth": "يرجى ملء اسم المستخدم وكلمة المرور الخاصة بـ SMTP، أو تمكين خيار 'بدون مصادقة'.",
-      "smtpMissingHostPort": "يرجى ملء مضيف ومنفذ SMTP قبل الاختبار.",
-      "smtpNotEnabled": "SMTP غير مفعل. يرجى تفعيل SMTP أولاً."
-    },
-    "title": "الإعدادات",
-    "breadcrumb": "الإعدادات",
-    "pageTitle": "الإعدادات",
-    "tooltips": {
-      "oidcScope": "أدخل نطاقاً واضغط Enter للإضافة",
-      "oidcAdminEmailDomains": "أدخل نطاقاً واضغط Enter للإضافة",
-      "testSmtp": "يختبر اتصال SMTP بالقيم المدخلة حاليًا في النموذج. لجعل التغييرات دائمة، تذكر حفظ إعداداتك بعد الاختبار.",
-      "defaultPlaceholder": "أدخل واضغط Enter"
-    },
-    "redirectUri": {
-      "placeholder": "https://mysite.com",
-      "previewLabel": "الرابط الكامل الذي سيتم حفظه:"
-    }
-  },
-  "share": {
-    "errors": {
-      "invalidPassword": "كلمة مرور غير صحيحة. يرجى المحاولة مرة أخرى.",
-      "loadFailed": "فشل في تحميل المشاركة",
-      "downloadFailed": "فشل في تنزيل الملف"
-    },
-    "messages": {
-      "downloadStarted": "بدأ التنزيل"
-    },
-    "password": {
-      "title": "مشاركة محمية بكلمة المرور",
-      "protected": "هذه المشاركة محمية بكلمة مرور",
-      "incorrect": "كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى.",
-      "label": "كلمة المرور",
-      "placeholder": "أدخل كلمة مرور المشاركة",
-      "submit": "إرسال"
-    },
-    "details": {
-      "untitled": "بدون عنوان",
-      "created": "تم الإنشاء: {date}",
-      "expires": "تنتهي: {date}"
-    },
-    "notFound": {
-      "title": "لم يتم العثور على المشاركة",
-      "description": "قد يكون تم حذف هذه المشاركة أو انتهت صلاحيتها."
-    },
-    "pageTitle": "المشاركة",
-    "downloadAll": "تحميل الكل"
-  },
-  "shareActions": {
-    "deleteTitle": "حذف المشاركة",
-    "deleteConfirmation": "هل أنت متأكد من أنك تريد حذف هذه المشاركة؟ لا يمكن التراجع عن هذا الإجراء.",
-    "editTitle": "تحرير المشاركة",
-    "nameLabel": "اسم المشاركة",
-    "descriptionLabel": "الوصف",
-    "descriptionPlaceholder": "أدخل وصفاً (اختياري)",
-    "expirationLabel": "تاريخ انتهاء الصلاحية",
-    "expirationPlaceholder": "YYYY/MM/DD HH:MM",
-    "maxViewsLabel": "الحد الأقصى للمشاهدات",
-    "maxViewsPlaceholder": "اتركه فارغاً للمشاهدات غير المحدودة",
-    "passwordProtection": "محمي بكلمة مرور",
-    "passwordLabel": "كلمة المرور",
-    "passwordPlaceholder": "أدخل كلمة المرور",
-    "newPasswordLabel": "كلمة المرور الجديدة (اتركها فارغة للاحتفاظ بالحالية)",
-    "newPasswordPlaceholder": "أدخل كلمة المرور الجديدة",
-    "manageFilesTitle": "إدارة الملفات",
-    "manageRecipientsTitle": "إدارة المستقبلين",
-    "editSuccess": "تم تحديث المشاركة بنجاح",
-    "editError": "فشل في تحديث المشاركة",
-    "bulkDeleteConfirmation": "هل أنت متأكد من أنك تريد حذف {count, plural, =1 {مشاركة واحدة} other {# مشاركات}} محددة؟ لا يمكن التراجع عن هذا الإجراء.",
-    "bulkDeleteTitle": "حذف المشاركات المحددة"
-  },
-  "shareDetails": {
-    "title": "تفاصيل المشاركة",
-    "subtitle": "معلومات تفصيلية حول هذه المشاركة",
-    "basicInfo": "المعلومات الأساسية",
-    "name": "الاسم",
-    "description": "الوصف",
-    "noDescription": "لم يتم توفير وصف",
-    "untitled": "بدون عنوان",
-    "shareLink": "رابط المشاركة",
-    "editLink": "تحرير الرابط",
-    "generateLink": "إنشاء رابط",
-    "noLink": "لم يتم إنشاء رابط بعد",
-    "copyLink": "نسخ الرابط",
-    "openLink": "فتح في علامة تبويب جديدة",
-    "linkCopied": "تم نسخ الرابط إلى الحافظة",
-    "views": "المشاهدات",
-    "dates": "التواريخ",
-    "created": "تم الإنشاء",
-    "expires": "ينتهي",
-    "never": "أبداً",
-    "security": "الأمان",
-    "passwordProtected": "محمي بكلمة مرور",
-    "publicAccess": "وصول عام",
-    "maxViews": "المشاهدات القصوى:",
-    "files": "الملفات",
-    "recipients": "المستقبلون",
-    "notAvailable": "غير متاح",
-    "invalidDate": "تاريخ غير صحيح",
-    "loadError": "فشل في تحميل تفاصيل المشاركة",
-    "editSecurity": "تحرير الأمان",
-    "editExpiration": "تحرير انتهاء الصلاحية"
-  },
-  "shareManager": {
-    "deleteSuccess": "تم حذف المشاركة بنجاح",
-    "deleteError": "فشل في حذف المشاركة",
-    "updateSuccess": "تم تحديث المشاركة بنجاح",
-    "updateError": "فشل في تحديث المشاركة",
-    "filesUpdateSuccess": "تم تحديث الملفات بنجاح",
-    "filesUpdateError": "فشل في تحديث الملفات",
-    "recipientsUpdateSuccess": "تم تحديث المستلمين بنجاح",
-    "recipientsUpdateError": "فشل في تحديث المستلمين",
-    "linkGenerateSuccess": "تم إنشاء رابط المشاركة بنجاح",
-    "linkGenerateError": "فشل في إنشاء رابط المشاركة",
-    "notifyLoading": "جاري إرسال الإشعارات...",
-    "notifySuccess": "تم إعلام المستلمين بنجاح",
-    "notifyError": "فشل في إعلام المستلمين",
-    "bulkDeleteError": "فشل في حذف المشاركات",
-    "bulkDeleteLoading": "جارٍ حذف {count, plural, =1 {مشاركة واحدة} other {# مشاركات}}...",
-    "bulkDeleteSuccess": "{count, plural, =1 {تم حذف مشاركة واحدة بنجاح} other {تم حذف # مشاركات بنجاح}}",
-    "securityUpdateError": "فشل في تحديث إعدادات الأمان",
-    "expirationUpdateError": "فشل في تحديث إعدادات انتهاء الصلاحية",
-    "securityUpdateSuccess": "تم تحديث إعدادات الأمان بنجاح",
-    "expirationUpdateSuccess": "تم تحديث إعدادات انتهاء الصلاحية بنجاح",
-    "creatingZip": "إنشاء ملف zip ...",
-    "defaultShareName": "يشارك",
-    "downloadError": "فشل تنزيل ملفات المشاركة",
-    "downloadSuccess": "بدأ التنزيل بنجاح",
-    "multipleSharesZipName": "{count} _shares_files.zip",
-    "noFilesToDownload": "لا توجد ملفات متاحة للتنزيل",
-    "singleShareZipName": "{ShareName} _files.zip",
-    "zipDownloadError": "فشل في إنشاء ملف مضغوط",
-    "zipDownloadSuccess": "تم تنزيل ملف zip بنجاح"
-  },
-  "shares": {
-    "errors": {
-      "loadFailed": "فشل في تحميل المشاركات",
-      "notifyFailed": "فشل في إعلام المستلمين",
-      "smtpConfigFailed": "فشل في تحميل إعدادات SMTP"
-    },
-    "messages": {
-      "linkCopied": "تم نسخ الرابط إلى الحافظة",
-      "recipientsNotified": "تم إعلام المستلمين بنجاح"
-    },
-    "empty": {
-      "message": "لم يتم إنشاء أي مشاركات بعد",
-      "createButton": "إنشاء مشاركة"
-    },
-    "header": {
-      "title": "مشاركاتي",
-      "myShares": "مشاركاتي"
-    },
-    "search": {
-      "title": "كل المشاركات",
-      "createButton": "إنشاء مشاركة",
-      "placeholder": "ابحث عن المشاركات...",
-      "results": "تم العثور على {filtered} من {total} مشاركات"
-    },
-    "pageTitle": "المشاركات"
-  },
-  "sharesTable": {
-    "ariaLabel": "جدول المشاركات",
-    "never": "أبداً",
-    "columns": {
-      "name": "الاسم",
-      "description": "الوصف",
-      "createdAt": "تاريخ الإنشاء",
-      "expiresAt": "تاريخ انتهاء الصلاحية",
-      "status": "الحالة",
-      "security": "الأمان",
-      "files": "الملفات",
-      "recipients": "المستقبلون",
-      "actions": "الإجراءات"
-    },
-    "status": {
-      "neverExpires": "لا تنتهي صلاحيتها أبداً",
-      "active": "نشط",
-      "expired": "منتهي الصلاحية"
-    },
-    "security": {
-      "protected": "محمي",
-      "public": "عام"
-    },
-    "filesCount": "ملفات",
-    "recipientsCount": "مستقبلين",
-    "actions": {
-      "menu": "قائمة إجراءات المشاركة",
-      "edit": "تحرير",
-      "manageFiles": "إدارة الملفات",
-      "manageRecipients": "إدارة المستقبلين",
-      "viewDetails": "عرض التفاصيل",
-      "generateLink": "إنشاء رابط",
-      "editLink": "تحرير الرابط",
-      "copyLink": "نسخ الرابط",
-      "notifyRecipients": "إشعار المستقبلين",
-      "delete": "حذف",
-      "downloadShareFiles": "قم بتنزيل جميع الملفات"
-    },
-    "bulkActions": {
-      "delete": "حذف",
-      "selected": "{count, plural, =1 {مشاركة واحدة محددة} other {# مشاركات محددة}}",
-      "actions": "الإجراءات",
-      "download": "تنزيل محدد"
-    },
-    "selectAll": "تحديد الكل",
-    "selectShare": "تحديد المشاركة {shareName}"
-  },
-  "storageUsage": {
-    "title": "استخدام التخزين",
-    "ariaLabel": "شريط تقدم استخدام التخزين",
-    "used": "المستخدمة",
-    "available": "متاح",
-    "loading": "جارٍ التحميل...",
-    "retry": "إعادة المحاولة",
-    "errors": {
-      "title": "معلومات التخزين غير متوفرة",
-      "detectionFailed": "تعذر اكتشاف مساحة القرص. قد يكون هذا بسبب مشاكل في إعدادات النظام أو صلاحيات غير كافية.",
-      "serverError": "حدث خطأ في الخادم أثناء استرجاع معلومات التخزين. يرجى المحاولة مرة أخرى لاحقاً.",
-      "unknown": "حدث خطأ غير متوقع أثناء تحميل معلومات التخزين."
-    }
-  },
-  "theme": {
-    "toggle": "تبديل السمة",
-    "light": "فاتح",
-    "dark": "داكن",
-    "system": "النظام"
-  },
-  "uploadFile": {
-    "title": "رفع ملف",
-    "multipleTitle": "رفع ملفات متعددة",
-    "selectFile": "انقر لاختيار ملف",
-    "selectMultipleFiles": "انقر لاختيار ملف واحد أو متعدد",
-    "dragAndDrop": "أو اسحب وأفلت الملفات هنا",
-    "preview": "معاينة",
-    "uploadProgress": "تقدم الرفع",
-    "upload": "رفع",
-    "startUploads": "بدء الرفع",
-    "retry": "إعادة المحاولة",
-    "finish": "إنهاء",
-    "success": "تم رفع الملف بنجاح",
-    "allSuccess": "{count, plural, =1 {تم رفع الملف بنجاح} other {تم رفع # ملف بنجاح}}",
-    "partialSuccess": "تم رفع {success} ملف بنجاح، فشل {error}",
-    "error": "فشل في رفع الملف",
-    "fileSizeExceeded": "حجم الملف يتجاوز الحد الأقصى {maxsizemb}MB.",
-    "insufficientStorage": "مساحة تخزين غير كافية. لديك {availablespace}MB متاحة.",
-    "unauthorized": "غير مخول: مطلوب رمز صالح للوصول إلى هذا المورد.",
-    "confirmCancel": {
-      "title": "إلغاء الرفع",
-      "messageSingle": "هناك رفع واحد قيد التقدم.",
-      "messageMultiple": "هناك {count} عمليات رفع قيد التقدم.",
-      "warning": "إذا أغلقت الآن، سيتم إلغاء الرفع وسيفقد أي تقدم.",
-      "continue": "مواصلة الرفع",
-      "cancel": "إلغاء الرفع"
-    }
-  },
-  "users": {
-    "modes": {
-      "create": "إنشاء",
-      "edit": "تعديل"
-    },
-    "errors": {
-      "loadFailed": "فشل في تحميل المستخدمين",
-      "submitFailed": "فشل في {mode} المستخدم",
-      "deleteFailed": "فشل في حذف المستخدم",
-      "statusUpdateFailed": "فشل في تحديث حالة المستخدم"
-    },
-    "messages": {
-      "createSuccess": "تم إنشاء المستخدم بنجاح",
-      "updateSuccess": "تم تحديث المستخدم بنجاح",
-      "deleteSuccess": "تم حذف المستخدم بنجاح",
-      "activateSuccess": "تم تفعيل المستخدم بنجاح",
-      "deactivateSuccess": "تم إلغاء تفعيل المستخدم بنجاح"
-    },
-    "actions": {
-      "edit": "تعديل",
-      "activate": "تفعيل",
-      "deactivate": "إلغاء التفعيل",
-      "delete": "حذف"
-    },
-    "delete": {
-      "title": "تأكيد حذف المستخدم",
-      "confirmation": "هل أنت متأكد من أنك تريد حذف {firstName} {lastName}؟ هذا الإجراء لا يمكن التراجع عنه.",
-      "confirm": "حذف المستخدم"
-    },
-    "form": {
-      "titleCreate": "إضافة مستخدم جديد",
-      "titleEdit": "تعديل المستخدم",
-      "firstName": "الاسم الأول",
-      "lastName": "اسم العائلة",
-      "username": "اسم المستخدم",
-      "email": "البريد الإلكتروني",
-      "password": "كلمة المرور",
-      "newPassword": "كلمة مرور جديدة (اختياري)",
-      "passwordPlaceholder": "اتركه فارغاً للاحتفاظ بكلمة المرور الحالية",
-      "role": "الدور",
-      "roleUser": "مستخدم",
-      "roleAdmin": "مسؤول",
-      "create": "إنشاء",
-      "save": "حفظ"
-    },
-    "status": {
-      "title": "تأكيد تغيير الحالة",
-      "confirmation": "هل أنت متأكد من أنك تريد {action} المستخدم {firstName} {lastName}؟",
-      "activate": "تفعيل",
-      "deactivate": "إلغاء التفعيل",
-      "user": "المستخدم"
-    },
-    "header": {
-      "title": "إدارة المستخدمين",
-      "addUser": "إضافة مستخدم",
-      "management": "إدارة المستخدمين"
-    },
-    "table": {
-      "user": "المستخدم",
-      "email": "البريد الإلكتروني",
-      "status": "الحالة",
-      "role": "الدور",
-      "actions": "الإجراءات",
-      "active": "مفعل",
-      "inactive": "غير مفعل",
-      "admin": "مسؤول",
-      "userr": "مستخدم"
-    }
-  },
-  "validation": {
-    "invalidEmail": "عنوان بريد إلكتروني غير صالح",
-    "passwordMinLength": "يجب أن تحتوي كلمة المرور على 6 أحرف على الأقل",
-    "firstNameRequired": "الاسم الأول مطلوب",
-    "lastNameRequired": "اسم العائلة مطلوب",
-    "usernameLength": "يجب أن يحتوي اسم المستخدم على 3 أحرف على الأقل",
-    "usernameSpaces": "لا يمكن أن يحتوي اسم المستخدم على فراغات",
-    "passwordLength": "يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل",
-    "passwordsMatch": "كلمتا المرور غير متطابقتين",
-    "emailRequired": "البريد الإلكتروني مطلوب",
-    "emailOrUsernameRequired": "البريد الإلكتروني أو اسم المستخدم مطلوب",
-    "passwordRequired": "كلمة المرور مطلوبة",
-    "nameRequired": "الاسم مطلوب",
-    "required": "هذا الحقل مطلوب"
-  },
-  "shareFile": {
-    "title": "مشاركة ملف",
-    "linkTitle": "إنشاء رابط",
-    "nameLabel": "اسم المشاركة",
-    "namePlaceholder": "أدخل اسم المشاركة",
-    "descriptionLabel": "الوصف",
-    "descriptionPlaceholder": "أدخل وصفاً (اختياري)",
-    "expirationLabel": "تاريخ انتهاء الصلاحية",
-    "expirationPlaceholder": "YYYY/MM/DD HH:MM",
-    "maxViewsLabel": "الحد الأقصى للمشاهدات",
-    "maxViewsPlaceholder": "اتركه فارغاً للمشاهدات غير المحدودة",
-    "passwordProtection": "محمي بكلمة مرور",
-    "passwordLabel": "كلمة المرور",
-    "passwordPlaceholder": "أدخل كلمة المرور",
-    "linkDescription": "إنشاء رابط مخصص لمشاركة الملف",
-    "aliasLabel": "اسم مستعار للرابط",
-    "aliasPlaceholder": "أدخل اسماً مستعاراً مخصصاً",
-    "linkReady": "رابط المشاركة جاهز:",
-    "createShare": "إنشاء مشاركة",
-    "generateLink": "إنشاء رابط",
-    "copyLink": "نسخ الرابط"
-  },
-  "bulkDownload": {
-    "title": "التحميل بالجملة",
-    "zipNameLabel": "اسم ملف ZIP",
-    "zipNamePlaceholder": "أدخل اسم الملف",
-    "description": "{count, plural, =1 {سيتم ضغط ملف واحد} other {سيتم ضغط # ملفات}}",
-    "download": "تحميل ZIP"
-  },
-  "deleteConfirmation": {
-    "filesToDelete": "الملفات المراد حذفها",
-    "sharesToDelete": "المشاركات التي سيتم حذفها"
-  },
-  "shareMultipleFiles": {
-    "title": "مشاركة ملفات متعددة",
-    "shareNameLabel": "اسم المشاركة",
-    "shareNamePlaceholder": "أدخل اسم المشاركة",
-    "descriptionLabel": "الوصف",
-    "descriptionPlaceholder": "أدخل وصفًا (اختياري)",
-    "filesToShare": "الملفات للمشاركة",
-    "files": "ملفات",
-    "totalSize": "الحجم الإجمالي",
-    "creating": "جاري الإنشاء...",
-    "create": "إنشاء مشاركة"
-  },
-  "shareSecurity": {
-    "subtitle": "تكوين حماية كلمة المرور وخيارات الأمان لهذه المشاركة",
-    "info": {
-      "title": "كيف يعمل:",
-      "withoutPassword": "يمكن لأي شخص لديه الرابط الوصول إلى هذه المشاركة بدون كلمة مرور.",
-      "withPassword": "سيحتاج المستخدمون إلى إدخال كلمة المرور للوصول إلى هذه المشاركة."
-    },
-    "existingPasswordMessage": "هذه المشاركة لديها بالفعل كلمة مرور. إذا كنت تريد تحديثها، أدخل كلمة المرور الجديدة في الحقل أدناه واحفظ.",
-    "passwordProtection": "حماية كلمة المرور",
-    "error": {
-      "updateFailed": "فشل في تحديث إعدادات الأمان"
-    },
-    "passwordRequirements": {
-      "title": "متطلبات كلمة المرور:",
-      "minLength": "على الأقل حرفين"
-    },
-    "newPassword": "كلمة مرور جديدة",
-    "success": {
-      "passwordUpdated": "تم تحديث كلمة المرور بنجاح",
-      "passwordRemoved": "تم إزالة حماية كلمة المرور بنجاح",
-      "passwordSet": "تم تمكين حماية كلمة المرور بنجاح"
-    },
-    "password": "كلمة المرور",
-    "validation": {
-      "passwordRequired": "كلمة المرور مطلوبة",
-      "passwordTooShort": "يجب أن تكون كلمة المرور حرفين على الأقل"
-    },
-    "currentStatus": "الحالة الحالية",
-    "passwordPlaceholder": "أدخل كلمة مرور آمنة",
-    "title": "إعدادات أمان المشاركة"
-  },
-  "shareExpiration": {
-    "neverExpires": "لا تنتهي صلاحيته أبداً",
-    "success": {
-      "expirationUpdated": "تم تحديث تاريخ انتهاء الصلاحية بنجاح",
-      "expirationRemoved": "تم إزالة انتهاء الصلاحية بنجاح - المشاركة الآن دائمة",
-      "expirationSet": "تم تعيين تاريخ انتهاء الصلاحية بنجاح"
-    },
-    "info": {
-      "canBeChanged": "يمكنك تغيير أو إزالة تاريخ انتهاء الصلاحية في أي وقت",
-      "willBeInaccessible": "ستصبح المشاركة غير قابلة للوصول بعد هذا التاريخ",
-      "noExpiration": "هذه المشاركة لن تنتهي صلاحيتها أبداً وستبقى قابلة للوصول إلى أجل غير مسمى.",
-      "title": "حول انتهاء الصلاحية:"
-    },
-    "enableExpiration": "تمكين انتهاء الصلاحية",
-    "title": "إعدادات انتهاء صلاحية المشاركة",
-    "subtitle": "تكوين متى ستنتهي صلاحية هذه المشاركة",
-    "validation": {
-      "dateMustBeFuture": "يجب أن يكون تاريخ انتهاء الصلاحية في المستقبل",
-      "dateRequired": "يرجى تحديد تاريخ انتهاء صلاحية"
-    },
-    "currentStatus": "الحالة الحالية",
-    "error": {
-      "updateFailed": "فشل في تحديث إعدادات انتهاء الصلاحية"
-    },
-    "expires": "تنتهي صلاحيته:",
-    "expirationDate": "تاريخ انتهاء الصلاحية"
-  },
-  "auth": {
-    "errors": {
-      "account_inactive": "الحساب غير نشط. اتصل بالمشرف.",
-      "registration_disabled": "التسجيل عبر تسجيل الدخول الموحد معطل.",
-      "token_expired": "انتهت صلاحية الرمز المميز. حاول مرة أخرى.",
-      "config_error": "خطأ في التكوين. اتصل بالدعم الفني.",
-      "auth_failed": "فشل في المصادقة. حاول مرة أخرى."
     }
   },
   "reverseShares": {
@@ -1449,5 +959,598 @@
       }
     },
     "defaultLinkName": "الملفات المستلمة"
+  },
+  "searchBar": {
+    "placeholder": "ابحث عن الملفات...",
+    "results": "تم العثور على {filtered} من {total} ملف"
+  },
+  "settings": {
+    "groups": {
+      "defaultDescription": "خيارات التكوين",
+      "general": {
+        "title": "عام",
+        "description": "إعدادات التطبيق الأساسية"
+      },
+      "email": {
+        "title": "البريد الإلكتروني",
+        "description": "تكوين خادم البريد الإلكتروني"
+      },
+      "security": {
+        "title": "الأمان",
+        "description": "إعدادات الأمان والمصادقة"
+      },
+      "storage": {
+        "title": "التخزين",
+        "description": "تكوين تخزين الملفات"
+      },
+      "oidc": {
+        "title": "OpenID Connect (SSO)",
+        "description": "تكوين المصادقة SSO عبر OpenID Connect"
+      }
+    },
+    "fields": {
+      "noDescription": "لا يوجد وصف متاح",
+      "appLogo": {
+        "title": "شعار التطبيق",
+        "description": "صورة شعار التطبيق"
+      },
+      "appName": {
+        "title": "اسم التطبيق",
+        "description": "اسم التطبيق الذي يظهر للمستخدمين"
+      },
+      "appDescription": {
+        "title": "وصف التطبيق",
+        "description": "وصف مختصر للتطبيق"
+      },
+      "showHomePage": {
+        "title": "عرض الصفحة الرئيسية",
+        "description": "عرض الصفحة الرئيسية بعد التثبيت"
+      },
+      "smtpEnabled": {
+        "title": "تمكين SMTP",
+        "description": "تمكين أو تعطيل وظيفة البريد الإلكتروني عبر SMTP"
+      },
+      "smtpHost": {
+        "title": "خادم SMTP",
+        "description": "عنوان خادم SMTP"
+      },
+      "smtpPort": {
+        "title": "منفذ SMTP",
+        "description": "منفذ خادم SMTP"
+      },
+      "smtpUser": {
+        "title": "مستخدم SMTP",
+        "description": "اسم المستخدم لمصادقة SMTP"
+      },
+      "smtpPass": {
+        "title": "كلمة مرور SMTP",
+        "description": "كلمة المرور لمصادقة SMTP"
+      },
+      "smtpFromName": {
+        "title": "اسم المرسل",
+        "description": "الاسم الظاهر في الرسائل المرسلة"
+      },
+      "smtpFromEmail": {
+        "title": "البريد الإلكتروني للمرسل",
+        "description": "عنوان البريد الإلكتروني للمرسل"
+      },
+      "maxLoginAttempts": {
+        "title": "أقصى محاولات تسجيل دخول",
+        "description": "الحد الأقصى لمحاولات تسجيل الدخول قبل الحظر"
+      },
+      "loginBlockDuration": {
+        "title": "مدة حظر تسجيل الدخول",
+        "description": "مدة الحظر (بالثواني) بعد تجاوز الحد الأقصى للمحاولات"
+      },
+      "passwordMinLength": {
+        "title": "الحد الأدنى لطول كلمة المرور",
+        "description": "الحد الأدنى لعدد الأحرف في كلمة المرور"
+      },
+      "passwordResetTokenExpiration": {
+        "title": "انتهاء صلاحية رمز إعادة التعيين",
+        "description": "مدة صلاحية رمز إعادة تعيين كلمة المرور (بالثواني)"
+      },
+      "maxFileSize": {
+        "title": "أقصى حجم للملف",
+        "description": "الحد الأقصى لحجم الملف المسموح به للرفع "
+      },
+      "maxTotalStoragePerUser": {
+        "title": "أقصى تخزين لكل مستخدم",
+        "description": "الحد الإجمالي للتخزين لكل مستخدم "
+      },
+      "firstUserAccess": {
+        "description": "إعدادات الوصول الأول للمستخدمين الجدد",
+        "title": "الوصول الأول للمستخدم"
+      },
+      "serverUrl": {
+        "title": "رابط الخادم",
+        "description": "الرابط الأساسي لخادم Palmr (مثال: https://palmr.example.com)"
+      },
+      "testSmtp": {
+        "title": "اختبار اتصال SMTP",
+        "description": "اختبار ما إذا كان تكوين SMTP صالحًا"
+      },
+      "smtpNoAuth": {
+        "title": "بدون مصادقة",
+        "description": "قم بتمكين هذا للخوادم الداخلية التي لا تتطلب اسم مستخدم/كلمة مرور (يخفي حقول المصادقة)"
+      },
+      "smtpSecure": {
+        "title": "أمان الاتصال",
+        "description": "طريقة أمان اتصال SMTP - تلقائي (موصى به)، SSL، STARTTLS، أو بدون (غير آمن)",
+        "options": {
+          "auto": "تلقائي (موصى به)",
+          "ssl": "SSL (منفذ 465)",
+          "tls": "STARTTLS (منفذ 587)",
+          "none": "بدون (غير آمن)"
+        }
+      },
+      "smtpTrustSelfSigned": {
+        "title": "الوثوق بالشهادات الموقعة ذاتياً",
+        "description": "قم بتمكين هذا للوثوق بشهادات SSL/TLS الموقعة ذاتياً (مفيد لبيئات التطوير)"
+      }
+    },
+    "buttons": {
+      "save": "احفظ {group}",
+      "testSmtp": "اختبار الاتصال",
+      "testing": "جاري الاختبار..."
+    },
+    "errors": {
+      "loadFailed": "فشل في تحميل الإعدادات",
+      "updateFailed": "فشل في تحديث الإعدادات"
+    },
+    "messages": {
+      "noChanges": "لا توجد تغييرات للحفظ",
+      "updateSuccess": "تم تحديث إعدادات {group} بنجاح",
+      "smtpTestFailed": "فشل اتصال SMTP: {error}",
+      "smtpTestGenericError": "فشل اختبار اتصال SMTP. يرجى التحقق من إعداداتك والمحاولة مرة أخرى.",
+      "smtpTestSuccess": "تم اتصال SMTP بنجاح! تكوين البريد الإلكتروني الخاص بك يعمل بشكل صحيح.",
+      "smtpMissingAuth": "يرجى ملء اسم المستخدم وكلمة المرور الخاصة بـ SMTP، أو تمكين خيار 'بدون مصادقة'.",
+      "smtpMissingHostPort": "يرجى ملء مضيف ومنفذ SMTP قبل الاختبار.",
+      "smtpNotEnabled": "SMTP غير مفعل. يرجى تفعيل SMTP أولاً."
+    },
+    "title": "الإعدادات",
+    "breadcrumb": "الإعدادات",
+    "pageTitle": "الإعدادات",
+    "tooltips": {
+      "testSmtp": "يختبر اتصال SMTP بالقيم المدخلة حاليًا في النموذج. لجعل التغييرات دائمة، تذكر حفظ إعداداتك بعد الاختبار.",
+      "defaultPlaceholder": "أدخل واضغط Enter"
+    },
+    "redirectUri": {
+      "placeholder": "https://mysite.com",
+      "previewLabel": "الرابط الكامل الذي سيتم حفظه:"
+    }
+  },
+  "share": {
+    "errors": {
+      "invalidPassword": "كلمة مرور غير صحيحة. يرجى المحاولة مرة أخرى.",
+      "loadFailed": "فشل في تحميل المشاركة",
+      "downloadFailed": "فشل في تنزيل الملف"
+    },
+    "messages": {
+      "downloadStarted": "بدأ التنزيل"
+    },
+    "password": {
+      "title": "مشاركة محمية بكلمة المرور",
+      "protected": "هذه المشاركة محمية بكلمة مرور",
+      "incorrect": "كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى.",
+      "label": "كلمة المرور",
+      "placeholder": "أدخل كلمة مرور المشاركة",
+      "submit": "إرسال"
+    },
+    "details": {
+      "untitled": "بدون عنوان",
+      "created": "تم الإنشاء: {date}",
+      "expires": "تنتهي: {date}"
+    },
+    "notFound": {
+      "title": "لم يتم العثور على المشاركة",
+      "description": "قد يكون تم حذف هذه المشاركة أو انتهت صلاحيتها."
+    },
+    "pageTitle": "المشاركة",
+    "downloadAll": "تحميل الكل"
+  },
+  "shareActions": {
+    "deleteTitle": "حذف المشاركة",
+    "deleteConfirmation": "هل أنت متأكد من أنك تريد حذف هذه المشاركة؟ لا يمكن التراجع عن هذا الإجراء.",
+    "editTitle": "تحرير المشاركة",
+    "nameLabel": "اسم المشاركة",
+    "descriptionLabel": "الوصف",
+    "descriptionPlaceholder": "أدخل وصفاً (اختياري)",
+    "expirationLabel": "تاريخ انتهاء الصلاحية",
+    "expirationPlaceholder": "YYYY/MM/DD HH:MM",
+    "maxViewsLabel": "الحد الأقصى للمشاهدات",
+    "maxViewsPlaceholder": "اتركه فارغاً للمشاهدات غير المحدودة",
+    "passwordProtection": "محمي بكلمة مرور",
+    "passwordLabel": "كلمة المرور",
+    "passwordPlaceholder": "أدخل كلمة المرور",
+    "newPasswordLabel": "كلمة المرور الجديدة (اتركها فارغة للاحتفاظ بالحالية)",
+    "newPasswordPlaceholder": "أدخل كلمة المرور الجديدة",
+    "manageFilesTitle": "إدارة الملفات",
+    "manageRecipientsTitle": "إدارة المستقبلين",
+    "editSuccess": "تم تحديث المشاركة بنجاح",
+    "editError": "فشل في تحديث المشاركة",
+    "bulkDeleteConfirmation": "هل أنت متأكد من أنك تريد حذف {count, plural, =1 {مشاركة واحدة} other {# مشاركات}} محددة؟ لا يمكن التراجع عن هذا الإجراء.",
+    "bulkDeleteTitle": "حذف المشاركات المحددة"
+  },
+  "shareDetails": {
+    "title": "تفاصيل المشاركة",
+    "subtitle": "معلومات تفصيلية حول هذه المشاركة",
+    "basicInfo": "المعلومات الأساسية",
+    "name": "الاسم",
+    "description": "الوصف",
+    "noDescription": "لم يتم توفير وصف",
+    "untitled": "بدون عنوان",
+    "shareLink": "رابط المشاركة",
+    "editLink": "تحرير الرابط",
+    "generateLink": "إنشاء رابط",
+    "noLink": "لم يتم إنشاء رابط بعد",
+    "copyLink": "نسخ الرابط",
+    "openLink": "فتح في علامة تبويب جديدة",
+    "linkCopied": "تم نسخ الرابط إلى الحافظة",
+    "views": "المشاهدات",
+    "dates": "التواريخ",
+    "created": "تم الإنشاء",
+    "expires": "ينتهي",
+    "never": "أبداً",
+    "security": "الأمان",
+    "passwordProtected": "محمي بكلمة مرور",
+    "publicAccess": "وصول عام",
+    "maxViews": "المشاهدات القصوى:",
+    "files": "الملفات",
+    "recipients": "المستقبلون",
+    "notAvailable": "غير متاح",
+    "invalidDate": "تاريخ غير صحيح",
+    "loadError": "فشل في تحميل تفاصيل المشاركة",
+    "editSecurity": "تحرير الأمان",
+    "editExpiration": "تحرير انتهاء الصلاحية"
+  },
+  "shareExpiration": {
+    "neverExpires": "لا تنتهي صلاحيته أبداً",
+    "success": {
+      "expirationUpdated": "تم تحديث تاريخ انتهاء الصلاحية بنجاح",
+      "expirationRemoved": "تم إزالة انتهاء الصلاحية بنجاح - المشاركة الآن دائمة",
+      "expirationSet": "تم تعيين تاريخ انتهاء الصلاحية بنجاح"
+    },
+    "info": {
+      "canBeChanged": "يمكنك تغيير أو إزالة تاريخ انتهاء الصلاحية في أي وقت",
+      "willBeInaccessible": "ستصبح المشاركة غير قابلة للوصول بعد هذا التاريخ",
+      "noExpiration": "هذه المشاركة لن تنتهي صلاحيتها أبداً وستبقى قابلة للوصول إلى أجل غير مسمى.",
+      "title": "حول انتهاء الصلاحية:"
+    },
+    "enableExpiration": "تمكين انتهاء الصلاحية",
+    "title": "إعدادات انتهاء صلاحية المشاركة",
+    "subtitle": "تكوين متى ستنتهي صلاحية هذه المشاركة",
+    "validation": {
+      "dateMustBeFuture": "يجب أن يكون تاريخ انتهاء الصلاحية في المستقبل",
+      "dateRequired": "يرجى تحديد تاريخ انتهاء صلاحية"
+    },
+    "currentStatus": "الحالة الحالية",
+    "error": {
+      "updateFailed": "فشل في تحديث إعدادات انتهاء الصلاحية"
+    },
+    "expires": "تنتهي صلاحيته:",
+    "expirationDate": "تاريخ انتهاء الصلاحية"
+  },
+  "shareFile": {
+    "title": "مشاركة ملف",
+    "linkTitle": "إنشاء رابط",
+    "nameLabel": "اسم المشاركة",
+    "namePlaceholder": "أدخل اسم المشاركة",
+    "descriptionLabel": "الوصف",
+    "descriptionPlaceholder": "أدخل وصفاً (اختياري)",
+    "expirationLabel": "تاريخ انتهاء الصلاحية",
+    "expirationPlaceholder": "YYYY/MM/DD HH:MM",
+    "maxViewsLabel": "الحد الأقصى للمشاهدات",
+    "maxViewsPlaceholder": "اتركه فارغاً للمشاهدات غير المحدودة",
+    "passwordProtection": "محمي بكلمة مرور",
+    "passwordLabel": "كلمة المرور",
+    "passwordPlaceholder": "أدخل كلمة المرور",
+    "linkDescription": "إنشاء رابط مخصص لمشاركة الملف",
+    "aliasLabel": "اسم مستعار للرابط",
+    "aliasPlaceholder": "أدخل اسماً مستعاراً مخصصاً",
+    "linkReady": "رابط المشاركة جاهز:",
+    "createShare": "إنشاء مشاركة",
+    "generateLink": "إنشاء رابط",
+    "copyLink": "نسخ الرابط"
+  },
+  "shareManager": {
+    "deleteSuccess": "تم حذف المشاركة بنجاح",
+    "deleteError": "فشل في حذف المشاركة",
+    "updateSuccess": "تم تحديث المشاركة بنجاح",
+    "updateError": "فشل في تحديث المشاركة",
+    "filesUpdateSuccess": "تم تحديث الملفات بنجاح",
+    "filesUpdateError": "فشل في تحديث الملفات",
+    "recipientsUpdateSuccess": "تم تحديث المستلمين بنجاح",
+    "recipientsUpdateError": "فشل في تحديث المستلمين",
+    "linkGenerateSuccess": "تم إنشاء رابط المشاركة بنجاح",
+    "linkGenerateError": "فشل في إنشاء رابط المشاركة",
+    "notifyLoading": "جاري إرسال الإشعارات...",
+    "notifySuccess": "تم إعلام المستلمين بنجاح",
+    "notifyError": "فشل في إعلام المستلمين",
+    "bulkDeleteError": "فشل في حذف المشاركات",
+    "bulkDeleteLoading": "جارٍ حذف {count, plural, =1 {مشاركة واحدة} other {# مشاركات}}...",
+    "bulkDeleteSuccess": "{count, plural, =1 {تم حذف مشاركة واحدة بنجاح} other {تم حذف # مشاركات بنجاح}}",
+    "securityUpdateError": "فشل في تحديث إعدادات الأمان",
+    "expirationUpdateError": "فشل في تحديث إعدادات انتهاء الصلاحية",
+    "securityUpdateSuccess": "تم تحديث إعدادات الأمان بنجاح",
+    "expirationUpdateSuccess": "تم تحديث إعدادات انتهاء الصلاحية بنجاح",
+    "creatingZip": "إنشاء ملف zip ...",
+    "defaultShareName": "يشارك",
+    "downloadError": "فشل تنزيل ملفات المشاركة",
+    "downloadSuccess": "بدأ التنزيل بنجاح",
+    "multipleSharesZipName": "{count} _shares_files.zip",
+    "noFilesToDownload": "لا توجد ملفات متاحة للتنزيل",
+    "singleShareZipName": "{ShareName} _files.zip",
+    "zipDownloadError": "فشل في إنشاء ملف مضغوط",
+    "zipDownloadSuccess": "تم تنزيل ملف zip بنجاح"
+  },
+  "shareMultipleFiles": {
+    "title": "مشاركة ملفات متعددة",
+    "shareNameLabel": "اسم المشاركة",
+    "shareNamePlaceholder": "أدخل اسم المشاركة",
+    "descriptionLabel": "الوصف",
+    "descriptionPlaceholder": "أدخل وصفًا (اختياري)",
+    "filesToShare": "الملفات للمشاركة",
+    "files": "ملفات",
+    "totalSize": "الحجم الإجمالي",
+    "creating": "جاري الإنشاء...",
+    "create": "إنشاء مشاركة"
+  },
+  "shareSecurity": {
+    "subtitle": "تكوين حماية كلمة المرور وخيارات الأمان لهذه المشاركة",
+    "info": {
+      "title": "كيف يعمل:",
+      "withoutPassword": "يمكن لأي شخص لديه الرابط الوصول إلى هذه المشاركة بدون كلمة مرور.",
+      "withPassword": "سيحتاج المستخدمون إلى إدخال كلمة المرور للوصول إلى هذه المشاركة."
+    },
+    "existingPasswordMessage": "هذه المشاركة لديها بالفعل كلمة مرور. إذا كنت تريد تحديثها، أدخل كلمة المرور الجديدة في الحقل أدناه واحفظ.",
+    "passwordProtection": "حماية كلمة المرور",
+    "error": {
+      "updateFailed": "فشل في تحديث إعدادات الأمان"
+    },
+    "passwordRequirements": {
+      "title": "متطلبات كلمة المرور:",
+      "minLength": "على الأقل حرفين"
+    },
+    "newPassword": "كلمة مرور جديدة",
+    "success": {
+      "passwordUpdated": "تم تحديث كلمة المرور بنجاح",
+      "passwordRemoved": "تم إزالة حماية كلمة المرور بنجاح",
+      "passwordSet": "تم تمكين حماية كلمة المرور بنجاح"
+    },
+    "password": "كلمة المرور",
+    "validation": {
+      "passwordRequired": "كلمة المرور مطلوبة",
+      "passwordTooShort": "يجب أن تكون كلمة المرور حرفين على الأقل"
+    },
+    "currentStatus": "الحالة الحالية",
+    "passwordPlaceholder": "أدخل كلمة مرور آمنة",
+    "title": "إعدادات أمان المشاركة"
+  },
+  "shares": {
+    "errors": {
+      "loadFailed": "فشل في تحميل المشاركات",
+      "notifyFailed": "فشل في إعلام المستلمين",
+      "smtpConfigFailed": "فشل في تحميل إعدادات SMTP"
+    },
+    "messages": {
+      "linkCopied": "تم نسخ الرابط إلى الحافظة",
+      "recipientsNotified": "تم إعلام المستلمين بنجاح"
+    },
+    "empty": {
+      "message": "لم يتم إنشاء أي مشاركات بعد",
+      "createButton": "إنشاء مشاركة"
+    },
+    "header": {
+      "title": "مشاركاتي",
+      "myShares": "مشاركاتي"
+    },
+    "search": {
+      "title": "كل المشاركات",
+      "createButton": "إنشاء مشاركة",
+      "placeholder": "ابحث عن المشاركات...",
+      "results": "تم العثور على {filtered} من {total} مشاركات"
+    },
+    "pageTitle": "المشاركات"
+  },
+  "sharesTable": {
+    "ariaLabel": "جدول المشاركات",
+    "never": "أبداً",
+    "columns": {
+      "name": "الاسم",
+      "description": "الوصف",
+      "createdAt": "تاريخ الإنشاء",
+      "expiresAt": "تاريخ انتهاء الصلاحية",
+      "status": "الحالة",
+      "security": "الأمان",
+      "files": "الملفات",
+      "recipients": "المستقبلون",
+      "actions": "الإجراءات"
+    },
+    "status": {
+      "neverExpires": "لا تنتهي صلاحيتها أبداً",
+      "active": "نشط",
+      "expired": "منتهي الصلاحية"
+    },
+    "security": {
+      "protected": "محمي",
+      "public": "عام"
+    },
+    "filesCount": "ملفات",
+    "recipientsCount": "مستقبلين",
+    "actions": {
+      "menu": "قائمة إجراءات المشاركة",
+      "edit": "تحرير",
+      "manageFiles": "إدارة الملفات",
+      "manageRecipients": "إدارة المستقبلين",
+      "viewDetails": "عرض التفاصيل",
+      "generateLink": "إنشاء رابط",
+      "editLink": "تحرير الرابط",
+      "copyLink": "نسخ الرابط",
+      "notifyRecipients": "إشعار المستقبلين",
+      "delete": "حذف",
+      "downloadShareFiles": "قم بتنزيل جميع الملفات"
+    },
+    "bulkActions": {
+      "delete": "حذف",
+      "selected": "{count, plural, =1 {مشاركة واحدة محددة} other {# مشاركات محددة}}",
+      "actions": "الإجراءات",
+      "download": "تنزيل محدد"
+    },
+    "selectAll": "تحديد الكل",
+    "selectShare": "تحديد المشاركة {shareName}"
+  },
+  "storageUsage": {
+    "title": "استخدام التخزين",
+    "ariaLabel": "شريط تقدم استخدام التخزين",
+    "used": "المستخدمة",
+    "available": "متاح",
+    "total": "الإجمالي",
+    "loading": "جارٍ التحميل...",
+    "retry": "إعادة المحاولة",
+    "errors": {
+      "title": "معلومات التخزين غير متوفرة",
+      "detectionFailed": "تعذر اكتشاف مساحة القرص. قد يكون هذا بسبب مشاكل في إعدادات النظام أو صلاحيات غير كافية.",
+      "serverError": "حدث خطأ في الخادم أثناء استرجاع معلومات التخزين. يرجى المحاولة مرة أخرى لاحقاً.",
+      "unknown": "حدث خطأ غير متوقع أثناء تحميل معلومات التخزين."
+    }
+  },
+  "theme": {
+    "toggle": "تبديل السمة",
+    "light": "فاتح",
+    "dark": "داكن",
+    "system": "النظام"
+  },
+  "uploadFile": {
+    "title": "رفع ملف",
+    "multipleTitle": "رفع ملفات متعددة",
+    "selectFile": "انقر لاختيار ملف",
+    "selectMultipleFiles": "انقر لاختيار ملف واحد أو متعدد",
+    "dragAndDrop": "أو اسحب وأفلت الملفات هنا",
+    "preview": "معاينة",
+    "uploadProgress": "تقدم الرفع",
+    "upload": "رفع",
+    "startUploads": "بدء الرفع",
+    "retry": "إعادة المحاولة",
+    "finish": "إنهاء",
+    "success": "تم رفع الملف بنجاح",
+    "allSuccess": "{count, plural, =1 {تم رفع الملف بنجاح} other {تم رفع # ملف بنجاح}}",
+    "partialSuccess": "تم رفع {success} ملف بنجاح، فشل {error}",
+    "error": "فشل في رفع الملف",
+    "fileSizeExceeded": "حجم الملف يتجاوز الحد الأقصى {maxsizemb}MB.",
+    "insufficientStorage": "مساحة تخزين غير كافية. لديك {availablespace}MB متاحة.",
+    "unauthorized": "غير مخول: مطلوب رمز صالح للوصول إلى هذا المورد.",
+    "confirmCancel": {
+      "title": "إلغاء الرفع",
+      "messageSingle": "هناك رفع واحد قيد التقدم.",
+      "messageMultiple": "هناك {count} عمليات رفع قيد التقدم.",
+      "warning": "إذا أغلقت الآن، سيتم إلغاء الرفع وسيفقد أي تقدم.",
+      "continue": "مواصلة الرفع",
+      "cancel": "إلغاء الرفع"
+    },
+    "globalDrop": {
+      "title": "إفلات الملفات للرفع",
+      "description": "حرر للرفع ملفاتك"
+    },
+    "pasteSuccess": "{count, plural, =1 {تم لصق الصورة ورفعها بنجاح} other {تم لصق # صور ورفعها بنجاح}}"
+  },
+  "users": {
+    "modes": {
+      "create": "إنشاء",
+      "edit": "تعديل"
+    },
+    "errors": {
+      "loadFailed": "فشل في تحميل المستخدمين",
+      "submitFailed": "فشل في {mode} المستخدم",
+      "deleteFailed": "فشل في حذف المستخدم",
+      "statusUpdateFailed": "فشل في تحديث حالة المستخدم"
+    },
+    "messages": {
+      "createSuccess": "تم إنشاء المستخدم بنجاح",
+      "updateSuccess": "تم تحديث المستخدم بنجاح",
+      "deleteSuccess": "تم حذف المستخدم بنجاح",
+      "activateSuccess": "تم تفعيل المستخدم بنجاح",
+      "deactivateSuccess": "تم إلغاء تفعيل المستخدم بنجاح"
+    },
+    "actions": {
+      "edit": "تعديل",
+      "activate": "تفعيل",
+      "deactivate": "إلغاء التفعيل",
+      "delete": "حذف"
+    },
+    "delete": {
+      "title": "تأكيد حذف المستخدم",
+      "confirmation": "هل أنت متأكد من أنك تريد حذف {firstName} {lastName}؟ هذا الإجراء لا يمكن التراجع عنه.",
+      "confirm": "حذف المستخدم"
+    },
+    "form": {
+      "titleCreate": "إضافة مستخدم جديد",
+      "titleEdit": "تعديل المستخدم",
+      "firstName": "الاسم الأول",
+      "lastName": "اسم العائلة",
+      "username": "اسم المستخدم",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "newPassword": "كلمة مرور جديدة (اختياري)",
+      "passwordPlaceholder": "اتركه فارغاً للاحتفاظ بكلمة المرور الحالية",
+      "role": "الدور",
+      "roleUser": "مستخدم",
+      "roleAdmin": "مسؤول",
+      "create": "إنشاء",
+      "save": "حفظ"
+    },
+    "status": {
+      "title": "تأكيد تغيير الحالة",
+      "confirmation": "هل أنت متأكد من أنك تريد {action} المستخدم {firstName} {lastName}؟",
+      "activate": "تفعيل",
+      "deactivate": "إلغاء التفعيل",
+      "user": "المستخدم"
+    },
+    "header": {
+      "title": "إدارة المستخدمين",
+      "addUser": "إضافة مستخدم",
+      "management": "إدارة المستخدمين"
+    },
+    "table": {
+      "user": "المستخدم",
+      "email": "البريد الإلكتروني",
+      "status": "الحالة",
+      "role": "الدور",
+      "actions": "الإجراءات",
+      "active": "مفعل",
+      "inactive": "غير مفعل",
+      "admin": "مسؤول",
+      "userr": "مستخدم"
+    }
+  },
+  "validation": {
+    "invalidEmail": "عنوان بريد إلكتروني غير صالح",
+    "passwordMinLength": "يجب أن تحتوي كلمة المرور على 6 أحرف على الأقل",
+    "firstNameRequired": "الاسم الأول مطلوب",
+    "lastNameRequired": "اسم العائلة مطلوب",
+    "usernameLength": "يجب أن يحتوي اسم المستخدم على 3 أحرف على الأقل",
+    "usernameSpaces": "لا يمكن أن يحتوي اسم المستخدم على فراغات",
+    "passwordLength": "يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل",
+    "passwordsMatch": "كلمتا المرور غير متطابقتين",
+    "emailRequired": "البريد الإلكتروني مطلوب",
+    "emailOrUsernameRequired": "البريد الإلكتروني أو اسم المستخدم مطلوب",
+    "passwordRequired": "كلمة المرور مطلوبة",
+    "nameRequired": "الاسم مطلوب",
+    "required": "هذا الحقل مطلوب"
+  },
+  "iconPicker": {
+    "title": "اختر أيقونة",
+    "placeholder": "اختر أيقونة",
+    "searchPlaceholder": "البحث عن الأيقونات...",
+    "loadingMore": "جاري تحميل المزيد من الأيقونات...",
+    "allIconsLoaded": "تم تحميل جميع الأيقونات {count}",
+    "noIconsFound": "لم يتم العثور على أيقونات لـ \"{search}\"",
+    "tabs": {
+      "all": "جميع الأيقونات",
+      "popular": "الشائعة",
+      "auth": "مزودي المصادقة"
+    },
+    "stats": "{iconCount} أيقونة من {libraryCount} مكتبة",
+    "categoryBadge": "{category} ({count} أيقونات)"
   }
 }

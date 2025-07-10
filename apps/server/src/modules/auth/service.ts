@@ -1,11 +1,12 @@
+import crypto from "node:crypto";
+import bcrypt from "bcryptjs";
+
 import { prisma } from "../../shared/prisma";
 import { ConfigService } from "../config/service";
 import { EmailService } from "../email/service";
 import { UserResponseSchema } from "../user/dto";
 import { PrismaUserRepository } from "../user/repository";
 import { LoginInput } from "./dto";
-import bcrypt from "bcryptjs";
-import crypto from "node:crypto";
 
 export class AuthService {
   private userRepository = new PrismaUserRepository();

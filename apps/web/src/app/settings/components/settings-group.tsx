@@ -63,6 +63,7 @@ export function SettingsGroup({ group, configs, form, isCollapsed, onToggleColla
                   "smtpPass",
                   "smtpSecure",
                   "smtpNoAuth",
+                  "smtpTrustSelfSigned",
                   "smtpFromName",
                   "smtpFromEmail",
                 ];
@@ -83,7 +84,7 @@ export function SettingsGroup({ group, configs, form, isCollapsed, onToggleColla
                       register={form.register}
                       setValue={form.setValue}
                       smtpEnabled={form.watch("configs.smtpEnabled")}
-                      oidcEnabled={form.watch("configs.oidcEnabled")}
+                      authProvidersEnabled={form.watch("configs.authProvidersEnabled")}
                       watch={form.watch}
                     />
                     <p className="text-xs text-muted-foreground ml-1">
@@ -111,6 +112,7 @@ export function SettingsGroup({ group, configs, form, isCollapsed, onToggleColla
                     smtpPass: form.getValues("configs.smtpPass") || "",
                     smtpSecure: form.getValues("configs.smtpSecure") || "auto",
                     smtpNoAuth: form.getValues("configs.smtpNoAuth") || "false",
+                    smtpTrustSelfSigned: form.getValues("configs.smtpTrustSelfSigned") || "false",
                   })}
                 />
               )}

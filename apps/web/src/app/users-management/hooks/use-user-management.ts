@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { Resolver, useForm } from "react-hook-form";
@@ -10,7 +10,7 @@ import { z } from "zod";
 import { useAuth } from "@/contexts/auth-context";
 import { useDisclosure } from "@/hooks/use-disclosure";
 import { activateUser, deactivateUser, deleteUser, listUsers, registerUser, updateUser } from "@/http/endpoints";
-import type { ListUsers200Item } from "@/http/models";
+import { User } from "@/http/endpoints/auth/types";
 
 const createSchemas = (t: (key: string) => string) => ({
   userSchema: z.object({
@@ -35,12 +35,12 @@ export function useUserManagement() {
   const t = useTranslations();
 
   const { userSchema } = createSchemas(t);
-  const [users, setUsers] = useState<ListUsers200Item[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedUser, setSelectedUser] = useState<ListUsers200Item | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
-  const [deleteModalUser, setDeleteModalUser] = useState<ListUsers200Item | null>(null);
-  const [statusModalUser, setStatusModalUser] = useState<ListUsers200Item | null>(null);
+  const [deleteModalUser, setDeleteModalUser] = useState<User | null>(null);
+  const [statusModalUser, setStatusModalUser] = useState<User | null>(null);
 
   const { user: currentUser } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -51,21 +51,21 @@ export function useUserManagement() {
     resolver: zodResolver(userSchema) as Resolver<UserFormData>,
   });
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       const response = await listUsers();
 
       setUsers(response.data);
-    } catch (error) {
+    } catch {
       toast.error(t("users.errors.loadFailed"));
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     loadUsers();
-  }, []);
+  }, [loadUsers]);
 
   const handleCreateUser = () => {
     setModalMode("create");
@@ -74,7 +74,7 @@ export function useUserManagement() {
     onOpen();
   };
 
-  const handleEditUser = (user: ListUsers200Item) => {
+  const handleEditUser = (user: User) => {
     setModalMode("edit");
     setSelectedUser(user);
     formMethods.reset({
@@ -109,7 +109,7 @@ export function useUserManagement() {
       }
       onClose();
       loadUsers();
-    } catch (error) {
+    } catch {
       toast.error(t("users.errors.submitFailed", { mode: t(`users.modes.${modalMode}`) }));
     }
   };
@@ -122,7 +122,7 @@ export function useUserManagement() {
       toast.success(t("users.messages.deleteSuccess"));
       loadUsers();
       onDeleteModalClose();
-    } catch (error) {
+    } catch {
       toast.error(t("users.errors.deleteFailed"));
     }
   };
@@ -140,7 +140,7 @@ export function useUserManagement() {
       }
       loadUsers();
       onStatusModalClose();
-    } catch (error) {
+    } catch {
       toast.error(t("users.errors.statusUpdateFailed"));
     }
   };

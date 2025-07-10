@@ -1,8 +1,9 @@
+import { FastifyReply, FastifyRequest } from "fastify";
+
 import { prisma } from "../../shared/prisma";
 import { ConfigService } from "../config/service";
-import { RegisterFileSchema, RegisterFileInput, UpdateFileSchema, CheckFileInput, CheckFileSchema } from "./dto";
+import { CheckFileInput, CheckFileSchema, RegisterFileInput, RegisterFileSchema, UpdateFileSchema } from "./dto";
 import { FileService } from "./service";
-import { FastifyReply, FastifyRequest } from "fastify";
 
 export class FileController {
   private fileService = new FileService();

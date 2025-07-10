@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   return new NextResponse(
     JSON.stringify({
       error: "This endpoint has been deprecated for security reasons. Use secure server actions instead.",

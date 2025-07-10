@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { createLoginSchema, type LoginFormValues } from "../schemas/schema";
+import { MultiProviderButtons } from "./multi-provider-buttons";
 import { PasswordVisibilityToggle } from "./password-visibility-toggle";
-import { SSOButton } from "./sso-button";
 
 interface LoginFormProps {
   error?: string;
@@ -97,7 +97,7 @@ export function LoginForm({ error, isVisible, onToggleVisibility, onSubmit }: Lo
         </form>
       </Form>
 
-      <SSOButton />
+      <MultiProviderButtons />
 
       <div className="flex w-full items-center justify-center px-1 mt-2">
         <Link className="text-muted-foreground hover:text-primary text-sm" href="/forgot-password">

@@ -1,23 +1,40 @@
-.PHONY: help build start clean logs stop restart
+.PHONY: help build start clean logs stop restart update-version
 
 # Default target
 help:
 	@echo "🚀 Palmr - Available Commands:"
 	@echo ""
-	@echo "  make build     - Build Docker image with multi-platform support"
-	@echo "  make start     - Start the application using docker-compose"
-	@echo "  make stop      - Stop all running containers"
-	@echo "  make logs      - Show application logs"
-	@echo "  make clean     - Clean up containers and images"
-	@echo "  make shell     - Access the application container shell"
+	@echo "  make build         - Build Docker image with multi-platform support"
+	@echo "  make update-version - Update version in all package.json files"
+	@echo "  make start         - Start the application using docker-compose"
+	@echo "  make stop          - Stop all running containers"
+	@echo "  make logs          - Show application logs"
+	@echo "  make clean         - Clean up containers and images"
+	@echo "  make shell         - Access the application container shell"
 	@echo ""
 	@echo "📁 Scripts location: ./infra/"
 
 # Build Docker image using the build script
 build:
 	@echo "🏗️  Building Palmr Docker image..."
+	@echo "📝 This will update version numbers in all package.json files before building"
+	@echo ""
+	@chmod +x ./infra/update-versions.sh
 	@chmod +x ./infra/build-docker.sh
+	@echo "🔄 Starting build process..."
 	@./infra/build-docker.sh
+
+# Update version in all package.json files
+update-version:
+	@echo "🔄 Updating version numbers..."
+	@echo "🏷️  Please enter the new version (e.g., v3.0.0, 3.0-beta):"
+	@read -p "Version: " VERSION; \
+	if [ -z "$$VERSION" ]; then \
+		echo "❌ Error: Version cannot be empty"; \
+		exit 1; \
+	fi; \
+	chmod +x ./infra/update-versions.sh; \
+	./infra/update-versions.sh "$$VERSION"
 
 # Start the application
 start:

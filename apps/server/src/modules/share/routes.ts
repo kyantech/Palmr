@@ -1,15 +1,16 @@
+import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { z } from "zod";
+
 import { ShareController } from "./controller";
 import {
   CreateShareSchema,
-  ShareResponseSchema,
-  UpdateShareSchema,
-  UpdateSharePasswordSchema,
-  UpdateShareFilesSchema,
-  UpdateShareRecipientsSchema,
   ShareAliasResponseSchema,
+  ShareResponseSchema,
+  UpdateShareFilesSchema,
+  UpdateSharePasswordSchema,
+  UpdateShareRecipientsSchema,
+  UpdateShareSchema,
 } from "./dto";
-import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { z } from "zod";
 
 export async function shareRoutes(app: FastifyInstance) {
   const shareController = new ShareController();

@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { useAuth } from "@/contexts/auth-context";
-import { getCurrentUser, login } from "@/http/endpoints";
+import { getAppInfo, getCurrentUser, login } from "@/http/endpoints";
 import { LoginFormValues } from "../schemas/schema";
 
 export const loginSchema = z.object({
@@ -29,10 +29,17 @@ export function useLogin() {
 
   useEffect(() => {
     const errorParam = searchParams.get("error");
+    const messageParam = searchParams.get("message");
 
     if (errorParam) {
-      const errorKey = `auth.errors.${errorParam}`;
-      const message = t(errorKey);
+      let message: string;
+
+      if (messageParam) {
+        message = decodeURIComponent(messageParam);
+      } else {
+        const errorKey = `auth.errors.${errorParam}`;
+        message = t(errorKey);
+      }
 
       setTimeout(() => {
         toast.error(message);
@@ -41,6 +48,8 @@ export function useLogin() {
       setTimeout(() => {
         const url = new URL(window.location.href);
         url.searchParams.delete("error");
+        url.searchParams.delete("message");
+        url.searchParams.delete("provider");
         window.history.replaceState({}, "", url.toString());
       }, 1000);
     }
@@ -49,8 +58,8 @@ export function useLogin() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const appInfoResponse = await fetch("/api/app/info");
-        const appInfo = await appInfoResponse.json();
+        const appInfoResponse = await getAppInfo();
+        const appInfo = appInfoResponse.data;
 
         if (appInfo.firstUserAccess) {
           setUser(null);

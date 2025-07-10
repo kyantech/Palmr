@@ -1,13 +1,14 @@
-import { registerSwagger } from "./config/swagger.config";
-import { envTimeoutOverrides } from "./config/timeout.config";
-import { prisma } from "./shared/prisma";
+import crypto from "node:crypto";
 import fastifyCookie from "@fastify/cookie";
 import { fastifyCors } from "@fastify/cors";
 import fastifyJwt from "@fastify/jwt";
 import { fastifySwaggerUi } from "@fastify/swagger-ui";
 import { fastify } from "fastify";
-import { validatorCompiler, serializerCompiler, ZodTypeProvider } from "fastify-type-provider-zod";
-import crypto from "node:crypto";
+import { serializerCompiler, validatorCompiler, ZodTypeProvider } from "fastify-type-provider-zod";
+
+import { registerSwagger } from "./config/swagger.config";
+import { envTimeoutOverrides } from "./config/timeout.config";
+import { prisma } from "./shared/prisma";
 
 export async function buildApp() {
   const jwtConfig = await prisma.appConfig.findUnique({

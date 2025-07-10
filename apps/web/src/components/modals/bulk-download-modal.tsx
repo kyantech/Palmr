@@ -20,17 +20,16 @@ export function BulkDownloadModal({ isOpen, onClose, onDownload, fileCount }: Bu
   const t = useTranslations();
   const [zipName, setZipName] = useState("");
 
+  const handleClose = () => {
+    onClose();
+    setZipName("");
+  };
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (zipName.trim()) {
       onDownload(zipName.trim());
       handleClose();
     }
-  };
-
-  const handleClose = () => {
-    onClose();
-    setZipName("");
   };
 
   return (

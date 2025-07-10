@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
-import { version } from "../../../package.json";
+import packageJson from "../../../package.json";
+
+const { version } = packageJson;
 
 export function DefaultFooter() {
   const t = useTranslations();

@@ -1,4 +1,132 @@
 {
+  "auth": {
+    "errors": {
+      "account_inactive": "Conta inativa. Entre em contato com o administrador.",
+      "registration_disabled": "Registro via SSO está desabilitado.",
+      "token_expired": "Token expirado. Tente novamente.",
+      "config_error": "Erro de configuração. Contate o suporte.",
+      "auth_failed": "Falha na autenticação. Tente novamente."
+    }
+  },
+  "authProviders": {
+    "title": "身份验证提供商",
+    "description": "配置外部身份验证提供商以实现单点登录",
+    "enabledCount": "{count} 个已启用",
+    "loadingProviders": "正在加载提供商...",
+    "providersConfigured": "已配置 {count} 个提供商",
+    "enabledOfTotal": "共 {total} 个提供商中已启用 {enabled} 个",
+    "hideDisabledProviders": "隐藏已禁用的提供商",
+    "addProvider": "添加提供商",
+    "addProviderTitle": "添加提供商",
+    "editProvider": "编辑提供商",
+    "deleteProvider": "删除提供商",
+    "enabled": "已启用",
+    "disabled": "已禁用",
+    "officialProvider": "官方提供商",
+    "dragToReorder": "拖动以重新排序",
+    "dragDisabledMessage": "筛选提供商时拖放功能已禁用。显示所有提供商以重新排序。",
+    "dragEnabledMessage": "拖动提供商以重新排序。此顺序将反映在登录页面上。",
+    "noProvidersEnabled": "没有启用的身份验证提供商",
+    "noProvidersConfigured": "未配置身份验证提供商",
+    "form": {
+      "providerName": "提供商名称",
+      "providerNamePlaceholder": "例如：mycompany",
+      "displayName": "显示名称",
+      "displayNamePlaceholder": "例如：我的公司 SSO",
+      "type": "类型",
+      "typeOidc": "OIDC (OpenID Connect)",
+      "typeOauth2": "OAuth 2.0",
+      "icon": "图标",
+      "iconPlaceholder": "选择图标",
+      "clientId": "客户端 ID",
+      "clientIdPlaceholder": "您的 OAuth 客户端 ID",
+      "clientSecret": "客户端密钥",
+      "clientSecretPlaceholder": "您的 OAuth 客户端密钥",
+      "oauthScopes": "OAuth 作用域",
+      "scopesPlaceholder": "输入作用域（例如：openid, profile, email）",
+      "scopesHelpOidc": "根据提供商 URL 自动建议作用域。常见 OIDC 作用域：openid, profile, email, groups",
+      "scopesHelpOauth2": "根据提供商 URL 自动建议作用域。常见 OAuth2 作用域取决于提供商",
+      "providerUrl": "提供商 URL",
+      "providerUrlPlaceholder": "https://auth.example.com",
+      "providerUrlAutoPlaceholder": "https://your-provider.com（将自动发现端点）",
+      "providerUrlManualPlaceholder": "https://your-provider.com",
+      "autoDiscoveryHelp": "系统将自动发现授权、令牌和用户信息端点",
+      "manualConfigurationHelp": "提供商的基础 URL（端点将相对于此 URL）",
+      "authorizationEndpoint": "授权端点",
+      "authorizationEndpointPlaceholder": "https://auth.example.com/auth",
+      "tokenEndpoint": "令牌端点",
+      "tokenEndpointPlaceholder": "https://auth.example.com/token",
+      "userInfoEndpoint": "用户信息端点",
+      "userInfoEndpointPlaceholder": "https://auth.example.com/userinfo",
+      "configurationMethod": "配置方法",
+      "autoDiscovery": "自动发现",
+      "autoDiscoveryDescription": "从提供商 URL 自动发现端点",
+      "manualEndpoints": "手动端点 (推荐)",
+      "manualEndpointsDescription": "手动配置授权、令牌和用户信息端点",
+      "callbackUrl": "回调 URL",
+      "callbackUrlDescription": "在您的 OAuth 提供商配置中使用此 URL",
+      "copyCallbackUrl": "复制回调 URL",
+      "callbackUrlCopied": "回调 URL 已复制到剪贴板！",
+      "adminEmailDomains": "管理员邮箱域名",
+      "adminEmailDomainsPlaceholder": "输入域名（例如：admin.company.com）",
+      "adminEmailDomainsHelp": "来自这些域名的用户将被授予管理员权限",
+      "autoRegister": "自动注册新用户",
+      "officialProviderUrlPlaceholder": "将占位符替换为您的 {displayName} URL",
+      "officialProviderHelp": "这是官方提供商。端点已预配置。您只能编辑此 URL。",
+      "officialProviderIconHelp": "您可以自定义此官方提供商的图标。"
+    },
+    "buttons": {
+      "cancel": "取消",
+      "save": "保存",
+      "saving": "保存中...",
+      "adding": "添加中...",
+      "updating": "更新中...",
+      "saveProvider": "保存提供商",
+      "delete": "删除",
+      "deleting": "删除中...",
+      "edit": "编辑",
+      "enable": "启用",
+      "disable": "禁用"
+    },
+    "messages": {
+      "providerAdded": "提供商添加成功",
+      "providerUpdated": "提供商更新成功",
+      "providerDeleted": "提供商删除成功",
+      "providerOrderUpdated": "提供商顺序更新成功",
+      "fillRequiredFields": "请填写所有必填字段（名称、显示名称、客户端 ID、客户端密钥）",
+      "provideUrlOrEndpoints": "请提供用于自动发现的提供商 URL 或所有三个自定义端点",
+      "chooseDiscoveryOrManual": "请选择自动发现（提供商 URL）或手动端点，不能同时选择两者",
+      "loadFailed": "加载提供商失败",
+      "addFailed": "添加提供商失败",
+      "updateFailed": "更新提供商失败",
+      "deleteFailed": "删除提供商失败",
+      "orderUpdateFailed": "更新提供商顺序失败"
+    },
+    "info": {
+      "title": "信息",
+      "officialProvidersRecommended": "为获得更好的功能，建议使用官方提供商。如果您在使用自定义提供商时遇到问题，请考虑在以下位置提出问题",
+      "github": "GitHub",
+      "officialProvider": "官方提供商",
+      "officialProviderDescription": "此提供商由 Palmr 优化。只能修改凭据和配置。",
+      "manualConfigTitle": "手动配置",
+      "manualConfigDescription": "您正在手动提供所有端点。请确保它们对您的提供商是正确的。"
+    },
+    "deleteModal": {
+      "title": "删除身份验证提供商",
+      "confirmMessage": "您确定要删除'{displayName}'提供商吗？此操作无法撤消。",
+      "providerId": "提供商 ID：{name}",
+      "cancel": "取消",
+      "delete": "删除提供商",
+      "deleting": "删除中..."
+    }
+  },
+  "bulkDownload": {
+    "title": "批量下载",
+    "zipNameLabel": "ZIP文件名",
+    "zipNamePlaceholder": "输入文件名",
+    "description": "{count, plural, =1 {将压缩1个文件} other {将压缩#个文件}}",
+    "download": "下载ZIP"
+  },
   "common": {
     "loading": "正在加载，请稍候...",
     "cancel": "取消",
@@ -41,6 +169,10 @@
       "description": "您最近上传的文件",
       "title": "最近文件"
     }
+  },
+  "deleteConfirmation": {
+    "filesToDelete": "要删除的文件",
+    "sharesToDelete": "将被删除的共享"
   },
   "emptyState": {
     "noFiles": "尚未上传任何文件",
@@ -389,628 +521,6 @@
     "errors": {
       "serverError": "密码重置失败，请重试。",
       "invalidToken": "无效或缺失重置令牌"
-    }
-  },
-  "searchBar": {
-    "placeholder": "搜索文件...",
-    "results": "共{total}个文件，找到{filtered}个"
-  },
-  "settings": {
-    "groups": {
-      "defaultDescription": "配置选项",
-      "general": {
-        "title": "通用",
-        "description": "基本的应用设置"
-      },
-      "email": {
-        "title": "电子邮件",
-        "description": "电子邮件服务器配置"
-      },
-      "security": {
-        "title": "安全性",
-        "description": "安全与认证设置"
-      },
-      "storage": {
-        "title": "存储",
-        "description": "文件存储配置"
-      },
-      "oidc": {
-        "title": "OpenID Connect (SSO)",
-        "description": "通过OpenID Connect配置SSO认证"
-      }
-    },
-    "fields": {
-      "noDescription": "暂无描述",
-      "appLogo": {
-        "title": "应用Logo",
-        "description": "应用的Logo图片"
-      },
-      "appName": {
-        "title": "应用名称",
-        "description": "显示给用户的应用名称"
-      },
-      "appDescription": {
-        "title": "应用描述",
-        "description": "对应用的简短描述"
-      },
-      "showHomePage": {
-        "title": "显示首页",
-        "description": "安装后显示首页"
-      },
-      "smtpEnabled": {
-        "title": "启用SMTP",
-        "description": "启用或禁用SMTP邮件功能"
-      },
-      "smtpHost": {
-        "title": "SMTP服务器",
-        "description": "SMTP服务器地址"
-      },
-      "smtpPort": {
-        "title": "SMTP端口",
-        "description": "SMTP服务器端口"
-      },
-      "smtpUser": {
-        "title": "SMTP用户名",
-        "description": "用于SMTP认证的用户名"
-      },
-      "smtpPass": {
-        "title": "SMTP密码",
-        "description": "用于SMTP认证的密码"
-      },
-      "smtpFromName": {
-        "title": "发件人姓名",
-        "description": "发送邮件时显示的名称"
-      },
-      "smtpFromEmail": {
-        "title": "发件人电子邮件",
-        "description": "发件人的电子邮件地址"
-      },
-      "maxLoginAttempts": {
-        "title": "最大登录尝试次数",
-        "description": "达到限制前允许的最大登录尝试次数"
-      },
-      "loginBlockDuration": {
-        "title": "登录阻止时长",
-        "description": "超过尝试次数后的阻止时长（以秒为单位）"
-      },
-      "passwordMinLength": {
-        "title": "最小密码长度",
-        "description": "密码所需的最小字符数"
-      },
-      "passwordResetTokenExpiration": {
-        "title": "密码重置令牌有效期",
-        "description": "密码重置令牌的有效时长（以秒为单位）"
-      },
-      "maxFileSize": {
-        "title": "最大文件大小",
-        "description": "允许上传的最大文件大小"
-      },
-      "maxTotalStoragePerUser": {
-        "title": "每个用户的最大存储量",
-        "description": "每个用户的总存储限制"
-      },
-      "firstUserAccess": {
-        "description": "新用户首次访问的设置",
-        "title": "首次用户访问"
-      },
-      "serverUrl": {
-        "title": "URL do Servidor",
-        "description": "URL base do servidor Palmr (ex: https://palmr.exemplo.com)"
-      },
-      "oidcEnabled": {
-        "title": "启用OIDC",
-        "description": "启用或禁用OpenID Connect认证"
-      },
-      "oidcIssuerUrl": {
-        "title": "提供商URL",
-        "description": "OpenID Connect提供商URL（例如：https://auth.example.com/auth/realms/master）"
-      },
-      "oidcClientId": {
-        "title": "客户端ID",
-        "description": "在提供商处注册的OIDC客户端标识符"
-      },
-      "oidcClientSecret": {
-        "title": "客户端密钥",
-        "description": "用于认证的OIDC客户端密钥"
-      },
-      "oidcRedirectUri": {
-        "title": "重定向URI",
-        "description": "认证后用户将被重定向到的URI。仅输入基本URL（例如：https://mysite.com）。路径/api/auth/oidc/callback将自动添加。"
-      },
-      "oidcScope": {
-        "title": "范围",
-        "description": "请求的OIDC范围（例如：openid profile email）"
-      },
-      "oidcAutoRegister": {
-        "title": "自动注册",
-        "description": "首次登录时自动注册不存在的用户"
-      },
-      "oidcAdminEmailDomains": {
-        "title": "管理员电子邮件域名",
-        "description": "自动获得管理员权限的电子邮件域名"
-      },
-      "testSmtp": {
-        "title": "测试SMTP连接",
-        "description": "测试SMTP配置是否有效"
-      },
-      "smtpNoAuth": {
-        "title": "无需认证",
-        "description": "为不需要用户名/密码的内部服务器启用此选项（隐藏认证字段）"
-      },
-      "smtpSecure": {
-        "title": "连接安全性",
-        "description": "SMTP连接安全方法 - 自动（推荐）、SSL、STARTTLS或无（不安全）",
-        "options": {
-          "auto": "自动（推荐）",
-          "ssl": "SSL（端口465）",
-          "tls": "STARTTLS（端口587）",
-          "none": "无（不安全）"
-        }
-      }
-    },
-    "buttons": {
-      "save": "保存 {group}",
-      "testSmtp": "测试连接",
-      "testing": "测试中..."
-    },
-    "errors": {
-      "loadFailed": "加载设置失败",
-      "updateFailed": "更新设置失败"
-    },
-    "messages": {
-      "noChanges": "没有需要保存的更改",
-      "updateSuccess": "{group}设置更新成功",
-      "smtpTestFailed": "SMTP连接失败：{error}",
-      "smtpTestGenericError": "SMTP连接测试失败。请检查您的设置并重试。",
-      "smtpTestSuccess": "SMTP连接成功！您的电子邮件配置工作正常。",
-      "smtpMissingAuth": "请填写SMTP用户名和密码，或启用“无需认证”选项。",
-      "smtpMissingHostPort": "测试前请填写SMTP主机和端口。",
-      "smtpNotEnabled": "SMTP未启用。请先启用SMTP。"
-    },
-    "title": "设置",
-    "breadcrumb": "设置",
-    "pageTitle": "设置",
-    "tooltips": {
-      "oidcScope": "Digite um escopo e pressione Enter para adicionar",
-      "oidcAdminEmailDomains": "Digite um domínio e pressione Enter para adicionar",
-      "testSmtp": "使用当前在表单中输入的值测试SMTP连接。要使更改永久生效，请记得在测试后保存您的设置。",
-      "defaultPlaceholder": "输入并按回车键"
-    },
-    "redirectUri": {
-      "placeholder": "https://meusite.com",
-      "previewLabel": "URL completa que será salva:"
-    }
-  },
-  "share": {
-    "errors": {
-      "invalidPassword": "无效的密码。请重试。",
-      "loadFailed": "加载共享失败",
-      "downloadFailed": "下载文件失败"
-    },
-    "messages": {
-      "downloadStarted": "下载已开始"
-    },
-    "password": {
-      "title": "密码保护的共享",
-      "protected": "此共享受密码保护",
-      "incorrect": "密码不正确。请重试。",
-      "label": "密码",
-      "placeholder": "请输入共享密码",
-      "submit": "提交"
-    },
-    "details": {
-      "untitled": "未命名",
-      "created": "创建于：{date}",
-      "expires": "过期于：{date}"
-    },
-    "notFound": {
-      "title": "未找到共享",
-      "description": "该共享可能已被删除或已过期。"
-    },
-    "pageTitle": "共享",
-    "downloadAll": "下载所有"
-  },
-  "shareActions": {
-    "deleteTitle": "删除共享",
-    "deleteConfirmation": "您确定要删除此共享吗？此操作不可撤销。",
-    "editTitle": "编辑共享",
-    "nameLabel": "共享名称",
-    "expirationLabel": "过期日期",
-    "expirationPlaceholder": "MM/DD/YYYY HH:MM",
-    "maxViewsLabel": "最大查看次数",
-    "maxViewsPlaceholder": "留空表示无限",
-    "passwordProtection": "密码保护",
-    "passwordLabel": "密码",
-    "passwordPlaceholder": "请输入密码",
-    "newPasswordLabel": "新密码（留空表示保持当前密码）",
-    "newPasswordPlaceholder": "请输入新密码",
-    "manageFilesTitle": "管理文件",
-    "manageRecipientsTitle": "管理收件人",
-    "editSuccess": "共享更新成功",
-    "editError": "更新共享失败",
-    "descriptionPlaceholder": "输入描述（可选）",
-    "descriptionLabel": "描述",
-    "bulkDeleteConfirmation": "您确定要删除{count, plural, =1 {1个共享} other {#个共享}}吗？此操作无法撤销。",
-    "bulkDeleteTitle": "删除选中的共享"
-  },
-  "shareDetails": {
-    "title": "共享详情",
-    "subtitle": "关于此共享的详细信息",
-    "basicInfo": "基本信息",
-    "name": "名称",
-    "untitled": "未命名",
-    "views": "查看次数",
-    "dates": "日期",
-    "created": "创建于",
-    "expires": "过期于",
-    "never": "从不",
-    "security": "安全性",
-    "passwordProtected": "受密码保护",
-    "publicAccess": "公开访问",
-    "maxViews": "最大查看次数:",
-    "files": "文件",
-    "recipients": "收件人",
-    "notAvailable": "不适用",
-    "invalidDate": "无效的日期",
-    "loadError": "加载共享详情失败",
-    "editLink": "编辑链接",
-    "openLink": "在新标签页中打开",
-    "shareLink": "分享链接",
-    "noDescription": "未提供描述",
-    "copyLink": "复制链接",
-    "generateLink": "生成链接",
-    "noLink": "尚未生成链接",
-    "description": "描述",
-    "linkCopied": "链接已复制到剪贴板",
-    "editSecurity": "编辑安全",
-    "editExpiration": "编辑过期"
-  },
-  "shareManager": {
-    "deleteSuccess": "共享删除成功",
-    "deleteError": "共享删除失败",
-    "updateSuccess": "共享更新成功",
-    "updateError": "共享更新失败",
-    "filesUpdateSuccess": "文件更新成功",
-    "filesUpdateError": "文件更新失败",
-    "recipientsUpdateSuccess": "收件人更新成功",
-    "recipientsUpdateError": "收件人更新失败",
-    "linkGenerateSuccess": "共享链接生成成功",
-    "linkGenerateError": "共享链接生成失败",
-    "notifyLoading": "正在发送通知...",
-    "notifySuccess": "通知收件人成功",
-    "notifyError": "通知收件人失败",
-    "bulkDeleteError": "删除共享失败",
-    "bulkDeleteLoading": "正在删除{count, plural, =1 {1个共享} other {#个共享}}...",
-    "bulkDeleteSuccess": "{count, plural, =1 {1个共享删除成功} other {#个共享删除成功}}",
-    "securityUpdateError": "更新安全设置失败",
-    "expirationUpdateError": "更新过期设置失败",
-    "securityUpdateSuccess": "安全设置更新成功",
-    "expirationUpdateSuccess": "过期设置更新成功",
-    "creatingZip": "创建zip文件...",
-    "defaultShareName": "分享",
-    "downloadError": "无法下载共享文件",
-    "downloadSuccess": "下载成功开始",
-    "multipleSharesZipName": "{count} _shares_files.zip",
-    "noFilesToDownload": "无需下载文件",
-    "singleShareZipName": "{sharename} _files.zip",
-    "zipDownloadError": "无法创建zip文件",
-    "zipDownloadSuccess": "zip文件成功下载了"
-  },
-  "shares": {
-    "errors": {
-      "loadFailed": "加载共享失败",
-      "notifyFailed": "通知收件人失败",
-      "smtpConfigFailed": "加载SMTP配置失败"
-    },
-    "messages": {
-      "linkCopied": "链接已复制到剪贴板",
-      "recipientsNotified": "收件人已成功通知"
-    },
-    "empty": {
-      "message": "尚未创建共享",
-      "createButton": "创建共享"
-    },
-    "header": {
-      "title": "我的共享",
-      "myShares": "我的共享"
-    },
-    "search": {
-      "title": "所有共享",
-      "createButton": "创建共享",
-      "placeholder": "搜索共享...",
-      "results": "在总共{total}个共享中找到了{filtered}个"
-    },
-    "pageTitle": "共享"
-  },
-  "sharesTable": {
-    "ariaLabel": "共享表格",
-    "never": "从不",
-    "columns": {
-      "name": "名称",
-      "createdAt": "创建时间",
-      "expiresAt": "过期时间",
-      "status": "状态",
-      "security": "安全性",
-      "files": "文件",
-      "recipients": "收件人",
-      "actions": "操作",
-      "description": "DESCRIÇÃO"
-    },
-    "status": {
-      "neverExpires": "永不过期",
-      "active": "活跃",
-      "expired": "已过期"
-    },
-    "security": {
-      "protected": "受保护",
-      "public": "公开"
-    },
-    "filesCount": "个文件",
-    "recipientsCount": "个收件人",
-    "actions": {
-      "menu": "共享操作菜单",
-      "edit": "编辑",
-      "manageFiles": "管理文件",
-      "manageRecipients": "管理收件人",
-      "viewDetails": "查看详情",
-      "generateLink": "生成链接",
-      "editLink": "编辑链接",
-      "copyLink": "复制链接",
-      "notifyRecipients": "通知收件人",
-      "delete": "删除",
-      "downloadShareFiles": "下载所有文件"
-    },
-    "bulkActions": {
-      "delete": "删除",
-      "selected": "{count, plural, =1 {已选择1个共享} other {已选择#个共享}}",
-      "actions": "动作",
-      "download": "选择下载"
-    },
-    "selectAll": "全选",
-    "selectShare": "选择共享 {shareName}"
-  },
-  "storageUsage": {
-    "title": "存储使用情况",
-    "ariaLabel": "存储使用进度条",
-    "used": "已使用：",
-    "available": "可用",
-    "loading": "加载中...",
-    "retry": "重试",
-    "errors": {
-      "title": "存储信息不可用",
-      "detectionFailed": "无法检测磁盘空间。这可能是由于系统配置问题或权限不足。",
-      "serverError": "检索存储信息时发生服务器错误。请稍后重试。",
-      "unknown": "加载存储信息时发生意外错误。"
-    }
-  },
-  "theme": {
-    "toggle": "切换主题",
-    "light": "明亮",
-    "dark": "暗黑",
-    "system": "系统"
-  },
-  "uploadFile": {
-    "title": "上传文件",
-    "multipleTitle": "上传多个文件",
-    "selectFile": "点击选择文件",
-    "selectMultipleFiles": "点击选择一个或多个文件",
-    "dragAndDrop": "或拖拽文件到这里",
-    "preview": "预览",
-    "uploadProgress": "上传进度",
-    "upload": "上传",
-    "startUploads": "开始上传",
-    "retry": "重试",
-    "finish": "完成",
-    "success": "文件上传成功",
-    "allSuccess": "{count, plural, =1 {文件上传成功} other {# 个文件上传成功}}",
-    "partialSuccess": "{success} 个文件上传成功，{error} 个失败",
-    "error": "文件上传失败",
-    "fileSizeExceeded": "文件大小超过 {maxsizemb}MB 限制。",
-    "insufficientStorage": "存储空间不足。您有 {availablespace}MB 可用空间。",
-    "unauthorized": "未授权：需要有效的令牌才能访问此资源。",
-    "confirmCancel": {
-      "title": "取消上传",
-      "messageSingle": "有一个上传正在进行中。",
-      "messageMultiple": "有 {count} 个上传正在进行中。",
-      "warning": "如果您现在关闭，上传将被取消，任何进度都将丢失。",
-      "continue": "继续上传",
-      "cancel": "取消上传"
-    }
-  },
-  "users": {
-    "modes": {
-      "create": "创建",
-      "edit": "编辑"
-    },
-    "errors": {
-      "loadFailed": "加载用户失败",
-      "submitFailed": "用户{mode}失败",
-      "deleteFailed": "删除用户失败",
-      "statusUpdateFailed": "更新用户状态失败"
-    },
-    "messages": {
-      "createSuccess": "用户创建成功",
-      "updateSuccess": "用户更新成功",
-      "deleteSuccess": "用户删除成功",
-      "activateSuccess": "用户已成功激活",
-      "deactivateSuccess": "用户已成功停用"
-    },
-    "actions": {
-      "edit": "编辑",
-      "activate": "激活",
-      "deactivate": "停用",
-      "delete": "删除"
-    },
-    "delete": {
-      "title": "确认删除用户",
-      "confirmation": "您确定要删除{firstName} {lastName}吗？此操作不可撤销。",
-      "confirm": "删除用户"
-    },
-    "form": {
-      "titleCreate": "添加新用户",
-      "titleEdit": "编辑用户",
-      "firstName": "名字",
-      "lastName": "姓氏",
-      "username": "用户名",
-      "email": "电子邮件",
-      "password": "密码",
-      "newPassword": "新密码（可选）",
-      "passwordPlaceholder": "留空以保留当前密码",
-      "role": "角色",
-      "roleUser": "用户",
-      "roleAdmin": "管理员",
-      "create": "创建",
-      "save": "保存"
-    },
-    "status": {
-      "title": "确认状态更改",
-      "confirmation": "您确定要{action}{firstName} {lastName}吗？",
-      "activate": "激活",
-      "deactivate": "停用",
-      "user": "用户"
-    },
-    "header": {
-      "title": "用户管理",
-      "addUser": "添加用户",
-      "management": "用户管理"
-    },
-    "table": {
-      "user": "用户",
-      "email": "电子邮件",
-      "status": "状态",
-      "role": "角色",
-      "actions": "操作",
-      "active": "激活",
-      "inactive": "停用",
-      "admin": "管理员",
-      "userr": "用户"
-    }
-  },
-  "validation": {
-    "invalidEmail": "无效的电子邮件地址",
-    "passwordMinLength": "密码至少需要6个字符",
-    "firstNameRequired": "名字为必填项",
-    "lastNameRequired": "姓氏为必填项",
-    "usernameLength": "用户名至少需要3个字符",
-    "usernameSpaces": "用户名不能包含空格",
-    "passwordLength": "密码至少需要8个字符",
-    "passwordsMatch": "密码不匹配",
-    "emailRequired": "电子邮件为必填项",
-    "emailOrUsernameRequired": "电子邮件或用户名是必填项",
-    "passwordRequired": "密码为必填项",
-    "nameRequired": "名称为必填项",
-    "required": "此字段为必填项"
-  },
-  "shareFile": {
-    "title": "分享文件",
-    "linkTitle": "生成链接",
-    "nameLabel": "分享名称",
-    "namePlaceholder": "输入分享名称",
-    "expirationLabel": "过期日期",
-    "expirationPlaceholder": "MM/DD/YYYY HH:MM",
-    "maxViewsLabel": "最大查看次数",
-    "maxViewsPlaceholder": "留空为无限制",
-    "passwordProtection": "密码保护",
-    "passwordLabel": "密码",
-    "passwordPlaceholder": "输入密码",
-    "linkDescription": "生成自定义链接来分享文件",
-    "aliasLabel": "链接别名",
-    "aliasPlaceholder": "输入自定义别名",
-    "linkReady": "您的分享链接已准备就绪：",
-    "createShare": "创建分享",
-    "generateLink": "生成链接",
-    "copyLink": "复制链接",
-    "descriptionLabel": "描述",
-    "descriptionPlaceholder": "输入描述（可选）"
-  },
-  "bulkDownload": {
-    "title": "批量下载",
-    "zipNameLabel": "ZIP文件名",
-    "zipNamePlaceholder": "输入文件名",
-    "description": "{count, plural, =1 {将压缩1个文件} other {将压缩#个文件}}",
-    "download": "下载ZIP"
-  },
-  "deleteConfirmation": {
-    "filesToDelete": "要删除的文件",
-    "sharesToDelete": "将被删除的共享"
-  },
-  "shareMultipleFiles": {
-    "title": "分享多个文件",
-    "shareNameLabel": "分享名称",
-    "shareNamePlaceholder": "输入分享名称",
-    "descriptionLabel": "描述",
-    "descriptionPlaceholder": "输入描述（可选）",
-    "filesToShare": "要分享的文件",
-    "files": "文件",
-    "totalSize": "总大小",
-    "creating": "创建中...",
-    "create": "创建分享"
-  },
-  "shareSecurity": {
-    "subtitle": "为此分享配置密码保护和安全选项",
-    "info": {
-      "title": "工作原理：",
-      "withoutPassword": "任何拥有链接的人都可以在没有密码的情况下访问此分享。",
-      "withPassword": "用户需要输入密码才能访问此分享。"
-    },
-    "existingPasswordMessage": "此分享已有密码。如果您想更新它，请在下面的字段中输入新密码并保存。",
-    "passwordProtection": "密码保护",
-    "error": {
-      "updateFailed": "更新安全设置失败"
-    },
-    "passwordRequirements": {
-      "title": "密码要求：",
-      "minLength": "至少2个字符"
-    },
-    "newPassword": "新密码",
-    "success": {
-      "passwordUpdated": "密码更新成功",
-      "passwordRemoved": "密码保护移除成功",
-      "passwordSet": "密码保护启用成功"
-    },
-    "password": "密码",
-    "validation": {
-      "passwordRequired": "密码是必需的",
-      "passwordTooShort": "密码必须至少包含2个字符"
-    },
-    "currentStatus": "当前状态",
-    "passwordPlaceholder": "输入安全密码",
-    "title": "分享安全设置"
-  },
-  "shareExpiration": {
-    "neverExpires": "永不过期",
-    "success": {
-      "expirationUpdated": "过期日期更新成功",
-      "expirationRemoved": "过期已移除成功 - 分享现在是永久的",
-      "expirationSet": "过期日期设置成功"
-    },
-    "info": {
-      "canBeChanged": "您可以随时更改或移除过期日期",
-      "willBeInaccessible": "分享在此日期后将无法访问",
-      "noExpiration": "此分享永不过期，将始终可访问。",
-      "title": "关于过期："
-    },
-    "enableExpiration": "启用过期",
-    "title": "分享过期设置",
-    "subtitle": "配置此分享何时过期",
-    "validation": {
-      "dateMustBeFuture": "过期日期必须在将来",
-      "dateRequired": "请选择过期日期"
-    },
-    "currentStatus": "当前状态",
-    "error": {
-      "updateFailed": "更新过期设置失败"
-    },
-    "expires": "过期:",
-    "expirationDate": "过期日期"
-  },
-  "auth": {
-    "errors": {
-      "account_inactive": "Conta inativa. Entre em contato com o administrador.",
-      "registration_disabled": "Registro via SSO está desabilitado.",
-      "token_expired": "Token expirado. Tente novamente.",
-      "config_error": "Erro de configuração. Contate o suporte.",
-      "auth_failed": "Falha na autenticação. Tente novamente."
     }
   },
   "reverseShares": {
@@ -1447,5 +957,598 @@
       }
     },
     "defaultLinkName": "已接收文件"
+  },
+  "searchBar": {
+    "placeholder": "搜索文件...",
+    "results": "共{total}个文件，找到{filtered}个"
+  },
+  "settings": {
+    "groups": {
+      "defaultDescription": "配置选项",
+      "general": {
+        "title": "通用",
+        "description": "基本的应用设置"
+      },
+      "email": {
+        "title": "电子邮件",
+        "description": "电子邮件服务器配置"
+      },
+      "security": {
+        "title": "安全性",
+        "description": "安全与认证设置"
+      },
+      "storage": {
+        "title": "存储",
+        "description": "文件存储配置"
+      },
+      "oidc": {
+        "title": "OpenID Connect (SSO)",
+        "description": "通过OpenID Connect配置SSO认证"
+      }
+    },
+    "fields": {
+      "noDescription": "暂无描述",
+      "appLogo": {
+        "title": "应用Logo",
+        "description": "应用的Logo图片"
+      },
+      "appName": {
+        "title": "应用名称",
+        "description": "显示给用户的应用名称"
+      },
+      "appDescription": {
+        "title": "应用描述",
+        "description": "对应用的简短描述"
+      },
+      "showHomePage": {
+        "title": "显示首页",
+        "description": "安装后显示首页"
+      },
+      "smtpEnabled": {
+        "title": "启用SMTP",
+        "description": "启用或禁用SMTP邮件功能"
+      },
+      "smtpHost": {
+        "title": "SMTP服务器",
+        "description": "SMTP服务器地址"
+      },
+      "smtpPort": {
+        "title": "SMTP端口",
+        "description": "SMTP服务器端口"
+      },
+      "smtpUser": {
+        "title": "SMTP用户名",
+        "description": "用于SMTP认证的用户名"
+      },
+      "smtpPass": {
+        "title": "SMTP密码",
+        "description": "用于SMTP认证的密码"
+      },
+      "smtpFromName": {
+        "title": "发件人姓名",
+        "description": "发送邮件时显示的名称"
+      },
+      "smtpFromEmail": {
+        "title": "发件人电子邮件",
+        "description": "发件人的电子邮件地址"
+      },
+      "maxLoginAttempts": {
+        "title": "最大登录尝试次数",
+        "description": "达到限制前允许的最大登录尝试次数"
+      },
+      "loginBlockDuration": {
+        "title": "登录阻止时长",
+        "description": "超过尝试次数后的阻止时长（以秒为单位）"
+      },
+      "passwordMinLength": {
+        "title": "最小密码长度",
+        "description": "密码所需的最小字符数"
+      },
+      "passwordResetTokenExpiration": {
+        "title": "密码重置令牌有效期",
+        "description": "密码重置令牌的有效时长（以秒为单位）"
+      },
+      "maxFileSize": {
+        "title": "最大文件大小",
+        "description": "允许上传的最大文件大小"
+      },
+      "maxTotalStoragePerUser": {
+        "title": "每个用户的最大存储量",
+        "description": "每个用户的总存储限制"
+      },
+      "firstUserAccess": {
+        "description": "新用户首次访问的设置",
+        "title": "首次用户访问"
+      },
+      "serverUrl": {
+        "title": "URL do Servidor",
+        "description": "URL base do servidor Palmr (ex: https://palmr.exemplo.com)"
+      },
+      "testSmtp": {
+        "title": "测试SMTP连接",
+        "description": "测试SMTP配置是否有效"
+      },
+      "smtpNoAuth": {
+        "title": "无需认证",
+        "description": "为不需要用户名/密码的内部服务器启用此选项（隐藏认证字段）"
+      },
+      "smtpSecure": {
+        "title": "连接安全性",
+        "description": "SMTP连接安全方法 - 自动（推荐）、SSL、STARTTLS或无（不安全）",
+        "options": {
+          "auto": "自动（推荐）",
+          "ssl": "SSL（端口465）",
+          "tls": "STARTTLS（端口587）",
+          "none": "无（不安全）"
+        }
+      },
+      "smtpTrustSelfSigned": {
+        "title": "信任自签名证书",
+        "description": "启用此选项以信任自签名SSL/TLS证书（对开发环境有用）"
+      }
+    },
+    "buttons": {
+      "save": "保存 {group}",
+      "testSmtp": "测试连接",
+      "testing": "测试中..."
+    },
+    "errors": {
+      "loadFailed": "加载设置失败",
+      "updateFailed": "更新设置失败"
+    },
+    "messages": {
+      "noChanges": "没有需要保存的更改",
+      "updateSuccess": "{group}设置更新成功",
+      "smtpTestFailed": "SMTP连接失败：{error}",
+      "smtpTestGenericError": "SMTP连接测试失败。请检查您的设置并重试。",
+      "smtpTestSuccess": "SMTP连接成功！您的电子邮件配置工作正常。",
+      "smtpMissingAuth": "请填写SMTP用户名和密码，或启用“无需认证”选项。",
+      "smtpMissingHostPort": "测试前请填写SMTP主机和端口。",
+      "smtpNotEnabled": "SMTP未启用。请先启用SMTP。"
+    },
+    "title": "设置",
+    "breadcrumb": "设置",
+    "pageTitle": "设置",
+    "tooltips": {
+      "testSmtp": "使用当前在表单中输入的值测试SMTP连接。要使更改永久生效，请记得在测试后保存您的设置。",
+      "defaultPlaceholder": "输入并按回车键"
+    },
+    "redirectUri": {
+      "placeholder": "https://meusite.com",
+      "previewLabel": "URL completa que será salva:"
+    }
+  },
+  "share": {
+    "errors": {
+      "invalidPassword": "无效的密码。请重试。",
+      "loadFailed": "加载共享失败",
+      "downloadFailed": "下载文件失败"
+    },
+    "messages": {
+      "downloadStarted": "下载已开始"
+    },
+    "password": {
+      "title": "密码保护的共享",
+      "protected": "此共享受密码保护",
+      "incorrect": "密码不正确。请重试。",
+      "label": "密码",
+      "placeholder": "请输入共享密码",
+      "submit": "提交"
+    },
+    "details": {
+      "untitled": "未命名",
+      "created": "创建于：{date}",
+      "expires": "过期于：{date}"
+    },
+    "notFound": {
+      "title": "未找到共享",
+      "description": "该共享可能已被删除或已过期。"
+    },
+    "pageTitle": "共享",
+    "downloadAll": "下载所有"
+  },
+  "shareActions": {
+    "deleteTitle": "删除共享",
+    "deleteConfirmation": "您确定要删除此共享吗？此操作不可撤销。",
+    "editTitle": "编辑共享",
+    "nameLabel": "共享名称",
+    "expirationLabel": "过期日期",
+    "expirationPlaceholder": "MM/DD/YYYY HH:MM",
+    "maxViewsLabel": "最大查看次数",
+    "maxViewsPlaceholder": "留空表示无限",
+    "passwordProtection": "密码保护",
+    "passwordLabel": "密码",
+    "passwordPlaceholder": "请输入密码",
+    "newPasswordLabel": "新密码（留空表示保持当前密码）",
+    "newPasswordPlaceholder": "请输入新密码",
+    "manageFilesTitle": "管理文件",
+    "manageRecipientsTitle": "管理收件人",
+    "editSuccess": "共享更新成功",
+    "editError": "更新共享失败",
+    "descriptionPlaceholder": "输入描述（可选）",
+    "descriptionLabel": "描述",
+    "bulkDeleteConfirmation": "您确定要删除{count, plural, =1 {1个共享} other {#个共享}}吗？此操作无法撤销。",
+    "bulkDeleteTitle": "删除选中的共享"
+  },
+  "shareDetails": {
+    "title": "共享详情",
+    "subtitle": "关于此共享的详细信息",
+    "basicInfo": "基本信息",
+    "name": "名称",
+    "untitled": "未命名",
+    "views": "查看次数",
+    "dates": "日期",
+    "created": "创建于",
+    "expires": "过期于",
+    "never": "从不",
+    "security": "安全性",
+    "passwordProtected": "受密码保护",
+    "publicAccess": "公开访问",
+    "maxViews": "最大查看次数:",
+    "files": "文件",
+    "recipients": "收件人",
+    "notAvailable": "不适用",
+    "invalidDate": "无效的日期",
+    "loadError": "加载共享详情失败",
+    "editLink": "编辑链接",
+    "openLink": "在新标签页中打开",
+    "shareLink": "分享链接",
+    "noDescription": "未提供描述",
+    "copyLink": "复制链接",
+    "generateLink": "生成链接",
+    "noLink": "尚未生成链接",
+    "description": "描述",
+    "linkCopied": "链接已复制到剪贴板",
+    "editSecurity": "编辑安全",
+    "editExpiration": "编辑过期"
+  },
+  "shareExpiration": {
+    "neverExpires": "永不过期",
+    "success": {
+      "expirationUpdated": "过期日期更新成功",
+      "expirationRemoved": "过期已移除成功 - 分享现在是永久的",
+      "expirationSet": "过期日期设置成功"
+    },
+    "info": {
+      "canBeChanged": "您可以随时更改或移除过期日期",
+      "willBeInaccessible": "分享在此日期后将无法访问",
+      "noExpiration": "此分享永不过期，将始终可访问。",
+      "title": "关于过期："
+    },
+    "enableExpiration": "启用过期",
+    "title": "分享过期设置",
+    "subtitle": "配置此分享何时过期",
+    "validation": {
+      "dateMustBeFuture": "过期日期必须在将来",
+      "dateRequired": "请选择过期日期"
+    },
+    "currentStatus": "当前状态",
+    "error": {
+      "updateFailed": "更新过期设置失败"
+    },
+    "expires": "过期:",
+    "expirationDate": "过期日期"
+  },
+  "shareFile": {
+    "title": "分享文件",
+    "linkTitle": "生成链接",
+    "nameLabel": "分享名称",
+    "namePlaceholder": "输入分享名称",
+    "expirationLabel": "过期日期",
+    "expirationPlaceholder": "MM/DD/YYYY HH:MM",
+    "maxViewsLabel": "最大查看次数",
+    "maxViewsPlaceholder": "留空为无限制",
+    "passwordProtection": "密码保护",
+    "passwordLabel": "密码",
+    "passwordPlaceholder": "输入密码",
+    "linkDescription": "生成自定义链接来分享文件",
+    "aliasLabel": "链接别名",
+    "aliasPlaceholder": "输入自定义别名",
+    "linkReady": "您的分享链接已准备就绪：",
+    "createShare": "创建分享",
+    "generateLink": "生成链接",
+    "copyLink": "复制链接",
+    "descriptionLabel": "描述",
+    "descriptionPlaceholder": "输入描述（可选）"
+  },
+  "shareManager": {
+    "deleteSuccess": "共享删除成功",
+    "deleteError": "共享删除失败",
+    "updateSuccess": "共享更新成功",
+    "updateError": "共享更新失败",
+    "filesUpdateSuccess": "文件更新成功",
+    "filesUpdateError": "文件更新失败",
+    "recipientsUpdateSuccess": "收件人更新成功",
+    "recipientsUpdateError": "收件人更新失败",
+    "linkGenerateSuccess": "共享链接生成成功",
+    "linkGenerateError": "共享链接生成失败",
+    "notifyLoading": "正在发送通知...",
+    "notifySuccess": "通知收件人成功",
+    "notifyError": "通知收件人失败",
+    "bulkDeleteError": "删除共享失败",
+    "bulkDeleteLoading": "正在删除{count, plural, =1 {1个共享} other {#个共享}}...",
+    "bulkDeleteSuccess": "{count, plural, =1 {1个共享删除成功} other {#个共享删除成功}}",
+    "securityUpdateError": "更新安全设置失败",
+    "expirationUpdateError": "更新过期设置失败",
+    "securityUpdateSuccess": "安全设置更新成功",
+    "expirationUpdateSuccess": "过期设置更新成功",
+    "creatingZip": "创建zip文件...",
+    "defaultShareName": "分享",
+    "downloadError": "无法下载共享文件",
+    "downloadSuccess": "下载成功开始",
+    "multipleSharesZipName": "{count} _shares_files.zip",
+    "noFilesToDownload": "无需下载文件",
+    "singleShareZipName": "{sharename} _files.zip",
+    "zipDownloadError": "无法创建zip文件",
+    "zipDownloadSuccess": "zip文件成功下载了"
+  },
+  "shareMultipleFiles": {
+    "title": "分享多个文件",
+    "shareNameLabel": "分享名称",
+    "shareNamePlaceholder": "输入分享名称",
+    "descriptionLabel": "描述",
+    "descriptionPlaceholder": "输入描述（可选）",
+    "filesToShare": "要分享的文件",
+    "files": "文件",
+    "totalSize": "总大小",
+    "creating": "创建中...",
+    "create": "创建分享"
+  },
+  "shareSecurity": {
+    "subtitle": "为此分享配置密码保护和安全选项",
+    "info": {
+      "title": "工作原理：",
+      "withoutPassword": "任何拥有链接的人都可以在没有密码的情况下访问此分享。",
+      "withPassword": "用户需要输入密码才能访问此分享。"
+    },
+    "existingPasswordMessage": "此分享已有密码。如果您想更新它，请在下面的字段中输入新密码并保存。",
+    "passwordProtection": "密码保护",
+    "error": {
+      "updateFailed": "更新安全设置失败"
+    },
+    "passwordRequirements": {
+      "title": "密码要求：",
+      "minLength": "至少2个字符"
+    },
+    "newPassword": "新密码",
+    "success": {
+      "passwordUpdated": "密码更新成功",
+      "passwordRemoved": "密码保护移除成功",
+      "passwordSet": "密码保护启用成功"
+    },
+    "password": "密码",
+    "validation": {
+      "passwordRequired": "密码是必需的",
+      "passwordTooShort": "密码必须至少包含2个字符"
+    },
+    "currentStatus": "当前状态",
+    "passwordPlaceholder": "输入安全密码",
+    "title": "分享安全设置"
+  },
+  "shares": {
+    "errors": {
+      "loadFailed": "加载共享失败",
+      "notifyFailed": "通知收件人失败",
+      "smtpConfigFailed": "加载SMTP配置失败"
+    },
+    "messages": {
+      "linkCopied": "链接已复制到剪贴板",
+      "recipientsNotified": "收件人已成功通知"
+    },
+    "empty": {
+      "message": "尚未创建共享",
+      "createButton": "创建共享"
+    },
+    "header": {
+      "title": "我的共享",
+      "myShares": "我的共享"
+    },
+    "search": {
+      "title": "所有共享",
+      "createButton": "创建共享",
+      "placeholder": "搜索共享...",
+      "results": "在总共{total}个共享中找到了{filtered}个"
+    },
+    "pageTitle": "共享"
+  },
+  "sharesTable": {
+    "ariaLabel": "共享表格",
+    "never": "从不",
+    "columns": {
+      "name": "名称",
+      "createdAt": "创建时间",
+      "expiresAt": "过期时间",
+      "status": "状态",
+      "security": "安全性",
+      "files": "文件",
+      "recipients": "收件人",
+      "actions": "操作",
+      "description": "DESCRIÇÃO"
+    },
+    "status": {
+      "neverExpires": "永不过期",
+      "active": "活跃",
+      "expired": "已过期"
+    },
+    "security": {
+      "protected": "受保护",
+      "public": "公开"
+    },
+    "filesCount": "个文件",
+    "recipientsCount": "个收件人",
+    "actions": {
+      "menu": "共享操作菜单",
+      "edit": "编辑",
+      "manageFiles": "管理文件",
+      "manageRecipients": "管理收件人",
+      "viewDetails": "查看详情",
+      "generateLink": "生成链接",
+      "editLink": "编辑链接",
+      "copyLink": "复制链接",
+      "notifyRecipients": "通知收件人",
+      "delete": "删除",
+      "downloadShareFiles": "下载所有文件"
+    },
+    "bulkActions": {
+      "delete": "删除",
+      "selected": "{count, plural, =1 {已选择1个共享} other {已选择#个共享}}",
+      "actions": "动作",
+      "download": "选择下载"
+    },
+    "selectAll": "全选",
+    "selectShare": "选择共享 {shareName}"
+  },
+  "storageUsage": {
+    "title": "存储使用情况",
+    "ariaLabel": "存储使用进度条",
+    "used": "已使用：",
+    "available": "可用",
+    "total": "总计",
+    "loading": "加载中...",
+    "retry": "重试",
+    "errors": {
+      "title": "存储信息不可用",
+      "detectionFailed": "无法检测磁盘空间。这可能是由于系统配置问题或权限不足。",
+      "serverError": "检索存储信息时发生服务器错误。请稍后重试。",
+      "unknown": "加载存储信息时发生意外错误。"
+    }
+  },
+  "theme": {
+    "toggle": "切换主题",
+    "light": "明亮",
+    "dark": "暗黑",
+    "system": "系统"
+  },
+  "uploadFile": {
+    "title": "上传文件",
+    "multipleTitle": "上传多个文件",
+    "selectFile": "点击选择文件",
+    "selectMultipleFiles": "点击选择一个或多个文件",
+    "dragAndDrop": "或拖拽文件到这里",
+    "preview": "预览",
+    "uploadProgress": "上传进度",
+    "upload": "上传",
+    "startUploads": "开始上传",
+    "retry": "重试",
+    "finish": "完成",
+    "success": "文件上传成功",
+    "allSuccess": "{count, plural, =1 {文件上传成功} other {# 个文件上传成功}}",
+    "partialSuccess": "{success} 个文件上传成功，{error} 个失败",
+    "error": "文件上传失败",
+    "fileSizeExceeded": "文件大小超过 {maxsizemb}MB 限制。",
+    "insufficientStorage": "存储空间不足。您有 {availablespace}MB 可用空间。",
+    "unauthorized": "未授权：需要有效的令牌才能访问此资源。",
+    "confirmCancel": {
+      "title": "取消上传",
+      "messageSingle": "有一个上传正在进行中。",
+      "messageMultiple": "有 {count} 个上传正在进行中。",
+      "warning": "如果您现在关闭，上传将被取消，任何进度都将丢失。",
+      "continue": "继续上传",
+      "cancel": "取消上传"
+    },
+    "globalDrop": {
+      "title": "拖放文件以上传",
+      "description": "松开以上传您的文件"
+    },
+    "pasteSuccess": "{count, plural, =1 {图片已成功粘贴并上传} other {# 张图片已成功粘贴并上传}}"
+  },
+  "users": {
+    "modes": {
+      "create": "创建",
+      "edit": "编辑"
+    },
+    "errors": {
+      "loadFailed": "加载用户失败",
+      "submitFailed": "用户{mode}失败",
+      "deleteFailed": "删除用户失败",
+      "statusUpdateFailed": "更新用户状态失败"
+    },
+    "messages": {
+      "createSuccess": "用户创建成功",
+      "updateSuccess": "用户更新成功",
+      "deleteSuccess": "用户删除成功",
+      "activateSuccess": "用户已成功激活",
+      "deactivateSuccess": "用户已成功停用"
+    },
+    "actions": {
+      "edit": "编辑",
+      "activate": "激活",
+      "deactivate": "停用",
+      "delete": "删除"
+    },
+    "delete": {
+      "title": "确认删除用户",
+      "confirmation": "您确定要删除{firstName} {lastName}吗？此操作不可撤销。",
+      "confirm": "删除用户"
+    },
+    "form": {
+      "titleCreate": "添加新用户",
+      "titleEdit": "编辑用户",
+      "firstName": "名字",
+      "lastName": "姓氏",
+      "username": "用户名",
+      "email": "电子邮件",
+      "password": "密码",
+      "newPassword": "新密码（可选）",
+      "passwordPlaceholder": "留空以保留当前密码",
+      "role": "角色",
+      "roleUser": "用户",
+      "roleAdmin": "管理员",
+      "create": "创建",
+      "save": "保存"
+    },
+    "status": {
+      "title": "确认状态更改",
+      "confirmation": "您确定要{action}{firstName} {lastName}吗？",
+      "activate": "激活",
+      "deactivate": "停用",
+      "user": "用户"
+    },
+    "header": {
+      "title": "用户管理",
+      "addUser": "添加用户",
+      "management": "用户管理"
+    },
+    "table": {
+      "user": "用户",
+      "email": "电子邮件",
+      "status": "状态",
+      "role": "角色",
+      "actions": "操作",
+      "active": "激活",
+      "inactive": "停用",
+      "admin": "管理员",
+      "userr": "用户"
+    }
+  },
+  "validation": {
+    "invalidEmail": "无效的电子邮件地址",
+    "passwordMinLength": "密码至少需要6个字符",
+    "firstNameRequired": "名字为必填项",
+    "lastNameRequired": "姓氏为必填项",
+    "usernameLength": "用户名至少需要3个字符",
+    "usernameSpaces": "用户名不能包含空格",
+    "passwordLength": "密码至少需要8个字符",
+    "passwordsMatch": "密码不匹配",
+    "emailRequired": "电子邮件为必填项",
+    "emailOrUsernameRequired": "电子邮件或用户名是必填项",
+    "passwordRequired": "密码为必填项",
+    "nameRequired": "名称为必填项",
+    "required": "此字段为必填项"
+  },
+  "iconPicker": {
+    "title": "选择图标",
+    "placeholder": "选择一个图标",
+    "searchPlaceholder": "搜索图标...",
+    "loadingMore": "正在加载更多图标...",
+    "allIconsLoaded": "已加载全部 {count} 个图标",
+    "noIconsFound": "未找到与\"{search}\"相关的图标",
+    "tabs": {
+      "all": "所有图标",
+      "popular": "常用",
+      "auth": "认证提供商"
+    },
+    "stats": "来自 {libraryCount} 个库的 {iconCount} 个图标",
+    "categoryBadge": "{category}（{count} 个图标）"
   }
 }

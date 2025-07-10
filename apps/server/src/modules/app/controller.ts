@@ -1,28 +1,8 @@
+import { FastifyReply, FastifyRequest } from "fastify";
+
 import { EmailService } from "../email/service";
 import { LogoService } from "./logo.service";
 import { AppService } from "./service";
-import { FastifyReply, FastifyRequest } from "fastify";
-import fs from "fs";
-import path from "path";
-
-const isDocker = (() => {
-  try {
-    require("fs").statSync("/.dockerenv");
-    return true;
-  } catch {
-    try {
-      return require("fs").readFileSync("/proc/self/cgroup", "utf8").includes("docker");
-    } catch {
-      return false;
-    }
-  }
-})();
-
-const baseDir = isDocker ? "/app/server" : process.cwd();
-const uploadsDir = path.join(baseDir, "uploads/logo");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
 
 export class AppController {
   private appService = new AppService();
@@ -101,7 +81,20 @@ export class AppController {
         return reply.status(400).send({ error: "Only images are allowed" });
       }
 
-      const buffer = await file.toBuffer();
+      // Logo files should be small (max 5MB), so we can safely use streaming to buffer
+      const chunks: Buffer[] = [];
+      const maxLogoSize = 5 * 1024 * 1024; // 5MB
+      let totalSize = 0;
+
+      for await (const chunk of file.file) {
+        totalSize += chunk.length;
+        if (totalSize > maxLogoSize) {
+          throw new Error("Logo file too large. Maximum size is 5MB.");
+        }
+        chunks.push(chunk);
+      }
+
+      const buffer = Buffer.concat(chunks);
       const base64Logo = await this.logoService.uploadLogo(buffer);
       await this.appService.updateConfig("appLogo", base64Logo);
 

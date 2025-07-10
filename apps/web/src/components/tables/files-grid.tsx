@@ -83,6 +83,11 @@ export function FilesGrid({
     setClearSelectionCallback?.(clearSelection);
   }, [setClearSelectionCallback]);
 
+  const isImageFile = (fileName: string) => {
+    const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+    return imageExtensions.some((ext) => fileName.toLowerCase().endsWith(ext));
+  };
+
   useEffect(() => {
     const loadPreviewUrls = async () => {
       const imageFiles = files.filter((file) => isImageFile(file.name));
@@ -123,7 +128,8 @@ export function FilesGrid({
     if (componentMounted.current) {
       loadPreviewUrls();
     }
-  }, [files, filePreviewUrls]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [files]);
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -184,11 +190,6 @@ export function FilesGrid({
   };
 
   const showBulkActions = selectedFiles.size > 0 && (onBulkDelete || onBulkShare || onBulkDownload);
-
-  const isImageFile = (fileName: string) => {
-    const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
-    return imageExtensions.some((ext) => fileName.toLowerCase().endsWith(ext));
-  };
 
   return (
     <div className="space-y-4">

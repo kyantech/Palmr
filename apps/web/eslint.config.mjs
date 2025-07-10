@@ -30,6 +30,7 @@ export default [
       "react/no-unused-prop-types": "off",
       "react/require-default-props": "off",
       "react/no-unescaped-entities": "off",
+      "@next/next/no-img-element": "off",
       "import/extensions": [
         "error",
         "ignorePackages",
@@ -62,5 +63,9 @@ export default [
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-var-requires": "off",
     },
+  },
+  // Ignore ESLint errors in @/ui directory
+  {
+    ignores: ["src/components/ui/**/*"],
   },
 ];

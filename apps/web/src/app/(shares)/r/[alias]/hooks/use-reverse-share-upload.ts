@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -31,59 +31,65 @@ export function useReverseShareUpload({ alias }: UseReverseShareUploadProps) {
     return reverseShareData.currentFileCount >= reverseShareData.maxFiles;
   };
 
-  const handleErrorResponse = (responseError: any) => {
-    const status = responseError.response?.status;
-    const errorMessage = responseError.response?.data?.error;
+  const handleErrorResponse = useCallback(
+    (responseError: any) => {
+      const status = responseError.response?.status;
+      const errorMessage = responseError.response?.data?.error;
 
-    switch (status) {
-      case HTTP_STATUS.UNAUTHORIZED:
-        if (errorMessage === ERROR_MESSAGES.PASSWORD_REQUIRED) {
-          setIsPasswordModalOpen(true);
-        } else if (errorMessage === ERROR_MESSAGES.INVALID_PASSWORD) {
-          setIsPasswordModalOpen(true);
-          toast.error(t("reverseShares.upload.errors.passwordIncorrect"));
-        }
-        break;
+      switch (status) {
+        case HTTP_STATUS.UNAUTHORIZED:
+          if (errorMessage === ERROR_MESSAGES.PASSWORD_REQUIRED) {
+            setIsPasswordModalOpen(true);
+          } else if (errorMessage === ERROR_MESSAGES.INVALID_PASSWORD) {
+            setIsPasswordModalOpen(true);
+            toast.error(t("reverseShares.upload.errors.passwordIncorrect"));
+          }
+          break;
 
-      case HTTP_STATUS.NOT_FOUND:
-        setError({ type: "notFound" });
-        break;
+        case HTTP_STATUS.NOT_FOUND:
+          setError({ type: "notFound" });
+          break;
 
-      case HTTP_STATUS.FORBIDDEN:
-        setError({ type: "inactive" });
-        break;
+        case HTTP_STATUS.FORBIDDEN:
+          setError({ type: "inactive" });
+          break;
 
-      case HTTP_STATUS.GONE:
-        setError({ type: "expired" });
-        break;
+        case HTTP_STATUS.GONE:
+          setError({ type: "expired" });
+          break;
 
-      default:
-        setError({ type: "generic" });
-        toast.error(t("reverseShares.upload.errors.loadFailed"));
-        break;
-    }
-  };
+        default:
+          setError({ type: "generic" });
+          toast.error(t("reverseShares.upload.errors.loadFailed"));
+          break;
+      }
+    },
+    [t]
+  );
 
-  const loadReverseShare = async (passwordAttempt?: string) => {
-    try {
-      setIsLoading(true);
-      setError({ type: null });
+  const loadReverseShare = useCallback(
+    async (passwordAttempt?: string) => {
+      try {
+        setIsLoading(true);
+        setError({ type: null });
 
-      const response = await getReverseShareForUploadByAlias(
-        alias,
-        passwordAttempt ? { password: passwordAttempt } : undefined
-      );
+        const response = await getReverseShareForUploadByAlias(
+          alias,
+          passwordAttempt ? { password: passwordAttempt } : undefined
+        );
 
-      setReverseShare(response.data.reverseShare);
-      setIsPasswordModalOpen(false);
-      setCurrentPassword(passwordAttempt || "");
-    } catch (responseError: any) {
-      console.error("Failed to load reverse share:", responseError);
-      handleErrorResponse(responseError);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        setReverseShare(response.data.reverseShare);
+        setIsPasswordModalOpen(false);
+        setCurrentPassword(passwordAttempt || "");
+      } catch (responseError: any) {
+        console.error("Failed to load reverse share:", responseError);
+        handleErrorResponse(responseError);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [alias, handleErrorResponse]
+  );
 
   const handlePasswordSubmit = (passwordValue: string) => {
     loadReverseShare(passwordValue);
@@ -105,7 +111,7 @@ export function useReverseShareUpload({ alias }: UseReverseShareUploadProps) {
     if (alias) {
       loadReverseShare();
     }
-  }, [alias]);
+  }, [alias, loadReverseShare]);
 
   const isMaxFilesReached = reverseShare ? checkIfMaxFilesReached(reverseShare) : false;
   const isWeTransferLayout = reverseShare?.pageLayout === "WETRANSFER";

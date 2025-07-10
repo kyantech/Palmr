@@ -3,12 +3,6 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   images: {
     remotePatterns: [
       {
@@ -22,6 +16,11 @@ const nextConfig: NextConfig = {
     ],
   },
   serverExternalPackages: [],
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "1pb",
+    },
+  },
 };
 
 const withNextIntl = createNextIntlPlugin();

@@ -24,7 +24,7 @@ export function EmptyReverseSharesState({ onCreateReverseShare }: EmptyReverseSh
       </div>
 
       <Button onClick={onCreateReverseShare}>
-        <IconPlus className="h-4 w-4 mr-2" />
+        <IconPlus className="h-4 w-4" />
         {t("reverseShares.empty.createButton")}
       </Button>
     </div>

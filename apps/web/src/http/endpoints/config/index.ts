@@ -2,7 +2,7 @@ import type { AxiosRequestConfig } from "axios";
 
 import apiInstance from "@/config/api";
 import type {
-  BulkUpdateConfigsBodyItem,
+  BulkUpdateConfigsBody,
   BulkUpdateConfigsResult,
   GetAllConfigsResult,
   UpdateConfigBody,
@@ -26,7 +26,7 @@ export const updateConfig = <TData = UpdateConfigResult>(
  * @summary List all configurations
  */
 export const getAllConfigs = <TData = GetAllConfigsResult>(options?: AxiosRequestConfig): Promise<TData> => {
-  return apiInstance.get(`/api/config/list`, options);
+  return apiInstance.get(`/api/app/configs`, options);
 };
 
 /**
@@ -34,8 +34,8 @@ export const getAllConfigs = <TData = GetAllConfigsResult>(options?: AxiosReques
  * @summary Bulk update configuration values
  */
 export const bulkUpdateConfigs = <TData = BulkUpdateConfigsResult>(
-  bulkUpdateConfigsBodyItem: BulkUpdateConfigsBodyItem[],
+  bulkUpdateConfigsBody: BulkUpdateConfigsBody,
   options?: AxiosRequestConfig
 ): Promise<TData> => {
-  return apiInstance.patch(`api/config/update/bulk`, bulkUpdateConfigsBodyItem, options);
+  return apiInstance.patch(`api/config/update/bulk`, bulkUpdateConfigsBody, options);
 };

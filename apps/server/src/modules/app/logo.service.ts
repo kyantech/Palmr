@@ -1,5 +1,6 @@
-import { prisma } from "../../shared/prisma";
 import sharp from "sharp";
+
+import { prisma } from "../../shared/prisma";
 
 export class LogoService {
   async uploadLogo(buffer: Buffer): Promise<string> {

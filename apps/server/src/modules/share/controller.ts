@@ -1,12 +1,13 @@
+import { FastifyReply, FastifyRequest } from "fastify";
+
 import {
   CreateShareSchema,
-  UpdateShareSchema,
-  UpdateSharePasswordSchema,
   UpdateShareFilesSchema,
+  UpdateSharePasswordSchema,
   UpdateShareRecipientsSchema,
+  UpdateShareSchema,
 } from "./dto";
 import { ShareService } from "./service";
-import { FastifyReply, FastifyRequest } from "fastify";
 
 export class ShareController {
   private shareService = new ShareService();

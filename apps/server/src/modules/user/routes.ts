@@ -1,10 +1,11 @@
+import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { z } from "zod";
+
 import { prisma } from "../../shared/prisma";
 import { createPasswordSchema } from "../auth/dto";
 import { UserController } from "./controller";
 import { UpdateUserSchema, UserResponseSchema } from "./dto";
 import { validatePasswordMiddleware } from "./middleware";
-import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { z } from "zod";
 
 export async function userRoutes(app: FastifyInstance) {
   const userController = new UserController();

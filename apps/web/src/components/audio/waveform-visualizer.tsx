@@ -23,7 +23,7 @@ const WaveformVisualizer = ({ progress, onSeek, audioData, isLoading = false }: 
   const generateRealWaveform = () => {
     if (!audioData) return generateMockWaveform();
 
-    return Array.from(audioData, (value, i) => {
+    return Array.from(audioData, (value) => {
       const normalizedHeight = Math.max(15, value * 100 + 20);
       return normalizedHeight;
     });

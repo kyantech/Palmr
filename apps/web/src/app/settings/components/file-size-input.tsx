@@ -1,62 +1,51 @@
 import { useEffect, useState } from "react";
 
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export interface FileSizeInputProps {
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
   error?: any;
+  placeholder?: string;
 }
 
-type Unit = "MB" | "GB" | "TB";
+type Unit = "MB" | "GB" | "TB" | "PB";
 
 const UNIT_MULTIPLIERS: Record<Unit, number> = {
   MB: 1024 * 1024,
   GB: 1024 * 1024 * 1024,
   TB: 1024 * 1024 * 1024 * 1024,
+  PB: 1024 * 1024 * 1024 * 1024 * 1024,
 };
 
 function bytesToHumanReadable(bytes: string): { value: string; unit: Unit } {
   const numBytes = parseInt(bytes, 10);
 
   if (!numBytes || numBytes <= 0) {
-    return { value: "0", unit: "GB" };
+    return { value: "0", unit: "MB" };
   }
 
-  if (numBytes >= UNIT_MULTIPLIERS.TB) {
-    const tbValue = numBytes / UNIT_MULTIPLIERS.TB;
-    if (tbValue === Math.floor(tbValue)) {
-      return {
-        value: tbValue.toString(),
-        unit: "TB",
-      };
+  const units: Unit[] = ["PB", "TB", "GB", "MB"];
+
+  for (const unit of units) {
+    const multiplier = UNIT_MULTIPLIERS[unit];
+    const value = numBytes / multiplier;
+
+    if (value >= 1) {
+      const rounded = Math.round(value * 100) / 100;
+
+      if (Math.abs(rounded - Math.round(rounded)) < 0.01) {
+        return { value: Math.round(rounded).toString(), unit };
+      } else {
+        return { value: rounded.toFixed(2), unit };
+      }
     }
-  }
-
-  if (numBytes >= UNIT_MULTIPLIERS.GB) {
-    const gbValue = numBytes / UNIT_MULTIPLIERS.GB;
-    if (gbValue === Math.floor(gbValue)) {
-      return {
-        value: gbValue.toString(),
-        unit: "GB",
-      };
-    }
-  }
-
-  if (numBytes >= UNIT_MULTIPLIERS.MB) {
-    const mbValue = numBytes / UNIT_MULTIPLIERS.MB;
-    return {
-      value: mbValue === Math.floor(mbValue) ? mbValue.toString() : mbValue.toFixed(2),
-      unit: "MB",
-    };
   }
 
   const mbValue = numBytes / UNIT_MULTIPLIERS.MB;
-  return {
-    value: mbValue.toFixed(3),
-    unit: "MB",
-  };
+  return { value: mbValue.toFixed(2), unit: "MB" as Unit };
 }
 
 function humanReadableToBytes(value: string, unit: Unit): string {
@@ -68,9 +57,9 @@ function humanReadableToBytes(value: string, unit: Unit): string {
   return Math.floor(numValue * UNIT_MULTIPLIERS[unit]).toString();
 }
 
-export function FileSizeInput({ value, onChange, disabled = false, error }: FileSizeInputProps) {
+export function FileSizeInput({ value, onChange, disabled = false, error, placeholder = "0" }: FileSizeInputProps) {
   const [displayValue, setDisplayValue] = useState("");
-  const [selectedUnit, setSelectedUnit] = useState<Unit>("GB");
+  const [selectedUnit, setSelectedUnit] = useState<Unit>("MB");
 
   useEffect(() => {
     if (value && value !== "0") {
@@ -79,7 +68,7 @@ export function FileSizeInput({ value, onChange, disabled = false, error }: File
       setSelectedUnit(unit);
     } else {
       setDisplayValue("");
-      setSelectedUnit("GB");
+      setSelectedUnit("MB");
     }
   }, [value]);
 
@@ -100,6 +89,10 @@ export function FileSizeInput({ value, onChange, disabled = false, error }: File
   };
 
   const handleUnitChange = (newUnit: Unit) => {
+    if (!newUnit || !["MB", "GB", "TB", "PB"].includes(newUnit)) {
+      return;
+    }
+
     setSelectedUnit(newUnit);
 
     if (displayValue && displayValue !== "0") {
@@ -114,21 +107,27 @@ export function FileSizeInput({ value, onChange, disabled = false, error }: File
         type="text"
         value={displayValue}
         onChange={(e) => handleValueChange(e.target.value)}
-        placeholder="0"
+        placeholder={placeholder}
         className="flex-1"
         disabled={disabled}
         aria-invalid={!!error}
       />
-      <select
+      <Select
+        key={`${selectedUnit}-${displayValue}`}
         value={selectedUnit}
-        onChange={(e) => handleUnitChange(e.target.value as Unit)}
-        className="w-20 rounded-md border border-input bg-transparent px-3 py-2 text-sm"
+        onValueChange={handleUnitChange}
         disabled={disabled}
       >
-        <option value="MB">MB</option>
-        <option value="GB">GB</option>
-        <option value="TB">TB</option>
-      </select>
+        <SelectTrigger className="w-20">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="MB">MB</SelectItem>
+          <SelectItem value="GB">GB</SelectItem>
+          <SelectItem value="TB">TB</SelectItem>
+          <SelectItem value="PB">PB</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   );
 }

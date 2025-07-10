@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3333";
+
 export async function GET(req: NextRequest) {
   const cookieHeader = req.headers.get("cookie");
   const searchParams = req.nextUrl.searchParams.toString();
-  const url = `${process.env.API_BASE_URL}/files/presigned-url${searchParams ? `?${searchParams}` : ""}`;
+  const url = `${API_BASE_URL}/files/presigned-url${searchParams ? `?${searchParams}` : ""}`;
 
   const apiRes = await fetch(url, {
     method: "GET",

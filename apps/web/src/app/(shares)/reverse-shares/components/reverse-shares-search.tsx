@@ -1,4 +1,4 @@
-import { IconPlus, IconSearch } from "@tabler/icons-react";
+import { IconPlus, IconRefresh, IconSearch } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,8 @@ export interface ReverseSharesSearchProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;
   onCreateReverseShare: () => void;
+  onRefresh: () => void;
+  isRefreshing?: boolean;
   totalReverseShares: number;
   filteredCount: number;
 }
@@ -16,6 +18,8 @@ export function ReverseSharesSearch({
   searchQuery,
   onSearchChange,
   onCreateReverseShare,
+  onRefresh,
+  isRefreshing = false,
   totalReverseShares,
   filteredCount,
 }: ReverseSharesSearchProps) {
@@ -25,10 +29,15 @@ export function ReverseSharesSearch({
     <div className="flex flex-col gap-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">{t("reverseShares.search.title")}</h2>
-        <Button onClick={onCreateReverseShare}>
-          <IconPlus className="h-4 w-4" />
-          {t("reverseShares.search.createButton")}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="icon" onClick={onRefresh} disabled={isRefreshing}>
+            <IconRefresh className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+          </Button>
+          <Button onClick={onCreateReverseShare}>
+            <IconPlus className="h-4 w-4" />
+            {t("reverseShares.search.createButton")}
+          </Button>
+        </div>
       </div>
 
       <div className="flex items-center gap-2">

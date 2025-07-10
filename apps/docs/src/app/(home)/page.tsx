@@ -1,31 +1,29 @@
-import {
-  type LucideIcon,
-  MousePointer,
-  UploadIcon,
-  GithubIcon,
-  BookOpenText,
-  CloudIcon,
-  LockIcon,
-  DatabaseIcon,
-} from "lucide-react";
+import type { ReactNode } from "react";
+import Link from "next/link";
 import {
   BatteryChargingIcon,
+  BookOpenText,
+  CloudIcon,
+  DatabaseIcon,
+  GithubIcon,
   KeyboardIcon,
   LayoutIcon,
+  LockIcon,
+  MousePointer,
   RocketIcon,
   SearchIcon,
   TimerIcon,
+  UploadIcon,
+  type LucideIcon,
 } from "lucide-react";
 
-import Link from "next/link";
-import type { ReactNode } from "react";
-import { ThreeDMarquee } from "@/components/ui/3d-marquee";
 import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
-import { TypingAnimation } from "@/components/magicui/typing-animation";
-import { TextHoverEffect } from "@/components/ui/text-hover-effect";
 import { PulsatingButton } from "@/components/magicui/pulsating-button";
 import { RippleButton } from "@/components/magicui/ripple-button";
+import { TypingAnimation } from "@/components/magicui/typing-animation";
 import { WordRotate } from "@/components/magicui/word-rotate";
+import { ThreeDMarquee } from "@/components/ui/3d-marquee";
+import { TextHoverEffect } from "@/components/ui/text-hover-effect";
 
 const images = [
   "https://res.cloudinary.com/technical-intelligence/image/upload/v1745546004/Palmr./dash_wt_kqtzxi.png",
@@ -59,40 +57,17 @@ const images = [
   "https://res.cloudinary.com/technical-intelligence/image/upload/v1745546005/Palmr./profile_mizwvg.png",
 ];
 
-const docsLink = "/docs/3.0-beta";
-
-export default function HomePage() {
-  return (
-    <>
-      <main className="relative z-[2] w-full px-4 py-6 sm:px-6 lg:px-8">
-        <div className="relative mx-auto max-w-screen-xl bg-background">
-          <Hero />
-          <LogoShowcase />
-          <Feedback />
-          <Features />
-          <GetStarted />
-        </div>
-      </main>
-      <FullWidthFooter />
-    </>
-  );
-}
+const docsLink = "/docs/3.1-beta";
 
 function Hero() {
   return (
     <section className="relative z-[2] flex flex-col border-x border-t  px-6 pt-12 pb-10 md:px-12 md:pt-16 max-md:text-center">
       <h1 className="mb-8 text-6xl font-bold">
-        Palmr.{" "}
-        <span className="text-[13px] font-light text-muted-foreground/50 font-mono">
-          v3.0-beta
-        </span>
+        Palmr. <span className="text-[13px] font-light text-muted-foreground/50 font-mono">v3.1-beta</span>
       </h1>
-      <h1 className="hidden text-4xl font-medium max-w-[600px] md:block mb-4">
-        Modern & efficient file sharing
-      </h1>
+      <h1 className="hidden text-4xl font-medium max-w-[600px] md:block mb-4">Modern & efficient file sharing</h1>
       <p className="mb-8 text-fd-muted-foreground md:max-w-[80%] md:text-xl">
-        Palmr is a fast and secure platform for sharing files, built with
-        performance and privacy in mind.
+        Palmr is a fast and secure platform for sharing files, built with performance and privacy in mind.
       </p>
       <div className="hidden h-[10rem] lg:flex items-center justify-center absolute right-0 top-10">
         <TextHoverEffect text="Palmr." />
@@ -136,17 +111,23 @@ function Feedback() {
         A modern way to share files
         <WordRotate
           duration={4000}
-          words={[
-            "efficiently",
-            "securely",
-            "privately",
-            "reliably",
-            "seamlessly",
-          ]}
+          words={["efficiently", "securely", "privately", "reliably", "seamlessly"]}
           className="min-w-[100px] inline-block"
         />
       </p>
     </section>
+  );
+}
+
+function Highlight({ icon: Icon, heading, children }: { icon: LucideIcon; heading: ReactNode; children: ReactNode }) {
+  return (
+    <div className="border-l border-t px-6 py-12">
+      <div className="mb-4 flex items-center gap-2 text-fd-muted-foreground">
+        <Icon className="size-6" />
+        <h2 className="text-sm font-medium">{heading}</h2>
+      </div>
+      <span className="font-medium">{children}</span>
+    </div>
   );
 }
 
@@ -163,8 +144,7 @@ function Features() {
             <h3 className="text-2xl font-semibold">Upload & Share</h3>
           </div>
           <p className="text-muted-foreground">
-            Send your files quickly and safely. Share easily with anyone through
-            secure links.
+            Send your files quickly and safely. Share easily with anyone through secure links.
           </p>
         </div>
         <div className="flex flex-col gap-4 border-r p-8 md:p-12">
@@ -174,9 +154,7 @@ function Features() {
             </div>
             <h3 className="text-2xl font-semibold">Secure & Private</h3>
           </div>
-          <p className="text-muted-foreground">
-            Files are encrypted and protected. You control your data completely.
-          </p>
+          <p className="text-muted-foreground">Files are encrypted and protected. You control your data completely.</p>
         </div>
       </section>
 
@@ -192,9 +170,7 @@ function Features() {
           <p className="mb-4 w-fit bg-fd-primary px-3 py-1 text-sm font-bold font-mono text-fd-primary-foreground mx-auto">
             Open Source & Self-Hosted
           </p>
-          <h2 className="text-center text-2xl font-semibold sm:text-3xl mb-4">
-            Complete File Sharing Solution
-          </h2>
+          <h2 className="text-center text-2xl font-semibold sm:text-3xl mb-4">Complete File Sharing Solution</h2>
           <TypingAnimation className="text-center text-xl text-muted-foreground">
             Built with Next.js, Fastify, and SQLite
           </TypingAnimation>
@@ -205,9 +181,7 @@ function Features() {
       {/* Technical Features Grid */}
       <section className="grid grid-cols-1 border-r md:grid-cols-2 lg:grid-cols-3">
         <div className="col-span-full flex items-start justify-center border-l border-t p-8 pb-2 text-center">
-          <h2 className="bg-fd-primary px-1 text-2xl font-semibold text-fd-primary-foreground">
-            Key Features
-          </h2>
+          <h2 className="bg-fd-primary px-1 text-2xl font-semibold text-fd-primary-foreground">Key Features</h2>
           <MousePointer className="-ml-1 mt-8" />
         </div>
 
@@ -239,37 +213,15 @@ function Features() {
   );
 }
 
-function Highlight({
-  icon: Icon,
-  heading,
-  children,
-}: {
-  icon: LucideIcon;
-  heading: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <div className="border-l border-t px-6 py-12">
-      <div className="mb-4 flex items-center gap-2 text-fd-muted-foreground">
-        <Icon className="size-6" />
-        <h2 className="text-sm font-medium">{heading}</h2>
-      </div>
-      <span className="font-medium">{children}</span>
-    </div>
-  );
-}
-
 function GetStarted() {
   return (
     <section className="flex w-full flex-1">
       <div className="w-full flex flex-col gap-8 overflow-hidden border px-8 py-14">
         <div className="text-center mb-6">
-          <h2 className="text-4xl font-extrabold font-mono uppercase mb-3">
-            Get Started Today
-          </h2>
+          <h2 className="text-4xl font-extrabold font-mono uppercase mb-3">Get Started Today</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Deploy your own secure file sharing platform in minutes. Take
-            control of your data with our self-hosted solution.
+            Deploy your own secure file sharing platform in minutes. Take control of your data with our self-hosted
+            solution.
           </p>
         </div>
 
@@ -282,8 +234,7 @@ function GetStarted() {
             </div>
             <h3 className="text-xl font-semibold">Quick Setup</h3>
             <p className="text-muted-foreground">
-              Docker deployment or direct installation - get running in under 5
-              minutes
+              Docker deployment or direct installation - get running in under 5 minutes
             </p>
           </div>
 
@@ -295,8 +246,7 @@ function GetStarted() {
             </div>
             <h3 className="text-xl font-semibold">Full Control</h3>
             <p className="text-muted-foreground">
-              Self-hosted means you own your data and control every aspect of
-              the platform
+              Self-hosted means you own your data and control every aspect of the platform
             </p>
           </div>
 
@@ -307,9 +257,7 @@ function GetStarted() {
               </div>
             </div>
             <h3 className="text-xl font-semibold">Production Ready</h3>
-            <p className="text-muted-foreground">
-              Latest technologies optimized for performance and security
-            </p>
+            <p className="text-muted-foreground">Latest technologies optimized for performance and security</p>
           </div>
         </div>
 
@@ -354,5 +302,22 @@ function FullWidthFooter() {
         </Link>
       </div>
     </footer>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <>
+      <main className="relative z-[2] w-full px-4 py-6 sm:px-6 lg:px-8">
+        <div className="relative mx-auto max-w-screen-xl bg-background">
+          <Hero />
+          <LogoShowcase />
+          <Feedback />
+          <Features />
+          <GetStarted />
+        </div>
+      </main>
+      <FullWidthFooter />
+    </>
   );
 }

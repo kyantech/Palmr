@@ -62,9 +62,9 @@ docker-compose*
 
 # Storage directories (created at runtime)
 uploads/
-temp-chunks/
+temp-uploads/
 apps/server/uploads/
-apps/server/temp-chunks/
+apps/server/temp-uploads/
 
 # Static files
 apps/server/prisma/*.db

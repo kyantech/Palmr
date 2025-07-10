@@ -115,8 +115,8 @@ export function DashboardModals({ modals, fileManager, shareManager, onSuccess }
         onClose={() => shareManager.setShareToViewDetails(null)}
         onUpdateName={shareManager.handleUpdateName}
         onUpdateDescription={shareManager.handleUpdateDescription}
-        onUpdateSecurity={shareManager.handleUpdateSecurity}
-        onUpdateExpiration={shareManager.handleUpdateExpiration}
+        onUpdateSecurity={async () => shareManager.handleUpdateSecurity(shareManager.shareToViewDetails!)}
+        onUpdateExpiration={async () => shareManager.handleUpdateExpiration(shareManager.shareToViewDetails!)}
         onGenerateLink={shareManager.handleGenerateLink}
         onManageFiles={shareManager.setShareToManageFiles}
         refreshTrigger={shareDetailsRefresh}

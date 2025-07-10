@@ -71,7 +71,7 @@ export function GenerateAliasModal({
     try {
       await onCreateAlias(reverseShare.id, data.alias);
       onClose();
-    } catch (error) {
+    } catch {
     } finally {
       setIsSubmitting(false);
     }

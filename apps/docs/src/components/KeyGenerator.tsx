@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Copy, X } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Toast } from "@/components/ui/toast";
 
@@ -49,9 +50,7 @@ export function KeyGenerator() {
         <code className="block w-full p-3 bg-gray-100 dark:bg-black/80 rounded-md font-mono text-sm min-h-[2.5rem] border border-gray-200 dark:border-gray-700">
           {key ? (
             <>
-              <span className="select-none text-gray-500 dark:text-gray-400">
-                ENCRYPTION_KEY=
-              </span>
+              <span className="select-none text-gray-500 dark:text-gray-400">ENCRYPTION_KEY=</span>
               <span className="text-green-900 dark:text-green-600">{key}</span>
             </>
           ) : (
@@ -73,17 +72,11 @@ export function KeyGenerator() {
 
       {key && (
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Copy the key and paste it into your <code>docker-compose.yml</code>{" "}
-          file.
+          Copy the key and paste it into your <code>docker-compose.yml</code> file.
         </p>
       )}
 
-      {showToast && (
-        <Toast
-          message="Key copied to clipboard!"
-          onClose={() => setShowToast(false)}
-        />
-      )}
+      {showToast && <Toast message="Key copied to clipboard!" onClose={() => setShowToast(false)} />}
     </div>
   );
 }

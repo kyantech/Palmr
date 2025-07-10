@@ -18,6 +18,7 @@ interface SmtpTestButtonProps {
     smtpPass: string;
     smtpSecure: string;
     smtpNoAuth: string;
+    smtpTrustSelfSigned: string;
   };
 }
 
@@ -54,6 +55,7 @@ export function SmtpTestButton({ smtpEnabled, getFormValues }: SmtpTestButtonPro
           smtpPass: formValues.smtpPass,
           smtpSecure: formValues.smtpSecure,
           smtpNoAuth: formValues.smtpNoAuth,
+          smtpTrustSelfSigned: formValues.smtpTrustSelfSigned,
         },
       });
 

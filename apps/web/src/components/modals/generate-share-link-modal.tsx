@@ -8,12 +8,12 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import type { ListUserShares200SharesItem } from "@/http/models/listUserShares200SharesItem";
+import { Share } from "@/http/endpoints/shares/types";
 import { customNanoid } from "@/lib/utils";
 
 interface GenerateShareLinkModalProps {
   shareId: string | null;
-  share: ListUserShares200SharesItem | null;
+  share: Share | null;
   onClose: () => void;
   onSuccess: () => void;
   onGenerate: (shareId: string, alias: string) => Promise<void>;
@@ -56,7 +56,7 @@ export function GenerateShareLinkModal({
       setGeneratedLink(link);
       onSuccess();
       toast.success(t("generateShareLink.success"));
-    } catch (error) {
+    } catch {
       toast.error(t("generateShareLink.error"));
     } finally {
       setIsLoading(false);

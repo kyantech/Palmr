@@ -76,11 +76,11 @@ export function DeleteConfirmationModal({
 
         <DialogFooter className="flex gap-2">
           <Button variant="outline" onClick={onClose}>
-            <IconX className="h-4 w-4 mr-2" />
+            <IconX className="h-4 w-4" />
             {t("common.cancel")}
           </Button>
           <Button variant="destructive" onClick={handleConfirm}>
-            <IconTrash className="h-4 w-4 mr-2" />
+            <IconTrash className="h-4 w-4" />
             {t("common.delete")}
           </Button>
         </DialogFooter>

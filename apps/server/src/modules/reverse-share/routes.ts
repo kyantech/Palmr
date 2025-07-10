@@ -1,18 +1,19 @@
+import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { z } from "zod";
+
 import { ReverseShareController } from "./controller";
 import {
   CreateReverseShareSchema,
-  UpdateReverseShareSchema,
-  UpdateReverseSharePasswordSchema,
-  ReverseShareResponseSchema,
-  ReverseSharePublicSchema,
-  ReverseSharePasswordSchema,
-  ReverseShareFileSchema,
-  UploadToReverseShareSchema,
   GetPresignedUrlSchema,
+  ReverseShareFileSchema,
+  ReverseSharePasswordSchema,
+  ReverseSharePublicSchema,
+  ReverseShareResponseSchema,
   UpdateReverseShareFileSchema,
+  UpdateReverseSharePasswordSchema,
+  UpdateReverseShareSchema,
+  UploadToReverseShareSchema,
 } from "./dto";
-import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { z } from "zod";
 
 export async function reverseShareRoutes(app: FastifyInstance) {
   const reverseShareController = new ReverseShareController();

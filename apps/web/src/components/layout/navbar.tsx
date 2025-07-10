@@ -88,7 +88,7 @@ export function Navbar() {
                   className="text-destructive focus:text-destructive cursor-pointer"
                   onClick={handleLogout}
                 >
-                  <IconLogout className="h-4 w-4 mr-2 text-destructive" />
+                  <IconLogout className="h-4 w-4 text-destructive" />
                   {t("navbar.logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>

@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { LoadingScreen } from "@/components/layout/loading-screen";
 import { useAuth } from "@/contexts/auth-context";
+import { getCurrentUser } from "@/http/endpoints";
 
 export default function OIDCCallbackPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { setUser, setIsAuthenticated, setIsAdmin } = useAuth();
   const t = useTranslations();
 
@@ -18,22 +18,14 @@ export default function OIDCCallbackPage() {
       try {
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        const response = await fetch("/api/auth/me", {
-          credentials: "include",
-        });
+        const response = await getCurrentUser();
+        const { isAdmin, ...userData } = response.data.user;
 
-        if (response.ok) {
-          const data = await response.json();
-          const { isAdmin, ...userData } = data.user;
+        setUser(userData);
+        setIsAdmin(isAdmin);
+        setIsAuthenticated(true);
 
-          setUser(userData);
-          setIsAdmin(isAdmin);
-          setIsAuthenticated(true);
-
-          router.push("/dashboard");
-        } else {
-          throw new Error("Authentication failed");
-        }
+        router.push("/dashboard");
       } catch (error) {
         console.error("OIDC callback error:", error);
         router.push("/login?error=authentication_failed");

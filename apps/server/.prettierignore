@@ -1,0 +1,7 @@
+/node_modules
+/dist
+/build
+/uploads
+/temp-uploads
+/logs
+/prisma/migrations 

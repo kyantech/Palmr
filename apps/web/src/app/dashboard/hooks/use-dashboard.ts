@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
@@ -8,7 +8,7 @@ import { useFileManager } from "@/hooks/use-file-manager";
 import { useSecureConfigValue } from "@/hooks/use-secure-configs";
 import { useShareManager } from "@/hooks/use-share-manager";
 import { getDiskSpace, listFiles, listUserShares } from "@/http/endpoints";
-import { ListUserShares200SharesItem } from "@/http/models/listUserShares200SharesItem";
+import { Share } from "@/http/endpoints/shares/types";
 
 export function useDashboard() {
   const t = useTranslations();
@@ -33,7 +33,7 @@ export function useDashboard() {
   const onOpenCreateModal = () => setIsCreateModalOpen(true);
   const onCloseCreateModal = () => setIsCreateModalOpen(false);
 
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     try {
       const loadDiskSpace = async () => {
         try {
@@ -77,12 +77,12 @@ export function useDashboard() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [t]);
 
   const fileManager = useFileManager(loadDashboardData);
   const shareManager = useShareManager(loadDashboardData);
 
-  const handleCopyLink = (share: ListUserShares200SharesItem) => {
+  const handleCopyLink = (share: Share) => {
     if (!share.alias?.alias) return;
     const link = `${window.location.origin}/s/${share.alias.alias}`;
 
@@ -92,7 +92,7 @@ export function useDashboard() {
 
   useEffect(() => {
     loadDashboardData();
-  }, []);
+  }, [loadDashboardData]);
 
   return {
     isLoading,

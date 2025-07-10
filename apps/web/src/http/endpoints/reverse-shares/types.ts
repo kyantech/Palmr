@@ -1,242 +1,11 @@
 import type { AxiosResponse } from "axios";
 
+// Base types and enums
 export type FieldRequirement = "HIDDEN" | "OPTIONAL" | "REQUIRED";
+export type PageLayout = "WETRANSFER" | "DEFAULT";
 
-export type CreateReverseShareBody = {
-  name?: string;
-  description?: string;
-  expiration?: string;
-  maxFiles?: number | null;
-  maxFileSize?: number | null;
-  allowedFileTypes?: string | null;
-  password?: string;
-  pageLayout?: "WETRANSFER" | "DEFAULT";
-  nameFieldRequired?: FieldRequirement;
-  emailFieldRequired?: FieldRequirement;
-};
-
-export type CreateReverseShareResult = AxiosResponse<{
-  reverseShare: {
-    id: string;
-    name: string | null;
-    description: string | null;
-    expiration: string | null;
-    maxFiles: number | null;
-    maxFileSize: number | null;
-    allowedFileTypes: string | null;
-    pageLayout: string;
-    isActive: boolean;
-    hasPassword: boolean;
-    nameFieldRequired: string;
-    emailFieldRequired: string;
-    createdAt: string;
-    updatedAt: string;
-    creatorId: string;
-    files: ReverseShareFile[];
-  };
-}>;
-
-export type UpdateReverseShareBody = {
-  id: string;
-  name?: string;
-  description?: string;
-  expiration?: string;
-  maxFiles?: number | null;
-  maxFileSize?: number | null;
-  allowedFileTypes?: string | null;
-  password?: string | null;
-  pageLayout?: "WETRANSFER" | "DEFAULT";
-  isActive?: boolean;
-  nameFieldRequired?: FieldRequirement;
-  emailFieldRequired?: FieldRequirement;
-};
-
-export type UpdateReverseShareResult = AxiosResponse<{
-  reverseShare: {
-    id: string;
-    name: string | null;
-    description: string | null;
-    expiration: string | null;
-    maxFiles: number | null;
-    maxFileSize: number | null;
-    allowedFileTypes: string | null;
-    pageLayout: string;
-    isActive: boolean;
-    hasPassword: boolean;
-    nameFieldRequired: string;
-    emailFieldRequired: string;
-    createdAt: string;
-    updatedAt: string;
-    creatorId: string;
-    files: ReverseShareFile[];
-  };
-}>;
-
-export type ListUserReverseSharesResult = AxiosResponse<{
-  reverseShares: {
-    id: string;
-    name: string | null;
-    description: string | null;
-    expiration: string | null;
-    maxFiles: number | null;
-    maxFileSize: number | null;
-    allowedFileTypes: string | null;
-    pageLayout: string;
-    isActive: boolean;
-    hasPassword: boolean;
-    nameFieldRequired: string;
-    emailFieldRequired: string;
-    createdAt: string;
-    updatedAt: string;
-    creatorId: string;
-    files: ReverseShareFile[];
-    alias?: {
-      id: string;
-      alias: string;
-      reverseShareId: string;
-      createdAt: string;
-      updatedAt: string;
-    } | null;
-  }[];
-}>;
-
-export type GetReverseShareResult = AxiosResponse<{
-  reverseShare: {
-    id: string;
-    name: string | null;
-    description: string | null;
-    expiration: string | null;
-    maxFiles: number | null;
-    maxFileSize: number | null;
-    allowedFileTypes: string | null;
-    pageLayout: string;
-    isActive: boolean;
-    hasPassword: boolean;
-    nameFieldRequired: string;
-    emailFieldRequired: string;
-    createdAt: string;
-    updatedAt: string;
-    creatorId: string;
-    files: ReverseShareFile[];
-    alias?: {
-      id: string;
-      alias: string;
-      reverseShareId: string;
-      createdAt: string;
-      updatedAt: string;
-    } | null;
-  };
-}>;
-
-export type DeleteReverseShareResult = AxiosResponse<{
-  reverseShare: {
-    id: string;
-    name: string | null;
-    description: string | null;
-    expiration: string | null;
-    maxFiles: number | null;
-    maxFileSize: number | null;
-    allowedFileTypes: string | null;
-    pageLayout: string;
-    isActive: boolean;
-    hasPassword: boolean;
-    nameFieldRequired: string;
-    emailFieldRequired: string;
-    createdAt: string;
-    updatedAt: string;
-    creatorId: string;
-    files: ReverseShareFile[];
-  };
-}>;
-
-export type GetReverseShareForUploadParams = {
-  password?: string;
-};
-
-export type GetReverseShareForUploadResult = AxiosResponse<{
-  reverseShare: {
-    id: string;
-    name: string | null;
-    description: string | null;
-    maxFiles: number | null;
-    maxFileSize: number | null;
-    allowedFileTypes: string | null;
-    pageLayout: string;
-    hasPassword: boolean;
-    currentFileCount: number;
-    nameFieldRequired: string;
-    emailFieldRequired: string;
-  };
-}>;
-
-export type UpdateReverseSharePasswordBody = {
-  password: string | null;
-};
-
-export type UpdateReverseSharePasswordResult = AxiosResponse<{
-  reverseShare: {
-    id: string;
-    name: string | null;
-    description: string | null;
-    expiration: string | null;
-    maxFiles: number | null;
-    maxFileSize: number | null;
-    allowedFileTypes: string | null;
-    pageLayout: string;
-    isActive: boolean;
-    hasPassword: boolean;
-    createdAt: string;
-    updatedAt: string;
-    creatorId: string;
-    files: ReverseShareFile[];
-  };
-}>;
-
-export type GetPresignedUrlBody = {
-  objectName: string;
-};
-
-export type GetPresignedUrlResult = AxiosResponse<{
-  url: string;
-  expiresIn: number;
-}>;
-
-export type RegisterFileUploadBody = {
-  name: string;
-  description?: string;
-  extension: string;
-  size: number;
-  objectName: string;
-  uploaderEmail?: string;
-  uploaderName?: string;
-};
-
-export type RegisterFileUploadParams = {
-  password?: string;
-};
-
-export type RegisterFileUploadResult = AxiosResponse<{
-  file: ReverseShareFile;
-}>;
-
-export type CheckReverseSharePasswordBody = {
-  password: string;
-};
-
-export type CheckReverseSharePasswordResult = AxiosResponse<{
-  valid: boolean;
-}>;
-
-export type DownloadReverseShareFileResult = AxiosResponse<{
-  url: string;
-  expiresIn: number;
-}>;
-
-export type DeleteReverseShareFileResult = AxiosResponse<{
-  file: ReverseShareFile;
-}>;
-
-export type ReverseShareFile = {
+// Base interfaces that are reused across different operations
+export interface ReverseShareFile {
   id: string;
   name: string;
   description: string | null;
@@ -247,51 +16,194 @@ export type ReverseShareFile = {
   uploaderName: string | null;
   createdAt: string;
   updatedAt: string;
-};
+}
 
-export type ActivateReverseShareResult = AxiosResponse<{
-  reverseShare: {
-    id: string;
-    name: string | null;
-    description: string | null;
-    expiration: string | null;
-    maxFiles: number | null;
-    maxFileSize: number | null;
-    allowedFileTypes: string | null;
-    pageLayout: string;
-    isActive: boolean;
-    hasPassword: boolean;
-    createdAt: string;
-    updatedAt: string;
-    creatorId: string;
-    files: ReverseShareFile[];
-  };
-}>;
+export interface ReverseShareAlias {
+  id: string;
+  alias: string;
+  reverseShareId: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
-export type DeactivateReverseShareResult = AxiosResponse<{
-  reverseShare: {
-    id: string;
-    name: string | null;
-    description: string | null;
-    expiration: string | null;
-    maxFiles: number | null;
-    maxFileSize: number | null;
-    allowedFileTypes: string | null;
-    pageLayout: string;
-    isActive: boolean;
-    hasPassword: boolean;
-    createdAt: string;
-    updatedAt: string;
-    creatorId: string;
-    files: ReverseShareFile[];
-  };
-}>;
+export interface BaseReverseShare {
+  id: string;
+  name: string | null;
+  description: string | null;
+  expiration: string | null;
+  maxFiles: number | null;
+  maxFileSize: number | null;
+  allowedFileTypes: string | null;
+  pageLayout: string;
+  isActive: boolean;
+  hasPassword: boolean;
+  nameFieldRequired: string;
+  emailFieldRequired: string;
+  createdAt: string;
+  updatedAt: string;
+  creatorId: string;
+  files: ReverseShareFile[];
+}
 
-export type UpdateReverseShareFileBody = {
+export interface ReverseShareWithAlias extends BaseReverseShare {
+  alias?: ReverseShareAlias | null;
+}
+
+export interface ReverseShareForUpload {
+  id: string;
+  name: string | null;
+  description: string | null;
+  maxFiles: number | null;
+  maxFileSize: number | null;
+  allowedFileTypes: string | null;
+  pageLayout: string;
+  hasPassword: boolean;
+  currentFileCount: number;
+  nameFieldRequired: string;
+  emailFieldRequired: string;
+}
+
+// Response interfaces using base types
+export interface CreateReverseShare201 {
+  reverseShare: BaseReverseShare;
+}
+
+export interface UpdateReverseShare200 {
+  reverseShare: BaseReverseShare;
+}
+
+export interface ListUserReverseShares200 {
+  reverseShares: ReverseShareWithAlias[];
+}
+
+export interface GetReverseShare200 {
+  reverseShare: ReverseShareWithAlias;
+}
+
+export interface DeleteReverseShare200 {
+  reverseShare: BaseReverseShare;
+}
+
+export interface GetReverseShareForUpload200 {
+  reverseShare: ReverseShareForUpload;
+}
+
+export interface UpdateReverseSharePassword200 {
+  reverseShare: BaseReverseShare;
+}
+
+export interface GetPresignedUrl200 {
+  url: string;
+  expiresIn: number;
+}
+
+export interface RegisterFileUpload201 {
+  file: ReverseShareFile;
+}
+
+export interface CheckReverseSharePassword200 {
+  valid: boolean;
+}
+
+export interface DownloadReverseShareFile200 {
+  url: string;
+  expiresIn: number;
+}
+
+export interface DeleteReverseShareFile200 {
+  file: ReverseShareFile;
+}
+
+export interface ActivateReverseShare200 {
+  reverseShare: BaseReverseShare;
+}
+
+export interface DeactivateReverseShare200 {
+  reverseShare: BaseReverseShare;
+}
+
+export interface UpdateReverseShareFile200 {
+  file: ReverseShareFile;
+}
+
+// Request body interfaces
+export interface CreateReverseShareBody {
+  name?: string;
+  description?: string;
+  expiration?: string;
+  maxFiles?: number | null;
+  maxFileSize?: number | null;
+  allowedFileTypes?: string | null;
+  password?: string;
+  pageLayout?: PageLayout;
+  nameFieldRequired?: FieldRequirement;
+  emailFieldRequired?: FieldRequirement;
+}
+
+export interface UpdateReverseShareBody {
+  id: string;
+  name?: string;
+  description?: string;
+  expiration?: string;
+  maxFiles?: number | null;
+  maxFileSize?: number | null;
+  allowedFileTypes?: string | null;
+  password?: string | null;
+  pageLayout?: PageLayout;
+  isActive?: boolean;
+  nameFieldRequired?: FieldRequirement;
+  emailFieldRequired?: FieldRequirement;
+}
+
+export interface UpdateReverseSharePasswordBody {
+  password: string | null;
+}
+
+export interface GetPresignedUrlBody {
+  objectName: string;
+}
+
+export interface RegisterFileUploadBody {
+  name: string;
+  description?: string;
+  extension: string;
+  size: number;
+  objectName: string;
+  uploaderEmail?: string;
+  uploaderName?: string;
+}
+
+export interface CheckReverseSharePasswordBody {
+  password: string;
+}
+
+export interface UpdateReverseShareFileBody {
   name?: string;
   description?: string | null;
-};
+}
 
-export type UpdateReverseShareFileResult = AxiosResponse<{
-  file: ReverseShareFile;
-}>;
+// Query parameter interfaces
+export interface GetReverseShareForUploadParams {
+  password?: string;
+}
+
+export interface RegisterFileUploadParams {
+  password?: string;
+}
+
+// Axios response types
+export type CreateReverseShareResult = AxiosResponse<CreateReverseShare201>;
+export type UpdateReverseShareResult = AxiosResponse<UpdateReverseShare200>;
+export type ListUserReverseSharesResult = AxiosResponse<ListUserReverseShares200>;
+export type GetReverseShareResult = AxiosResponse<GetReverseShare200>;
+export type DeleteReverseShareResult = AxiosResponse<DeleteReverseShare200>;
+export type GetReverseShareForUploadResult = AxiosResponse<GetReverseShareForUpload200>;
+export type UpdateReverseSharePasswordResult = AxiosResponse<UpdateReverseSharePassword200>;
+export type GetPresignedUrlResult = AxiosResponse<GetPresignedUrl200>;
+export type RegisterFileUploadResult = AxiosResponse<RegisterFileUpload201>;
+export type CheckReverseSharePasswordResult = AxiosResponse<CheckReverseSharePassword200>;
+export type DownloadReverseShareFileResult = AxiosResponse<DownloadReverseShareFile200>;
+export type DeleteReverseShareFileResult = AxiosResponse<DeleteReverseShareFile200>;
+export type ActivateReverseShareResult = AxiosResponse<ActivateReverseShare200>;
+export type DeactivateReverseShareResult = AxiosResponse<DeactivateReverseShare200>;
+export type UpdateReverseShareFileResult = AxiosResponse<UpdateReverseShareFile200>;

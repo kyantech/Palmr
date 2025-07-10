@@ -1,0 +1,273 @@
+---
+title: Configuring SMTP
+icon: Mail
+---
+
+For Palmr to function with all its best features, you need to configure an email server. To make this process easier, there's a built-in configuration panel inside **Settings** in Palmr. However, only users with an **ADMIN** profile can access and configure these settings.
+
+This guide walks you through the complete process of setting up SMTP for your Palmr installation, ensuring that email-dependent features work seamlessly.
+
+## Why configure SMTP?
+
+Configuring SMTP is essential for enabling key email functionalities that enhance the user experience and ensure proper system operation.
+
+The main functionalities that depend on SMTP configuration are:
+
+- **Password Reset** – Users who forget their password and cannot access the **Settings** panel need this feature to regain access to their accounts.
+- **Email Notifications** – Recipients will receive email notifications when new shares are sent to them, keeping them informed about shared content.
+
+Without proper SMTP configuration, these features will not work, potentially leaving users unable to recover their accounts or stay informed about shared files.
+
+Now, let's go through the step-by-step process to configure the **SMTP Server**.
+
+---
+
+## Accessing SMTP settings
+
+To configure SMTP settings, you'll need administrative access to the Palmr settings panel.
+
+### Prerequisites
+
+Before beginning the configuration process:
+
+- Ensure you have **ADMIN** user privileges in Palmr
+- Have your SMTP server credentials ready
+- For Gmail users, prepare to generate an App Password
+
+### Navigating to settings
+
+To access **Settings**, an **ADMIN** user must click on the profile picture in the **header** and select **Settings** from the dropdown menu.
+
+Once inside the **Settings** panel, click on the **Email** card to expand the SMTP configuration options.
+
+![Closed Settings Card](/assets/v3/smtp/closed-card.png)
+
+After expanding the card, the following SMTP configuration fields will appear:
+
+![Opened Settings Card](/assets/v3/smtp/opened-card.png)
+
+---
+
+## Configuring SMTP server
+
+The SMTP configuration process involves enabling the service and configuring the necessary connection details.
+
+### Enabling SMTP
+
+The first step is to **enable SMTP** by selecting "Yes" in the **SMTP Enabled** field.
+
+![SMTP Enabled](/assets/v3/smtp/smtp-enabled.png)
+
+### Configuration fields
+
+Once SMTP is enabled, you can configure the following fields:
+
+#### Basic SMTP Configuration
+
+**SMTP Server** – The SMTP server address provided by your email service. For Gmail, use `smtp.gmail.com` (this is the recommended option and set as default).
+
+**SMTP Port** – The server port used for connections. For Gmail, the standard port is **587** (TLS encryption).
+
+**SMTP Username** – The username for authenticating with your SMTP server. For Gmail, enter your complete email address.
+
+**SMTP Password** – The password for SMTP authentication. For Gmail, you must use an **App Password** (not your regular email password).
+
+#### Email Sender Configuration
+
+**Sender Name** – This will appear as the sender's name in all outgoing emails. Use a recognizable name like "Palmr" or your organization name.
+
+**Sender Email** – The email address from which notifications will be sent. Use a professional address like "noreply@palmr.app" or "notifications@yourdomain.com".
+
+#### Advanced Configuration Options
+
+**Connection Security** – Choose the appropriate security method for your SMTP server:
+
+- **Auto (Recommended)** – Automatically selects the best security method based on the port
+- **SSL (Port 465)** – Uses SSL encryption for the entire connection
+- **STARTTLS (Port 587)** – Uses STARTTLS to upgrade a plain connection to TLS
+- **None (Insecure)** – Uses plain SMTP without encryption (only for development/testing)
+
+**No Authentication** – Enable this option for internal SMTP servers that don't require username/password authentication. When enabled, the username and password fields will be hidden.
+
+**Trust Self-Signed Certificates** – Enable this option to trust self-signed SSL/TLS certificates. This is particularly useful for development environments or internal SMTP servers with self-signed certificates.
+
+#### Field Behavior and Dependencies
+
+**Conditional Field Display**: The SMTP configuration uses intelligent field display:
+
+- **All SMTP fields** are hidden when SMTP is disabled
+- **Username and Password fields** are automatically hidden when "No Authentication" is enabled
+- **Test Connection button** only appears when SMTP is enabled
+
+**Field Validation**: The system provides real-time validation:
+
+- **Required fields** are checked before testing connections
+- **Authentication fields** are validated unless "No Authentication" is enabled
+- **Connection testing** validates all settings before saving
+
+#### Testing Configuration
+
+**Test SMTP Connection** – Use this button to test your SMTP configuration before saving. This will verify that all settings are correct and the connection works properly.
+
+**Test Button Features**:
+
+- **Real-time validation** of all required fields
+- **Informational tooltip** explaining the test process
+- **Loading state** with spinner during connection test
+- **Success/Error messages** with detailed feedback
+- **Uses form values** (not saved settings) for testing
+
+### Important security note
+
+**Important:** If using **Gmail**, you need to generate an **App Password** instead of using your standard email password. This provides better security and is required for applications like Palmr.
+
+For other email services, consult the official documentation of the service provider you are using. We recommend using Gmail for its simplicity, reliability, and reasonable email sending limits.
+
+---
+
+## Generating a Gmail App Password
+
+Gmail requires App Passwords for third-party applications to ensure account security while maintaining functionality.
+
+### Step-by-step process
+
+To generate an App Password for Gmail:
+
+1. **Access Your Account**: Go to [Google My Account](https://myaccount.google.com/)
+2. **Navigate to Security**: Select the **Security** section from the menu
+3. **Find App Passwords**: Scroll down to locate **App Passwords** (you may need to enable 2-factor authentication first)
+4. **Generate Password**: Create a new password specifically for Palmr
+5. **Save Securely**: Copy and store the generated password safely
+
+### Additional resources
+
+For a complete guide with screenshots and detailed instructions, refer to: **[How to set up SMTP credentials with Gmail](https://medium.com/rails-to-rescue/how-to-set-up-smtp-credentials-with-gmail-for-your-app-send-email-cf236d11087d)**.
+
+### Gmail configuration summary
+
+When using Gmail, your final settings should be:
+
+- **SMTP Server**: `smtp.gmail.com`
+- **SMTP Port**: `587`
+- **SMTP Username**: Your Gmail address
+- **SMTP Password**: Generated App Password (16 characters)
+- **Connection Security**: Auto (Recommended) or STARTTLS (Port 587)
+
+---
+
+## Other email provider configurations
+
+While Gmail is recommended for its simplicity, Palmr supports various email providers. Here are common configurations:
+
+### Outlook/Hotmail
+
+- **SMTP Server**: `smtp-mail.outlook.com`
+- **SMTP Port**: `587`
+- **Connection Security**: STARTTLS (Port 587)
+- **Authentication**: Username and password required
+
+### Yahoo Mail
+
+- **SMTP Server**: `smtp.mail.yahoo.com`
+- **SMTP Port**: `587` or `465`
+- **Connection Security**: STARTTLS (Port 587) or SSL (Port 465)
+- **Authentication**: App-specific password required
+
+### Custom SMTP Server
+
+- **SMTP Server**: Your server's hostname or IP address
+- **SMTP Port**: Usually `25`, `587`, or `465`
+- **Connection Security**: Choose based on your server's capabilities
+- **Authentication**: Configure according to your server's requirements
+- **Trust Self-Signed Certificates**: Enable if using self-signed certificates
+
+---
+
+## Testing your configuration
+
+After completing the configuration, it's important to verify that everything works correctly.
+
+### Using the Test Connection feature
+
+Palmr provides a built-in **Test SMTP Connection** button that allows you to verify your configuration before saving:
+
+1. **Fill in your SMTP settings** – Complete all required fields in the SMTP configuration
+2. **Click "Test Connection"** – This will attempt to connect to your SMTP server with the current settings
+3. **Review the results** – You'll see a success message if the connection works, or an error message with details if it fails
+4. **Save your settings** – Once the test is successful, save your configuration to make it permanent
+
+**Note:** The test connection uses the values currently entered in the form, not the saved settings. Make sure to save your configuration after a successful test.
+
+### Validation steps
+
+1. **Save Settings**: Apply your SMTP configuration in the Palmr interface
+2. **Test Password Reset**: Try the password reset feature with a test account to ensure emails are sent
+3. **Test Notifications**: Create a test share to verify that notification emails are delivered
+4. **Check Email Delivery**: Confirm that emails arrive in the recipient's inbox (not spam folder)
+
+### Troubleshooting common issues
+
+If emails are not being sent:
+
+- **Verify all fields are filled correctly** – Ensure all required fields have valid values
+- **For Gmail, ensure you're using the App Password** – Not your regular email password
+- **Check that your email provider allows SMTP connections** – Some providers require specific settings
+- **Confirm that port 587 is not blocked by your firewall** – Check both local and network firewall settings
+- **Verify the SMTP server address** – Double-check the hostname for typos
+- **Test with different security settings** – Try different Connection Security options if one fails
+
+### Troubleshooting self-signed certificate issues
+
+If you're using an SMTP server with self-signed certificates and encountering connection errors:
+
+1. **Enable Trust Self-Signed Certificates** – In the SMTP settings, enable the "Trust Self-Signed Certificates" option
+2. **Use Appropriate Security Method** – Choose the correct security method for your server:
+   - For servers requiring TLS: Use "STARTTLS (Port 587)" or "SSL (Port 465)"
+   - For development servers without encryption: Use "None (Insecure)"
+3. **Verify Server Configuration** – Ensure your SMTP server is properly configured to accept connections on the specified port
+4. **Test Connection** – Use the "Test Connection" button to verify your configuration before saving
+
+**Note:** The "None (Insecure)" option should only be used in development environments or with trusted internal servers, as it transmits data without encryption.
+
+### Troubleshooting authentication issues
+
+If you're experiencing authentication problems:
+
+- **Check username and password** – Ensure they are correct and match your email provider's requirements
+- **For Gmail users** – Make sure you're using an App Password, not your regular password
+- **Enable "No Authentication" if applicable** – For internal servers that don't require authentication
+- **Verify account settings** – Some providers require enabling "Less secure app access" or similar settings
+
+### Common error messages and solutions
+
+The SMTP configuration system provides specific error messages to help you troubleshoot issues:
+
+**"SMTP is not enabled. Please enable SMTP first."**
+
+- **Solution**: Enable the "SMTP Enabled" toggle before testing
+
+**"Please fill in SMTP Host and Port before testing."**
+
+- **Solution**: Ensure both SMTP Server and SMTP Port fields are filled
+
+**"Please fill in SMTP Username and Password, or enable 'No Authentication' option."**
+
+- **Solution**: Either provide authentication credentials or enable "No Authentication"
+
+**"SMTP connection failed: [specific error]"**
+
+- **Solution**: Check the specific error message for details about the connection issue
+
+---
+
+## Finalizing SMTP configuration
+
+After entering the correct information and testing the functionality, save the settings.
+
+Your Palmr installation is now ready to:
+
+- Send password reset emails to users who need account recovery
+- Deliver share notifications to recipients automatically
+- Provide a complete user experience with reliable email communication
+
+With SMTP properly configured, users can take full advantage of Palmr's email-dependent features, ensuring a smooth and professional experience when sharing files and managing their accounts.

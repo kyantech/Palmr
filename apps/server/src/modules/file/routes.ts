@@ -1,7 +1,8 @@
+import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { z } from "zod";
+
 import { FileController } from "./controller";
 import { CheckFileSchema, RegisterFileSchema, UpdateFileSchema } from "./dto";
-import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { z } from "zod";
 
 export async function fileRoutes(app: FastifyInstance) {
   const fileController = new FileController();

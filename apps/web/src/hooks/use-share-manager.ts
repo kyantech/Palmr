@@ -13,56 +13,56 @@ import {
   notifyRecipients,
   updateShare,
 } from "@/http/endpoints";
-import { ListUserShares200SharesItem } from "@/http/models/listUserShares200SharesItem";
+import type { Share } from "@/http/endpoints/shares/types";
 
 export interface ShareManagerHook {
-  shareToDelete: ListUserShares200SharesItem | null;
-  shareToEdit: ListUserShares200SharesItem | null;
-  shareToManageFiles: ListUserShares200SharesItem | null;
-  shareToManageRecipients: ListUserShares200SharesItem | null;
-  shareToManageSecurity: ListUserShares200SharesItem | null;
-  shareToManageExpiration: ListUserShares200SharesItem | null;
-  shareToViewDetails: ListUserShares200SharesItem | null;
-  shareToGenerateLink: ListUserShares200SharesItem | null;
-  sharesToDelete: ListUserShares200SharesItem[] | null;
-  setShareToDelete: (share: ListUserShares200SharesItem | null) => void;
-  setShareToEdit: (share: ListUserShares200SharesItem | null) => void;
-  setShareToManageFiles: (share: ListUserShares200SharesItem | null) => void;
-  setShareToManageRecipients: (share: ListUserShares200SharesItem | null) => void;
-  setShareToManageSecurity: (share: ListUserShares200SharesItem | null) => void;
-  setShareToManageExpiration: (share: ListUserShares200SharesItem | null) => void;
-  setShareToViewDetails: (share: ListUserShares200SharesItem | null) => void;
-  setShareToGenerateLink: (share: ListUserShares200SharesItem | null) => void;
-  setSharesToDelete: (shares: ListUserShares200SharesItem[] | null) => void;
+  shareToDelete: Share | null;
+  shareToEdit: Share | null;
+  shareToManageFiles: Share | null;
+  shareToManageRecipients: Share | null;
+  shareToManageSecurity: Share | null;
+  shareToManageExpiration: Share | null;
+  shareToViewDetails: Share | null;
+  shareToGenerateLink: Share | null;
+  sharesToDelete: Share[] | null;
+  setShareToDelete: (share: Share | null) => void;
+  setShareToEdit: (share: Share | null) => void;
+  setShareToManageFiles: (share: Share | null) => void;
+  setShareToManageRecipients: (share: Share | null) => void;
+  setShareToManageSecurity: (share: Share | null) => void;
+  setShareToManageExpiration: (share: Share | null) => void;
+  setShareToViewDetails: (share: Share | null) => void;
+  setShareToGenerateLink: (share: Share | null) => void;
+  setSharesToDelete: (shares: Share[] | null) => void;
   handleDelete: (shareId: string) => Promise<void>;
-  handleBulkDelete: (shares: ListUserShares200SharesItem[]) => void;
-  handleBulkDownload: (shares: ListUserShares200SharesItem[]) => void;
-  handleDownloadShareFiles: (share: ListUserShares200SharesItem) => Promise<void>;
-  handleBulkDownloadWithZip: (shares: ListUserShares200SharesItem[], zipName: string) => Promise<void>;
+  handleBulkDelete: (shares: Share[]) => void;
+  handleBulkDownload: (shares: Share[]) => void;
+  handleDownloadShareFiles: (share: Share) => Promise<void>;
+  handleBulkDownloadWithZip: (shares: Share[], zipName: string) => Promise<void>;
   handleDeleteBulk: () => Promise<void>;
   handleEdit: (shareId: string, data: any) => Promise<void>;
   handleUpdateName: (shareId: string, newName: string) => Promise<void>;
   handleUpdateDescription: (shareId: string, newDescription: string) => Promise<void>;
-  handleUpdateSecurity: (shareId: string) => Promise<void>;
-  handleUpdateExpiration: (shareId: string) => Promise<void>;
+  handleUpdateSecurity: (share: Share) => Promise<void>;
+  handleUpdateExpiration: (share: Share) => Promise<void>;
   handleManageFiles: (shareId: string, files: any[]) => Promise<void>;
   handleManageRecipients: (shareId: string, recipients: any[]) => Promise<void>;
   handleGenerateLink: (shareId: string, alias: string) => Promise<void>;
-  handleNotifyRecipients: (share: ListUserShares200SharesItem) => Promise<void>;
+  handleNotifyRecipients: (share: Share) => Promise<void>;
   setClearSelectionCallback?: (callback: () => void) => void;
 }
 
 export function useShareManager(onSuccess: () => void) {
   const t = useTranslations();
-  const [shareToDelete, setShareToDelete] = useState<ListUserShares200SharesItem | null>(null);
-  const [shareToEdit, setShareToEdit] = useState<ListUserShares200SharesItem | null>(null);
-  const [shareToManageFiles, setShareToManageFiles] = useState<ListUserShares200SharesItem | null>(null);
-  const [shareToManageRecipients, setShareToManageRecipients] = useState<ListUserShares200SharesItem | null>(null);
-  const [shareToManageSecurity, setShareToManageSecurity] = useState<ListUserShares200SharesItem | null>(null);
-  const [shareToManageExpiration, setShareToManageExpiration] = useState<ListUserShares200SharesItem | null>(null);
-  const [shareToViewDetails, setShareToViewDetails] = useState<ListUserShares200SharesItem | null>(null);
-  const [shareToGenerateLink, setShareToGenerateLink] = useState<ListUserShares200SharesItem | null>(null);
-  const [sharesToDelete, setSharesToDelete] = useState<ListUserShares200SharesItem[] | null>(null);
+  const [shareToDelete, setShareToDelete] = useState<Share | null>(null);
+  const [shareToEdit, setShareToEdit] = useState<Share | null>(null);
+  const [shareToManageFiles, setShareToManageFiles] = useState<Share | null>(null);
+  const [shareToManageRecipients, setShareToManageRecipients] = useState<Share | null>(null);
+  const [shareToManageSecurity, setShareToManageSecurity] = useState<Share | null>(null);
+  const [shareToManageExpiration, setShareToManageExpiration] = useState<Share | null>(null);
+  const [shareToViewDetails, setShareToViewDetails] = useState<Share | null>(null);
+  const [shareToGenerateLink, setShareToGenerateLink] = useState<Share | null>(null);
+  const [sharesToDelete, setSharesToDelete] = useState<Share[] | null>(null);
   const [clearSelectionCallback, setClearSelectionCallbackState] = useState<(() => void) | null>(null);
 
   const setClearSelectionCallback = useCallback((callback: () => void) => {
@@ -75,12 +75,12 @@ export function useShareManager(onSuccess: () => void) {
       toast.success(t("shareManager.deleteSuccess"));
       onSuccess();
       setShareToDelete(null);
-    } catch (error) {
+    } catch {
       toast.error(t("shareManager.deleteError"));
     }
   };
 
-  const handleBulkDelete = (shares: ListUserShares200SharesItem[]) => {
+  const handleBulkDelete = (shares: Share[]) => {
     setSharesToDelete(shares);
   };
 
@@ -99,7 +99,7 @@ export function useShareManager(onSuccess: () => void) {
       if (clearSelectionCallback) {
         clearSelectionCallback();
       }
-    } catch (error) {
+    } catch {
       toast.dismiss(loadingToast);
       toast.error(t("shareManager.bulkDeleteError"));
     }
@@ -111,7 +111,7 @@ export function useShareManager(onSuccess: () => void) {
       toast.success(t("shareManager.updateSuccess"));
       onSuccess();
       setShareToEdit(null);
-    } catch (error) {
+    } catch {
       toast.error(t("shareManager.updateError"));
     }
   };
@@ -121,7 +121,7 @@ export function useShareManager(onSuccess: () => void) {
       await updateShare({ id: shareId, name: newName });
       await onSuccess();
       toast.success(t("shareManager.updateSuccess"));
-    } catch (error) {
+    } catch {
       toast.error(t("shareManager.updateError"));
     }
   };
@@ -131,27 +131,17 @@ export function useShareManager(onSuccess: () => void) {
       await updateShare({ id: shareId, description: newDescription });
       await onSuccess();
       toast.success(t("shareManager.updateSuccess"));
-    } catch (error) {
+    } catch {
       toast.error(t("shareManager.updateError"));
     }
   };
 
-  const handleUpdateSecurity = async (shareId: string) => {
-    try {
-      await onSuccess();
-      toast.success(t("shareManager.securityUpdateSuccess"));
-    } catch (error) {
-      toast.error(t("shareManager.securityUpdateError"));
-    }
+  const handleUpdateSecurity = async (share: Share) => {
+    setShareToManageSecurity(share);
   };
 
-  const handleUpdateExpiration = async (shareId: string) => {
-    try {
-      await onSuccess();
-      toast.success(t("shareManager.expirationUpdateSuccess"));
-    } catch (error) {
-      toast.error(t("shareManager.expirationUpdateError"));
-    }
+  const handleUpdateExpiration = async (share: Share) => {
+    setShareToManageExpiration(share);
   };
 
   const handleManageFiles = async (shareId: string, files: string[]) => {
@@ -160,7 +150,7 @@ export function useShareManager(onSuccess: () => void) {
       toast.success(t("shareManager.filesUpdateSuccess"));
       onSuccess();
       setShareToManageFiles(null);
-    } catch (error) {
+    } catch {
       toast.error(t("shareManager.filesUpdateError"));
     }
   };
@@ -171,7 +161,7 @@ export function useShareManager(onSuccess: () => void) {
       toast.success(t("shareManager.recipientsUpdateSuccess"));
       onSuccess();
       setShareToManageRecipients(null);
-    } catch (error) {
+    } catch {
       toast.error(t("shareManager.recipientsUpdateError"));
     }
   };
@@ -187,7 +177,7 @@ export function useShareManager(onSuccess: () => void) {
     }
   };
 
-  const handleNotifyRecipients = async (share: ListUserShares200SharesItem) => {
+  const handleNotifyRecipients = async (share: Share) => {
     const link = `${window.location.origin}/s/${share.alias?.alias}`;
     const loadingToast = toast.loading(t("shareManager.notifyLoading"));
 
@@ -195,54 +185,13 @@ export function useShareManager(onSuccess: () => void) {
       await notifyRecipients(share.id, { shareLink: link });
       toast.dismiss(loadingToast);
       toast.success(t("shareManager.notifySuccess"));
-    } catch (error) {
+    } catch {
       toast.dismiss(loadingToast);
       toast.error(t("shareManager.notifyError"));
     }
   };
 
-  const handleBulkDownload = (shares: ListUserShares200SharesItem[]) => {
-    const zipName =
-      shares.length === 1
-        ? t("shareManager.singleShareZipName", { shareName: shares[0].name || t("shareManager.defaultShareName") })
-        : t("shareManager.multipleSharesZipName", { count: shares.length });
-
-    handleBulkDownloadWithZip(shares, zipName);
-  };
-
-  const handleDownloadShareFiles = async (share: ListUserShares200SharesItem) => {
-    if (!share.files || share.files.length === 0) {
-      toast.error(t("shareManager.noFilesToDownload"));
-      return;
-    }
-
-    if (share.files.length === 1) {
-      const file = share.files[0];
-      try {
-        const encodedObjectName = encodeURIComponent(file.objectName);
-        const response = await getDownloadUrl(encodedObjectName);
-        const downloadUrl = response.data.url;
-
-        const link = document.createElement("a");
-        link.href = downloadUrl;
-        link.download = file.name;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        toast.success(t("shareManager.downloadSuccess"));
-      } catch (error) {
-        console.error("Download error:", error);
-        toast.error(t("shareManager.downloadError"));
-      }
-    } else {
-      const zipName = t("shareManager.singleShareZipName", {
-        shareName: share.name || t("shareManager.defaultShareName"),
-      });
-      await handleBulkDownloadWithZip([share], zipName);
-    }
-  };
-
-  const handleBulkDownloadWithZip = async (shares: ListUserShares200SharesItem[], zipName: string) => {
+  const handleBulkDownloadWithZip = async (shares: Share[], zipName: string) => {
     try {
       toast.promise(
         (async () => {
@@ -306,6 +255,47 @@ export function useShareManager(onSuccess: () => void) {
       );
     } catch (error) {
       console.error("Error creating ZIP:", error);
+    }
+  };
+
+  const handleBulkDownload = (shares: Share[]) => {
+    const zipName =
+      shares.length === 1
+        ? t("shareManager.singleShareZipName", { shareName: shares[0].name || t("shareManager.defaultShareName") })
+        : t("shareManager.multipleSharesZipName", { count: shares.length });
+
+    handleBulkDownloadWithZip(shares, zipName);
+  };
+
+  const handleDownloadShareFiles = async (share: Share) => {
+    if (!share.files || share.files.length === 0) {
+      toast.error(t("shareManager.noFilesToDownload"));
+      return;
+    }
+
+    if (share.files.length === 1) {
+      const file = share.files[0];
+      try {
+        const encodedObjectName = encodeURIComponent(file.objectName);
+        const response = await getDownloadUrl(encodedObjectName);
+        const downloadUrl = response.data.url;
+
+        const link = document.createElement("a");
+        link.href = downloadUrl;
+        link.download = file.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success(t("shareManager.downloadSuccess"));
+      } catch (error) {
+        console.error("Download error:", error);
+        toast.error(t("shareManager.downloadError"));
+      }
+    } else {
+      const zipName = t("shareManager.singleShareZipName", {
+        shareName: share.name || t("shareManager.defaultShareName"),
+      });
+      await handleBulkDownloadWithZip([share], zipName);
     }
   };
 

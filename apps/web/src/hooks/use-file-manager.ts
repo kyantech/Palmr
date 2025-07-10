@@ -18,6 +18,7 @@ interface FileToDelete {
 interface PreviewFile {
   name: string;
   objectName: string;
+  description?: string;
 }
 
 interface FileToShare {
@@ -101,6 +102,7 @@ export function useFileManager(onRefresh: () => Promise<void>, clearSelection?: 
       toast.success(t("files.downloadStart"));
     } catch (error) {
       toast.error(t("files.downloadError"));
+      throw error;
     }
   };
 

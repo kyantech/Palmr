@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import { getAdminConfigs, getSecureConfigs, getSecureConfigValue } from "@/lib/actions/config";
+import { getAllConfigs } from "@/http/endpoints";
 
 interface Config {
   key: string;
@@ -13,8 +13,8 @@ interface Config {
 }
 
 /**
- * Hook para buscar configurações de forma segura
- * Substitui o uso direto de getAllConfigs que expunha dados sensíveis
+ * Hook to fetch configurations securely
+ * Replaces direct use of getAllConfigs which exposed sensitive data
  */
 export function useSecureConfigs() {
   const [configs, setConfigs] = useState<Config[]>([]);
@@ -25,8 +25,8 @@ export function useSecureConfigs() {
     try {
       setIsLoading(true);
       setError(null);
-      const data = await getSecureConfigs();
-      setConfigs(data.configs);
+      const response = await getAllConfigs();
+      setConfigs(response.data.configs);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
       console.error("Error loading secure configs:", err);
@@ -48,8 +48,8 @@ export function useSecureConfigs() {
 }
 
 /**
- * Hook para buscar configurações para administradores
- * REQUER PERMISSÕES DE ADMIN - retorna erro se usuário não for admin
+ * Hook to fetch configurations for administrators
+ * REQUIRES ADMIN PERMISSIONS - returns error if user is not admin
  */
 export function useAdminConfigs() {
   const [configs, setConfigs] = useState<Config[]>([]);
@@ -63,12 +63,12 @@ export function useAdminConfigs() {
       setError(null);
       setIsUnauthorized(false);
 
-      const data = await getAdminConfigs();
-      setConfigs(data.configs);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      const response = await getAllConfigs();
+      setConfigs(response.data.configs);
+    } catch (err: any) {
+      const errorMessage = err?.response?.data?.error || err?.message || "Unknown error";
 
-      if (errorMessage.includes("Unauthorized") || errorMessage.includes("Admin access required")) {
+      if (err?.response?.status === 401 || err?.response?.status === 403) {
         setIsUnauthorized(true);
         setError("Access denied: Administrator privileges required");
       } else {
@@ -95,31 +95,32 @@ export function useAdminConfigs() {
 }
 
 /**
- * Hook para buscar um valor específico de configuração
- * Útil quando você só precisa de um valor específico (ex: smtpEnabled)
+ * Hook to fetch a specific configuration value
+ * Useful when you only need a specific value (e.g. smtpEnabled)
  */
 export function useSecureConfigValue(key: string) {
   const [value, setValue] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadConfigValue = async () => {
+  const loadConfigValue = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const configValue = await getSecureConfigValue(key);
-      setValue(configValue);
+      const response = await getAllConfigs();
+      const config = response.data.configs.find((c) => c.key === key);
+      setValue(config?.value || null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
       console.error(`Error loading config value for ${key}:`, err);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [key]);
 
   useEffect(() => {
     loadConfigValue();
-  }, [key]);
+  }, [key, loadConfigValue]);
 
   return {
     value,

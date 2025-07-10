@@ -1,13 +1,14 @@
+import { FastifyReply, FastifyRequest } from "fastify";
+
 import {
   CreateReverseShareSchema,
-  UpdateReverseShareSchema,
-  UpdateReverseSharePasswordSchema,
-  UploadToReverseShareSchema,
-  ReverseSharePasswordSchema,
   GetPresignedUrlSchema,
+  ReverseSharePasswordSchema,
+  UpdateReverseSharePasswordSchema,
+  UpdateReverseShareSchema,
+  UploadToReverseShareSchema,
 } from "./dto";
 import { ReverseShareService } from "./service";
-import { FastifyReply, FastifyRequest } from "fastify";
 
 export class ReverseShareController {
   private reverseShareService = new ReverseShareService();

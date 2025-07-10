@@ -1,6 +1,7 @@
-import { StorageController } from "./controller";
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
+
+import { StorageController } from "./controller";
 
 export async function storageRoutes(app: FastifyInstance) {
   const storageController = new StorageController();

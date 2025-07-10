@@ -1,0 +1,370 @@
+---
+title: Auth0
+icon: Lock
+---
+
+import { ZoomableImage } from "@/components/ui/zoomable-image";
+
+Auth0 is one of Palmr's officially supported OIDC providers, offering enterprise-grade authentication through Auth0's identity platform. This integration allows users to sign in to Palmr using Auth0's comprehensive authentication system, making it perfect for enterprise organizations, applications requiring advanced security features, and teams that need centralized identity management.
+
+<ZoomableImage src="/assets/v3/oidc/auth0/sign-in-with-auth0.png" alt="Sign in with Auth0" />
+
+## Why use Auth0 authentication?
+
+Auth0 authentication provides several advantages for enterprise and security-focused organizations:
+
+- **Enterprise-grade security** - Advanced security features like MFA, adaptive authentication, and threat detection
+- **Centralized identity management** - Single platform to manage users across multiple applications
+- **Flexible authentication options** - Support for social logins, enterprise SSO, and custom databases
+- **Compliance ready** - Built-in compliance with SOC 2, GDPR, HIPAA, and other standards
+- **Advanced customization** - Rules, hooks, and custom branding capabilities
+
+---
+
+## Prerequisites
+
+Before configuring Auth0 authentication, ensure you have:
+
+- **Auth0 account** - Ability to create applications and manage tenants
+- **Admin privileges in Palmr** - Required to configure OIDC settings
+- **Domain configuration** - For production deployments with custom domains
+
+> **Note:** Auth0 is pre-configured as an official provider in Palmr, which means the technical configuration is handled automatically. You only need to provide your OAuth credentials.
+
+---
+
+## Setting up Auth0 Application
+
+### Creating an Auth0 application
+
+To get started with Auth0 authentication, you'll need to create an application in your Auth0 Dashboard.
+
+1. **Navigate to Auth0 Dashboard**: Go to [manage.auth0.com](https://manage.auth0.com)
+
+<ZoomableImage src="/assets/v3/oidc/auth0/auth0-dashboard.png" alt="Auth0 Dashboard" />
+
+2. **Create new application**: Click **"Applications"** in the left sidebar, then click **"+ Create Application"**
+
+<ZoomableImage src="/assets/v3/oidc/auth0/create-application.png" alt="Auth0 Create Application" />
+
+3. **Select application type**: Choose **"Single Page Application"** for web-based Palmr instances
+
+<ZoomableImage
+  src="/assets/v3/oidc/auth0/application-type.png"
+  alt="Auth0 Application Type Selection"
+  legend="This is a fake application, you have to use your own."
+/>
+
+4. **Enter application details**:
+   - **Name**: Enter a descriptive name like "Palmr File Sharing"
+
+5. **Create application**: Click **"Create"** to generate your Auth0 application
+
+### Configuring application settings
+
+After creating your application, you'll need to configure the settings that Palmr will use. Navigate to the application page and click on the **"Settings"** tab.
+
+<ZoomableImage
+  src="/assets/v3/oidc/auth0/application-settings.png"
+  alt="Auth0 Application Settings"
+  legend="This is a fake application, you have to use your own."
+/>
+
+1. **Configure application URLs**:
+
+You'll need to configure several URLs in your Auth0 application settings. Here's what to add for each environment:
+
+### Application Login URIs
+
+| Environment | URL                                 |
+| ----------- | ----------------------------------- |
+| Production  | `https://yourdomain.com/login`      |
+| Development | Don't add anything here             |
+| Custom Port | `https://yourdomain.com:5487/login` |
+
+### Allowed Logout URLs
+
+| Environment | URL                           |
+| ----------- | ----------------------------- |
+| Production  | `https://yourdomain.com`      |
+| Development | `http://localhost:3000`       |
+| Custom Port | `https://yourdomain.com:5487` |
+
+### Allowed Web Origins
+
+| Environment | URL                           |
+| ----------- | ----------------------------- |
+| Production  | `https://yourdomain.com`      |
+| Development | `http://localhost:3000`       |
+| Custom Port | `https://yourdomain.com:5487` |
+
+### Allowed Callback URLs
+
+| Environment | URL                                                             |
+| ----------- | --------------------------------------------------------------- |
+| Production  | `https://yourdomain.com/api/auth/providers/auth0/callback`      |
+| Development | `http://localhost:3000/api/auth/providers/auth0/callback`       |
+| Custom Port | `https://yourdomain.com:5487/api/auth/providers/auth0/callback` |
+
+> **Note:** Replace `yourdomain.com` with your actual domain name in all production and custom port URLs.
+
+<ZoomableImage
+  src="/assets/v3/oidc/auth0/config-urls.png"
+  alt="Auth0 Application URLs Configuration"
+  legend="This is a fake application, you have to use your own."
+/>
+
+2. **Save changes**: Click **"Save"** to apply your configuration
+
+### Getting OAuth credentials
+
+Now you'll get the credentials that Palmr will use to authenticate with Auth0.
+
+1. **Copy Domain**: Note your Auth0 domain (e.g., `your-tenant.auth0.com`) add `https://` at the beginning
+
+2. **Copy Client ID**: The Client ID is displayed in the **"Client ID"** field
+
+3. **Generate Client Secret**: Click **"Show"** next to Client Secret to reveal it
+
+<ZoomableImage
+  src="/assets/v3/oidc/auth0/oauth-credentials.png"
+  alt="Auth0 OAuth Credentials"
+  legend="The client ID and client secret shown in the image are examples only (fake credentials). You must use your own credentials from Auth0."
+/>
+
+4. **Save credentials**: Copy the **Domain**, **Client ID**, and **Client Secret** for later use
+
+> **Important:** Replace `yourdomain.com` with your actual domain. You can add multiple callback URLs for different environments (development, staging, production).
+
+---
+
+## Configuring Palmr
+
+### Accessing OIDC settings
+
+To configure Auth0 authentication in Palmr, you need administrator access to the settings panel.
+
+1. **Login as administrator**: Sign in to Palmr with an admin account
+
+2. **Access settings**: Click your profile picture in the header and select **Settings**
+
+3. **Navigate to authentication**: Find and click on the **Authentication Providers** configuration section
+
+<ZoomableImage src="/assets/v3/oidc/auth-providers.png" alt="Palmr Authentication Providers" />
+
+### Enabling Auth0 provider
+
+Auth0 comes pre-configured as an official provider, so the setup process is streamlined.
+
+1. **Locate Auth0 provider**: Find Auth0 in the list of available providers
+
+2. **Enable the provider**: Toggle the status to **Enabled**
+
+<ZoomableImage src="/assets/v3/oidc/auth0/enabled-auth0.png" alt="Palmr Auth0 Provider Enabled" />
+
+After enabling the provider, click on the pen icon to configure the provider.
+
+3. **Configure credentials**:
+   - **Provider URL**: Paste your Auth0 domain (e.g., `https://your-tenant.auth0.com`) remember to add the `https://` at the beginning
+   - **Client ID**: Paste the Client ID from Auth0 application
+   - **Client Secret**: Paste the Client Secret from Auth0 application
+   - **Scopes**: Add the scopes you want to use. The default scopes are `openid`, `profile`, and `email`.
+
+<ZoomableImage
+  src="/assets/v3/oidc/auth0/edit-auth0.png"
+  alt="Edit Auth0 Provider"
+  legend="This is a fake application, you have to use your own."
+/>
+
+### Advanced configuration options
+
+Configure additional settings to customize the authentication behavior:
+
+**Auto Registration**: Enable this to automatically create user accounts when someone authenticates for the first time.
+
+**Sort Order**: Control where the Auth0 login button appears relative to other authentication providers.
+
+**Icon**: you can choose the icon you want to use for the Auth0 login button (default is `SiAuth0`).
+
+<ZoomableImage src="/assets/v3/oidc/auth0/auth0-icon.png" alt="Auth0 Icon" />
+
+> **Enterprise tip:** Auth0 authentication works great for enterprise organizations requiring advanced security features and centralized identity management.
+
+---
+
+## Account linking
+
+By default, if a user is already registered in Palmr with their Auth0 email, they will be automatically linked to their Palmr account.
+
+> **Note:** You can't disable account linking. If you want to unlink a user from their Auth0 account, you need to delete the user from Palmr.
+
+---
+
+## Technical configuration
+
+Auth0's technical configuration is handled automatically, but understanding the setup can help with troubleshooting:
+
+```yaml
+Provider Type: OAuth 2.0 with OIDC Discovery
+Issuer URL: https://your-tenant.auth0.com
+Authorization Endpoint: /authorize
+Token Endpoint: /oauth/token
+UserInfo Endpoint: /userinfo
+Scopes: openid profile email
+```
+
+### Field mappings
+
+Palmr automatically maps Auth0 user information to local user accounts:
+
+- **User ID**: Maps from Auth0's `sub` field
+- **Email**: Maps from Auth0's `email` field
+- **Full Name**: Maps from Auth0's `name` field
+- **First Name**: Maps from Auth0's `given_name` field
+- **Last Name**: Maps from Auth0's `family_name` field
+- **Avatar**: Maps from Auth0's `picture` field
+- **Username**: Maps from Auth0's `nickname` field
+
+### Auth0-specific features
+
+- **Custom Claims**: Can include custom user metadata and app metadata
+- **Connection Support**: Works with database, social, and enterprise connections
+- **Rules and Hooks**: Can customize authentication flow with custom logic
+- **Multi-factor Authentication**: Supports Auth0's MFA features
+- **Enterprise SSO**: Integrates with SAML, LDAP, and other enterprise systems
+
+---
+
+## Testing the configuration
+
+### Verifying the setup
+
+After configuring Auth0 authentication, test the integration to ensure everything works correctly.
+
+1. **Check login page**: Navigate to your Palmr login page and verify the "Sign in with Auth0" button appears
+
+2. **Test authentication flow**: Click the Auth0 sign-in button and complete the authentication process
+
+3. **Verify user creation**: Confirm that a new user account is created (if auto-registration is enabled)
+
+### Login flow verification
+
+The complete authentication process should work as follows:
+
+1. **User clicks "Sign in with Auth0"**: The browser redirects to Auth0's authorization page
+2. **User authenticates**: User completes authentication through Auth0 (login, MFA, etc.)
+3. **Auth0 redirects back to Palmr**: User returns to Palmr with authentication tokens
+4. **Palmr creates or updates user**: User account is automatically managed with Auth0 information
+5. **User accesses Palmr**: User is logged in with their Auth0 identity
+
+---
+
+## Troubleshooting common issues
+
+### Redirect URI mismatch error
+
+**Error message**: `invalid_redirect_uri`
+
+**Cause**: The redirect URI in your request doesn't match what's configured in Auth0 application.
+
+**Solution**:
+
+1. Check the exact URL in the error message
+2. Add this exact URL to your Auth0 application's callback URLs
+3. Ensure you include the correct protocol (http/https) and port
+4. Remove any trailing slashes unless they're in the callback URL
+
+### Access denied error
+
+**Error message**: `access_denied`
+
+**Cause**: User denied permissions or the application isn't properly configured.
+
+**Solution**:
+
+1. Verify that your Auth0 application requests the correct scopes
+2. Check that users are granting permissions during the authorization flow
+3. Ensure your application is not restricted or disabled
+4. Verify the application has proper permissions set up
+
+### Invalid client error
+
+**Error message**: `invalid_client`
+
+**Cause**: Incorrect Client ID, Client Secret, or Domain.
+
+**Solution**:
+
+1. Double-check that you've copied the credentials correctly from Auth0
+2. Ensure there are no extra spaces or characters in the credentials
+3. Verify you're using the correct domain format (e.g., `your-tenant.auth0.com`)
+4. Generate a new Client Secret if necessary
+
+### Domain configuration issues
+
+**Error message**: Domain not found or invalid
+
+**Cause**: Incorrect Auth0 domain or tenant configuration.
+
+**Solution**:
+
+1. Verify your Auth0 domain is correct (e.g., `your-tenant.auth0.com`)
+2. Check that your Auth0 tenant is active and not suspended
+3. Ensure you're using the correct region for your tenant
+4. Verify DNS resolution for your Auth0 domain
+
+### Custom claims not available
+
+**Cause**: Custom claims not properly configured in Auth0 rules or actions.
+
+**Solution**:
+
+1. Check Auth0 rules and actions for custom claim configuration
+2. Verify that custom claims are included in the ID token
+3. Ensure the claims are properly formatted and accessible
+4. Test with a user that has the expected custom claims
+
+---
+
+## Security best practices
+
+### Credential management
+
+- **Never expose secrets**: Keep your Client Secret secure and never commit it to version control
+- **Rotate credentials regularly**: Generate new Client Secrets periodically for enhanced security
+- **Use environment variables**: Store sensitive configuration in environment variables, not config files
+- **Monitor access logs**: Regularly review authentication logs for suspicious activity
+
+### Scope and permission management
+
+- **Minimal scopes**: Only request `openid`, `profile`, and `email` scopes as required by Palmr
+- **User consent**: Ensure users understand what permissions they're granting
+- **Regular audits**: Review which users have connected their Auth0 accounts
+- **Access reviews**: Periodically check user access and remove inactive accounts
+
+### Production considerations
+
+- **Use HTTPS**: Always use HTTPS in production environments
+- **Configure proper domains**: Use production domains in Auth0 application settings
+- **Test thoroughly**: Verify the complete authentication flow before going live
+- **Plan for failures**: Have fallback authentication methods available
+
+---
+
+## Next steps
+
+With Auth0 authentication configured, you might want to:
+
+- **Configure additional providers**: Set up other OIDC providers for more authentication options
+- **Customize user management**: Fine-tune auto-registration and admin assignment rules
+- **Review security settings**: Ensure your authentication setup meets your security requirements
+- **Monitor usage**: Keep track of authentication patterns and user activity
+
+For more information about OIDC authentication in Palmr, see the [OIDC Authentication overview](/docs/3.1-beta/oidc-authentication).
+
+## Useful resources
+
+- [Auth0 Documentation](https://auth0.com/docs)
+- [Auth0 OAuth 2.0 Guide](https://auth0.com/docs/protocols/oauth2)
+- [Auth0 OpenID Connect](https://auth0.com/docs/protocols/openid-connect)
+- [Auth0 Dashboard](https://manage.auth0.com)

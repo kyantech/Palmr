@@ -1,20 +1,19 @@
 "use client";
 
-import { LATEST_VERSION, LATEST_VERSION_PATH } from "@/config/constants";
-import { AlertTriangle, ArrowRightIcon, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { AlertTriangle, ArrowRightIcon, X } from "lucide-react";
 
-function useIntersectionObserver(
-  targetRef: React.RefObject<HTMLDivElement | null>
-) {
+import { LATEST_VERSION, LATEST_VERSION_PATH } from "@/config/constants";
+
+function useIntersectionObserver(targetRef: React.RefObject<HTMLDivElement | null>) {
   const [isIntersecting, setIsIntersecting] = useState(true);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsIntersecting(entry.isIntersecting),
-      { threshold: 0, rootMargin: "-10px 0px 0px 0px" }
-    );
+    const observer = new IntersectionObserver(([entry]) => setIsIntersecting(entry.isIntersecting), {
+      threshold: 0,
+      rootMargin: "-10px 0px 0px 0px",
+    });
 
     if (targetRef.current) {
       observer.observe(targetRef.current);
@@ -26,10 +25,7 @@ function useIntersectionObserver(
   return isIntersecting;
 }
 
-function useClickOutside(
-  ref: React.RefObject<HTMLDivElement | null>,
-  callback: () => void
-) {
+function useClickOutside(ref: React.RefObject<HTMLDivElement | null>, callback: () => void) {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (ref.current && !ref.current.contains(event.target as Node)) {
@@ -59,16 +55,14 @@ function WarningContent({ onClose }: { onClose: () => void }) {
             Deprecated version documentation
           </h3>
           <p className="text-[15px] text-amber-700 dark:text-amber-300 mb-3">
-            This documentation refers to a previous version of Palmr. It may
-            contain more complex configurations and bugs that have already been
-            fixed.
+            This documentation refers to a previous version of Palmr. It may contain more complex configurations and
+            bugs that have already been fixed.
           </p>
           <Link
             href={LATEST_VERSION_PATH}
             className="inline-flex items-center text-base font-medium text-amber-800 dark:text-amber-100 hover:text-amber-900 dark:hover:text-amber-200"
           >
-            View latest documentation ({LATEST_VERSION}){" "}
-            <ArrowRightIcon className="w-4 h-4 ml-1 mt-0.5" />
+            View latest documentation ({LATEST_VERSION}) <ArrowRightIcon className="w-4 h-4 ml-1 mt-0.5" />
           </Link>
         </div>
       </div>
@@ -85,10 +79,7 @@ function FloatingWarning({ onClose }: { onClose: () => void }) {
   const toggleContent = () => setShowContent(!showContent);
 
   return (
-    <div
-      className="fixed bottom-6 z-50"
-      style={{ right: "max(1.5rem, calc((100vw - 1024px) / 2 + 1.5rem))" }}
-    >
+    <div className="fixed bottom-6 z-50" style={{ right: "max(1.5rem, calc((100vw - 1024px) / 2 + 1.5rem))" }}>
       <div className="relative" ref={floatingRef}>
         <button
           onClick={toggleContent}

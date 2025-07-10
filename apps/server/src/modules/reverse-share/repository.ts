@@ -1,6 +1,7 @@
+import bcrypt from "bcryptjs";
+
 import { prisma } from "../../shared/prisma";
 import { CreateReverseShareInput, UpdateReverseShareInput } from "./dto";
-import bcrypt from "bcryptjs";
 
 export class ReverseShareRepository {
   async create(data: CreateReverseShareInput, creatorId: string) {

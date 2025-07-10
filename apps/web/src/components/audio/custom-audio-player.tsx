@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { IconPlayerPause, IconPlayerPlay, IconVolume, IconVolume3, IconVolumeOff } from "@tabler/icons-react";
 
 import { Button } from "@/components/ui/button";
@@ -21,9 +21,37 @@ export function CustomAudioPlayer({ src }: CustomAudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const previousVolume = useRef(1);
 
+  const loadAudioData = useCallback(async () => {
+    try {
+      const response = await fetch(src);
+      const arrayBuffer = await response.arrayBuffer();
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+      const channelData = audioBuffer.getChannelData(0);
+      const points = 200;
+      const blockSize = Math.floor(channelData.length / points);
+      const downsampledData = new Float32Array(points);
+
+      for (let i = 0; i < points; i++) {
+        const blockStart = blockSize * i;
+        let sum = 0;
+        for (let j = 0; j < blockSize; j++) {
+          sum += Math.abs(channelData[blockStart + j]);
+        }
+        downsampledData[i] = sum / blockSize;
+      }
+
+      setAudioData(downsampledData);
+    } catch (error) {
+      console.error("Failed to load audio data:", error);
+      setAudioData(null);
+    }
+  }, [src]);
+
   useEffect(() => {
     loadAudioData();
-  }, [src]);
+  }, [src, loadAudioData]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -50,34 +78,6 @@ export function CustomAudioPlayer({ src }: CustomAudioPlayerProps) {
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
     };
   }, []);
-
-  const loadAudioData = async () => {
-    try {
-      const response = await fetch(src);
-      const arrayBuffer = await response.arrayBuffer();
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-
-      const channelData = audioBuffer.getChannelData(0);
-      const points = 200;
-      const blockSize = Math.floor(channelData.length / points);
-      const downsampledData = new Float32Array(points);
-
-      for (let i = 0; i < points; i++) {
-        const blockStart = blockSize * i;
-        let sum = 0;
-        for (let j = 0; j < blockSize; j++) {
-          sum += Math.abs(channelData[blockStart + j]);
-        }
-        downsampledData[i] = sum / blockSize;
-      }
-
-      setAudioData(downsampledData);
-    } catch (error) {
-      console.error("Failed to load audio data:", error);
-      setAudioData(null);
-    }
-  };
 
   const togglePlayPause = () => {
     if (!audioRef.current) return;

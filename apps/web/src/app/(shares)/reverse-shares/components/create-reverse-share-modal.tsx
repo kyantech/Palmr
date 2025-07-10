@@ -8,7 +8,6 @@ import {
   IconFile,
   IconFiles,
   IconLock,
-  IconMail,
   IconSettings,
   IconUpload,
   IconUser,
@@ -162,7 +161,7 @@ export function CreateReverseShareModal({
       const payload = buildPayload(formData);
       await onCreateReverseShare(payload);
       form.reset();
-    } catch (error) {
+    } catch {
       // Error handling is managed by the hook
     }
   };

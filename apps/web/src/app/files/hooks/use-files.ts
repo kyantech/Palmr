@@ -19,7 +19,7 @@ export function useFiles() {
     setClearSelectionCallbackState(() => callback);
   }, []);
 
-  const loadFiles = async () => {
+  const loadFiles = useCallback(async () => {
     try {
       const response = await listFiles();
       const allFiles = response.data.files || [];
@@ -28,19 +28,19 @@ export function useFiles() {
       );
 
       setFiles(sortedFiles);
-    } catch (error) {
+    } catch {
       toast.error(t("files.loadError"));
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [t]);
 
   const fileManager = useFileManager(loadFiles, clearSelectionCallback);
   const filteredFiles = files.filter((file) => file.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   useEffect(() => {
     loadFiles();
-  }, []);
+  }, [loadFiles]);
 
   return {
     isLoading,

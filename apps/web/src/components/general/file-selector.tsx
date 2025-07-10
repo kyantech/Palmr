@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { IconCheck, IconEdit, IconEye, IconMinus, IconPlus, IconSearch } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -30,21 +30,21 @@ export function FileSelector({ shareId, selectedFiles, onSave, onEditFile }: Fil
   const [previewFile, setPreviewFile] = useState<any>(null);
   const [fileToEdit, setFileToEdit] = useState<any>(null);
 
-  useEffect(() => {
-    loadFiles();
-  }, [shareId, selectedFiles]);
-
-  const loadFiles = async () => {
+  const loadFiles = useCallback(async () => {
     try {
       const response = await listFiles();
       const allFiles = response.data.files || [];
 
       setShareFiles(allFiles.filter((file) => selectedFiles.includes(file.id)));
       setAvailableFiles(allFiles.filter((file) => !selectedFiles.includes(file.id)));
-    } catch (error) {
+    } catch {
       toast.error(t("files.loadError"));
     }
-  };
+  }, [selectedFiles, t]);
+
+  useEffect(() => {
+    loadFiles();
+  }, [loadFiles]);
 
   const addToShare = (fileId: string) => {
     const file = availableFiles.find((f) => f.id === fileId);
@@ -78,7 +78,7 @@ export function FileSelector({ shareId, selectedFiles, onSave, onEditFile }: Fil
       }
 
       await onSave(shareFiles.map((f) => f.id));
-    } catch (error) {
+    } catch {
       toast.error(t("shareManager.filesUpdateError"));
     } finally {
       setIsLoading(false);

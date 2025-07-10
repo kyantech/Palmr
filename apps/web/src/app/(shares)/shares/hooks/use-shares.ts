@@ -1,24 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { useSecureConfigValue } from "@/hooks/use-secure-configs";
 import { listUserShares, notifyRecipients } from "@/http/endpoints";
-import { ListUserShares200SharesItem } from "@/http/models/listUserShares200SharesItem";
+import { Share } from "@/http/endpoints/shares/types";
 
 export function useShares() {
   const t = useTranslations();
-  const [shares, setShares] = useState<ListUserShares200SharesItem[]>([]);
+  const [shares, setShares] = useState<Share[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [shareToViewDetails, setShareToViewDetails] = useState<ListUserShares200SharesItem | null>(null);
-  const [shareToGenerateLink, setShareToGenerateLink] = useState<ListUserShares200SharesItem | null>(null);
+  const [shareToGenerateLink, setShareToGenerateLink] = useState<Share | null>(null);
 
   const { value: smtpEnabled } = useSecureConfigValue("smtpEnabled");
 
-  const loadShares = async () => {
+  const loadShares = useCallback(async () => {
     try {
       const response = await listUserShares();
       const allShares = response.data.shares || [];
@@ -27,22 +26,22 @@ export function useShares() {
       );
 
       setShares(sortedShares);
-    } catch (error) {
+    } catch {
       toast.error(t("shares.errors.loadFailed"));
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     loadShares();
-  }, []);
+  }, [loadShares]);
 
   const filteredShares = shares.filter(
     (share) => share.name?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false
   );
 
-  const handleCopyLink = (share: ListUserShares200SharesItem) => {
+  const handleCopyLink = (share: Share) => {
     if (!share.alias?.alias) return;
 
     const link = `${window.location.origin}/s/${share.alias.alias}`;
@@ -51,7 +50,7 @@ export function useShares() {
     toast.success(t("shares.messages.linkCopied"));
   };
 
-  const handleNotifyRecipients = async (share: ListUserShares200SharesItem) => {
+  const handleNotifyRecipients = async (share: Share) => {
     if (!share.alias?.alias) return;
 
     const link = `${window.location.origin}/s/${share.alias.alias}`;
@@ -59,7 +58,7 @@ export function useShares() {
     try {
       await notifyRecipients(share.id, { shareLink: link });
       toast.success(t("shares.messages.recipientsNotified"));
-    } catch (error) {
+    } catch {
       toast.error(t("shares.errors.notifyFailed"));
     }
   };
@@ -68,12 +67,10 @@ export function useShares() {
     shares,
     isLoading,
     searchQuery,
-    shareToViewDetails,
     shareToGenerateLink,
     filteredShares,
     smtpEnabled: smtpEnabled || "false",
     setSearchQuery,
-    setShareToViewDetails,
     setShareToGenerateLink,
     handleCopyLink,
     handleNotifyRecipients,

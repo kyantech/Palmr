@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3333";
+
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ shareId: string }> }) {
   const cookieHeader = req.headers.get("cookie");
   const body = await req.text();
   const { shareId } = await params;
+  const url = `${API_BASE_URL}/shares/${shareId}/password`;
 
-  const apiRes = await fetch(`${process.env.API_BASE_URL}/shares/${shareId}/password`, {
+  const apiRes = await fetch(url, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",

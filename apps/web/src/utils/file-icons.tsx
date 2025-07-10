@@ -388,7 +388,7 @@ const fileIcons: FileIconMapping[] = [
   {
     extensions: ["md", "markdown"],
     icon: IconMarkdown,
-    color: "text-gray-700",
+    color: "text-emerald-500",
   },
   {
     extensions: ["rst", "txt"],

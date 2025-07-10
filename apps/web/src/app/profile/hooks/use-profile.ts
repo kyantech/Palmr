@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
@@ -53,7 +53,7 @@ export function useProfile() {
     resolver: zodResolver(passwordSchema),
   });
 
-  const loadUserData = async () => {
+  const loadUserData = useCallback(async () => {
     try {
       const response = await getCurrentUser();
 
@@ -64,12 +64,12 @@ export function useProfile() {
         username: response.data.user.username,
         email: response.data.user.email,
       });
-    } catch (error) {
+    } catch {
       toast.error(t("profile.errors.loadFailed"));
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [t, profileForm]);
 
   const onProfileSubmit = async (data: z.infer<typeof profileSchema>) => {
     const hasChanges = Object.keys(data).some((key) => data[key as keyof typeof data] !== userData[key]);
@@ -87,7 +87,7 @@ export function useProfile() {
       });
       toast.success(t("profile.messages.updateSuccess"));
       await loadUserData();
-    } catch (error) {
+    } catch {
       toast.error(t("profile.errors.updateFailed"));
     }
   };
@@ -106,7 +106,7 @@ export function useProfile() {
       });
       toast.success(t("profile.messages.passwordSuccess"));
       passwordForm.reset();
-    } catch (error) {
+    } catch {
       toast.error(t("profile.errors.passwordFailed"));
     }
   };
@@ -121,7 +121,7 @@ export function useProfile() {
       setUserData(updatedUser);
       setUser(updatedUser);
       toast.success(t("profile.messages.imageSuccess"));
-    } catch (error) {
+    } catch {
       toast.error(t("profile.errors.imageFailed"));
     }
   };
@@ -136,14 +136,14 @@ export function useProfile() {
       setUserData(updatedUser);
       setUser(updatedUser);
       toast.success(t("profile.messages.imageRemoved"));
-    } catch (error) {
+    } catch {
       toast.error(t("profile.errors.imageRemoveFailed"));
     }
   };
 
   useEffect(() => {
     loadUserData();
-  }, []);
+  }, [loadUserData]);
 
   return {
     isLoading,

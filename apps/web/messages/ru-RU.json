@@ -1,4 +1,132 @@
 {
+  "auth": {
+    "errors": {
+      "account_inactive": "Conta inativa. Entre em contato com o administrador.",
+      "registration_disabled": "Registro via SSO está desabilitado.",
+      "token_expired": "Token expirado. Tente novamente.",
+      "config_error": "Erro de configuração. Contate o suporte.",
+      "auth_failed": "Falha na autenticação. Tente novamente."
+    }
+  },
+  "authProviders": {
+    "title": "Провайдеры аутентификации",
+    "description": "Настройка внешних провайдеров аутентификации для SSO",
+    "enabledCount": "{count} включено",
+    "loadingProviders": "Загрузка провайдеров...",
+    "providersConfigured": "Настроено {count} провайдеров",
+    "enabledOfTotal": "Включено {enabled} из {total} провайдеров",
+    "hideDisabledProviders": "Скрыть отключенные провайдеры",
+    "addProvider": "Добавить провайдера",
+    "addProviderTitle": "Добавить провайдера",
+    "editProvider": "Редактировать провайдера",
+    "deleteProvider": "Удалить провайдера",
+    "enabled": "Включен",
+    "disabled": "Отключен",
+    "officialProvider": "Официальный провайдер",
+    "dragToReorder": "Перетащите для изменения порядка",
+    "dragDisabledMessage": "Перетаскивание отключено при фильтрации провайдеров. Покажите всех провайдеров для изменения порядка.",
+    "dragEnabledMessage": "Перетащите провайдеров для изменения порядка. Этот порядок будет отображен на странице входа.",
+    "noProvidersEnabled": "Нет включенных провайдеров аутентификации",
+    "noProvidersConfigured": "Нет настроенных провайдеров аутентификации",
+    "form": {
+      "providerName": "Имя провайдера",
+      "providerNamePlaceholder": "например, mycompany",
+      "displayName": "Отображаемое имя",
+      "displayNamePlaceholder": "например, SSO моей компании",
+      "type": "Тип",
+      "typeOidc": "OIDC (OpenID Connect)",
+      "typeOauth2": "OAuth 2.0",
+      "icon": "Иконка",
+      "iconPlaceholder": "Выберите иконку",
+      "clientId": "ID клиента",
+      "clientIdPlaceholder": "Ваш ID клиента OAuth",
+      "clientSecret": "Секрет клиента",
+      "clientSecretPlaceholder": "Ваш секрет клиента OAuth",
+      "oauthScopes": "Области OAuth",
+      "scopesPlaceholder": "Введите области (например, openid, profile, email)",
+      "scopesHelpOidc": "Области автоматически предлагаются на основе URL провайдера. Общие области OIDC: openid, profile, email, groups",
+      "scopesHelpOauth2": "Области автоматически предлагаются на основе URL провайдера. Общие области OAuth2 зависят от провайдера",
+      "providerUrl": "URL провайдера",
+      "providerUrlPlaceholder": "https://auth.example.com",
+      "providerUrlAutoPlaceholder": "https://your-provider.com (конечные точки будут обнаружены автоматически)",
+      "providerUrlManualPlaceholder": "https://your-provider.com",
+      "autoDiscoveryHelp": "Система автоматически обнаружит конечные точки авторизации, токена и информации о пользователе",
+      "manualConfigurationHelp": "Базовый URL вашего провайдера (конечные точки будут относительно этого URL)",
+      "authorizationEndpoint": "Конечная точка авторизации",
+      "authorizationEndpointPlaceholder": "https://auth.example.com/auth",
+      "tokenEndpoint": "Конечная точка токена",
+      "tokenEndpointPlaceholder": "https://auth.example.com/token",
+      "userInfoEndpoint": "Конечная точка информации о пользователе",
+      "userInfoEndpointPlaceholder": "https://auth.example.com/userinfo",
+      "configurationMethod": "Метод конфигурации",
+      "autoDiscovery": "Автоматическое обнаружение",
+      "autoDiscoveryDescription": "Автоматически обнаруживать конечные точки из URL провайдера",
+      "manualEndpoints": "Ручные конечные точки (Рекомендуется)",
+      "manualEndpointsDescription": "Вручную настроить конечные точки авторизации, токена и информации о пользователе",
+      "callbackUrl": "URL обратного вызова",
+      "callbackUrlDescription": "Используйте этот URL в конфигурации вашего OAuth провайдера",
+      "copyCallbackUrl": "Копировать URL обратного вызова",
+      "callbackUrlCopied": "URL обратного вызова скопирован в буфер обмена!",
+      "adminEmailDomains": "Домены электронной почты администраторов",
+      "adminEmailDomainsPlaceholder": "Введите домены (например, admin.company.com)",
+      "adminEmailDomainsHelp": "Пользователи с электронной почтой из этих доменов получат права администратора",
+      "autoRegister": "Автоматически регистрировать новых пользователей",
+      "officialProviderUrlPlaceholder": "Замените заполнитель вашим URL {displayName}",
+      "officialProviderHelp": "Это официальный провайдер. Конечные точки предварительно настроены. Вы можете редактировать только этот URL.",
+      "officialProviderIconHelp": "Вы можете настроить иконку для этого официального провайдера."
+    },
+    "buttons": {
+      "cancel": "Отмена",
+      "save": "Сохранить",
+      "saving": "Сохранение...",
+      "adding": "Добавление...",
+      "updating": "Обновление...",
+      "saveProvider": "Сохранить провайдера",
+      "delete": "Удалить",
+      "deleting": "Удаление...",
+      "edit": "Редактировать",
+      "enable": "Включить",
+      "disable": "Отключить"
+    },
+    "messages": {
+      "providerAdded": "Провайдер успешно добавлен",
+      "providerUpdated": "Провайдер успешно обновлен",
+      "providerDeleted": "Провайдер успешно удален",
+      "providerOrderUpdated": "Порядок провайдеров успешно обновлен",
+      "fillRequiredFields": "Пожалуйста, заполните все обязательные поля (имя, отображаемое имя, ID клиента, секрет клиента)",
+      "provideUrlOrEndpoints": "Укажите либо URL провайдера для автоматического обнаружения, ЛИБО все три пользовательские конечные точки",
+      "chooseDiscoveryOrManual": "Выберите либо автоматическое обнаружение (URL провайдера), ЛИБО ручные конечные точки, но не оба варианта",
+      "loadFailed": "Не удалось загрузить провайдеров",
+      "addFailed": "Не удалось добавить провайдера",
+      "updateFailed": "Не удалось обновить провайдера",
+      "deleteFailed": "Не удалось удалить провайдера",
+      "orderUpdateFailed": "Не удалось обновить порядок провайдеров"
+    },
+    "info": {
+      "title": "Информация",
+      "officialProvidersRecommended": "Для лучшей функциональности рекомендуется использовать официальных провайдеров. Если у вас возникли проблемы с пользовательским провайдером, рассмотрите возможность создания issue на",
+      "github": "GitHub",
+      "officialProvider": "Официальный провайдер",
+      "officialProviderDescription": "Этот провайдер оптимизирован Palmr. Можно изменять только учетные данные и конфигурацию.",
+      "manualConfigTitle": "Ручная настройка",
+      "manualConfigDescription": "Вы предоставляете все конечные точки вручную. Убедитесь, что они правильны для вашего провайдера."
+    },
+    "deleteModal": {
+      "title": "Удалить провайдера аутентификации",
+      "confirmMessage": "Вы уверены, что хотите удалить провайдера \"{displayName}\"? Это действие нельзя отменить.",
+      "providerId": "ID провайдера: {name}",
+      "cancel": "Отмена",
+      "delete": "Удалить провайдера",
+      "deleting": "Удаление..."
+    }
+  },
+  "bulkDownload": {
+    "title": "Массовая Загрузка",
+    "zipNameLabel": "Имя ZIP-файла",
+    "zipNamePlaceholder": "Введите имя файла",
+    "description": "{count, plural, =1 {1 файл будет сжат} other {# файлов будет сжато}}",
+    "download": "Скачать ZIP"
+  },
   "common": {
     "loading": "Загрузка, пожалуйста, подождите...",
     "cancel": "Отмена",
@@ -41,6 +169,10 @@
       "title": "Недавние файлы",
       "description": "Ваши недавно загруженные файлы"
     }
+  },
+  "deleteConfirmation": {
+    "filesToDelete": "Файлы для удаления",
+    "sharesToDelete": "Общие папки, которые будут удалены"
   },
   "emptyState": {
     "noFiles": "Файлы еще не загружены",
@@ -389,628 +521,6 @@
     "errors": {
       "serverError": "Не удалось сбросить пароль. Пожалуйста, попробуйте еще раз.",
       "invalidToken": "Неверный или отсутствующий токен сброса"
-    }
-  },
-  "searchBar": {
-    "placeholder": "Поиск файлов...",
-    "results": "Найдено {filtered} из {total} файлов"
-  },
-  "settings": {
-    "groups": {
-      "defaultDescription": "Настройки конфигурации",
-      "general": {
-        "title": "Общие",
-        "description": "Основные настройки приложения"
-      },
-      "email": {
-        "title": "Электронная почта",
-        "description": "Настройки почтового сервера"
-      },
-      "security": {
-        "title": "Безопасность",
-        "description": "Настройки безопасности и аутентификации"
-      },
-      "storage": {
-        "title": "Хранилище",
-        "description": "Настройки хранения файлов"
-      },
-      "oidc": {
-        "title": "OpenID Connect (SSO)",
-        "description": "Настройка аутентификации SSO через OpenID Connect"
-      }
-    },
-    "fields": {
-      "noDescription": "Описание отсутствует",
-      "appLogo": {
-        "title": "Логотип приложения",
-        "description": "Изображение логотипа приложения"
-      },
-      "appName": {
-        "title": "Название приложения",
-        "description": "Название приложения, отображаемое пользователям"
-      },
-      "appDescription": {
-        "title": "Описание приложения",
-        "description": "Краткое описание приложения"
-      },
-      "showHomePage": {
-        "title": "Показывать главную страницу",
-        "description": "Показывать главную страницу после установки"
-      },
-      "smtpEnabled": {
-        "title": "Включить SMTP",
-        "description": "Включить или отключить функцию SMTP для отправки электронной почты"
-      },
-      "smtpHost": {
-        "title": "SMTP-сервер",
-        "description": "Адрес SMTP-сервера"
-      },
-      "smtpPort": {
-        "title": "SMTP-порт",
-        "description": "Порт SMTP-сервера"
-      },
-      "smtpUser": {
-        "title": "SMTP-пользователь",
-        "description": "Имя пользователя для SMTP-аутентификации"
-      },
-      "smtpPass": {
-        "title": "SMTP-пароль",
-        "description": "Пароль для SMTP-аутентификации"
-      },
-      "smtpFromName": {
-        "title": "Имя отправителя",
-        "description": "Имя, отображаемое в отправляемых письмах"
-      },
-      "smtpFromEmail": {
-        "title": "Электронная почта отправителя",
-        "description": "Адрес электронной почты отправителя"
-      },
-      "maxLoginAttempts": {
-        "title": "Максимальное количество попыток входа",
-        "description": "Максимальное количество попыток входа до блокировки"
-      },
-      "loginBlockDuration": {
-        "title": "Время блокировки",
-        "description": "Продолжительность блокировки (в секундах) после превышения лимита попыток"
-      },
-      "passwordMinLength": {
-        "title": "Минимальная длина пароля",
-        "description": "Минимальное количество символов в пароле"
-      },
-      "passwordResetTokenExpiration": {
-        "title": "Время истечения токена сброса пароля",
-        "description": "Время действия токена сброса пароля (в секундах)"
-      },
-      "maxFileSize": {
-        "title": "Максимальный размер файла",
-        "description": "Максимальный размер файла для загрузки"
-      },
-      "maxTotalStoragePerUser": {
-        "title": "Максимальное хранилище для пользователя",
-        "description": "Общий лимит хранилища для каждого пользователя"
-      },
-      "firstUserAccess": {
-        "title": "Первый доступ пользователя",
-        "description": "Время первого доступа пользователя"
-      },
-      "serverUrl": {
-        "title": "URL do Servidor",
-        "description": "URL base do servidor Palmr (ex: https://palmr.exemplo.com)"
-      },
-      "oidcEnabled": {
-        "title": "OIDC Включен",
-        "description": "Включить или отключить аутентификацию через OpenID Connect"
-      },
-      "oidcIssuerUrl": {
-        "title": "URL Провайдера",
-        "description": "URL провайдера OpenID Connect (например: https://auth.example.com/auth/realms/master)"
-      },
-      "oidcClientId": {
-        "title": "Client ID",
-        "description": "Идентификатор клиента OIDC, зарегистрированный у провайдера"
-      },
-      "oidcClientSecret": {
-        "title": "Client Secret",
-        "description": "Секрет клиента OIDC для аутентификации"
-      },
-      "oidcRedirectUri": {
-        "title": "URI Перенаправления",
-        "description": "URI, куда пользователь будет перенаправлен после аутентификации. Введите только базовый URL (например: https://mysite.com). Путь /api/auth/oidc/callback будет добавлен автоматически."
-      },
-      "oidcScope": {
-        "title": "Области",
-        "description": "Запрашиваемые области OIDC (например: openid profile email)"
-      },
-      "oidcAutoRegister": {
-        "title": "Автоматическая Регистрация",
-        "description": "Автоматически регистрировать пользователей, которых нет при первом входе"
-      },
-      "oidcAdminEmailDomains": {
-        "title": "Домены Email Администратора",
-        "description": "Домены электронной почты, которые автоматически получают права администратора"
-      },
-      "testSmtp": {
-        "title": "Проверить SMTP-соединение",
-        "description": "Проверить правильность настройки SMTP"
-      },
-      "smtpNoAuth": {
-        "title": "Без аутентификации",
-        "description": "Включите для внутренних серверов, не требующих имя пользователя/пароль (скрывает поля аутентификации)"
-      },
-      "smtpSecure": {
-        "title": "Безопасность соединения",
-        "description": "Метод безопасности SMTP-соединения - Авто (рекомендуется), SSL, STARTTLS или Нет (небезопасно)",
-        "options": {
-          "auto": "Авто (Рекомендуется)",
-          "ssl": "SSL (Порт 465)",
-          "tls": "STARTTLS (Порт 587)",
-          "none": "Нет (Небезопасно)"
-        }
-      }
-    },
-    "buttons": {
-      "save": "Сохранить {group}",
-      "testSmtp": "Проверить соединение",
-      "testing": "Проверка..."
-    },
-    "errors": {
-      "loadFailed": "Ошибка загрузки настроек",
-      "updateFailed": "Ошибка обновления настроек"
-    },
-    "messages": {
-      "noChanges": "Изменений для сохранения нет",
-      "updateSuccess": "Настройки {group} успешно обновлены",
-      "smtpTestFailed": "Ошибка SMTP-соединения: {error}",
-      "smtpTestGenericError": "Не удалось проверить SMTP-соединение. Пожалуйста, проверьте настройки и попробуйте снова.",
-      "smtpTestSuccess": "SMTP-соединение успешно установлено! Ваша конфигурация электронной почты работает корректно.",
-      "smtpMissingAuth": "Пожалуйста, заполните имя пользователя и пароль SMTP или включите опцию 'Без аутентификации'.",
-      "smtpMissingHostPort": "Пожалуйста, заполните хост и порт SMTP перед тестированием.",
-      "smtpNotEnabled": "SMTP не включен. Пожалуйста, сначала включите SMTP."
-    },
-    "title": "Настройки",
-    "breadcrumb": "Настройки",
-    "pageTitle": "Настройки",
-    "tooltips": {
-      "oidcScope": "Digite um escopo e pressione Enter para adicionar",
-      "oidcAdminEmailDomains": "Digite um domínio e pressione Enter para adicionar",
-      "testSmtp": "Проверяет SMTP-соединение с текущими значениями в форме. Чтобы сохранить изменения, не забудьте сохранить настройки после тестирования.",
-      "defaultPlaceholder": "Введите и нажмите Enter"
-    },
-    "redirectUri": {
-      "placeholder": "https://meusite.com",
-      "previewLabel": "URL completa que será salva:"
-    }
-  },
-  "share": {
-    "errors": {
-      "invalidPassword": "Неверный пароль. Пожалуйста, попробуйте еще раз.",
-      "loadFailed": "Ошибка загрузки общего доступа",
-      "downloadFailed": "Ошибка скачивания файла"
-    },
-    "messages": {
-      "downloadStarted": "Скачивание начато"
-    },
-    "password": {
-      "title": "Общий доступ, защищенный паролем",
-      "protected": "Этот общий доступ защищен паролем",
-      "incorrect": "Неверный пароль. Пожалуйста, попробуйте снова.",
-      "label": "Пароль",
-      "placeholder": "Введите пароль для общего доступа",
-      "submit": "Отправить"
-    },
-    "details": {
-      "untitled": "Без названия",
-      "created": "Создано: {date}",
-      "expires": "Истекает: {date}"
-    },
-    "notFound": {
-      "title": "Общий доступ не найден",
-      "description": "Этот общий доступ может быть удален или истек."
-    },
-    "pageTitle": "Общий доступ",
-    "downloadAll": "Скачать все"
-  },
-  "shareActions": {
-    "deleteTitle": "Удалить Общий Доступ",
-    "deleteConfirmation": "Вы уверены, что хотите удалить этот общий доступ? Это действие нельзя отменить.",
-    "editTitle": "Редактировать Общий Доступ",
-    "nameLabel": "Название Общего Доступа",
-    "descriptionLabel": "Описание",
-    "descriptionPlaceholder": "Введите описание (опционально)",
-    "expirationLabel": "Дата Истечения",
-    "expirationPlaceholder": "ДД.ММ.ГГГГ ЧЧ:ММ",
-    "maxViewsLabel": "Максимальные Просмотры",
-    "maxViewsPlaceholder": "Оставьте пустым для неограниченного",
-    "passwordProtection": "Защищено Паролем",
-    "passwordLabel": "Пароль",
-    "passwordPlaceholder": "Введите пароль",
-    "newPasswordLabel": "Новый Пароль (оставьте пустым, чтобы сохранить текущий)",
-    "newPasswordPlaceholder": "Введите новый пароль",
-    "manageFilesTitle": "Управление Файлами",
-    "manageRecipientsTitle": "Управление Получателями",
-    "editSuccess": "Общий доступ успешно обновлен",
-    "editError": "Ошибка обновления общего доступа",
-    "bulkDeleteConfirmation": "Вы уверены, что хотите удалить {count, plural, =1 {1 общую папку} other {# общих папок}}? Это действие нельзя отменить.",
-    "bulkDeleteTitle": "Удалить Выбранные Общие Папки"
-  },
-  "shareDetails": {
-    "title": "Детали Общего Доступа",
-    "subtitle": "Подробная информация об этом общем доступе",
-    "basicInfo": "Основная Информация",
-    "name": "Название",
-    "description": "Описание",
-    "noDescription": "Описание не предоставлено",
-    "untitled": "Без названия",
-    "shareLink": "Ссылка Общего Доступа",
-    "editLink": "Редактировать Ссылку",
-    "generateLink": "Сгенерировать Ссылку",
-    "noLink": "Ссылка еще не сгенерирована",
-    "copyLink": "Скопировать ссылку",
-    "openLink": "Открыть в новой вкладке",
-    "linkCopied": "Ссылка скопирована в буфер обмена",
-    "views": "Просмотры",
-    "dates": "Даты",
-    "created": "Создано",
-    "expires": "Истекает",
-    "never": "Никогда",
-    "security": "Безопасность",
-    "passwordProtected": "Защищено Паролем",
-    "publicAccess": "Публичный Доступ",
-    "maxViews": "Макс. Просмотры:",
-    "files": "Файлы",
-    "recipients": "Получатели",
-    "notAvailable": "Н/Д",
-    "invalidDate": "Неверная дата",
-    "loadError": "Ошибка загрузки деталей общего доступа",
-    "editSecurity": "Изменить безопасность",
-    "editExpiration": "Изменить срок действия"
-  },
-  "shareManager": {
-    "deleteSuccess": "Общий доступ успешно удален",
-    "deleteError": "Ошибка при удалении общего доступа",
-    "updateSuccess": "Общий доступ успешно обновлен",
-    "updateError": "Ошибка при обновлении общего доступа",
-    "filesUpdateSuccess": "Файлы успешно обновлены",
-    "filesUpdateError": "Ошибка при обновлении файлов",
-    "recipientsUpdateSuccess": "Получатели успешно обновлены",
-    "recipientsUpdateError": "Ошибка при обновлении получателей",
-    "linkGenerateSuccess": "Ссылка для общего доступа успешно создана",
-    "linkGenerateError": "Ошибка при создании ссылки для общего доступа",
-    "notifyLoading": "Отправка уведомлений...",
-    "notifySuccess": "Получатели успешно уведомлены",
-    "notifyError": "Ошибка при уведомлении получателей",
-    "bulkDeleteError": "Не удалось удалить общие папки",
-    "bulkDeleteLoading": "Удаление {count, plural, =1 {1 общей папки} other {# общих папок}}...",
-    "bulkDeleteSuccess": "{count, plural, =1 {1 общая папка успешно удалена} other {# общих папок успешно удалены}}",
-    "securityUpdateError": "Не удалось обновить настройки безопасности",
-    "expirationUpdateError": "Не удалось обновить настройки истечения",
-    "securityUpdateSuccess": "Настройки безопасности успешно обновлены",
-    "expirationUpdateSuccess": "Настройки истечения успешно обновлены",
-    "creatingZip": "Создание файла Zip ...",
-    "defaultShareName": "Делиться",
-    "downloadError": "Не удалось скачать общие файлы",
-    "downloadSuccess": "Скачать началась успешно",
-    "multipleSharesZipName": "{count} _shares_files.zip",
-    "noFilesToDownload": "Нет файлов для скачивания",
-    "singleShareZipName": "{shareme} _files.zip",
-    "zipDownloadError": "Не удалось создать zip -файл",
-    "zipDownloadSuccess": "Zip -файл успешно загружен"
-  },
-  "shares": {
-    "errors": {
-      "loadFailed": "Ошибка загрузки общих доступов",
-      "notifyFailed": "Ошибка уведомления получателей",
-      "smtpConfigFailed": "Ошибка загрузки SMTP-настроек"
-    },
-    "messages": {
-      "linkCopied": "Ссылка скопирована в буфер обмена",
-      "recipientsNotified": "Получатели успешно уведомлены"
-    },
-    "empty": {
-      "message": "Общие доступы еще не созданы",
-      "createButton": "Создать общий доступ"
-    },
-    "header": {
-      "title": "Мои общие доступы",
-      "myShares": "Мои общие доступы"
-    },
-    "search": {
-      "title": "Все общие доступы",
-      "createButton": "Создать общий доступ",
-      "placeholder": "Поиск общих доступов...",
-      "results": "Найдено {filtered} из {total} общих доступов"
-    },
-    "pageTitle": "Общие доступы"
-  },
-  "sharesTable": {
-    "ariaLabel": "Таблица общих доступов",
-    "never": "Никогда",
-    "columns": {
-      "name": "НАЗВАНИЕ",
-      "description": "ОПИСАНИЕ",
-      "createdAt": "СОЗДАНО",
-      "expiresAt": "ИСТЕКАЕТ",
-      "status": "СТАТУС",
-      "security": "БЕЗОПАСНОСТЬ",
-      "files": "ФАЙЛЫ",
-      "recipients": "ПОЛУЧАТЕЛИ",
-      "actions": "ДЕЙСТВИЯ"
-    },
-    "status": {
-      "neverExpires": "Никогда Не Истекает",
-      "active": "Активный",
-      "expired": "Истекший"
-    },
-    "security": {
-      "protected": "Защищен",
-      "public": "Публичный"
-    },
-    "filesCount": "файлов",
-    "recipientsCount": "получателей",
-    "actions": {
-      "menu": "Меню действий общего доступа",
-      "edit": "Редактировать",
-      "manageFiles": "Управление Файлами",
-      "manageRecipients": "Управление Получателями",
-      "viewDetails": "Просмотр Деталей",
-      "generateLink": "Сгенерировать Ссылку",
-      "editLink": "Редактировать Ссылку",
-      "copyLink": "Скопировать Ссылку",
-      "notifyRecipients": "Уведомить Получателей",
-      "delete": "Удалить",
-      "downloadShareFiles": "Загрузите все файлы"
-    },
-    "bulkActions": {
-      "delete": "Удалить",
-      "selected": "{count, plural, =1 {1 общая папка выбрана} other {# общих папок выбрано}}",
-      "actions": "Действия",
-      "download": "Скачать выбранный"
-    },
-    "selectAll": "Выбрать все",
-    "selectShare": "Выбрать общую папку {shareName}"
-  },
-  "storageUsage": {
-    "title": "Использование хранилища",
-    "ariaLabel": "Индикатор использования хранилища",
-    "used": "Использовано",
-    "available": "Доступно",
-    "loading": "Загрузка...",
-    "retry": "Повторить",
-    "errors": {
-      "title": "Информация о хранилище недоступна",
-      "detectionFailed": "Не удалось определить свободное место на диске. Это может быть связано с проблемами конфигурации системы или недостаточными правами доступа.",
-      "serverError": "Произошла ошибка сервера при получении информации о хранилище. Пожалуйста, повторите попытку позже.",
-      "unknown": "Произошла непредвиденная ошибка при загрузке информации о хранилище."
-    }
-  },
-  "theme": {
-    "toggle": "Переключить тему",
-    "light": "Светлая",
-    "dark": "Тёмная",
-    "system": "Системная"
-  },
-  "uploadFile": {
-    "title": "Загрузить файл",
-    "multipleTitle": "Загрузить Несколько Файлов",
-    "selectFile": "Нажмите, чтобы выбрать файл",
-    "selectMultipleFiles": "Нажмите, чтобы выбрать один или несколько файлов",
-    "dragAndDrop": "или перетащите файлы сюда",
-    "preview": "Предпросмотр",
-    "uploadProgress": "Прогресс загрузки",
-    "upload": "Загрузить",
-    "startUploads": "Начать Загрузку",
-    "retry": "Повторить",
-    "finish": "Завершить",
-    "success": "Файл успешно загружен",
-    "allSuccess": "{count, plural, =1 {Файл успешно загружен} other {# файлов успешно загружено}}",
-    "partialSuccess": "{success} файлов успешно загружено, {error} неудачно",
-    "error": "Не удалось загрузить файл",
-    "fileSizeExceeded": "Размер файла превышает лимит в {maxsizemb}МБ.",
-    "insufficientStorage": "Недостаточно места для хранения. У вас доступно {availablespace}МБ.",
-    "unauthorized": "Не авторизовано: для доступа к этому ресурсу требуется действительный токен.",
-    "confirmCancel": {
-      "title": "Отменить Загрузку",
-      "messageSingle": "В процессе одна загрузка.",
-      "messageMultiple": "В процессе {count} загрузок.",
-      "warning": "Если вы закроете сейчас, загрузки будут отменены и весь прогресс будет потерян.",
-      "continue": "Продолжить Загрузку",
-      "cancel": "Отменить Загрузку"
-    }
-  },
-  "users": {
-    "modes": {
-      "create": "создать",
-      "edit": "редактировать"
-    },
-    "errors": {
-      "loadFailed": "Ошибка загрузки пользователей",
-      "submitFailed": "Ошибка при {mode} пользователя",
-      "deleteFailed": "Ошибка при удалении пользователя",
-      "statusUpdateFailed": "Ошибка обновления статуса пользователя"
-    },
-    "messages": {
-      "createSuccess": "Пользователь успешно создан",
-      "updateSuccess": "Пользователь успешно обновлен",
-      "deleteSuccess": "Пользователь успешно удален",
-      "activateSuccess": "Пользователь успешно активирован",
-      "deactivateSuccess": "Пользователь успешно деактивирован"
-    },
-    "actions": {
-      "edit": "Редактировать",
-      "activate": "Активировать",
-      "deactivate": "Деактивировать",
-      "delete": "Удалить"
-    },
-    "delete": {
-      "title": "Подтверждение удаления пользователя",
-      "confirmation": "Вы уверены, что хотите удалить пользователя {firstName} {lastName}? Это действие нельзя отменить.",
-      "confirm": "Удалить пользователя"
-    },
-    "form": {
-      "titleCreate": "Добавить нового пользователя",
-      "titleEdit": "Редактировать пользователя",
-      "firstName": "Имя",
-      "lastName": "Фамилия",
-      "username": "Имя пользователя",
-      "email": "Электронная почта",
-      "password": "Пароль",
-      "newPassword": "Новый пароль (необязательно)",
-      "passwordPlaceholder": "Оставьте пустым, чтобы сохранить текущий пароль",
-      "role": "Роль",
-      "roleUser": "Пользователь",
-      "roleAdmin": "Администратор",
-      "create": "Создать",
-      "save": "Сохранить"
-    },
-    "status": {
-      "title": "Подтверждение изменения статуса",
-      "confirmation": "Вы уверены, что хотите {action} пользователя {firstName} {lastName}?",
-      "activate": "активировать",
-      "deactivate": "деактивировать",
-      "user": "Пользователь"
-    },
-    "header": {
-      "title": "Управление пользователями",
-      "addUser": "Добавить пользователя",
-      "management": "Управление пользователями"
-    },
-    "table": {
-      "user": "ПОЛЬЗОВАТЕЛЬ",
-      "email": "ЭЛЕКТРОННАЯ ПОЧТА",
-      "status": "СТАТУС",
-      "role": "РОЛЬ",
-      "actions": "ДЕЙСТВИЯ",
-      "active": "Активен",
-      "inactive": "Неактивен",
-      "admin": "Администратор",
-      "userr": "Пользователь"
-    }
-  },
-  "validation": {
-    "invalidEmail": "Неверный адрес электронной почты",
-    "passwordMinLength": "Пароль должен содержать не менее 6 символов",
-    "firstNameRequired": "Имя обязательно",
-    "lastNameRequired": "Фамилия обязательна",
-    "usernameLength": "Имя пользователя должно содержать не менее 3 символов",
-    "usernameSpaces": "Имя пользователя не может содержать пробелов",
-    "passwordLength": "Пароль должен содержать не менее 8 символов",
-    "passwordsMatch": "Пароли не совпадают",
-    "emailRequired": "Требуется электронная почта",
-    "emailOrUsernameRequired": "Электронная почта или имя пользователя обязательно",
-    "passwordRequired": "Требуется пароль",
-    "nameRequired": "Требуется имя",
-    "required": "Это поле обязательно"
-  },
-  "shareFile": {
-    "title": "Поделиться Файлом",
-    "linkTitle": "Сгенерировать Ссылку",
-    "nameLabel": "Название Общего Доступа",
-    "namePlaceholder": "Введите название общего доступа",
-    "descriptionLabel": "Описание",
-    "descriptionPlaceholder": "Введите описание (опционально)",
-    "expirationLabel": "Дата Истечения",
-    "expirationPlaceholder": "ДД.ММ.ГГГГ ЧЧ:ММ",
-    "maxViewsLabel": "Максимальные Просмотры",
-    "maxViewsPlaceholder": "Оставьте пустым для неограниченного",
-    "passwordProtection": "Защищено Паролем",
-    "passwordLabel": "Пароль",
-    "passwordPlaceholder": "Введите пароль",
-    "linkDescription": "Сгенерируйте пользовательскую ссылку для отправки файла",
-    "aliasLabel": "Псевдоним Ссылки",
-    "aliasPlaceholder": "Введите пользовательский псевдоним",
-    "linkReady": "Ваша ссылка для общего доступа готова:",
-    "createShare": "Создать Общий Доступ",
-    "generateLink": "Сгенерировать Ссылку",
-    "copyLink": "Скопировать Ссылку"
-  },
-  "bulkDownload": {
-    "title": "Массовая Загрузка",
-    "zipNameLabel": "Имя ZIP-файла",
-    "zipNamePlaceholder": "Введите имя файла",
-    "description": "{count, plural, =1 {1 файл будет сжат} other {# файлов будет сжато}}",
-    "download": "Скачать ZIP"
-  },
-  "deleteConfirmation": {
-    "filesToDelete": "Файлы для удаления",
-    "sharesToDelete": "Общие папки, которые будут удалены"
-  },
-  "shareMultipleFiles": {
-    "title": "Поделиться Несколькими Файлами",
-    "shareNameLabel": "Название Общего Доступа",
-    "shareNamePlaceholder": "Введите название общего доступа",
-    "descriptionLabel": "Описание",
-    "descriptionPlaceholder": "Введите описание (опционально)",
-    "filesToShare": "Файлы для отправки",
-    "files": "файлов",
-    "totalSize": "Общий размер",
-    "creating": "Создание...",
-    "create": "Создать Общий Доступ"
-  },
-  "shareSecurity": {
-    "subtitle": "Настройте защиту паролем и параметры безопасности для этого общего доступа",
-    "info": {
-      "title": "Как это работает:",
-      "withoutPassword": "Любой, у кого есть ссылка, может получить доступ к этому общему доступу без пароля.",
-      "withPassword": "Пользователям нужно будет ввести пароль для доступа к этому общему доступу."
-    },
-    "existingPasswordMessage": "У этого общего доступа уже есть пароль. Если вы хотите его обновить, введите новый пароль в поле ниже и сохраните.",
-    "passwordProtection": "Защита паролем",
-    "error": {
-      "updateFailed": "Не удалось обновить настройки безопасности"
-    },
-    "passwordRequirements": {
-      "title": "Требования к паролю:",
-      "minLength": "Минимум 2 символа"
-    },
-    "newPassword": "Новый пароль",
-    "success": {
-      "passwordUpdated": "Пароль успешно обновлен",
-      "passwordRemoved": "Защита паролем успешно удалена",
-      "passwordSet": "Защита паролем успешно включена"
-    },
-    "password": "Пароль",
-    "validation": {
-      "passwordRequired": "Требуется пароль",
-      "passwordTooShort": "Пароль должен содержать не менее 2 символов"
-    },
-    "currentStatus": "Текущий статус",
-    "passwordPlaceholder": "Введите надежный пароль",
-    "title": "Настройки безопасности общего доступа"
-  },
-  "shareExpiration": {
-    "neverExpires": "Никогда не истекает",
-    "success": {
-      "expirationUpdated": "Дата истечения успешно обновлена",
-      "expirationRemoved": "Истечение успешно удалено - общий доступ теперь постоянный",
-      "expirationSet": "Дата истечения успешно установлена"
-    },
-    "info": {
-      "canBeChanged": "Вы можете изменить или удалить дату истечения в любое время",
-      "willBeInaccessible": "Общий доступ станет недоступным после этой даты",
-      "noExpiration": "Этот общий доступ никогда не истечет и останется доступным бессрочно.",
-      "title": "Об истечении:"
-    },
-    "enableExpiration": "Включить срок действия",
-    "title": "Настройки истечения общего доступа",
-    "subtitle": "Настройте, когда истечет этот общий доступ",
-    "validation": {
-      "dateMustBeFuture": "Дата истечения должна быть в будущем",
-      "dateRequired": "Пожалуйста, выберите дату истечения"
-    },
-    "currentStatus": "Текущий статус",
-    "error": {
-      "updateFailed": "Не удалось обновить настройки истечения"
-    },
-    "expires": "Истекает:",
-    "expirationDate": "Дата истечения"
-  },
-  "auth": {
-    "errors": {
-      "account_inactive": "Conta inativa. Entre em contato com o administrador.",
-      "registration_disabled": "Registro via SSO está desabilitado.",
-      "token_expired": "Token expirado. Tente novamente.",
-      "config_error": "Erro de configuração. Contate o suporte.",
-      "auth_failed": "Falha na autenticação. Tente novamente."
     }
   },
   "reverseShares": {
@@ -1447,5 +957,598 @@
       }
     },
     "defaultLinkName": "Полученные файлы"
+  },
+  "searchBar": {
+    "placeholder": "Поиск файлов...",
+    "results": "Найдено {filtered} из {total} файлов"
+  },
+  "settings": {
+    "groups": {
+      "defaultDescription": "Настройки конфигурации",
+      "general": {
+        "title": "Общие",
+        "description": "Основные настройки приложения"
+      },
+      "email": {
+        "title": "Электронная почта",
+        "description": "Настройки почтового сервера"
+      },
+      "security": {
+        "title": "Безопасность",
+        "description": "Настройки безопасности и аутентификации"
+      },
+      "storage": {
+        "title": "Хранилище",
+        "description": "Настройки хранения файлов"
+      },
+      "oidc": {
+        "title": "OpenID Connect (SSO)",
+        "description": "Настройка аутентификации SSO через OpenID Connect"
+      }
+    },
+    "fields": {
+      "noDescription": "Описание отсутствует",
+      "appLogo": {
+        "title": "Логотип приложения",
+        "description": "Изображение логотипа приложения"
+      },
+      "appName": {
+        "title": "Название приложения",
+        "description": "Название приложения, отображаемое пользователям"
+      },
+      "appDescription": {
+        "title": "Описание приложения",
+        "description": "Краткое описание приложения"
+      },
+      "showHomePage": {
+        "title": "Показывать главную страницу",
+        "description": "Показывать главную страницу после установки"
+      },
+      "smtpEnabled": {
+        "title": "Включить SMTP",
+        "description": "Включить или отключить функцию SMTP для отправки электронной почты"
+      },
+      "smtpHost": {
+        "title": "SMTP-сервер",
+        "description": "Адрес SMTP-сервера"
+      },
+      "smtpPort": {
+        "title": "SMTP-порт",
+        "description": "Порт SMTP-сервера"
+      },
+      "smtpUser": {
+        "title": "SMTP-пользователь",
+        "description": "Имя пользователя для SMTP-аутентификации"
+      },
+      "smtpPass": {
+        "title": "SMTP-пароль",
+        "description": "Пароль для SMTP-аутентификации"
+      },
+      "smtpFromName": {
+        "title": "Имя отправителя",
+        "description": "Имя, отображаемое в отправляемых письмах"
+      },
+      "smtpFromEmail": {
+        "title": "Электронная почта отправителя",
+        "description": "Адрес электронной почты отправителя"
+      },
+      "maxLoginAttempts": {
+        "title": "Максимальное количество попыток входа",
+        "description": "Максимальное количество попыток входа до блокировки"
+      },
+      "loginBlockDuration": {
+        "title": "Время блокировки",
+        "description": "Продолжительность блокировки (в секундах) после превышения лимита попыток"
+      },
+      "passwordMinLength": {
+        "title": "Минимальная длина пароля",
+        "description": "Минимальное количество символов в пароле"
+      },
+      "passwordResetTokenExpiration": {
+        "title": "Время истечения токена сброса пароля",
+        "description": "Время действия токена сброса пароля (в секундах)"
+      },
+      "maxFileSize": {
+        "title": "Максимальный размер файла",
+        "description": "Максимальный размер файла для загрузки"
+      },
+      "maxTotalStoragePerUser": {
+        "title": "Максимальное хранилище для пользователя",
+        "description": "Общий лимит хранилища для каждого пользователя"
+      },
+      "firstUserAccess": {
+        "title": "Первый доступ пользователя",
+        "description": "Время первого доступа пользователя"
+      },
+      "serverUrl": {
+        "title": "URL do Servidor",
+        "description": "URL base do servidor Palmr (ex: https://palmr.exemplo.com)"
+      },
+      "testSmtp": {
+        "title": "Проверить SMTP-соединение",
+        "description": "Проверить правильность настройки SMTP"
+      },
+      "smtpNoAuth": {
+        "title": "Без аутентификации",
+        "description": "Включите для внутренних серверов, не требующих имя пользователя/пароль (скрывает поля аутентификации)"
+      },
+      "smtpSecure": {
+        "title": "Безопасность соединения",
+        "description": "Метод безопасности SMTP-соединения - Авто (рекомендуется), SSL, STARTTLS или Нет (небезопасно)",
+        "options": {
+          "auto": "Авто (Рекомендуется)",
+          "ssl": "SSL (Порт 465)",
+          "tls": "STARTTLS (Порт 587)",
+          "none": "Нет (Небезопасно)"
+        }
+      },
+      "smtpTrustSelfSigned": {
+        "title": "Доверять самоподписанным сертификатам",
+        "description": "Включите это для доверия самоподписанным SSL/TLS сертификатам (полезно для сред разработки)"
+      }
+    },
+    "buttons": {
+      "save": "Сохранить {group}",
+      "testSmtp": "Проверить соединение",
+      "testing": "Проверка..."
+    },
+    "errors": {
+      "loadFailed": "Ошибка загрузки настроек",
+      "updateFailed": "Ошибка обновления настроек"
+    },
+    "messages": {
+      "noChanges": "Изменений для сохранения нет",
+      "updateSuccess": "Настройки {group} успешно обновлены",
+      "smtpTestFailed": "Ошибка SMTP-соединения: {error}",
+      "smtpTestGenericError": "Не удалось проверить SMTP-соединение. Пожалуйста, проверьте настройки и попробуйте снова.",
+      "smtpTestSuccess": "SMTP-соединение успешно установлено! Ваша конфигурация электронной почты работает корректно.",
+      "smtpMissingAuth": "Пожалуйста, заполните имя пользователя и пароль SMTP или включите опцию 'Без аутентификации'.",
+      "smtpMissingHostPort": "Пожалуйста, заполните хост и порт SMTP перед тестированием.",
+      "smtpNotEnabled": "SMTP не включен. Пожалуйста, сначала включите SMTP."
+    },
+    "title": "Настройки",
+    "breadcrumb": "Настройки",
+    "pageTitle": "Настройки",
+    "tooltips": {
+      "testSmtp": "Проверяет SMTP-соединение с текущими значениями в форме. Чтобы сохранить изменения, не забудьте сохранить настройки после тестирования.",
+      "defaultPlaceholder": "Введите и нажмите Enter"
+    },
+    "redirectUri": {
+      "placeholder": "https://meusite.com",
+      "previewLabel": "URL completa que será salva:"
+    }
+  },
+  "share": {
+    "errors": {
+      "invalidPassword": "Неверный пароль. Пожалуйста, попробуйте еще раз.",
+      "loadFailed": "Ошибка загрузки общего доступа",
+      "downloadFailed": "Ошибка скачивания файла"
+    },
+    "messages": {
+      "downloadStarted": "Скачивание начато"
+    },
+    "password": {
+      "title": "Общий доступ, защищенный паролем",
+      "protected": "Этот общий доступ защищен паролем",
+      "incorrect": "Неверный пароль. Пожалуйста, попробуйте снова.",
+      "label": "Пароль",
+      "placeholder": "Введите пароль для общего доступа",
+      "submit": "Отправить"
+    },
+    "details": {
+      "untitled": "Без названия",
+      "created": "Создано: {date}",
+      "expires": "Истекает: {date}"
+    },
+    "notFound": {
+      "title": "Общий доступ не найден",
+      "description": "Этот общий доступ может быть удален или истек."
+    },
+    "pageTitle": "Общий доступ",
+    "downloadAll": "Скачать все"
+  },
+  "shareActions": {
+    "deleteTitle": "Удалить Общий Доступ",
+    "deleteConfirmation": "Вы уверены, что хотите удалить этот общий доступ? Это действие нельзя отменить.",
+    "editTitle": "Редактировать Общий Доступ",
+    "nameLabel": "Название Общего Доступа",
+    "descriptionLabel": "Описание",
+    "descriptionPlaceholder": "Введите описание (опционально)",
+    "expirationLabel": "Дата Истечения",
+    "expirationPlaceholder": "ДД.ММ.ГГГГ ЧЧ:ММ",
+    "maxViewsLabel": "Максимальные Просмотры",
+    "maxViewsPlaceholder": "Оставьте пустым для неограниченного",
+    "passwordProtection": "Защищено Паролем",
+    "passwordLabel": "Пароль",
+    "passwordPlaceholder": "Введите пароль",
+    "newPasswordLabel": "Новый Пароль (оставьте пустым, чтобы сохранить текущий)",
+    "newPasswordPlaceholder": "Введите новый пароль",
+    "manageFilesTitle": "Управление Файлами",
+    "manageRecipientsTitle": "Управление Получателями",
+    "editSuccess": "Общий доступ успешно обновлен",
+    "editError": "Ошибка обновления общего доступа",
+    "bulkDeleteConfirmation": "Вы уверены, что хотите удалить {count, plural, =1 {1 общую папку} other {# общих папок}}? Это действие нельзя отменить.",
+    "bulkDeleteTitle": "Удалить Выбранные Общие Папки"
+  },
+  "shareDetails": {
+    "title": "Детали Общего Доступа",
+    "subtitle": "Подробная информация об этом общем доступе",
+    "basicInfo": "Основная Информация",
+    "name": "Название",
+    "description": "Описание",
+    "noDescription": "Описание не предоставлено",
+    "untitled": "Без названия",
+    "shareLink": "Ссылка Общего Доступа",
+    "editLink": "Редактировать Ссылку",
+    "generateLink": "Сгенерировать Ссылку",
+    "noLink": "Ссылка еще не сгенерирована",
+    "copyLink": "Скопировать ссылку",
+    "openLink": "Открыть в новой вкладке",
+    "linkCopied": "Ссылка скопирована в буфер обмена",
+    "views": "Просмотры",
+    "dates": "Даты",
+    "created": "Создано",
+    "expires": "Истекает",
+    "never": "Никогда",
+    "security": "Безопасность",
+    "passwordProtected": "Защищено Паролем",
+    "publicAccess": "Публичный Доступ",
+    "maxViews": "Макс. Просмотры:",
+    "files": "Файлы",
+    "recipients": "Получатели",
+    "notAvailable": "Н/Д",
+    "invalidDate": "Неверная дата",
+    "loadError": "Ошибка загрузки деталей общего доступа",
+    "editSecurity": "Изменить безопасность",
+    "editExpiration": "Изменить срок действия"
+  },
+  "shareExpiration": {
+    "neverExpires": "Никогда не истекает",
+    "success": {
+      "expirationUpdated": "Дата истечения успешно обновлена",
+      "expirationRemoved": "Истечение успешно удалено - общий доступ теперь постоянный",
+      "expirationSet": "Дата истечения успешно установлена"
+    },
+    "info": {
+      "canBeChanged": "Вы можете изменить или удалить дату истечения в любое время",
+      "willBeInaccessible": "Общий доступ станет недоступным после этой даты",
+      "noExpiration": "Этот общий доступ никогда не истечет и останется доступным бессрочно.",
+      "title": "Об истечении:"
+    },
+    "enableExpiration": "Включить срок действия",
+    "title": "Настройки истечения общего доступа",
+    "subtitle": "Настройте, когда истечет этот общий доступ",
+    "validation": {
+      "dateMustBeFuture": "Дата истечения должна быть в будущем",
+      "dateRequired": "Пожалуйста, выберите дату истечения"
+    },
+    "currentStatus": "Текущий статус",
+    "error": {
+      "updateFailed": "Не удалось обновить настройки истечения"
+    },
+    "expires": "Истекает:",
+    "expirationDate": "Дата истечения"
+  },
+  "shareFile": {
+    "title": "Поделиться Файлом",
+    "linkTitle": "Сгенерировать Ссылку",
+    "nameLabel": "Название Общего Доступа",
+    "namePlaceholder": "Введите название общего доступа",
+    "descriptionLabel": "Описание",
+    "descriptionPlaceholder": "Введите описание (опционально)",
+    "expirationLabel": "Дата Истечения",
+    "expirationPlaceholder": "ДД.ММ.ГГГГ ЧЧ:ММ",
+    "maxViewsLabel": "Максимальные Просмотры",
+    "maxViewsPlaceholder": "Оставьте пустым для неограниченного",
+    "passwordProtection": "Защищено Паролем",
+    "passwordLabel": "Пароль",
+    "passwordPlaceholder": "Введите пароль",
+    "linkDescription": "Сгенерируйте пользовательскую ссылку для отправки файла",
+    "aliasLabel": "Псевдоним Ссылки",
+    "aliasPlaceholder": "Введите пользовательский псевдоним",
+    "linkReady": "Ваша ссылка для общего доступа готова:",
+    "createShare": "Создать Общий Доступ",
+    "generateLink": "Сгенерировать Ссылку",
+    "copyLink": "Скопировать Ссылку"
+  },
+  "shareManager": {
+    "deleteSuccess": "Общий доступ успешно удален",
+    "deleteError": "Ошибка при удалении общего доступа",
+    "updateSuccess": "Общий доступ успешно обновлен",
+    "updateError": "Ошибка при обновлении общего доступа",
+    "filesUpdateSuccess": "Файлы успешно обновлены",
+    "filesUpdateError": "Ошибка при обновлении файлов",
+    "recipientsUpdateSuccess": "Получатели успешно обновлены",
+    "recipientsUpdateError": "Ошибка при обновлении получателей",
+    "linkGenerateSuccess": "Ссылка для общего доступа успешно создана",
+    "linkGenerateError": "Ошибка при создании ссылки для общего доступа",
+    "notifyLoading": "Отправка уведомлений...",
+    "notifySuccess": "Получатели успешно уведомлены",
+    "notifyError": "Ошибка при уведомлении получателей",
+    "bulkDeleteError": "Не удалось удалить общие папки",
+    "bulkDeleteLoading": "Удаление {count, plural, =1 {1 общей папки} other {# общих папок}}...",
+    "bulkDeleteSuccess": "{count, plural, =1 {1 общая папка успешно удалена} other {# общих папок успешно удалены}}",
+    "securityUpdateError": "Не удалось обновить настройки безопасности",
+    "expirationUpdateError": "Не удалось обновить настройки истечения",
+    "securityUpdateSuccess": "Настройки безопасности успешно обновлены",
+    "expirationUpdateSuccess": "Настройки истечения успешно обновлены",
+    "creatingZip": "Создание файла Zip ...",
+    "defaultShareName": "Делиться",
+    "downloadError": "Не удалось скачать общие файлы",
+    "downloadSuccess": "Скачать началась успешно",
+    "multipleSharesZipName": "{count} _shares_files.zip",
+    "noFilesToDownload": "Нет файлов для скачивания",
+    "singleShareZipName": "{shareme} _files.zip",
+    "zipDownloadError": "Не удалось создать zip -файл",
+    "zipDownloadSuccess": "Zip -файл успешно загружен"
+  },
+  "shareMultipleFiles": {
+    "title": "Поделиться Несколькими Файлами",
+    "shareNameLabel": "Название Общего Доступа",
+    "shareNamePlaceholder": "Введите название общего доступа",
+    "descriptionLabel": "Описание",
+    "descriptionPlaceholder": "Введите описание (опционально)",
+    "filesToShare": "Файлы для отправки",
+    "files": "файлов",
+    "totalSize": "Общий размер",
+    "creating": "Создание...",
+    "create": "Создать Общий Доступ"
+  },
+  "shareSecurity": {
+    "subtitle": "Настройте защиту паролем и параметры безопасности для этого общего доступа",
+    "info": {
+      "title": "Как это работает:",
+      "withoutPassword": "Любой, у кого есть ссылка, может получить доступ к этому общему доступу без пароля.",
+      "withPassword": "Пользователям нужно будет ввести пароль для доступа к этому общему доступу."
+    },
+    "existingPasswordMessage": "У этого общего доступа уже есть пароль. Если вы хотите его обновить, введите новый пароль в поле ниже и сохраните.",
+    "passwordProtection": "Защита паролем",
+    "error": {
+      "updateFailed": "Не удалось обновить настройки безопасности"
+    },
+    "passwordRequirements": {
+      "title": "Требования к паролю:",
+      "minLength": "Минимум 2 символа"
+    },
+    "newPassword": "Новый пароль",
+    "success": {
+      "passwordUpdated": "Пароль успешно обновлен",
+      "passwordRemoved": "Защита паролем успешно удалена",
+      "passwordSet": "Защита паролем успешно включена"
+    },
+    "password": "Пароль",
+    "validation": {
+      "passwordRequired": "Требуется пароль",
+      "passwordTooShort": "Пароль должен содержать не менее 2 символов"
+    },
+    "currentStatus": "Текущий статус",
+    "passwordPlaceholder": "Введите надежный пароль",
+    "title": "Настройки безопасности общего доступа"
+  },
+  "shares": {
+    "errors": {
+      "loadFailed": "Ошибка загрузки общих доступов",
+      "notifyFailed": "Ошибка уведомления получателей",
+      "smtpConfigFailed": "Ошибка загрузки SMTP-настроек"
+    },
+    "messages": {
+      "linkCopied": "Ссылка скопирована в буфер обмена",
+      "recipientsNotified": "Получатели успешно уведомлены"
+    },
+    "empty": {
+      "message": "Общие доступы еще не созданы",
+      "createButton": "Создать общий доступ"
+    },
+    "header": {
+      "title": "Мои общие доступы",
+      "myShares": "Мои общие доступы"
+    },
+    "search": {
+      "title": "Все общие доступы",
+      "createButton": "Создать общий доступ",
+      "placeholder": "Поиск общих доступов...",
+      "results": "Найдено {filtered} из {total} общих доступов"
+    },
+    "pageTitle": "Общие доступы"
+  },
+  "sharesTable": {
+    "ariaLabel": "Таблица общих доступов",
+    "never": "Никогда",
+    "columns": {
+      "name": "НАЗВАНИЕ",
+      "description": "ОПИСАНИЕ",
+      "createdAt": "СОЗДАНО",
+      "expiresAt": "ИСТЕКАЕТ",
+      "status": "СТАТУС",
+      "security": "БЕЗОПАСНОСТЬ",
+      "files": "ФАЙЛЫ",
+      "recipients": "ПОЛУЧАТЕЛИ",
+      "actions": "ДЕЙСТВИЯ"
+    },
+    "status": {
+      "neverExpires": "Никогда Не Истекает",
+      "active": "Активный",
+      "expired": "Истекший"
+    },
+    "security": {
+      "protected": "Защищен",
+      "public": "Публичный"
+    },
+    "filesCount": "файлов",
+    "recipientsCount": "получателей",
+    "actions": {
+      "menu": "Меню действий общего доступа",
+      "edit": "Редактировать",
+      "manageFiles": "Управление Файлами",
+      "manageRecipients": "Управление Получателями",
+      "viewDetails": "Просмотр Деталей",
+      "generateLink": "Сгенерировать Ссылку",
+      "editLink": "Редактировать Ссылку",
+      "copyLink": "Скопировать Ссылку",
+      "notifyRecipients": "Уведомить Получателей",
+      "delete": "Удалить",
+      "downloadShareFiles": "Загрузите все файлы"
+    },
+    "bulkActions": {
+      "delete": "Удалить",
+      "selected": "{count, plural, =1 {1 общая папка выбрана} other {# общих папок выбрано}}",
+      "actions": "Действия",
+      "download": "Скачать выбранный"
+    },
+    "selectAll": "Выбрать все",
+    "selectShare": "Выбрать общую папку {shareName}"
+  },
+  "storageUsage": {
+    "title": "Использование хранилища",
+    "ariaLabel": "Индикатор использования хранилища",
+    "used": "Использовано",
+    "available": "Доступно",
+    "total": "Всего",
+    "loading": "Загрузка...",
+    "retry": "Повторить",
+    "errors": {
+      "title": "Информация о хранилище недоступна",
+      "detectionFailed": "Не удалось определить свободное место на диске. Это может быть связано с проблемами конфигурации системы или недостаточными правами доступа.",
+      "serverError": "Произошла ошибка сервера при получении информации о хранилище. Пожалуйста, повторите попытку позже.",
+      "unknown": "Произошла непредвиденная ошибка при загрузке информации о хранилище."
+    }
+  },
+  "theme": {
+    "toggle": "Переключить тему",
+    "light": "Светлая",
+    "dark": "Тёмная",
+    "system": "Системная"
+  },
+  "uploadFile": {
+    "title": "Загрузить файл",
+    "multipleTitle": "Загрузить Несколько Файлов",
+    "selectFile": "Нажмите, чтобы выбрать файл",
+    "selectMultipleFiles": "Нажмите, чтобы выбрать один или несколько файлов",
+    "dragAndDrop": "или перетащите файлы сюда",
+    "preview": "Предпросмотр",
+    "uploadProgress": "Прогресс загрузки",
+    "upload": "Загрузить",
+    "startUploads": "Начать Загрузку",
+    "retry": "Повторить",
+    "finish": "Завершить",
+    "success": "Файл успешно загружен",
+    "allSuccess": "{count, plural, =1 {Файл успешно загружен} other {# файлов успешно загружено}}",
+    "partialSuccess": "{success} файлов успешно загружено, {error} неудачно",
+    "error": "Не удалось загрузить файл",
+    "fileSizeExceeded": "Размер файла превышает лимит в {maxsizemb}МБ.",
+    "insufficientStorage": "Недостаточно места для хранения. У вас доступно {availablespace}МБ.",
+    "unauthorized": "Не авторизовано: для доступа к этому ресурсу требуется действительный токен.",
+    "confirmCancel": {
+      "title": "Отменить Загрузку",
+      "messageSingle": "В процессе одна загрузка.",
+      "messageMultiple": "В процессе {count} загрузок.",
+      "warning": "Если вы закроете сейчас, загрузки будут отменены и весь прогресс будет потерян.",
+      "continue": "Продолжить Загрузку",
+      "cancel": "Отменить Загрузку"
+    },
+    "globalDrop": {
+      "title": "Перетащите файлы для загрузки",
+      "description": "Отпустите, чтобы загрузить файлы"
+    },
+    "pasteSuccess": "{count, plural, =1 {Изображение вставлено и успешно загружено} other {# изображений вставлено и успешно загружено}}"
+  },
+  "users": {
+    "modes": {
+      "create": "создать",
+      "edit": "редактировать"
+    },
+    "errors": {
+      "loadFailed": "Ошибка загрузки пользователей",
+      "submitFailed": "Ошибка при {mode} пользователя",
+      "deleteFailed": "Ошибка при удалении пользователя",
+      "statusUpdateFailed": "Ошибка обновления статуса пользователя"
+    },
+    "messages": {
+      "createSuccess": "Пользователь успешно создан",
+      "updateSuccess": "Пользователь успешно обновлен",
+      "deleteSuccess": "Пользователь успешно удален",
+      "activateSuccess": "Пользователь успешно активирован",
+      "deactivateSuccess": "Пользователь успешно деактивирован"
+    },
+    "actions": {
+      "edit": "Редактировать",
+      "activate": "Активировать",
+      "deactivate": "Деактивировать",
+      "delete": "Удалить"
+    },
+    "delete": {
+      "title": "Подтверждение удаления пользователя",
+      "confirmation": "Вы уверены, что хотите удалить пользователя {firstName} {lastName}? Это действие нельзя отменить.",
+      "confirm": "Удалить пользователя"
+    },
+    "form": {
+      "titleCreate": "Добавить нового пользователя",
+      "titleEdit": "Редактировать пользователя",
+      "firstName": "Имя",
+      "lastName": "Фамилия",
+      "username": "Имя пользователя",
+      "email": "Электронная почта",
+      "password": "Пароль",
+      "newPassword": "Новый пароль (необязательно)",
+      "passwordPlaceholder": "Оставьте пустым, чтобы сохранить текущий пароль",
+      "role": "Роль",
+      "roleUser": "Пользователь",
+      "roleAdmin": "Администратор",
+      "create": "Создать",
+      "save": "Сохранить"
+    },
+    "status": {
+      "title": "Подтверждение изменения статуса",
+      "confirmation": "Вы уверены, что хотите {action} пользователя {firstName} {lastName}?",
+      "activate": "активировать",
+      "deactivate": "деактивировать",
+      "user": "Пользователь"
+    },
+    "header": {
+      "title": "Управление пользователями",
+      "addUser": "Добавить пользователя",
+      "management": "Управление пользователями"
+    },
+    "table": {
+      "user": "ПОЛЬЗОВАТЕЛЬ",
+      "email": "ЭЛЕКТРОННАЯ ПОЧТА",
+      "status": "СТАТУС",
+      "role": "РОЛЬ",
+      "actions": "ДЕЙСТВИЯ",
+      "active": "Активен",
+      "inactive": "Неактивен",
+      "admin": "Администратор",
+      "userr": "Пользователь"
+    }
+  },
+  "validation": {
+    "invalidEmail": "Неверный адрес электронной почты",
+    "passwordMinLength": "Пароль должен содержать не менее 6 символов",
+    "firstNameRequired": "Имя обязательно",
+    "lastNameRequired": "Фамилия обязательна",
+    "usernameLength": "Имя пользователя должно содержать не менее 3 символов",
+    "usernameSpaces": "Имя пользователя не может содержать пробелов",
+    "passwordLength": "Пароль должен содержать не менее 8 символов",
+    "passwordsMatch": "Пароли не совпадают",
+    "emailRequired": "Требуется электронная почта",
+    "emailOrUsernameRequired": "Электронная почта или имя пользователя обязательно",
+    "passwordRequired": "Требуется пароль",
+    "nameRequired": "Требуется имя",
+    "required": "Это поле обязательно"
+  },
+  "iconPicker": {
+    "title": "Выбрать иконку",
+    "placeholder": "Выберите иконку",
+    "searchPlaceholder": "Поиск иконок...",
+    "loadingMore": "Загрузка дополнительных иконок...",
+    "allIconsLoaded": "Загружено все {count} иконок",
+    "noIconsFound": "Не найдено иконок для \"{search}\"",
+    "tabs": {
+      "all": "Все иконки",
+      "popular": "Популярные",
+      "auth": "Провайдеры аутентификации"
+    },
+    "stats": "{iconCount} иконок из {libraryCount} библиотек",
+    "categoryBadge": "{category} ({count} иконок)"
   }
 }

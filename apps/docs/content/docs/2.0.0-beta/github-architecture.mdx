@@ -2,31 +2,30 @@
 title: </> Github Architecture
 ---
 
-import { File, Folder, Files } from "fumadocs-ui/components/files";
+import { File, Files, Folder } from "fumadocs-ui/components/files";
 
 ## Project Structure
 
 <Files>
   <Folder name="apps" defaultOpen>
-    <Folder name="docs" >
+    <Folder name="docs">
       <File name="all documentation files" />
     </Folder>
-    <Folder name="server" >
+    <Folder name="server">
       <File name="all backend files" />
     </Folder>
-    <Folder name="web" >
+    <Folder name="web">
       <File name="all frontend files" />
     </Folder>
   </Folder>
   <File name="other project files" />
 </Files>
 
-
 ## Core Components
 
 ### 🖥️ Frontend Application (apps/web)
 
- **Technology Stack:**
+**Technology Stack:**
 
 - Next.js 15 (App Router)
 - React 18
@@ -41,18 +40,18 @@ Internationalization is handled by **next-intl**, which integrates perfectly wit
 
 The frontend is organized with:
 
-- A **components-based architecture** for modular UI  
-- **Custom hooks** to isolate logic and side effects  
-- A **route protection system** using session cookies and middleware  
-- A **file management interface** integrated with the backend  
-- A **reusable modal system** used for file actions, confirmations, and more  
-- **Dynamic, locale-aware routing** using next-intl  
+- A **components-based architecture** for modular UI
+- **Custom hooks** to isolate logic and side effects
+- A **route protection system** using session cookies and middleware
+- A **file management interface** integrated with the backend
+- A **reusable modal system** used for file actions, confirmations, and more
+- **Dynamic, locale-aware routing** using next-intl
 
 ---
 
 ### ⚙️ Backend Service (apps/server)
 
- **Technology Stack:**
+**Technology Stack:**
 
 - Fastify
 - PostgreSQL
@@ -65,18 +64,18 @@ Data is stored in **PostgreSQL**, which handles user info, file metadata, sessio
 
 Key features include:
 
-- **Authentication/authorization** with JWT + cookie sessions  
-- **File management logic** including uploads, deletes, and renames  
-- **Storage operations** to handle bucket creation, usage tracking, and cleanup  
-- A **share system** that generates tokenized public file links  
-- Schema-based request validation for all endpoints  
-- Prisma models that keep the database logic predictable and type-safe  
+- **Authentication/authorization** with JWT + cookie sessions
+- **File management logic** including uploads, deletes, and renames
+- **Storage operations** to handle bucket creation, usage tracking, and cleanup
+- A **share system** that generates tokenized public file links
+- Schema-based request validation for all endpoints
+- Prisma models that keep the database logic predictable and type-safe
 
---- 
+---
 
 ### 📚 Documentation (apps/docs)
 
- **Technology Stack:**
+**Technology Stack:**
 
 - Fumadocs
 - MDX (Markdown + JSX)
@@ -86,12 +85,12 @@ The docs are built using **Fumadocs**, a modern documentation system built on to
 
 It supports sidebar navigation, keyboard shortcuts, dark mode, and even interactive demos or UI previews. The file tree you see above, for example, is powered by a real React component from the docs.
 
-- Built with **Fumadocs**, powered by Next.js  
-- Supports **MDX** and full React component embedding  
-- Ideal for technical docs and live code samples  
-- Styled using the same Tailwind setup from the main app  
+- Built with **Fumadocs**, powered by Next.js
+- Supports **MDX** and full React component embedding
+- Ideal for technical docs and live code samples
+- Styled using the same Tailwind setup from the main app
 
---- 
+---
 
 ### 🏗️ Infrastructure
 
@@ -99,12 +98,12 @@ Palmr. is fully containerized using **Docker**, which means every service: front
 
 Volumes are used to persist data locally, and containers are networked together so that all services can talk to each other securely.
 
-- **Docker-first architecture** with all services containerized  
-- Configurable through `.env` and compose overrides  
-- Local volumes and named networks  
-- Easy to deploy and scale on any container-compatible infra  
+- **Docker-first architecture** with all services containerized
+- Configurable through `.env` and compose overrides
+- Local volumes and named networks
+- Easy to deploy and scale on any container-compatible infra
 
---- 
+---
 
 ## Key Features
 
@@ -112,34 +111,34 @@ Volumes are used to persist data locally, and containers are networked together 
 
 Files are at the heart of Palmr. Users can upload files via the frontend, and they’re streamed directly to MinIO. The backend handles metadata (name, size, type, ownership), and also handles deletion, renaming, and public sharing. Every file operation is tracked, and all actions can be scoped per user.
 
-- Upload/download with instant feedback  
-- File previews, type validation, and size limits  
-- Token-based sharing system  
-- Disk usage tracking by user  
+- Upload/download with instant feedback
+- File previews, type validation, and size limits
+- Token-based sharing system
+- Disk usage tracking by user
 
 ### 👤 User System
 
 Authentication is done through secure JWTs, stored in HTTP-only cookies for safety. Signup and login flows are simple and fast, and user info is kept in sync across the frontend and backend.
 
-- Cookie-based session management  
-- Role support and future admin access  
-- Profile updates and password reset flows  
-- Logged-in user state handled via custom hooks  
+- Cookie-based session management
+- Role support and future admin access
+- Profile updates and password reset flows
+- Logged-in user state handled via custom hooks
 
 ### 💾 Storage System
 
 MinIO is used for all file storage. It’s fast, lightweight, and fully S3-compatible which means it can scale easily and integrates with tons of other tools. The backend tracks usage, handles cleanup of orphaned files, and ensures that every file on disk has a matching database record.
 
-- S3-compatible object storage via MinIO  
-- Upload validation and automatic cleanup  
-- Usage tracking and quotas (per user or global)  
-- Secure access to stored files with signed URLs  
+- S3-compatible object storage via MinIO
+- Upload validation and automatic cleanup
+- Usage tracking and quotas (per user or global)
+- Secure access to stored files with signed URLs
 
-### 🌐 Internationalization 
+### 🌐 Internationalization
 
 Palmr. supports multiple languages using **next-intl**, which is deeply integrated into the routing system. It loads only the necessary translations per route, supports nested namespaces, and makes it easy to keep things organized even at scale.
 
-- Per-locale localstorage (`en-US`, `pt-BR`, etc.)  
-- Translation loading by namespace/page  
-- Full pluralization and formatting support  
-- Easy translation management via JSON files  
+- Per-locale localstorage (`en-US`, `pt-BR`, etc.)
+- Translation loading by namespace/page
+- Full pluralization and formatting support
+- Easy translation management via JSON files

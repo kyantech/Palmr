@@ -1,22 +1,23 @@
+import * as fs from "fs/promises";
+import crypto from "node:crypto";
+import path from "path";
+import fastifyMultipart from "@fastify/multipart";
+import fastifyStatic from "@fastify/static";
+
 import { buildApp } from "./app";
+import { directoriesConfig } from "./config/directories.config";
 import { env } from "./env";
 import { appRoutes } from "./modules/app/routes";
+import { authProvidersRoutes } from "./modules/auth-providers/routes";
 import { authRoutes } from "./modules/auth/routes";
-import { ConfigService } from "./modules/config/service";
 import { fileRoutes } from "./modules/file/routes";
 import { filesystemRoutes } from "./modules/filesystem/routes";
 import { healthRoutes } from "./modules/health/routes";
-import { oidcRoutes } from "./modules/oidc/routes";
 import { reverseShareRoutes } from "./modules/reverse-share/routes";
 import { shareRoutes } from "./modules/share/routes";
 import { storageRoutes } from "./modules/storage/routes";
 import { userRoutes } from "./modules/user/routes";
 import { IS_RUNNING_IN_CONTAINER } from "./utils/container-detection";
-import fastifyMultipart from "@fastify/multipart";
-import fastifyStatic from "@fastify/static";
-import * as fs from "fs/promises";
-import crypto from "node:crypto";
-import path from "path";
 
 if (typeof globalThis.crypto === "undefined") {
   globalThis.crypto = crypto.webcrypto as any;
@@ -27,28 +28,23 @@ if (typeof global.crypto === "undefined") {
 }
 
 async function ensureDirectories() {
-  const baseDir = IS_RUNNING_IN_CONTAINER ? "/app/server" : process.cwd();
-  const uploadsDir = path.join(baseDir, "uploads");
-  const tempChunksDir = path.join(baseDir, "temp-chunks");
+  const dirsToCreate = [
+    { path: directoriesConfig.uploads, name: "uploads" },
+    { path: directoriesConfig.tempUploads, name: "temp-uploads" },
+  ];
 
-  try {
-    await fs.access(uploadsDir);
-  } catch {
-    await fs.mkdir(uploadsDir, { recursive: true });
-    console.log(`📁 Created uploads directory: ${uploadsDir}`);
-  }
-
-  try {
-    await fs.access(tempChunksDir);
-  } catch {
-    await fs.mkdir(tempChunksDir, { recursive: true });
-    console.log(`📁 Created temp-chunks directory: ${tempChunksDir}`);
+  for (const dir of dirsToCreate) {
+    try {
+      await fs.access(dir.path);
+    } catch {
+      await fs.mkdir(dir.path, { recursive: true });
+      console.log(`📁 Created ${dir.name} directory: ${dir.path}`);
+    }
   }
 }
 
 async function startServer() {
   const app = await buildApp();
-  const configService = new ConfigService();
 
   await ensureDirectories();
 
@@ -64,18 +60,15 @@ async function startServer() {
   });
 
   if (env.ENABLE_S3 !== "true") {
-    const baseDir = IS_RUNNING_IN_CONTAINER ? "/app/server" : process.cwd();
-    const uploadsPath = path.join(baseDir, "uploads");
-
     await app.register(fastifyStatic, {
-      root: uploadsPath,
+      root: directoriesConfig.uploads,
       prefix: "/uploads/",
       decorateReply: false,
     });
   }
 
   app.register(authRoutes);
-  app.register(oidcRoutes, { prefix: "/auth/oidc" });
+  app.register(authProvidersRoutes, { prefix: "/auth" });
   app.register(userRoutes);
   app.register(fileRoutes);
 
@@ -94,17 +87,19 @@ async function startServer() {
     host: "0.0.0.0",
   });
 
-  let oidcStatus = "Disabled";
+  let authProviders = "Disabled";
   try {
-    const oidcEnabled = await configService.getValue("oidcEnabled");
-    oidcStatus = oidcEnabled === "true" ? "Enabled" : "Disabled";
+    const { AuthProvidersService } = await import("./modules/auth-providers/service.js");
+    const authService = new AuthProvidersService();
+    const enabledProviders = await authService.getEnabledProviders();
+    authProviders = enabledProviders.length > 0 ? `Enabled (${enabledProviders.length} providers)` : "Disabled";
   } catch (error) {
-    console.error("Error getting OIDC status:", error);
+    console.error("Error getting auth providers status:", error);
   }
 
   console.log(`🌴 Palmr server running on port 3333 🌴`);
   console.log(`📦 Storage mode: ${env.ENABLE_S3 === "true" ? "S3" : "Local Filesystem (Encrypted)"}`);
-  console.log(`🔐 OIDC SSO: ${oidcStatus}`);
+  console.log(`🔐 Auth Providers: ${authProviders}`);
 
   console.log("\n📚 API Documentation:");
   console.log(`   - API Reference: http://localhost:3333/docs\n`);

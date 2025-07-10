@@ -23,18 +23,6 @@ export function FileTypesTagsInput({
 }: FileTypesTagsInputProps) {
   const [inputValue, setInputValue] = useState("");
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" || e.key === " " || e.key === "," || e.key === "|" || e.key === "-") {
-      e.preventDefault();
-      addTag();
-    } else if (e.key === "Backspace" && inputValue === "" && value.length > 0) {
-      e.preventDefault();
-      removeTag(value.length - 1);
-    } else if (e.key === ".") {
-      e.preventDefault();
-    }
-  };
-
   const addTag = () => {
     const newTag = inputValue.trim().toLowerCase();
     if (newTag && !value.includes(newTag)) {
@@ -46,6 +34,18 @@ export function FileTypesTagsInput({
   const removeTag = (index: number) => {
     const newTags = value.filter((_, i) => i !== index);
     onChange(newTags);
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" || e.key === " " || e.key === "," || e.key === "|" || e.key === "-") {
+      e.preventDefault();
+      addTag();
+    } else if (e.key === "Backspace" && inputValue === "" && value.length > 0) {
+      e.preventDefault();
+      removeTag(value.length - 1);
+    } else if (e.key === ".") {
+      e.preventDefault();
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

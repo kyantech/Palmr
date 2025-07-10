@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3333";
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ objectPath: string[] }> }) {
   const { objectPath } = await params;
   const cookieHeader = req.headers.get("cookie");
-
   const objectName = objectPath.join("/");
-
-  const url = `${process.env.API_BASE_URL}/files/${encodeURIComponent(objectName)}/download`;
+  const url = `${API_BASE_URL}/files/${encodeURIComponent(objectName)}/download`;
 
   const apiRes = await fetch(url, {
     method: "GET",

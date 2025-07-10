@@ -1,0 +1,12 @@
+echo "🔍 Running pre-push validation for all apps..."
+
+echo "📱 Validating web app..."
+cd apps/web && pnpm validate
+
+echo "📚 Validating docs app..."
+cd ../docs && pnpm validate
+
+echo "🖥️ Validating server app..."
+cd ../server && pnpm validate
+
+echo "✅ All validations passed!" 

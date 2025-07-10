@@ -15,7 +15,7 @@ export function registerSwagger(app: any) {
           name: "Authentication",
           description: "Authentication related endpoints",
         },
-        { name: "OIDC", description: "OpenID Connect authentication endpoints" },
+        { name: "Auth Providers", description: "External authentication providers management" },
         { name: "User", description: "User management endpoints" },
         { name: "File", description: "File management endpoints" },
         { name: "Share", description: "File sharing endpoints" },

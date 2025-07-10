@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   IconCheck,
   IconCopy,
@@ -88,11 +88,24 @@ export function ShareDetailsModal({
   const [showExpirationModal, setShowExpirationModal] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const loadShareDetails = useCallback(async () => {
+    if (!shareId) return;
+    setIsLoading(true);
+    try {
+      const response = await getShare(shareId);
+      setShare(response.data.share);
+    } catch {
+      toast.error(t("shareDetails.loadError"));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [shareId, t]);
+
   useEffect(() => {
     if (shareId) {
       loadShareDetails();
     }
-  }, [shareId]);
+  }, [shareId, loadShareDetails]);
 
   useEffect(() => {
     if (editingField && inputRef.current) {
@@ -109,26 +122,13 @@ export function ShareDetailsModal({
     if (refreshTrigger) {
       loadShareDetails();
     }
-  }, [refreshTrigger]);
-
-  const loadShareDetails = async () => {
-    if (!shareId) return;
-    setIsLoading(true);
-    try {
-      const response = await getShare(shareId);
-      setShare(response.data.share);
-    } catch (error) {
-      toast.error(t("shareDetails.loadError"));
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [refreshTrigger, loadShareDetails]);
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return t("shareDetails.notAvailable");
     try {
       return format(new Date(dateString), "MM/dd/yyyy HH:mm");
-    } catch (error) {
+    } catch {
       return t("shareDetails.invalidDate");
     }
   };

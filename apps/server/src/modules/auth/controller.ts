@@ -1,7 +1,8 @@
-import { env } from "../../env";
-import { LoginSchema, RequestPasswordResetSchema, createResetPasswordSchema } from "./dto";
-import { AuthService } from "./service";
 import { FastifyReply, FastifyRequest } from "fastify";
+
+import { env } from "../../env";
+import { createResetPasswordSchema, LoginSchema, RequestPasswordResetSchema } from "./dto";
+import { AuthService } from "./service";
 
 export class AuthController {
   private authService = new AuthService();

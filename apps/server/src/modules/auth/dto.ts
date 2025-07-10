@@ -1,5 +1,6 @@
-import { ConfigService } from "../config/service";
 import { z } from "zod";
+
+import { ConfigService } from "../config/service";
 
 const configService = new ConfigService();
 

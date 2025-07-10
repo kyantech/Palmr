@@ -1,4 +1,4 @@
-import { GetShareByAlias200Share } from "@/http/models";
+import { Share } from "@/http/endpoints/shares/types";
 
 export interface ShareFile {
   id: string;
@@ -22,7 +22,7 @@ export interface PasswordModalProps {
 }
 
 export interface ShareDetailsProps {
-  share: GetShareByAlias200Share;
+  share: Share;
   onDownload: (objectName: string, fileName: string) => Promise<void>;
   onBulkDownload?: () => Promise<void>;
 }

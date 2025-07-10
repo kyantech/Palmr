@@ -1,15 +1,9 @@
 "use client";
-import React, { useRef, useEffect, useState } from "react";
+
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 
-export const TextHoverEffect = ({
-  text,
-  duration,
-}: {
-  text: string;
-  duration?: number;
-  automatic?: boolean;
-}) => {
+export const TextHoverEffect = ({ text, duration }: { text: string; duration?: number; automatic?: boolean }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [cursor, setCursor] = useState({ x: 0, y: 0 });
   const [hovered, setHovered] = useState(false);
@@ -40,13 +34,7 @@ export const TextHoverEffect = ({
       className="select-none"
     >
       <defs>
-        <linearGradient
-          id="textGradient"
-          gradientUnits="userSpaceOnUse"
-          cx="50%"
-          cy="50%"
-          r="25%"
-        >
+        <linearGradient id="textGradient" gradientUnits="userSpaceOnUse" cx="50%" cy="50%" r="25%">
           {hovered && (
             <>
               <stop offset="0%" stopColor="#eab308" />
@@ -78,13 +66,7 @@ export const TextHoverEffect = ({
           <stop offset="100%" stopColor="black" />
         </motion.radialGradient>
         <mask id="textMask">
-          <rect
-            x="0"
-            y="0"
-            width="100%"
-            height="100%"
-            fill="url(#revealMask)"
-          />
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#revealMask)" />
         </mask>
       </defs>
       <text

@@ -1,6 +1,7 @@
+import { S3Client } from "@aws-sdk/client-s3";
+
 import { env } from "../env";
 import { StorageConfig } from "../types/storage";
-import { S3Client } from "@aws-sdk/client-s3";
 
 export const storageConfig: StorageConfig = {
   endpoint: env.S3_ENDPOINT || "",

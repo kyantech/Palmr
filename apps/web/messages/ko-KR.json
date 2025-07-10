@@ -1,4 +1,132 @@
 {
+  "auth": {
+    "errors": {
+      "account_inactive": "계정이 비활성화되었습니다. 관리자에게 문의하세요.",
+      "registration_disabled": "SSO를 통한 등록이 비활성화되었습니다.",
+      "token_expired": "토큰이 만료되었습니다. 다시 시도하세요.",
+      "config_error": "구성 오류. 지원팀에 문의하세요.",
+      "auth_failed": "인증에 실패했습니다. 다시 시도하세요."
+    }
+  },
+  "authProviders": {
+    "title": "인증 제공자",
+    "description": "SSO를 위한 외부 인증 제공자 구성",
+    "enabledCount": "{count}개 활성화됨",
+    "loadingProviders": "제공자 로딩 중...",
+    "providersConfigured": "{count}개의 제공자가 구성됨",
+    "enabledOfTotal": "전체 {total}개 중 {enabled}개 활성화됨",
+    "hideDisabledProviders": "비활성화된 제공자 숨기기",
+    "addProvider": "제공자 추가",
+    "addProviderTitle": "제공자 추가",
+    "editProvider": "제공자 편집",
+    "deleteProvider": "제공자 삭제",
+    "enabled": "활성화됨",
+    "disabled": "비활성화됨",
+    "officialProvider": "공식 제공자",
+    "dragToReorder": "드래그하여 순서 변경",
+    "dragDisabledMessage": "제공자 필터링 시 드래그 앤 드롭이 비활성화됩니다. 순서를 변경하려면 모든 제공자를 표시하세요.",
+    "dragEnabledMessage": "제공자를 드래그하여 순서를 변경하세요. 이 순서는 로그인 페이지에 반영됩니다.",
+    "noProvidersEnabled": "활성화된 인증 제공자가 없습니다",
+    "noProvidersConfigured": "구성된 인증 제공자가 없습니다",
+    "form": {
+      "providerName": "제공자 이름",
+      "providerNamePlaceholder": "예: mycompany",
+      "displayName": "표시 이름",
+      "displayNamePlaceholder": "예: 내 회사 SSO",
+      "type": "유형",
+      "typeOidc": "OIDC (OpenID Connect)",
+      "typeOauth2": "OAuth 2.0",
+      "icon": "아이콘",
+      "iconPlaceholder": "아이콘 선택",
+      "clientId": "클라이언트 ID",
+      "clientIdPlaceholder": "OAuth 클라이언트 ID",
+      "clientSecret": "클라이언트 시크릿",
+      "clientSecretPlaceholder": "OAuth 클라이언트 시크릿",
+      "oauthScopes": "OAuth 스코프",
+      "scopesPlaceholder": "스코프 입력 (예: openid, profile, email)",
+      "scopesHelpOidc": "제공자 URL을 기반으로 자동 제안된 스코프. 일반적인 OIDC 스코프: openid, profile, email, groups",
+      "scopesHelpOauth2": "제공자 URL을 기반으로 자동 제안된 스코프. 일반적인 OAuth2 스코프는 제공자에 따라 다릅니다",
+      "providerUrl": "제공자 URL",
+      "providerUrlPlaceholder": "https://auth.example.com",
+      "providerUrlAutoPlaceholder": "https://your-provider.com (엔드포인트가 자동으로 발견됩니다)",
+      "providerUrlManualPlaceholder": "https://your-provider.com",
+      "autoDiscoveryHelp": "시스템이 자동으로 인증, 토큰 및 사용자 정보 엔드포인트를 발견합니다",
+      "manualConfigurationHelp": "제공자의 기본 URL (엔드포인트는 이것을 기준으로 상대적)",
+      "authorizationEndpoint": "인증 엔드포인트",
+      "authorizationEndpointPlaceholder": "https://auth.example.com/auth",
+      "tokenEndpoint": "토큰 엔드포인트",
+      "tokenEndpointPlaceholder": "https://auth.example.com/token",
+      "userInfoEndpoint": "사용자 정보 엔드포인트",
+      "userInfoEndpointPlaceholder": "https://auth.example.com/userinfo",
+      "configurationMethod": "구성 방법",
+      "autoDiscovery": "자동 발견",
+      "autoDiscoveryDescription": "제공자 URL에서 엔드포인트 자동 발견",
+      "manualEndpoints": "수동 엔드포인트 (권장)",
+      "manualEndpointsDescription": "인증, 토큰 및 사용자 정보 엔드포인트를 수동으로 구성",
+      "callbackUrl": "콜백 URL",
+      "callbackUrlDescription": "OAuth 제공자 구성에서 이 URL을 사용하세요",
+      "copyCallbackUrl": "콜백 URL 복사",
+      "callbackUrlCopied": "콜백 URL이 클립보드에 복사되었습니다!",
+      "adminEmailDomains": "관리자 이메일 도메인",
+      "adminEmailDomainsPlaceholder": "도메인 입력 (예: admin.company.com)",
+      "adminEmailDomainsHelp": "이러한 도메인의 이메일을 가진 사용자에게 관리자 권한이 부여됩니다",
+      "autoRegister": "새 사용자 자동 등록",
+      "officialProviderUrlPlaceholder": "{displayName} URL로 자리표시자 교체",
+      "officialProviderHelp": "이것은 공식 제공자입니다. 엔드포인트가 미리 구성되어 있습니다. 이 URL만 편집할 수 있습니다.",
+      "officialProviderIconHelp": "이 공식 제공자의 아이콘을 사용자 지정할 수 있습니다."
+    },
+    "buttons": {
+      "cancel": "취소",
+      "save": "저장",
+      "saving": "저장 중...",
+      "adding": "추가 중...",
+      "updating": "업데이트 중...",
+      "saveProvider": "제공자 저장",
+      "delete": "삭제",
+      "deleting": "삭제 중...",
+      "edit": "편집",
+      "enable": "활성화",
+      "disable": "비활성화"
+    },
+    "messages": {
+      "providerAdded": "제공자가 성공적으로 추가되었습니다",
+      "providerUpdated": "제공자가 성공적으로 업데이트되었습니다",
+      "providerDeleted": "제공자가 성공적으로 삭제되었습니다",
+      "providerOrderUpdated": "제공자 순서가 성공적으로 업데이트되었습니다",
+      "fillRequiredFields": "모든 필수 필드를 입력하세요 (이름, 표시 이름, 클라이언트 ID, 클라이언트 시크릿)",
+      "provideUrlOrEndpoints": "자동 발견을 위한 제공자 URL 또는 세 가지 사용자 지정 엔드포인트를 모두 제공하세요",
+      "chooseDiscoveryOrManual": "자동 발견(제공자 URL) 또는 수동 엔드포인트 중 하나를 선택하세요. 둘 다는 안 됩니다",
+      "loadFailed": "제공자 로드에 실패했습니다",
+      "addFailed": "제공자 추가에 실패했습니다",
+      "updateFailed": "제공자 업데이트에 실패했습니다",
+      "deleteFailed": "제공자 삭제에 실패했습니다",
+      "orderUpdateFailed": "제공자 순서 업데이트에 실패했습니다"
+    },
+    "info": {
+      "title": "정보",
+      "officialProvidersRecommended": "더 나은 기능을 위해 공식 제공자 사용을 고려하세요. 사용자 지정 제공자에 문제가 있는 경우 다음에서 이슈를 열어주세요",
+      "github": "GitHub",
+      "officialProvider": "공식 제공자",
+      "officialProviderDescription": "이 제공자는 Palmr에 의해 최적화되었습니다. 자격 증명과 구성만 수정할 수 있습니다.",
+      "manualConfigTitle": "수동 구성",
+      "manualConfigDescription": "모든 엔드포인트를 수동으로 제공하고 있습니다. 제공자에 맞게 올바르게 설정되었는지 확인하세요."
+    },
+    "deleteModal": {
+      "title": "인증 제공자 삭제",
+      "confirmMessage": "\"{displayName}\" 제공자를 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+      "providerId": "제공자 ID: {name}",
+      "cancel": "취소",
+      "delete": "제공자 삭제",
+      "deleting": "삭제 중..."
+    }
+  },
+  "bulkDownload": {
+    "title": "일괄 다운로드",
+    "zipNameLabel": "ZIP 파일명",
+    "zipNamePlaceholder": "파일명을 입력하세요",
+    "description": "{count, plural, =1 {1개 파일이 압축됩니다} other {#개 파일이 압축됩니다}}",
+    "download": "ZIP 다운로드"
+  },
   "common": {
     "loading": "로딩 중입니다. 잠시만 기다려주세요...",
     "cancel": "취소",
@@ -41,6 +169,10 @@
       "description": "가장 최근에 업로드한 파일",
       "title": "최근 파일"
     }
+  },
+  "deleteConfirmation": {
+    "filesToDelete": "삭제할 파일",
+    "sharesToDelete": "삭제될 공유"
   },
   "emptyState": {
     "noFiles": "아직 파일이 업로드되지 않았습니다",
@@ -389,628 +521,6 @@
     "errors": {
       "serverError": "비밀번호 재설정에 실패했습니다. 다시 시도해주세요.",
       "invalidToken": "유효하지 않거나 누락된 재설정 토큰"
-    }
-  },
-  "searchBar": {
-    "placeholder": "파일 검색...",
-    "results": "전체 {total}개 중 {filtered}개 파일을 찾았습니다"
-  },
-  "settings": {
-    "groups": {
-      "defaultDescription": "구성 옵션",
-      "general": {
-        "title": "일반",
-        "description": "기본 애플리케이션 설정"
-      },
-      "email": {
-        "title": "이메일",
-        "description": "이메일 서버 구성"
-      },
-      "security": {
-        "title": "보안",
-        "description": "보안 및 인증 설정"
-      },
-      "storage": {
-        "title": "스토리지",
-        "description": "파일 스토리지 구성"
-      },
-      "oidc": {
-        "title": "OpenID Connect (SSO)",
-        "description": "OpenID Connect를 사용한 SSO 인증 구성"
-      }
-    },
-    "fields": {
-      "noDescription": "설명이 제공되지 않았습니다",
-      "appLogo": {
-        "title": "애플리케이션 로고",
-        "description": "애플리케이션 로고 이미지"
-      },
-      "appName": {
-        "title": "애플리케이션 이름",
-        "description": "사용자에게 표시되는 애플리케이션 이름"
-      },
-      "appDescription": {
-        "title": "애플리케이션 설명",
-        "description": "애플리케이션에 대한 간략한 설명"
-      },
-      "showHomePage": {
-        "title": "홈페이지 표시",
-        "description": "설치 후 홈페이지를 표시합니다"
-      },
-      "smtpEnabled": {
-        "title": "SMTP 사용",
-        "description": "SMTP 이메일 기능을 활성화 또는 비활성화합니다"
-      },
-      "smtpHost": {
-        "title": "SMTP 서버",
-        "description": "SMTP 서버 주소"
-      },
-      "smtpPort": {
-        "title": "SMTP 포트",
-        "description": "SMTP 서버 포트"
-      },
-      "smtpUser": {
-        "title": "SMTP 사용자",
-        "description": "SMTP 인증을 위한 사용자 이름"
-      },
-      "smtpPass": {
-        "title": "SMTP 비밀번호",
-        "description": "SMTP 인증을 위한 비밀번호"
-      },
-      "smtpFromName": {
-        "title": "발신자 이름",
-        "description": "보내는 이메일에 표시될 이름"
-      },
-      "smtpFromEmail": {
-        "title": "발신자 이메일",
-        "description": "발신자 이메일 주소"
-      },
-      "maxLoginAttempts": {
-        "title": "최대 로그인 시도 횟수",
-        "description": "차단되기 전 최대 로그인 시도 횟수"
-      },
-      "loginBlockDuration": {
-        "title": "로그인 차단 기간",
-        "description": "시도 초과 시 차단되는 시간(초 단위)"
-      },
-      "passwordMinLength": {
-        "title": "최소 비밀번호 길이",
-        "description": "비밀번호에 필요한 최소 문자 수"
-      },
-      "passwordResetTokenExpiration": {
-        "title": "비밀번호 재설정 토큰 만료",
-        "description": "비밀번호 재설정 토큰의 유효 기간(초 단위)"
-      },
-      "maxFileSize": {
-        "title": "최대 파일 크기",
-        "description": "업로드 가능한 최대 파일 크기"
-      },
-      "maxTotalStoragePerUser": {
-        "title": "사용자당 최대 스토리지",
-        "description": "사용자당 총 스토리지 제한"
-      },
-      "firstUserAccess": {
-        "description": "새 사용자의 첫 번째 액세스 설정",
-        "title": "첫 번째 사용자 액세스"
-      },
-      "serverUrl": {
-        "title": "서버 URL",
-        "description": "Palmr 서버의 기본 URL (예: https://palmr.example.com)"
-      },
-      "oidcEnabled": {
-        "title": "OIDC 활성화",
-        "description": "OpenID Connect를 통한 인증을 활성화 또는 비활성화합니다"
-      },
-      "oidcIssuerUrl": {
-        "title": "프로바이더 URL",
-        "description": "OpenID Connect 프로바이더의 URL (예: https://auth.example.com/auth/realms/master)"
-      },
-      "oidcClientId": {
-        "title": "클라이언트 ID",
-        "description": "프로바이더에 등록된 OIDC 클라이언트 식별자"
-      },
-      "oidcClientSecret": {
-        "title": "클라이언트 시크릿",
-        "description": "인증을 위한 OIDC 클라이언트의 시크릿"
-      },
-      "oidcRedirectUri": {
-        "title": "리디렉션 URI",
-        "description": "인증 후 사용자가 리디렉션될 URI. 기본 URL만 입력하세요 (예: https://mysite.com). 경로 /api/auth/oidc/callback는 자동으로 추가됩니다."
-      },
-      "oidcScope": {
-        "title": "스코프",
-        "description": "요청하는 OIDC 스코프 (예: openid profile email)"
-      },
-      "oidcAutoRegister": {
-        "title": "자동 등록",
-        "description": "첫 로그인 시 존재하지 않는 사용자를 자동으로 등록합니다"
-      },
-      "oidcAdminEmailDomains": {
-        "title": "관리자 이메일 도메인",
-        "description": "자동으로 관리자 권한이 부여되는 이메일 도메인"
-      },
-      "testSmtp": {
-        "title": "SMTP 연결 테스트",
-        "description": "SMTP 구성이 유효한지 테스트합니다"
-      },
-      "smtpNoAuth": {
-        "title": "인증 없음",
-        "description": "사용자 이름/비밀번호가 필요하지 않은 내부 서버의 경우 활성화하세요 (인증 필드 숨김)"
-      },
-      "smtpSecure": {
-        "title": "연결 보안",
-        "description": "SMTP 연결 보안 방식 - 자동 (권장), SSL, STARTTLS 또는 없음 (비보안)",
-        "options": {
-          "auto": "자동 (권장)",
-          "ssl": "SSL (포트 465)",
-          "tls": "STARTTLS (포트 587)",
-          "none": "없음 (비보안)"
-        }
-      }
-    },
-    "buttons": {
-      "save": "{group} 저장",
-      "testSmtp": "연결 테스트",
-      "testing": "테스트 중..."
-    },
-    "errors": {
-      "loadFailed": "설정을 불러오는데 실패했습니다",
-      "updateFailed": "설정 업데이트에 실패했습니다"
-    },
-    "messages": {
-      "noChanges": "저장할 변경 사항이 없습니다",
-      "updateSuccess": "{group} 설정이 성공적으로 업데이트되었습니다",
-      "smtpTestFailed": "SMTP 연결 실패: {error}",
-      "smtpTestGenericError": "SMTP 연결 테스트에 실패했습니다. 설정을 확인하고 다시 시도해주세요.",
-      "smtpTestSuccess": "SMTP 연결 성공! 이메일 구성이 올바르게 작동합니다.",
-      "smtpMissingAuth": "SMTP 사용자 이름과 비밀번호를 입력하거나 '인증 없음' 옵션을 활성화하세요.",
-      "smtpMissingHostPort": "테스트하기 전에 SMTP 호스트와 포트를 입력하세요.",
-      "smtpNotEnabled": "SMTP가 활성화되지 않았습니다. 먼저 SMTP를 활성화하세요."
-    },
-    "title": "설정",
-    "breadcrumb": "설정",
-    "pageTitle": "설정",
-    "tooltips": {
-      "oidcScope": "스코프를 입력하고 Enter 키를 눌러 추가",
-      "oidcAdminEmailDomains": "도메인을 입력하고 Enter 키를 눌러 추가",
-      "testSmtp": "현재 입력된 값으로 SMTP 연결을 테스트합니다. 변경 사항을 영구적으로 적용하려면 테스트 후 설정을 저장하는 것을 잊지 마세요.",
-      "defaultPlaceholder": "입력하고 Enter 키를 누르세요"
-    },
-    "redirectUri": {
-      "placeholder": "https://mysite.com",
-      "previewLabel": "저장될 전체 URL:"
-    }
-  },
-  "share": {
-    "errors": {
-      "invalidPassword": "잘못된 비밀번호입니다. 다시 시도해주세요.",
-      "loadFailed": "공유를 불러오는데 실패했습니다",
-      "downloadFailed": "파일 다운로드에 실패했습니다"
-    },
-    "messages": {
-      "downloadStarted": "다운로드가 시작되었습니다"
-    },
-    "password": {
-      "title": "비밀번호 보호 공유",
-      "protected": "이 공유는 비밀번호로 보호되어 있습니다",
-      "incorrect": "비밀번호가 올바르지 않습니다. 다시 시도해주세요.",
-      "label": "비밀번호",
-      "placeholder": "공유 비밀번호를 입력하세요",
-      "submit": "제출"
-    },
-    "details": {
-      "untitled": "제목 없음",
-      "created": "생성됨: {date}",
-      "expires": "만료됨: {date}"
-    },
-    "notFound": {
-      "title": "공유를 찾을 수 없습니다",
-      "description": "이 공유는 삭제되었거나 만료되었을 수 있습니다."
-    },
-    "pageTitle": "공유",
-    "downloadAll": "모두 다운로드"
-  },
-  "shareActions": {
-    "deleteTitle": "공유 삭제",
-    "deleteConfirmation": "이 공유를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
-    "editTitle": "공유 편집",
-    "nameLabel": "공유 이름",
-    "descriptionLabel": "설명",
-    "descriptionPlaceholder": "설명을 입력하세요 (선택사항)",
-    "expirationLabel": "만료 날짜",
-    "expirationPlaceholder": "YYYY/MM/DD HH:MM",
-    "maxViewsLabel": "최대 조회수",
-    "maxViewsPlaceholder": "무제한은 공백으로 두세요",
-    "passwordProtection": "비밀번호 보호",
-    "passwordLabel": "비밀번호",
-    "passwordPlaceholder": "비밀번호를 입력하세요",
-    "newPasswordLabel": "새 비밀번호 (현재 비밀번호를 유지하려면 공백으로 두세요)",
-    "newPasswordPlaceholder": "새 비밀번호를 입력하세요",
-    "manageFilesTitle": "파일 관리",
-    "manageRecipientsTitle": "받는 사람 관리",
-    "editSuccess": "공유가 성공적으로 업데이트되었습니다",
-    "editError": "공유 업데이트에 실패했습니다",
-    "bulkDeleteConfirmation": "{count, plural, =1 {1개의 공유} other {#개의 공유}}를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
-    "bulkDeleteTitle": "선택한 공유 삭제"
-  },
-  "shareDetails": {
-    "title": "공유 세부 정보",
-    "subtitle": "이 공유에 대한 상세 정보",
-    "basicInfo": "기본 정보",
-    "name": "이름",
-    "description": "설명",
-    "noDescription": "설명이 제공되지 않았습니다",
-    "untitled": "제목 없음",
-    "shareLink": "공유 링크",
-    "editLink": "링크 편집",
-    "generateLink": "링크 생성",
-    "noLink": "아직 링크가 생성되지 않았습니다",
-    "copyLink": "링크 복사",
-    "openLink": "새 탭에서 열기",
-    "linkCopied": "링크가 클립보드에 복사되었습니다",
-    "views": "조회수",
-    "dates": "날짜",
-    "created": "생성됨",
-    "expires": "만료",
-    "never": "없음",
-    "security": "보안",
-    "passwordProtected": "비밀번호 보호",
-    "publicAccess": "공개 액세스",
-    "maxViews": "최대 조회수:",
-    "files": "파일",
-    "recipients": "받는 사람",
-    "notAvailable": "해당없음",
-    "invalidDate": "잘못된 날짜",
-    "loadError": "공유 세부 정보 로드에 실패했습니다",
-    "editSecurity": "보안 편집",
-    "editExpiration": "만료 편집"
-  },
-  "shareManager": {
-    "deleteSuccess": "공유가 성공적으로 삭제되었습니다",
-    "deleteError": "공유 삭제에 실패했습니다",
-    "updateSuccess": "공유가 성공적으로 업데이트되었습니다",
-    "updateError": "공유 업데이트에 실패했습니다",
-    "filesUpdateSuccess": "파일이 성공적으로 업데이트되었습니다",
-    "filesUpdateError": "파일 업데이트에 실패했습니다",
-    "recipientsUpdateSuccess": "수신자가 성공적으로 업데이트되었습니다",
-    "recipientsUpdateError": "수신자 업데이트에 실패했습니다",
-    "linkGenerateSuccess": "공유 링크가 성공적으로 생성되었습니다",
-    "linkGenerateError": "공유 링크 생성에 실패했습니다",
-    "notifyLoading": "알림 전송 중...",
-    "notifySuccess": "수신자에게 성공적으로 알렸습니다",
-    "notifyError": "수신자 알림 전송에 실패했습니다",
-    "bulkDeleteError": "공유 삭제 실패",
-    "bulkDeleteLoading": "{count, plural, =1 {1개의 공유} other {#개의 공유}} 삭제 중...",
-    "bulkDeleteSuccess": "{count, plural, =1 {1개의 공유가 성공적으로 삭제되었습니다} other {#개의 공유가 성공적으로 삭제되었습니다}}",
-    "securityUpdateError": "보안 설정 업데이트에 실패했습니다",
-    "expirationUpdateError": "만료 설정 업데이트에 실패했습니다",
-    "securityUpdateSuccess": "보안 설정이 성공적으로 업데이트되었습니다",
-    "expirationUpdateSuccess": "만료 설정이 성공적으로 업데이트되었습니다",
-    "creatingZip": "zip 파일 만들기 ...",
-    "defaultShareName": "공유하다",
-    "downloadError": "공유 파일을 다운로드하지 못했습니다",
-    "downloadSuccess": "다운로드가 성공적으로 시작되었습니다",
-    "multipleSharesZipName": "{count} _shares_files.zip",
-    "noFilesToDownload": "다운로드 할 수있는 파일이 없습니다",
-    "singleShareZipName": "{sharename} _files.zip",
-    "zipDownloadError": "zip 파일을 만들지 못했습니다",
-    "zipDownloadSuccess": "zip 파일이 성공적으로 다운로드되었습니다"
-  },
-  "shares": {
-    "errors": {
-      "loadFailed": "공유 목록을 불러오는데 실패했습니다",
-      "notifyFailed": "수신자 알림에 실패했습니다",
-      "smtpConfigFailed": "SMTP 설정을 불러오는데 실패했습니다"
-    },
-    "messages": {
-      "linkCopied": "링크가 클립보드에 복사되었습니다",
-      "recipientsNotified": "수신자에게 성공적으로 알렸습니다"
-    },
-    "empty": {
-      "message": "아직 공유가 생성되지 않았습니다",
-      "createButton": "공유 생성"
-    },
-    "header": {
-      "title": "내 공유",
-      "myShares": "내 공유"
-    },
-    "search": {
-      "title": "전체 공유",
-      "createButton": "공유 생성",
-      "placeholder": "공유 검색...",
-      "results": "전체 {total}개 중 {filtered}개가 검색되었습니다"
-    },
-    "pageTitle": "공유"
-  },
-  "sharesTable": {
-    "ariaLabel": "공유 테이블",
-    "never": "없음",
-    "columns": {
-      "name": "이름",
-      "description": "설명",
-      "createdAt": "생성일",
-      "expiresAt": "만료일",
-      "status": "상태",
-      "security": "보안",
-      "files": "파일",
-      "recipients": "받는 사람",
-      "actions": "작업"
-    },
-    "status": {
-      "neverExpires": "만료되지 않음",
-      "active": "활성",
-      "expired": "만료됨"
-    },
-    "security": {
-      "protected": "보호됨",
-      "public": "공개"
-    },
-    "filesCount": "파일",
-    "recipientsCount": "받는 사람",
-    "actions": {
-      "menu": "공유 작업 메뉴",
-      "edit": "편집",
-      "manageFiles": "파일 관리",
-      "manageRecipients": "받는 사람 관리",
-      "viewDetails": "세부 정보 보기",
-      "generateLink": "링크 생성",
-      "editLink": "링크 편집",
-      "copyLink": "링크 복사",
-      "notifyRecipients": "받는 사람에게 알림",
-      "delete": "삭제",
-      "downloadShareFiles": "모든 파일을 다운로드하십시오"
-    },
-    "bulkActions": {
-      "delete": "삭제",
-      "selected": "{count, plural, =1 {1개의 공유가 선택됨} other {#개의 공유가 선택됨}}",
-      "actions": "행위",
-      "download": "선택한 다운로드"
-    },
-    "selectAll": "모두 선택",
-    "selectShare": "공유 {shareName} 선택"
-  },
-  "storageUsage": {
-    "title": "스토리지 사용량",
-    "ariaLabel": "스토리지 사용량 진행 바",
-    "used": "사용됨",
-    "available": "사용 가능",
-    "loading": "로딩 중...",
-    "retry": "다시 시도",
-    "errors": {
-      "title": "스토리지 정보를 사용할 수 없음",
-      "detectionFailed": "디스크 공간을 감지할 수 없습니다. 시스템 구성 문제 또는 권한이 부족한 것이 원인일 수 있습니다.",
-      "serverError": "스토리지 정보를 검색하는 중에 서버 오류가 발생했습니다. 나중에 다시 시도해 주세요.",
-      "unknown": "스토리지 정보를 로드하는 중에 예기치 않은 오류가 발생했습니다."
-    }
-  },
-  "theme": {
-    "toggle": "테마 전환",
-    "light": "라이트",
-    "dark": "다크",
-    "system": "시스템"
-  },
-  "uploadFile": {
-    "title": "파일 업로드",
-    "multipleTitle": "여러 파일 업로드",
-    "selectFile": "파일을 선택하려면 클릭하세요",
-    "selectMultipleFiles": "하나 또는 여러 파일을 선택하려면 클릭하세요",
-    "dragAndDrop": "또는 파일을 여기에 드래그 앤 드롭하세요",
-    "preview": "미리보기",
-    "uploadProgress": "업로드 진행률",
-    "upload": "업로드",
-    "startUploads": "업로드 시작",
-    "retry": "다시 시도",
-    "finish": "완료",
-    "success": "파일이 성공적으로 업로드되었습니다",
-    "allSuccess": "{count, plural, =1 {파일이 성공적으로 업로드되었습니다} other {# 개 파일이 성공적으로 업로드되었습니다}}",
-    "partialSuccess": "{success}개 파일이 성공적으로 업로드되었고, {error}개가 실패했습니다",
-    "error": "파일 업로드에 실패했습니다",
-    "fileSizeExceeded": "파일 크기가 {maxsizemb}MB 제한을 초과합니다.",
-    "insufficientStorage": "저장 공간이 부족합니다. {availablespace}MB 사용 가능합니다.",
-    "unauthorized": "권한 없음: 이 리소스에 액세스하려면 유효한 토큰이 필요합니다.",
-    "confirmCancel": {
-      "title": "업로드 취소",
-      "messageSingle": "진행 중인 업로드가 하나 있습니다.",
-      "messageMultiple": "진행 중인 업로드가 {count}개 있습니다.",
-      "warning": "지금 닫으면 업로드가 취소되고 모든 진행 상황이 손실됩니다.",
-      "continue": "업로드 계속",
-      "cancel": "업로드 취소"
-    }
-  },
-  "users": {
-    "modes": {
-      "create": "생성",
-      "edit": "편집"
-    },
-    "errors": {
-      "loadFailed": "사용자 목록을 불러오는데 실패했습니다",
-      "submitFailed": "사용자 {mode}에 실패했습니다",
-      "deleteFailed": "사용자 삭제에 실패했습니다",
-      "statusUpdateFailed": "사용자 상태 업데이트에 실패했습니다"
-    },
-    "messages": {
-      "createSuccess": "사용자가 성공적으로 생성되었습니다",
-      "updateSuccess": "사용자가 성공적으로 업데이트되었습니다",
-      "deleteSuccess": "사용자가 성공적으로 삭제되었습니다",
-      "activateSuccess": "사용자가 성공적으로 활성화되었습니다",
-      "deactivateSuccess": "사용자가 성공적으로 비활성화되었습니다"
-    },
-    "actions": {
-      "edit": "편집",
-      "activate": "활성화",
-      "deactivate": "비활성화",
-      "delete": "삭제"
-    },
-    "delete": {
-      "title": "사용자 삭제 확인",
-      "confirmation": "{firstName} {lastName} 사용자를 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
-      "confirm": "사용자 삭제"
-    },
-    "form": {
-      "titleCreate": "새 사용자 추가",
-      "titleEdit": "사용자 편집",
-      "firstName": "이름",
-      "lastName": "성",
-      "username": "사용자 이름",
-      "email": "이메일",
-      "password": "비밀번호",
-      "newPassword": "새 비밀번호 (선택 사항)",
-      "passwordPlaceholder": "현재 비밀번호를 유지하려면 비워두세요",
-      "role": "역할",
-      "roleUser": "사용자",
-      "roleAdmin": "관리자",
-      "create": "생성",
-      "save": "저장"
-    },
-    "status": {
-      "title": "상태 변경 확인",
-      "confirmation": "{firstName} {lastName} 사용자를 {action}하시겠습니까?",
-      "activate": "활성화",
-      "deactivate": "비활성화",
-      "user": "사용자"
-    },
-    "header": {
-      "title": "사용자 관리",
-      "addUser": "사용자 추가",
-      "management": "사용자 관리"
-    },
-    "table": {
-      "user": "사용자",
-      "email": "이메일",
-      "status": "상태",
-      "role": "역할",
-      "actions": "작업",
-      "active": "활성",
-      "inactive": "비활성",
-      "admin": "관리자",
-      "userr": "사용자"
-    }
-  },
-  "validation": {
-    "invalidEmail": "유효하지 않은 이메일 주소입니다",
-    "passwordMinLength": "비밀번호는 최소 6자 이상이어야 합니다",
-    "firstNameRequired": "이름은 필수입니다",
-    "lastNameRequired": "성을 입력하세요",
-    "usernameLength": "사용자 이름은 최소 3자 이상이어야 합니다",
-    "usernameSpaces": "사용자 이름에는 공백을 사용할 수 없습니다",
-    "passwordLength": "비밀번호는 최소 8자 이상이어야 합니다",
-    "passwordsMatch": "비밀번호가 일치하지 않습니다",
-    "emailRequired": "이메일은 필수입니다",
-    "emailOrUsernameRequired": "이메일 또는 사용자 이름은 필수입니다",
-    "passwordRequired": "비밀번호는 필수입니다",
-    "nameRequired": "이름은 필수입니다",
-    "required": "이 필드는 필수입니다"
-  },
-  "shareFile": {
-    "title": "파일 공유",
-    "linkTitle": "링크 생성",
-    "nameLabel": "공유 이름",
-    "namePlaceholder": "공유 이름을 입력하세요",
-    "descriptionLabel": "설명",
-    "descriptionPlaceholder": "설명을 입력하세요 (선택사항)",
-    "expirationLabel": "만료 날짜",
-    "expirationPlaceholder": "YYYY/MM/DD HH:MM",
-    "maxViewsLabel": "최대 조회수",
-    "maxViewsPlaceholder": "무제한은 공백으로 두세요",
-    "passwordProtection": "비밀번호 보호",
-    "passwordLabel": "비밀번호",
-    "passwordPlaceholder": "비밀번호를 입력하세요",
-    "linkDescription": "파일을 공유할 맞춤 링크를 생성하세요",
-    "aliasLabel": "링크 별칭",
-    "aliasPlaceholder": "맞춤 별칭을 입력하세요",
-    "linkReady": "공유 링크가 준비되었습니다:",
-    "createShare": "공유 생성",
-    "generateLink": "링크 생성",
-    "copyLink": "링크 복사"
-  },
-  "bulkDownload": {
-    "title": "일괄 다운로드",
-    "zipNameLabel": "ZIP 파일명",
-    "zipNamePlaceholder": "파일명을 입력하세요",
-    "description": "{count, plural, =1 {1개 파일이 압축됩니다} other {#개 파일이 압축됩니다}}",
-    "download": "ZIP 다운로드"
-  },
-  "deleteConfirmation": {
-    "filesToDelete": "삭제할 파일",
-    "sharesToDelete": "삭제될 공유"
-  },
-  "shareMultipleFiles": {
-    "title": "여러 파일 공유",
-    "shareNameLabel": "공유 이름",
-    "shareNamePlaceholder": "공유 이름을 입력하세요",
-    "descriptionLabel": "설명",
-    "descriptionPlaceholder": "설명을 입력하세요 (선택사항)",
-    "filesToShare": "공유할 파일",
-    "files": "파일",
-    "totalSize": "전체 크기",
-    "creating": "생성 중...",
-    "create": "공유 생성"
-  },
-  "shareSecurity": {
-    "subtitle": "이 공유의 비밀번호 보호 및 보안 옵션을 구성하세요",
-    "info": {
-      "title": "작동 방식:",
-      "withoutPassword": "링크를 가진 누구나 비밀번호 없이 이 공유에 액세스할 수 있습니다.",
-      "withPassword": "사용자는 이 공유에 액세스하려면 비밀번호를 입력해야 합니다."
-    },
-    "existingPasswordMessage": "이 공유에는 이미 비밀번호가 설정되어 있습니다. 업데이트하려면 아래 필드에 새 비밀번호를 입력하고 저장하세요.",
-    "passwordProtection": "비밀번호 보호",
-    "error": {
-      "updateFailed": "보안 설정 업데이트에 실패했습니다"
-    },
-    "passwordRequirements": {
-      "title": "비밀번호 요구사항:",
-      "minLength": "최소 2자 이상"
-    },
-    "newPassword": "새 비밀번호",
-    "success": {
-      "passwordUpdated": "비밀번호가 성공적으로 업데이트되었습니다",
-      "passwordRemoved": "비밀번호 보호가 성공적으로 제거되었습니다",
-      "passwordSet": "비밀번호 보호가 성공적으로 활성화되었습니다"
-    },
-    "password": "비밀번호",
-    "validation": {
-      "passwordRequired": "비밀번호가 필요합니다",
-      "passwordTooShort": "비밀번호는 최소 2자 이상이어야 합니다"
-    },
-    "currentStatus": "현재 상태",
-    "passwordPlaceholder": "안전한 비밀번호를 입력하세요",
-    "title": "공유 보안 설정"
-  },
-  "shareExpiration": {
-    "neverExpires": "만료되지 않음",
-    "success": {
-      "expirationUpdated": "만료 날짜가 성공적으로 업데이트되었습니다",
-      "expirationRemoved": "만료가 성공적으로 제거되었습니다 - 공유가 이제 영구적입니다",
-      "expirationSet": "만료 날짜가 성공적으로 설정되었습니다"
-    },
-    "info": {
-      "canBeChanged": "언제든지 만료 날짜를 변경하거나 제거할 수 있습니다",
-      "willBeInaccessible": "이 날짜 이후에는 공유에 액세스할 수 없게 됩니다",
-      "noExpiration": "이 공유는 만료되지 않으며 무기한 액세스 가능합니다.",
-      "title": "만료에 대해:"
-    },
-    "enableExpiration": "만료 활성화",
-    "title": "공유 만료 설정",
-    "subtitle": "이 공유가 언제 만료될지 구성하세요",
-    "validation": {
-      "dateMustBeFuture": "만료 날짜는 미래여야 합니다",
-      "dateRequired": "만료 날짜를 선택해주세요"
-    },
-    "currentStatus": "현재 상태",
-    "error": {
-      "updateFailed": "만료 설정 업데이트에 실패했습니다"
-    },
-    "expires": "만료:",
-    "expirationDate": "만료 날짜"
-  },
-  "auth": {
-    "errors": {
-      "account_inactive": "계정이 비활성화되었습니다. 관리자에게 문의하세요.",
-      "registration_disabled": "SSO를 통한 등록이 비활성화되었습니다.",
-      "token_expired": "토큰이 만료되었습니다. 다시 시도하세요.",
-      "config_error": "구성 오류. 지원팀에 문의하세요.",
-      "auth_failed": "인증에 실패했습니다. 다시 시도하세요."
     }
   },
   "reverseShares": {
@@ -1447,5 +957,598 @@
       }
     },
     "defaultLinkName": "받은 파일"
+  },
+  "searchBar": {
+    "placeholder": "파일 검색...",
+    "results": "전체 {total}개 중 {filtered}개 파일을 찾았습니다"
+  },
+  "settings": {
+    "groups": {
+      "defaultDescription": "구성 옵션",
+      "general": {
+        "title": "일반",
+        "description": "기본 애플리케이션 설정"
+      },
+      "email": {
+        "title": "이메일",
+        "description": "이메일 서버 구성"
+      },
+      "security": {
+        "title": "보안",
+        "description": "보안 및 인증 설정"
+      },
+      "storage": {
+        "title": "스토리지",
+        "description": "파일 스토리지 구성"
+      },
+      "oidc": {
+        "title": "OpenID Connect (SSO)",
+        "description": "OpenID Connect를 사용한 SSO 인증 구성"
+      }
+    },
+    "fields": {
+      "noDescription": "설명이 제공되지 않았습니다",
+      "appLogo": {
+        "title": "애플리케이션 로고",
+        "description": "애플리케이션 로고 이미지"
+      },
+      "appName": {
+        "title": "애플리케이션 이름",
+        "description": "사용자에게 표시되는 애플리케이션 이름"
+      },
+      "appDescription": {
+        "title": "애플리케이션 설명",
+        "description": "애플리케이션에 대한 간략한 설명"
+      },
+      "showHomePage": {
+        "title": "홈페이지 표시",
+        "description": "설치 후 홈페이지를 표시합니다"
+      },
+      "smtpEnabled": {
+        "title": "SMTP 사용",
+        "description": "SMTP 이메일 기능을 활성화 또는 비활성화합니다"
+      },
+      "smtpHost": {
+        "title": "SMTP 서버",
+        "description": "SMTP 서버 주소"
+      },
+      "smtpPort": {
+        "title": "SMTP 포트",
+        "description": "SMTP 서버 포트"
+      },
+      "smtpUser": {
+        "title": "SMTP 사용자",
+        "description": "SMTP 인증을 위한 사용자 이름"
+      },
+      "smtpPass": {
+        "title": "SMTP 비밀번호",
+        "description": "SMTP 인증을 위한 비밀번호"
+      },
+      "smtpFromName": {
+        "title": "발신자 이름",
+        "description": "보내는 이메일에 표시될 이름"
+      },
+      "smtpFromEmail": {
+        "title": "발신자 이메일",
+        "description": "발신자 이메일 주소"
+      },
+      "maxLoginAttempts": {
+        "title": "최대 로그인 시도 횟수",
+        "description": "차단되기 전 최대 로그인 시도 횟수"
+      },
+      "loginBlockDuration": {
+        "title": "로그인 차단 기간",
+        "description": "시도 초과 시 차단되는 시간(초 단위)"
+      },
+      "passwordMinLength": {
+        "title": "최소 비밀번호 길이",
+        "description": "비밀번호에 필요한 최소 문자 수"
+      },
+      "passwordResetTokenExpiration": {
+        "title": "비밀번호 재설정 토큰 만료",
+        "description": "비밀번호 재설정 토큰의 유효 기간(초 단위)"
+      },
+      "maxFileSize": {
+        "title": "최대 파일 크기",
+        "description": "업로드 가능한 최대 파일 크기"
+      },
+      "maxTotalStoragePerUser": {
+        "title": "사용자당 최대 스토리지",
+        "description": "사용자당 총 스토리지 제한"
+      },
+      "firstUserAccess": {
+        "description": "새 사용자의 첫 번째 액세스 설정",
+        "title": "첫 번째 사용자 액세스"
+      },
+      "serverUrl": {
+        "title": "서버 URL",
+        "description": "Palmr 서버의 기본 URL (예: https://palmr.example.com)"
+      },
+      "testSmtp": {
+        "title": "SMTP 연결 테스트",
+        "description": "SMTP 구성이 유효한지 테스트합니다"
+      },
+      "smtpNoAuth": {
+        "title": "인증 없음",
+        "description": "사용자 이름/비밀번호가 필요하지 않은 내부 서버의 경우 활성화하세요 (인증 필드 숨김)"
+      },
+      "smtpSecure": {
+        "title": "연결 보안",
+        "description": "SMTP 연결 보안 방식 - 자동 (권장), SSL, STARTTLS 또는 없음 (비보안)",
+        "options": {
+          "auto": "자동 (권장)",
+          "ssl": "SSL (포트 465)",
+          "tls": "STARTTLS (포트 587)",
+          "none": "없음 (비보안)"
+        }
+      },
+      "smtpTrustSelfSigned": {
+        "title": "자체 서명된 인증서 신뢰",
+        "description": "자체 서명된 SSL/TLS 인증서를 신뢰하려면 활성화하세요 (개발 환경에서 유용)"
+      }
+    },
+    "buttons": {
+      "save": "{group} 저장",
+      "testSmtp": "연결 테스트",
+      "testing": "테스트 중..."
+    },
+    "errors": {
+      "loadFailed": "설정을 불러오는데 실패했습니다",
+      "updateFailed": "설정 업데이트에 실패했습니다"
+    },
+    "messages": {
+      "noChanges": "저장할 변경 사항이 없습니다",
+      "updateSuccess": "{group} 설정이 성공적으로 업데이트되었습니다",
+      "smtpTestFailed": "SMTP 연결 실패: {error}",
+      "smtpTestGenericError": "SMTP 연결 테스트에 실패했습니다. 설정을 확인하고 다시 시도해주세요.",
+      "smtpTestSuccess": "SMTP 연결 성공! 이메일 구성이 올바르게 작동합니다.",
+      "smtpMissingAuth": "SMTP 사용자 이름과 비밀번호를 입력하거나 '인증 없음' 옵션을 활성화하세요.",
+      "smtpMissingHostPort": "테스트하기 전에 SMTP 호스트와 포트를 입력하세요.",
+      "smtpNotEnabled": "SMTP가 활성화되지 않았습니다. 먼저 SMTP를 활성화하세요."
+    },
+    "title": "설정",
+    "breadcrumb": "설정",
+    "pageTitle": "설정",
+    "tooltips": {
+      "testSmtp": "현재 입력된 값으로 SMTP 연결을 테스트합니다. 변경 사항을 영구적으로 적용하려면 테스트 후 설정을 저장하는 것을 잊지 마세요.",
+      "defaultPlaceholder": "입력하고 Enter 키를 누르세요"
+    },
+    "redirectUri": {
+      "placeholder": "https://mysite.com",
+      "previewLabel": "저장될 전체 URL:"
+    }
+  },
+  "share": {
+    "errors": {
+      "invalidPassword": "잘못된 비밀번호입니다. 다시 시도해주세요.",
+      "loadFailed": "공유를 불러오는데 실패했습니다",
+      "downloadFailed": "파일 다운로드에 실패했습니다"
+    },
+    "messages": {
+      "downloadStarted": "다운로드가 시작되었습니다"
+    },
+    "password": {
+      "title": "비밀번호 보호 공유",
+      "protected": "이 공유는 비밀번호로 보호되어 있습니다",
+      "incorrect": "비밀번호가 올바르지 않습니다. 다시 시도해주세요.",
+      "label": "비밀번호",
+      "placeholder": "공유 비밀번호를 입력하세요",
+      "submit": "제출"
+    },
+    "details": {
+      "untitled": "제목 없음",
+      "created": "생성됨: {date}",
+      "expires": "만료됨: {date}"
+    },
+    "notFound": {
+      "title": "공유를 찾을 수 없습니다",
+      "description": "이 공유는 삭제되었거나 만료되었을 수 있습니다."
+    },
+    "pageTitle": "공유",
+    "downloadAll": "모두 다운로드"
+  },
+  "shareActions": {
+    "deleteTitle": "공유 삭제",
+    "deleteConfirmation": "이 공유를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+    "editTitle": "공유 편집",
+    "nameLabel": "공유 이름",
+    "descriptionLabel": "설명",
+    "descriptionPlaceholder": "설명을 입력하세요 (선택사항)",
+    "expirationLabel": "만료 날짜",
+    "expirationPlaceholder": "YYYY/MM/DD HH:MM",
+    "maxViewsLabel": "최대 조회수",
+    "maxViewsPlaceholder": "무제한은 공백으로 두세요",
+    "passwordProtection": "비밀번호 보호",
+    "passwordLabel": "비밀번호",
+    "passwordPlaceholder": "비밀번호를 입력하세요",
+    "newPasswordLabel": "새 비밀번호 (현재 비밀번호를 유지하려면 공백으로 두세요)",
+    "newPasswordPlaceholder": "새 비밀번호를 입력하세요",
+    "manageFilesTitle": "파일 관리",
+    "manageRecipientsTitle": "받는 사람 관리",
+    "editSuccess": "공유가 성공적으로 업데이트되었습니다",
+    "editError": "공유 업데이트에 실패했습니다",
+    "bulkDeleteConfirmation": "{count, plural, =1 {1개의 공유} other {#개의 공유}}를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+    "bulkDeleteTitle": "선택한 공유 삭제"
+  },
+  "shareDetails": {
+    "title": "공유 세부 정보",
+    "subtitle": "이 공유에 대한 상세 정보",
+    "basicInfo": "기본 정보",
+    "name": "이름",
+    "description": "설명",
+    "noDescription": "설명이 제공되지 않았습니다",
+    "untitled": "제목 없음",
+    "shareLink": "공유 링크",
+    "editLink": "링크 편집",
+    "generateLink": "링크 생성",
+    "noLink": "아직 링크가 생성되지 않았습니다",
+    "copyLink": "링크 복사",
+    "openLink": "새 탭에서 열기",
+    "linkCopied": "링크가 클립보드에 복사되었습니다",
+    "views": "조회수",
+    "dates": "날짜",
+    "created": "생성됨",
+    "expires": "만료",
+    "never": "없음",
+    "security": "보안",
+    "passwordProtected": "비밀번호 보호",
+    "publicAccess": "공개 액세스",
+    "maxViews": "최대 조회수:",
+    "files": "파일",
+    "recipients": "받는 사람",
+    "notAvailable": "해당없음",
+    "invalidDate": "잘못된 날짜",
+    "loadError": "공유 세부 정보 로드에 실패했습니다",
+    "editSecurity": "보안 편집",
+    "editExpiration": "만료 편집"
+  },
+  "shareExpiration": {
+    "neverExpires": "만료되지 않음",
+    "success": {
+      "expirationUpdated": "만료 날짜가 성공적으로 업데이트되었습니다",
+      "expirationRemoved": "만료가 성공적으로 제거되었습니다 - 공유가 이제 영구적입니다",
+      "expirationSet": "만료 날짜가 성공적으로 설정되었습니다"
+    },
+    "info": {
+      "canBeChanged": "언제든지 만료 날짜를 변경하거나 제거할 수 있습니다",
+      "willBeInaccessible": "이 날짜 이후에는 공유에 액세스할 수 없게 됩니다",
+      "noExpiration": "이 공유는 만료되지 않으며 무기한 액세스 가능합니다.",
+      "title": "만료에 대해:"
+    },
+    "enableExpiration": "만료 활성화",
+    "title": "공유 만료 설정",
+    "subtitle": "이 공유가 언제 만료될지 구성하세요",
+    "validation": {
+      "dateMustBeFuture": "만료 날짜는 미래여야 합니다",
+      "dateRequired": "만료 날짜를 선택해주세요"
+    },
+    "currentStatus": "현재 상태",
+    "error": {
+      "updateFailed": "만료 설정 업데이트에 실패했습니다"
+    },
+    "expires": "만료:",
+    "expirationDate": "만료 날짜"
+  },
+  "shareFile": {
+    "title": "파일 공유",
+    "linkTitle": "링크 생성",
+    "nameLabel": "공유 이름",
+    "namePlaceholder": "공유 이름을 입력하세요",
+    "descriptionLabel": "설명",
+    "descriptionPlaceholder": "설명을 입력하세요 (선택사항)",
+    "expirationLabel": "만료 날짜",
+    "expirationPlaceholder": "YYYY/MM/DD HH:MM",
+    "maxViewsLabel": "최대 조회수",
+    "maxViewsPlaceholder": "무제한은 공백으로 두세요",
+    "passwordProtection": "비밀번호 보호",
+    "passwordLabel": "비밀번호",
+    "passwordPlaceholder": "비밀번호를 입력하세요",
+    "linkDescription": "파일을 공유할 맞춤 링크를 생성하세요",
+    "aliasLabel": "링크 별칭",
+    "aliasPlaceholder": "맞춤 별칭을 입력하세요",
+    "linkReady": "공유 링크가 준비되었습니다:",
+    "createShare": "공유 생성",
+    "generateLink": "링크 생성",
+    "copyLink": "링크 복사"
+  },
+  "shareManager": {
+    "deleteSuccess": "공유가 성공적으로 삭제되었습니다",
+    "deleteError": "공유 삭제에 실패했습니다",
+    "updateSuccess": "공유가 성공적으로 업데이트되었습니다",
+    "updateError": "공유 업데이트에 실패했습니다",
+    "filesUpdateSuccess": "파일이 성공적으로 업데이트되었습니다",
+    "filesUpdateError": "파일 업데이트에 실패했습니다",
+    "recipientsUpdateSuccess": "수신자가 성공적으로 업데이트되었습니다",
+    "recipientsUpdateError": "수신자 업데이트에 실패했습니다",
+    "linkGenerateSuccess": "공유 링크가 성공적으로 생성되었습니다",
+    "linkGenerateError": "공유 링크 생성에 실패했습니다",
+    "notifyLoading": "알림 전송 중...",
+    "notifySuccess": "수신자에게 성공적으로 알렸습니다",
+    "notifyError": "수신자 알림 전송에 실패했습니다",
+    "bulkDeleteError": "공유 삭제 실패",
+    "bulkDeleteLoading": "{count, plural, =1 {1개의 공유} other {#개의 공유}} 삭제 중...",
+    "bulkDeleteSuccess": "{count, plural, =1 {1개의 공유가 성공적으로 삭제되었습니다} other {#개의 공유가 성공적으로 삭제되었습니다}}",
+    "securityUpdateError": "보안 설정 업데이트에 실패했습니다",
+    "expirationUpdateError": "만료 설정 업데이트에 실패했습니다",
+    "securityUpdateSuccess": "보안 설정이 성공적으로 업데이트되었습니다",
+    "expirationUpdateSuccess": "만료 설정이 성공적으로 업데이트되었습니다",
+    "creatingZip": "zip 파일 만들기 ...",
+    "defaultShareName": "공유하다",
+    "downloadError": "공유 파일을 다운로드하지 못했습니다",
+    "downloadSuccess": "다운로드가 성공적으로 시작되었습니다",
+    "multipleSharesZipName": "{count} _shares_files.zip",
+    "noFilesToDownload": "다운로드 할 수있는 파일이 없습니다",
+    "singleShareZipName": "{sharename} _files.zip",
+    "zipDownloadError": "zip 파일을 만들지 못했습니다",
+    "zipDownloadSuccess": "zip 파일이 성공적으로 다운로드되었습니다"
+  },
+  "shareMultipleFiles": {
+    "title": "여러 파일 공유",
+    "shareNameLabel": "공유 이름",
+    "shareNamePlaceholder": "공유 이름을 입력하세요",
+    "descriptionLabel": "설명",
+    "descriptionPlaceholder": "설명을 입력하세요 (선택사항)",
+    "filesToShare": "공유할 파일",
+    "files": "파일",
+    "totalSize": "전체 크기",
+    "creating": "생성 중...",
+    "create": "공유 생성"
+  },
+  "shareSecurity": {
+    "subtitle": "이 공유의 비밀번호 보호 및 보안 옵션을 구성하세요",
+    "info": {
+      "title": "작동 방식:",
+      "withoutPassword": "링크를 가진 누구나 비밀번호 없이 이 공유에 액세스할 수 있습니다.",
+      "withPassword": "사용자는 이 공유에 액세스하려면 비밀번호를 입력해야 합니다."
+    },
+    "existingPasswordMessage": "이 공유에는 이미 비밀번호가 설정되어 있습니다. 업데이트하려면 아래 필드에 새 비밀번호를 입력하고 저장하세요.",
+    "passwordProtection": "비밀번호 보호",
+    "error": {
+      "updateFailed": "보안 설정 업데이트에 실패했습니다"
+    },
+    "passwordRequirements": {
+      "title": "비밀번호 요구사항:",
+      "minLength": "최소 2자 이상"
+    },
+    "newPassword": "새 비밀번호",
+    "success": {
+      "passwordUpdated": "비밀번호가 성공적으로 업데이트되었습니다",
+      "passwordRemoved": "비밀번호 보호가 성공적으로 제거되었습니다",
+      "passwordSet": "비밀번호 보호가 성공적으로 활성화되었습니다"
+    },
+    "password": "비밀번호",
+    "validation": {
+      "passwordRequired": "비밀번호가 필요합니다",
+      "passwordTooShort": "비밀번호는 최소 2자 이상이어야 합니다"
+    },
+    "currentStatus": "현재 상태",
+    "passwordPlaceholder": "안전한 비밀번호를 입력하세요",
+    "title": "공유 보안 설정"
+  },
+  "shares": {
+    "errors": {
+      "loadFailed": "공유 목록을 불러오는데 실패했습니다",
+      "notifyFailed": "수신자 알림에 실패했습니다",
+      "smtpConfigFailed": "SMTP 설정을 불러오는데 실패했습니다"
+    },
+    "messages": {
+      "linkCopied": "링크가 클립보드에 복사되었습니다",
+      "recipientsNotified": "수신자에게 성공적으로 알렸습니다"
+    },
+    "empty": {
+      "message": "아직 공유가 생성되지 않았습니다",
+      "createButton": "공유 생성"
+    },
+    "header": {
+      "title": "내 공유",
+      "myShares": "내 공유"
+    },
+    "search": {
+      "title": "전체 공유",
+      "createButton": "공유 생성",
+      "placeholder": "공유 검색...",
+      "results": "전체 {total}개 중 {filtered}개가 검색되었습니다"
+    },
+    "pageTitle": "공유"
+  },
+  "sharesTable": {
+    "ariaLabel": "공유 테이블",
+    "never": "없음",
+    "columns": {
+      "name": "이름",
+      "description": "설명",
+      "createdAt": "생성일",
+      "expiresAt": "만료일",
+      "status": "상태",
+      "security": "보안",
+      "files": "파일",
+      "recipients": "받는 사람",
+      "actions": "작업"
+    },
+    "status": {
+      "neverExpires": "만료되지 않음",
+      "active": "활성",
+      "expired": "만료됨"
+    },
+    "security": {
+      "protected": "보호됨",
+      "public": "공개"
+    },
+    "filesCount": "파일",
+    "recipientsCount": "받는 사람",
+    "actions": {
+      "menu": "공유 작업 메뉴",
+      "edit": "편집",
+      "manageFiles": "파일 관리",
+      "manageRecipients": "받는 사람 관리",
+      "viewDetails": "세부 정보 보기",
+      "generateLink": "링크 생성",
+      "editLink": "링크 편집",
+      "copyLink": "링크 복사",
+      "notifyRecipients": "받는 사람에게 알림",
+      "delete": "삭제",
+      "downloadShareFiles": "모든 파일을 다운로드하십시오"
+    },
+    "bulkActions": {
+      "delete": "삭제",
+      "selected": "{count, plural, =1 {1개의 공유가 선택됨} other {#개의 공유가 선택됨}}",
+      "actions": "행위",
+      "download": "선택한 다운로드"
+    },
+    "selectAll": "모두 선택",
+    "selectShare": "공유 {shareName} 선택"
+  },
+  "storageUsage": {
+    "title": "스토리지 사용량",
+    "ariaLabel": "스토리지 사용량 진행 바",
+    "used": "사용됨",
+    "available": "사용 가능",
+    "total": "총계",
+    "loading": "로딩 중...",
+    "retry": "다시 시도",
+    "errors": {
+      "title": "스토리지 정보를 사용할 수 없음",
+      "detectionFailed": "디스크 공간을 감지할 수 없습니다. 시스템 구성 문제 또는 권한이 부족한 것이 원인일 수 있습니다.",
+      "serverError": "스토리지 정보를 검색하는 중에 서버 오류가 발생했습니다. 나중에 다시 시도해 주세요.",
+      "unknown": "스토리지 정보를 로드하는 중에 예기치 않은 오류가 발생했습니다."
+    }
+  },
+  "theme": {
+    "toggle": "테마 전환",
+    "light": "라이트",
+    "dark": "다크",
+    "system": "시스템"
+  },
+  "uploadFile": {
+    "title": "파일 업로드",
+    "multipleTitle": "여러 파일 업로드",
+    "selectFile": "파일을 선택하려면 클릭하세요",
+    "selectMultipleFiles": "하나 또는 여러 파일을 선택하려면 클릭하세요",
+    "dragAndDrop": "또는 파일을 여기에 드래그 앤 드롭하세요",
+    "preview": "미리보기",
+    "uploadProgress": "업로드 진행률",
+    "upload": "업로드",
+    "startUploads": "업로드 시작",
+    "retry": "다시 시도",
+    "finish": "완료",
+    "success": "파일이 성공적으로 업로드되었습니다",
+    "allSuccess": "{count, plural, =1 {파일이 성공적으로 업로드되었습니다} other {# 개 파일이 성공적으로 업로드되었습니다}}",
+    "partialSuccess": "{success}개 파일이 성공적으로 업로드되었고, {error}개가 실패했습니다",
+    "error": "파일 업로드에 실패했습니다",
+    "fileSizeExceeded": "파일 크기가 {maxsizemb}MB 제한을 초과합니다.",
+    "insufficientStorage": "저장 공간이 부족합니다. {availablespace}MB 사용 가능합니다.",
+    "unauthorized": "권한 없음: 이 리소스에 액세스하려면 유효한 토큰이 필요합니다.",
+    "confirmCancel": {
+      "title": "업로드 취소",
+      "messageSingle": "진행 중인 업로드가 하나 있습니다.",
+      "messageMultiple": "진행 중인 업로드가 {count}개 있습니다.",
+      "warning": "지금 닫으면 업로드가 취소되고 모든 진행 상황이 손실됩니다.",
+      "continue": "업로드 계속",
+      "cancel": "업로드 취소"
+    },
+    "globalDrop": {
+      "title": "업로드할 파일 드롭",
+      "description": "파일을 업로드하려면 놓으세요"
+    },
+    "pasteSuccess": "{count, plural, =1 {이미지가 성공적으로 붙여넣기 및 업로드되었습니다} other {# 개의 이미지가 성공적으로 붙여넣기 및 업로드되었습니다}}"
+  },
+  "users": {
+    "modes": {
+      "create": "생성",
+      "edit": "편집"
+    },
+    "errors": {
+      "loadFailed": "사용자 목록을 불러오는데 실패했습니다",
+      "submitFailed": "사용자 {mode}에 실패했습니다",
+      "deleteFailed": "사용자 삭제에 실패했습니다",
+      "statusUpdateFailed": "사용자 상태 업데이트에 실패했습니다"
+    },
+    "messages": {
+      "createSuccess": "사용자가 성공적으로 생성되었습니다",
+      "updateSuccess": "사용자가 성공적으로 업데이트되었습니다",
+      "deleteSuccess": "사용자가 성공적으로 삭제되었습니다",
+      "activateSuccess": "사용자가 성공적으로 활성화되었습니다",
+      "deactivateSuccess": "사용자가 성공적으로 비활성화되었습니다"
+    },
+    "actions": {
+      "edit": "편집",
+      "activate": "활성화",
+      "deactivate": "비활성화",
+      "delete": "삭제"
+    },
+    "delete": {
+      "title": "사용자 삭제 확인",
+      "confirmation": "{firstName} {lastName} 사용자를 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+      "confirm": "사용자 삭제"
+    },
+    "form": {
+      "titleCreate": "새 사용자 추가",
+      "titleEdit": "사용자 편집",
+      "firstName": "이름",
+      "lastName": "성",
+      "username": "사용자 이름",
+      "email": "이메일",
+      "password": "비밀번호",
+      "newPassword": "새 비밀번호 (선택 사항)",
+      "passwordPlaceholder": "현재 비밀번호를 유지하려면 비워두세요",
+      "role": "역할",
+      "roleUser": "사용자",
+      "roleAdmin": "관리자",
+      "create": "생성",
+      "save": "저장"
+    },
+    "status": {
+      "title": "상태 변경 확인",
+      "confirmation": "{firstName} {lastName} 사용자를 {action}하시겠습니까?",
+      "activate": "활성화",
+      "deactivate": "비활성화",
+      "user": "사용자"
+    },
+    "header": {
+      "title": "사용자 관리",
+      "addUser": "사용자 추가",
+      "management": "사용자 관리"
+    },
+    "table": {
+      "user": "사용자",
+      "email": "이메일",
+      "status": "상태",
+      "role": "역할",
+      "actions": "작업",
+      "active": "활성",
+      "inactive": "비활성",
+      "admin": "관리자",
+      "userr": "사용자"
+    }
+  },
+  "validation": {
+    "invalidEmail": "유효하지 않은 이메일 주소입니다",
+    "passwordMinLength": "비밀번호는 최소 6자 이상이어야 합니다",
+    "firstNameRequired": "이름은 필수입니다",
+    "lastNameRequired": "성을 입력하세요",
+    "usernameLength": "사용자 이름은 최소 3자 이상이어야 합니다",
+    "usernameSpaces": "사용자 이름에는 공백을 사용할 수 없습니다",
+    "passwordLength": "비밀번호는 최소 8자 이상이어야 합니다",
+    "passwordsMatch": "비밀번호가 일치하지 않습니다",
+    "emailRequired": "이메일은 필수입니다",
+    "emailOrUsernameRequired": "이메일 또는 사용자 이름은 필수입니다",
+    "passwordRequired": "비밀번호는 필수입니다",
+    "nameRequired": "이름은 필수입니다",
+    "required": "이 필드는 필수입니다"
+  },
+  "iconPicker": {
+    "title": "아이콘 선택",
+    "placeholder": "아이콘 선택",
+    "searchPlaceholder": "아이콘 검색...",
+    "loadingMore": "아이콘 더 불러오는 중...",
+    "allIconsLoaded": "모든 {count}개의 아이콘이 로드됨",
+    "noIconsFound": "\"{search}\"에 대한 아이콘을 찾을 수 없습니다",
+    "tabs": {
+      "all": "모든 아이콘",
+      "popular": "인기",
+      "auth": "인증 제공자"
+    },
+    "stats": "{libraryCount}개의 라이브러리에서 {iconCount}개의 아이콘",
+    "categoryBadge": "{category} ({count}개의 아이콘)"
   }
 }

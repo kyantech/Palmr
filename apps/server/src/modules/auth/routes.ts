@@ -1,9 +1,10 @@
+import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { z } from "zod";
+
 import { ConfigService } from "../config/service";
 import { validatePasswordMiddleware } from "../user/middleware";
 import { AuthController } from "./controller";
-import { RequestPasswordResetSchema, createResetPasswordSchema } from "./dto";
-import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { z } from "zod";
+import { createResetPasswordSchema, RequestPasswordResetSchema } from "./dto";
 
 const configService = new ConfigService();
 

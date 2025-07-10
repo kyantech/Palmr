@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3333";
+const url = `${API_BASE_URL}/files`;
+
 export async function GET(req: NextRequest) {
   const cookieHeader = req.headers.get("cookie");
 
-  const apiRes = await fetch(`${process.env.API_BASE_URL}/files`, {
+  const apiRes = await fetch(url, {
     method: "GET",
     headers: {
       cookie: cookieHeader || "",
@@ -31,7 +34,7 @@ export async function POST(req: NextRequest) {
   const body = await req.text();
   const cookieHeader = req.headers.get("cookie");
 
-  const apiRes = await fetch(`${process.env.API_BASE_URL}/files`, {
+  const apiRes = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

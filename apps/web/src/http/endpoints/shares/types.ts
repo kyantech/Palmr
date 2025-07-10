@@ -1,32 +1,179 @@
 import type { AxiosResponse } from "axios";
 
-import type {
-  AddFiles200,
-  AddFilesBody,
-  AddRecipients200,
-  AddRecipientsBody,
-  CreateShare201,
-  CreateShareAlias200,
-  CreateShareAliasBody,
-  CreateShareBody,
-  DeleteShare200,
-  GetShare200,
-  GetShareByAlias200,
-  GetShareByAliasParams,
-  GetShareParams,
-  ListUserShares200,
-  NotifyRecipients200,
-  NotifyRecipientsBody,
-  RemoveFiles200,
-  RemoveFilesBody,
-  RemoveRecipients200,
-  RemoveRecipientsBody,
-  UpdateShare200,
-  UpdateShareBody,
-  UpdateSharePassword200,
-  UpdateSharePasswordBody,
-} from "../../models";
+export type ShareAlias = {
+  id: string;
+  alias: string;
+  shareId: string;
+  createdAt: string;
+  updatedAt: string;
+} | null;
 
+export interface ShareFile {
+  id: string;
+  name: string;
+  description: string | null;
+  extension: string;
+  size: string;
+  objectName: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ShareRecipient {
+  id: string;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ShareSecurity {
+  maxViews: number | null;
+  hasPassword: boolean;
+}
+
+// Full share object used in most responses
+export interface Share {
+  id: string;
+  name: string | null;
+  description: string | null;
+  expiration: string | null;
+  views: number;
+  createdAt: string;
+  updatedAt: string;
+  creatorId: string;
+  security: ShareSecurity;
+  files: ShareFile[];
+  recipients: ShareRecipient[];
+  alias: ShareAlias;
+}
+
+// Simplified share object for specific operations
+export interface SimpleShare {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
+// Response types using base types
+export interface CreateShare201 {
+  share: Share;
+}
+
+export interface UpdateShare200 {
+  share: Share;
+}
+
+export interface UpdateSharePassword200 {
+  share: Share;
+}
+
+export interface GetShare200 {
+  share: Share;
+}
+
+export interface GetShareByAlias200 {
+  share: Share;
+}
+
+export interface DeleteShare200 {
+  share: Share;
+}
+
+export interface RemoveRecipients200 {
+  share: Share;
+}
+
+export interface RemoveFiles200 {
+  share: Share;
+}
+
+export interface AddRecipients200 {
+  share: Share;
+}
+
+export interface AddFiles200 {
+  share: SimpleShare;
+}
+
+export interface ListUserShares200 {
+  shares: Share[];
+}
+
+export interface CreateShareAlias200 {
+  alias: {
+    id: string;
+    alias: string;
+    shareId: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+}
+
+export interface NotifyRecipients200 {
+  message: string;
+  notifiedRecipients: string[];
+}
+
+// Request body types
+export interface CreateShareBody {
+  name?: string;
+  description?: string;
+  expiration?: string;
+  files: string[];
+  password?: string;
+  maxViews?: number | null;
+  recipients?: string[];
+}
+
+export interface UpdateShareBody {
+  id: string;
+  name?: string;
+  description?: string;
+  expiration?: string;
+  password?: string;
+  maxViews?: number | null;
+  recipients?: string[];
+}
+
+export interface UpdateSharePasswordBody {
+  password: string | null;
+}
+
+export interface AddFilesBody {
+  files: string[];
+}
+
+export interface RemoveFilesBody {
+  files: string[];
+}
+
+export interface AddRecipientsBody {
+  emails: string[];
+}
+
+export interface RemoveRecipientsBody {
+  emails: string[];
+}
+
+export interface CreateShareAliasBody {
+  alias: string;
+}
+
+export interface NotifyRecipientsBody {
+  shareLink: string;
+}
+
+// Query parameter types
+export interface GetShareParams {
+  password?: string;
+}
+
+export interface GetShareByAliasParams {
+  password?: string;
+}
+
+// Axios response types
 export type CreateShareResult = AxiosResponse<CreateShare201>;
 export type UpdateShareResult = AxiosResponse<UpdateShare200>;
 export type ListUserSharesResult = AxiosResponse<ListUserShares200>;
@@ -40,17 +187,3 @@ export type RemoveRecipientsResult = AxiosResponse<RemoveRecipients200>;
 export type CreateShareAliasResult = AxiosResponse<CreateShareAlias200>;
 export type GetShareByAliasResult = AxiosResponse<GetShareByAlias200>;
 export type NotifyRecipientsResult = AxiosResponse<NotifyRecipients200>;
-
-export type {
-  CreateShareBody,
-  UpdateShareBody,
-  GetShareParams,
-  UpdateSharePasswordBody,
-  AddFilesBody,
-  RemoveFilesBody,
-  AddRecipientsBody,
-  RemoveRecipientsBody,
-  CreateShareAliasBody,
-  GetShareByAliasParams,
-  NotifyRecipientsBody,
-};

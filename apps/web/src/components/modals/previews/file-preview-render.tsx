@@ -16,6 +16,8 @@ interface FilePreviewRendererProps {
   pdfAsBlob: boolean;
   pdfLoadFailed: boolean;
   onPdfLoadError: () => void;
+  description?: string;
+  onDownload?: () => void;
 }
 
 export function FilePreviewRenderer({
@@ -28,6 +30,8 @@ export function FilePreviewRenderer({
   pdfAsBlob,
   pdfLoadFailed,
   onPdfLoadError,
+  description,
+  onDownload,
 }: FilePreviewRendererProps) {
   if (isLoading) {
     return <DefaultPreview fileName={fileName} isLoading />;
@@ -63,7 +67,7 @@ export function FilePreviewRenderer({
       return <TextPreview content={textContent} fileName={fileName} />;
 
     case "image":
-      return <ImagePreview src={previewUrl!} alt={fileName} />;
+      return <ImagePreview src={previewUrl!} alt={fileName} description={description} onDownload={onDownload} />;
 
     case "audio":
       return <AudioPreview src={mediaUrl!} />;

@@ -1,6 +1,6 @@
 import { FileManagerHook } from "@/hooks/use-file-manager";
 import { ShareManagerHook } from "@/hooks/use-share-manager";
-import { ListUserShares200SharesItem } from "@/http/models/listUserShares200SharesItem";
+import { Share } from "@/http/endpoints/shares/types";
 
 export interface RecentFilesProps {
   files: any[];
@@ -10,11 +10,11 @@ export interface RecentFilesProps {
 }
 
 export interface RecentSharesProps {
-  shares: ListUserShares200SharesItem[];
+  shares: Share[];
   shareManager: ShareManagerHook;
   isCreateModalOpen: boolean;
   onOpenCreateModal: () => void;
-  onCopyLink: (share: ListUserShares200SharesItem) => void;
+  onCopyLink: (share: Share) => void;
 }
 
 export interface StorageUsageProps {

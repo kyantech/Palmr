@@ -1,8 +1,9 @@
+import bcrypt from "bcryptjs";
+
 import { prisma } from "../../shared/prisma";
 import { EmailService } from "../email/service";
-import { CreateShareInput, UpdateShareInput, ShareResponseSchema } from "./dto";
-import { PrismaShareRepository, IShareRepository } from "./repository";
-import bcrypt from "bcryptjs";
+import { CreateShareInput, ShareResponseSchema, UpdateShareInput } from "./dto";
+import { IShareRepository, PrismaShareRepository } from "./repository";
 
 export class ShareService {
   constructor(private readonly shareRepository: IShareRepository = new PrismaShareRepository()) {}

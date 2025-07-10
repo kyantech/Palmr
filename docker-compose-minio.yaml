@@ -12,6 +12,9 @@ services:
       - S3_REGION=${S3_REGION:-us-east-1} # S3 region (us-east-1 is the default region) but it depends on your s3 server region
       - S3_BUCKET_NAME=${S3_BUCKET_NAME:-palmr-files} # Bucket name for the S3 storage (here we are using palmr-files as the bucket name to understand that this is the bucket for palmr)
       - S3_FORCE_PATH_STYLE=true # For MinIO compatibility we have to set this to true
+      - PALMR_UID=1000 # UID for the container processes (default is 1001) you can change it to the UID of the user running the container
+      - PALMR_GID=1000 # GID for the container processes (default is 1001) you can change it to the GID of the user running the container
+      - SECURE_SITE=false # Set to true if you are using a reverse proxy
     ports:
       - "5487:5487" # Web port
       - "3333:3333" # API port (OPTIONAL EXPOSED - ONLY IF YOU WANT TO ACCESS THE API DIRECTLY)

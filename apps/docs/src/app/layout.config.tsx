@@ -1,6 +1,7 @@
-import { LATEST_VERSION_PATH } from "@/config/constants";
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
 import { Github, Palmtree } from "lucide-react";
+
+import { LATEST_VERSION_PATH } from "@/config/constants";
 
 export const baseOptions: BaseLayoutProps = {
   nav: {

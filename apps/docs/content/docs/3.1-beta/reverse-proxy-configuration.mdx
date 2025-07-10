@@ -1,0 +1,198 @@
+---
+title: Reverse Proxy Configuration
+icon: "Shield"
+---
+
+When deploying **Palmr.** behind a reverse proxy (like Traefik, Nginx, or Cloudflare), you need to configure secure cookie settings to ensure proper authentication. This guide covers the `SECURE_SITE` environment variable and related proxy configurations.
+
+## Overview
+
+Reverse proxies terminate SSL/TLS connections and forward requests to Palmr., which can cause authentication issues if cookies aren't configured properly for HTTPS environments. The `SECURE_SITE` environment variable controls cookie security settings to handle these scenarios.
+
+## The SECURE_SITE Environment Variable
+
+The `SECURE_SITE` variable configures how Palmr. handles authentication cookies based on your deployment environment:
+
+### Configuration Options
+
+| Value   | Cookie Settings                       | Use Case                            |
+| ------- | ------------------------------------- | ----------------------------------- |
+| `true`  | `secure: true`, `sameSite: "lax"`     | HTTPS/Production with reverse proxy |
+| `false` | `secure: false`, `sameSite: "strict"` | HTTP/Development (default)          |
+
+### When to Use SECURE_SITE=true
+
+Set `SECURE_SITE=true` in the following scenarios:
+
+- ✅ **Reverse Proxy with HTTPS**: Traefik, Nginx, HAProxy with SSL termination
+- ✅ **Cloud Providers**: Cloudflare, AWS ALB, Azure Application Gateway
+- ✅ **CDN with HTTPS**: Any CDN that terminates SSL
+- ✅ **Production Deployments**: When users access via HTTPS
+
+### When to Use SECURE_SITE=false
+
+Keep `SECURE_SITE=false` (default) for:
+
+- ✅ **Local Development**: Running on `http://localhost`
+- ✅ **Direct HTTP Access**: No reverse proxy involved
+- ✅ **Testing Environments**: When using HTTP
+- ✅ **HTTP Reverse Proxy**: Nginx, Apache, etc. without SSL termination
+
+---
+
+## HTTP Reverse Proxy Setup
+
+**Docker Compose for HTTP Nginx:**
+
+```yaml
+environment:
+  - SECURE_SITE=false # HTTP = false
+```
+
+> **⚠️ HTTP Security**: Remember that HTTP transmits data in plain text. Consider using HTTPS in production environments.
+
+---
+
+## Troubleshooting Authentication Issues
+
+### Common Symptoms
+
+If you experience authentication issues behind a reverse proxy:
+
+- ❌ Login appears successful but redirects to login page
+- ❌ "No Authorization was found in request.cookies" errors
+- ❌ API requests return 401 Unauthorized
+- ❌ User registration fails silently
+
+### Diagnostic Steps
+
+1. **Check Browser Developer Tools**:
+   - Look for cookies in Application/Storage tab
+   - Verify cookie has `Secure` flag when using HTTPS
+   - Check if `SameSite` attribute is appropriate
+
+2. **Verify Environment Variables**:
+
+   ```bash
+   docker exec -it palmr env | grep SECURE_SITE
+   ```
+
+3. **Test Cookie Settings**:
+   - With `SECURE_SITE=false`: Should work on HTTP
+   - With `SECURE_SITE=true`: Should work on HTTPS
+
+### Common Fixes
+
+**Problem**: Authentication fails with reverse proxy
+
+**Solution**: Set `SECURE_SITE=true` and ensure proper headers:
+
+```yaml
+environment:
+  - SECURE_SITE=true
+```
+
+**Problem**: Mixed content errors
+
+**Solution**: Ensure proxy passes correct headers:
+
+```yaml
+# Traefik
+- "traefik.http.middlewares.palmr-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+
+# Nginx
+proxy_set_header X-Forwarded-Proto $scheme;
+```
+
+**Problem**: Authentication fails with HTTP reverse proxy
+
+**Solution**: Use `SECURE_SITE=false` and ensure proper cookie headers:
+
+```yaml
+environment:
+  - SECURE_SITE=false # For HTTP proxy
+```
+
+```nginx
+# Nginx - Add these headers for cookie handling
+proxy_set_header Cookie $http_cookie;
+proxy_pass_header Set-Cookie;
+```
+
+**Problem**: SQLite "readonly database" error with bind mounts
+
+**Solution**: Configure proper UID/GID permissions:
+
+```yaml
+environment:
+  - PALMR_UID=1000 # Your host UID (check with: id)
+  - PALMR_GID=1000 # Your host GID
+  - ENCRYPTION_KEY=your-key-here
+```
+
+> **💡 Note**: Check your host UID/GID with `id` command and use those values. See [UID/GID Configuration](/docs/3.1-beta/uid-gid-configuration) for detailed setup.
+
+---
+
+## Security Considerations
+
+> **⚠️ Important**: Always use HTTPS in production environments. The `SECURE_SITE=true` setting ensures cookies are only sent over encrypted connections.
+
+---
+
+## Advanced Configuration
+
+### Multiple Domains
+
+If serving Palmr. on multiple domains, ensure consistent cookie settings:
+
+```yaml
+environment:
+  - SECURE_SITE=true # Use for all HTTPS domains
+```
+
+### Development vs Production
+
+Use environment-specific configurations:
+
+**Development (HTTP):**
+
+```yaml
+environment:
+  - SECURE_SITE=false
+```
+
+**Production (HTTPS):**
+
+```yaml
+environment:
+  - SECURE_SITE=true
+```
+
+### Health Checks
+
+Add health checks to ensure proper proxy configuration:
+
+```yaml
+services:
+  palmr:
+    # ... other config
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5487/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+---
+
+## Need Help?
+
+If you're still experiencing issues after following this guide:
+
+1. **Check the Logs**: `docker logs palmr`
+2. **Verify Headers**: Use browser dev tools or `curl -I`
+3. **Test Direct Access**: Try accessing Palmr. directly (bypassing proxy)
+4. **Open an Issue**: [Report bugs on GitHub](https://github.com/kyantech/Palmr/issues)
+
+> **💡 Pro Tip**: When reporting issues, include your reverse proxy configuration and any relevant error messages from both Palmr. and your proxy logs.

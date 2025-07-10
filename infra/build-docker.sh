@@ -1,10 +1,8 @@
 #!/bin/bash
 
-# Ask for tag interactively
 echo "🏷️  Please enter a tag for the build (e.g., v1.0.0, production, beta):"
 read -p "Tag: " TAG
 
-# Check if tag was provided
 if [ -z "$TAG" ]; then
     echo "❌ Error: Tag cannot be empty"
     echo "Please run the script again and provide a valid tag"
@@ -14,10 +12,8 @@ fi
 echo "🚀 Building Palmr Unified Image for AMD64 and ARM..."
 echo "📦 Building tags: latest and $TAG"
 
-# Ensure buildx is available and create/use a builder instance
 docker buildx create --name palmr-builder --use 2>/dev/null || docker buildx use palmr-builder
 
-# Build the unified image for multiple platforms without cache
 docker buildx build \
     --platform linux/amd64,linux/arm64 \
     --no-cache \

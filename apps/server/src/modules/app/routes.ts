@@ -1,8 +1,9 @@
-import { prisma } from "../../shared/prisma";
-import { AppController } from "./controller";
-import { ConfigResponseSchema, BulkUpdateConfigSchema } from "./dto";
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
+
+import { prisma } from "../../shared/prisma";
+import { AppController } from "./controller";
+import { BulkUpdateConfigSchema, ConfigResponseSchema } from "./dto";
 
 export async function appRoutes(app: FastifyInstance) {
   const appController = new AppController();
@@ -153,6 +154,10 @@ export async function appRoutes(app: FastifyInstance) {
                   .optional()
                   .describe("Connection security method ('auto', 'ssl', 'tls', or 'none')"),
                 smtpNoAuth: z.string().optional().describe("Disable SMTP authentication ('true' or 'false')"),
+                smtpTrustSelfSigned: z
+                  .string()
+                  .optional()
+                  .describe("Trust self-signed certificates ('true' or 'false')"),
               })
               .optional()
               .describe("SMTP configuration to test. If not provided, uses currently saved configuration"),

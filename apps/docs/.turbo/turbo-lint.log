@@ -1,0 +1,5 @@
+
+
+> palmr-docs@3.1-beta lint /Users/daniel/clones/Palmr/apps/docs
+> eslint "src/**/*.+(ts|tsx)"
+

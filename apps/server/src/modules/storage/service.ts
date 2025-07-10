@@ -1,9 +1,10 @@
-import { IS_RUNNING_IN_CONTAINER } from "../../utils/container-detection";
-import { ConfigService } from "../config/service";
-import { PrismaClient } from "@prisma/client";
 import { exec } from "child_process";
 import fs from "node:fs";
 import { promisify } from "util";
+import { PrismaClient } from "@prisma/client";
+
+import { IS_RUNNING_IN_CONTAINER } from "../../utils/container-detection";
+import { ConfigService } from "../config/service";
 
 const execAsync = promisify(exec);
 const prisma = new PrismaClient();
@@ -12,27 +13,21 @@ export class StorageService {
   private configService = new ConfigService();
 
   private _ensureNumber(value: number, fallback: number = 0): number {
-    if (isNaN(value) || !isFinite(value)) {
-      return fallback;
-    }
-    return value;
+    return Number.isNaN(value) || !Number.isFinite(value) || value < 0 ? fallback : value;
   }
 
   private _safeParseInt(value: string): number {
-    const parsed = parseInt(value);
-    return this._ensureNumber(parsed, 0);
+    const parsed = parseInt(value, 10);
+    return Number.isNaN(parsed) ? 0 : parsed;
   }
 
   private async _tryDiskSpaceCommand(command: string): Promise<{ total: number; available: number } | null> {
     try {
-      console.log(`Trying disk space command: ${command}`);
       const { stdout, stderr } = await execAsync(command);
 
       if (stderr) {
         console.warn(`Command stderr: ${stderr}`);
       }
-
-      console.log(`Command stdout: ${stdout}`);
 
       let total = 0;
       let available = 0;
@@ -75,7 +70,6 @@ export class StorageService {
       }
 
       if (total > 0 && available >= 0) {
-        console.log(`Successfully parsed disk space: ${total} bytes total, ${available} bytes available`);
         return { total, available };
       } else {
         console.warn(`Invalid values parsed: total=${total}, available=${available}`);
@@ -87,19 +81,128 @@ export class StorageService {
     }
   }
 
+  /**
+   * Gets detailed mount information for debugging
+   */
+  private async _getMountInfo(path: string): Promise<{ filesystem: string; mountPoint: string; type: string } | null> {
+    try {
+      if (!fs.existsSync("/proc/mounts")) {
+        return null;
+      }
+
+      const mountsContent = await fs.promises.readFile("/proc/mounts", "utf8");
+      const lines = mountsContent.split("\n").filter((line) => line.trim());
+
+      let bestMatch = null;
+      let bestMatchLength = 0;
+
+      for (const line of lines) {
+        const parts = line.split(/\s+/);
+        if (parts.length >= 3) {
+          const [filesystem, mountPoint, type] = parts;
+
+          if (path.startsWith(mountPoint) && mountPoint.length > bestMatchLength) {
+            bestMatch = { filesystem, mountPoint, type };
+            bestMatchLength = mountPoint.length;
+          }
+        }
+      }
+
+      return bestMatch;
+    } catch (error) {
+      console.warn(`Could not get mount info for ${path}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Detects if a path is a bind mount or mount point by checking /proc/mounts
+   * Returns the actual filesystem path for bind mounts
+   */
+  private async _detectMountPoint(path: string): Promise<string | null> {
+    try {
+      if (!fs.existsSync("/proc/mounts")) {
+        return null;
+      }
+
+      const mountsContent = await fs.promises.readFile("/proc/mounts", "utf8");
+      const lines = mountsContent.split("\n").filter((line) => line.trim());
+
+      let bestMatch = null;
+      let bestMatchLength = 0;
+
+      for (const line of lines) {
+        const parts = line.split(/\s+/);
+        if (parts.length >= 2) {
+          const [, mountPoint] = parts;
+
+          if (path.startsWith(mountPoint) && mountPoint.length > bestMatchLength) {
+            bestMatch = mountPoint;
+            bestMatchLength = mountPoint.length;
+          }
+        }
+      }
+
+      if (bestMatch && bestMatch !== "/") {
+        return bestMatch;
+      }
+
+      return null;
+    } catch (error) {
+      console.warn(`Could not detect mount point for ${path}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Gets filesystem information for a specific path, with bind mount detection
+   */
+  private async _getFileSystemInfo(
+    path: string
+  ): Promise<{ total: number; available: number; mountPoint?: string } | null> {
+    try {
+      const mountInfo = await this._getMountInfo(path);
+      if (mountInfo && mountInfo.mountPoint !== "/") {
+        console.log(`📁 Bind mount detected: ${path} → ${mountInfo.filesystem} (${mountInfo.type})`);
+      }
+
+      const mountPoint = await this._detectMountPoint(path);
+      const targetPath = mountPoint || path;
+
+      const commandsToTry =
+        process.platform === "win32"
+          ? ["wmic logicaldisk get size,freespace,caption"]
+          : process.platform === "darwin"
+            ? [`df -k "${targetPath}"`, `df "${targetPath}"`]
+            : [`df -B1 "${targetPath}"`, `df -k "${targetPath}"`, `df "${targetPath}"`];
+
+      for (const command of commandsToTry) {
+        const result = await this._tryDiskSpaceCommand(command);
+        if (result) {
+          return {
+            ...result,
+            mountPoint: mountPoint || undefined,
+          };
+        }
+      }
+
+      return null;
+    } catch (error) {
+      console.warn(`Error getting filesystem info for ${path}:`, error);
+      return null;
+    }
+  }
+
   private async _getDiskSpaceMultiplePaths(): Promise<{ total: number; available: number } | null> {
     const pathsToTry = IS_RUNNING_IN_CONTAINER
       ? ["/app/server/uploads", "/app/server", "/app", "/"]
       : [".", "./uploads", process.cwd()];
 
     for (const pathToCheck of pathsToTry) {
-      console.log(`Trying path: ${pathToCheck}`);
-
       if (pathToCheck.includes("uploads")) {
         try {
           if (!fs.existsSync(pathToCheck)) {
             fs.mkdirSync(pathToCheck, { recursive: true });
-            console.log(`Created directory: ${pathToCheck}`);
           }
         } catch (err) {
           console.warn(`Could not create path ${pathToCheck}:`, err);
@@ -108,23 +211,16 @@ export class StorageService {
       }
 
       if (!fs.existsSync(pathToCheck)) {
-        console.warn(`Path does not exist: ${pathToCheck}`);
         continue;
       }
 
-      const commandsToTry =
-        process.platform === "win32"
-          ? ["wmic logicaldisk get size,freespace,caption"]
-          : process.platform === "darwin"
-            ? [`df -k "${pathToCheck}"`, `df "${pathToCheck}"`]
-            : [`df -B1 "${pathToCheck}"`, `df -k "${pathToCheck}"`, `df "${pathToCheck}"`];
-
-      for (const command of commandsToTry) {
-        const result = await this._tryDiskSpaceCommand(command);
-        if (result) {
-          console.log(`✅ Successfully got disk space for path: ${pathToCheck}`);
-          return result;
+      // Use the new filesystem detection method
+      const result = await this._getFileSystemInfo(pathToCheck);
+      if (result) {
+        if (result.mountPoint) {
+          console.log(`✅ Storage resolved via bind mount: ${result.mountPoint}`);
         }
+        return { total: result.total, available: result.available };
       }
     }
 
@@ -142,17 +238,10 @@ export class StorageService {
   }> {
     try {
       if (isAdmin) {
-        console.log(`Running in container: ${IS_RUNNING_IN_CONTAINER}`);
-
         const diskInfo = await this._getDiskSpaceMultiplePaths();
 
         if (!diskInfo) {
-          console.error("❌ CRITICAL: Could not determine disk space using any method!");
-          console.error("This indicates a serious system issue. Please check:");
-          console.error("1. File system permissions");
-          console.error("2. Available disk utilities (df, wmic)");
-          console.error("3. Container/system configuration");
-
+          console.error("❌ Could not determine disk space - system configuration issue");
           throw new Error("Unable to determine actual disk space - system configuration issue");
         }
 
@@ -162,10 +251,6 @@ export class StorageService {
         const diskSizeGB = this._ensureNumber(total / (1024 * 1024 * 1024), 0);
         const diskUsedGB = this._ensureNumber(used / (1024 * 1024 * 1024), 0);
         const diskAvailableGB = this._ensureNumber(available / (1024 * 1024 * 1024), 0);
-
-        console.log(
-          `✅ Real disk space: ${diskSizeGB.toFixed(2)}GB total, ${diskUsedGB.toFixed(2)}GB used, ${diskAvailableGB.toFixed(2)}GB available`
-        );
 
         return {
           diskSizeGB: Number(diskSizeGB.toFixed(2)),
@@ -198,7 +283,6 @@ export class StorageService {
       throw new Error("User ID is required for non-admin users");
     } catch (error) {
       console.error("❌ Error getting disk space:", error);
-
       throw new Error(
         `Failed to get disk space information: ${error instanceof Error ? error.message : String(error)}`
       );

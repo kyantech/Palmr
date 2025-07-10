@@ -26,10 +26,13 @@ export function StorageUsage({ diskSpace, diskSpaceError, onRetry }: StorageUsag
       <Card className="w-full">
         <CardContent className="">
           <div className="flex flex-col gap-4">
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              <IconDatabaseCog className="text-gray-500" size={24} />
-              {t("storageUsage.title")}
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <IconDatabaseCog className="text-gray-500" size={24} />
+                {t("storageUsage.title")}
+              </h2>
+              <span className="text-sm text-muted-foreground">{t("storageUsage.total")}: --</span>
+            </div>
             <div className="flex flex-col gap-3 py-4">
               <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
                 <IconAlertCircle size={20} />
@@ -38,7 +41,7 @@ export function StorageUsage({ diskSpace, diskSpaceError, onRetry }: StorageUsag
               <p className="text-sm text-muted-foreground">{getErrorMessage(diskSpaceError)}</p>
               {onRetry && (
                 <Button variant="outline" size="sm" onClick={onRetry} className="w-fit">
-                  <IconRefresh size={16} className="mr-2" />
+                  <IconRefresh size={16} />
                   {t("storageUsage.retry")}
                 </Button>
               )}
@@ -54,10 +57,13 @@ export function StorageUsage({ diskSpace, diskSpaceError, onRetry }: StorageUsag
       <Card className="w-full">
         <CardContent className="">
           <div className="flex flex-col gap-4">
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              <IconDatabaseCog className="text-gray-500" size={24} />
-              {t("storageUsage.title")}
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <IconDatabaseCog className="text-gray-500" size={24} />
+                {t("storageUsage.title")}
+              </h2>
+              <span className="text-sm text-muted-foreground">{t("storageUsage.total")}: --</span>
+            </div>
             <div className="flex flex-col gap-2">
               <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
               <div className="flex justify-between text-sm text-muted-foreground">
@@ -75,15 +81,20 @@ export function StorageUsage({ diskSpace, diskSpaceError, onRetry }: StorageUsag
     <Card className="w-full">
       <CardContent className="">
         <div className="flex flex-col gap-4">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <IconDatabaseCog className="text-gray-500" size={24} />
-            {t("storageUsage.title")}
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <IconDatabaseCog className="text-gray-500" size={24} />
+              {t("storageUsage.title")}
+            </h2>
+            <span className="text-sm text-muted-foreground">
+              {t("storageUsage.total")}: {formatStorageSize(diskSpace?.diskSizeGB || 0)}
+            </span>
+          </div>
           <div className="flex flex-col gap-2">
             <Progress
               aria-label={t("storageUsage.ariaLabel")}
               value={((diskSpace?.diskUsedGB || 0) / (diskSpace?.diskSizeGB || 1)) * 100}
-              className="w-full h-3"
+              className="w-full h-2"
             />
             <div className="flex justify-between text-sm">
               <span>

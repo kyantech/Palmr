@@ -1,4 +1,132 @@
 {
+  "auth": {
+    "errors": {
+      "account_inactive": "アカウントが無効です。管理者にお問い合わせください。",
+      "registration_disabled": "SSOによる登録が無効になっています。",
+      "token_expired": "トークンの有効期限が切れました。もう一度お試しください。",
+      "config_error": "設定エラー。サポートにお問い合わせください。",
+      "auth_failed": "認証に失敗しました。もう一度お試しください。"
+    }
+  },
+  "authProviders": {
+    "title": "認証プロバイダー",
+    "description": "SSOの外部認証プロバイダーを設定する",
+    "enabledCount": "{count}件有効",
+    "loadingProviders": "プロバイダーを読み込み中...",
+    "providersConfigured": "{count}件のプロバイダーが設定済み",
+    "enabledOfTotal": "全{total}件中{enabled}件が有効",
+    "hideDisabledProviders": "無効なプロバイダーを非表示",
+    "addProvider": "プロバイダーを追加",
+    "addProviderTitle": "プロバイダーを追加",
+    "editProvider": "プロバイダーを編集",
+    "deleteProvider": "プロバイダーを削除",
+    "enabled": "有効",
+    "disabled": "無効",
+    "officialProvider": "公式プロバイダー",
+    "dragToReorder": "ドラッグして並び替え",
+    "dragDisabledMessage": "プロバイダーをフィルタリング中はドラッグ＆ドロップが無効です。並び替えるには全てのプロバイダーを表示してください。",
+    "dragEnabledMessage": "プロバイダーをドラッグして並び替えできます。この順序はログインページに反映されます。",
+    "noProvidersEnabled": "有効な認証プロバイダーがありません",
+    "noProvidersConfigured": "設定された認証プロバイダーがありません",
+    "form": {
+      "providerName": "プロバイダー名",
+      "providerNamePlaceholder": "例：mycompany",
+      "displayName": "表示名",
+      "displayNamePlaceholder": "例：My Company SSO",
+      "type": "タイプ",
+      "typeOidc": "OIDC (OpenID Connect)",
+      "typeOauth2": "OAuth 2.0",
+      "icon": "アイコン",
+      "iconPlaceholder": "アイコンを選択",
+      "clientId": "クライアントID",
+      "clientIdPlaceholder": "OAuthクライアントID",
+      "clientSecret": "クライアントシークレット",
+      "clientSecretPlaceholder": "OAuthクライアントシークレット",
+      "oauthScopes": "OAuthスコープ",
+      "scopesPlaceholder": "スコープを入力（例：openid, profile, email）",
+      "scopesHelpOidc": "プロバイダーURLに基づいて自動提案されるスコープ。一般的なOIDCスコープ：openid, profile, email, groups",
+      "scopesHelpOauth2": "プロバイダーURLに基づいて自動提案されるスコープ。一般的なOAuth2スコープはプロバイダーによって異なります",
+      "providerUrl": "プロバイダーURL",
+      "providerUrlPlaceholder": "https://auth.example.com",
+      "providerUrlAutoPlaceholder": "https://your-provider.com（エンドポイントは自動的に検出されます）",
+      "providerUrlManualPlaceholder": "https://your-provider.com",
+      "autoDiscoveryHelp": "システムは認証、トークン、ユーザー情報のエンドポイントを自動的に検出します",
+      "manualConfigurationHelp": "プロバイダーのベースURL（エンドポイントはこれを基準とします）",
+      "authorizationEndpoint": "認証エンドポイント",
+      "authorizationEndpointPlaceholder": "https://auth.example.com/auth",
+      "tokenEndpoint": "トークンエンドポイント",
+      "tokenEndpointPlaceholder": "https://auth.example.com/token",
+      "userInfoEndpoint": "ユーザー情報エンドポイント",
+      "userInfoEndpointPlaceholder": "https://auth.example.com/userinfo",
+      "configurationMethod": "設定方法",
+      "autoDiscovery": "自動検出",
+      "autoDiscoveryDescription": "プロバイダーURLからエンドポイントを自動的に検出",
+      "manualEndpoints": "手動エンドポイント (推奨)",
+      "manualEndpointsDescription": "認証、トークン、ユーザー情報エンドポイントを手動で設定",
+      "callbackUrl": "コールバックURL",
+      "callbackUrlDescription": "OAuthプロバイダー設定でこのURLを使用してください",
+      "copyCallbackUrl": "コールバックURLをコピー",
+      "callbackUrlCopied": "コールバックURLをクリップボードにコピーしました！",
+      "adminEmailDomains": "管理者メールドメイン",
+      "adminEmailDomainsPlaceholder": "ドメインを入力（例：admin.company.com）",
+      "adminEmailDomainsHelp": "これらのドメインのメールアドレスを持つユーザーに管理者権限が付与されます",
+      "autoRegister": "新規ユーザーを自動登録",
+      "officialProviderUrlPlaceholder": "プレースホルダーを{displayName}のURLに置き換えてください",
+      "officialProviderHelp": "これは公式プロバイダーです。エンドポイントは事前設定されています。このURLのみ編集可能です。",
+      "officialProviderIconHelp": "この公式プロバイダーのアイコンをカスタマイズできます。"
+    },
+    "buttons": {
+      "cancel": "キャンセル",
+      "save": "保存",
+      "saving": "保存中...",
+      "adding": "追加中...",
+      "updating": "更新中...",
+      "saveProvider": "プロバイダーを保存",
+      "delete": "削除",
+      "deleting": "削除中...",
+      "edit": "編集",
+      "enable": "有効化",
+      "disable": "無効化"
+    },
+    "messages": {
+      "providerAdded": "プロバイダーを追加しました",
+      "providerUpdated": "プロバイダーを更新しました",
+      "providerDeleted": "プロバイダーを削除しました",
+      "providerOrderUpdated": "プロバイダーの順序を更新しました",
+      "fillRequiredFields": "必須項目（名前、表示名、クライアントID、クライアントシークレット）を入力してください",
+      "provideUrlOrEndpoints": "自動検出用のプロバイダーURLか、3つのカスタムエンドポイントのいずれかを提供してください",
+      "chooseDiscoveryOrManual": "自動検出（プロバイダーURL）か手動エンドポイントのどちらかを選択してください。両方は選択できません",
+      "loadFailed": "プロバイダーの読み込みに失敗しました",
+      "addFailed": "プロバイダーの追加に失敗しました",
+      "updateFailed": "プロバイダーの更新に失敗しました",
+      "deleteFailed": "プロバイダーの削除に失敗しました",
+      "orderUpdateFailed": "プロバイダーの順序の更新に失敗しました"
+    },
+    "info": {
+      "title": "情報",
+      "officialProvidersRecommended": "より良い機能のために、公式プロバイダーの使用を検討してください。カスタムプロバイダーで問題が発生した場合は、以下で問題を報告することを検討してください：",
+      "github": "GitHub",
+      "officialProvider": "公式プロバイダー",
+      "officialProviderDescription": "このプロバイダーはPalmrによって最適化されています。認証情報と設定のみ変更可能です。",
+      "manualConfigTitle": "手動設定",
+      "manualConfigDescription": "すべてのエンドポイントを手動で提供しています。プロバイダーに対して正しいことを確認してください。"
+    },
+    "deleteModal": {
+      "title": "認証プロバイダーの削除",
+      "confirmMessage": "本当に\"{displayName}\"プロバイダーを削除しますか？この操作は取り消せません。",
+      "providerId": "プロバイダーID：{name}",
+      "cancel": "キャンセル",
+      "delete": "プロバイダーを削除",
+      "deleting": "削除中..."
+    }
+  },
+  "bulkDownload": {
+    "title": "一括ダウンロード",
+    "zipNameLabel": "ZIPファイル名",
+    "zipNamePlaceholder": "ファイル名を入力してください",
+    "description": "{count, plural, =1 {1つのファイルが圧縮されます} other {#つのファイルが圧縮されます}}",
+    "download": "ZIPをダウンロード"
+  },
   "common": {
     "loading": "読み込み中です、お待ちください...",
     "cancel": "キャンセル",
@@ -41,6 +169,10 @@
       "title": "最近のファイル",
       "description": "最近アップロードされたファイル"
     }
+  },
+  "deleteConfirmation": {
+    "filesToDelete": "削除するファイル",
+    "sharesToDelete": "削除される共有"
   },
   "emptyState": {
     "noFiles": "まだファイルがアップロードされていません",
@@ -389,628 +521,6 @@
     "errors": {
       "serverError": "パスワードのリセットに失敗しました。もう一度お試しください。",
       "invalidToken": "無効なリセットトークン、またはトークンが存在しません"
-    }
-  },
-  "searchBar": {
-    "placeholder": "ファイルを検索...",
-    "results": "全{total}件中{filtered}件が見つかりました"
-  },
-  "settings": {
-    "groups": {
-      "defaultDescription": "構成オプション",
-      "general": {
-        "title": "一般",
-        "description": "基本的なアプリケーション設定"
-      },
-      "email": {
-        "title": "メール",
-        "description": "メールサーバーの設定"
-      },
-      "security": {
-        "title": "セキュリティ",
-        "description": "セキュリティおよび認証設定"
-      },
-      "storage": {
-        "title": "ストレージ",
-        "description": "ファイルストレージの設定"
-      },
-      "oidc": {
-        "title": "OpenID Connect (SSO)",
-        "description": "OpenID Connectを使用したSSO認証の設定"
-      }
-    },
-    "fields": {
-      "noDescription": "利用可能な説明はありません",
-      "appLogo": {
-        "title": "アプリケーションロゴ",
-        "description": "アプリケーションのロゴ画像"
-      },
-      "appName": {
-        "title": "アプリケーション名",
-        "description": "ユーザーに表示されるアプリケーション名"
-      },
-      "appDescription": {
-        "title": "アプリケーションの説明",
-        "description": "アプリケーションの簡単な説明"
-      },
-      "showHomePage": {
-        "title": "ホームページを表示",
-        "description": "インストール後にホームページを表示"
-      },
-      "smtpEnabled": {
-        "title": "SMTP有効",
-        "description": "SMTPメール機能を有効または無効にする"
-      },
-      "smtpHost": {
-        "title": "SMTPサーバー",
-        "description": "SMTPサーバーのアドレス"
-      },
-      "smtpPort": {
-        "title": "SMTPポート",
-        "description": "SMTPサーバーのポート"
-      },
-      "smtpUser": {
-        "title": "SMTPユーザー",
-        "description": "SMTP認証用のユーザー名"
-      },
-      "smtpPass": {
-        "title": "SMTPパスワード",
-        "description": "SMTP認証用のパスワード"
-      },
-      "smtpFromName": {
-        "title": "送信者名",
-        "description": "送信されるメールの表示名"
-      },
-      "smtpFromEmail": {
-        "title": "送信者メール",
-        "description": "送信者のメールアドレス"
-      },
-      "maxLoginAttempts": {
-        "title": "最大ログイン試行回数",
-        "description": "ブロックする前の最大ログイン試行回数"
-      },
-      "loginBlockDuration": {
-        "title": "ログインブロック期間",
-        "description": "試行回数超過後のブロック期間（秒単位）"
-      },
-      "passwordMinLength": {
-        "title": "パスワードの最小長",
-        "description": "パスワードに必要な最小文字数"
-      },
-      "passwordResetTokenExpiration": {
-        "title": "リセットトークンの有効期限",
-        "description": "パスワードリセットトークンの有効期間（秒単位）"
-      },
-      "maxFileSize": {
-        "title": "最大ファイルサイズ",
-        "description": "アップロード可能な最大ファイルサイズ"
-      },
-      "maxTotalStoragePerUser": {
-        "title": "ユーザーごとの最大ストレージ",
-        "description": "ユーザーごとの総ストレージ制限"
-      },
-      "firstUserAccess": {
-        "description": "新規ユーザーの初回アクセス設定",
-        "title": "初回ユーザーアクセス"
-      },
-      "serverUrl": {
-        "title": "サーバーURL",
-        "description": "PalmrサーバーのベースURL（例: https://palmr.example.com）"
-      },
-      "oidcEnabled": {
-        "title": "OIDC有効",
-        "description": "OpenID Connectによる認証を有効または無効にする"
-      },
-      "oidcIssuerUrl": {
-        "title": "プロバイダーURL",
-        "description": "OpenID ConnectプロバイダーのURL（例: https://auth.example.com/auth/realms/master）"
-      },
-      "oidcClientId": {
-        "title": "クライアントID",
-        "description": "プロバイダーに登録されたOIDCクライアントの識別子"
-      },
-      "oidcClientSecret": {
-        "title": "クライアントシークレット",
-        "description": "認証用のOIDCクライアントのシークレット"
-      },
-      "oidcRedirectUri": {
-        "title": "リダイレクトURI",
-        "description": "認証後にユーザーがリダイレクトされるURI。ベースURLのみを入力してください（例: https://mysite.com）。パス /api/auth/oidc/callback は自動的に追加されます。"
-      },
-      "oidcScope": {
-        "title": "スコープ",
-        "description": "要求するOIDCスコープ（例: openid profile email）"
-      },
-      "oidcAutoRegister": {
-        "title": "自動登録",
-        "description": "初回ログイン時に存在しないユーザーを自動的に登録"
-      },
-      "oidcAdminEmailDomains": {
-        "title": "管理者メールドメイン",
-        "description": "自動的に管理者権限が付与されるメールドメイン"
-      },
-      "testSmtp": {
-        "title": "SMTP接続テスト",
-        "description": "SMTP設定が有効かどうかをテストします"
-      },
-      "smtpNoAuth": {
-        "title": "認証なし",
-        "description": "ユーザー名/パスワードを必要としない内部サーバー用（認証フィールドを非表示）"
-      },
-      "smtpSecure": {
-        "title": "接続セキュリティ",
-        "description": "SMTP接続セキュリティ方式 - 自動（推奨）、SSL、STARTTLS、または なし（安全でない）",
-        "options": {
-          "auto": "自動（推奨）",
-          "ssl": "SSL（ポート465）",
-          "tls": "STARTTLS（ポート587）",
-          "none": "なし（安全でない）"
-        }
-      }
-    },
-    "buttons": {
-      "save": "{group}を保存",
-      "testSmtp": "接続テスト",
-      "testing": "テスト中..."
-    },
-    "errors": {
-      "loadFailed": "設定の読み込みに失敗しました",
-      "updateFailed": "設定の更新に失敗しました"
-    },
-    "messages": {
-      "noChanges": "保存する変更はありません",
-      "updateSuccess": "{group}の設定が正常に更新されました",
-      "smtpTestFailed": "SMTP接続に失敗しました: {error}",
-      "smtpTestGenericError": "SMTP接続のテストに失敗しました。設定を確認して再度お試しください。",
-      "smtpTestSuccess": "SMTP接続に成功しました！メール設定は正常に動作しています。",
-      "smtpMissingAuth": "SMTPユーザー名とパスワードを入力するか、「認証なし」オプションを有効にしてください。",
-      "smtpMissingHostPort": "テストの前にSMTPホストとポートを入力してください。",
-      "smtpNotEnabled": "SMTPが有効になっていません。最初にSMTPを有効にしてください。"
-    },
-    "title": "設定",
-    "breadcrumb": "設定",
-    "pageTitle": "設定",
-    "tooltips": {
-      "oidcScope": "スコープを入力してEnterキーを押して追加",
-      "oidcAdminEmailDomains": "ドメインを入力してEnterキーを押して追加",
-      "testSmtp": "フォームに現在入力されている値でSMTP接続をテストします。変更を永続化するには、テスト後に設定を保存することを忘れないでください。",
-      "defaultPlaceholder": "入力してEnterキーを押してください"
-    },
-    "redirectUri": {
-      "placeholder": "https://mysite.com",
-      "previewLabel": "保存される完全なURL:"
-    }
-  },
-  "share": {
-    "errors": {
-      "invalidPassword": "無効なパスワードです。もう一度お試しください。",
-      "loadFailed": "共有の読み込みに失敗しました",
-      "downloadFailed": "ファイルのダウンロードに失敗しました"
-    },
-    "messages": {
-      "downloadStarted": "ダウンロードが開始されました"
-    },
-    "password": {
-      "title": "パスワード保護された共有",
-      "protected": "この共有はパスワードで保護されています",
-      "incorrect": "パスワードが正しくありません。もう一度お試しください。",
-      "label": "パスワード",
-      "placeholder": "共有のパスワードを入力してください",
-      "submit": "送信"
-    },
-    "details": {
-      "untitled": "無題",
-      "created": "作成日: {date}",
-      "expires": "有効期限: {date}"
-    },
-    "notFound": {
-      "title": "共有が見つかりません",
-      "description": "この共有は削除されたか、期限が切れている可能性があります。"
-    },
-    "pageTitle": "共有",
-    "downloadAll": "すべてダウンロード"
-  },
-  "shareActions": {
-    "deleteTitle": "共有を削除",
-    "deleteConfirmation": "この共有を削除しますか？この操作は元に戻すことができません。",
-    "editTitle": "共有を編集",
-    "nameLabel": "共有名",
-    "descriptionLabel": "説明",
-    "descriptionPlaceholder": "説明を入力してください（任意）",
-    "expirationLabel": "有効期限",
-    "expirationPlaceholder": "YYYY/MM/DD HH:MM",
-    "maxViewsLabel": "最大表示回数",
-    "maxViewsPlaceholder": "無制限の場合は空白にしてください",
-    "passwordProtection": "パスワード保護",
-    "passwordLabel": "パスワード",
-    "passwordPlaceholder": "パスワードを入力してください",
-    "newPasswordLabel": "新しいパスワード（現在のパスワードを保持する場合は空白）",
-    "newPasswordPlaceholder": "新しいパスワードを入力してください",
-    "manageFilesTitle": "ファイル管理",
-    "manageRecipientsTitle": "受信者管理",
-    "editSuccess": "共有が正常に更新されました",
-    "editError": "共有の更新に失敗しました",
-    "bulkDeleteConfirmation": "{count, plural, =1 {1つの共有} other {#つの共有}}を削除してもよろしいですか？この操作は元に戻せません。",
-    "bulkDeleteTitle": "選択した共有を削除"
-  },
-  "shareDetails": {
-    "title": "共有詳細",
-    "subtitle": "この共有に関する詳細情報",
-    "basicInfo": "基本情報",
-    "name": "名前",
-    "description": "説明",
-    "noDescription": "説明が提供されていません",
-    "untitled": "無題",
-    "shareLink": "共有リンク",
-    "editLink": "リンクを編集",
-    "generateLink": "リンクを生成",
-    "noLink": "まだリンクが生成されていません",
-    "copyLink": "リンクをコピー",
-    "openLink": "新しいタブで開く",
-    "linkCopied": "リンクがクリップボードにコピーされました",
-    "views": "表示回数",
-    "dates": "日付",
-    "created": "作成日",
-    "expires": "有効期限",
-    "never": "なし",
-    "security": "セキュリティ",
-    "passwordProtected": "パスワード保護",
-    "publicAccess": "パブリックアクセス",
-    "maxViews": "最大表示回数:",
-    "files": "ファイル",
-    "recipients": "受信者",
-    "notAvailable": "該当なし",
-    "invalidDate": "無効な日付",
-    "loadError": "共有詳細の読み込みに失敗しました",
-    "editSecurity": "セキュリティを編集",
-    "editExpiration": "期限を編集"
-  },
-  "shareManager": {
-    "deleteSuccess": "共有が正常に削除されました",
-    "deleteError": "共有の削除に失敗しました",
-    "updateSuccess": "共有が正常に更新されました",
-    "updateError": "共有の更新に失敗しました",
-    "filesUpdateSuccess": "ファイルが正常に更新されました",
-    "filesUpdateError": "ファイルの更新に失敗しました",
-    "recipientsUpdateSuccess": "受信者が正常に更新されました",
-    "recipientsUpdateError": "受信者の更新に失敗しました",
-    "linkGenerateSuccess": "共有リンクが正常に生成されました",
-    "linkGenerateError": "共有リンクの生成に失敗しました",
-    "notifyLoading": "通知を送信中...",
-    "notifySuccess": "受信者に正常に通知しました",
-    "notifyError": "受信者への通知に失敗しました",
-    "bulkDeleteError": "共有の削除に失敗しました",
-    "bulkDeleteLoading": "{count, plural, =1 {1つの共有} other {#つの共有}}を削除中...",
-    "bulkDeleteSuccess": "{count, plural, =1 {1つの共有が正常に削除されました} other {#つの共有が正常に削除されました}}",
-    "securityUpdateError": "セキュリティ設定の更新に失敗しました",
-    "expirationUpdateError": "有効期限設定の更新に失敗しました",
-    "securityUpdateSuccess": "セキュリティ設定が正常に更新されました",
-    "expirationUpdateSuccess": "有効期限設定が正常に更新されました",
-    "creatingZip": "zipファイルの作成...",
-    "defaultShareName": "共有",
-    "downloadError": "共有ファイルをダウンロードできませんでした",
-    "downloadSuccess": "ダウンロードは正常に開始されました",
-    "multipleSharesZipName": "{count} _shares_files.zip",
-    "noFilesToDownload": "ダウンロードできるファイルはありません",
-    "singleShareZipName": "{sharename} _files.zip",
-    "zipDownloadError": "zipファイルの作成に失敗しました",
-    "zipDownloadSuccess": "zipファイルは正常にダウンロードされました"
-  },
-  "shares": {
-    "errors": {
-      "loadFailed": "共有の読み込みに失敗しました",
-      "notifyFailed": "受信者への通知に失敗しました",
-      "smtpConfigFailed": "SMTP設定の読み込みに失敗しました"
-    },
-    "messages": {
-      "linkCopied": "リンクがクリップボードにコピーされました",
-      "recipientsNotified": "受信者に正常に通知されました"
-    },
-    "empty": {
-      "message": "まだ共有が作成されていません",
-      "createButton": "共有を作成"
-    },
-    "header": {
-      "title": "マイ共有",
-      "myShares": "マイ共有"
-    },
-    "search": {
-      "title": "すべての共有",
-      "createButton": "共有を作成",
-      "placeholder": "共有を検索...",
-      "results": "全{total}件中{filtered}件が見つかりました"
-    },
-    "pageTitle": "共有"
-  },
-  "sharesTable": {
-    "ariaLabel": "共有テーブル",
-    "never": "なし",
-    "columns": {
-      "name": "名前",
-      "description": "説明",
-      "createdAt": "作成日",
-      "expiresAt": "有効期限",
-      "status": "ステータス",
-      "security": "セキュリティ",
-      "files": "ファイル",
-      "recipients": "受信者",
-      "actions": "アクション"
-    },
-    "status": {
-      "neverExpires": "期限なし",
-      "active": "アクティブ",
-      "expired": "期限切れ"
-    },
-    "security": {
-      "protected": "保護済み",
-      "public": "公開"
-    },
-    "filesCount": "ファイル",
-    "recipientsCount": "受信者",
-    "actions": {
-      "menu": "共有アクションメニュー",
-      "edit": "編集",
-      "manageFiles": "ファイル管理",
-      "manageRecipients": "受信者管理",
-      "viewDetails": "詳細表示",
-      "generateLink": "リンク生成",
-      "editLink": "リンク編集",
-      "copyLink": "リンクコピー",
-      "notifyRecipients": "受信者に通知",
-      "delete": "削除",
-      "downloadShareFiles": "すべてのファイルをダウンロードします"
-    },
-    "bulkActions": {
-      "delete": "削除",
-      "selected": "{count, plural, =1 {1つの共有が選択されました} other {#つの共有が選択されました}}",
-      "actions": "アクション",
-      "download": "選択したダウンロード"
-    },
-    "selectAll": "すべて選択",
-    "selectShare": "共有{shareName}を選択"
-  },
-  "storageUsage": {
-    "title": "ストレージ使用量",
-    "ariaLabel": "ストレージ使用状況のプログレスバー",
-    "used": "使用済み",
-    "available": "利用可能",
-    "loading": "読み込み中...",
-    "retry": "再試行",
-    "errors": {
-      "title": "ストレージ情報が利用できません",
-      "detectionFailed": "ディスク容量を検出できません。システム設定の問題または権限が不足している可能性があります。",
-      "serverError": "ストレージ情報の取得中にサーバーエラーが発生しました。後でもう一度お試しください。",
-      "unknown": "ストレージ情報の読み込み中に予期せぬエラーが発生しました。"
-    }
-  },
-  "theme": {
-    "toggle": "テーマを切り替える",
-    "light": "ライト",
-    "dark": "ダーク",
-    "system": "システム"
-  },
-  "uploadFile": {
-    "title": "ファイルをアップロード",
-    "selectFile": "ファイルを選択するにはクリックしてください",
-    "preview": "プレビュー",
-    "uploadProgress": "アップロードの進行状況",
-    "upload": "アップロード",
-    "success": "ファイルが正常にアップロードされました",
-    "error": "ファイルのアップロードに失敗しました",
-    "fileSizeExceeded": "ファイルサイズが制限値 {maxsizemb}MB を超えています。",
-    "insufficientStorage": "ストレージ容量が不足しています。利用可能な容量は {availablespace}MB です。",
-    "unauthorized": "権限がありません: このリソースにアクセスするには有効なトークンが必要です。",
-    "selectMultipleFiles": "複数のファイルを選択するにはクリック",
-    "finish": "完了",
-    "confirmCancel": {
-      "warning": "今閉じるとアップロードがキャンセルされ、進行状況が失われます。",
-      "continue": "アップロードを続行",
-      "title": "アップロードをキャンセル",
-      "messageMultiple": "{count}件のアップロードが進行中です。",
-      "messageSingle": "1件のアップロードが進行中です。",
-      "cancel": "アップロードをキャンセル"
-    },
-    "multipleTitle": "複数ファイルをアップロード",
-    "startUploads": "アップロードを開始",
-    "retry": "再試行",
-    "allSuccess": "{count, plural, =1 {ファイルがアップロードされました} other {#個のファイルがアップロードされました}}",
-    "partialSuccess": "{success}個のファイルがアップロードされ、{error}個が失敗しました",
-    "dragAndDrop": "またはここにファイルをドラッグ＆ドロップ"
-  },
-  "users": {
-    "modes": {
-      "create": "作成",
-      "edit": "編集"
-    },
-    "errors": {
-      "loadFailed": "ユーザーの読み込みに失敗しました",
-      "submitFailed": "ユーザーの{mode}に失敗しました",
-      "deleteFailed": "ユーザーの削除に失敗しました",
-      "statusUpdateFailed": "ユーザー状態の更新に失敗しました"
-    },
-    "messages": {
-      "createSuccess": "ユーザーが正常に作成されました",
-      "updateSuccess": "ユーザーが正常に更新されました",
-      "deleteSuccess": "ユーザーが正常に削除されました",
-      "activateSuccess": "ユーザーが正常にアクティブ化されました",
-      "deactivateSuccess": "ユーザーが正常に非アクティブ化されました"
-    },
-    "actions": {
-      "edit": "編集",
-      "activate": "アクティブ化",
-      "deactivate": "非アクティブ化",
-      "delete": "削除"
-    },
-    "delete": {
-      "title": "ユーザー削除の確認",
-      "confirmation": "{firstName} {lastName} を削除してもよろしいですか？この操作は元に戻せません。",
-      "confirm": "ユーザーを削除"
-    },
-    "form": {
-      "titleCreate": "新しいユーザーを追加",
-      "titleEdit": "ユーザーを編集",
-      "firstName": "名",
-      "lastName": "姓",
-      "username": "ユーザー名",
-      "email": "メール",
-      "password": "パスワード",
-      "newPassword": "新しいパスワード（任意）",
-      "passwordPlaceholder": "現在のパスワードを保持する場合は空白のままにする",
-      "role": "役割",
-      "roleUser": "ユーザー",
-      "roleAdmin": "管理者",
-      "create": "作成",
-      "save": "保存"
-    },
-    "status": {
-      "title": "状態変更の確認",
-      "confirmation": "{firstName} {lastName} を{action}してもよろしいですか？",
-      "activate": "アクティブ化",
-      "deactivate": "非アクティブ化",
-      "user": "ユーザー"
-    },
-    "header": {
-      "title": "ユーザー管理",
-      "addUser": "ユーザーを追加",
-      "management": "ユーザー管理"
-    },
-    "table": {
-      "user": "ユーザー",
-      "email": "メール",
-      "status": "状態",
-      "role": "役割",
-      "actions": "操作",
-      "active": "アクティブ",
-      "inactive": "非アクティブ",
-      "admin": "管理者",
-      "userr": "ユーザー"
-    }
-  },
-  "validation": {
-    "invalidEmail": "無効なメールアドレスです",
-    "passwordMinLength": "パスワードは最低6文字必要です",
-    "firstNameRequired": "名は必須です",
-    "lastNameRequired": "姓は必須です",
-    "usernameLength": "ユーザー名は最低3文字必要です",
-    "usernameSpaces": "ユーザー名にスペースは使用できません",
-    "passwordLength": "パスワードは最低8文字必要です",
-    "passwordsMatch": "パスワードが一致しません",
-    "emailRequired": "メールアドレスは必須です",
-    "emailOrUsernameRequired": "メールアドレスまたはユーザー名は必須です",
-    "passwordRequired": "パスワードは必須です",
-    "nameRequired": "名前は必須です",
-    "required": "このフィールドは必須です"
-  },
-  "shareFile": {
-    "title": "ファイル共有",
-    "linkTitle": "リンク生成",
-    "nameLabel": "共有名",
-    "namePlaceholder": "共有名を入力してください",
-    "descriptionLabel": "説明",
-    "descriptionPlaceholder": "説明を入力してください（任意）",
-    "expirationLabel": "有効期限",
-    "expirationPlaceholder": "YYYY/MM/DD HH:MM",
-    "maxViewsLabel": "最大表示回数",
-    "maxViewsPlaceholder": "無制限の場合は空白にしてください",
-    "passwordProtection": "パスワード保護",
-    "passwordLabel": "パスワード",
-    "passwordPlaceholder": "パスワードを入力してください",
-    "linkDescription": "ファイルを共有するためのカスタムリンクを生成する",
-    "aliasLabel": "リンクエイリアス",
-    "aliasPlaceholder": "カスタムエイリアスを入力してください",
-    "linkReady": "共有リンクの準備ができました：",
-    "createShare": "共有を作成",
-    "generateLink": "リンク生成",
-    "copyLink": "リンクコピー"
-  },
-  "bulkDownload": {
-    "title": "一括ダウンロード",
-    "zipNameLabel": "ZIPファイル名",
-    "zipNamePlaceholder": "ファイル名を入力してください",
-    "description": "{count, plural, =1 {1つのファイルが圧縮されます} other {#つのファイルが圧縮されます}}",
-    "download": "ZIPをダウンロード"
-  },
-  "deleteConfirmation": {
-    "filesToDelete": "削除するファイル",
-    "sharesToDelete": "削除される共有"
-  },
-  "shareMultipleFiles": {
-    "title": "複数ファイルを共有",
-    "shareNameLabel": "共有名",
-    "shareNamePlaceholder": "共有名を入力してください",
-    "descriptionLabel": "説明",
-    "descriptionPlaceholder": "説明を入力してください（任意）",
-    "filesToShare": "共有するファイル",
-    "files": "ファイル",
-    "totalSize": "合計サイズ",
-    "creating": "作成中...",
-    "create": "共有を作成"
-  },
-  "shareSecurity": {
-    "subtitle": "この共有のパスワード保護とセキュリティオプションを設定",
-    "info": {
-      "title": "仕組み:",
-      "withoutPassword": "リンクを持つ誰でもパスワードなしでこの共有にアクセスできます。",
-      "withPassword": "ユーザーはこの共有にアクセスするためにパスワードを入力する必要があります。"
-    },
-    "existingPasswordMessage": "この共有には既にパスワードが設定されています。更新したい場合は、下のフィールドに新しいパスワードを入力して保存してください。",
-    "passwordProtection": "パスワード保護",
-    "error": {
-      "updateFailed": "セキュリティ設定の更新に失敗しました"
-    },
-    "passwordRequirements": {
-      "title": "パスワード要件:",
-      "minLength": "2文字以上"
-    },
-    "newPassword": "新しいパスワード",
-    "success": {
-      "passwordUpdated": "パスワードが正常に更新されました",
-      "passwordRemoved": "パスワード保護が正常に削除されました",
-      "passwordSet": "パスワード保護が正常に有効化されました"
-    },
-    "password": "パスワード",
-    "validation": {
-      "passwordRequired": "パスワードが必要です",
-      "passwordTooShort": "パスワードは2文字以上である必要があります"
-    },
-    "currentStatus": "現在のステータス",
-    "passwordPlaceholder": "安全なパスワードを入力してください",
-    "title": "共有セキュリティ設定"
-  },
-  "shareExpiration": {
-    "neverExpires": "期限なし",
-    "success": {
-      "expirationUpdated": "有効期限が正常に更新されました",
-      "expirationRemoved": "有効期限が正常に削除されました - 共有は永続的になりました",
-      "expirationSet": "有効期限が正常に設定されました"
-    },
-    "info": {
-      "canBeChanged": "有効期限はいつでも変更または削除できます",
-      "willBeInaccessible": "この日時以降、共有にアクセスできなくなります",
-      "noExpiration": "この共有は期限がなく、無期限でアクセス可能です。",
-      "title": "有効期限について:"
-    },
-    "enableExpiration": "有効期限を有効にする",
-    "title": "共有有効期限設定",
-    "subtitle": "この共有の期限を設定",
-    "validation": {
-      "dateMustBeFuture": "有効期限は未来の日時である必要があります",
-      "dateRequired": "有効期限を選択してください"
-    },
-    "currentStatus": "現在のステータス",
-    "error": {
-      "updateFailed": "有効期限設定の更新に失敗しました"
-    },
-    "expires": "期限:",
-    "expirationDate": "有効期限"
-  },
-  "auth": {
-    "errors": {
-      "account_inactive": "アカウントが無効です。管理者にお問い合わせください。",
-      "registration_disabled": "SSOによる登録が無効になっています。",
-      "token_expired": "トークンの有効期限が切れました。もう一度お試しください。",
-      "config_error": "設定エラー。サポートにお問い合わせください。",
-      "auth_failed": "認証に失敗しました。もう一度お試しください。"
     }
   },
   "reverseShares": {
@@ -1447,5 +957,598 @@
       }
     },
     "defaultLinkName": "受信したファイル"
+  },
+  "searchBar": {
+    "placeholder": "ファイルを検索...",
+    "results": "全{total}件中{filtered}件が見つかりました"
+  },
+  "settings": {
+    "groups": {
+      "defaultDescription": "構成オプション",
+      "general": {
+        "title": "一般",
+        "description": "基本的なアプリケーション設定"
+      },
+      "email": {
+        "title": "メール",
+        "description": "メールサーバーの設定"
+      },
+      "security": {
+        "title": "セキュリティ",
+        "description": "セキュリティおよび認証設定"
+      },
+      "storage": {
+        "title": "ストレージ",
+        "description": "ファイルストレージの設定"
+      },
+      "oidc": {
+        "title": "OpenID Connect (SSO)",
+        "description": "OpenID Connectを使用したSSO認証の設定"
+      }
+    },
+    "fields": {
+      "noDescription": "利用可能な説明はありません",
+      "appLogo": {
+        "title": "アプリケーションロゴ",
+        "description": "アプリケーションのロゴ画像"
+      },
+      "appName": {
+        "title": "アプリケーション名",
+        "description": "ユーザーに表示されるアプリケーション名"
+      },
+      "appDescription": {
+        "title": "アプリケーションの説明",
+        "description": "アプリケーションの簡単な説明"
+      },
+      "showHomePage": {
+        "title": "ホームページを表示",
+        "description": "インストール後にホームページを表示"
+      },
+      "smtpEnabled": {
+        "title": "SMTP有効",
+        "description": "SMTPメール機能を有効または無効にする"
+      },
+      "smtpHost": {
+        "title": "SMTPサーバー",
+        "description": "SMTPサーバーのアドレス"
+      },
+      "smtpPort": {
+        "title": "SMTPポート",
+        "description": "SMTPサーバーのポート"
+      },
+      "smtpUser": {
+        "title": "SMTPユーザー",
+        "description": "SMTP認証用のユーザー名"
+      },
+      "smtpPass": {
+        "title": "SMTPパスワード",
+        "description": "SMTP認証用のパスワード"
+      },
+      "smtpFromName": {
+        "title": "送信者名",
+        "description": "送信されるメールの表示名"
+      },
+      "smtpFromEmail": {
+        "title": "送信者メール",
+        "description": "送信者のメールアドレス"
+      },
+      "maxLoginAttempts": {
+        "title": "最大ログイン試行回数",
+        "description": "ブロックする前の最大ログイン試行回数"
+      },
+      "loginBlockDuration": {
+        "title": "ログインブロック期間",
+        "description": "試行回数超過後のブロック期間（秒単位）"
+      },
+      "passwordMinLength": {
+        "title": "パスワードの最小長",
+        "description": "パスワードに必要な最小文字数"
+      },
+      "passwordResetTokenExpiration": {
+        "title": "リセットトークンの有効期限",
+        "description": "パスワードリセットトークンの有効期間（秒単位）"
+      },
+      "maxFileSize": {
+        "title": "最大ファイルサイズ",
+        "description": "アップロード可能な最大ファイルサイズ"
+      },
+      "maxTotalStoragePerUser": {
+        "title": "ユーザーごとの最大ストレージ",
+        "description": "ユーザーごとの総ストレージ制限"
+      },
+      "firstUserAccess": {
+        "description": "新規ユーザーの初回アクセス設定",
+        "title": "初回ユーザーアクセス"
+      },
+      "serverUrl": {
+        "title": "サーバーURL",
+        "description": "PalmrサーバーのベースURL（例: https://palmr.example.com）"
+      },
+      "testSmtp": {
+        "title": "SMTP接続テスト",
+        "description": "SMTP設定が有効かどうかをテストします"
+      },
+      "smtpNoAuth": {
+        "title": "認証なし",
+        "description": "ユーザー名/パスワードを必要としない内部サーバー用（認証フィールドを非表示）"
+      },
+      "smtpSecure": {
+        "title": "接続セキュリティ",
+        "description": "SMTP接続セキュリティ方式 - 自動（推奨）、SSL、STARTTLS、または なし（安全でない）",
+        "options": {
+          "auto": "自動（推奨）",
+          "ssl": "SSL（ポート465）",
+          "tls": "STARTTLS（ポート587）",
+          "none": "なし（安全でない）"
+        }
+      },
+      "smtpTrustSelfSigned": {
+        "title": "自己署名証明書を信頼",
+        "description": "自己署名SSL/TLS証明書を信頼するように設定します（開発環境で便利）"
+      }
+    },
+    "buttons": {
+      "save": "{group}を保存",
+      "testSmtp": "接続テスト",
+      "testing": "テスト中..."
+    },
+    "errors": {
+      "loadFailed": "設定の読み込みに失敗しました",
+      "updateFailed": "設定の更新に失敗しました"
+    },
+    "messages": {
+      "noChanges": "保存する変更はありません",
+      "updateSuccess": "{group}の設定が正常に更新されました",
+      "smtpTestFailed": "SMTP接続に失敗しました: {error}",
+      "smtpTestGenericError": "SMTP接続のテストに失敗しました。設定を確認して再度お試しください。",
+      "smtpTestSuccess": "SMTP接続に成功しました！メール設定は正常に動作しています。",
+      "smtpMissingAuth": "SMTPユーザー名とパスワードを入力するか、「認証なし」オプションを有効にしてください。",
+      "smtpMissingHostPort": "テストの前にSMTPホストとポートを入力してください。",
+      "smtpNotEnabled": "SMTPが有効になっていません。最初にSMTPを有効にしてください。"
+    },
+    "title": "設定",
+    "breadcrumb": "設定",
+    "pageTitle": "設定",
+    "tooltips": {
+      "testSmtp": "フォームに現在入力されている値でSMTP接続をテストします。変更を永続化するには、テスト後に設定を保存することを忘れないでください。",
+      "defaultPlaceholder": "入力してEnterキーを押してください"
+    },
+    "redirectUri": {
+      "placeholder": "https://mysite.com",
+      "previewLabel": "保存される完全なURL:"
+    }
+  },
+  "share": {
+    "errors": {
+      "invalidPassword": "無効なパスワードです。もう一度お試しください。",
+      "loadFailed": "共有の読み込みに失敗しました",
+      "downloadFailed": "ファイルのダウンロードに失敗しました"
+    },
+    "messages": {
+      "downloadStarted": "ダウンロードが開始されました"
+    },
+    "password": {
+      "title": "パスワード保護された共有",
+      "protected": "この共有はパスワードで保護されています",
+      "incorrect": "パスワードが正しくありません。もう一度お試しください。",
+      "label": "パスワード",
+      "placeholder": "共有のパスワードを入力してください",
+      "submit": "送信"
+    },
+    "details": {
+      "untitled": "無題",
+      "created": "作成日: {date}",
+      "expires": "有効期限: {date}"
+    },
+    "notFound": {
+      "title": "共有が見つかりません",
+      "description": "この共有は削除されたか、期限が切れている可能性があります。"
+    },
+    "pageTitle": "共有",
+    "downloadAll": "すべてダウンロード"
+  },
+  "shareActions": {
+    "deleteTitle": "共有を削除",
+    "deleteConfirmation": "この共有を削除しますか？この操作は元に戻すことができません。",
+    "editTitle": "共有を編集",
+    "nameLabel": "共有名",
+    "descriptionLabel": "説明",
+    "descriptionPlaceholder": "説明を入力してください（任意）",
+    "expirationLabel": "有効期限",
+    "expirationPlaceholder": "YYYY/MM/DD HH:MM",
+    "maxViewsLabel": "最大表示回数",
+    "maxViewsPlaceholder": "無制限の場合は空白にしてください",
+    "passwordProtection": "パスワード保護",
+    "passwordLabel": "パスワード",
+    "passwordPlaceholder": "パスワードを入力してください",
+    "newPasswordLabel": "新しいパスワード（現在のパスワードを保持する場合は空白）",
+    "newPasswordPlaceholder": "新しいパスワードを入力してください",
+    "manageFilesTitle": "ファイル管理",
+    "manageRecipientsTitle": "受信者管理",
+    "editSuccess": "共有が正常に更新されました",
+    "editError": "共有の更新に失敗しました",
+    "bulkDeleteConfirmation": "{count, plural, =1 {1つの共有} other {#つの共有}}を削除してもよろしいですか？この操作は元に戻せません。",
+    "bulkDeleteTitle": "選択した共有を削除"
+  },
+  "shareDetails": {
+    "title": "共有詳細",
+    "subtitle": "この共有に関する詳細情報",
+    "basicInfo": "基本情報",
+    "name": "名前",
+    "description": "説明",
+    "noDescription": "説明が提供されていません",
+    "untitled": "無題",
+    "shareLink": "共有リンク",
+    "editLink": "リンクを編集",
+    "generateLink": "リンクを生成",
+    "noLink": "まだリンクが生成されていません",
+    "copyLink": "リンクをコピー",
+    "openLink": "新しいタブで開く",
+    "linkCopied": "リンクがクリップボードにコピーされました",
+    "views": "表示回数",
+    "dates": "日付",
+    "created": "作成日",
+    "expires": "有効期限",
+    "never": "なし",
+    "security": "セキュリティ",
+    "passwordProtected": "パスワード保護",
+    "publicAccess": "パブリックアクセス",
+    "maxViews": "最大表示回数:",
+    "files": "ファイル",
+    "recipients": "受信者",
+    "notAvailable": "該当なし",
+    "invalidDate": "無効な日付",
+    "loadError": "共有詳細の読み込みに失敗しました",
+    "editSecurity": "セキュリティを編集",
+    "editExpiration": "期限を編集"
+  },
+  "shareExpiration": {
+    "neverExpires": "期限なし",
+    "success": {
+      "expirationUpdated": "有効期限が正常に更新されました",
+      "expirationRemoved": "有効期限が正常に削除されました - 共有は永続的になりました",
+      "expirationSet": "有効期限が正常に設定されました"
+    },
+    "info": {
+      "canBeChanged": "有効期限はいつでも変更または削除できます",
+      "willBeInaccessible": "この日時以降、共有にアクセスできなくなります",
+      "noExpiration": "この共有は期限がなく、無期限でアクセス可能です。",
+      "title": "有効期限について:"
+    },
+    "enableExpiration": "有効期限を有効にする",
+    "title": "共有有効期限設定",
+    "subtitle": "この共有の期限を設定",
+    "validation": {
+      "dateMustBeFuture": "有効期限は未来の日時である必要があります",
+      "dateRequired": "有効期限を選択してください"
+    },
+    "currentStatus": "現在のステータス",
+    "error": {
+      "updateFailed": "有効期限設定の更新に失敗しました"
+    },
+    "expires": "期限:",
+    "expirationDate": "有効期限"
+  },
+  "shareFile": {
+    "title": "ファイル共有",
+    "linkTitle": "リンク生成",
+    "nameLabel": "共有名",
+    "namePlaceholder": "共有名を入力してください",
+    "descriptionLabel": "説明",
+    "descriptionPlaceholder": "説明を入力してください（任意）",
+    "expirationLabel": "有効期限",
+    "expirationPlaceholder": "YYYY/MM/DD HH:MM",
+    "maxViewsLabel": "最大表示回数",
+    "maxViewsPlaceholder": "無制限の場合は空白にしてください",
+    "passwordProtection": "パスワード保護",
+    "passwordLabel": "パスワード",
+    "passwordPlaceholder": "パスワードを入力してください",
+    "linkDescription": "ファイルを共有するためのカスタムリンクを生成する",
+    "aliasLabel": "リンクエイリアス",
+    "aliasPlaceholder": "カスタムエイリアスを入力してください",
+    "linkReady": "共有リンクの準備ができました：",
+    "createShare": "共有を作成",
+    "generateLink": "リンク生成",
+    "copyLink": "リンクコピー"
+  },
+  "shareManager": {
+    "deleteSuccess": "共有が正常に削除されました",
+    "deleteError": "共有の削除に失敗しました",
+    "updateSuccess": "共有が正常に更新されました",
+    "updateError": "共有の更新に失敗しました",
+    "filesUpdateSuccess": "ファイルが正常に更新されました",
+    "filesUpdateError": "ファイルの更新に失敗しました",
+    "recipientsUpdateSuccess": "受信者が正常に更新されました",
+    "recipientsUpdateError": "受信者の更新に失敗しました",
+    "linkGenerateSuccess": "共有リンクが正常に生成されました",
+    "linkGenerateError": "共有リンクの生成に失敗しました",
+    "notifyLoading": "通知を送信中...",
+    "notifySuccess": "受信者に正常に通知しました",
+    "notifyError": "受信者への通知に失敗しました",
+    "bulkDeleteError": "共有の削除に失敗しました",
+    "bulkDeleteLoading": "{count, plural, =1 {1つの共有} other {#つの共有}}を削除中...",
+    "bulkDeleteSuccess": "{count, plural, =1 {1つの共有が正常に削除されました} other {#つの共有が正常に削除されました}}",
+    "securityUpdateError": "セキュリティ設定の更新に失敗しました",
+    "expirationUpdateError": "有効期限設定の更新に失敗しました",
+    "securityUpdateSuccess": "セキュリティ設定が正常に更新されました",
+    "expirationUpdateSuccess": "有効期限設定が正常に更新されました",
+    "creatingZip": "zipファイルの作成...",
+    "defaultShareName": "共有",
+    "downloadError": "共有ファイルをダウンロードできませんでした",
+    "downloadSuccess": "ダウンロードは正常に開始されました",
+    "multipleSharesZipName": "{count} _shares_files.zip",
+    "noFilesToDownload": "ダウンロードできるファイルはありません",
+    "singleShareZipName": "{sharename} _files.zip",
+    "zipDownloadError": "zipファイルの作成に失敗しました",
+    "zipDownloadSuccess": "zipファイルは正常にダウンロードされました"
+  },
+  "shareMultipleFiles": {
+    "title": "複数ファイルを共有",
+    "shareNameLabel": "共有名",
+    "shareNamePlaceholder": "共有名を入力してください",
+    "descriptionLabel": "説明",
+    "descriptionPlaceholder": "説明を入力してください（任意）",
+    "filesToShare": "共有するファイル",
+    "files": "ファイル",
+    "totalSize": "合計サイズ",
+    "creating": "作成中...",
+    "create": "共有を作成"
+  },
+  "shareSecurity": {
+    "subtitle": "この共有のパスワード保護とセキュリティオプションを設定",
+    "info": {
+      "title": "仕組み:",
+      "withoutPassword": "リンクを持つ誰でもパスワードなしでこの共有にアクセスできます。",
+      "withPassword": "ユーザーはこの共有にアクセスするためにパスワードを入力する必要があります。"
+    },
+    "existingPasswordMessage": "この共有には既にパスワードが設定されています。更新したい場合は、下のフィールドに新しいパスワードを入力して保存してください。",
+    "passwordProtection": "パスワード保護",
+    "error": {
+      "updateFailed": "セキュリティ設定の更新に失敗しました"
+    },
+    "passwordRequirements": {
+      "title": "パスワード要件:",
+      "minLength": "2文字以上"
+    },
+    "newPassword": "新しいパスワード",
+    "success": {
+      "passwordUpdated": "パスワードが正常に更新されました",
+      "passwordRemoved": "パスワード保護が正常に削除されました",
+      "passwordSet": "パスワード保護が正常に有効化されました"
+    },
+    "password": "パスワード",
+    "validation": {
+      "passwordRequired": "パスワードが必要です",
+      "passwordTooShort": "パスワードは2文字以上である必要があります"
+    },
+    "currentStatus": "現在のステータス",
+    "passwordPlaceholder": "安全なパスワードを入力してください",
+    "title": "共有セキュリティ設定"
+  },
+  "shares": {
+    "errors": {
+      "loadFailed": "共有の読み込みに失敗しました",
+      "notifyFailed": "受信者への通知に失敗しました",
+      "smtpConfigFailed": "SMTP設定の読み込みに失敗しました"
+    },
+    "messages": {
+      "linkCopied": "リンクがクリップボードにコピーされました",
+      "recipientsNotified": "受信者に正常に通知されました"
+    },
+    "empty": {
+      "message": "まだ共有が作成されていません",
+      "createButton": "共有を作成"
+    },
+    "header": {
+      "title": "マイ共有",
+      "myShares": "マイ共有"
+    },
+    "search": {
+      "title": "すべての共有",
+      "createButton": "共有を作成",
+      "placeholder": "共有を検索...",
+      "results": "全{total}件中{filtered}件が見つかりました"
+    },
+    "pageTitle": "共有"
+  },
+  "sharesTable": {
+    "ariaLabel": "共有テーブル",
+    "never": "なし",
+    "columns": {
+      "name": "名前",
+      "description": "説明",
+      "createdAt": "作成日",
+      "expiresAt": "有効期限",
+      "status": "ステータス",
+      "security": "セキュリティ",
+      "files": "ファイル",
+      "recipients": "受信者",
+      "actions": "アクション"
+    },
+    "status": {
+      "neverExpires": "期限なし",
+      "active": "アクティブ",
+      "expired": "期限切れ"
+    },
+    "security": {
+      "protected": "保護済み",
+      "public": "公開"
+    },
+    "filesCount": "ファイル",
+    "recipientsCount": "受信者",
+    "actions": {
+      "menu": "共有アクションメニュー",
+      "edit": "編集",
+      "manageFiles": "ファイル管理",
+      "manageRecipients": "受信者管理",
+      "viewDetails": "詳細表示",
+      "generateLink": "リンク生成",
+      "editLink": "リンク編集",
+      "copyLink": "リンクコピー",
+      "notifyRecipients": "受信者に通知",
+      "delete": "削除",
+      "downloadShareFiles": "すべてのファイルをダウンロードします"
+    },
+    "bulkActions": {
+      "delete": "削除",
+      "selected": "{count, plural, =1 {1つの共有が選択されました} other {#つの共有が選択されました}}",
+      "actions": "アクション",
+      "download": "選択したダウンロード"
+    },
+    "selectAll": "すべて選択",
+    "selectShare": "共有{shareName}を選択"
+  },
+  "storageUsage": {
+    "title": "ストレージ使用量",
+    "ariaLabel": "ストレージ使用状況のプログレスバー",
+    "used": "使用済み",
+    "available": "利用可能",
+    "total": "合計",
+    "loading": "読み込み中...",
+    "retry": "再試行",
+    "errors": {
+      "title": "ストレージ情報が利用できません",
+      "detectionFailed": "ディスク容量を検出できません。システム設定の問題または権限が不足している可能性があります。",
+      "serverError": "ストレージ情報の取得中にサーバーエラーが発生しました。後でもう一度お試しください。",
+      "unknown": "ストレージ情報の読み込み中に予期せぬエラーが発生しました。"
+    }
+  },
+  "theme": {
+    "toggle": "テーマを切り替える",
+    "light": "ライト",
+    "dark": "ダーク",
+    "system": "システム"
+  },
+  "uploadFile": {
+    "title": "ファイルをアップロード",
+    "selectFile": "ファイルを選択するにはクリックしてください",
+    "preview": "プレビュー",
+    "uploadProgress": "アップロードの進行状況",
+    "upload": "アップロード",
+    "success": "ファイルが正常にアップロードされました",
+    "error": "ファイルのアップロードに失敗しました",
+    "fileSizeExceeded": "ファイルサイズが制限値 {maxsizemb}MB を超えています。",
+    "insufficientStorage": "ストレージ容量が不足しています。利用可能な容量は {availablespace}MB です。",
+    "unauthorized": "権限がありません: このリソースにアクセスするには有効なトークンが必要です。",
+    "selectMultipleFiles": "複数のファイルを選択するにはクリック",
+    "finish": "完了",
+    "confirmCancel": {
+      "warning": "今閉じるとアップロードがキャンセルされ、進行状況が失われます。",
+      "continue": "アップロードを続行",
+      "title": "アップロードをキャンセル",
+      "messageMultiple": "{count}件のアップロードが進行中です。",
+      "messageSingle": "1件のアップロードが進行中です。",
+      "cancel": "アップロードをキャンセル"
+    },
+    "multipleTitle": "複数ファイルをアップロード",
+    "startUploads": "アップロードを開始",
+    "retry": "再試行",
+    "allSuccess": "{count, plural, =1 {ファイルがアップロードされました} other {#個のファイルがアップロードされました}}",
+    "partialSuccess": "{success}個のファイルがアップロードされ、{error}個が失敗しました",
+    "dragAndDrop": "またはここにファイルをドラッグ＆ドロップ",
+    "globalDrop": {
+      "title": "アップロードするファイルをドロップ",
+      "description": "ファイルをアップロードするにはリリースしてください"
+    },
+    "pasteSuccess": "{count, plural, =1 {画像が貼り付けられ、正常にアップロードされました} other {#個の画像が貼り付けられ、正常にアップロードされました}}"
+  },
+  "users": {
+    "modes": {
+      "create": "作成",
+      "edit": "編集"
+    },
+    "errors": {
+      "loadFailed": "ユーザーの読み込みに失敗しました",
+      "submitFailed": "ユーザーの{mode}に失敗しました",
+      "deleteFailed": "ユーザーの削除に失敗しました",
+      "statusUpdateFailed": "ユーザー状態の更新に失敗しました"
+    },
+    "messages": {
+      "createSuccess": "ユーザーが正常に作成されました",
+      "updateSuccess": "ユーザーが正常に更新されました",
+      "deleteSuccess": "ユーザーが正常に削除されました",
+      "activateSuccess": "ユーザーが正常にアクティブ化されました",
+      "deactivateSuccess": "ユーザーが正常に非アクティブ化されました"
+    },
+    "actions": {
+      "edit": "編集",
+      "activate": "アクティブ化",
+      "deactivate": "非アクティブ化",
+      "delete": "削除"
+    },
+    "delete": {
+      "title": "ユーザー削除の確認",
+      "confirmation": "{firstName} {lastName} を削除してもよろしいですか？この操作は元に戻せません。",
+      "confirm": "ユーザーを削除"
+    },
+    "form": {
+      "titleCreate": "新しいユーザーを追加",
+      "titleEdit": "ユーザーを編集",
+      "firstName": "名",
+      "lastName": "姓",
+      "username": "ユーザー名",
+      "email": "メール",
+      "password": "パスワード",
+      "newPassword": "新しいパスワード（任意）",
+      "passwordPlaceholder": "現在のパスワードを保持する場合は空白のままにする",
+      "role": "役割",
+      "roleUser": "ユーザー",
+      "roleAdmin": "管理者",
+      "create": "作成",
+      "save": "保存"
+    },
+    "status": {
+      "title": "状態変更の確認",
+      "confirmation": "{firstName} {lastName} を{action}してもよろしいですか？",
+      "activate": "アクティブ化",
+      "deactivate": "非アクティブ化",
+      "user": "ユーザー"
+    },
+    "header": {
+      "title": "ユーザー管理",
+      "addUser": "ユーザーを追加",
+      "management": "ユーザー管理"
+    },
+    "table": {
+      "user": "ユーザー",
+      "email": "メール",
+      "status": "状態",
+      "role": "役割",
+      "actions": "操作",
+      "active": "アクティブ",
+      "inactive": "非アクティブ",
+      "admin": "管理者",
+      "userr": "ユーザー"
+    }
+  },
+  "validation": {
+    "invalidEmail": "無効なメールアドレスです",
+    "passwordMinLength": "パスワードは最低6文字必要です",
+    "firstNameRequired": "名は必須です",
+    "lastNameRequired": "姓は必須です",
+    "usernameLength": "ユーザー名は最低3文字必要です",
+    "usernameSpaces": "ユーザー名にスペースは使用できません",
+    "passwordLength": "パスワードは最低8文字必要です",
+    "passwordsMatch": "パスワードが一致しません",
+    "emailRequired": "メールアドレスは必須です",
+    "emailOrUsernameRequired": "メールアドレスまたはユーザー名は必須です",
+    "passwordRequired": "パスワードは必須です",
+    "nameRequired": "名前は必須です",
+    "required": "このフィールドは必須です"
+  },
+  "iconPicker": {
+    "title": "アイコンを選択",
+    "placeholder": "アイコンを選択してください",
+    "searchPlaceholder": "アイコンを検索...",
+    "loadingMore": "アイコンを読み込み中...",
+    "allIconsLoaded": "全{count}個のアイコンを読み込みました",
+    "noIconsFound": "\"{search}\"に一致するアイコンが見つかりませんでした",
+    "tabs": {
+      "all": "すべてのアイコン",
+      "popular": "人気",
+      "auth": "認証プロバイダー"
+    },
+    "stats": "{libraryCount}ライブラリから{iconCount}個のアイコン",
+    "categoryBadge": "{category}（{count}個のアイコン）"
   }
 }

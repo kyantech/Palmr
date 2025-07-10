@@ -20,6 +20,9 @@ make stop
 
 # Clean up containers and images
 make clean
+
+# Update apps version
+make update-version
 ```
 
 ### Available Commands:
@@ -29,5 +32,6 @@ make clean
 - `make logs` - Show application logs
 - `make clean` - Clean up containers and images
 - `make shell` - Access the application container shell
+- `make update-version` - Update all apps version in package.json
 
 All infrastructure scripts are organized in the `./infra/` directory for better project organization.

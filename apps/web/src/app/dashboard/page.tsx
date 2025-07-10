@@ -4,6 +4,7 @@ import { IconLayoutDashboardFilled } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { GlobalDropZone } from "@/components/general/global-drop-zone";
 import { FileManagerLayout } from "@/components/layout/file-manager-layout";
 import { LoadingScreen } from "@/components/layout/loading-screen";
 import { QuickAccessCards } from "./components/quick-access-cards";
@@ -39,39 +40,41 @@ export default function DashboardPage() {
 
   return (
     <ProtectedRoute>
-      <FileManagerLayout
-        breadcrumbLabel={t("dashboard.breadcrumb")}
-        icon={<IconLayoutDashboardFilled className="text-xl" />}
-        showBreadcrumb={false}
-        title={t("dashboard.pageTitle")}
-      >
-        <StorageUsage diskSpace={diskSpace} diskSpaceError={diskSpaceError} onRetry={handleRetryDiskSpace} />
-        <QuickAccessCards />
+      <GlobalDropZone onSuccess={loadDashboardData}>
+        <FileManagerLayout
+          breadcrumbLabel={t("dashboard.breadcrumb")}
+          icon={<IconLayoutDashboardFilled className="text-xl" />}
+          showBreadcrumb={false}
+          title={t("dashboard.pageTitle")}
+        >
+          <StorageUsage diskSpace={diskSpace} diskSpaceError={diskSpaceError} onRetry={handleRetryDiskSpace} />
+          <QuickAccessCards />
 
-        <div className="flex flex-col gap-6">
-          <RecentFiles
+          <div className="flex flex-col gap-6">
+            <RecentFiles
+              fileManager={fileManager}
+              files={recentFiles}
+              isUploadModalOpen={modals.isUploadModalOpen}
+              onOpenUploadModal={modals.onOpenUploadModal}
+            />
+
+            <RecentShares
+              isCreateModalOpen={modals.isCreateModalOpen}
+              shareManager={shareManager}
+              shares={recentShares}
+              onCopyLink={handleCopyLink}
+              onOpenCreateModal={modals.onOpenCreateModal}
+            />
+          </div>
+
+          <DashboardModals
             fileManager={fileManager}
-            files={recentFiles}
-            isUploadModalOpen={modals.isUploadModalOpen}
-            onOpenUploadModal={modals.onOpenUploadModal}
-          />
-
-          <RecentShares
-            isCreateModalOpen={modals.isCreateModalOpen}
+            modals={modals}
             shareManager={shareManager}
-            shares={recentShares}
-            onCopyLink={handleCopyLink}
-            onOpenCreateModal={modals.onOpenCreateModal}
+            onSuccess={loadDashboardData}
           />
-        </div>
-
-        <DashboardModals
-          fileManager={fileManager}
-          modals={modals}
-          shareManager={shareManager}
-          onSuccess={loadDashboardData}
-        />
-      </FileManagerLayout>
+        </FileManagerLayout>
+      </GlobalDropZone>
     </ProtectedRoute>
   );
 }

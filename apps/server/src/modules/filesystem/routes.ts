@@ -1,6 +1,7 @@
-import { FilesystemController } from "./controller";
 import { FastifyInstance, FastifyRequest } from "fastify";
 import { z } from "zod";
+
+import { FilesystemController } from "./controller";
 
 export async function filesystemRoutes(app: FastifyInstance) {
   const filesystemController = new FilesystemController();

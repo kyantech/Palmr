@@ -1,4 +1,132 @@
 {
+  "auth": {
+    "errors": {
+      "account_inactive": "Konto inaktiv. Kontaktieren Sie den Administrator.",
+      "registration_disabled": "Registrierung über SSO ist deaktiviert.",
+      "token_expired": "Token abgelaufen. Versuchen Sie es erneut.",
+      "config_error": "Konfigurationsfehler. Kontaktieren Sie den Support.",
+      "auth_failed": "Authentifizierung fehlgeschlagen. Versuchen Sie es erneut."
+    }
+  },
+  "authProviders": {
+    "title": "Authentifizierungsanbieter",
+    "description": "Externe Authentifizierungsanbieter für SSO konfigurieren",
+    "enabledCount": "{count} aktiviert",
+    "loadingProviders": "Anbieter werden geladen...",
+    "providersConfigured": "{count} Anbieter konfiguriert",
+    "enabledOfTotal": "{enabled} von {total} Anbietern aktiviert",
+    "hideDisabledProviders": "Deaktivierte Anbieter ausblenden",
+    "addProvider": "Anbieter hinzufügen",
+    "addProviderTitle": "Anbieter hinzufügen",
+    "editProvider": "Anbieter bearbeiten",
+    "deleteProvider": "Anbieter löschen",
+    "enabled": "Aktiviert",
+    "disabled": "Deaktiviert",
+    "officialProvider": "Offizieller Anbieter",
+    "dragToReorder": "Zum Neuordnen ziehen",
+    "dragDisabledMessage": "Drag & Drop ist bei gefilterten Anbietern deaktiviert. Zeigen Sie alle Anbieter an, um sie neu zu ordnen.",
+    "dragEnabledMessage": "Ziehen Sie Anbieter, um sie neu zu ordnen. Diese Reihenfolge wird auf der Anmeldeseite angezeigt.",
+    "noProvidersEnabled": "Keine Authentifizierungsanbieter aktiviert",
+    "noProvidersConfigured": "Keine Authentifizierungsanbieter konfiguriert",
+    "form": {
+      "providerName": "Anbietername",
+      "providerNamePlaceholder": "z.B. meinefirma",
+      "displayName": "Anzeigename",
+      "displayNamePlaceholder": "z.B. Meine Firma SSO",
+      "type": "Typ",
+      "typeOidc": "OIDC (OpenID Connect)",
+      "typeOauth2": "OAuth 2.0",
+      "icon": "Symbol",
+      "iconPlaceholder": "Symbol auswählen",
+      "clientId": "Client-ID",
+      "clientIdPlaceholder": "Ihre OAuth-Client-ID",
+      "clientSecret": "Client-Secret",
+      "clientSecretPlaceholder": "Ihr OAuth-Client-Secret",
+      "oauthScopes": "OAuth-Scopes",
+      "scopesPlaceholder": "Scopes eingeben (z.B. openid, profile, email)",
+      "scopesHelpOidc": "Scopes werden basierend auf der Anbieter-URL automatisch vorgeschlagen. Übliche OIDC-Scopes: openid, profile, email, groups",
+      "scopesHelpOauth2": "Scopes werden basierend auf der Anbieter-URL automatisch vorgeschlagen. Übliche OAuth2-Scopes hängen vom Anbieter ab",
+      "providerUrl": "Anbieter-URL",
+      "providerUrlPlaceholder": "https://auth.beispiel.de",
+      "providerUrlAutoPlaceholder": "https://ihr-anbieter.de (Endpunkte werden automatisch erkannt)",
+      "providerUrlManualPlaceholder": "https://ihr-anbieter.de",
+      "autoDiscoveryHelp": "Das System erkennt automatisch die Autorisierungs-, Token- und Userinfo-Endpunkte",
+      "manualConfigurationHelp": "Basis-URL Ihres Anbieters (Endpunkte werden relativ dazu angegeben)",
+      "authorizationEndpoint": "Autorisierungs-Endpunkt",
+      "authorizationEndpointPlaceholder": "https://auth.beispiel.de/auth",
+      "tokenEndpoint": "Token-Endpunkt",
+      "tokenEndpointPlaceholder": "https://auth.beispiel.de/token",
+      "userInfoEndpoint": "Benutzerinfo-Endpunkt",
+      "userInfoEndpointPlaceholder": "https://auth.beispiel.de/userinfo",
+      "configurationMethod": "Konfigurationsmethode",
+      "autoDiscovery": "Automatische Erkennung",
+      "autoDiscoveryDescription": "Endpunkte automatisch von der Anbieter-URL erkennen",
+      "manualEndpoints": "Manuelle Endpunkte (Empfohlen)",
+      "manualEndpointsDescription": "Autorisierungs-, Token- und Benutzerinfo-Endpunkte manuell konfigurieren",
+      "callbackUrl": "Callback-URL",
+      "callbackUrlDescription": "Verwenden Sie diese URL in Ihrer OAuth-Anbieterkonfiguration",
+      "copyCallbackUrl": "Callback-URL kopieren",
+      "callbackUrlCopied": "Callback-URL in die Zwischenablage kopiert!",
+      "adminEmailDomains": "Admin-E-Mail-Domains",
+      "adminEmailDomainsPlaceholder": "Domains eingeben (z.B. admin.firma.de)",
+      "adminEmailDomainsHelp": "Benutzer mit E-Mails von diesen Domains erhalten Administratorrechte",
+      "autoRegister": "Neue Benutzer automatisch registrieren",
+      "officialProviderUrlPlaceholder": "Ersetzen Sie den Platzhalter mit Ihrer {displayName}-URL",
+      "officialProviderHelp": "Dies ist ein offizieller Anbieter. Die Endpunkte sind vorkonfiguriert. Sie können nur diese URL bearbeiten.",
+      "officialProviderIconHelp": "Sie können das Symbol für diesen offiziellen Anbieter anpassen."
+    },
+    "buttons": {
+      "cancel": "Abbrechen",
+      "save": "Speichern",
+      "saving": "Wird gespeichert...",
+      "adding": "Wird hinzugefügt...",
+      "updating": "Wird aktualisiert...",
+      "saveProvider": "Anbieter speichern",
+      "delete": "Löschen",
+      "deleting": "Wird gelöscht...",
+      "edit": "Bearbeiten",
+      "enable": "Aktivieren",
+      "disable": "Deaktivieren"
+    },
+    "messages": {
+      "providerAdded": "Anbieter erfolgreich hinzugefügt",
+      "providerUpdated": "Anbieter erfolgreich aktualisiert",
+      "providerDeleted": "Anbieter erfolgreich gelöscht",
+      "providerOrderUpdated": "Anbieterreihenfolge erfolgreich aktualisiert",
+      "fillRequiredFields": "Bitte füllen Sie alle erforderlichen Felder aus (Name, Anzeigename, Client-ID, Client-Secret)",
+      "provideUrlOrEndpoints": "Geben Sie entweder eine Anbieter-URL für die automatische Erkennung ODER alle drei benutzerdefinierten Endpunkte an",
+      "chooseDiscoveryOrManual": "Wählen Sie entweder die automatische Erkennung (Anbieter-URL) ODER manuelle Endpunkte, nicht beides",
+      "loadFailed": "Fehler beim Laden der Anbieter",
+      "addFailed": "Fehler beim Hinzufügen des Anbieters",
+      "updateFailed": "Fehler beim Aktualisieren des Anbieters",
+      "deleteFailed": "Fehler beim Löschen des Anbieters",
+      "orderUpdateFailed": "Fehler beim Aktualisieren der Anbieterreihenfolge"
+    },
+    "info": {
+      "title": "Information",
+      "officialProvidersRecommended": "Für bessere Funktionalität empfehlen wir die Verwendung offizieller Anbieter. Bei Problemen mit einem benutzerdefinierten Anbieter können Sie ein Issue auf",
+      "github": "GitHub",
+      "officialProvider": "Offizieller Anbieter",
+      "officialProviderDescription": "Dieser Anbieter ist von Palmr optimiert. Nur Zugangsdaten und Konfiguration können geändert werden.",
+      "manualConfigTitle": "Manuelle Konfiguration",
+      "manualConfigDescription": "Sie geben alle Endpunkte manuell an. Stellen Sie sicher, dass sie für Ihren Anbieter korrekt sind."
+    },
+    "deleteModal": {
+      "title": "Authentifizierungsanbieter löschen",
+      "confirmMessage": "Sind Sie sicher, dass Sie den Anbieter \"{displayName}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "providerId": "Anbieter-ID: {name}",
+      "cancel": "Abbrechen",
+      "delete": "Anbieter löschen",
+      "deleting": "Wird gelöscht..."
+    }
+  },
+  "bulkDownload": {
+    "title": "Massen-Download",
+    "zipNameLabel": "ZIP-Dateiname",
+    "zipNamePlaceholder": "Dateiname eingeben",
+    "description": "{count, plural, =1 {1 Datei wird komprimiert} other {# Dateien werden komprimiert}}",
+    "download": "ZIP Herunterladen"
+  },
   "common": {
     "loading": "Laden, bitte warten...",
     "cancel": "Abbrechen",
@@ -41,6 +169,10 @@
       "description": "Ihre zuletzt hochgeladenen Dateien",
       "title": "Kürzlich genutzte Dateien"
     }
+  },
+  "deleteConfirmation": {
+    "filesToDelete": "Zu löschende Dateien",
+    "sharesToDelete": "Freigaben, die gelöscht werden"
   },
   "emptyState": {
     "noFiles": "Noch keine Dateien hochgeladen",
@@ -389,628 +521,6 @@
     "errors": {
       "serverError": "Fehler beim Zurücksetzen des Passworts. Bitte versuchen Sie es erneut.",
       "invalidToken": "Ungültiges oder fehlendes Zurücksetzungstoken"
-    }
-  },
-  "searchBar": {
-    "placeholder": "Dateien suchen...",
-    "results": "Gefunden {filtered} von {total} Dateien"
-  },
-  "settings": {
-    "groups": {
-      "defaultDescription": "Konfigurationsoptionen",
-      "general": {
-        "title": "Allgemein",
-        "description": "Grundlegende Anwendungseinstellungen"
-      },
-      "email": {
-        "title": "E-Mail",
-        "description": "Konfiguration des E-Mail-Servers"
-      },
-      "security": {
-        "title": "Sicherheit",
-        "description": "Sicherheits- und Authentifizierungseinstellungen"
-      },
-      "storage": {
-        "title": "Speicher",
-        "description": "Konfiguration des Dateispeichers"
-      },
-      "oidc": {
-        "title": "OpenID Connect (SSO)",
-        "description": "SSO-Authentifizierung über OpenID Connect konfigurieren"
-      }
-    },
-    "fields": {
-      "noDescription": "Keine Beschreibung verfügbar",
-      "appLogo": {
-        "title": "Anwendungslogo",
-        "description": "Logo-Bild der Anwendung"
-      },
-      "appName": {
-        "title": "Anwendungsname",
-        "description": "Anwendungsname, der den Benutzern angezeigt wird"
-      },
-      "appDescription": {
-        "title": "Anwendungsbeschreibung",
-        "description": "Kurze Beschreibung der Anwendung"
-      },
-      "showHomePage": {
-        "title": "Startseite anzeigen",
-        "description": "Startseite nach der Installation anzeigen"
-      },
-      "smtpEnabled": {
-        "title": "SMTP aktiviert",
-        "description": "SMTP-E-Mail-Funktionalität aktivieren oder deaktivieren"
-      },
-      "smtpHost": {
-        "title": "SMTP-Server",
-        "description": "Adresse des SMTP-Servers"
-      },
-      "smtpPort": {
-        "title": "SMTP-Port",
-        "description": "Port des SMTP-Servers"
-      },
-      "smtpUser": {
-        "title": "SMTP-Benutzer",
-        "description": "Benutzername für die SMTP-Authentifizierung"
-      },
-      "smtpPass": {
-        "title": "SMTP-Passwort",
-        "description": "Passwort für die SMTP-Authentifizierung"
-      },
-      "smtpFromName": {
-        "title": "Absendername",
-        "description": "Anzeigename für gesendete E-Mails"
-      },
-      "smtpFromEmail": {
-        "title": "Absender-E-Mail",
-        "description": "E-Mail-Adresse des Absenders"
-      },
-      "maxLoginAttempts": {
-        "title": "Maximale Anmeldeversuche",
-        "description": "Maximale Anzahl von Anmeldeversuchen, bevor gesperrt wird"
-      },
-      "loginBlockDuration": {
-        "title": "Sperrdauer",
-        "description": "Dauer (in Sekunden) der Sperre nach Überschreiten der Versuche"
-      },
-      "passwordMinLength": {
-        "title": "Minimale Passwortlänge",
-        "description": "Minimale Anzahl an Zeichen für Passwörter"
-      },
-      "passwordResetTokenExpiration": {
-        "title": "Ablauf des Reset-Tokens",
-        "description": "Gültigkeitsdauer (in Sekunden) des Passwort-Reset-Tokens"
-      },
-      "maxFileSize": {
-        "title": "Maximale Dateigröße",
-        "description": "Maximal erlaubte Dateigröße für Uploads"
-      },
-      "maxTotalStoragePerUser": {
-        "title": "Maximaler Speicher pro Benutzer",
-        "description": "Gesamtspeicherlimit pro Benutzer"
-      },
-      "firstUserAccess": {
-        "description": "Einstellungen für den ersten Zugriff neuer Benutzer",
-        "title": "Erster Benutzerzugriff"
-      },
-      "serverUrl": {
-        "title": "Server-URL",
-        "description": "Basis-URL des Palmr-Servers (z.B.: https://palmr.example.com)"
-      },
-      "oidcEnabled": {
-        "title": "OIDC aktiviert",
-        "description": "Authentifizierung über OpenID Connect aktivieren oder deaktivieren"
-      },
-      "oidcIssuerUrl": {
-        "title": "Anbieter-URL",
-        "description": "URL des OpenID Connect-Anbieters (z.B.: https://auth.example.com/auth/realms/master)"
-      },
-      "oidcClientId": {
-        "title": "Client-ID",
-        "description": "Identifier des beim Anbieter registrierten OIDC-Clients"
-      },
-      "oidcClientSecret": {
-        "title": "Client-Secret",
-        "description": "Secret des OIDC-Clients für die Authentifizierung"
-      },
-      "oidcRedirectUri": {
-        "title": "Weiterleitungs-URI",
-        "description": "URI, zu der der Benutzer nach der Authentifizierung weitergeleitet wird. Geben Sie nur die Basis-URL ein (z.B.: https://meineseite.com). Der Pfad /api/auth/oidc/callback wird automatisch hinzugefügt."
-      },
-      "oidcScope": {
-        "title": "Scopes",
-        "description": "Angeforderte OIDC-Scopes (z.B.: openid profile email)"
-      },
-      "oidcAutoRegister": {
-        "title": "Automatische Registrierung",
-        "description": "Registriert automatisch Benutzer, die beim ersten Login nicht existieren"
-      },
-      "oidcAdminEmailDomains": {
-        "title": "Admin-E-Mail-Domains",
-        "description": "E-Mail-Domains, die automatisch Administratorrechte erhalten"
-      },
-      "testSmtp": {
-        "title": "SMTP-Verbindung testen",
-        "description": "Testen Sie, ob die SMTP-Konfiguration gültig ist"
-      },
-      "smtpNoAuth": {
-        "title": "Keine Authentifizierung",
-        "description": "Aktivieren Sie dies für interne Server, die keinen Benutzernamen/Passwort benötigen (blendet Authentifizierungsfelder aus)"
-      },
-      "smtpSecure": {
-        "title": "Verbindungssicherheit",
-        "description": "SMTP-Verbindungssicherheitsmethode - Auto (empfohlen), SSL, STARTTLS oder Keine (unsicher)",
-        "options": {
-          "auto": "Auto (Empfohlen)",
-          "ssl": "SSL (Port 465)",
-          "tls": "STARTTLS (Port 587)",
-          "none": "Keine (Unsicher)"
-        }
-      }
-    },
-    "buttons": {
-      "save": "{group} speichern",
-      "testSmtp": "Verbindung testen",
-      "testing": "Teste..."
-    },
-    "errors": {
-      "loadFailed": "Fehler beim Laden der Einstellungen",
-      "updateFailed": "Fehler beim Aktualisieren der Einstellungen"
-    },
-    "messages": {
-      "noChanges": "Keine Änderungen zum Speichern",
-      "updateSuccess": "{group}-Einstellungen erfolgreich aktualisiert",
-      "smtpTestFailed": "SMTP-Verbindung fehlgeschlagen: {error}",
-      "smtpTestGenericError": "SMTP-Verbindungstest fehlgeschlagen. Bitte überprüfen Sie Ihre Einstellungen und versuchen Sie es erneut.",
-      "smtpTestSuccess": "SMTP-Verbindung erfolgreich! Ihre E-Mail-Konfiguration funktioniert korrekt.",
-      "smtpMissingAuth": "Bitte geben Sie SMTP-Benutzername und Passwort ein oder aktivieren Sie die Option 'Keine Authentifizierung'.",
-      "smtpMissingHostPort": "Bitte geben Sie SMTP-Host und Port vor dem Test ein.",
-      "smtpNotEnabled": "SMTP ist nicht aktiviert. Bitte aktivieren Sie zuerst SMTP."
-    },
-    "title": "Einstellungen",
-    "breadcrumb": "Einstellungen",
-    "pageTitle": "Einstellungen",
-    "tooltips": {
-      "oidcScope": "Geben Sie einen Scope ein und drücken Sie Enter zum Hinzufügen",
-      "oidcAdminEmailDomains": "Geben Sie eine Domain ein und drücken Sie Enter zum Hinzufügen",
-      "testSmtp": "Testet die SMTP-Verbindung mit den aktuell im Formular eingegebenen Werten. Um die Änderungen dauerhaft zu machen, denken Sie daran, Ihre Einstellungen nach dem Test zu speichern.",
-      "defaultPlaceholder": "Eingeben und Enter drücken"
-    },
-    "redirectUri": {
-      "placeholder": "https://meineseite.com",
-      "previewLabel": "Vollständige URL, die gespeichert wird:"
-    }
-  },
-  "share": {
-    "errors": {
-      "invalidPassword": "Ungültiges Passwort. Bitte versuchen Sie es erneut.",
-      "loadFailed": "Fehler beim Laden der Freigabe",
-      "downloadFailed": "Fehler beim Herunterladen der Datei"
-    },
-    "messages": {
-      "downloadStarted": "Download gestartet"
-    },
-    "password": {
-      "title": "Passwortgeschützte Freigabe",
-      "protected": "Diese Freigabe ist passwortgeschützt",
-      "incorrect": "Falsches Passwort. Bitte versuchen Sie es erneut.",
-      "label": "Passwort",
-      "placeholder": "Passwort der Freigabe eingeben",
-      "submit": "Absenden"
-    },
-    "details": {
-      "untitled": "Unbenannte Freigabe",
-      "created": "Erstellt: {date}",
-      "expires": "Läuft ab: {date}"
-    },
-    "notFound": {
-      "title": "Freigabe nicht gefunden",
-      "description": "Diese Freigabe wurde möglicherweise gelöscht oder ist abgelaufen."
-    },
-    "pageTitle": "Freigabe",
-    "downloadAll": "Alle herunterladen"
-  },
-  "shareActions": {
-    "deleteTitle": "Freigabe Löschen",
-    "deleteConfirmation": "Sind Sie sicher, dass Sie diese Freigabe löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "editTitle": "Freigabe Bearbeiten",
-    "nameLabel": "Freigabe-Name",
-    "descriptionLabel": "Beschreibung",
-    "descriptionPlaceholder": "Geben Sie eine Beschreibung ein (optional)",
-    "expirationLabel": "Ablaufdatum",
-    "expirationPlaceholder": "TT.MM.JJJJ HH:MM",
-    "maxViewsLabel": "Maximale Ansichten",
-    "maxViewsPlaceholder": "Leer lassen für unbegrenzt",
-    "passwordProtection": "Passwort-geschützt",
-    "passwordLabel": "Passwort",
-    "passwordPlaceholder": "Passwort eingeben",
-    "newPasswordLabel": "Neues Passwort (leer lassen, um das aktuelle zu behalten)",
-    "newPasswordPlaceholder": "Neues Passwort eingeben",
-    "manageFilesTitle": "Dateien Verwalten",
-    "manageRecipientsTitle": "Empfänger Verwalten",
-    "editSuccess": "Freigabe erfolgreich aktualisiert",
-    "editError": "Fehler beim Aktualisieren der Freigabe",
-    "bulkDeleteConfirmation": "Sind Sie sicher, dass Sie {count, plural, =1 {1 Freigabe} other {# Freigaben}} löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "bulkDeleteTitle": "Ausgewählte Freigaben löschen"
-  },
-  "shareDetails": {
-    "title": "Freigabe-Details",
-    "subtitle": "Detaillierte Informationen über diese Freigabe",
-    "basicInfo": "Grundinformationen",
-    "name": "Name",
-    "description": "Beschreibung",
-    "noDescription": "Keine Beschreibung angegeben",
-    "untitled": "Unbenannt",
-    "shareLink": "Freigabe-Link",
-    "editLink": "Link Bearbeiten",
-    "generateLink": "Link Generieren",
-    "noLink": "Noch kein Link generiert",
-    "copyLink": "Link kopieren",
-    "openLink": "In neuem Tab öffnen",
-    "linkCopied": "Link in Zwischenablage kopiert",
-    "views": "Ansichten",
-    "dates": "Daten",
-    "created": "Erstellt",
-    "expires": "Läuft ab",
-    "never": "Niemals",
-    "security": "Sicherheit",
-    "passwordProtected": "Passwort-geschützt",
-    "publicAccess": "Öffentlicher Zugang",
-    "maxViews": "Max. Ansichten:",
-    "files": "Dateien",
-    "recipients": "Empfänger",
-    "notAvailable": "N/V",
-    "invalidDate": "Ungültiges Datum",
-    "loadError": "Fehler beim Laden der Freigabe-Details",
-    "editSecurity": "Sicherheit bearbeiten",
-    "editExpiration": "Ablauf bearbeiten"
-  },
-  "shareManager": {
-    "deleteSuccess": "Freigabe erfolgreich gelöscht",
-    "deleteError": "Fehler beim Löschen der Freigabe",
-    "updateSuccess": "Freigabe erfolgreich aktualisiert",
-    "updateError": "Fehler beim Aktualisieren der Freigabe",
-    "filesUpdateSuccess": "Dateien erfolgreich aktualisiert",
-    "filesUpdateError": "Fehler beim Aktualisieren der Dateien",
-    "recipientsUpdateSuccess": "Empfänger erfolgreich aktualisiert",
-    "recipientsUpdateError": "Fehler beim Aktualisieren der Empfänger",
-    "linkGenerateSuccess": "Freigabelink erfolgreich generiert",
-    "linkGenerateError": "Fehler beim Generieren des Freigabelinks",
-    "notifyLoading": "Benachrichtigungen werden gesendet...",
-    "notifySuccess": "Empfänger erfolgreich benachrichtigt",
-    "notifyError": "Fehler beim Benachrichtigen der Empfänger",
-    "bulkDeleteError": "Fehler beim Löschen der Freigaben",
-    "bulkDeleteLoading": "Lösche {count, plural, =1 {1 Freigabe} other {# Freigaben}}...",
-    "bulkDeleteSuccess": "{count, plural, =1 {1 Freigabe erfolgreich gelöscht} other {# Freigaben erfolgreich gelöscht}}",
-    "securityUpdateError": "Sicherheitseinstellungen konnten nicht aktualisiert werden",
-    "expirationUpdateError": "Ablaufeinstellungen konnten nicht aktualisiert werden",
-    "securityUpdateSuccess": "Sicherheitseinstellungen erfolgreich aktualisiert",
-    "expirationUpdateSuccess": "Ablaufeinstellungen erfolgreich aktualisiert",
-    "creatingZip": "ZIP -Datei erstellen ...",
-    "defaultShareName": "Aktie",
-    "downloadError": "Download Share -Dateien nicht herunterladen",
-    "downloadSuccess": "Download begann erfolgreich",
-    "multipleSharesZipName": "{count} _shares_files.zip",
-    "noFilesToDownload": "Keine Dateien zum Download zur Verfügung stehen",
-    "singleShareZipName": "{ShareName} _files.zip",
-    "zipDownloadError": "Die ZIP -Datei erstellt nicht",
-    "zipDownloadSuccess": "ZIP -Datei erfolgreich heruntergeladen"
-  },
-  "shares": {
-    "errors": {
-      "loadFailed": "Fehler beim Laden der Freigaben",
-      "notifyFailed": "Fehler beim Benachrichtigen der Empfänger",
-      "smtpConfigFailed": "Fehler beim Laden der SMTP-Konfiguration"
-    },
-    "messages": {
-      "linkCopied": "Link in die Zwischenablage kopiert",
-      "recipientsNotified": "Empfänger erfolgreich benachrichtigt"
-    },
-    "empty": {
-      "message": "Noch keine Freigaben erstellt",
-      "createButton": "Freigabe erstellen"
-    },
-    "header": {
-      "title": "Meine Freigaben",
-      "myShares": "Meine Freigaben"
-    },
-    "search": {
-      "title": "Alle Freigaben",
-      "createButton": "Freigabe erstellen",
-      "placeholder": "Freigaben suchen...",
-      "results": "Gefunden {filtered} von {total} Freigaben"
-    },
-    "pageTitle": "Freigaben"
-  },
-  "sharesTable": {
-    "ariaLabel": "Freigaben-Tabelle",
-    "never": "Niemals",
-    "columns": {
-      "name": "NAME",
-      "description": "BESCHREIBUNG",
-      "createdAt": "ERSTELLT AM",
-      "expiresAt": "LÄUFT AB AM",
-      "status": "STATUS",
-      "security": "SICHERHEIT",
-      "files": "DATEIEN",
-      "recipients": "EMPFÄNGER",
-      "actions": "AKTIONEN"
-    },
-    "status": {
-      "neverExpires": "Läuft Nie Ab",
-      "active": "Aktiv",
-      "expired": "Abgelaufen"
-    },
-    "security": {
-      "protected": "Geschützt",
-      "public": "Öffentlich"
-    },
-    "filesCount": "Dateien",
-    "recipientsCount": "Empfänger",
-    "actions": {
-      "menu": "Freigabe-Aktionen-Menü",
-      "edit": "Bearbeiten",
-      "manageFiles": "Dateien Verwalten",
-      "manageRecipients": "Empfänger Verwalten",
-      "viewDetails": "Details Anzeigen",
-      "generateLink": "Link Generieren",
-      "editLink": "Link Bearbeiten",
-      "copyLink": "Link Kopieren",
-      "notifyRecipients": "Empfänger Benachrichtigen",
-      "delete": "Löschen",
-      "downloadShareFiles": "Laden Sie alle Dateien herunter"
-    },
-    "bulkActions": {
-      "delete": "Löschen",
-      "selected": "{count, plural, =1 {1 Freigabe ausgewählt} other {# Freigaben ausgewählt}}",
-      "actions": "Aktionen",
-      "download": "Download ausgewählt"
-    },
-    "selectAll": "Alle auswählen",
-    "selectShare": "Freigabe {shareName} auswählen"
-  },
-  "storageUsage": {
-    "title": "Speichernutzung",
-    "ariaLabel": "Fortschrittsbalken der Speichernutzung",
-    "used": "genutzt",
-    "available": "verfügbar",
-    "loading": "Wird geladen...",
-    "retry": "Wiederholen",
-    "errors": {
-      "title": "Speicherinformationen nicht verfügbar",
-      "detectionFailed": "Speicherplatz konnte nicht erkannt werden. Dies kann an Systemkonfigurationsproblemen oder unzureichenden Berechtigungen liegen.",
-      "serverError": "Serverfehler beim Abrufen der Speicherinformationen. Bitte versuchen Sie es später erneut.",
-      "unknown": "Ein unerwarteter Fehler ist beim Laden der Speicherinformationen aufgetreten."
-    }
-  },
-  "theme": {
-    "toggle": "Design umschalten",
-    "light": "Hell",
-    "dark": "Dunkel",
-    "system": "System"
-  },
-  "uploadFile": {
-    "title": "Datei hochladen",
-    "multipleTitle": "Mehrere Dateien Hochladen",
-    "selectFile": "Klicken Sie, um eine Datei auszuwählen",
-    "selectMultipleFiles": "Klicken Sie, um eine oder mehrere Dateien auszuwählen",
-    "dragAndDrop": "oder ziehen und legen Sie Dateien hier ab",
-    "preview": "Vorschau",
-    "uploadProgress": "Upload-Fortschritt",
-    "upload": "Hochladen",
-    "startUploads": "Uploads Starten",
-    "retry": "Wiederholen",
-    "finish": "Beenden",
-    "success": "Datei erfolgreich hochgeladen",
-    "allSuccess": "{count, plural, =1 {Datei erfolgreich hochgeladen} other {# Dateien erfolgreich hochgeladen}}",
-    "partialSuccess": "{success} Dateien erfolgreich hochgeladen, {error} fehlgeschlagen",
-    "error": "Fehler beim Hochladen der Datei",
-    "fileSizeExceeded": "Die Dateigröße überschreitet das Limit von {maxsizemb}MB.",
-    "insufficientStorage": "Unzureichender Speicherplatz. Sie haben {availablespace}MB verfügbar.",
-    "unauthorized": "Nicht autorisiert: Ein gültiger Token ist erforderlich, um auf diese Ressource zuzugreifen.",
-    "confirmCancel": {
-      "title": "Uploads Abbrechen",
-      "messageSingle": "Es läuft ein Upload.",
-      "messageMultiple": "Es laufen {count} Uploads.",
-      "warning": "Wenn Sie jetzt schließen, werden die Uploads abgebrochen und jeder Fortschritt geht verloren.",
-      "continue": "Uploads Fortsetzen",
-      "cancel": "Uploads Abbrechen"
-    }
-  },
-  "users": {
-    "modes": {
-      "create": "erstellen",
-      "edit": "bearbeiten"
-    },
-    "errors": {
-      "loadFailed": "Fehler beim Laden der Benutzer",
-      "submitFailed": "Fehler beim {mode} des Benutzers",
-      "deleteFailed": "Fehler beim Löschen des Benutzers",
-      "statusUpdateFailed": "Fehler beim Aktualisieren des Benutzerstatus"
-    },
-    "messages": {
-      "createSuccess": "Benutzer erfolgreich erstellt",
-      "updateSuccess": "Benutzer erfolgreich aktualisiert",
-      "deleteSuccess": "Benutzer erfolgreich gelöscht",
-      "activateSuccess": "Benutzer erfolgreich aktiviert",
-      "deactivateSuccess": "Benutzer erfolgreich deaktiviert"
-    },
-    "actions": {
-      "edit": "Bearbeiten",
-      "activate": "Aktivieren",
-      "deactivate": "Deaktivieren",
-      "delete": "Löschen"
-    },
-    "delete": {
-      "title": "Löschen des Benutzers bestätigen",
-      "confirmation": "Sind Sie sicher, dass Sie den Benutzer {firstName} {lastName} löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
-      "confirm": "Benutzer löschen"
-    },
-    "form": {
-      "titleCreate": "Neuen Benutzer hinzufügen",
-      "titleEdit": "Benutzer bearbeiten",
-      "firstName": "Vorname",
-      "lastName": "Nachname",
-      "username": "Benutzername",
-      "email": "E-Mail",
-      "password": "Passwort",
-      "newPassword": "Neues Passwort (optional)",
-      "passwordPlaceholder": "Leer lassen, um das aktuelle Passwort zu behalten",
-      "role": "Rolle",
-      "roleUser": "Benutzer",
-      "roleAdmin": "Administrator",
-      "create": "Erstellen",
-      "save": "Speichern"
-    },
-    "status": {
-      "title": "Statusänderung bestätigen",
-      "confirmation": "Sind Sie sicher, dass Sie den Benutzer {firstName} {lastName} {action} möchten?",
-      "activate": "aktivieren",
-      "deactivate": "deaktivieren",
-      "user": "Benutzer"
-    },
-    "header": {
-      "title": "Benutzerverwaltung",
-      "addUser": "Benutzer hinzufügen",
-      "management": "Benutzerverwaltung"
-    },
-    "table": {
-      "user": "BENUTZER",
-      "email": "E-MAIL",
-      "status": "STATUS",
-      "role": "ROLLE",
-      "actions": "AKTIONEN",
-      "active": "Aktiv",
-      "inactive": "Inaktiv",
-      "admin": "Administrator",
-      "userr": "Benutzer"
-    }
-  },
-  "validation": {
-    "invalidEmail": "Ungültige E-Mail-Adresse",
-    "passwordMinLength": "Das Passwort muss mindestens 6 Zeichen lang sein",
-    "firstNameRequired": "Vorname ist erforderlich",
-    "lastNameRequired": "Nachname ist erforderlich",
-    "usernameLength": "Der Benutzername muss mindestens 3 Zeichen lang sein",
-    "usernameSpaces": "Der Benutzername darf keine Leerzeichen enthalten",
-    "passwordLength": "Das Passwort muss mindestens 8 Zeichen lang sein",
-    "passwordsMatch": "Die Passwörter stimmen nicht überein",
-    "emailRequired": "E-Mail ist erforderlich",
-    "emailOrUsernameRequired": "E-Mail oder Benutzername ist erforderlich",
-    "passwordRequired": "Passwort ist erforderlich",
-    "nameRequired": "Name ist erforderlich",
-    "required": "Dieses Feld ist erforderlich"
-  },
-  "shareFile": {
-    "title": "Datei Freigeben",
-    "linkTitle": "Link Generieren",
-    "nameLabel": "Freigabe-Name",
-    "namePlaceholder": "Freigabe-Namen eingeben",
-    "descriptionLabel": "Beschreibung",
-    "descriptionPlaceholder": "Geben Sie eine Beschreibung ein (optional)",
-    "expirationLabel": "Ablaufdatum",
-    "expirationPlaceholder": "TT.MM.JJJJ HH:MM",
-    "maxViewsLabel": "Maximale Ansichten",
-    "maxViewsPlaceholder": "Leer lassen für unbegrenzt",
-    "passwordProtection": "Passwort-geschützt",
-    "passwordLabel": "Passwort",
-    "passwordPlaceholder": "Passwort eingeben",
-    "linkDescription": "Einen benutzerdefinierten Link zum Teilen der Datei generieren",
-    "aliasLabel": "Link-Alias",
-    "aliasPlaceholder": "Benutzerdefinierten Alias eingeben",
-    "linkReady": "Ihr Freigabe-Link ist bereit:",
-    "createShare": "Freigabe Erstellen",
-    "generateLink": "Link Generieren",
-    "copyLink": "Link Kopieren"
-  },
-  "bulkDownload": {
-    "title": "Massen-Download",
-    "zipNameLabel": "ZIP-Dateiname",
-    "zipNamePlaceholder": "Dateiname eingeben",
-    "description": "{count, plural, =1 {1 Datei wird komprimiert} other {# Dateien werden komprimiert}}",
-    "download": "ZIP Herunterladen"
-  },
-  "deleteConfirmation": {
-    "filesToDelete": "Zu löschende Dateien",
-    "sharesToDelete": "Freigaben, die gelöscht werden"
-  },
-  "shareMultipleFiles": {
-    "title": "Mehrere Dateien Teilen",
-    "shareNameLabel": "Freigabe-Name",
-    "shareNamePlaceholder": "Freigabe-Name eingeben",
-    "descriptionLabel": "Beschreibung",
-    "descriptionPlaceholder": "Geben Sie eine Beschreibung ein (optional)",
-    "filesToShare": "Zu teilende Dateien",
-    "files": "Dateien",
-    "totalSize": "Gesamtgröße",
-    "creating": "Erstellen...",
-    "create": "Freigabe Erstellen"
-  },
-  "shareSecurity": {
-    "subtitle": "Passwortschutz und Sicherheitsoptionen für diese Freigabe konfigurieren",
-    "info": {
-      "title": "So funktioniert es:",
-      "withoutPassword": "Jeder mit dem Link kann auf diese Freigabe ohne Passwort zugreifen.",
-      "withPassword": "Benutzer müssen das Passwort eingeben, um auf diese Freigabe zuzugreifen."
-    },
-    "existingPasswordMessage": "Diese Freigabe hat bereits ein Passwort. Wenn Sie es aktualisieren möchten, geben Sie das neue Passwort in das Feld unten ein und speichern Sie.",
-    "passwordProtection": "Passwortschutz",
-    "error": {
-      "updateFailed": "Sicherheitseinstellungen konnten nicht aktualisiert werden"
-    },
-    "passwordRequirements": {
-      "title": "Passwort-Anforderungen:",
-      "minLength": "Mindestens 2 Zeichen"
-    },
-    "newPassword": "Neues Passwort",
-    "success": {
-      "passwordUpdated": "Passwort erfolgreich aktualisiert",
-      "passwordRemoved": "Passwortschutz erfolgreich entfernt",
-      "passwordSet": "Passwortschutz erfolgreich aktiviert"
-    },
-    "password": "Passwort",
-    "validation": {
-      "passwordRequired": "Passwort ist erforderlich",
-      "passwordTooShort": "Passwort muss mindestens 2 Zeichen haben"
-    },
-    "currentStatus": "Aktueller Status",
-    "passwordPlaceholder": "Sicheres Passwort eingeben",
-    "title": "Freigabe-Sicherheitseinstellungen"
-  },
-  "shareExpiration": {
-    "neverExpires": "Läuft nie ab",
-    "success": {
-      "expirationUpdated": "Ablaufdatum erfolgreich aktualisiert",
-      "expirationRemoved": "Ablauf erfolgreich entfernt - Freigabe ist jetzt dauerhaft",
-      "expirationSet": "Ablaufdatum erfolgreich festgelegt"
-    },
-    "info": {
-      "canBeChanged": "Sie können das Ablaufdatum jederzeit ändern oder entfernen",
-      "willBeInaccessible": "Die Freigabe wird nach diesem Datum unzugänglich",
-      "noExpiration": "Diese Freigabe läuft nie ab und bleibt unbegrenzt zugänglich.",
-      "title": "Über Ablauf:"
-    },
-    "enableExpiration": "Ablauf aktivieren",
-    "title": "Freigabe-Ablaufeinstellungen",
-    "subtitle": "Konfigurieren, wann diese Freigabe abläuft",
-    "validation": {
-      "dateMustBeFuture": "Ablaufdatum muss in der Zukunft liegen",
-      "dateRequired": "Bitte wählen Sie ein Ablaufdatum"
-    },
-    "currentStatus": "Aktueller Status",
-    "error": {
-      "updateFailed": "Ablaufeinstellungen konnten nicht aktualisiert werden"
-    },
-    "expires": "Läuft ab:",
-    "expirationDate": "Ablaufdatum"
-  },
-  "auth": {
-    "errors": {
-      "account_inactive": "Konto inaktiv. Kontaktieren Sie den Administrator.",
-      "registration_disabled": "Registrierung über SSO ist deaktiviert.",
-      "token_expired": "Token abgelaufen. Versuchen Sie es erneut.",
-      "config_error": "Konfigurationsfehler. Kontaktieren Sie den Support.",
-      "auth_failed": "Authentifizierung fehlgeschlagen. Versuchen Sie es erneut."
     }
   },
   "reverseShares": {
@@ -1447,5 +957,598 @@
       }
     },
     "defaultLinkName": "Empfangene Dateien"
+  },
+  "searchBar": {
+    "placeholder": "Dateien suchen...",
+    "results": "Gefunden {filtered} von {total} Dateien"
+  },
+  "settings": {
+    "groups": {
+      "defaultDescription": "Konfigurationsoptionen",
+      "general": {
+        "title": "Allgemein",
+        "description": "Grundlegende Anwendungseinstellungen"
+      },
+      "email": {
+        "title": "E-Mail",
+        "description": "Konfiguration des E-Mail-Servers"
+      },
+      "security": {
+        "title": "Sicherheit",
+        "description": "Sicherheits- und Authentifizierungseinstellungen"
+      },
+      "storage": {
+        "title": "Speicher",
+        "description": "Konfiguration des Dateispeichers"
+      },
+      "oidc": {
+        "title": "OpenID Connect (SSO)",
+        "description": "SSO-Authentifizierung über OpenID Connect konfigurieren"
+      }
+    },
+    "fields": {
+      "noDescription": "Keine Beschreibung verfügbar",
+      "appLogo": {
+        "title": "Anwendungslogo",
+        "description": "Logo-Bild der Anwendung"
+      },
+      "appName": {
+        "title": "Anwendungsname",
+        "description": "Anwendungsname, der den Benutzern angezeigt wird"
+      },
+      "appDescription": {
+        "title": "Anwendungsbeschreibung",
+        "description": "Kurze Beschreibung der Anwendung"
+      },
+      "showHomePage": {
+        "title": "Startseite anzeigen",
+        "description": "Startseite nach der Installation anzeigen"
+      },
+      "smtpEnabled": {
+        "title": "SMTP aktiviert",
+        "description": "SMTP-E-Mail-Funktionalität aktivieren oder deaktivieren"
+      },
+      "smtpHost": {
+        "title": "SMTP-Server",
+        "description": "Adresse des SMTP-Servers"
+      },
+      "smtpPort": {
+        "title": "SMTP-Port",
+        "description": "Port des SMTP-Servers"
+      },
+      "smtpUser": {
+        "title": "SMTP-Benutzer",
+        "description": "Benutzername für die SMTP-Authentifizierung"
+      },
+      "smtpPass": {
+        "title": "SMTP-Passwort",
+        "description": "Passwort für die SMTP-Authentifizierung"
+      },
+      "smtpFromName": {
+        "title": "Absendername",
+        "description": "Anzeigename für gesendete E-Mails"
+      },
+      "smtpFromEmail": {
+        "title": "Absender-E-Mail",
+        "description": "E-Mail-Adresse des Absenders"
+      },
+      "maxLoginAttempts": {
+        "title": "Maximale Anmeldeversuche",
+        "description": "Maximale Anzahl von Anmeldeversuchen, bevor gesperrt wird"
+      },
+      "loginBlockDuration": {
+        "title": "Sperrdauer",
+        "description": "Dauer (in Sekunden) der Sperre nach Überschreiten der Versuche"
+      },
+      "passwordMinLength": {
+        "title": "Minimale Passwortlänge",
+        "description": "Minimale Anzahl an Zeichen für Passwörter"
+      },
+      "passwordResetTokenExpiration": {
+        "title": "Ablauf des Reset-Tokens",
+        "description": "Gültigkeitsdauer (in Sekunden) des Passwort-Reset-Tokens"
+      },
+      "maxFileSize": {
+        "title": "Maximale Dateigröße",
+        "description": "Maximal erlaubte Dateigröße für Uploads"
+      },
+      "maxTotalStoragePerUser": {
+        "title": "Maximaler Speicher pro Benutzer",
+        "description": "Gesamtspeicherlimit pro Benutzer"
+      },
+      "firstUserAccess": {
+        "description": "Einstellungen für den ersten Zugriff neuer Benutzer",
+        "title": "Erster Benutzerzugriff"
+      },
+      "serverUrl": {
+        "title": "Server-URL",
+        "description": "Basis-URL des Palmr-Servers (z.B.: https://palmr.example.com)"
+      },
+      "testSmtp": {
+        "title": "SMTP-Verbindung testen",
+        "description": "Testen Sie, ob die SMTP-Konfiguration gültig ist"
+      },
+      "smtpNoAuth": {
+        "title": "Keine Authentifizierung",
+        "description": "Aktivieren Sie dies für interne Server, die keinen Benutzernamen/Passwort benötigen (versteckt Authentifizierungsfelder)"
+      },
+      "smtpTrustSelfSigned": {
+        "title": "Selbstsignierte Zertifikate vertrauen",
+        "description": "Aktivieren Sie dies, um selbstsignierten SSL/TLS-Zertifikaten zu vertrauen (nützlich für Entwicklungsumgebungen)"
+      },
+      "smtpSecure": {
+        "title": "Verbindungssicherheit",
+        "description": "SMTP-Verbindungssicherheitsmethode - Auto (empfohlen), SSL, STARTTLS oder Keine (unsicher)",
+        "options": {
+          "auto": "Auto (Empfohlen)",
+          "ssl": "SSL (Port 465)",
+          "tls": "STARTTLS (Port 587)",
+          "none": "Keine (Unsicher)"
+        }
+      }
+    },
+    "buttons": {
+      "save": "{group} speichern",
+      "testSmtp": "Verbindung testen",
+      "testing": "Teste..."
+    },
+    "errors": {
+      "loadFailed": "Fehler beim Laden der Einstellungen",
+      "updateFailed": "Fehler beim Aktualisieren der Einstellungen"
+    },
+    "messages": {
+      "noChanges": "Keine Änderungen zum Speichern",
+      "updateSuccess": "{group}-Einstellungen erfolgreich aktualisiert",
+      "smtpTestFailed": "SMTP-Verbindung fehlgeschlagen: {error}",
+      "smtpTestGenericError": "SMTP-Verbindungstest fehlgeschlagen. Bitte überprüfen Sie Ihre Einstellungen und versuchen Sie es erneut.",
+      "smtpTestSuccess": "SMTP-Verbindung erfolgreich! Ihre E-Mail-Konfiguration funktioniert korrekt.",
+      "smtpMissingAuth": "Bitte geben Sie SMTP-Benutzername und Passwort ein oder aktivieren Sie die Option 'Keine Authentifizierung'.",
+      "smtpMissingHostPort": "Bitte geben Sie SMTP-Host und Port vor dem Test ein.",
+      "smtpNotEnabled": "SMTP ist nicht aktiviert. Bitte aktivieren Sie zuerst SMTP."
+    },
+    "title": "Einstellungen",
+    "breadcrumb": "Einstellungen",
+    "pageTitle": "Einstellungen",
+    "tooltips": {
+      "testSmtp": "Testet die SMTP-Verbindung mit den aktuell im Formular eingegebenen Werten. Um die Änderungen dauerhaft zu machen, denken Sie daran, Ihre Einstellungen nach dem Test zu speichern.",
+      "defaultPlaceholder": "Eingeben und Enter drücken"
+    },
+    "redirectUri": {
+      "placeholder": "https://meineseite.com",
+      "previewLabel": "Vollständige URL, die gespeichert wird:"
+    }
+  },
+  "share": {
+    "errors": {
+      "invalidPassword": "Ungültiges Passwort. Bitte versuchen Sie es erneut.",
+      "loadFailed": "Fehler beim Laden der Freigabe",
+      "downloadFailed": "Fehler beim Herunterladen der Datei"
+    },
+    "messages": {
+      "downloadStarted": "Download gestartet"
+    },
+    "password": {
+      "title": "Passwortgeschützte Freigabe",
+      "protected": "Diese Freigabe ist passwortgeschützt",
+      "incorrect": "Falsches Passwort. Bitte versuchen Sie es erneut.",
+      "label": "Passwort",
+      "placeholder": "Passwort der Freigabe eingeben",
+      "submit": "Absenden"
+    },
+    "details": {
+      "untitled": "Unbenannte Freigabe",
+      "created": "Erstellt: {date}",
+      "expires": "Läuft ab: {date}"
+    },
+    "notFound": {
+      "title": "Freigabe nicht gefunden",
+      "description": "Diese Freigabe wurde möglicherweise gelöscht oder ist abgelaufen."
+    },
+    "pageTitle": "Freigabe",
+    "downloadAll": "Alle herunterladen"
+  },
+  "shareActions": {
+    "deleteTitle": "Freigabe Löschen",
+    "deleteConfirmation": "Sind Sie sicher, dass Sie diese Freigabe löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "editTitle": "Freigabe Bearbeiten",
+    "nameLabel": "Freigabe-Name",
+    "descriptionLabel": "Beschreibung",
+    "descriptionPlaceholder": "Geben Sie eine Beschreibung ein (optional)",
+    "expirationLabel": "Ablaufdatum",
+    "expirationPlaceholder": "TT.MM.JJJJ HH:MM",
+    "maxViewsLabel": "Maximale Ansichten",
+    "maxViewsPlaceholder": "Leer lassen für unbegrenzt",
+    "passwordProtection": "Passwort-geschützt",
+    "passwordLabel": "Passwort",
+    "passwordPlaceholder": "Passwort eingeben",
+    "newPasswordLabel": "Neues Passwort (leer lassen, um das aktuelle zu behalten)",
+    "newPasswordPlaceholder": "Neues Passwort eingeben",
+    "manageFilesTitle": "Dateien Verwalten",
+    "manageRecipientsTitle": "Empfänger Verwalten",
+    "editSuccess": "Freigabe erfolgreich aktualisiert",
+    "editError": "Fehler beim Aktualisieren der Freigabe",
+    "bulkDeleteConfirmation": "Sind Sie sicher, dass Sie {count, plural, =1 {1 Freigabe} other {# Freigaben}} löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "bulkDeleteTitle": "Ausgewählte Freigaben löschen"
+  },
+  "shareDetails": {
+    "title": "Freigabe-Details",
+    "subtitle": "Detaillierte Informationen über diese Freigabe",
+    "basicInfo": "Grundinformationen",
+    "name": "Name",
+    "description": "Beschreibung",
+    "noDescription": "Keine Beschreibung angegeben",
+    "untitled": "Unbenannt",
+    "shareLink": "Freigabe-Link",
+    "editLink": "Link Bearbeiten",
+    "generateLink": "Link Generieren",
+    "noLink": "Noch kein Link generiert",
+    "copyLink": "Link kopieren",
+    "openLink": "In neuem Tab öffnen",
+    "linkCopied": "Link in Zwischenablage kopiert",
+    "views": "Ansichten",
+    "dates": "Daten",
+    "created": "Erstellt",
+    "expires": "Läuft ab",
+    "never": "Niemals",
+    "security": "Sicherheit",
+    "passwordProtected": "Passwort-geschützt",
+    "publicAccess": "Öffentlicher Zugang",
+    "maxViews": "Max. Ansichten:",
+    "files": "Dateien",
+    "recipients": "Empfänger",
+    "notAvailable": "N/V",
+    "invalidDate": "Ungültiges Datum",
+    "loadError": "Fehler beim Laden der Freigabe-Details",
+    "editSecurity": "Sicherheit bearbeiten",
+    "editExpiration": "Ablauf bearbeiten"
+  },
+  "shareExpiration": {
+    "neverExpires": "Läuft nie ab",
+    "success": {
+      "expirationUpdated": "Ablaufdatum erfolgreich aktualisiert",
+      "expirationRemoved": "Ablauf erfolgreich entfernt - Freigabe ist jetzt dauerhaft",
+      "expirationSet": "Ablaufdatum erfolgreich festgelegt"
+    },
+    "info": {
+      "canBeChanged": "Sie können das Ablaufdatum jederzeit ändern oder entfernen",
+      "willBeInaccessible": "Die Freigabe wird nach diesem Datum unzugänglich",
+      "noExpiration": "Diese Freigabe läuft nie ab und bleibt unbegrenzt zugänglich.",
+      "title": "Über Ablauf:"
+    },
+    "enableExpiration": "Ablauf aktivieren",
+    "title": "Freigabe-Ablaufeinstellungen",
+    "subtitle": "Konfigurieren, wann diese Freigabe abläuft",
+    "validation": {
+      "dateMustBeFuture": "Ablaufdatum muss in der Zukunft liegen",
+      "dateRequired": "Bitte wählen Sie ein Ablaufdatum"
+    },
+    "currentStatus": "Aktueller Status",
+    "error": {
+      "updateFailed": "Ablaufeinstellungen konnten nicht aktualisiert werden"
+    },
+    "expires": "Läuft ab:",
+    "expirationDate": "Ablaufdatum"
+  },
+  "shareFile": {
+    "title": "Datei Freigeben",
+    "linkTitle": "Link Generieren",
+    "nameLabel": "Freigabe-Name",
+    "namePlaceholder": "Freigabe-Namen eingeben",
+    "descriptionLabel": "Beschreibung",
+    "descriptionPlaceholder": "Geben Sie eine Beschreibung ein (optional)",
+    "expirationLabel": "Ablaufdatum",
+    "expirationPlaceholder": "TT.MM.JJJJ HH:MM",
+    "maxViewsLabel": "Maximale Ansichten",
+    "maxViewsPlaceholder": "Leer lassen für unbegrenzt",
+    "passwordProtection": "Passwort-geschützt",
+    "passwordLabel": "Passwort",
+    "passwordPlaceholder": "Passwort eingeben",
+    "linkDescription": "Einen benutzerdefinierten Link zum Teilen der Datei generieren",
+    "aliasLabel": "Link-Alias",
+    "aliasPlaceholder": "Benutzerdefinierten Alias eingeben",
+    "linkReady": "Ihr Freigabe-Link ist bereit:",
+    "createShare": "Freigabe Erstellen",
+    "generateLink": "Link Generieren",
+    "copyLink": "Link Kopieren"
+  },
+  "shareManager": {
+    "deleteSuccess": "Freigabe erfolgreich gelöscht",
+    "deleteError": "Fehler beim Löschen der Freigabe",
+    "updateSuccess": "Freigabe erfolgreich aktualisiert",
+    "updateError": "Fehler beim Aktualisieren der Freigabe",
+    "filesUpdateSuccess": "Dateien erfolgreich aktualisiert",
+    "filesUpdateError": "Fehler beim Aktualisieren der Dateien",
+    "recipientsUpdateSuccess": "Empfänger erfolgreich aktualisiert",
+    "recipientsUpdateError": "Fehler beim Aktualisieren der Empfänger",
+    "linkGenerateSuccess": "Freigabelink erfolgreich generiert",
+    "linkGenerateError": "Fehler beim Generieren des Freigabelinks",
+    "notifyLoading": "Benachrichtigungen werden gesendet...",
+    "notifySuccess": "Empfänger erfolgreich benachrichtigt",
+    "notifyError": "Fehler beim Benachrichtigen der Empfänger",
+    "bulkDeleteError": "Fehler beim Löschen der Freigaben",
+    "bulkDeleteLoading": "Lösche {count, plural, =1 {1 Freigabe} other {# Freigaben}}...",
+    "bulkDeleteSuccess": "{count, plural, =1 {1 Freigabe erfolgreich gelöscht} other {# Freigaben erfolgreich gelöscht}}",
+    "securityUpdateError": "Sicherheitseinstellungen konnten nicht aktualisiert werden",
+    "expirationUpdateError": "Ablaufeinstellungen konnten nicht aktualisiert werden",
+    "securityUpdateSuccess": "Sicherheitseinstellungen erfolgreich aktualisiert",
+    "expirationUpdateSuccess": "Ablaufeinstellungen erfolgreich aktualisiert",
+    "creatingZip": "ZIP -Datei erstellen ...",
+    "defaultShareName": "Aktie",
+    "downloadError": "Download Share -Dateien nicht herunterladen",
+    "downloadSuccess": "Download begann erfolgreich",
+    "multipleSharesZipName": "{count} _shares_files.zip",
+    "noFilesToDownload": "Keine Dateien zum Download zur Verfügung stehen",
+    "singleShareZipName": "{ShareName} _files.zip",
+    "zipDownloadError": "Die ZIP -Datei erstellt nicht",
+    "zipDownloadSuccess": "ZIP -Datei erfolgreich heruntergeladen"
+  },
+  "shareMultipleFiles": {
+    "title": "Mehrere Dateien Teilen",
+    "shareNameLabel": "Freigabe-Name",
+    "shareNamePlaceholder": "Freigabe-Name eingeben",
+    "descriptionLabel": "Beschreibung",
+    "descriptionPlaceholder": "Geben Sie eine Beschreibung ein (optional)",
+    "filesToShare": "Zu teilende Dateien",
+    "files": "Dateien",
+    "totalSize": "Gesamtgröße",
+    "creating": "Erstellen...",
+    "create": "Freigabe Erstellen"
+  },
+  "shareSecurity": {
+    "subtitle": "Passwortschutz und Sicherheitsoptionen für diese Freigabe konfigurieren",
+    "info": {
+      "title": "So funktioniert es:",
+      "withoutPassword": "Jeder mit dem Link kann auf diese Freigabe ohne Passwort zugreifen.",
+      "withPassword": "Benutzer müssen das Passwort eingeben, um auf diese Freigabe zuzugreifen."
+    },
+    "existingPasswordMessage": "Diese Freigabe hat bereits ein Passwort. Wenn Sie es aktualisieren möchten, geben Sie das neue Passwort in das Feld unten ein und speichern Sie.",
+    "passwordProtection": "Passwortschutz",
+    "error": {
+      "updateFailed": "Sicherheitseinstellungen konnten nicht aktualisiert werden"
+    },
+    "passwordRequirements": {
+      "title": "Passwort-Anforderungen:",
+      "minLength": "Mindestens 2 Zeichen"
+    },
+    "newPassword": "Neues Passwort",
+    "success": {
+      "passwordUpdated": "Passwort erfolgreich aktualisiert",
+      "passwordRemoved": "Passwortschutz erfolgreich entfernt",
+      "passwordSet": "Passwortschutz erfolgreich aktiviert"
+    },
+    "password": "Passwort",
+    "validation": {
+      "passwordRequired": "Passwort ist erforderlich",
+      "passwordTooShort": "Passwort muss mindestens 2 Zeichen haben"
+    },
+    "currentStatus": "Aktueller Status",
+    "passwordPlaceholder": "Sicheres Passwort eingeben",
+    "title": "Freigabe-Sicherheitseinstellungen"
+  },
+  "shares": {
+    "errors": {
+      "loadFailed": "Fehler beim Laden der Freigaben",
+      "notifyFailed": "Fehler beim Benachrichtigen der Empfänger",
+      "smtpConfigFailed": "Fehler beim Laden der SMTP-Konfiguration"
+    },
+    "messages": {
+      "linkCopied": "Link in die Zwischenablage kopiert",
+      "recipientsNotified": "Empfänger erfolgreich benachrichtigt"
+    },
+    "empty": {
+      "message": "Noch keine Freigaben erstellt",
+      "createButton": "Freigabe erstellen"
+    },
+    "header": {
+      "title": "Meine Freigaben",
+      "myShares": "Meine Freigaben"
+    },
+    "search": {
+      "title": "Alle Freigaben",
+      "createButton": "Freigabe erstellen",
+      "placeholder": "Freigaben suchen...",
+      "results": "Gefunden {filtered} von {total} Freigaben"
+    },
+    "pageTitle": "Freigaben"
+  },
+  "sharesTable": {
+    "ariaLabel": "Freigaben-Tabelle",
+    "never": "Niemals",
+    "columns": {
+      "name": "NAME",
+      "description": "BESCHREIBUNG",
+      "createdAt": "ERSTELLT AM",
+      "expiresAt": "LÄUFT AB AM",
+      "status": "STATUS",
+      "security": "SICHERHEIT",
+      "files": "DATEIEN",
+      "recipients": "EMPFÄNGER",
+      "actions": "AKTIONEN"
+    },
+    "status": {
+      "neverExpires": "Läuft Nie Ab",
+      "active": "Aktiv",
+      "expired": "Abgelaufen"
+    },
+    "security": {
+      "protected": "Geschützt",
+      "public": "Öffentlich"
+    },
+    "filesCount": "Dateien",
+    "recipientsCount": "Empfänger",
+    "actions": {
+      "menu": "Freigabe-Aktionen-Menü",
+      "edit": "Bearbeiten",
+      "manageFiles": "Dateien Verwalten",
+      "manageRecipients": "Empfänger Verwalten",
+      "viewDetails": "Details Anzeigen",
+      "generateLink": "Link Generieren",
+      "editLink": "Link Bearbeiten",
+      "copyLink": "Link Kopieren",
+      "notifyRecipients": "Empfänger Benachrichtigen",
+      "delete": "Löschen",
+      "downloadShareFiles": "Laden Sie alle Dateien herunter"
+    },
+    "bulkActions": {
+      "delete": "Löschen",
+      "selected": "{count, plural, =1 {1 Freigabe ausgewählt} other {# Freigaben ausgewählt}}",
+      "actions": "Aktionen",
+      "download": "Download ausgewählt"
+    },
+    "selectAll": "Alle auswählen",
+    "selectShare": "Freigabe {shareName} auswählen"
+  },
+  "storageUsage": {
+    "title": "Speichernutzung",
+    "ariaLabel": "Fortschrittsbalken der Speichernutzung",
+    "used": "genutzt",
+    "available": "verfügbar",
+    "total": "Gesamt",
+    "loading": "Wird geladen...",
+    "retry": "Wiederholen",
+    "errors": {
+      "title": "Speicherinformationen nicht verfügbar",
+      "detectionFailed": "Speicherplatz konnte nicht erkannt werden. Dies kann an Systemkonfigurationsproblemen oder unzureichenden Berechtigungen liegen.",
+      "serverError": "Serverfehler beim Abrufen der Speicherinformationen. Bitte versuchen Sie es später erneut.",
+      "unknown": "Ein unerwarteter Fehler ist beim Laden der Speicherinformationen aufgetreten."
+    }
+  },
+  "theme": {
+    "toggle": "Design umschalten",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "system": "System"
+  },
+  "uploadFile": {
+    "title": "Datei hochladen",
+    "multipleTitle": "Mehrere Dateien Hochladen",
+    "selectFile": "Klicken Sie, um eine Datei auszuwählen",
+    "selectMultipleFiles": "Klicken Sie, um eine oder mehrere Dateien auszuwählen",
+    "dragAndDrop": "oder ziehen und legen Sie Dateien hier ab",
+    "preview": "Vorschau",
+    "uploadProgress": "Upload-Fortschritt",
+    "upload": "Hochladen",
+    "startUploads": "Uploads Starten",
+    "retry": "Wiederholen",
+    "finish": "Beenden",
+    "success": "Datei erfolgreich hochgeladen",
+    "allSuccess": "{count, plural, =1 {Datei erfolgreich hochgeladen} other {# Dateien erfolgreich hochgeladen}}",
+    "partialSuccess": "{success} Dateien erfolgreich hochgeladen, {error} fehlgeschlagen",
+    "error": "Fehler beim Hochladen der Datei",
+    "fileSizeExceeded": "Die Dateigröße überschreitet das Limit von {maxsizemb}MB.",
+    "insufficientStorage": "Unzureichender Speicherplatz. Sie haben {availablespace}MB verfügbar.",
+    "unauthorized": "Nicht autorisiert: Ein gültiger Token ist erforderlich, um auf diese Ressource zuzugreifen.",
+    "confirmCancel": {
+      "title": "Uploads Abbrechen",
+      "messageSingle": "Es läuft ein Upload.",
+      "messageMultiple": "Es laufen {count} Uploads.",
+      "warning": "Wenn Sie jetzt schließen, werden die Uploads abgebrochen und jeder Fortschritt geht verloren.",
+      "continue": "Uploads Fortsetzen",
+      "cancel": "Uploads Abbrechen"
+    },
+    "globalDrop": {
+      "title": "Dateien zum Hochladen ablegen",
+      "description": "Loslassen, um Ihre Dateien hochzuladen"
+    },
+    "pasteSuccess": "{count, plural, =1 {Bild erfolgreich eingefügt und hochgeladen} other {# Bilder erfolgreich eingefügt und hochgeladen}}"
+  },
+  "users": {
+    "modes": {
+      "create": "erstellen",
+      "edit": "bearbeiten"
+    },
+    "errors": {
+      "loadFailed": "Fehler beim Laden der Benutzer",
+      "submitFailed": "Fehler beim {mode} des Benutzers",
+      "deleteFailed": "Fehler beim Löschen des Benutzers",
+      "statusUpdateFailed": "Fehler beim Aktualisieren des Benutzerstatus"
+    },
+    "messages": {
+      "createSuccess": "Benutzer erfolgreich erstellt",
+      "updateSuccess": "Benutzer erfolgreich aktualisiert",
+      "deleteSuccess": "Benutzer erfolgreich gelöscht",
+      "activateSuccess": "Benutzer erfolgreich aktiviert",
+      "deactivateSuccess": "Benutzer erfolgreich deaktiviert"
+    },
+    "actions": {
+      "edit": "Bearbeiten",
+      "activate": "Aktivieren",
+      "deactivate": "Deaktivieren",
+      "delete": "Löschen"
+    },
+    "delete": {
+      "title": "Löschen des Benutzers bestätigen",
+      "confirmation": "Sind Sie sicher, dass Sie den Benutzer {firstName} {lastName} löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "confirm": "Benutzer löschen"
+    },
+    "form": {
+      "titleCreate": "Neuen Benutzer hinzufügen",
+      "titleEdit": "Benutzer bearbeiten",
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "username": "Benutzername",
+      "email": "E-Mail",
+      "password": "Passwort",
+      "newPassword": "Neues Passwort (optional)",
+      "passwordPlaceholder": "Leer lassen, um das aktuelle Passwort zu behalten",
+      "role": "Rolle",
+      "roleUser": "Benutzer",
+      "roleAdmin": "Administrator",
+      "create": "Erstellen",
+      "save": "Speichern"
+    },
+    "status": {
+      "title": "Statusänderung bestätigen",
+      "confirmation": "Sind Sie sicher, dass Sie den Benutzer {firstName} {lastName} {action} möchten?",
+      "activate": "aktivieren",
+      "deactivate": "deaktivieren",
+      "user": "Benutzer"
+    },
+    "header": {
+      "title": "Benutzerverwaltung",
+      "addUser": "Benutzer hinzufügen",
+      "management": "Benutzerverwaltung"
+    },
+    "table": {
+      "user": "BENUTZER",
+      "email": "E-MAIL",
+      "status": "STATUS",
+      "role": "ROLLE",
+      "actions": "AKTIONEN",
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "admin": "Administrator",
+      "userr": "Benutzer"
+    }
+  },
+  "validation": {
+    "invalidEmail": "Ungültige E-Mail-Adresse",
+    "passwordMinLength": "Das Passwort muss mindestens 6 Zeichen lang sein",
+    "firstNameRequired": "Vorname ist erforderlich",
+    "lastNameRequired": "Nachname ist erforderlich",
+    "usernameLength": "Der Benutzername muss mindestens 3 Zeichen lang sein",
+    "usernameSpaces": "Der Benutzername darf keine Leerzeichen enthalten",
+    "passwordLength": "Das Passwort muss mindestens 8 Zeichen lang sein",
+    "passwordsMatch": "Die Passwörter stimmen nicht überein",
+    "emailRequired": "E-Mail ist erforderlich",
+    "emailOrUsernameRequired": "E-Mail oder Benutzername ist erforderlich",
+    "passwordRequired": "Passwort ist erforderlich",
+    "nameRequired": "Name ist erforderlich",
+    "required": "Dieses Feld ist erforderlich"
+  },
+  "iconPicker": {
+    "title": "Symbol auswählen",
+    "placeholder": "Wählen Sie ein Symbol",
+    "searchPlaceholder": "Symbole suchen...",
+    "loadingMore": "Weitere Symbole werden geladen...",
+    "allIconsLoaded": "Alle {count} Symbole geladen",
+    "noIconsFound": "Keine Symbole für \"{search}\" gefunden",
+    "tabs": {
+      "all": "Alle Symbole",
+      "popular": "Beliebt",
+      "auth": "Authentifizierungsanbieter"
+    },
+    "stats": "{iconCount} Symbole aus {libraryCount} Bibliotheken",
+    "categoryBadge": "{category} ({count} Symbole)"
   }
 }

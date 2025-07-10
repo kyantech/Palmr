@@ -64,7 +64,7 @@ export function RecipientSelector({ shareId, selectedRecipients, shareAlias, onS
       setNewRecipient("");
       toast.success(t("recipientSelector.addSuccess"));
       onSuccess();
-    } catch (error) {
+    } catch {
       toast.error(t("recipientSelector.addError"));
     } finally {
       setIsAddingRecipient(false);
@@ -82,7 +82,7 @@ export function RecipientSelector({ shareId, selectedRecipients, shareAlias, onS
       });
       toast.success(t("recipientSelector.removeSuccess"));
       onSuccess();
-    } catch (error) {
+    } catch {
       toast.error(t("recipientSelector.removeError"));
     }
   };
@@ -95,7 +95,7 @@ export function RecipientSelector({ shareId, selectedRecipients, shareAlias, onS
       setSelectedForAction(new Set());
       toast.success(t("recipientSelector.bulkRemoveSuccess", { count: emailsToRemove.length }));
       onSuccess();
-    } catch (error) {
+    } catch {
       toast.error(t("recipientSelector.bulkRemoveError"));
     }
   };
@@ -112,7 +112,7 @@ export function RecipientSelector({ shareId, selectedRecipients, shareAlias, onS
       toast.dismiss(loadingToast);
       toast.success(t("recipientSelector.bulkNotifySuccess", { count: emailsToNotify.length }));
       setSelectedForAction(new Set());
-    } catch (error) {
+    } catch {
       toast.dismiss(loadingToast);
       toast.error(t("recipientSelector.bulkNotifyError"));
     }
@@ -128,7 +128,7 @@ export function RecipientSelector({ shareId, selectedRecipients, shareAlias, onS
       await notifyRecipients(shareId, { shareLink: link });
       toast.dismiss(loadingToast);
       toast.success(t("recipientSelector.notifySuccess"));
-    } catch (error) {
+    } catch {
       toast.dismiss(loadingToast);
       toast.error(t("recipientSelector.notifyError"));
     }
@@ -300,7 +300,7 @@ export function RecipientSelector({ shareId, selectedRecipients, shareAlias, onS
                                 await notifyRecipients(shareId, { shareLink: link });
                                 toast.dismiss(loadingToast);
                                 toast.success(t("recipientSelector.singleNotifySuccess", { email }));
-                              } catch (error) {
+                              } catch {
                                 toast.dismiss(loadingToast);
                                 toast.error(t("recipientSelector.singleNotifyError"));
                               }

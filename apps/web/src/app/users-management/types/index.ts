@@ -1,20 +1,20 @@
 import { UseFormReturn } from "react-hook-form";
 
-import type { ListUsers200Item } from "@/http/models";
+import { User } from "@/http/endpoints/auth/types";
 import { UserFormData } from "../hooks/use-user-management";
 
 export interface UserActionsDropdownProps {
-  user: ListUsers200Item;
+  user: User;
   isCurrentUser: boolean;
-  onEdit: (user: ListUsers200Item) => void;
-  onDelete: (user: ListUsers200Item) => void;
-  onToggleStatus: (user: ListUsers200Item) => void;
+  onEdit: (user: User) => void;
+  onDelete: (user: User) => void;
+  onToggleStatus: (user: User) => void;
 }
 
 export interface UserDeleteModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: ListUsers200Item | null;
+  user: User | null;
   onConfirm: () => Promise<void>;
 }
 
@@ -22,7 +22,7 @@ export interface UserFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   modalMode: "create" | "edit";
-  selectedUser: ListUsers200Item | null;
+  selectedUser: User | null;
   formMethods: UseFormReturn<UserFormData>;
   onSubmit: (data: UserFormData) => Promise<void>;
 }
@@ -37,9 +37,9 @@ export interface UserManagementModalsProps {
     isStatusModalOpen: boolean;
     onStatusModalClose: () => void;
   };
-  selectedUser: ListUsers200Item | null;
-  deleteModalUser: ListUsers200Item | null;
-  statusModalUser: ListUsers200Item | null;
+  selectedUser: User | null;
+  deleteModalUser: User | null;
+  statusModalUser: User | null;
   onSubmit: (data: UserFormData) => Promise<void>;
   onDelete: () => Promise<void>;
   onToggleStatus: () => Promise<void>;
@@ -49,7 +49,7 @@ export interface UserManagementModalsProps {
 export interface UserStatusModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: ListUsers200Item | null;
+  user: User | null;
   onConfirm: () => Promise<void>;
 }
 
@@ -67,9 +67,9 @@ export interface AuthUser {
 }
 
 export interface UsersTableProps {
-  users: ListUsers200Item[];
+  users: User[];
   currentUser: AuthUser | null;
-  onEdit: (user: ListUsers200Item) => void;
-  onDelete: (user: ListUsers200Item) => void;
-  onToggleStatus: (user: ListUsers200Item) => void;
+  onEdit: (user: User) => void;
+  onDelete: (user: User) => void;
+  onToggleStatus: (user: User) => void;
 }

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { createPortal } from "react-dom";
 import { CheckCircle } from "lucide-react";
+import { createPortal } from "react-dom";
 
 interface ToastProps {
   message: string;

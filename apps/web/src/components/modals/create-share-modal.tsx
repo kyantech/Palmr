@@ -52,7 +52,7 @@ export function CreateShareModal({ isOpen, onClose, onSuccess }: CreateShareModa
         isPasswordProtected: false,
         maxViews: "",
       });
-    } catch (error) {
+    } catch {
       toast.error(t("createShare.error"));
     } finally {
       setIsLoading(false);

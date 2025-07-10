@@ -31,3 +31,5 @@ apps/server/dist/*
 #DEFAULT
 .env
 data/
+
+node_modules/

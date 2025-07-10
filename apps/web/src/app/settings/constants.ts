@@ -1,4 +1,4 @@
-import { IconDatabase, IconKey, IconMail, IconSettings, IconShield } from "@tabler/icons-react";
+import { IconDatabase, IconMail, IconSettings, IconShield, IconUserCheck } from "@tabler/icons-react";
 import { createTranslator } from "next-intl";
 
 export const createGroupMetadata = (t: ReturnType<typeof createTranslator>) => ({
@@ -12,10 +12,10 @@ export const createGroupMetadata = (t: ReturnType<typeof createTranslator>) => (
     description: t("settings.groups.general.description"),
     icon: IconSettings,
   },
-  oidc: {
-    title: t("settings.groups.oidc.title"),
-    description: t("settings.groups.oidc.description"),
-    icon: IconKey,
+  "auth-providers": {
+    title: "Authentication Providers",
+    description: "Configure external authentication providers for SSO",
+    icon: IconUserCheck,
   },
   security: {
     title: t("settings.groups.security.title"),
@@ -48,16 +48,10 @@ export const createFieldDescriptions = (t: ReturnType<typeof createTranslator>) 
   smtpFromEmail: t("settings.fields.smtpFromEmail.description"),
   smtpSecure: t("settings.fields.smtpSecure.description"),
   smtpNoAuth: t("settings.fields.smtpNoAuth.description"),
+  smtpTrustSelfSigned: t("settings.fields.smtpTrustSelfSigned.description"),
 
-  // OIDC settings (nomes corretos do seed)
-  oidcEnabled: t("settings.fields.oidcEnabled.description"),
-  oidcIssuerUrl: t("settings.fields.oidcIssuerUrl.description"),
-  oidcClientId: t("settings.fields.oidcClientId.description"),
-  oidcClientSecret: t("settings.fields.oidcClientSecret.description"),
-  oidcRedirectUri: t("settings.fields.oidcRedirectUri.description"),
-  oidcScope: t("settings.fields.oidcScope.description"),
-  oidcAutoRegister: t("settings.fields.oidcAutoRegister.description"),
-  oidcAdminEmailDomains: t("settings.fields.oidcAdminEmailDomains.description"),
+  // Auth Providers settings
+  authProvidersEnabled: "Enable external authentication providers for SSO",
 
   // Security settings
   maxLoginAttempts: t("settings.fields.maxLoginAttempts.description"),
@@ -89,16 +83,10 @@ export const createFieldTitles = (t: ReturnType<typeof createTranslator>) => ({
   smtpFromEmail: t("settings.fields.smtpFromEmail.title"),
   smtpSecure: t("settings.fields.smtpSecure.title"),
   smtpNoAuth: t("settings.fields.smtpNoAuth.title"),
+  smtpTrustSelfSigned: t("settings.fields.smtpTrustSelfSigned.title"),
 
-  // OIDC settings
-  oidcEnabled: t("settings.fields.oidcEnabled.title"),
-  oidcIssuerUrl: t("settings.fields.oidcIssuerUrl.title"),
-  oidcClientId: t("settings.fields.oidcClientId.title"),
-  oidcClientSecret: t("settings.fields.oidcClientSecret.title"),
-  oidcRedirectUri: t("settings.fields.oidcRedirectUri.title"),
-  oidcScope: t("settings.fields.oidcScope.title"),
-  oidcAutoRegister: t("settings.fields.oidcAutoRegister.title"),
-  oidcAdminEmailDomains: t("settings.fields.oidcAdminEmailDomains.title"),
+  // Auth Providers settings
+  authProvidersEnabled: "Authentication Providers Enabled",
 
   // Security settings
   maxLoginAttempts: t("settings.fields.maxLoginAttempts.title"),

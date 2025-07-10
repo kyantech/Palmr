@@ -1,6 +1,7 @@
+import type { Share, ShareSecurity } from "@prisma/client";
+
 import { prisma } from "../../shared/prisma";
 import type { CreateShareInput } from "./dto";
-import type { Share, ShareSecurity } from "@prisma/client";
 
 export interface IShareRepository {
   createShare(data: CreateShareInput & { securityId: string; creatorId: string }): Promise<Share>;

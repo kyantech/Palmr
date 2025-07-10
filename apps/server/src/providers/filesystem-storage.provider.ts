@@ -1,12 +1,14 @@
-import { env } from "../env";
-import { StorageProvider } from "../types/storage";
-import { IS_RUNNING_IN_CONTAINER } from "../utils/container-detection";
 import * as crypto from "crypto";
 import * as fsSync from "fs";
 import * as fs from "fs/promises";
 import * as path from "path";
 import { Transform } from "stream";
 import { pipeline } from "stream/promises";
+
+import { directoriesConfig, getTempFilePath } from "../config/directories.config";
+import { env } from "../env";
+import { StorageProvider } from "../types/storage";
+import { IS_RUNNING_IN_CONTAINER } from "../utils/container-detection";
 
 export class FilesystemStorageProvider implements StorageProvider {
   private static instance: FilesystemStorageProvider;
@@ -16,10 +18,11 @@ export class FilesystemStorageProvider implements StorageProvider {
   private downloadTokens = new Map<string, { objectName: string; expiresAt: number; fileName?: string }>();
 
   private constructor() {
-    this.uploadsDir = IS_RUNNING_IN_CONTAINER ? "/app/server/uploads" : path.join(process.cwd(), "uploads");
+    this.uploadsDir = directoriesConfig.uploads;
 
     this.ensureUploadsDir();
     setInterval(() => this.cleanExpiredTokens(), 5 * 60 * 1000);
+    setInterval(() => this.cleanupEmptyTempDirs(), 10 * 60 * 1000); // Every 10 minutes
   }
 
   public static getInstance(): FilesystemStorageProvider {
@@ -176,28 +179,40 @@ export class FilesystemStorageProvider implements StorageProvider {
   }
 
   async uploadFile(objectName: string, buffer: Buffer): Promise<void> {
+    // For backward compatibility, convert buffer to stream and use streaming upload
     const filePath = this.getFilePath(objectName);
     const dir = path.dirname(filePath);
 
     await fs.mkdir(dir, { recursive: true });
 
-    if (buffer.length > 50 * 1024 * 1024) {
-      await this.uploadFileStream(objectName, buffer);
-    } else {
-      const encryptedBuffer = this.encryptFileBuffer(buffer);
-      await fs.writeFile(filePath, encryptedBuffer);
-    }
+    const { Readable } = await import("stream");
+    const readable = Readable.from(buffer);
+
+    await this.uploadFileFromStream(objectName, readable);
   }
 
-  private async uploadFileStream(objectName: string, buffer: Buffer): Promise<void> {
+  async uploadFileFromStream(objectName: string, inputStream: NodeJS.ReadableStream): Promise<void> {
     const filePath = this.getFilePath(objectName);
-    const { Readable } = await import("stream");
+    const dir = path.dirname(filePath);
 
-    const readable = Readable.from(buffer);
-    const writeStream = fsSync.createWriteStream(filePath);
+    await fs.mkdir(dir, { recursive: true });
+
+    // Use the new temp file system for better organization
+    const tempPath = getTempFilePath(objectName);
+    const tempDir = path.dirname(tempPath);
+
+    await fs.mkdir(tempDir, { recursive: true });
+
+    const writeStream = fsSync.createWriteStream(tempPath);
     const encryptStream = this.createEncryptStream();
 
-    await pipeline(readable, encryptStream, writeStream);
+    try {
+      await pipeline(inputStream, encryptStream, writeStream);
+      await fs.rename(tempPath, filePath);
+    } catch (error) {
+      await this.cleanupTempFile(tempPath);
+      throw error;
+    }
   }
 
   private encryptFileBuffer(buffer: Buffer): Buffer {
@@ -286,5 +301,82 @@ export class FilesystemStorageProvider implements StorageProvider {
 
   consumeDownloadToken(token: string): void {
     this.downloadTokens.delete(token);
+  }
+
+  /**
+   * Clean up temporary file and its parent directory if empty
+   */
+  private async cleanupTempFile(tempPath: string): Promise<void> {
+    try {
+      // Remove the temp file
+      await fs.unlink(tempPath);
+
+      // Try to remove the parent directory if it's empty
+      const tempDir = path.dirname(tempPath);
+      try {
+        const files = await fs.readdir(tempDir);
+        if (files.length === 0) {
+          await fs.rmdir(tempDir);
+        }
+      } catch (dirError: any) {
+        // Ignore errors when trying to remove directory (might not be empty or might not exist)
+        if (dirError.code !== "ENOTEMPTY" && dirError.code !== "ENOENT") {
+          console.warn("Warning: Could not remove temp directory:", dirError.message);
+        }
+      }
+    } catch (cleanupError: any) {
+      if (cleanupError.code !== "ENOENT") {
+        console.error("Error deleting temp file:", cleanupError);
+      }
+    }
+  }
+
+  /**
+   * Clean up empty temporary directories periodically
+   */
+  private async cleanupEmptyTempDirs(): Promise<void> {
+    try {
+      const tempUploadsDir = directoriesConfig.tempUploads;
+
+      // Check if temp-uploads directory exists
+      try {
+        await fs.access(tempUploadsDir);
+      } catch {
+        return; // Directory doesn't exist, nothing to clean
+      }
+
+      const items = await fs.readdir(tempUploadsDir);
+
+      for (const item of items) {
+        const itemPath = path.join(tempUploadsDir, item);
+
+        try {
+          const stat = await fs.stat(itemPath);
+
+          if (stat.isDirectory()) {
+            // Check if directory is empty
+            const dirContents = await fs.readdir(itemPath);
+            if (dirContents.length === 0) {
+              await fs.rmdir(itemPath);
+              console.log(`🧹 Cleaned up empty temp directory: ${itemPath}`);
+            }
+          } else if (stat.isFile()) {
+            // Check if file is older than 1 hour (stale temp files)
+            const oneHourAgo = Date.now() - 60 * 60 * 1000;
+            if (stat.mtime.getTime() < oneHourAgo) {
+              await fs.unlink(itemPath);
+              console.log(`🧹 Cleaned up stale temp file: ${itemPath}`);
+            }
+          }
+        } catch (error: any) {
+          // Ignore errors for individual items
+          if (error.code !== "ENOENT") {
+            console.warn(`Warning: Could not process temp item ${itemPath}:`, error.message);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error during temp directory cleanup:", error);
+    }
   }
 }

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
+import * as readline from "readline";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import * as readline from "readline";
 
 const prisma = new PrismaClient();
 

@@ -11,7 +11,7 @@ interface RedirectUriInputProps {
   placeholder?: string;
 }
 
-const CALLBACK_PATH = "/api/auth/oidc/callback";
+const CALLBACK_PATH = "/api/auth/providers/callback";
 
 export const RedirectUriInput = forwardRef<HTMLInputElement, RedirectUriInputProps>(
   ({ value, onChange, disabled, error, placeholder }, ref) => {

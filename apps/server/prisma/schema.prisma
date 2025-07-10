@@ -146,17 +146,56 @@ model ShareAlias {
   @@map("share_aliases")
 }
 
+model AuthProvider {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  displayName String
+  type        String
+  icon        String?
+  enabled     Boolean @default(false)
+
+  issuerUrl    String?
+  clientId     String?
+  clientSecret String?
+  redirectUri  String?
+  scope        String? @default("openid profile email")
+
+  authorizationEndpoint String?
+  tokenEndpoint         String?
+  userInfoEndpoint      String?
+
+  metadata String?
+
+  autoRegister      Boolean @default(true)
+  adminEmailDomains String?
+
+  sortOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userAuthProviders UserAuthProvider[]
+
+  @@map("auth_providers")
+}
+
 model UserAuthProvider {
-  id         String   @id @default(cuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  provider   String
-  providerId String?
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  providerId   String
+  authProvider AuthProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  provider String?
+
+  externalId String
   metadata   String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  @@unique([userId, provider])
+  @@unique([userId, providerId])
+  @@unique([providerId, externalId])
   @@map("user_auth_providers")
 }
 

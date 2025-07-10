@@ -5,9 +5,9 @@ services:
     environment:
       - ENABLE_S3=false
       - ENCRYPTION_KEY=change-this-key-in-production-min-32-chars # CHANGE THIS KEY FOR SECURITY
-      # Optional: Set custom UID/GID for file permissions
-      # - PALMR_UID=1000
-      # - PALMR_GID=1000
+      - PALMR_UID=1000 # UID for the container processes (default is 1001) you can change it to the UID of the user running the container
+      - PALMR_GID=1000 # GID for the container processes (default is 1001) you can change it to the GID of the user running the container
+      - SECURE_SITE=false # Set to true if you are using a reverse proxy
     ports:
       - "5487:5487" # Web port
       - "3333:3333" # API port (OPTIONAL EXPOSED - ONLY IF YOU WANT TO ACCESS THE API DIRECTLY)

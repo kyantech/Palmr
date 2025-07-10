@@ -1,4 +1,132 @@
 {
+  "auth": {
+    "errors": {
+      "account_inactive": "Account inactive. Please contact the administrator.",
+      "registration_disabled": "SSO registration is disabled.",
+      "token_expired": "Token expired. Please try again.",
+      "config_error": "Configuration error. Please contact support.",
+      "auth_failed": "Authentication failed. Please try again."
+    }
+  },
+  "authProviders": {
+    "title": "Authentication Providers",
+    "description": "Configure external authentication providers for SSO",
+    "enabledCount": "{count} enabled",
+    "loadingProviders": "Loading providers...",
+    "providersConfigured": "{count} providers configured",
+    "enabledOfTotal": "{enabled} enabled of {total} providers",
+    "hideDisabledProviders": "Hide disabled providers",
+    "addProvider": "Add Provider",
+    "addProviderTitle": "Add Provider",
+    "editProvider": "Edit Provider",
+    "deleteProvider": "Delete Provider",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "officialProvider": "Official Provider",
+    "dragToReorder": "Drag to reorder",
+    "dragDisabledMessage": "Drag and drop is disabled when filtering providers. Show all providers to reorder them.",
+    "dragEnabledMessage": "Drag providers to reorder them. This order will be reflected on the login page.",
+    "noProvidersEnabled": "No enabled authentication providers",
+    "noProvidersConfigured": "No authentication providers configured",
+    "form": {
+      "providerName": "Provider Name",
+      "providerNamePlaceholder": "e.g., mycompany",
+      "displayName": "Display Name",
+      "displayNamePlaceholder": "e.g., My Company SSO",
+      "type": "Type",
+      "typeOidc": "OIDC (OpenID Connect)",
+      "typeOauth2": "OAuth 2.0",
+      "icon": "Icon",
+      "iconPlaceholder": "Select an icon",
+      "clientId": "Client ID",
+      "clientIdPlaceholder": "Your OAuth client ID",
+      "clientSecret": "Client Secret",
+      "clientSecretPlaceholder": "Your OAuth client secret",
+      "oauthScopes": "OAuth Scopes",
+      "scopesPlaceholder": "Enter scopes (e.g., openid, profile, email)",
+      "scopesHelpOidc": "Scopes auto-suggested based on Provider URL. Common OIDC scopes: openid, profile, email, groups",
+      "scopesHelpOauth2": "Scopes auto-suggested based on Provider URL. Common OAuth2 scopes depend on the provider",
+      "providerUrl": "Provider URL",
+      "providerUrlPlaceholder": "https://auth.example.com",
+      "providerUrlAutoPlaceholder": "https://your-provider.com (endpoints will be discovered automatically)",
+      "providerUrlManualPlaceholder": "https://your-provider.com",
+      "autoDiscoveryHelp": "The system will automatically discover authorization, token, and userinfo endpoints",
+      "manualConfigurationHelp": "Base URL of your provider (endpoints will be relative to this)",
+      "authorizationEndpoint": "Authorization Endpoint",
+      "authorizationEndpointPlaceholder": "https://auth.example.com/auth",
+      "tokenEndpoint": "Token Endpoint",
+      "tokenEndpointPlaceholder": "https://auth.example.com/token",
+      "userInfoEndpoint": "User Info Endpoint",
+      "userInfoEndpointPlaceholder": "https://auth.example.com/userinfo",
+      "configurationMethod": "Configuration Method",
+      "autoDiscovery": "Auto-discovery",
+      "autoDiscoveryDescription": "Automatically discover endpoints from Provider URL",
+      "manualEndpoints": "Manual Endpoints (Recommended)",
+      "manualEndpointsDescription": "Manually configure authorization, token, and user info endpoints",
+      "callbackUrl": "Callback URL",
+      "callbackUrlDescription": "Use this URL in your OAuth provider configuration",
+      "copyCallbackUrl": "Copy Callback URL",
+      "callbackUrlCopied": "Callback URL copied to clipboard!",
+      "adminEmailDomains": "Admin Email Domains",
+      "adminEmailDomainsPlaceholder": "Enter domains (e.g., admin.company.com)",
+      "adminEmailDomainsHelp": "Users with emails from these domains will be granted admin privileges",
+      "autoRegister": "Auto-register new users",
+      "officialProviderUrlPlaceholder": "Replace placeholder with your {displayName} URL",
+      "officialProviderHelp": "This is an official provider. Endpoints are pre-configured. You can edit just this URL.",
+      "officialProviderIconHelp": "You can customize the icon for this official provider."
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving...",
+      "adding": "Adding...",
+      "updating": "Updating...",
+      "saveProvider": "Save Provider",
+      "delete": "Delete",
+      "deleting": "Deleting...",
+      "edit": "Edit",
+      "enable": "Enable",
+      "disable": "Disable"
+    },
+    "messages": {
+      "providerAdded": "Provider added successfully",
+      "providerUpdated": "Provider updated successfully",
+      "providerDeleted": "Provider deleted successfully",
+      "providerOrderUpdated": "Provider order updated successfully",
+      "fillRequiredFields": "Please fill in all required fields (name, display name, client ID, client secret)",
+      "provideUrlOrEndpoints": "Either provide a Provider URL for automatic discovery OR all three custom endpoints",
+      "chooseDiscoveryOrManual": "Choose either automatic discovery (Provider URL) OR manual endpoints, not both",
+      "loadFailed": "Failed to load providers",
+      "addFailed": "Failed to add provider",
+      "updateFailed": "Failed to update provider",
+      "deleteFailed": "Failed to delete provider",
+      "orderUpdateFailed": "Failed to update provider order"
+    },
+    "info": {
+      "title": "Information",
+      "officialProvidersRecommended": "For better functionality, consider using official providers. If you have issues with a custom provider, consider opening an issue on",
+      "github": "GitHub",
+      "officialProvider": "Official Provider",
+      "officialProviderDescription": "This provider is optimized by Palmr. Only credentials and configuration can be modified.",
+      "manualConfigTitle": "Manual Configuration",
+      "manualConfigDescription": "You're providing all endpoints manually. Make sure they're correct for your provider."
+    },
+    "deleteModal": {
+      "title": "Delete Authentication Provider",
+      "confirmMessage": "Are you sure you want to delete the \"{displayName}\" provider? This action cannot be undone.",
+      "providerId": "Provider ID: {name}",
+      "cancel": "Cancel",
+      "delete": "Delete Provider",
+      "deleting": "Deleting..."
+    }
+  },
+  "bulkDownload": {
+    "title": "Bulk Download",
+    "zipNameLabel": "ZIP file name",
+    "zipNamePlaceholder": "Enter file name",
+    "description": "{count, plural, =1 {1 file will be compressed} other {# files will be compressed}}",
+    "download": "Download ZIP"
+  },
   "common": {
     "loading": "Loading, please wait...",
     "cancel": "Cancel",
@@ -41,6 +169,10 @@
       "title": "Recent Files",
       "description": "Your most recently uploaded files"
     }
+  },
+  "deleteConfirmation": {
+    "filesToDelete": "Files to be deleted",
+    "sharesToDelete": "Shares to be deleted"
   },
   "emptyState": {
     "noFiles": "No files uploaded yet",
@@ -389,628 +521,6 @@
     "errors": {
       "serverError": "Failed to reset password. Please try again.",
       "invalidToken": "Invalid or missing reset token"
-    }
-  },
-  "searchBar": {
-    "placeholder": "Search files...",
-    "results": "Found {filtered} of {total} files"
-  },
-  "settings": {
-    "groups": {
-      "defaultDescription": "Configuration options",
-      "general": {
-        "title": "General",
-        "description": "Basic application settings"
-      },
-      "email": {
-        "title": "Email",
-        "description": "Email server configuration"
-      },
-      "security": {
-        "title": "Security",
-        "description": "Security and authentication settings"
-      },
-      "storage": {
-        "title": "Storage",
-        "description": "File storage configuration"
-      },
-      "oidc": {
-        "title": "OpenID Connect (SSO)",
-        "description": "Configure SSO authentication via OpenID Connect"
-      }
-    },
-    "fields": {
-      "noDescription": "No description available",
-      "appLogo": {
-        "title": "Application Logo",
-        "description": "Application logo image"
-      },
-      "appName": {
-        "title": "Application Name",
-        "description": "Application name displayed to users"
-      },
-      "appDescription": {
-        "title": "Application Description",
-        "description": "Brief description of the application"
-      },
-      "showHomePage": {
-        "title": "Show Home Page",
-        "description": "Show Home Page after installation"
-      },
-      "smtpEnabled": {
-        "title": "SMTP Enabled",
-        "description": "Enable or disable SMTP email functionality"
-      },
-      "smtpHost": {
-        "title": "SMTP Server",
-        "description": "SMTP server address"
-      },
-      "smtpPort": {
-        "title": "SMTP Port",
-        "description": "SMTP server port"
-      },
-      "smtpUser": {
-        "title": "SMTP Username",
-        "description": "Username for SMTP authentication"
-      },
-      "smtpPass": {
-        "title": "SMTP Password",
-        "description": "Password for SMTP authentication"
-      },
-      "smtpFromName": {
-        "title": "Sender Name",
-        "description": "Display name for sent emails"
-      },
-      "smtpFromEmail": {
-        "title": "Sender Email",
-        "description": "Sender email address"
-      },
-      "smtpSecure": {
-        "title": "Connection Security",
-        "description": "SMTP connection security method - Auto (recommended), SSL, STARTTLS, or None (insecure)",
-        "options": {
-          "auto": "Auto (Recommended)",
-          "ssl": "SSL (Port 465)",
-          "tls": "STARTTLS (Port 587)",
-          "none": "None (Insecure)"
-        }
-      },
-      "smtpNoAuth": {
-        "title": "No Authentication",
-        "description": "Enable this for internal servers that don't require username/password (hides auth fields)"
-      },
-      "testSmtp": {
-        "title": "Test SMTP Connection",
-        "description": "Test if the SMTP configuration is valid"
-      },
-      "maxLoginAttempts": {
-        "title": "Maximum Login Attempts",
-        "description": "Maximum number of login attempts before blocking"
-      },
-      "loginBlockDuration": {
-        "title": "Block Duration",
-        "description": "Duration (in seconds) to block after exceeding attempts"
-      },
-      "passwordMinLength": {
-        "title": "Minimum Password Length",
-        "description": "Minimum number of characters for passwords"
-      },
-      "passwordResetTokenExpiration": {
-        "title": "Reset Token Expiration",
-        "description": "Validity time (in seconds) for password reset token"
-      },
-      "maxFileSize": {
-        "title": "Maximum File Size",
-        "description": "Maximum allowed file size for uploads"
-      },
-      "maxTotalStoragePerUser": {
-        "title": "Maximum Storage Per User",
-        "description": "Total storage limit per user"
-      },
-      "firstUserAccess": {
-        "title": "First User Access",
-        "description": "Settings for first access of new users"
-      },
-      "serverUrl": {
-        "title": "Server URL",
-        "description": "Base URL of the Palmr server (e.g.: https://palmr.example.com)"
-      },
-      "oidcEnabled": {
-        "title": "OIDC Enabled",
-        "description": "Enable or disable OpenID Connect authentication"
-      },
-      "oidcIssuerUrl": {
-        "title": "Provider URL",
-        "description": "OpenID Connect provider URL (e.g.: https://auth.example.com/auth/realms/master)"
-      },
-      "oidcClientId": {
-        "title": "Client ID",
-        "description": "OIDC client identifier registered with the provider"
-      },
-      "oidcClientSecret": {
-        "title": "Client Secret",
-        "description": "OIDC client secret for authentication"
-      },
-      "oidcRedirectUri": {
-        "title": "Redirect URI",
-        "description": "URI where users will be redirected after authentication. Enter only the base URL (e.g.: https://mysite.com). The path /api/auth/oidc/callback will be added automatically."
-      },
-      "oidcScope": {
-        "title": "Scopes",
-        "description": "Requested OIDC scopes (e.g.: openid profile email)"
-      },
-      "oidcAutoRegister": {
-        "title": "Auto Register",
-        "description": "Automatically register users that don't exist on first login"
-      },
-      "oidcAdminEmailDomains": {
-        "title": "Admin Email Domains",
-        "description": "Email domains that automatically receive admin privileges"
-      }
-    },
-    "buttons": {
-      "save": "Save {group}",
-      "testSmtp": "Test Connection",
-      "testing": "Testing..."
-    },
-    "errors": {
-      "loadFailed": "Failed to load settings",
-      "updateFailed": "Failed to update settings"
-    },
-    "messages": {
-      "noChanges": "No changes to save",
-      "updateSuccess": "{group} settings updated successfully",
-      "smtpTestSuccess": "SMTP connection successful! Your email configuration is working correctly.",
-      "smtpTestFailed": "SMTP connection failed: {error}",
-      "smtpTestGenericError": "Failed to test SMTP connection. Please check your settings and try again.",
-      "smtpNotEnabled": "SMTP is not enabled. Please enable SMTP first.",
-      "smtpMissingHostPort": "Please fill in SMTP Host and Port before testing.",
-      "smtpMissingAuth": "Please fill in SMTP Username and Password, or enable 'No Authentication' option."
-    },
-    "title": "Settings",
-    "breadcrumb": "Settings",
-    "pageTitle": "Settings",
-    "tooltips": {
-      "oidcScope": "Enter a scope and press Enter to add",
-      "oidcAdminEmailDomains": "Enter a domain and press Enter to add",
-      "testSmtp": "Tests the SMTP connection with the values currently entered in the form. To make changes permanent, remember to save your settings after testing.",
-      "defaultPlaceholder": "Enter and press Enter"
-    },
-    "redirectUri": {
-      "placeholder": "https://mysite.com",
-      "previewLabel": "Complete URL that will be saved:"
-    }
-  },
-  "share": {
-    "errors": {
-      "invalidPassword": "Invalid password. Please try again.",
-      "loadFailed": "Failed to load share",
-      "downloadFailed": "Failed to download file"
-    },
-    "messages": {
-      "downloadStarted": "Download started"
-    },
-    "password": {
-      "title": "Password Protected Share",
-      "protected": "This share is password protected",
-      "incorrect": "Incorrect password. Please try again.",
-      "label": "Password",
-      "placeholder": "Enter share password",
-      "submit": "Submit"
-    },
-    "details": {
-      "untitled": "Untitled Share",
-      "created": "Created: {date}",
-      "expires": "Expires: {date}"
-    },
-    "downloadAll": "Download All",
-    "notFound": {
-      "title": "Share Not Found",
-      "description": "This share may have been deleted or expired."
-    },
-    "pageTitle": "Share"
-  },
-  "shareActions": {
-    "deleteTitle": "Delete Share",
-    "deleteConfirmation": "Are you sure you want to delete this share? This action cannot be undone.",
-    "editTitle": "Edit Share",
-    "nameLabel": "Share Name",
-    "descriptionLabel": "Description",
-    "descriptionPlaceholder": "Enter a description (optional)",
-    "expirationLabel": "Expiration Date",
-    "expirationPlaceholder": "MM/DD/YYYY HH:MM",
-    "maxViewsLabel": "Max Views",
-    "maxViewsPlaceholder": "Leave empty for unlimited",
-    "passwordProtection": "Password Protected",
-    "passwordLabel": "Password",
-    "passwordPlaceholder": "Enter password",
-    "newPasswordLabel": "New Password (leave empty to keep current)",
-    "newPasswordPlaceholder": "Enter new password",
-    "manageFilesTitle": "Manage Files",
-    "manageRecipientsTitle": "Manage Recipients",
-    "editSuccess": "Share updated successfully",
-    "editError": "Failed to update share",
-    "bulkDeleteConfirmation": "Are you sure you want to delete {count, plural, =1 {1 share} other {# shares}}? This action cannot be undone.",
-    "bulkDeleteTitle": "Delete Selected Shares"
-  },
-  "shareDetails": {
-    "title": "Share Details",
-    "subtitle": "Detailed information about this share",
-    "basicInfo": "Basic Information",
-    "name": "Name",
-    "description": "Description",
-    "noDescription": "No description provided",
-    "untitled": "Untitled",
-    "shareLink": "Share Link",
-    "editLink": "Edit Link",
-    "generateLink": "Generate Link",
-    "noLink": "No link generated yet",
-    "copyLink": "Copy link",
-    "openLink": "Open in new tab",
-    "linkCopied": "Link copied to clipboard",
-    "views": "Views",
-    "dates": "Dates",
-    "created": "Created",
-    "expires": "Expires",
-    "never": "Never",
-    "security": "Security",
-    "editSecurity": "Edit Security",
-    "editExpiration": "Edit Expiration",
-    "passwordProtected": "Password Protected",
-    "publicAccess": "Public Access",
-    "maxViews": "Max Views:",
-    "files": "Files",
-    "recipients": "Recipients",
-    "notAvailable": "N/A",
-    "invalidDate": "Invalid date",
-    "loadError": "Failed to load share details"
-  },
-  "shareSecurity": {
-    "title": "Share Security Settings",
-    "subtitle": "Configure password protection and security options for this share",
-    "currentStatus": "Current Status",
-    "passwordProtection": "Password Protection",
-    "password": "Password",
-    "newPassword": "New Password",
-    "passwordPlaceholder": "Enter a secure password",
-    "existingPasswordMessage": "This share already has a password. If you want to update it, enter the new password in the field below and save.",
-    "passwordRequirements": {
-      "title": "Password requirements:",
-      "minLength": "At least 2 characters"
-    },
-    "info": {
-      "title": "How it works:",
-      "withPassword": "Users will need to enter the password to access this share.",
-      "withoutPassword": "Anyone with the link can access this share without a password."
-    },
-    "validation": {
-      "passwordRequired": "Password is required",
-      "passwordTooShort": "Password must be at least 2 characters"
-    },
-    "success": {
-      "passwordSet": "Password protection enabled successfully",
-      "passwordUpdated": "Password updated successfully",
-      "passwordRemoved": "Password protection removed successfully"
-    },
-    "error": {
-      "updateFailed": "Failed to update security settings"
-    }
-  },
-  "shareExpiration": {
-    "title": "Share Expiration Settings",
-    "subtitle": "Configure when this share will expire",
-    "currentStatus": "Current Status",
-    "expires": "Expires:",
-    "neverExpires": "Never Expires",
-    "enableExpiration": "Enable Expiration",
-    "expirationDate": "Expiration Date",
-    "validation": {
-      "dateRequired": "Please select an expiration date",
-      "dateMustBeFuture": "Expiration date must be in the future"
-    },
-    "success": {
-      "expirationSet": "Expiration date set successfully",
-      "expirationUpdated": "Expiration date updated successfully",
-      "expirationRemoved": "Expiration removed successfully - share is now permanent"
-    },
-    "error": {
-      "updateFailed": "Failed to update expiration settings"
-    },
-    "info": {
-      "title": "About expiration:",
-      "willBeInaccessible": "The share will become inaccessible after this date",
-      "canBeChanged": "You can change or remove the expiration date anytime",
-      "noExpiration": "This share will never expire and will remain accessible indefinitely."
-    }
-  },
-  "shareManager": {
-    "deleteSuccess": "Share deleted successfully",
-    "deleteError": "Failed to delete share",
-    "updateSuccess": "Share updated successfully",
-    "updateError": "Failed to update share",
-    "securityUpdateSuccess": "Security settings updated successfully",
-    "securityUpdateError": "Failed to update security settings",
-    "expirationUpdateSuccess": "Expiration settings updated successfully",
-    "expirationUpdateError": "Failed to update expiration settings",
-    "filesUpdateSuccess": "Files updated successfully",
-    "filesUpdateError": "Failed to update files",
-    "recipientsUpdateSuccess": "Recipients updated successfully",
-    "recipientsUpdateError": "Failed to update recipients",
-    "linkGenerateSuccess": "Share link generated successfully",
-    "linkGenerateError": "Failed to generate share link",
-    "notifyLoading": "Sending notifications...",
-    "notifySuccess": "Recipients notified successfully",
-    "notifyError": "Failed to notify recipients",
-    "bulkDeleteError": "Failed to delete shares",
-    "bulkDeleteLoading": "Deleting {count, plural, =1 {1 share} other {# shares}}...",
-    "bulkDeleteSuccess": "{count, plural, =1 {1 share deleted successfully} other {# shares deleted successfully}}",
-    "downloadSuccess": "Download started successfully",
-    "downloadError": "Failed to download share files",
-    "noFilesToDownload": "No files available to download",
-    "creatingZip": "Creating ZIP file...",
-    "zipDownloadSuccess": "ZIP file downloaded successfully",
-    "zipDownloadError": "Failed to create ZIP file",
-    "singleShareZipName": "{shareName}_files.zip",
-    "multipleSharesZipName": "{count}_shares_files.zip",
-    "defaultShareName": "Share"
-  },
-  "shares": {
-    "errors": {
-      "loadFailed": "Failed to load shares",
-      "notifyFailed": "Failed to notify recipients",
-      "smtpConfigFailed": "Failed to load SMTP configuration"
-    },
-    "messages": {
-      "linkCopied": "Link copied to clipboard",
-      "recipientsNotified": "Recipients notified successfully"
-    },
-    "empty": {
-      "message": "No shares created yet",
-      "createButton": "Create Share"
-    },
-    "header": {
-      "title": "My Shares",
-      "myShares": "My Shares"
-    },
-    "search": {
-      "title": "All Shares",
-      "createButton": "Create Share",
-      "placeholder": "Search shares...",
-      "results": "Found {filtered} of {total} shares"
-    },
-    "pageTitle": "Shares"
-  },
-  "sharesTable": {
-    "ariaLabel": "Shares table",
-    "never": "Never",
-    "columns": {
-      "name": "NAME",
-      "description": "DESCRIPTION",
-      "createdAt": "CREATED AT",
-      "expiresAt": "EXPIRES AT",
-      "status": "STATUS",
-      "security": "SECURITY",
-      "files": "FILES",
-      "recipients": "RECIPIENTS",
-      "actions": "ACTIONS"
-    },
-    "status": {
-      "neverExpires": "Never Expires",
-      "active": "Active",
-      "expired": "Expired"
-    },
-    "security": {
-      "protected": "Protected",
-      "public": "Public"
-    },
-    "filesCount": "files",
-    "recipientsCount": "recipients",
-    "actions": {
-      "menu": "Share actions menu",
-      "edit": "Edit",
-      "manageFiles": "Manage Files",
-      "manageRecipients": "Manage Recipients",
-      "viewDetails": "View Details",
-      "generateLink": "Generate Link",
-      "editLink": "Edit Link",
-      "copyLink": "Copy Link",
-      "notifyRecipients": "Notify Recipients",
-      "downloadShareFiles": "Download All Files",
-      "delete": "Delete"
-    },
-    "bulkActions": {
-      "actions": "Actions",
-      "download": "Download Selected",
-      "delete": "Delete",
-      "selected": "{count, plural, =1 {1 share selected} other {# shares selected}}"
-    },
-    "selectAll": "Select all",
-    "selectShare": "Select share {shareName}"
-  },
-  "storageUsage": {
-    "title": "Storage Usage",
-    "ariaLabel": "Storage usage progress bar",
-    "used": "used",
-    "available": "available",
-    "loading": "Loading...",
-    "retry": "Retry",
-    "errors": {
-      "title": "Storage information unavailable",
-      "detectionFailed": "Unable to detect disk space. This may be due to system configuration issues or insufficient permissions.",
-      "serverError": "Server error occurred while retrieving storage information. Please try again later.",
-      "unknown": "An unexpected error occurred while loading storage information."
-    }
-  },
-  "theme": {
-    "toggle": "Toggle theme",
-    "light": "Light",
-    "dark": "Dark",
-    "system": "System"
-  },
-  "uploadFile": {
-    "title": "Upload File",
-    "multipleTitle": "Upload Files",
-    "selectFile": "Click to select a file",
-    "selectMultipleFiles": "Click to select one or multiple files",
-    "dragAndDrop": "or drag and drop files here",
-    "preview": "Preview",
-    "uploadProgress": "Upload progress",
-    "upload": "Upload",
-    "startUploads": "Start Uploads",
-    "retry": "Retry",
-    "finish": "Finish",
-    "success": "File uploaded successfully",
-    "allSuccess": "{count, plural, =1 {File uploaded successfully} other {# files uploaded successfully}}",
-    "partialSuccess": "{success} files uploaded successfully, {error} failed",
-    "error": "Failed to upload file",
-    "fileSizeExceeded": "File size exceeds the limit of {maxsizemb}MB.",
-    "insufficientStorage": "Insufficient storage space. You have {availablespace}MB available.",
-    "unauthorized": "Unauthorized: a valid token is required to access this resource.",
-    "confirmCancel": {
-      "title": "Cancel Uploads",
-      "messageSingle": "There is one upload in progress.",
-      "messageMultiple": "There are {count} uploads in progress.",
-      "warning": "If you close now, uploads will be cancelled and any progress will be lost.",
-      "continue": "Continue Uploads",
-      "cancel": "Cancel Uploads"
-    }
-  },
-  "users": {
-    "modes": {
-      "create": "create",
-      "edit": "edit"
-    },
-    "errors": {
-      "loadFailed": "Failed to load users",
-      "submitFailed": "Failed to {mode} user",
-      "deleteFailed": "Failed to delete user",
-      "statusUpdateFailed": "Failed to update user status"
-    },
-    "messages": {
-      "createSuccess": "User created successfully",
-      "updateSuccess": "User updated successfully",
-      "deleteSuccess": "User deleted successfully",
-      "activateSuccess": "User activated successfully",
-      "deactivateSuccess": "User deactivated successfully"
-    },
-    "actions": {
-      "edit": "Edit",
-      "activate": "Activate",
-      "deactivate": "Deactivate",
-      "delete": "Delete"
-    },
-    "delete": {
-      "title": "Confirm Delete User",
-      "confirmation": "Are you sure you want to delete user {firstName} {lastName}? This action cannot be undone.",
-      "confirm": "Delete User"
-    },
-    "form": {
-      "titleCreate": "Add New User",
-      "titleEdit": "Edit User",
-      "firstName": "First Name",
-      "lastName": "Last Name",
-      "username": "Username",
-      "email": "Email",
-      "password": "Password",
-      "newPassword": "New Password (optional)",
-      "passwordPlaceholder": "Leave blank to keep current password",
-      "role": "Role",
-      "roleUser": "User",
-      "roleAdmin": "Admin",
-      "create": "Create",
-      "save": "Save"
-    },
-    "status": {
-      "title": "Confirm Status Change",
-      "confirmation": "Are you sure you want to {action} user {firstName} {lastName}?",
-      "activate": "activate",
-      "deactivate": "deactivate",
-      "user": "User"
-    },
-    "header": {
-      "title": "User Management",
-      "addUser": "Add User",
-      "management": "User Management"
-    },
-    "table": {
-      "user": "USER",
-      "email": "EMAIL",
-      "status": "STATUS",
-      "role": "ROLE",
-      "actions": "ACTIONS",
-      "active": "Active",
-      "inactive": "Inactive",
-      "admin": "Admin",
-      "userr": "User"
-    }
-  },
-  "validation": {
-    "firstNameRequired": "First name is required",
-    "lastNameRequired": "Last name is required",
-    "usernameLength": "Username must be at least 3 characters long",
-    "usernameSpaces": "Username cannot contain spaces",
-    "invalidEmail": "Please enter a valid email address",
-    "passwordLength": "Password must be at least 8 characters long",
-    "passwordsMatch": "Passwords must match",
-    "emailRequired": "Email is required",
-    "emailOrUsernameRequired": "Email or username is required",
-    "passwordRequired": "Password is required",
-    "passwordMinLength": "Password must be at least 6 characters",
-    "nameRequired": "Name is required",
-    "required": "This field is required"
-  },
-  "shareFile": {
-    "title": "Share File",
-    "linkTitle": "Generate Link",
-    "nameLabel": "Share Name",
-    "namePlaceholder": "Enter share name",
-    "descriptionLabel": "Description",
-    "descriptionPlaceholder": "Enter a description (optional)",
-    "expirationLabel": "Expiration Date",
-    "expirationPlaceholder": "MM/DD/YYYY HH:MM",
-    "maxViewsLabel": "Maximum Views",
-    "maxViewsPlaceholder": "Leave empty for unlimited",
-    "passwordProtection": "Password Protected",
-    "passwordLabel": "Password",
-    "passwordPlaceholder": "Enter password",
-    "linkDescription": "Generate a custom link to share the file",
-    "aliasLabel": "Link Alias",
-    "aliasPlaceholder": "Enter custom alias",
-    "linkReady": "Your share link is ready:",
-    "createShare": "Create Share",
-    "generateLink": "Generate Link",
-    "copyLink": "Copy Link"
-  },
-  "bulkDownload": {
-    "title": "Bulk Download",
-    "zipNameLabel": "ZIP file name",
-    "zipNamePlaceholder": "Enter file name",
-    "description": "{count, plural, =1 {1 file will be compressed} other {# files will be compressed}}",
-    "download": "Download ZIP"
-  },
-  "deleteConfirmation": {
-    "filesToDelete": "Files to be deleted",
-    "sharesToDelete": "Shares to be deleted"
-  },
-  "shareMultipleFiles": {
-    "title": "Share Multiple Files",
-    "shareNameLabel": "Share Name",
-    "shareNamePlaceholder": "Enter share name",
-    "descriptionLabel": "Description",
-    "descriptionPlaceholder": "Enter a description (optional)",
-    "filesToShare": "Files to share",
-    "files": "files",
-    "totalSize": "Total size",
-    "creating": "Creating...",
-    "create": "Create Share"
-  },
-  "auth": {
-    "errors": {
-      "account_inactive": "Account inactive. Please contact the administrator.",
-      "registration_disabled": "SSO registration is disabled.",
-      "token_expired": "Token expired. Please try again.",
-      "config_error": "Configuration error. Please contact support.",
-      "auth_failed": "Authentication failed. Please try again."
     }
   },
   "reverseShares": {
@@ -1447,5 +957,598 @@
         "cancelEdit": "Cancel edit"
       }
     }
+  },
+  "searchBar": {
+    "placeholder": "Search files...",
+    "results": "Found {filtered} of {total} files"
+  },
+  "settings": {
+    "groups": {
+      "defaultDescription": "Configuration options",
+      "general": {
+        "title": "General",
+        "description": "Basic application settings"
+      },
+      "email": {
+        "title": "Email",
+        "description": "Email server configuration"
+      },
+      "security": {
+        "title": "Security",
+        "description": "Security and authentication settings"
+      },
+      "storage": {
+        "title": "Storage",
+        "description": "File storage configuration"
+      },
+      "oidc": {
+        "title": "OpenID Connect (SSO)",
+        "description": "Configure SSO authentication via OpenID Connect"
+      }
+    },
+    "fields": {
+      "noDescription": "No description available",
+      "appLogo": {
+        "title": "Application Logo",
+        "description": "Application logo image"
+      },
+      "appName": {
+        "title": "Application Name",
+        "description": "Application name displayed to users"
+      },
+      "appDescription": {
+        "title": "Application Description",
+        "description": "Brief description of the application"
+      },
+      "showHomePage": {
+        "title": "Show Home Page",
+        "description": "Show Home Page after installation"
+      },
+      "smtpEnabled": {
+        "title": "SMTP Enabled",
+        "description": "Enable or disable SMTP email functionality"
+      },
+      "smtpHost": {
+        "title": "SMTP Server",
+        "description": "SMTP server address"
+      },
+      "smtpPort": {
+        "title": "SMTP Port",
+        "description": "SMTP server port"
+      },
+      "smtpUser": {
+        "title": "SMTP Username",
+        "description": "Username for SMTP authentication"
+      },
+      "smtpPass": {
+        "title": "SMTP Password",
+        "description": "Password for SMTP authentication"
+      },
+      "smtpFromName": {
+        "title": "Sender Name",
+        "description": "Display name for sent emails"
+      },
+      "smtpFromEmail": {
+        "title": "Sender Email",
+        "description": "Sender email address"
+      },
+      "smtpSecure": {
+        "title": "Connection Security",
+        "description": "SMTP connection security method - Auto (recommended), SSL, STARTTLS, or None (insecure)",
+        "options": {
+          "auto": "Auto (Recommended)",
+          "ssl": "SSL (Port 465)",
+          "tls": "STARTTLS (Port 587)",
+          "none": "None (Insecure)"
+        }
+      },
+      "smtpNoAuth": {
+        "title": "No Authentication",
+        "description": "Enable this for internal servers that don't require username/password (hides auth fields)"
+      },
+      "smtpTrustSelfSigned": {
+        "title": "Trust Self-Signed Certificates",
+        "description": "Enable this to trust self-signed SSL/TLS certificates (useful for development environments)"
+      },
+      "testSmtp": {
+        "title": "Test SMTP Connection",
+        "description": "Test if the SMTP configuration is valid"
+      },
+      "maxLoginAttempts": {
+        "title": "Maximum Login Attempts",
+        "description": "Maximum number of login attempts before blocking"
+      },
+      "loginBlockDuration": {
+        "title": "Block Duration",
+        "description": "Duration (in seconds) to block after exceeding attempts"
+      },
+      "passwordMinLength": {
+        "title": "Minimum Password Length",
+        "description": "Minimum number of characters for passwords"
+      },
+      "passwordResetTokenExpiration": {
+        "title": "Reset Token Expiration",
+        "description": "Validity time (in seconds) for password reset token"
+      },
+      "maxFileSize": {
+        "title": "Maximum File Size",
+        "description": "Maximum allowed file size for uploads"
+      },
+      "maxTotalStoragePerUser": {
+        "title": "Maximum Storage Per User",
+        "description": "Total storage limit per user"
+      },
+      "firstUserAccess": {
+        "title": "First User Access",
+        "description": "Settings for first access of new users"
+      },
+      "serverUrl": {
+        "title": "Server URL",
+        "description": "Base URL of the Palmr server (e.g.: https://palmr.example.com)"
+      }
+    },
+    "buttons": {
+      "save": "Save {group}",
+      "testSmtp": "Test Connection",
+      "testing": "Testing..."
+    },
+    "errors": {
+      "loadFailed": "Failed to load settings",
+      "updateFailed": "Failed to update settings"
+    },
+    "messages": {
+      "noChanges": "No changes to save",
+      "updateSuccess": "{group} settings updated successfully",
+      "smtpTestSuccess": "SMTP connection successful! Your email configuration is working correctly.",
+      "smtpTestFailed": "SMTP connection failed: {error}",
+      "smtpTestGenericError": "Failed to test SMTP connection. Please check your settings and try again.",
+      "smtpNotEnabled": "SMTP is not enabled. Please enable SMTP first.",
+      "smtpMissingHostPort": "Please fill in SMTP Host and Port before testing.",
+      "smtpMissingAuth": "Please fill in SMTP Username and Password, or enable 'No Authentication' option."
+    },
+    "title": "Settings",
+    "breadcrumb": "Settings",
+    "pageTitle": "Settings",
+    "tooltips": {
+      "testSmtp": "Tests the SMTP connection with the values currently entered in the form. To make changes permanent, remember to save your settings after testing.",
+      "defaultPlaceholder": "Enter and press Enter"
+    },
+    "redirectUri": {
+      "placeholder": "https://mysite.com",
+      "previewLabel": "Complete URL that will be saved:"
+    }
+  },
+  "share": {
+    "errors": {
+      "invalidPassword": "Invalid password. Please try again.",
+      "loadFailed": "Failed to load share",
+      "downloadFailed": "Failed to download file"
+    },
+    "messages": {
+      "downloadStarted": "Download started"
+    },
+    "password": {
+      "title": "Password Protected Share",
+      "protected": "This share is password protected",
+      "incorrect": "Incorrect password. Please try again.",
+      "label": "Password",
+      "placeholder": "Enter share password",
+      "submit": "Submit"
+    },
+    "details": {
+      "untitled": "Untitled Share",
+      "created": "Created: {date}",
+      "expires": "Expires: {date}"
+    },
+    "downloadAll": "Download All",
+    "notFound": {
+      "title": "Share Not Found",
+      "description": "This share may have been deleted or expired."
+    },
+    "pageTitle": "Share"
+  },
+  "shareActions": {
+    "deleteTitle": "Delete Share",
+    "deleteConfirmation": "Are you sure you want to delete this share? This action cannot be undone.",
+    "editTitle": "Edit Share",
+    "nameLabel": "Share Name",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Enter a description (optional)",
+    "expirationLabel": "Expiration Date",
+    "expirationPlaceholder": "MM/DD/YYYY HH:MM",
+    "maxViewsLabel": "Max Views",
+    "maxViewsPlaceholder": "Leave empty for unlimited",
+    "passwordProtection": "Password Protected",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter password",
+    "newPasswordLabel": "New Password (leave empty to keep current)",
+    "newPasswordPlaceholder": "Enter new password",
+    "manageFilesTitle": "Manage Files",
+    "manageRecipientsTitle": "Manage Recipients",
+    "editSuccess": "Share updated successfully",
+    "editError": "Failed to update share",
+    "bulkDeleteConfirmation": "Are you sure you want to delete {count, plural, =1 {1 share} other {# shares}}? This action cannot be undone.",
+    "bulkDeleteTitle": "Delete Selected Shares"
+  },
+  "shareDetails": {
+    "title": "Share Details",
+    "subtitle": "Detailed information about this share",
+    "basicInfo": "Basic Information",
+    "name": "Name",
+    "description": "Description",
+    "noDescription": "No description provided",
+    "untitled": "Untitled",
+    "shareLink": "Share Link",
+    "editLink": "Edit Link",
+    "generateLink": "Generate Link",
+    "noLink": "No link generated yet",
+    "copyLink": "Copy link",
+    "openLink": "Open in new tab",
+    "linkCopied": "Link copied to clipboard",
+    "views": "Views",
+    "dates": "Dates",
+    "created": "Created",
+    "expires": "Expires",
+    "never": "Never",
+    "security": "Security",
+    "editSecurity": "Edit Security",
+    "editExpiration": "Edit Expiration",
+    "passwordProtected": "Password Protected",
+    "publicAccess": "Public Access",
+    "maxViews": "Max Views:",
+    "files": "Files",
+    "recipients": "Recipients",
+    "notAvailable": "N/A",
+    "invalidDate": "Invalid date",
+    "loadError": "Failed to load share details"
+  },
+  "shareExpiration": {
+    "title": "Share Expiration Settings",
+    "subtitle": "Configure when this share will expire",
+    "currentStatus": "Current Status",
+    "expires": "Expires:",
+    "neverExpires": "Never Expires",
+    "enableExpiration": "Enable Expiration",
+    "expirationDate": "Expiration Date",
+    "validation": {
+      "dateRequired": "Please select an expiration date",
+      "dateMustBeFuture": "Expiration date must be in the future"
+    },
+    "success": {
+      "expirationSet": "Expiration date set successfully",
+      "expirationUpdated": "Expiration date updated successfully",
+      "expirationRemoved": "Expiration removed successfully - share is now permanent"
+    },
+    "error": {
+      "updateFailed": "Failed to update expiration settings"
+    },
+    "info": {
+      "title": "About expiration:",
+      "willBeInaccessible": "The share will become inaccessible after this date",
+      "canBeChanged": "You can change or remove the expiration date anytime",
+      "noExpiration": "This share will never expire and will remain accessible indefinitely."
+    }
+  },
+  "shareFile": {
+    "title": "Share File",
+    "linkTitle": "Generate Link",
+    "nameLabel": "Share Name",
+    "namePlaceholder": "Enter share name",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Enter a description (optional)",
+    "expirationLabel": "Expiration Date",
+    "expirationPlaceholder": "MM/DD/YYYY HH:MM",
+    "maxViewsLabel": "Maximum Views",
+    "maxViewsPlaceholder": "Leave empty for unlimited",
+    "passwordProtection": "Password Protected",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter password",
+    "linkDescription": "Generate a custom link to share the file",
+    "aliasLabel": "Link Alias",
+    "aliasPlaceholder": "Enter custom alias",
+    "linkReady": "Your share link is ready:",
+    "createShare": "Create Share",
+    "generateLink": "Generate Link",
+    "copyLink": "Copy Link"
+  },
+  "shareManager": {
+    "deleteSuccess": "Share deleted successfully",
+    "deleteError": "Failed to delete share",
+    "updateSuccess": "Share updated successfully",
+    "updateError": "Failed to update share",
+    "securityUpdateSuccess": "Security settings updated successfully",
+    "securityUpdateError": "Failed to update security settings",
+    "expirationUpdateSuccess": "Expiration settings updated successfully",
+    "expirationUpdateError": "Failed to update expiration settings",
+    "filesUpdateSuccess": "Files updated successfully",
+    "filesUpdateError": "Failed to update files",
+    "recipientsUpdateSuccess": "Recipients updated successfully",
+    "recipientsUpdateError": "Failed to update recipients",
+    "linkGenerateSuccess": "Share link generated successfully",
+    "linkGenerateError": "Failed to generate share link",
+    "notifyLoading": "Sending notifications...",
+    "notifySuccess": "Recipients notified successfully",
+    "notifyError": "Failed to notify recipients",
+    "bulkDeleteError": "Failed to delete shares",
+    "bulkDeleteLoading": "Deleting {count, plural, =1 {1 share} other {# shares}}...",
+    "bulkDeleteSuccess": "{count, plural, =1 {1 share deleted successfully} other {# shares deleted successfully}}",
+    "downloadSuccess": "Download started successfully",
+    "downloadError": "Failed to download share files",
+    "noFilesToDownload": "No files available to download",
+    "creatingZip": "Creating ZIP file...",
+    "zipDownloadSuccess": "ZIP file downloaded successfully",
+    "zipDownloadError": "Failed to create ZIP file",
+    "singleShareZipName": "{shareName}_files.zip",
+    "multipleSharesZipName": "{count}_shares_files.zip",
+    "defaultShareName": "Share"
+  },
+  "shareMultipleFiles": {
+    "title": "Share Multiple Files",
+    "shareNameLabel": "Share Name",
+    "shareNamePlaceholder": "Enter share name",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Enter a description (optional)",
+    "filesToShare": "Files to share",
+    "files": "files",
+    "totalSize": "Total size",
+    "creating": "Creating...",
+    "create": "Create Share"
+  },
+  "shareSecurity": {
+    "title": "Share Security Settings",
+    "subtitle": "Configure password protection and security options for this share",
+    "currentStatus": "Current Status",
+    "passwordProtection": "Password Protection",
+    "password": "Password",
+    "newPassword": "New Password",
+    "passwordPlaceholder": "Enter a secure password",
+    "existingPasswordMessage": "This share already has a password. If you want to update it, enter the new password in the field below and save.",
+    "passwordRequirements": {
+      "title": "Password requirements:",
+      "minLength": "At least 2 characters"
+    },
+    "info": {
+      "title": "How it works:",
+      "withPassword": "Users will need to enter the password to access this share.",
+      "withoutPassword": "Anyone with the link can access this share without a password."
+    },
+    "validation": {
+      "passwordRequired": "Password is required",
+      "passwordTooShort": "Password must be at least 2 characters"
+    },
+    "success": {
+      "passwordSet": "Password protection enabled successfully",
+      "passwordUpdated": "Password updated successfully",
+      "passwordRemoved": "Password protection removed successfully"
+    },
+    "error": {
+      "updateFailed": "Failed to update security settings"
+    }
+  },
+  "shares": {
+    "errors": {
+      "loadFailed": "Failed to load shares",
+      "notifyFailed": "Failed to notify recipients",
+      "smtpConfigFailed": "Failed to load SMTP configuration"
+    },
+    "messages": {
+      "linkCopied": "Link copied to clipboard",
+      "recipientsNotified": "Recipients notified successfully"
+    },
+    "empty": {
+      "message": "No shares created yet",
+      "createButton": "Create Share"
+    },
+    "header": {
+      "title": "My Shares",
+      "myShares": "My Shares"
+    },
+    "search": {
+      "title": "All Shares",
+      "createButton": "Create Share",
+      "placeholder": "Search shares...",
+      "results": "Found {filtered} of {total} shares"
+    },
+    "pageTitle": "Shares"
+  },
+  "sharesTable": {
+    "ariaLabel": "Shares table",
+    "never": "Never",
+    "columns": {
+      "name": "NAME",
+      "description": "DESCRIPTION",
+      "createdAt": "CREATED AT",
+      "expiresAt": "EXPIRES AT",
+      "status": "STATUS",
+      "security": "SECURITY",
+      "files": "FILES",
+      "recipients": "RECIPIENTS",
+      "actions": "ACTIONS"
+    },
+    "status": {
+      "neverExpires": "Never Expires",
+      "active": "Active",
+      "expired": "Expired"
+    },
+    "security": {
+      "protected": "Protected",
+      "public": "Public"
+    },
+    "filesCount": "files",
+    "recipientsCount": "recipients",
+    "actions": {
+      "menu": "Share actions menu",
+      "edit": "Edit",
+      "manageFiles": "Manage Files",
+      "manageRecipients": "Manage Recipients",
+      "viewDetails": "View Details",
+      "generateLink": "Generate Link",
+      "editLink": "Edit Link",
+      "copyLink": "Copy Link",
+      "notifyRecipients": "Notify Recipients",
+      "downloadShareFiles": "Download All Files",
+      "delete": "Delete"
+    },
+    "bulkActions": {
+      "actions": "Actions",
+      "download": "Download Selected",
+      "delete": "Delete",
+      "selected": "{count, plural, =1 {1 share selected} other {# shares selected}}"
+    },
+    "selectAll": "Select all",
+    "selectShare": "Select share {shareName}"
+  },
+  "storageUsage": {
+    "title": "Storage Usage",
+    "ariaLabel": "Storage usage progress bar",
+    "used": "used",
+    "available": "available",
+    "total": "Total",
+    "loading": "Loading...",
+    "retry": "Retry",
+    "errors": {
+      "title": "Storage information unavailable",
+      "detectionFailed": "Unable to detect disk space. This may be due to system configuration issues or insufficient permissions.",
+      "serverError": "Server error occurred while retrieving storage information. Please try again later.",
+      "unknown": "An unexpected error occurred while loading storage information."
+    }
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "uploadFile": {
+    "title": "Upload File",
+    "multipleTitle": "Upload Files",
+    "selectFile": "Click to select a file",
+    "selectMultipleFiles": "Click to select one or multiple files",
+    "dragAndDrop": "or drag and drop files here",
+    "preview": "Preview",
+    "uploadProgress": "Upload progress",
+    "upload": "Upload",
+    "startUploads": "Start Uploads",
+    "retry": "Retry",
+    "finish": "Finish",
+    "success": "File uploaded successfully",
+    "allSuccess": "{count, plural, =1 {File uploaded successfully} other {# files uploaded successfully}}",
+    "partialSuccess": "{success} files uploaded successfully, {error} failed",
+    "error": "Failed to upload file",
+    "fileSizeExceeded": "File size exceeds the limit of {maxsizemb}MB.",
+    "insufficientStorage": "Insufficient storage space. You have {availablespace}MB available.",
+    "unauthorized": "Unauthorized: a valid token is required to access this resource.",
+    "globalDrop": {
+      "title": "Drop files to upload",
+      "description": "Release to upload your files"
+    },
+    "confirmCancel": {
+      "title": "Cancel Uploads",
+      "messageSingle": "There is one upload in progress.",
+      "messageMultiple": "There are {count} uploads in progress.",
+      "warning": "If you close now, uploads will be cancelled and any progress will be lost.",
+      "continue": "Continue Uploads",
+      "cancel": "Cancel Uploads"
+    },
+    "pasteSuccess": "{count, plural, =1 {Image pasted and uploaded successfully} other {# images pasted and uploaded successfully}}"
+  },
+  "users": {
+    "modes": {
+      "create": "create",
+      "edit": "edit"
+    },
+    "errors": {
+      "loadFailed": "Failed to load users",
+      "submitFailed": "Failed to {mode} user",
+      "deleteFailed": "Failed to delete user",
+      "statusUpdateFailed": "Failed to update user status"
+    },
+    "messages": {
+      "createSuccess": "User created successfully",
+      "updateSuccess": "User updated successfully",
+      "deleteSuccess": "User deleted successfully",
+      "activateSuccess": "User activated successfully",
+      "deactivateSuccess": "User deactivated successfully"
+    },
+    "actions": {
+      "edit": "Edit",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "delete": "Delete"
+    },
+    "delete": {
+      "title": "Confirm Delete User",
+      "confirmation": "Are you sure you want to delete user {firstName} {lastName}? This action cannot be undone.",
+      "confirm": "Delete User"
+    },
+    "form": {
+      "titleCreate": "Add New User",
+      "titleEdit": "Edit User",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "username": "Username",
+      "email": "Email",
+      "password": "Password",
+      "newPassword": "New Password (optional)",
+      "passwordPlaceholder": "Leave blank to keep current password",
+      "role": "Role",
+      "roleUser": "User",
+      "roleAdmin": "Admin",
+      "create": "Create",
+      "save": "Save"
+    },
+    "status": {
+      "title": "Confirm Status Change",
+      "confirmation": "Are you sure you want to {action} user {firstName} {lastName}?",
+      "activate": "activate",
+      "deactivate": "deactivate",
+      "user": "User"
+    },
+    "header": {
+      "title": "User Management",
+      "addUser": "Add User",
+      "management": "User Management"
+    },
+    "table": {
+      "user": "USER",
+      "email": "EMAIL",
+      "status": "STATUS",
+      "role": "ROLE",
+      "actions": "ACTIONS",
+      "active": "Active",
+      "inactive": "Inactive",
+      "admin": "Admin",
+      "userr": "User"
+    }
+  },
+  "validation": {
+    "firstNameRequired": "First name is required",
+    "lastNameRequired": "Last name is required",
+    "usernameLength": "Username must be at least 3 characters long",
+    "usernameSpaces": "Username cannot contain spaces",
+    "invalidEmail": "Please enter a valid email address",
+    "passwordLength": "Password must be at least 8 characters long",
+    "passwordsMatch": "Passwords must match",
+    "emailRequired": "Email is required",
+    "emailOrUsernameRequired": "Email or username is required",
+    "passwordRequired": "Password is required",
+    "passwordMinLength": "Password must be at least 6 characters",
+    "nameRequired": "Name is required",
+    "required": "This field is required"
+  },
+  "iconPicker": {
+    "title": "Select Icon",
+    "placeholder": "Select an icon",
+    "searchPlaceholder": "Search icons...",
+    "loadingMore": "Loading more icons...",
+    "allIconsLoaded": "All {count} icons loaded",
+    "noIconsFound": "No icons found for \"{search}\"",
+    "tabs": {
+      "all": "All Icons",
+      "popular": "Popular",
+      "auth": "Auth Providers"
+    },
+    "stats": "{iconCount} icons from {libraryCount} libraries",
+    "categoryBadge": "{category} ({count} icons)"
   }
 }

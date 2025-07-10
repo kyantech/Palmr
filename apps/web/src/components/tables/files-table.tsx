@@ -330,7 +330,13 @@ export function FilesTable({
                   </TableCell>
                   <TableCell className="h-12 px-4 border-0">
                     <div className="flex items-center gap-2">
-                      <FileIcon className={`h-5 w-5 ${color}`} />
+                      <FileIcon
+                        className={`h-5.5 w-5.5 ${color} cursor-pointer hover:opacity-80 transition-opacity`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onPreview(file);
+                        }}
+                      />
                       <div
                         className="flex items-center gap-1 min-w-0 flex-1"
                         onMouseEnter={() => setHoveredField({ fileId: file.id, field: "name" })}

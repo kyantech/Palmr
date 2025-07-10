@@ -1,23 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export const maxDuration = 300;
+export const maxDuration = 30000;
 export const dynamic = "force-dynamic";
+
+const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3333";
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const cookieHeader = req.headers.get("cookie");
+  const url = `${API_BASE_URL}/filesystem/upload/${token}`;
 
-  const body = await req.arrayBuffer();
-
-  const apiRes = await fetch(`${process.env.API_BASE_URL}/filesystem/upload/${token}`, {
+  const apiRes = await fetch(url, {
     method: "PUT",
     headers: {
       cookie: cookieHeader || "",
       "Content-Type": req.headers.get("Content-Type") || "application/octet-stream",
-      "Content-Length": req.headers.get("Content-Length") || body.byteLength.toString(),
+      "Content-Length": req.headers.get("Content-Length") || "0",
     },
-    body: body,
-  });
+    body: req.body,
+    duplex: "half",
+  } as RequestInit);
 
   const contentType = apiRes.headers.get("Content-Type") || "application/json";
 

@@ -77,7 +77,7 @@ export function FilesView({
               className="h-8 px-3"
               onClick={() => setViewMode("table")}
             >
-              <IconTable className="h-4 w-4 mr-2" />
+              <IconTable className="h-4 w-4" />
               {t("files.viewMode.table")}
             </Button>
             <Button
@@ -86,7 +86,7 @@ export function FilesView({
               className="h-8 px-3"
               onClick={() => setViewMode("grid")}
             >
-              <IconLayoutGrid className="h-4 w-4 mr-2" />
+              <IconLayoutGrid className="h-4 w-4" />
               {t("files.viewMode.grid")}
             </Button>
           </div>

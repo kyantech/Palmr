@@ -137,11 +137,9 @@ echo "Database: SQLite"
 
 # Set global environment variables
 export DATABASE_URL="file:/app/server/prisma/palmr.db"
-export UPLOAD_PATH="/app/server/uploads"
-export TEMP_CHUNKS_PATH="/app/server/temp-chunks"
 
 # Ensure /app/server directory exists for bind mounts
-mkdir -p /app/server/uploads /app/server/temp-chunks /app/server/uploads/logo /app/server/prisma
+mkdir -p /app/server/uploads /app/server/temp-uploads /app/server/prisma
 
 echo "Data directories ready for first run..."
 

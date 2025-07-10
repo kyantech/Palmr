@@ -73,100 +73,6 @@ interface EditReverseShareModalProps {
   isUpdating: boolean;
 }
 
-export function EditReverseShareModal({
-  reverseShare,
-  isOpen,
-  onClose,
-  onUpdateReverseShare,
-  isUpdating,
-}: EditReverseShareModalProps) {
-  const t = useTranslations();
-
-  const form = useForm<EditReverseShareFormData>({
-    defaultValues: getFormDefaultValues(),
-  });
-
-  const watchedValues = {
-    hasExpiration: form.watch("hasExpiration"),
-    hasFileLimits: form.watch("hasFileLimits"),
-    hasFieldRequirements: form.watch("hasFieldRequirements"),
-    noFilesLimit: form.watch("noFilesLimit"),
-    noSizeLimit: form.watch("noSizeLimit"),
-    allFileTypes: form.watch("allFileTypes"),
-    hasPassword: form.watch("hasPassword"),
-  };
-
-  useEffect(() => {
-    if (reverseShare) {
-      form.reset(mapReverseShareToFormData(reverseShare));
-    }
-  }, [reverseShare, form]);
-
-  const handleSubmit = async (data: EditReverseShareFormData) => {
-    if (!reverseShare) return;
-
-    try {
-      const payload = buildUpdatePayload(data, reverseShare.id);
-      await onUpdateReverseShare(payload);
-    } catch (error) {
-      // Error is handled by the hook
-    }
-  };
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] md:max-w-[650px] max-h-[85vh] overflow-hidden">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <IconEdit size={20} />
-            {t("reverseShares.modals.edit.title")}
-          </DialogTitle>
-          <DialogDescription>{t("reverseShares.modals.edit.description")}</DialogDescription>
-        </DialogHeader>
-
-        <div className="overflow-y-auto max-h-[calc(85vh-140px)] py-2">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-              <BasicInfoSection form={form} t={t} />
-              <Separator />
-              <ExpirationSection form={form} t={t} hasExpiration={watchedValues.hasExpiration} />
-              <Separator />
-              <FileLimitsSection
-                form={form}
-                t={t}
-                hasFileLimits={watchedValues.hasFileLimits}
-                noFilesLimit={watchedValues.noFilesLimit}
-                noSizeLimit={watchedValues.noSizeLimit}
-                allFileTypes={watchedValues.allFileTypes}
-              />
-              <Separator />
-              <PasswordSection form={form} t={t} hasPassword={watchedValues.hasPassword} />
-              <Separator />
-              <FieldRequirementsSection form={form} t={t} hasFieldRequirements={watchedValues.hasFieldRequirements} />
-
-              <DialogFooter className="gap-2">
-                <Button type="button" variant="outline" onClick={onClose} disabled={isUpdating}>
-                  {t("common.cancel")}
-                </Button>
-                <Button type="submit" disabled={isUpdating}>
-                  {isUpdating ? (
-                    <div className="flex items-center gap-2">
-                      <div className="animate-spin">⠋</div>
-                      {t("reverseShares.modals.edit.updating")}
-                    </div>
-                  ) : (
-                    t("reverseShares.modals.edit.saveChanges")
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 function getFormDefaultValues(): EditReverseShareFormData {
   return {
     name: DEFAULT_VALUES.EMPTY_STRING,
@@ -188,6 +94,12 @@ function getFormDefaultValues(): EditReverseShareFormData {
     noSizeLimit: true,
     allFileTypes: true,
   };
+}
+
+function parsePositiveIntegerOrNull(value?: string): number | null {
+  if (!value || value === DEFAULT_VALUES.ZERO_STRING) return null;
+  const parsed = parseInt(value);
+  return parsed > 0 ? parsed : null;
 }
 
 function mapReverseShareToFormData(reverseShare: ReverseShare): EditReverseShareFormData {
@@ -257,12 +169,6 @@ function buildUpdatePayload(data: EditReverseShareFormData, id: string): UpdateR
   }
 
   return payload;
-}
-
-function parsePositiveIntegerOrNull(value?: string): number | null {
-  if (!value || value === DEFAULT_VALUES.ZERO_STRING) return null;
-  const parsed = parseInt(value);
-  return parsed > 0 ? parsed : null;
 }
 
 function createToggleButton(isExpanded: boolean, onToggle: () => void, icon: React.ReactNode, label: string) {
@@ -719,5 +625,99 @@ function FieldRequirementsSection({
         </div>
       )}
     </div>
+  );
+}
+
+export function EditReverseShareModal({
+  reverseShare,
+  isOpen,
+  onClose,
+  onUpdateReverseShare,
+  isUpdating,
+}: EditReverseShareModalProps) {
+  const t = useTranslations();
+
+  const form = useForm<EditReverseShareFormData>({
+    defaultValues: getFormDefaultValues(),
+  });
+
+  const watchedValues = {
+    hasExpiration: form.watch("hasExpiration"),
+    hasFileLimits: form.watch("hasFileLimits"),
+    hasFieldRequirements: form.watch("hasFieldRequirements"),
+    noFilesLimit: form.watch("noFilesLimit"),
+    noSizeLimit: form.watch("noSizeLimit"),
+    allFileTypes: form.watch("allFileTypes"),
+    hasPassword: form.watch("hasPassword"),
+  };
+
+  useEffect(() => {
+    if (reverseShare) {
+      form.reset(mapReverseShareToFormData(reverseShare));
+    }
+  }, [reverseShare, form]);
+
+  const handleSubmit = async (data: EditReverseShareFormData) => {
+    if (!reverseShare) return;
+
+    try {
+      const payload = buildUpdatePayload(data, reverseShare.id);
+      await onUpdateReverseShare(payload);
+    } catch {
+      // Error is handled by the hook
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[500px] md:max-w-[650px] max-h-[85vh] overflow-hidden">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <IconEdit size={20} />
+            {t("reverseShares.modals.edit.title")}
+          </DialogTitle>
+          <DialogDescription>{t("reverseShares.modals.edit.description")}</DialogDescription>
+        </DialogHeader>
+
+        <div className="overflow-y-auto max-h-[calc(85vh-140px)] py-2">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+              <BasicInfoSection form={form} t={t} />
+              <Separator />
+              <ExpirationSection form={form} t={t} hasExpiration={watchedValues.hasExpiration} />
+              <Separator />
+              <FileLimitsSection
+                form={form}
+                t={t}
+                hasFileLimits={watchedValues.hasFileLimits}
+                noFilesLimit={watchedValues.noFilesLimit}
+                noSizeLimit={watchedValues.noSizeLimit}
+                allFileTypes={watchedValues.allFileTypes}
+              />
+              <Separator />
+              <PasswordSection form={form} t={t} hasPassword={watchedValues.hasPassword} />
+              <Separator />
+              <FieldRequirementsSection form={form} t={t} hasFieldRequirements={watchedValues.hasFieldRequirements} />
+
+              <DialogFooter className="gap-2">
+                <Button type="button" variant="outline" onClick={onClose} disabled={isUpdating}>
+                  {t("common.cancel")}
+                </Button>
+                <Button type="submit" disabled={isUpdating}>
+                  {isUpdating ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin">⠋</div>
+                      {t("reverseShares.modals.edit.updating")}
+                    </div>
+                  ) : (
+                    t("reverseShares.modals.edit.saveChanges")
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
