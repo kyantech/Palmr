@@ -96,7 +96,7 @@ export function useFileManager(onRefresh: () => Promise<void>, clearSelection?: 
       console.log("📞 Calling downloadManager.startDownload...");
       await downloadManager.startDownload(objectName, fileName);
       console.log("✅ downloadManager.startDownload completed");
-      
+
       // Don't show immediate success toast - the toaster will show progress
       // toast.success(t("files.downloadStart")); // Removed
     } catch (error) {

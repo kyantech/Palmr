@@ -5,14 +5,18 @@ Este sistema implementa um toaster de progresso de download similar ao sistema d
 ## Componentes
 
 ### `useDownloadManager`
+
 Hook principal que gerencia o estado dos downloads ativos:
+
 - Rastreia progresso em tempo real
 - Calcula velocidade de transferência
 - Estima tempo restante
 - Gerencia cancelamento e retry
 
 ### `GlobalDownloadToaster`
+
 Componente visual que exibe os downloads no canto inferior direito:
+
 - Cards individuais para cada download
 - Barra de progresso com percentual
 - Velocidade e ETA
@@ -37,15 +41,15 @@ O sistema é automaticamente integrado ao `useFileManager`. Quando um usuário c
 ### Exemplo de uso direto:
 
 ```tsx
-import { useDownloadManager } from '@/hooks/use-download-manager';
+import { useDownloadManager } from "@/hooks/use-download-manager";
 
 function MyComponent() {
   const { startDownload } = useDownloadManager();
-  
+
   const handleDownload = async () => {
-    await startDownload('object-name', 'filename.pdf');
+    await startDownload("object-name", "filename.pdf");
   };
-  
+
   return <button onClick={handleDownload}>Download</button>;
 }
 ```

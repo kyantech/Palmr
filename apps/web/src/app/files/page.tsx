@@ -4,11 +4,11 @@ import { IconFolderOpen } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { DownloadTest } from "@/components/downloads/download-test";
 import { GlobalDropZone } from "@/components/general/global-drop-zone";
 import { FileManagerLayout } from "@/components/layout/file-manager-layout";
 import { LoadingScreen } from "@/components/layout/loading-screen";
 import { Card, CardContent } from "@/components/ui/card";
-import { DownloadTest } from "@/components/downloads/download-test";
 import { FilesViewManager } from "./components/files-view-manager";
 import { Header } from "./components/header";
 import { useFiles } from "./hooks/use-files";
