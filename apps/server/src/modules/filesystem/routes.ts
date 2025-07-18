@@ -120,4 +120,137 @@ export async function filesystemRoutes(app: FastifyInstance) {
     },
     filesystemController.cancelUpload.bind(filesystemController)
   );
+
+  // Resumable Download Routes
+  app.get(
+    "/filesystem/download-session/:sessionId",
+    {
+      schema: {
+        tags: ["Filesystem"],
+        operationId: "getDownloadSession",
+        summary: "Get resumable download session info",
+        description: "Get information about a resumable download session",
+        params: z.object({
+          sessionId: z.string().describe("Download session ID"),
+        }),
+        response: {
+          200: z.object({
+            sessionId: z.string(),
+            fileName: z.string(),
+            fileSize: z.number(),
+            bytesDownloaded: z.number(),
+            progress: z.number(),
+            isActive: z.boolean(),
+            createdAt: z.number(),
+            expiresAt: z.number(),
+            lastActivity: z.number(),
+          }),
+          404: z.object({
+            error: z.string(),
+          }),
+          500: z.object({
+            error: z.string(),
+          }),
+        },
+      },
+    },
+    filesystemController.getDownloadSession.bind(filesystemController)
+  );
+
+  app.get(
+    "/filesystem/download-sessions",
+    {
+      schema: {
+        tags: ["Filesystem"],
+        operationId: "getActiveDownloadSessions",
+        summary: "Get all active download sessions",
+        description: "Get information about all active resumable download sessions for monitoring",
+        response: {
+          200: z.object({
+            stats: z.object({
+              totalSessions: z.number(),
+              activeSessions: z.number(),
+              totalBytes: z.number(),
+              downloadedBytes: z.number(),
+            }),
+            sessions: z.array(
+              z.object({
+                sessionId: z.string(),
+                fileName: z.string(),
+                fileSize: z.number(),
+                bytesDownloaded: z.number(),
+                progress: z.number(),
+                isActive: z.boolean(),
+                createdAt: z.number(),
+                lastActivity: z.number(),
+              })
+            ),
+          }),
+          500: z.object({
+            error: z.string(),
+          }),
+        },
+      },
+    },
+    filesystemController.getActiveDownloadSessions.bind(filesystemController)
+  );
+
+  app.get(
+    "/filesystem/resume-download/:sessionId",
+    {
+      bodyLimit: 1024 * 1024 * 1024 * 1024 * 1024, // 1PB limit
+      schema: {
+        tags: ["Filesystem"],
+        operationId: "resumeDownload",
+        summary: "Resume a download from where it left off",
+        description: "Resume a previously interrupted download using the session ID",
+        params: z.object({
+          sessionId: z.string().describe("Download session ID"),
+        }),
+        response: {
+          206: z.string().describe("Partial file content"),
+          403: z.object({
+            error: z.string(),
+          }),
+          404: z.object({
+            error: z.string(),
+          }),
+          500: z.object({
+            error: z.string(),
+          }),
+        },
+      },
+    },
+    filesystemController.resumeDownload.bind(filesystemController)
+  );
+
+  app.delete(
+    "/filesystem/download-session/:sessionId",
+    {
+      schema: {
+        tags: ["Filesystem"],
+        operationId: "cancelDownloadSession",
+        summary: "Cancel a resumable download session",
+        description: "Cancel and remove a resumable download session",
+        params: z.object({
+          sessionId: z.string().describe("Download session ID"),
+        }),
+        response: {
+          200: z.object({
+            message: z.string(),
+          }),
+          403: z.object({
+            error: z.string(),
+          }),
+          404: z.object({
+            error: z.string(),
+          }),
+          500: z.object({
+            error: z.string(),
+          }),
+        },
+      },
+    },
+    filesystemController.cancelDownloadSession.bind(filesystemController)
+  );
 }

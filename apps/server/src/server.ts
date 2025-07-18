@@ -12,6 +12,8 @@ import { authProvidersRoutes } from "./modules/auth-providers/routes";
 import { authRoutes } from "./modules/auth/routes";
 import { fileRoutes } from "./modules/file/routes";
 import { ChunkManager } from "./modules/filesystem/chunk-manager";
+import { PeriodicCleanupService } from "./modules/filesystem/periodic-cleanup.service";
+import { ResumableDownloadService } from "./modules/filesystem/resumable-download.service";
 import { filesystemRoutes } from "./modules/filesystem/routes";
 import { healthRoutes } from "./modules/health/routes";
 import { reverseShareRoutes } from "./modules/reverse-share/routes";
@@ -100,24 +102,45 @@ async function startServer() {
     console.error("Error getting auth providers status:", error);
   }
 
+  // Start periodic cleanup service for download memory management
+  const periodicCleanupService = PeriodicCleanupService.getInstance();
+  periodicCleanupService.start();
+
   console.log(`🌴 Palmr server running on port 3333 🌴`);
   console.log(
     `📦 Storage mode: ${env.ENABLE_S3 === "true" ? "S3" : `Local Filesystem ${env.DISABLE_FILESYSTEM_ENCRYPTION === "true" ? "(Unencrypted)" : "(Encrypted)"}`}`
   );
   console.log(`🔐 Auth Providers: ${authProviders}`);
+  console.log(`🧹 Periodic cleanup service: Started`);
 
   console.log("\n📚 API Documentation:");
   console.log(`   - API Reference: http://localhost:3333/docs\n`);
 
   process.on("SIGINT", async () => {
+    console.log("🛑 Shutting down server...");
     const chunkManager = ChunkManager.getInstance();
+    const periodicCleanupService = PeriodicCleanupService.getInstance();
+    const resumableDownloadService = ResumableDownloadService.getInstance();
+
     chunkManager.destroy();
+    periodicCleanupService.stop();
+    await resumableDownloadService.shutdown();
+
+    console.log("✅ Server shutdown complete");
     process.exit(0);
   });
 
   process.on("SIGTERM", async () => {
+    console.log("🛑 Shutting down server...");
     const chunkManager = ChunkManager.getInstance();
+    const periodicCleanupService = PeriodicCleanupService.getInstance();
+    const resumableDownloadService = ResumableDownloadService.getInstance();
+
     chunkManager.destroy();
+    periodicCleanupService.stop();
+    await resumableDownloadService.shutdown();
+
+    console.log("✅ Server shutdown complete");
     process.exit(0);
   });
 }

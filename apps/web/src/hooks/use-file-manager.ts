@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { deleteFile, getDownloadUrl, updateFile } from "@/http/endpoints";
+import { useDownloadManager } from "./use-download-manager";
 
 interface FileToRename {
   id: string;
@@ -73,6 +74,7 @@ export interface FileManagerHook {
 
 export function useFileManager(onRefresh: () => Promise<void>, clearSelection?: () => void) {
   const t = useTranslations();
+  const downloadManager = useDownloadManager();
   const [previewFile, setPreviewFile] = useState<PreviewFile | null>(null);
   const [fileToRename, setFileToRename] = useState<FileToRename | null>(null);
   const [fileToDelete, setFileToDelete] = useState<FileToDelete | null>(null);
@@ -88,19 +90,17 @@ export function useFileManager(onRefresh: () => Promise<void>, clearSelection?: 
   }, []);
 
   const handleDownload = async (objectName: string, fileName: string) => {
+    console.log("🎯 useFileManager handleDownload called:", { objectName, fileName });
     try {
-      const encodedObjectName = encodeURIComponent(objectName);
-      const response = await getDownloadUrl(encodedObjectName);
-      const downloadUrl = response.data.url;
-
-      const link = document.createElement("a");
-      link.href = downloadUrl;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      toast.success(t("files.downloadStart"));
+      // Use the download manager instead of direct download
+      console.log("📞 Calling downloadManager.startDownload...");
+      await downloadManager.startDownload(objectName, fileName);
+      console.log("✅ downloadManager.startDownload completed");
+      
+      // Don't show immediate success toast - the toaster will show progress
+      // toast.success(t("files.downloadStart")); // Removed
     } catch (error) {
+      console.error("❌ Error in handleDownload:", error);
       toast.error(t("files.downloadError"));
       throw error;
     }

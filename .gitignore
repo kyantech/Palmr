@@ -31,5 +31,6 @@ apps/server/dist/*
 #DEFAULT
 .env
 data/
+.kiro
 
 node_modules/

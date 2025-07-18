@@ -257,6 +257,7 @@
     "breadcrumb": "My Files",
     "downloadStart": "Download started",
     "downloadError": "Failed to download file",
+    "downloadSuccess": "Download completed: {fileName}",
     "updateSuccess": "File updated successfully",
     "updateError": "Failed to update file",
     "deleteSuccess": "File deleted successfully",
@@ -271,6 +272,20 @@
       "table": "Table",
       "grid": "Grid"
     }
+  },
+  "downloads": {
+    "status": {
+      "pending": "Pending",
+      "downloading": "Downloading",
+      "completed": "Completed",
+      "error": "Error",
+      "paused": "Paused",
+      "cancelled": "Cancelled"
+    },
+    "retry": "Retry download",
+    "cancel": "Cancel download",
+    "remove": "Remove from list",
+    "clearCompleted": "Clear completed downloads"
   },
   "filesTable": {
     "ariaLabel": "Files table",

@@ -257,6 +257,7 @@
     "breadcrumb": "Meus Arquivos",
     "downloadStart": "Download iniciado",
     "downloadError": "Erro ao baixar o arquivo",
+    "downloadSuccess": "Download concluído: {fileName}",
     "updateSuccess": "Arquivo atualizado com sucesso",
     "updateError": "Erro ao atualizar o arquivo",
     "deleteSuccess": "Arquivo excluído com sucesso",
@@ -271,6 +272,20 @@
       "table": "Tabela",
       "grid": "Grade"
     }
+  },
+  "downloads": {
+    "status": {
+      "pending": "Pendente",
+      "downloading": "Baixando",
+      "completed": "Concluído",
+      "error": "Erro",
+      "paused": "Pausado",
+      "cancelled": "Cancelado"
+    },
+    "retry": "Tentar novamente",
+    "cancel": "Cancelar download",
+    "remove": "Remover da lista",
+    "clearCompleted": "Limpar downloads concluídos"
   },
   "filesTable": {
     "ariaLabel": "Tabela de arquivos",

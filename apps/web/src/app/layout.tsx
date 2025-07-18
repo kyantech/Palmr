@@ -4,11 +4,13 @@ import { getLocale } from "next-intl/server";
 
 import "./globals.css";
 
+import { GlobalDownloadToaster } from "@/components/downloads/global-download-toaster";
 import { Favicon } from "@/components/layout/favicon";
 import { DynamicToaster } from "@/components/ui/dynamic-toaster";
 import { useAppInfo } from "@/contexts/app-info-context";
 import { AuthProvider } from "@/contexts/auth-context";
 import { ShareProvider } from "@/contexts/share-context";
+import { DownloadManagerProvider } from "@/hooks/use-download-manager";
 import { ThemeProvider } from "../providers/theme-provider";
 
 const outfit = Outfit({
@@ -37,12 +39,15 @@ export default async function RootLayout({
       </head>
       <body className={`${outfit.variable} antialiased`}>
         <NextIntlClientProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-            <AuthProvider>
-              <ShareProvider>{children}</ShareProvider>
-            </AuthProvider>
-            <DynamicToaster />
-          </ThemeProvider>
+          <DownloadManagerProvider>
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+              <AuthProvider>
+                <ShareProvider>{children}</ShareProvider>
+              </AuthProvider>
+              <DynamicToaster />
+              <GlobalDownloadToaster />
+            </ThemeProvider>
+          </DownloadManagerProvider>
         </NextIntlClientProvider>
       </body>
     </html>
