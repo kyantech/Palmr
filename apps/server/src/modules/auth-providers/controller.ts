@@ -51,12 +51,13 @@ export class AuthProvidersController {
     return {
       protocol: (request.headers["x-forwarded-proto"] as string) || request.protocol,
       host: (request.headers["x-forwarded-host"] as string) || (request.headers.host as string),
+      port: (request.headers["x-forwarded-port"] as string) || (request.port as string),
       headers: request.headers,
     };
   }
 
   private buildBaseUrl(requestContext: RequestContext): string {
-    return `${requestContext.protocol}://${requestContext.host}`;
+    return `${requestContext.protocol}://${requestContext.host}${requestContext.port ? `:${requestContext.port}` : ''}`;
   }
 
   private sendSuccessResponse(reply: FastifyReply, data?: any, message?: string) {

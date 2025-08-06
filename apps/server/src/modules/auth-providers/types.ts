@@ -65,6 +65,7 @@ export interface AuthResult {
 export interface RequestContext {
   protocol: string;
   host: string;
+  port?: string;
   headers: any;
 }
 
