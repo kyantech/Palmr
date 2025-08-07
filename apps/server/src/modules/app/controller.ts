@@ -18,6 +18,15 @@ export class AppController {
     }
   }
 
+  async getSystemInfo(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const systemInfo = await this.appService.getSystemInfo();
+      return reply.send(systemInfo);
+    } catch (error: any) {
+      return reply.status(400).send({ error: error.message });
+    }
+  }
+
   async getAllConfigs(request: FastifyRequest, reply: FastifyReply) {
     try {
       const configs = await this.appService.getAllConfigs();

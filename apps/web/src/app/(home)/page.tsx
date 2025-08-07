@@ -7,9 +7,9 @@ import { Navbar } from "./components/navbar";
 import { useHome } from "./hooks/use-home";
 
 export default function HomePage() {
-  const { isLoading } = useHome();
+  const { isLoading, shouldShowHomePage } = useHome();
 
-  if (isLoading) {
+  if (isLoading || !shouldShowHomePage) {
     return <LoadingScreen />;
   }
 

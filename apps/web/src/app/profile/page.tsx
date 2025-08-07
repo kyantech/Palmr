@@ -8,6 +8,7 @@ import { PasswordForm } from "./components/password-form";
 import { ProfileForm } from "./components/profile-form";
 import { ProfileHeader } from "./components/profile-header";
 import { ProfilePicture } from "./components/profile-picture";
+import { TwoFactorForm } from "./components/two-factor-form";
 import { useProfile } from "./hooks/use-profile";
 
 export default function ProfilePage() {
@@ -39,6 +40,7 @@ export default function ProfilePage() {
                 onToggleConfirmPassword={() => profile.setIsConfirmPasswordVisible(!profile.isConfirmPasswordVisible)}
                 onToggleNewPassword={() => profile.setIsNewPasswordVisible(!profile.isNewPasswordVisible)}
               />
+              <TwoFactorForm />
             </div>
           </div>
         </div>

@@ -29,7 +29,7 @@ export function Navbar() {
               {appLogo && <img alt="App Logo" className="h-8 w-8 object-contain rounded" src={appLogo} />}
               <p className="font-bold text-2xl">{appName}</p>
             </Link>
-            <nav className="hidden lg:flex ml-2 gap-4">
+            <nav className="hidden md:flex ml-2 gap-4">
               {siteConfig.navItems.map((item) => (
                 <Link
                   key={item.href}
@@ -44,7 +44,7 @@ export function Navbar() {
               ))}
             </nav>
           </div>
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden lg:flex items-center gap-2">
             <LanguageSwitcher />
             <ModeToggle />
 
@@ -56,7 +56,7 @@ export function Navbar() {
             </Button>
           </div>
 
-          <div className="flex items-center gap-2 sm:hidden">
+          <div className="flex items-center gap-2 md:hidden">
             <LanguageSwitcher />
             <ModeToggle />
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
@@ -79,6 +79,16 @@ export function Navbar() {
                         {item.label}
                       </Link>
                     ))}
+                    <Link
+                      href={siteConfig.links.sponsor}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-foreground text-lg font-medium flex items-center gap-2"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <IconHeart className="h-4 w-4 text-destructive" />
+                      Sponsor
+                    </Link>
                   </div>
                 </div>
               </SheetContent>

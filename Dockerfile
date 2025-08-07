@@ -82,7 +82,7 @@ RUN addgroup --system --gid ${PALMR_GID} nodejs
 RUN adduser --system --uid ${PALMR_UID} --ingroup nodejs palmr
 
 # Create application directories 
-RUN mkdir -p /app/palmr-app /app/web /home/palmr/.npm /home/palmr/.cache
+RUN mkdir -p /app/palmr-app /app/web /app/infra /home/palmr/.npm /home/palmr/.cache
 RUN chown -R palmr:nodejs /app /home/palmr
 
 # === Copy Server Files to /app/palmr-app (separate from /app/server for bind mounts) ===
@@ -117,10 +117,13 @@ WORKDIR /app
 # Create supervisor configuration
 RUN mkdir -p /etc/supervisor/conf.d
 
-# Copy server start script
+# Copy server start script and configuration files
 COPY infra/server-start.sh /app/server-start.sh
+COPY infra/configs.json /app/infra/configs.json
+COPY infra/providers.json /app/infra/providers.json
+COPY infra/check-missing.js /app/infra/check-missing.js
 RUN chmod +x /app/server-start.sh
-RUN chown palmr:nodejs /app/server-start.sh
+RUN chown -R palmr:nodejs /app/server-start.sh /app/infra
 
 # Copy supervisor configuration
 COPY infra/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
@@ -133,10 +136,12 @@ set -e
 echo "Starting Palmr Application..."
 echo "Storage Mode: \${ENABLE_S3:-false}"
 echo "Secure Site: \${SECURE_SITE:-false}"
+echo "Encryption: \${DISABLE_FILESYSTEM_ENCRYPTION:-true}"
 echo "Database: SQLite"
 
 # Set global environment variables
 export DATABASE_URL="file:/app/server/prisma/palmr.db"
+export NEXT_PUBLIC_DEFAULT_LANGUAGE=\${DEFAULT_LANGUAGE:-en-US}
 
 # Ensure /app/server directory exists for bind mounts
 mkdir -p /app/server/uploads /app/server/temp-uploads /app/server/prisma

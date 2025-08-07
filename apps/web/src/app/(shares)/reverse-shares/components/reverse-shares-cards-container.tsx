@@ -10,6 +10,7 @@ interface ReverseSharesCardsContainerProps {
   onGenerateLink: (reverseShare: ReverseShare) => void;
   onViewDetails: (reverseShare: ReverseShare) => void;
   onViewFiles: (reverseShare: ReverseShare) => void;
+  onViewQrCode?: (reverseShare: ReverseShare) => void;
   onCreateReverseShare: () => void;
   onUpdateReverseShare?: (id: string, data: any) => Promise<any>;
   onToggleActive?: (id: string, isActive: boolean) => Promise<any>;
@@ -24,6 +25,7 @@ export function ReverseSharesCardsContainer({
   onGenerateLink,
   onViewDetails,
   onViewFiles,
+  onViewQrCode,
   onCreateReverseShare,
   onUpdateReverseShare,
   onToggleActive,
@@ -45,6 +47,7 @@ export function ReverseSharesCardsContainer({
           onGenerateLink={onGenerateLink}
           onViewDetails={onViewDetails}
           onViewFiles={onViewFiles}
+          onViewQrCode={onViewQrCode}
           onUpdateReverseShare={onUpdateReverseShare}
           onToggleActive={onToggleActive}
           onUpdatePassword={onUpdatePassword}

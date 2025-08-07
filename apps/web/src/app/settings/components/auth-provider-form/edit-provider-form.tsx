@@ -70,7 +70,6 @@ export function EditProviderForm({
   const [showClientSecret, setShowClientSecret] = useState(false);
   const isOfficial = provider.isOfficial;
 
-  // Função para identificar providers oficiais que não devem ter o campo de provider URL editável
   const isProviderUrlEditable = (providerName: string): boolean => {
     const nonEditableProviders = ["google", "discord", "github"];
     return !nonEditableProviders.includes(providerName.toLowerCase());
@@ -105,8 +104,10 @@ export function EditProviderForm({
       { pattern: "linkedin.com", scopes: ["r_liteprofile", "r_emailaddress"] },
       { pattern: "auth0.com", scopes: ["openid", "profile", "email"] },
       { pattern: "okta.com", scopes: ["openid", "profile", "email"] },
+      { pattern: "authentik", scopes: ["openid", "profile", "email"] },
       { pattern: "kinde.com", scopes: ["openid", "profile", "email"] },
       { pattern: "zitadel.com", scopes: ["openid", "profile", "email"] },
+      { pattern: "pocketid", scopes: ["openid", "profile", "email"] },
     ];
 
     for (const { pattern, scopes } of providerPatterns) {

@@ -15,7 +15,6 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
 
   const MDXContent = page.data.body;
 
-  // Check if this is an older version page that needs a warning
   const shouldShowWarning = page.url.startsWith("/docs/2.0.0-beta");
 
   return (

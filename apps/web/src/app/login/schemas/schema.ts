@@ -3,10 +3,10 @@ import * as z from "zod";
 
 type TFunction = ReturnType<typeof useTranslations>;
 
-export const createLoginSchema = (t: TFunction) =>
+export const createLoginSchema = (t: TFunction, passwordAuthEnabled: boolean = true) =>
   z.object({
     emailOrUsername: z.string().min(1, t("validation.emailOrUsernameRequired")),
-    password: z.string().min(1, t("validation.passwordRequired")),
+    password: passwordAuthEnabled ? z.string().min(1, t("validation.passwordRequired")) : z.string().optional(),
   });
 
 export type LoginFormValues = z.infer<ReturnType<typeof createLoginSchema>>;

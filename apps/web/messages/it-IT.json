@@ -143,7 +143,8 @@
     "saving": "Salvataggio...",
     "update": "Aggiorna",
     "click": "Clicca per",
-    "creating": "Creazione in corso..."
+    "creating": "Creazione in corso...",
+    "loadingSimple": "Caricamento..."
   },
   "createShare": {
     "title": "Crea Condivisione",
@@ -158,7 +159,8 @@
     "passwordLabel": "Password",
     "create": "Crea Condivisione",
     "success": "Condivisione creata con successo",
-    "error": "Errore nella creazione della condivisione"
+    "error": "Errore nella creazione della condivisione",
+    "namePlaceholder": "Inserisci un nome per la tua condivisione"
   },
   "dashboard": {
     "loadError": "Errore durante il caricamento dei dati del pannello di controllo",
@@ -182,7 +184,15 @@
     "invalidCredentials": "Email o password non validi",
     "userNotFound": "Utente non trovato",
     "accountLocked": "Account bloccato. Riprova più tardi",
-    "unexpectedError": "Si è verificato un errore imprevisto. Riprova"
+    "unexpectedError": "Si è verificato un errore imprevisto. Riprova",
+    "Invalid password": "Password non valida",
+    "Invalid two-factor authentication code": "Codice di autenticazione a due fattori non valido",
+    "Invalid verification code": "Codice di verifica non valido",
+    "Password verification required": "Verifica della password richiesta",
+    "Two-factor authentication is already enabled": "L'autenticazione a due fattori è già abilitata",
+    "Two-factor authentication is not enabled": "L'autenticazione a due fattori non è abilitata",
+    "Two-factor authentication required": "Autenticazione a due fattori richiesta",
+    "noUserData": "Nessun dato utente"
   },
   "fileActions": {
     "editFile": "Modifica File",
@@ -304,7 +314,8 @@
     "title": "Parola d'accesso Dimenticata",
     "description": "Inserisci il tuo indirizzo email e ti invieremo le istruzioni per reimpostare la parola d'accesso.",
     "resetInstructions": "Istruzioni di reimpostazione inviate alla tua email",
-    "pageTitle": "Parola d'accesso Dimenticata"
+    "pageTitle": "Parola d'accesso Dimenticata",
+    "passwordAuthDisabled": "L'autenticazione tramite password è disabilitata. Contatta il tuo amministratore o utilizza un provider di autenticazione esterno."
   },
   "generateShareLink": {
     "generateTitle": "Genera link di condivisione",
@@ -318,7 +329,12 @@
     "copyButton": "Copia link",
     "success": "Link generato con successo",
     "error": "Errore nella generazione del link",
-    "copied": "Link copiato negli appunti"
+    "copied": "Link copiato negli appunti",
+    "readyDescription": "Il tuo link di condivisione è pronto. Puoi scansionare il codice QR direttamente, scaricarlo per un uso successivo, o copiare il link qui sotto.",
+    "tabs": {
+      "link": "Link",
+      "qrcode": "QR Code"
+    }
   },
   "home": {
     "description": "L'alternativa open-source a WeTransfer. Condividi file in sicurezza, senza tracciamento o limitazioni.",
@@ -330,6 +346,27 @@
       "tagline": "semplice e gratuita"
     },
     "pageTitle": "Pagina iniziale"
+  },
+  "iconPicker": {
+    "title": "Seleziona Icona",
+    "placeholder": "Seleziona un'icona",
+    "searchPlaceholder": "Cerca icone...",
+    "loadingMore": "Caricamento altre icone...",
+    "allIconsLoaded": "Tutte le {count} icone caricate",
+    "noIconsFound": "Nessuna icona trovata per \"{search}\"",
+    "tabs": {
+      "all": "Tutte le Icone",
+      "popular": "Popolari",
+      "auth": "Provider di Autenticazione"
+    },
+    "stats": "{iconCount} icone da {libraryCount} librerie",
+    "categoryBadge": "{category} ({count} icone)"
+  },
+  "imageEdit": {
+    "title": "Modifica Immagine",
+    "rotate": "Ruota",
+    "zoom": "Zoom",
+    "cropInstructions": "Trascina per riposizionare, ridimensiona gli angoli per adattare l'area di ritaglio"
   },
   "login": {
     "welcome": "Benvenuto in",
@@ -417,6 +454,11 @@
       "imageRemoved": "Immagine profilo rimossa con successo"
     },
     "pageTitle": "Profilo"
+  },
+  "qrCodeModal": {
+    "title": "Condividi QR Code",
+    "description": "Scansiona questo codice QR per accedere al link.",
+    "download": "Scarica QR Code"
   },
   "quickAccess": {
     "files": {
@@ -589,7 +631,8 @@
       "createLink": "Crea Link",
       "delete": "Elimina",
       "copyLinkTitle": "Copia link",
-      "createLinkCTA": "Crea Link di Ricezione"
+      "createLinkCTA": "Crea Link di Ricezione",
+      "viewQrCode": "Visualizza QR Code"
     },
     "status": {
       "active": "Attivo",
@@ -605,7 +648,8 @@
       "viewDetails": "Vedi Dettagli",
       "edit": "Modifica",
       "delete": "Elimina",
-      "viewFiles": "File Ricevuti"
+      "viewFiles": "File Ricevuti",
+      "viewQrCode": "Visualizza QR Code"
     },
     "empty": {
       "title": "Nessun link di ricezione creato",
@@ -746,7 +790,12 @@
         "selectAll": "Seleziona tutto",
         "selectFile": "Seleziona file {fileName}",
         "deleteError": "Errore durante l'eliminazione del file",
-        "deleteSuccess": "File eliminato con successo"
+        "deleteSuccess": "File eliminato con successo",
+        "copyErrors": {
+          "timeout": "Operazione di copia scaduta. Riprova con un file più piccolo o controlla la tua connessione.",
+          "failed": "Operazione di copia fallita. Per favore riprova.",
+          "aborted": "L'operazione di copia è stata annullata per timeout."
+        }
       }
     },
     "form": {
@@ -897,7 +946,8 @@
       "fileList": {
         "title": "File selezionati:",
         "statusUploaded": "Inviato",
-        "statusError": "Errore"
+        "statusError": "Errore",
+        "retry": "Riprova"
       },
       "form": {
         "nameLabel": "Nome",
@@ -1085,6 +1135,10 @@
       "smtpTrustSelfSigned": {
         "title": "Accetta Certificati Auto-Firmati",
         "description": "Abilita questa opzione per accettare certificati SSL/TLS auto-firmati (utile per ambienti di sviluppo)"
+      },
+      "passwordAuthEnabled": {
+        "title": "Autenticazione Password",
+        "description": "Abilita o disabilita l'autenticazione basata su password"
       }
     },
     "buttons": {
@@ -1094,7 +1148,8 @@
     },
     "errors": {
       "loadFailed": "Errore durante il caricamento delle impostazioni",
-      "updateFailed": "Errore durante l'aggiornamento delle impostazioni"
+      "updateFailed": "Errore durante l'aggiornamento delle impostazioni",
+      "passwordAuthRequiresProvider": "Impossibile disabilitare l'autenticazione password senza avere almeno un provider di autenticazione attivo"
     },
     "messages": {
       "noChanges": "Nessuna modifica da salvare",
@@ -1200,7 +1255,10 @@
     "invalidDate": "Data non valida",
     "loadError": "Errore nel caricamento dei dettagli della condivisione",
     "editSecurity": "Modifica Sicurezza",
-    "editExpiration": "Modifica Scadenza"
+    "editExpiration": "Modifica Scadenza",
+    "clickToEnlargeQrCode": "Clicca per ingrandire il QR Code",
+    "downloadQrCode": "Scarica QR Code",
+    "qrCode": "QR Code"
   },
   "shareExpiration": {
     "neverExpires": "Non Scade Mai",
@@ -1387,7 +1445,8 @@
       "copyLink": "Copia Link",
       "notifyRecipients": "Notifica Destinatari",
       "delete": "Elimina",
-      "downloadShareFiles": "Scarica tutti i file"
+      "downloadShareFiles": "Scarica tutti i file",
+      "viewQrCode": "Visualizza QR Code"
     },
     "bulkActions": {
       "delete": "Elimina",
@@ -1418,6 +1477,160 @@
     "light": "Chiaro",
     "dark": "Scuro",
     "system": "Sistema"
+  },
+  "twoFactor": {
+    "title": "Autenticazione a Due Fattori",
+    "description": "Aggiungi un ulteriore livello di sicurezza al tuo account",
+    "enabled": "Il tuo account è protetto con l'autenticazione a due fattori",
+    "disabled": "L'autenticazione a due fattori non è abilitata",
+    "setup": {
+      "title": "Abilita Autenticazione a Due Fattori",
+      "description": "Scansiona il codice QR con la tua app di autenticazione, quindi inserisci il codice di verifica.",
+      "qrCode": "Codice QR",
+      "manualEntryKey": "Chiave per Inserimento Manuale",
+      "verificationCode": "Codice di Verifica",
+      "verificationCodePlaceholder": "Inserisci il codice a 6 cifre",
+      "verificationCodeDescription": "Inserisci il codice a 6 cifre dalla tua app di autenticazione",
+      "verifyAndEnable": "Verifica e Abilita",
+      "cancel": "Annulla"
+    },
+    "disable": {
+      "title": "Disabilita Autenticazione a Due Fattori",
+      "description": "Inserisci la tua password per confermare la disabilitazione dell'autenticazione a due fattori.",
+      "password": "Password",
+      "passwordPlaceholder": "Inserisci la tua password",
+      "confirm": "Conferma Disabilitazione",
+      "cancel": "Annulla"
+    },
+    "backupCodes": {
+      "title": "Codici di Backup",
+      "description": "Salva questi codici di backup in un luogo sicuro. Puoi usarli per accedere al tuo account se perdi il tuo dispositivo di autenticazione.",
+      "warning": "Importante:",
+      "warningText": "Ogni codice di backup può essere utilizzato una sola volta. Conservali in modo sicuro e non condividerli con nessuno.",
+      "generateNew": "Genera Nuovi Codici di Backup",
+      "download": "Scarica Codici di Backup",
+      "copyToClipboard": "Copia negli Appunti",
+      "savedMessage": "Ho Salvato i Miei Codici di Backup",
+      "available": "{count} codici di backup disponibili",
+      "instructions": [
+        "• Salva questi codici in un luogo sicuro",
+        "• Ogni codice di backup può essere utilizzato una sola volta",
+        "• Puoi generare nuovi codici in qualsiasi momento"
+      ]
+    },
+    "verification": {
+      "title": "Autenticazione a Due Fattori",
+      "description": "Inserisci il codice a 6 cifre dalla tua app di autenticazione",
+      "backupDescription": "Inserisci uno dei tuoi codici di backup per continuare",
+      "verificationCode": "Codice di Verifica",
+      "backupCode": "Codice di Backup",
+      "verificationCodePlaceholder": "000000",
+      "backupCodePlaceholder": "XXXX-XXXX",
+      "verify": "Verifica",
+      "verifying": "Verifica in corso...",
+      "useBackupCode": "Usa invece un codice di backup",
+      "useAuthenticatorCode": "Usa invece il codice dell'autenticatore",
+      "rememberDevice": "Ricorda questo dispositivo per 30 giorni",
+      "rememberDeviceDescription": "Non dovrai inserire codici 2FA su questo dispositivo per 30 giorni"
+    },
+    "messages": {
+      "enabledSuccess": "Autenticazione a due fattori abilitata con successo!",
+      "disabledSuccess": "Autenticazione a due fattori disabilitata con successo",
+      "backupCodesGenerated": "Nuovi codici di backup generati con successo",
+      "backupCodesCopied": "Codici di backup copiati negli appunti",
+      "setupFailed": "Impossibile generare la configurazione 2FA",
+      "verificationFailed": "Codice di verifica non valido",
+      "disableFailed": "Impossibile disabilitare 2FA. Verifica la tua password.",
+      "backupCodesFailed": "Impossibile generare i codici di backup",
+      "backupCodesCopyFailed": "Impossibile copiare i codici di backup",
+      "statusLoadFailed": "Impossibile caricare lo stato 2FA",
+      "enterVerificationCode": "Inserisci il codice di verifica",
+      "enterPassword": "Inserisci la tua password",
+      "deviceTrusted": "Questo dispositivo è stato contrassegnato come affidabile per 30 giorni"
+    },
+    "errors": {
+      "invalidVerificationCode": "Codice di verifica non valido",
+      "invalidTwoFactorCode": "Codice di autenticazione a due fattori non valido",
+      "twoFactorRequired": "Autenticazione a due fattori richiesta",
+      "twoFactorAlreadyEnabled": "L'autenticazione a due fattori è già abilitata",
+      "twoFactorNotEnabled": "L'autenticazione a due fattori non è abilitata",
+      "passwordVerificationRequired": "Verifica password richiesta",
+      "invalidPassword": "Password non valida",
+      "userNotFound": "Utente non trovato"
+    },
+    "buttons": {
+      "enable2FA": "Abilita 2FA",
+      "disable2FA": "Disabilita 2FA"
+    },
+    "deviceNames": {
+      "unknownDevice": "Dispositivo Sconosciuto",
+      "browsers": {
+        "chrome": "Chrome",
+        "firefox": "Firefox",
+        "safari": "Safari",
+        "edge": "Edge"
+      },
+      "platforms": {
+        "windows": " su Windows",
+        "macos": " su macOS",
+        "linux": " su Linux",
+        "iphone": " su iPhone",
+        "android": " su Android"
+      }
+    },
+    "status": {
+      "label": "Stato:",
+      "enabled": "Abilitato",
+      "disabled": "Disabilitato"
+    },
+    "trustedDevices": {
+      "title": "Dispositivi Affidabili - 2FA",
+      "description": "Dispositivi che non richiedono la verifica 2FA",
+      "noDevices": "Nessun dispositivo affidabile",
+      "deviceName": "Dispositivo",
+      "addedOn": "Aggiunto il",
+      "expiresOn": "Scade il",
+      "remove": "Rimuovi",
+      "removeAll": "Rimuovi Tutti",
+      "confirmRemove": "Sei sicuro di voler rimuovere questo dispositivo affidabile?",
+      "confirmRemoveAll": "Sei sicuro di voler rimuovere tutti i dispositivi affidabili?",
+      "deviceRemoved": "Dispositivo affidabile rimosso con successo",
+      "allDevicesRemoved": "Tutti i dispositivi affidabili rimossi con successo",
+      "loadFailed": "Impossibile caricare i dispositivi affidabili",
+      "removeFailed": "Impossibile rimuovere il dispositivo affidabile",
+      "removeAllFailed": "Impossibile rimuovere tutti i dispositivi affidabili",
+      "loading": "Caricamento dispositivi affidabili...",
+      "noDevicesDescription": "I dispositivi appariranno qui quando scegli di fidarti di loro durante la verifica 2FA",
+      "tableHeaders": {
+        "device": "Dispositivo",
+        "added": "Aggiunto",
+        "expires": "Scade",
+        "lastUsed": "Ultimo Utilizzo",
+        "ipAddress": "Indirizzo IP",
+        "actions": "Azioni"
+      },
+      "status": {
+        "never": "Mai",
+        "expired": "Scaduto"
+      },
+      "modals": {
+        "removeDevice": {
+          "title": "Rimuovi Dispositivo Affidabile",
+          "added": "Aggiunto:",
+          "ip": "IP:"
+        },
+        "removeAllDevices": {
+          "title": "Rimuovi Tutti i Dispositivi Affidabili",
+          "description": "Questo rimuoverà {count} dispositivo{count, plural, =1 {} other {i}} affidabile{count, plural, =1 {} other {i}}. Dovrai verificare 2FA su tutti i dispositivi nuovamente."
+        },
+        "buttons": {
+          "cancel": "Annulla",
+          "removing": "Rimozione in corso...",
+          "removeDevice": "Rimuovi Dispositivo",
+          "removeAllDevices": "Rimuovi Tutti i Dispositivi"
+        }
+      }
+    }
   },
   "uploadFile": {
     "title": "Carica file",
@@ -1450,7 +1663,8 @@
       "title": "Rilascia i file per caricarli",
       "description": "Rilascia per caricare i tuoi file"
     },
-    "pasteSuccess": "{count, plural, =1 {Immagine incollata e caricata con successo} other {# immagini incollate e caricate con successo}}"
+    "pasteSuccess": "{count, plural, =1 {Immagine incollata e caricata con successo} other {# immagini incollate e caricate con successo}}",
+    "filesQueued": "{count, plural, one {# file in coda per il caricamento} other {# files in coda per il caricamento}}"
   },
   "users": {
     "modes": {
@@ -1535,20 +1749,5 @@
     "passwordMinLength": "La password deve contenere almeno 6 caratteri",
     "nameRequired": "Il nome è obbligatorio",
     "required": "Questo campo è obbligatorio"
-  },
-  "iconPicker": {
-    "title": "Seleziona Icona",
-    "placeholder": "Seleziona un'icona",
-    "searchPlaceholder": "Cerca icone...",
-    "loadingMore": "Caricamento altre icone...",
-    "allIconsLoaded": "Tutte le {count} icone caricate",
-    "noIconsFound": "Nessuna icona trovata per \"{search}\"",
-    "tabs": {
-      "all": "Tutte le Icone",
-      "popular": "Popolari",
-      "auth": "Provider di Autenticazione"
-    },
-    "stats": "{iconCount} icone da {libraryCount} librerie",
-    "categoryBadge": "{category} ({count} icone)"
   }
 }

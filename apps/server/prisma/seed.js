@@ -148,6 +148,12 @@ const defaultConfigs = [
     group: "auth-providers",
   },
   {
+    key: "passwordAuthEnabled",
+    value: "true",
+    type: "boolean",
+    group: "security",
+  },
+  {
     key: "serverUrl",
     value: "http://localhost:3333",
     type: "string",
@@ -300,6 +306,24 @@ const defaultAuthProviders = [
     metadata: JSON.stringify({
       description: "Sign in with Frontegg - Replace 'your-tenant' with your Frontegg tenant",
       docs: "https://docs.frontegg.com",
+      supportsDiscovery: true,
+    }),
+  },
+  {
+    name: "pocketid",
+    displayName: "Pocket ID",
+    type: "oidc",
+    icon: "BsFillPSquareFill",
+    enabled: false,
+    issuerUrl: "https://your-pocket-id.domain.com",
+    authorizationEndpoint: "/authorize",
+    tokenEndpoint: "/api/oidc/token",
+    userInfoEndpoint: "/api/oidc/userinfo",
+    scope: "openid profile email",
+    sortOrder: 9,
+    metadata: JSON.stringify({
+      description: "Sign in with Pocket ID - Replace with your Pocket ID instance URL",
+      docs: "https://docs.pocket-id.org",
       supportsDiscovery: true,
     }),
   },

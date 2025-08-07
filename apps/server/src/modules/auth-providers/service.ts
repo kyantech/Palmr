@@ -18,7 +18,6 @@ import {
   TokenResponse,
 } from "./types";
 
-// Constants
 const DEFAULT_BASE_URL = "http://localhost:3000";
 const STATE_EXPIRY_TIME = 600000; // 10 minutes
 const CLEANUP_INTERVAL = 5 * 60 * 1000; // 5 minutes
@@ -43,7 +42,6 @@ export class AuthProvidersService {
     setInterval(() => this.cleanupExpiredStates(), CLEANUP_INTERVAL);
   }
 
-  // Utility methods
   private buildBaseUrl(requestContext?: RequestContextService): string {
     return requestContext ? `${requestContext.protocol}://${requestContext.host}` : DEFAULT_BASE_URL;
   }
@@ -87,7 +85,6 @@ export class AuthProvidersService {
     }
   }
 
-  // Provider configuration methods
   private isOfficial(providerName: string): boolean {
     return providerName in providersConfig.officialProviders;
   }
@@ -114,7 +111,6 @@ export class AuthProvidersService {
   }
 
   private async resolveEndpoints(provider: any, config: ProviderConfig): Promise<ProviderEndpoints> {
-    // Use custom endpoints if all are provided
     if (provider.authorizationEndpoint && provider.tokenEndpoint && provider.userInfoEndpoint) {
       return {
         authorizationEndpoint: this.resolveEndpointUrl(provider.authorizationEndpoint, provider.issuerUrl),
@@ -123,7 +119,6 @@ export class AuthProvidersService {
       };
     }
 
-    // Try discovery if supported
     if (config.supportsDiscovery && provider.issuerUrl) {
       const discoveredEndpoints = await this.attemptDiscovery(provider.issuerUrl);
       if (discoveredEndpoints) {
@@ -131,7 +126,6 @@ export class AuthProvidersService {
       }
     }
 
-    // Fallback to intelligent endpoints
     const baseUrl = provider.issuerUrl?.replace(/\/$/, "") || "";
     const detectedType = detectProviderType(provider.issuerUrl || "");
     const fallbackPattern = getFallbackEndpoints(detectedType);
@@ -224,7 +218,6 @@ export class AuthProvidersService {
     return config.specialHandling?.emailEndpoint || null;
   }
 
-  // PKCE and OAuth setup methods
   private setupPkceIfNeeded(provider: any): { codeVerifier?: string; codeChallenge?: string } {
     const needsPkce = provider.type === DEFAULT_PROVIDER_TYPE;
 
@@ -263,7 +256,6 @@ export class AuthProvidersService {
     return authUrl.toString();
   }
 
-  // Callback handling methods
   private validateAndGetPendingState(state: string): PendingState {
     const pendingState = this.pendingStates.get(state);
 
@@ -299,7 +291,6 @@ export class AuthProvidersService {
     };
   }
 
-  // Public methods
   async getEnabledProviders(requestContext?: RequestContextService) {
     const providers = await prisma.authProvider.findMany({
       where: { enabled: true },
@@ -605,16 +596,13 @@ export class AuthProvidersService {
       throw new Error(ERROR_MESSAGES.MISSING_USER_INFO);
     }
 
-    // First, check if there's already an auth provider entry for this external ID
     const existingAuthProvider = await this.findExistingAuthProvider(provider.id, String(externalId));
     if (existingAuthProvider) {
       return await this.updateExistingUserFromProvider(existingAuthProvider.user, userInfo);
     }
 
-    // Check if there's a user with this email
     const existingUser = await this.findExistingUserByEmail(userInfo.email);
     if (existingUser) {
-      // Check if this user already has this provider linked
       const existingUserProvider = await prisma.userAuthProvider.findFirst({
         where: {
           userId: existingUser.id,

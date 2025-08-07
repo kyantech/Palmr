@@ -62,6 +62,7 @@ export function RecentShares({ shares, shareManager, onOpenCreateModal, onCopyLi
               onManageFiles={shareManager.setShareToManageFiles}
               onManageRecipients={shareManager.setShareToManageRecipients}
               onNotifyRecipients={shareManager.handleNotifyRecipients}
+              onViewQrCode={shareManager.setShareToViewQrCode}
               onViewDetails={shareManager.setShareToViewDetails}
               setClearSelectionCallback={shareManager.setClearSelectionCallback}
             />

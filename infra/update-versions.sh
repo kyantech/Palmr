@@ -31,6 +31,7 @@ update_package_json() {
 update_package_json "apps/web/package.json" "Web App"
 update_package_json "apps/docs/package.json" "Documentation"
 update_package_json "apps/server/package.json" "API Server"
+update_package_json "./package.json" "Monorepo"
 
 echo "🎉 Version update completed!"
 echo "📦 All package.json files now have version: $VERSION" 

@@ -1,3 +1,5 @@
+"use client";
+
 import type { ReactNode } from "react";
 import Link from "next/link";
 import {
@@ -79,7 +81,6 @@ function Hero() {
             <Link href={docsLink}>Documentation</Link>
           </div>
         </PulsatingButton>
-
         <RippleButton>
           <a
             href="https://github.com/kyantech/Palmr"

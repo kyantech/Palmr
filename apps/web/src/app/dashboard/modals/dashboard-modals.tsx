@@ -7,6 +7,7 @@ import { DeleteConfirmationModal } from "@/components/modals/delete-confirmation
 import { FileActionsModals } from "@/components/modals/file-actions-modals";
 import { FilePreviewModal } from "@/components/modals/file-preview-modal";
 import { GenerateShareLinkModal } from "@/components/modals/generate-share-link-modal";
+import { QrCodeModal } from "@/components/modals/qr-code-modal";
 import { ShareActionsModals } from "@/components/modals/share-actions-modals";
 import { ShareDetailsModal } from "@/components/modals/share-details-modal";
 import { ShareExpirationModal } from "@/components/modals/share-expiration-modal";
@@ -23,6 +24,11 @@ export function DashboardModals({ modals, fileManager, shareManager, onSuccess }
   const handleShareSuccess = () => {
     setShareDetailsRefresh((prev) => prev + 1);
     onSuccess();
+  };
+
+  const getShareLink = (share: any) => {
+    if (!share?.alias?.alias) return "";
+    return `${window.location.origin}/s/${share.alias.alias}`;
   };
 
   return (
@@ -143,6 +149,13 @@ export function DashboardModals({ modals, fileManager, shareManager, onSuccess }
         onClose={() => shareManager.setShareToGenerateLink(null)}
         onGenerate={shareManager.handleGenerateLink}
         onSuccess={onSuccess}
+      />
+
+      <QrCodeModal
+        isOpen={!!shareManager.shareToViewQrCode}
+        onClose={() => shareManager.setShareToViewQrCode(null)}
+        shareLink={getShareLink(shareManager.shareToViewQrCode)}
+        shareName={shareManager.shareToViewQrCode?.name || "Share"}
       />
     </>
   );

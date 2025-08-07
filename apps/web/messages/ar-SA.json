@@ -143,7 +143,8 @@
     "saving": "جاري الحفظ...",
     "update": "تحديث",
     "click": "انقر على",
-    "creating": "جاري الإنشاء..."
+    "creating": "جاري الإنشاء...",
+    "loadingSimple": "جاري التحميل..."
   },
   "createShare": {
     "title": "إنشاء مشاركة",
@@ -158,7 +159,8 @@
     "passwordLabel": "كلمة المرور",
     "create": "إنشاء مشاركة",
     "success": "تم إنشاء المشاركة بنجاح",
-    "error": "فشل في إنشاء المشاركة"
+    "error": "فشل في إنشاء المشاركة",
+    "namePlaceholder": "أدخل اسمًا لمشاركتك"
   },
   "dashboard": {
     "loadError": "فشل في تحميل بيانات لوحة التحكم",
@@ -182,7 +184,15 @@
     "invalidCredentials": "بريد إلكتروني أو كلمة مرور غير صحيحة",
     "userNotFound": "المستخدم غير موجود",
     "accountLocked": "تم قفل الحساب. يرجى المحاولة لاحقًا",
-    "unexpectedError": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى"
+    "unexpectedError": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى",
+    "Invalid password": "كلمة المرور غير صحيحة",
+    "Invalid two-factor authentication code": "رمز المصادقة الثنائية غير صحيح",
+    "Invalid verification code": "رمز التحقق غير صحيح",
+    "Password verification required": "مطلوب التحقق من كلمة المرور",
+    "Two-factor authentication is already enabled": "المصادقة الثنائية مفعلة بالفعل",
+    "Two-factor authentication is not enabled": "المصادقة الثنائية غير مفعلة",
+    "Two-factor authentication required": "المصادقة الثنائية مطلوبة",
+    "noUserData": "لا يوجد بيانات المستخدم"
   },
   "fileActions": {
     "editFile": "تعديل الملف",
@@ -304,7 +314,8 @@
     "title": "نسيت كلمة المرور",
     "description": "أدخل بريدك الإلكتروني وسنرسل لك تعليمات إعادة تعيين كلمة المرور.",
     "resetInstructions": "تم إرسال تعليمات إعادة التعيين إلى بريدك الإلكتروني",
-    "pageTitle": "نسيت كلمة المرور"
+    "pageTitle": "نسيت كلمة المرور",
+    "passwordAuthDisabled": "تم تعطيل المصادقة بكلمة المرور. يرجى الاتصال بالمسؤول أو استخدام مزود مصادقة خارجي."
   },
   "generateShareLink": {
     "generateTitle": "إنشاء رابط المشاركة",
@@ -318,7 +329,12 @@
     "copyButton": "نسخ الرابط",
     "success": "تم إنشاء الرابط بنجاح",
     "error": "فشل في إنشاء الرابط",
-    "copied": "تم نسخ الرابط إلى الحافظة"
+    "copied": "تم نسخ الرابط إلى الحافظة",
+    "readyDescription": "رابط المشاركة الخاص بك جاهز. يمكنك مسح رمز QR مباشرة، أو تنزيله للاستخدام لاحقًا، أو نسخ الرابط أدناه.",
+    "tabs": {
+      "link": "الرابط",
+      "qrcode": "رمز QR"
+    }
   },
   "home": {
     "description": "البديل مفتوح المصدر لـ WeTransfer. شارك ملفاتك بأمان، دون تتبع أو قيود.",
@@ -330,6 +346,27 @@
       "tagline": "بسيط ومجاني"
     },
     "pageTitle": "الصفحة الرئيسية"
+  },
+  "iconPicker": {
+    "title": "اختر أيقونة",
+    "placeholder": "اختر أيقونة",
+    "searchPlaceholder": "البحث عن الأيقونات...",
+    "loadingMore": "جاري تحميل المزيد من الأيقونات...",
+    "allIconsLoaded": "تم تحميل جميع الأيقونات {count}",
+    "noIconsFound": "لم يتم العثور على أيقونات لـ \"{search}\"",
+    "tabs": {
+      "all": "جميع الأيقونات",
+      "popular": "الشائعة",
+      "auth": "مزودي المصادقة"
+    },
+    "stats": "{iconCount} أيقونة من {libraryCount} مكتبة",
+    "categoryBadge": "{category} ({count} أيقونات)"
+  },
+  "imageEdit": {
+    "title": "تعديل الصورة",
+    "rotate": "تدوير",
+    "zoom": "تكبير/تصغير",
+    "cropInstructions": "اسحب لإعادة تحديد الموضع، غير حجم الزوايا لضبط منطقة القص"
   },
   "login": {
     "welcome": "مرحبا بك",
@@ -417,6 +454,11 @@
       "imageRemoved": "تم حذف صورة الملف الشخصي بنجاح"
     },
     "pageTitle": "الملف الشخصي"
+  },
+  "qrCodeModal": {
+    "title": "مشاركة رمز QR",
+    "description": "امسح رمز QR هذا للوصول إلى الرابط.",
+    "download": "تحميل رمز QR"
   },
   "quickAccess": {
     "files": {
@@ -589,7 +631,8 @@
       "createLink": "إنشاء رابط",
       "delete": "حذف",
       "copyLinkTitle": "نسخ الرابط",
-      "createLinkCTA": "إنشاء رابط استلام"
+      "createLinkCTA": "إنشاء رابط استلام",
+      "viewQrCode": "عرض رمز QR"
     },
     "status": {
       "active": "نشط",
@@ -605,7 +648,8 @@
       "viewDetails": "عرض التفاصيل",
       "edit": "تحرير",
       "delete": "حذف",
-      "viewFiles": "الملفات المستلمة"
+      "viewFiles": "الملفات المستلمة",
+      "viewQrCode": "عرض رمز QR"
     },
     "empty": {
       "title": "لم يتم إنشاء روابط استلام",
@@ -746,7 +790,12 @@
         "selectAll": "تحديد الكل",
         "selectFile": "تحديد الملف {fileName}",
         "deleteError": "خطأ في حذف الملف",
-        "deleteSuccess": "تم حذف الملف بنجاح"
+        "deleteSuccess": "تم حذف الملف بنجاح",
+        "copyErrors": {
+          "timeout": "انتهت مهلة عملية النسخ. يرجى المحاولة مرة أخرى باستخدام ملف أصغر أو التحقق من اتصالك.",
+          "failed": "فشلت عملية النسخ. يرجى المحاولة مرة أخرى.",
+          "aborted": "تم إلغاء عملية النسخ بسبب انتهاء المهلة."
+        }
       }
     },
     "form": {
@@ -897,7 +946,8 @@
       "fileList": {
         "title": "الملفات المختارة:",
         "statusUploaded": "تم الرفع",
-        "statusError": "خطأ"
+        "statusError": "خطأ",
+        "retry": "إعادة المحاولة"
       },
       "form": {
         "nameLabel": "الاسم",
@@ -1087,6 +1137,10 @@
       "smtpTrustSelfSigned": {
         "title": "الوثوق بالشهادات الموقعة ذاتياً",
         "description": "قم بتمكين هذا للوثوق بشهادات SSL/TLS الموقعة ذاتياً (مفيد لبيئات التطوير)"
+      },
+      "passwordAuthEnabled": {
+        "title": "المصادقة بالكلمة السرية",
+        "description": "تمكين أو تعطيل المصادقة بالكلمة السرية"
       }
     },
     "buttons": {
@@ -1096,7 +1150,8 @@
     },
     "errors": {
       "loadFailed": "فشل في تحميل الإعدادات",
-      "updateFailed": "فشل في تحديث الإعدادات"
+      "updateFailed": "فشل في تحديث الإعدادات",
+      "passwordAuthRequiresProvider": "لا يمكن تعطيل المصادقة بالكلمة السرية دون وجود على الأقل موفرين مصادقة مفعلين"
     },
     "messages": {
       "noChanges": "لا توجد تغييرات للحفظ",
@@ -1202,7 +1257,10 @@
     "invalidDate": "تاريخ غير صحيح",
     "loadError": "فشل في تحميل تفاصيل المشاركة",
     "editSecurity": "تحرير الأمان",
-    "editExpiration": "تحرير انتهاء الصلاحية"
+    "editExpiration": "تحرير انتهاء الصلاحية",
+    "clickToEnlargeQrCode": "انقر لتكبير رمز QR",
+    "downloadQrCode": "تحميل رمز QR",
+    "qrCode": "رمز QR"
   },
   "shareExpiration": {
     "neverExpires": "لا تنتهي صلاحيته أبداً",
@@ -1389,7 +1447,8 @@
       "copyLink": "نسخ الرابط",
       "notifyRecipients": "إشعار المستقبلين",
       "delete": "حذف",
-      "downloadShareFiles": "قم بتنزيل جميع الملفات"
+      "downloadShareFiles": "قم بتنزيل جميع الملفات",
+      "viewQrCode": "عرض رمز QR"
     },
     "bulkActions": {
       "delete": "حذف",
@@ -1420,6 +1479,160 @@
     "light": "فاتح",
     "dark": "داكن",
     "system": "النظام"
+  },
+  "twoFactor": {
+    "title": "المصادقة الثنائية",
+    "description": "أضف طبقة إضافية من الأمان إلى حسابك",
+    "enabled": "حسابك محمي بالمصادقة الثنائية",
+    "disabled": "المصادقة الثنائية غير مفعلة",
+    "setup": {
+      "title": "تفعيل المصادقة الثنائية",
+      "description": "امسح رمز QR باستخدام تطبيق المصادقة، ثم أدخل رمز التحقق.",
+      "qrCode": "رمز QR",
+      "manualEntryKey": "مفتاح الإدخال اليدوي",
+      "verificationCode": "رمز التحقق",
+      "verificationCodePlaceholder": "أدخل الرمز المكون من 6 أرقام",
+      "verificationCodeDescription": "أدخل الرمز المكون من 6 أرقام من تطبيق المصادقة",
+      "verifyAndEnable": "تحقق وتفعيل",
+      "cancel": "إلغاء"
+    },
+    "disable": {
+      "title": "تعطيل المصادقة الثنائية",
+      "description": "أدخل كلمة المرور للتأكيد على تعطيل المصادقة الثنائية.",
+      "password": "كلمة المرور",
+      "passwordPlaceholder": "أدخل كلمة المرور",
+      "confirm": "تأكيد التعطيل",
+      "cancel": "إلغاء"
+    },
+    "backupCodes": {
+      "title": "رموز النسخ الاحتياطي",
+      "description": "احفظ رموز النسخ الاحتياطي هذه في مكان آمن. يمكنك استخدامها للوصول إلى حسابك في حالة فقدان جهاز المصادقة.",
+      "warning": "هام:",
+      "warningText": "يمكن استخدام كل رمز نسخ احتياطي مرة واحدة فقط. احتفظ بها بشكل آمن ولا تشاركها مع أي شخص.",
+      "generateNew": "إنشاء رموز نسخ احتياطي جديدة",
+      "download": "تحميل رموز النسخ الاحتياطي",
+      "copyToClipboard": "نسخ إلى الحافظة",
+      "savedMessage": "لقد حفظت رموز النسخ الاحتياطي",
+      "available": "{count} رموز نسخ احتياطي متاحة",
+      "instructions": [
+        "• احفظ هذه الرموز في مكان آمن",
+        "• يمكن استخدام كل رمز نسخ احتياطي مرة واحدة فقط",
+        "• يمكنك إنشاء رموز جديدة في أي وقت"
+      ]
+    },
+    "verification": {
+      "title": "المصادقة الثنائية",
+      "description": "أدخل الرمز المكون من 6 أرقام من تطبيق المصادقة",
+      "backupDescription": "أدخل أحد رموز النسخ الاحتياطي للمتابعة",
+      "verificationCode": "رمز التحقق",
+      "backupCode": "رمز النسخ الاحتياطي",
+      "verificationCodePlaceholder": "000000",
+      "backupCodePlaceholder": "XXXX-XXXX",
+      "verify": "تحقق",
+      "verifying": "جاري التحقق...",
+      "useBackupCode": "استخدم رمز النسخ الاحتياطي بدلاً من ذلك",
+      "useAuthenticatorCode": "استخدم رمز المصادقة بدلاً من ذلك",
+      "rememberDevice": "تذكر هذا الجهاز لمدة 30 يومًا",
+      "rememberDeviceDescription": "لن تحتاج إلى إدخال رموز المصادقة الثنائية على هذا الجهاز لمدة 30 يومًا"
+    },
+    "messages": {
+      "enabledSuccess": "تم تفعيل المصادقة الثنائية بنجاح!",
+      "disabledSuccess": "تم تعطيل المصادقة الثنائية بنجاح",
+      "backupCodesGenerated": "تم إنشاء رموز النسخ الاحتياطي الجديدة بنجاح",
+      "backupCodesCopied": "تم نسخ رموز النسخ الاحتياطي إلى الحافظة",
+      "setupFailed": "فشل في إنشاء إعداد المصادقة الثنائية",
+      "verificationFailed": "رمز التحقق غير صالح",
+      "disableFailed": "فشل في تعطيل المصادقة الثنائية. يرجى التحقق من كلمة المرور.",
+      "backupCodesFailed": "فشل في إنشاء رموز النسخ الاحتياطي",
+      "backupCodesCopyFailed": "فشل في نسخ رموز النسخ الاحتياطي",
+      "statusLoadFailed": "فشل في تحميل حالة المصادقة الثنائية",
+      "enterVerificationCode": "يرجى إدخال رمز التحقق",
+      "enterPassword": "يرجى إدخال كلمة المرور",
+      "deviceTrusted": "تم تحديد هذا الجهاز كجهاز موثوق به لمدة 30 يومًا"
+    },
+    "errors": {
+      "invalidVerificationCode": "رمز التحقق غير صالح",
+      "invalidTwoFactorCode": "رمز المصادقة الثنائية غير صالح",
+      "twoFactorRequired": "المصادقة الثنائية مطلوبة",
+      "twoFactorAlreadyEnabled": "المصادقة الثنائية مفعلة بالفعل",
+      "twoFactorNotEnabled": "المصادقة الثنائية غير مفعلة",
+      "passwordVerificationRequired": "التحقق من كلمة المرور مطلوب",
+      "invalidPassword": "كلمة المرور غير صالحة",
+      "userNotFound": "المستخدم غير موجود"
+    },
+    "buttons": {
+      "enable2FA": "تفعيل المصادقة الثنائية",
+      "disable2FA": "تعطيل المصادقة الثنائية"
+    },
+    "deviceNames": {
+      "unknownDevice": "جهاز غير معروف",
+      "browsers": {
+        "chrome": "كروم",
+        "firefox": "فايرفوكس",
+        "safari": "سفاري",
+        "edge": "إيدج"
+      },
+      "platforms": {
+        "windows": " على ويندوز",
+        "macos": " على ماك",
+        "linux": " على لينكس",
+        "iphone": " على آيفون",
+        "android": " على أندرويد"
+      }
+    },
+    "status": {
+      "label": "الحالة:",
+      "enabled": "مفعل",
+      "disabled": "معطل"
+    },
+    "trustedDevices": {
+      "title": "الأجهزة الموثوقة - المصادقة الثنائية",
+      "description": "الأجهزة التي لا تتطلب التحقق من المصادقة الثنائية",
+      "noDevices": "لا توجد أجهزة موثوقة",
+      "deviceName": "الجهاز",
+      "addedOn": "تمت الإضافة في",
+      "expiresOn": "تنتهي في",
+      "remove": "إزالة",
+      "removeAll": "إزالة الكل",
+      "confirmRemove": "هل أنت متأكد أنك تريد إزالة هذا الجهاز الموثوق به؟",
+      "confirmRemoveAll": "هل أنت متأكد أنك تريد إزالة جميع الأجهزة الموثوقة؟",
+      "deviceRemoved": "تمت إزالة الجهاز الموثوق به بنجاح",
+      "allDevicesRemoved": "تمت إزالة جميع الأجهزة الموثوقة بنجاح",
+      "loadFailed": "فشل في تحميل الأجهزة الموثوقة",
+      "removeFailed": "فشل في إزالة الجهاز الموثوق به",
+      "removeAllFailed": "فشل في إزالة جميع الأجهزة الموثوقة",
+      "loading": "جاري تحميل الأجهزة الموثوقة...",
+      "noDevicesDescription": "ستظهر الأجهزة هنا عندما تختار الوثوق بها أثناء التحقق من المصادقة الثنائية",
+      "tableHeaders": {
+        "device": "الجهاز",
+        "added": "تمت الإضافة",
+        "expires": "تنتهي",
+        "lastUsed": "آخر استخدام",
+        "ipAddress": "عنوان IP",
+        "actions": "الإجراءات"
+      },
+      "status": {
+        "never": "أبداً",
+        "expired": "منتهي الصلاحية"
+      },
+      "modals": {
+        "removeDevice": {
+          "title": "إزالة الجهاز الموثوق به",
+          "added": "تمت الإضافة:",
+          "ip": "عنوان IP:"
+        },
+        "removeAllDevices": {
+          "title": "إزالة جميع الأجهزة الموثوقة",
+          "description": "سيؤدي هذا إلى إزالة {count} جهاز موثوق به{count, plural, =1 {} other {}}. ستحتاج إلى التحقق من المصادقة الثنائية على جميع الأجهزة مرة أخرى."
+        },
+        "buttons": {
+          "cancel": "إلغاء",
+          "removing": "جاري الإزالة...",
+          "removeDevice": "إزالة الجهاز",
+          "removeAllDevices": "إزالة جميع الأجهزة"
+        }
+      }
+    }
   },
   "uploadFile": {
     "title": "رفع ملف",
@@ -1452,7 +1665,8 @@
       "title": "إفلات الملفات للرفع",
       "description": "حرر للرفع ملفاتك"
     },
-    "pasteSuccess": "{count, plural, =1 {تم لصق الصورة ورفعها بنجاح} other {تم لصق # صور ورفعها بنجاح}}"
+    "pasteSuccess": "{count, plural, =1 {تم لصق الصورة ورفعها بنجاح} other {تم لصق # صور ورفعها بنجاح}}",
+    "filesQueued": "{count, plural, one {# ملف في الصف} other {# ملفات في الصف}}"
   },
   "users": {
     "modes": {
@@ -1537,20 +1751,5 @@
     "passwordRequired": "كلمة المرور مطلوبة",
     "nameRequired": "الاسم مطلوب",
     "required": "هذا الحقل مطلوب"
-  },
-  "iconPicker": {
-    "title": "اختر أيقونة",
-    "placeholder": "اختر أيقونة",
-    "searchPlaceholder": "البحث عن الأيقونات...",
-    "loadingMore": "جاري تحميل المزيد من الأيقونات...",
-    "allIconsLoaded": "تم تحميل جميع الأيقونات {count}",
-    "noIconsFound": "لم يتم العثور على أيقونات لـ \"{search}\"",
-    "tabs": {
-      "all": "جميع الأيقونات",
-      "popular": "الشائعة",
-      "auth": "مزودي المصادقة"
-    },
-    "stats": "{iconCount} أيقونة من {libraryCount} مكتبة",
-    "categoryBadge": "{category} ({count} أيقونات)"
   }
 }

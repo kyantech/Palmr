@@ -65,7 +65,7 @@ export function LanguageSwitcher() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {Object.entries(languages).map(([code, name]) => {
-          const isCurrentLocale = locale === code.split("-")[0];
+          const isCurrentLocale = locale === code;
 
           return (
             <DropdownMenuItem

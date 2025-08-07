@@ -1,5 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 
+import { env } from "../../env";
 import { prisma } from "../../shared/prisma";
 import { ConfigService } from "../config/service";
 import { CheckFileInput, CheckFileSchema, RegisterFileInput, RegisterFileSchema, UpdateFileSchema } from "./dto";

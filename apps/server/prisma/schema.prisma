@@ -20,6 +20,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  twoFactorEnabled     Boolean @default(false)
+  twoFactorSecret      String?
+  twoFactorBackupCodes String?
+  twoFactorVerified    Boolean @default(false)
+
   files         File[]
   shares        Share[]
   reverseShares ReverseShare[]
@@ -28,6 +33,7 @@ model User {
 
   passwordResets PasswordReset[]
   authProviders  UserAuthProvider[]
+  trustedDevices TrustedDevice[]
 
   @@map("users")
 }
@@ -262,4 +268,20 @@ enum FieldRequirement {
 enum PageLayout {
   DEFAULT
   WETRANSFER
+}
+
+model TrustedDevice {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceHash   String   @unique
+  deviceName   String?
+  userAgent    String?
+  ipAddress    String?
+  lastUsedAt   DateTime @default(now())
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("trusted_devices")
 }

@@ -11,6 +11,7 @@ import {
   IconLink,
   IconLock,
   IconLockOpen,
+  IconQrcode,
   IconToggleLeft,
   IconToggleRight,
   IconTrash,
@@ -38,6 +39,7 @@ interface ReverseShareCardProps {
   onGenerateLink: (reverseShare: ReverseShare) => void;
   onViewDetails: (reverseShare: ReverseShare) => void;
   onViewFiles: (reverseShare: ReverseShare) => void;
+  onViewQrCode?: (reverseShare: ReverseShare) => void;
   onUpdateReverseShare?: (id: string, data: any) => Promise<any>;
   onToggleActive?: (id: string, isActive: boolean) => Promise<any>;
   onUpdatePassword?: (id: string, data: { hasPassword: boolean; password?: string }) => Promise<any>;
@@ -51,6 +53,7 @@ export function ReverseShareCard({
   onGenerateLink,
   onViewDetails,
   onViewFiles,
+  onViewQrCode,
   onUpdateReverseShare,
   onToggleActive,
   onUpdatePassword,
@@ -230,6 +233,18 @@ export function ReverseShareCard({
             </div>
 
             <div className="flex items-center gap-1">
+              {hasAlias && onViewQrCode && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 w-6 p-0 hover:bg-background/80 rounded-sm"
+                  onClick={() => onViewQrCode(reverseShare)}
+                  title={t("reverseShares.card.viewQrCode")}
+                >
+                  <IconQrcode className="h-3 w-3" />
+                </Button>
+              )}
+
               <Button
                 variant="outline"
                 size="sm"
@@ -239,7 +254,6 @@ export function ReverseShareCard({
               >
                 <IconEye className="h-3 w-3" />
               </Button>
-
               <Button
                 variant="outline"
                 size="sm"
@@ -257,6 +271,11 @@ export function ReverseShareCard({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onViewDetails(reverseShare)}>
+                    <IconEye className="h-4 w-4" />
+                    {t("reverseShares.card.viewDetails")}
+                  </DropdownMenuItem>
+
                   <DropdownMenuItem onClick={() => onCopyLink(reverseShare)}>
                     <IconCopy className="h-4 w-4" />
                     {t("reverseShares.card.copyLink")}
@@ -285,6 +304,13 @@ export function ReverseShareCard({
                     <IconFile className="h-4 w-4" />
                     {t("reverseShares.actions.viewFiles")}
                   </DropdownMenuItem>
+
+                  {hasAlias && onViewQrCode && (
+                    <DropdownMenuItem onClick={() => onViewQrCode(reverseShare)}>
+                      <IconQrcode className="h-4 w-4" />
+                      {t("reverseShares.actions.viewQrCode")}
+                    </DropdownMenuItem>
+                  )}
 
                   <DropdownMenuItem className="text-destructive" onClick={() => onDelete(reverseShare)}>
                     <IconTrash className="h-4 w-4" />

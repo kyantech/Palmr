@@ -41,7 +41,6 @@ import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// Custom CSS for additional grid columns
 const customStyles = `
   .grid-cols-16 {
     grid-template-columns: repeat(16, minmax(0, 1fr));
@@ -51,9 +50,8 @@ const customStyles = `
   }
 `;
 
-// Inject custom styles
 if (typeof document !== "undefined") {
-  const styleElement = document.createElement("style");
+  const styleElement = document.createElement("iconPicker.style");
   styleElement.textContent = customStyles;
   if (!document.head.querySelector("style[data-icon-picker]")) {
     styleElement.setAttribute("data-icon-picker", "true");
@@ -73,11 +71,9 @@ interface IconPickerProps {
   placeholder?: string;
 }
 
-// Lazy loading configuration
 const ICONS_PER_BATCH = 100;
-const SCROLL_THRESHOLD = 200; // pixels from bottom to trigger load
+const SCROLL_THRESHOLD = 200;
 
-// Virtualized Icon Grid Component with Lazy Loading
 interface VirtualizedIconGridProps {
   icons: IconData[];
   onIconSelect: (iconName: string) => void;
@@ -86,13 +82,12 @@ interface VirtualizedIconGridProps {
 }
 
 function VirtualizedIconGrid({ icons, onIconSelect, renderIcon, showCategories = false }: VirtualizedIconGridProps) {
-  const t = useTranslations("iconPicker");
+  const t = useTranslations();
   const [visibleCount, setVisibleCount] = useState(ICONS_PER_BATCH);
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Intersection Observer for infinite scroll
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
@@ -102,7 +97,6 @@ function VirtualizedIconGrid({ icons, onIconSelect, renderIcon, showCategories =
         const entry = entries[0];
         if (entry.isIntersecting && visibleCount < icons.length && !isLoading) {
           setIsLoading(true);
-          // Simulate async loading with setTimeout for better UX
           setTimeout(() => {
             setVisibleCount((prev) => Math.min(prev + ICONS_PER_BATCH, icons.length));
             setIsLoading(false);
@@ -123,19 +117,16 @@ function VirtualizedIconGrid({ icons, onIconSelect, renderIcon, showCategories =
     };
   }, [visibleCount, icons.length, isLoading]);
 
-  // Reset visible count when icons change
   useEffect(() => {
     setVisibleCount(ICONS_PER_BATCH);
   }, [icons]);
 
-  // Reset visible count when switching between search and category view
   useEffect(() => {
     setVisibleCount(ICONS_PER_BATCH);
   }, [showCategories]);
 
   const visibleIcons = useMemo(() => icons.slice(0, visibleCount), [icons, visibleCount]);
 
-  // Group icons by category for category view - always compute, use conditionally
   const iconsByCategory = useMemo(() => {
     if (!showCategories) return [];
     const grouped = new Map<string, IconData[]>();
@@ -155,7 +146,7 @@ function VirtualizedIconGrid({ icons, onIconSelect, renderIcon, showCategories =
           {iconsByCategory.map(([category, categoryIcons]) => (
             <div key={category}>
               <Badge variant="secondary" className="text-xs mb-3">
-                {t("categoryBadge", {
+                {t("iconPicker.categoryBadge", {
                   category,
                   count: icons.filter((icon) => icon.category === category).length,
                 })}
@@ -177,10 +168,10 @@ function VirtualizedIconGrid({ icons, onIconSelect, renderIcon, showCategories =
 
           {/* Loading indicator and sentinel */}
           <div ref={sentinelRef} className="flex justify-center py-4">
-            {isLoading && <div className="text-sm text-muted-foreground">{t("loadingMore")}</div>}
+            {isLoading && <div className="text-sm text-muted-foreground">{t("iconPicker.loadingMore")}</div>}
             {visibleCount >= icons.length && icons.length > 0 && (
               <div className="text-sm text-muted-foreground">
-                {t("allIconsLoaded", { count: icons.length.toLocaleString() })}
+                {t("iconPicker.allIconsLoaded", { count: icons.length.toLocaleString() })}
               </div>
             )}
           </div>
@@ -189,7 +180,6 @@ function VirtualizedIconGrid({ icons, onIconSelect, renderIcon, showCategories =
     );
   }
 
-  // Simple grid view for search results and specific tabs
   return (
     <div ref={scrollRef} className="max-h-[600px] overflow-y-auto overflow-x-hidden pr-2">
       <div className="grid grid-cols-8 sm:grid-cols-12 lg:grid-cols-16 xl:grid-cols-20 gap-2 sm:gap-3">
@@ -205,12 +195,11 @@ function VirtualizedIconGrid({ icons, onIconSelect, renderIcon, showCategories =
         ))}
       </div>
 
-      {/* Loading indicator and sentinel */}
       <div ref={sentinelRef} className="flex justify-center py-4">
-        {isLoading && <div className="text-sm text-muted-foreground">{t("loadingMore")}</div>}
+        {isLoading && <div className="text-sm text-muted-foreground">{t("iconPicker.loadingMore")}</div>}
         {visibleCount >= icons.length && icons.length > 0 && (
           <div className="text-sm text-muted-foreground">
-            {t("allIconsLoaded", { count: icons.length.toLocaleString() })}
+            {t("iconPicker.allIconsLoaded", { count: icons.length.toLocaleString() })}
           </div>
         )}
       </div>
@@ -218,7 +207,6 @@ function VirtualizedIconGrid({ icons, onIconSelect, renderIcon, showCategories =
   );
 }
 
-// Popular icons for quick access
 const POPULAR_ICONS = [
   "FaGoogle",
   "FaGithub",
@@ -252,7 +240,6 @@ const POPULAR_ICONS = [
   "TbKey",
 ];
 
-// Auth provider specific icons
 const AUTH_PROVIDER_ICONS = [
   "SiGoogle",
   "SiGithub",
@@ -277,14 +264,12 @@ const AUTH_PROVIDER_ICONS = [
 ];
 
 export function IconPicker({ value, onChange, placeholder }: IconPickerProps) {
-  const t = useTranslations("iconPicker");
+  const t = useTranslations();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
-  // Use translation for placeholder if not provided
-  const displayPlaceholder = placeholder || t("placeholder");
+  const displayPlaceholder = placeholder || t("iconPicker.placeholder");
 
-  // Combine ALL icon libraries
   const allIcons = useMemo(() => {
     const iconSets = [
       { icons: AiIcons, prefix: "Ai", category: "Ant Design Icons" },
@@ -326,7 +311,6 @@ export function IconPicker({ value, onChange, placeholder }: IconPickerProps) {
     iconSets.forEach(({ icons: iconSet, prefix, category }) => {
       Object.entries(iconSet).forEach(([name, component]) => {
         if (typeof component === "function" && name.startsWith(prefix)) {
-          // Skip duplicates - keep only the first occurrence
           if (seenNames.has(name)) {
             return;
           }
@@ -344,23 +328,19 @@ export function IconPicker({ value, onChange, placeholder }: IconPickerProps) {
     return icons;
   }, []);
 
-  // Filter icons based on search
   const filteredIcons = useMemo(() => {
     if (!search) return allIcons;
     return allIcons.filter((icon) => icon.name.toLowerCase().includes(search.toLowerCase()));
   }, [allIcons, search]);
 
-  // Get popular icons
   const popularIcons = useMemo(() => {
     return POPULAR_ICONS.map((name) => allIcons.find((icon) => icon.name === name)).filter(Boolean) as IconData[];
   }, [allIcons]);
 
-  // Get auth provider icons
   const authProviderIcons = useMemo(() => {
     return AUTH_PROVIDER_ICONS.map((name) => allIcons.find((icon) => icon.name === name)).filter(Boolean) as IconData[];
   }, [allIcons]);
 
-  // Get current icon component
   const currentIcon = useMemo(() => {
     if (!value) return null;
     return allIcons.find((icon) => icon.name === value);
@@ -380,7 +360,6 @@ export function IconPicker({ value, onChange, placeholder }: IconPickerProps) {
     return <IconComponent className={className} size={size || 32} />;
   }, []);
 
-  // Get unique categories for display
   const categories = useMemo(() => {
     const uniqueCategories = Array.from(new Set(allIcons.map((icon) => icon.category)));
     return uniqueCategories.sort();
@@ -406,9 +385,9 @@ export function IconPicker({ value, onChange, placeholder }: IconPickerProps) {
       <DialogContent className="max-w-5xl xl:max-w-6xl max-h-[90vh] overflow-hidden">
         <div className="space-y-4 overflow-hidden">
           <div className="flex items-center justify-between">
-            <DialogTitle>{t("title")}</DialogTitle>
+            <DialogTitle>{t("iconPicker.title")}</DialogTitle>
             <div className="text-sm text-muted-foreground">
-              {t("stats", {
+              {t("iconPicker.stats", {
                 iconCount: allIcons.length.toLocaleString(),
                 libraryCount: categories.length,
               })}
@@ -419,7 +398,7 @@ export function IconPicker({ value, onChange, placeholder }: IconPickerProps) {
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder={t("searchPlaceholder")}
+              placeholder={t("iconPicker.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-8"
@@ -438,9 +417,9 @@ export function IconPicker({ value, onChange, placeholder }: IconPickerProps) {
 
           <Tabs defaultValue="all" className="w-full overflow-hidden">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="all">{t("tabs.all")}</TabsTrigger>
-              <TabsTrigger value="popular">{t("tabs.popular")}</TabsTrigger>
-              <TabsTrigger value="auth">{t("tabs.auth")}</TabsTrigger>
+              <TabsTrigger value="all">{t("iconPicker.tabs.all")}</TabsTrigger>
+              <TabsTrigger value="popular">{t("iconPicker.tabs.popular")}</TabsTrigger>
+              <TabsTrigger value="auth">{t("iconPicker.tabs.auth")}</TabsTrigger>
             </TabsList>
 
             {/* All Icons */}
@@ -490,7 +469,7 @@ export function IconPicker({ value, onChange, placeholder }: IconPickerProps) {
           {search && filteredIcons.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
               <Search className="mx-auto h-12 w-12 opacity-50 mb-2" />
-              <p>{t("noIconsFound", { search })}</p>
+              <p>{t("iconPicker.noIconsFound", { search })}</p>
             </div>
           )}
         </div>
@@ -499,7 +478,6 @@ export function IconPicker({ value, onChange, placeholder }: IconPickerProps) {
   );
 }
 
-// Utility function to render an icon by name
 export function renderIconByName(iconName: string, className = "w-5 h-5") {
   const iconSets = [
     AiIcons,
@@ -542,6 +520,5 @@ export function renderIconByName(iconName: string, className = "w-5 h-5") {
     }
   }
 
-  // Fallback to a default icon
   return React.createElement(FaIcons.FaCog, { className });
 }

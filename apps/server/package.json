@@ -1,6 +1,6 @@
 {
   "name": "palmr-api",
-  "version": "3.1-beta",
+  "version": "3.1.8-beta",
   "description": "API for Palmr",
   "private": true,
   "author": "Daniel Luiz Alves <daniel@kyantech.com.br>",
@@ -51,7 +51,9 @@
     "node-fetch": "^3.3.2",
     "nodemailer": "^6.10.0",
     "openid-client": "^6.6.2",
+    "qrcode": "^1.5.4",
     "sharp": "^0.34.2",
+    "speakeasy": "^2.0.0",
     "zod": "^3.25.67"
   },
   "devDependencies": {
@@ -61,6 +63,8 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.13.4",
     "@types/nodemailer": "^6.4.17",
+    "@types/qrcode": "^1.5.5",
+    "@types/speakeasy": "^2.0.10",
     "@typescript-eslint/eslint-plugin": "8.35.1",
     "@typescript-eslint/parser": "8.35.1",
     "eslint": "9.30.0",

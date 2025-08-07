@@ -1,5 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 
+import { ConfigService } from "../config/service";
 import { UpdateAuthProviderSchema } from "./dto";
 import { AuthProvidersService } from "./service";
 import {
@@ -39,9 +40,11 @@ const ERROR_MESSAGES = {
 
 export class AuthProvidersController {
   private authProvidersService: AuthProvidersService;
+  private configService: ConfigService;
 
   constructor() {
     this.authProvidersService = new AuthProvidersService();
+    this.configService = new ConfigService();
   }
 
   private buildRequestContext(request: FastifyRequest): RequestContext {
@@ -223,11 +226,22 @@ export class AuthProvidersController {
 
     try {
       const { id } = request.params;
-      const data = request.body;
+      const data = request.body as any;
 
       const existingProvider = await this.authProvidersService.getProviderById(id);
       if (!existingProvider) {
         return this.sendErrorResponse(reply, 404, ERROR_MESSAGES.PROVIDER_NOT_FOUND);
+      }
+
+      if (data.enabled === false && existingProvider.enabled === true) {
+        const canDisable = await this.configService.validateAllProvidersDisable();
+        if (!canDisable) {
+          return this.sendErrorResponse(
+            reply,
+            400,
+            "Cannot disable the last authentication provider when password authentication is disabled"
+          );
+        }
       }
 
       const isOfficial = this.authProvidersService.isOfficialProvider(existingProvider.name);
@@ -298,6 +312,17 @@ export class AuthProvidersController {
       const isOfficial = this.authProvidersService.isOfficialProvider(provider.name);
       if (isOfficial) {
         return this.sendErrorResponse(reply, 400, ERROR_MESSAGES.OFFICIAL_CANNOT_DELETE);
+      }
+
+      if (provider.enabled) {
+        const canDisable = await this.configService.validateAllProvidersDisable();
+        if (!canDisable) {
+          return this.sendErrorResponse(
+            reply,
+            400,
+            "Cannot delete the last authentication provider when password authentication is disabled"
+          );
+        }
       }
 
       await this.authProvidersService.deleteProvider(id);

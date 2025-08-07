@@ -3,8 +3,8 @@ set -e
 
 echo "🌴 Starting Palmr Server..."
 
-TARGET_UID=${PALMR_UID:-1001}
-TARGET_GID=${PALMR_GID:-1001}
+TARGET_UID=${PALMR_UID:-1000}
+TARGET_GID=${PALMR_GID:-1000}
 
 if [ -n "$PALMR_UID" ] || [ -n "$PALMR_GID" ]; then
     echo "🔧 Runtime UID/GID: $TARGET_UID:$TARGET_GID"
@@ -35,108 +35,59 @@ if [ "$(id -u)" = "0" ]; then
     chown -R $TARGET_UID:$TARGET_GID /app/server/prisma 2>/dev/null || true
 fi
 
+run_as_user() {
+    if [ "$(id -u)" = "0" ]; then
+        su-exec $TARGET_UID:$TARGET_GID "$@"
+    else
+        "$@"
+    fi
+}
+
+if [ ! -f "/app/server/prisma/configs.json" ]; then
+    echo "📄 Copying configuration files..."
+    cp -f /app/infra/configs.json /app/server/prisma/configs.json 2>/dev/null || echo "⚠️ Failed to copy configs.json"
+    cp -f /app/infra/providers.json /app/server/prisma/providers.json 2>/dev/null || echo "⚠️ Failed to copy providers.json"
+    cp -f /app/infra/check-missing.js /app/server/prisma/check-missing.js 2>/dev/null || echo "⚠️ Failed to copy check-missing.js"
+    
+    if [ "$(id -u)" = "0" ]; then
+        chown $TARGET_UID:$TARGET_GID /app/server/prisma/configs.json /app/server/prisma/providers.json /app/server/prisma/check-missing.js 2>/dev/null || true
+    fi
+fi
+
 if [ ! -f "/app/server/prisma/palmr.db" ]; then
     echo "🚀 First run detected - setting up database..."
     
     echo "🗄️ Creating database schema..."
-    if [ "$(id -u)" = "0" ]; then
-        su-exec $TARGET_UID:$TARGET_GID npx prisma db push --schema=./prisma/schema.prisma --skip-generate
-    else
-        npx prisma db push --schema=./prisma/schema.prisma --skip-generate
-    fi
+    run_as_user npx prisma db push --schema=./prisma/schema.prisma --skip-generate
     
     echo "🌱 Seeding database..."
-    if [ "$(id -u)" = "0" ]; then
-        su-exec $TARGET_UID:$TARGET_GID node ./prisma/seed.js
-    else
-        node ./prisma/seed.js
-    fi
+    run_as_user node ./prisma/seed.js
     
     echo "✅ Database setup completed!"
 else
     echo "♻️ Existing database found"
     
     echo "🔧 Checking for schema updates..."
-    if [ "$(id -u)" = "0" ]; then
-        su-exec $TARGET_UID:$TARGET_GID npx prisma db push --schema=./prisma/schema.prisma --skip-generate
-    else
-        npx prisma db push --schema=./prisma/schema.prisma --skip-generate
-    fi
+    run_as_user npx prisma db push --schema=./prisma/schema.prisma --skip-generate
     
     echo "🔍 Checking if new tables need seeding..."
-    NEEDS_SEEDING=$(
-        if [ "$(id -u)" = "0" ]; then
-            su-exec $TARGET_UID:$TARGET_GID node -e "
-                const { PrismaClient } = require('@prisma/client');
-                const prisma = new PrismaClient();
-                
-                async function checkSeedingNeeded() {
-                    try {
-                        const appConfigCount = await prisma.appConfig.count();
-                        const userCount = await prisma.user.count();
-                        const authProviderCount = await prisma.authProvider.count();
-                        
-                        if (appConfigCount === 0 || userCount === 0) {
-                            console.log('true');
-                            return;
-                        }
-                        
-                        if (authProviderCount === 0) {
-                            console.log('true');
-                            return;
-                        }
-                        
-                        console.log('false');
-                    } catch (error) {
-                        console.log('true');
-                    } finally {
-                        await prisma.\$disconnect();
-                    }
-                }
-                
-                checkSeedingNeeded();
-            " 2>/dev/null || echo "true"
-        else
-            node -e "
-                const { PrismaClient } = require('@prisma/client');
-                const prisma = new PrismaClient();
-                
-                async function checkSeedingNeeded() {
-                    try {
-                        const appConfigCount = await prisma.appConfig.count();
-                        const userCount = await prisma.user.count();
-                        const authProviderCount = await prisma.authProvider.count();
-                        
-                        if (appConfigCount === 0 || userCount === 0) {
-                            console.log('true');
-                            return;
-                        }
-                        
-                        if (authProviderCount === 0) {
-                            console.log('true');
-                            return;
-                        }
-                        
-                        console.log('false');
-                    } catch (error) {
-                        console.log('true');
-                    } finally {
-                        await prisma.\$disconnect();
-                    }
-                }
-                
-                checkSeedingNeeded();
-            " 2>/dev/null || echo "true"
-        fi
-    )
+    NEEDS_SEEDING=$(run_as_user node ./prisma/check-missing.js check-seeding 2>/dev/null || echo "true")
     
     if [ "$NEEDS_SEEDING" = "true" ]; then
         echo "🌱 New tables detected or missing data, running seed..."
-        if [ "$(id -u)" = "0" ]; then
-            su-exec $TARGET_UID:$TARGET_GID node ./prisma/seed.js
-        else
-            node ./prisma/seed.js
+        
+        MISSING_PROVIDERS=$(run_as_user node ./prisma/check-missing.js check-providers 2>/dev/null || echo "Error checking providers")
+        MISSING_CONFIGS=$(run_as_user node ./prisma/check-missing.js check-configs 2>/dev/null || echo "Error checking configurations")
+
+        if [ "$MISSING_PROVIDERS" != "No missing providers" ] && [ "$MISSING_PROVIDERS" != "Error checking providers" ]; then
+            echo "🔍 $MISSING_PROVIDERS"
         fi
+        
+        if [ "$MISSING_CONFIGS" != "No missing configurations" ] && [ "$MISSING_CONFIGS" != "Error checking configurations" ]; then
+            echo "⚙️ $MISSING_CONFIGS"
+        fi
+        
+        run_as_user node ./prisma/seed.js
         echo "✅ Seeding completed!"
     else
         echo "✅ All tables have data, no seeding needed"
@@ -150,4 +101,4 @@ if [ "$(id -u)" = "0" ]; then
     exec su-exec $TARGET_UID:$TARGET_GID node dist/server.js
 else
     exec node dist/server.js
-fi 
+fi

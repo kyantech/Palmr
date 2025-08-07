@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { IconCalendar, IconCopy, IconEye, IconLink, IconLock, IconShare } from "@tabler/icons-react";
+import { IconCalendar, IconCopy, IconDownload, IconEye, IconLink, IconLock, IconShare } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
+import QRCode from "react-qr-code";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -121,6 +122,18 @@ export function ShareFileModal({ isOpen, file, onClose, onSuccess }: ShareFileMo
   const handleCopyLink = () => {
     navigator.clipboard.writeText(generatedLink);
     toast.success(t("generateShareLink.copied"));
+  };
+
+  const downloadQRCode = () => {
+    const canvas = document.getElementById("share-file-qr-code") as HTMLCanvasElement;
+    if (canvas) {
+      const link = document.createElement("a");
+      link.download = "share-file-qr-code.png";
+      link.href = canvas.toDataURL("image/png");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
   const handleClose = () => {
@@ -259,8 +272,26 @@ export function ShareFileModal({ isOpen, file, onClose, onSuccess }: ShareFileMo
               </>
             ) : (
               <>
+                <div className="flex flex-col items-center justify-center">
+                  <div className="p-4 bg-white rounded-lg">
+                    <svg style={{ display: "none" }} /> {/* For SSR safety */}
+                    <QRCode
+                      id="share-file-qr-code"
+                      value={generatedLink}
+                      size={250}
+                      level="H"
+                      fgColor="#000000"
+                      bgColor="#FFFFFF"
+                    />
+                  </div>
+                </div>
                 <p className="text-sm text-muted-foreground">{t("shareFile.linkReady")}</p>
-                <Input readOnly value={generatedLink} />
+                <div className="flex gap-2">
+                  <Input readOnly value={generatedLink} className="flex-1" />
+                  <Button size="icon" variant="outline" onClick={handleCopyLink} title={t("shareFile.copyLink")}>
+                    <IconCopy className="h-4 w-4" />
+                  </Button>
+                </div>
               </>
             )}
           </div>
@@ -294,9 +325,9 @@ export function ShareFileModal({ isOpen, file, onClose, onSuccess }: ShareFileMo
               <Button variant="outline" onClick={handleSuccess}>
                 {t("common.close")}
               </Button>
-              <Button onClick={handleCopyLink}>
-                <IconCopy className="h-4 w-4" />
-                {t("shareFile.copyLink")}
+              <Button onClick={downloadQRCode}>
+                <IconDownload className="h-4 w-4" />
+                {t("qrCodeModal.download")}
               </Button>
             </>
           )}

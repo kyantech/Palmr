@@ -30,6 +30,7 @@ export function useReverseShares() {
   const [reverseShareToDelete, setReverseShareToDelete] = useState<ReverseShare | null>(null);
   const [reverseShareToEdit, setReverseShareToEdit] = useState<ReverseShare | null>(null);
   const [reverseShareToViewFiles, setReverseShareToViewFiles] = useState<ReverseShare | null>(null);
+  const [reverseShareToViewQrCode, setReverseShareToViewQrCode] = useState<ReverseShare | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -277,6 +278,7 @@ export function useReverseShares() {
     reverseShareToDelete,
     reverseShareToEdit,
     reverseShareToViewFiles,
+    reverseShareToViewQrCode,
     isDeleting,
     isCreateModalOpen,
     isCreating,
@@ -288,6 +290,7 @@ export function useReverseShares() {
     setReverseShareToDelete,
     setReverseShareToEdit,
     setReverseShareToViewFiles,
+    setReverseShareToViewQrCode,
     setIsCreateModalOpen,
     handleCopyLink,
     handleDeleteReverseShare,

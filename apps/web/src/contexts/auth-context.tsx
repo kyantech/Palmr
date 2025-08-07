@@ -39,10 +39,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    let isMounted = true;
+
     const checkAuth = async () => {
       try {
         const appInfoResponse = await getAppInfo();
         const appInfo = appInfoResponse.data;
+
+        if (!isMounted) return;
 
         if (appInfo.firstUserAccess) {
           setUser(null);
@@ -52,8 +56,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         const response = await getCurrentUser();
+
+        if (!isMounted) return;
+
         if (!response?.data?.user) {
-          throw new Error("No user data");
+          setUser(null);
+          setIsAdmin(false);
+          setIsAuthenticated(false);
+          return;
         }
 
         const { isAdmin, ...userData } = response.data.user;
@@ -62,6 +72,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsAdmin(isAdmin);
         setIsAuthenticated(true);
       } catch (err) {
+        if (!isMounted) return;
+
         console.error(err);
         setUser(null);
         setIsAdmin(false);
@@ -70,6 +82,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     checkAuth();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (

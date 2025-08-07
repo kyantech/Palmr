@@ -6,7 +6,7 @@
 echo "🔐 Palmr Password Reset Tool"
 echo "============================="
 
-# Check if we're in the right directory
+# Check if we're in the right directory and set DATABASE_URL
 if [ ! -f "package.json" ]; then
     echo "❌ Error: This script must be run from the server directory (/app/server)"
     echo "   Current directory: $(pwd)"
@@ -14,18 +14,26 @@ if [ ! -f "package.json" ]; then
     exit 1
 fi
 
+# Set DATABASE_URL if not already set
+if [ -z "$DATABASE_URL" ]; then
+    export DATABASE_URL="file:/app/server/prisma/palmr.db"
+fi
+
+# Ensure database directory exists
+mkdir -p /app/server/prisma
+
 # Function to check if tsx is available
 check_tsx() {
     # Check if tsx binary exists in node_modules
     if [ -f "node_modules/.bin/tsx" ]; then
         return 0
     fi
-    
+
     # Fallback: try npx
     if npx tsx --version >/dev/null 2>&1; then
         return 0
     fi
-    
+
     return 1
 }
 
@@ -39,7 +47,7 @@ install_tsx_only() {
     else
         return 1
     fi
-    
+
     return $?
 }
 
@@ -62,7 +70,7 @@ ensure_prisma() {
     if [ -d "node_modules/@prisma/client" ] && [ -f "node_modules/@prisma/client/index.js" ]; then
         return 0
     fi
-    
+
     echo "📦 Generating Prisma client..."
     if npx prisma generate --silent >/dev/null 2>&1; then
         echo "✅ Prisma client ready"
@@ -81,14 +89,14 @@ if check_tsx; then
     echo "✅ tsx is ready"
 else
     echo "📦 tsx not found, installing..."
-    
+
     # Try quick tsx-only install first
     if install_tsx_only && check_tsx; then
         echo "✅ tsx installed successfully"
     else
         echo "⚠️  Quick install failed, installing all dependencies..."
         install_all_deps
-        
+
         # Final check
         if ! check_tsx; then
             echo "❌ Error: tsx is still not available after full installation"
@@ -119,4 +127,4 @@ if [ -f "node_modules/.bin/tsx" ]; then
     node_modules/.bin/tsx src/scripts/reset-password.ts "$@"
 else
     npx tsx src/scripts/reset-password.ts "$@"
-fi 
+fi

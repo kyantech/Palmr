@@ -143,7 +143,8 @@
     "saving": "保存中...",
     "update": "更新",
     "click": "点击",
-    "creating": "创建中..."
+    "creating": "创建中...",
+    "loadingSimple": "加载中..."
   },
   "createShare": {
     "title": "创建分享",
@@ -158,7 +159,8 @@
     "passwordLabel": "密码",
     "create": "创建分享",
     "success": "分享创建成功",
-    "error": "创建分享失败"
+    "error": "创建分享失败",
+    "namePlaceholder": "输入分享名称"
   },
   "dashboard": {
     "loadError": "加载仪表盘数据失败",
@@ -182,7 +184,15 @@
     "invalidCredentials": "电子邮件或密码错误",
     "userNotFound": "未找到用户",
     "accountLocked": "账户已锁定。请稍后再试",
-    "unexpectedError": "发生意外错误。请重试"
+    "unexpectedError": "发生意外错误。请重试",
+    "Invalid password": "密码无效",
+    "Invalid two-factor authentication code": "双重认证码无效",
+    "Invalid verification code": "验证码无效",
+    "Password verification required": "需要密码验证",
+    "Two-factor authentication is already enabled": "双重认证已启用",
+    "Two-factor authentication is not enabled": "双重认证未启用",
+    "Two-factor authentication required": "需要双重认证",
+    "noUserData": "没有用户数据"
   },
   "fileActions": {
     "editFile": "编辑文件",
@@ -304,7 +314,8 @@
     "title": "忘记密码？",
     "description": "请输入您的电子邮件，我们将发送密码重置指令给您。",
     "resetInstructions": "密码重置指令已发送到您的电子邮件",
-    "pageTitle": "忘记密码？"
+    "pageTitle": "忘记密码？",
+    "passwordAuthDisabled": "密码认证已禁用。请联系您的管理员或使用外部认证提供商。"
   },
   "generateShareLink": {
     "generateTitle": "生成分享链接",
@@ -318,7 +329,12 @@
     "copyButton": "复制链接",
     "success": "链接生成成功",
     "error": "链接生成失败",
-    "copied": "链接已复制到剪贴板"
+    "copied": "链接已复制到剪贴板",
+    "readyDescription": "您的分享链接已准备就绪：",
+    "tabs": {
+      "link": "链接",
+      "qrcode": "QR Code"
+    }
   },
   "home": {
     "description": "WeTransfer的开源替代方案。安全分享文件，无需跟踪或限制。",
@@ -330,6 +346,27 @@
       "tagline": "简单且免费"
     },
     "pageTitle": "首页"
+  },
+  "iconPicker": {
+    "title": "选择图标",
+    "placeholder": "选择一个图标",
+    "searchPlaceholder": "搜索图标...",
+    "loadingMore": "正在加载更多图标...",
+    "allIconsLoaded": "已加载全部 {count} 个图标",
+    "noIconsFound": "未找到与\"{search}\"相关的图标",
+    "tabs": {
+      "all": "所有图标",
+      "popular": "常用",
+      "auth": "认证提供商"
+    },
+    "stats": "来自 {libraryCount} 个库的 {iconCount} 个图标",
+    "categoryBadge": "{category}（{count} 个图标）"
+  },
+  "imageEdit": {
+    "title": "编辑图片",
+    "rotate": "旋转",
+    "zoom": "缩放",
+    "cropInstructions": "拖动以重新定位，调整角落大小以调整裁剪区域"
   },
   "login": {
     "welcome": "欢迎您",
@@ -417,6 +454,11 @@
       "imageRemoved": "头像移除成功"
     },
     "pageTitle": "个人资料"
+  },
+  "qrCodeModal": {
+    "title": "分享QR Code",
+    "description": "扫描此QR Code以访问链接。",
+    "download": "下载QR Code"
   },
   "quickAccess": {
     "files": {
@@ -589,7 +631,8 @@
       "createLink": "创建链接",
       "delete": "删除",
       "copyLinkTitle": "复制链接",
-      "createLinkCTA": "创建接收链接"
+      "createLinkCTA": "创建接收链接",
+      "viewQrCode": "查看QR Code"
     },
     "status": {
       "active": "活动",
@@ -605,7 +648,8 @@
       "viewDetails": "查看详情",
       "edit": "编辑",
       "delete": "删除",
-      "viewFiles": "已接收文件"
+      "viewFiles": "已接收文件",
+      "viewQrCode": "查看QR Code"
     },
     "empty": {
       "title": "未创建接收链接",
@@ -746,7 +790,12 @@
         "selectAll": "全选",
         "selectFile": "选择文件 {fileName}",
         "deleteError": "删除文件时出错",
-        "deleteSuccess": "文件已成功删除"
+        "deleteSuccess": "文件已成功删除",
+        "copyErrors": {
+          "timeout": "复制操作超时。请尝试使用较小的文件或检查您的连接。",
+          "failed": "复制操作失败。请重试。",
+          "aborted": "由于超时，复制操作已取消。"
+        }
       }
     },
     "form": {
@@ -897,7 +946,8 @@
       "fileList": {
         "title": "已选择的文件：",
         "statusUploaded": "已上传",
-        "statusError": "错误"
+        "statusError": "错误",
+        "retry": "重试"
       },
       "form": {
         "nameLabel": "姓名",
@@ -1085,6 +1135,10 @@
       "smtpTrustSelfSigned": {
         "title": "信任自签名证书",
         "description": "启用此选项以信任自签名SSL/TLS证书（对开发环境有用）"
+      },
+      "passwordAuthEnabled": {
+        "title": "密码认证",
+        "description": "启用或禁用基于密码的认证"
       }
     },
     "buttons": {
@@ -1094,7 +1148,8 @@
     },
     "errors": {
       "loadFailed": "加载设置失败",
-      "updateFailed": "更新设置失败"
+      "updateFailed": "更新设置失败",
+      "passwordAuthRequiresProvider": "没有至少一个活动认证提供者时，无法禁用密码认证"
     },
     "messages": {
       "noChanges": "没有需要保存的更改",
@@ -1200,7 +1255,10 @@
     "description": "描述",
     "linkCopied": "链接已复制到剪贴板",
     "editSecurity": "编辑安全",
-    "editExpiration": "编辑过期"
+    "editExpiration": "编辑过期",
+    "clickToEnlargeQrCode": "点击放大QR Code",
+    "downloadQrCode": "下载QR Code",
+    "qrCode": "QR Code"
   },
   "shareExpiration": {
     "neverExpires": "永不过期",
@@ -1387,7 +1445,8 @@
       "copyLink": "复制链接",
       "notifyRecipients": "通知收件人",
       "delete": "删除",
-      "downloadShareFiles": "下载所有文件"
+      "downloadShareFiles": "下载所有文件",
+      "viewQrCode": "查看QR Code"
     },
     "bulkActions": {
       "delete": "删除",
@@ -1418,6 +1477,156 @@
     "light": "明亮",
     "dark": "暗黑",
     "system": "系统"
+  },
+  "twoFactor": {
+    "title": "双重认证",
+    "description": "为您的账户添加额外的安全保护",
+    "enabled": "您的账户已启用双重认证保护",
+    "disabled": "未启用双重认证",
+    "setup": {
+      "title": "启用双重认证",
+      "description": "使用您的认证器应用扫描二维码，然后输入验证码。",
+      "qrCode": "二维码",
+      "manualEntryKey": "手动输入密钥",
+      "verificationCode": "验证码",
+      "verificationCodePlaceholder": "输入6位数验证码",
+      "verificationCodeDescription": "输入认证器应用生成的6位数验证码",
+      "verifyAndEnable": "验证并启用",
+      "cancel": "取消"
+    },
+    "disable": {
+      "title": "禁用双重认证",
+      "description": "请输入您的密码以确认禁用双重认证。",
+      "password": "密码",
+      "passwordPlaceholder": "输入您的密码",
+      "confirm": "确认禁用",
+      "cancel": "取消"
+    },
+    "backupCodes": {
+      "title": "备用码",
+      "description": "请将这些备用码保存在安全的地方。如果您丢失了认证器设备，可以使用它们访问您的账户。",
+      "warning": "重要提示：",
+      "warningText": "每个备用码只能使用一次。请妥善保管，不要与任何人分享。",
+      "generateNew": "生成新的备用码",
+      "download": "下载备用码",
+      "copyToClipboard": "复制到剪贴板",
+      "savedMessage": "我已保存备用码",
+      "available": "可用备用码：{count}个",
+      "instructions": ["• 将这些代码保存在安全的位置", "• 每个备用码只能使用一次", "• 您可以随时生成新的备用码"]
+    },
+    "verification": {
+      "title": "双重认证",
+      "description": "请输入认证器应用生成的6位数验证码",
+      "backupDescription": "请输入一个备用码以继续",
+      "verificationCode": "验证码",
+      "backupCode": "备用码",
+      "verificationCodePlaceholder": "000000",
+      "backupCodePlaceholder": "XXXX-XXXX",
+      "verify": "验证",
+      "verifying": "验证中...",
+      "useBackupCode": "使用备用码",
+      "useAuthenticatorCode": "使用认证器验证码",
+      "rememberDevice": "在30天内记住此设备",
+      "rememberDeviceDescription": "在30天内您无需在此设备上输入双重认证码"
+    },
+    "messages": {
+      "enabledSuccess": "双重认证启用成功！",
+      "disabledSuccess": "双重认证已成功禁用",
+      "backupCodesGenerated": "新的备用码生成成功",
+      "backupCodesCopied": "备用码已复制到剪贴板",
+      "setupFailed": "生成双重认证设置失败",
+      "verificationFailed": "验证码无效",
+      "disableFailed": "禁用双重认证失败。请检查您的密码。",
+      "backupCodesFailed": "生成备用码失败",
+      "backupCodesCopyFailed": "复制备用码失败",
+      "statusLoadFailed": "加载双重认证状态失败",
+      "enterVerificationCode": "请输入验证码",
+      "enterPassword": "请输入您的密码",
+      "deviceTrusted": "此设备已被标记为30天内受信任"
+    },
+    "errors": {
+      "invalidVerificationCode": "验证码无效",
+      "invalidTwoFactorCode": "双重认证码无效",
+      "twoFactorRequired": "需要双重认证",
+      "twoFactorAlreadyEnabled": "双重认证已启用",
+      "twoFactorNotEnabled": "未启用双重认证",
+      "passwordVerificationRequired": "需要密码验证",
+      "invalidPassword": "密码无效",
+      "userNotFound": "未找到用户"
+    },
+    "buttons": {
+      "enable2FA": "启用双重认证",
+      "disable2FA": "禁用双重认证"
+    },
+    "deviceNames": {
+      "unknownDevice": "未知设备",
+      "browsers": {
+        "chrome": "Chrome",
+        "firefox": "Firefox",
+        "safari": "Safari",
+        "edge": "Edge"
+      },
+      "platforms": {
+        "windows": " 在 Windows 上",
+        "macos": " 在 macOS 上",
+        "linux": " 在 Linux 上",
+        "iphone": " 在 iPhone 上",
+        "android": " 在 Android 上"
+      }
+    },
+    "status": {
+      "label": "状态：",
+      "enabled": "已启用",
+      "disabled": "已禁用"
+    },
+    "trustedDevices": {
+      "title": "受信任设备 - 双重认证",
+      "description": "无需双重认证验证的设备",
+      "noDevices": "没有受信任的设备",
+      "deviceName": "设备",
+      "addedOn": "添加于",
+      "expiresOn": "过期于",
+      "remove": "移除",
+      "removeAll": "移除全部",
+      "confirmRemove": "您确定要移除此受信任设备吗？",
+      "confirmRemoveAll": "您确定要移除所有受信任设备吗？",
+      "deviceRemoved": "受信任设备已成功移除",
+      "allDevicesRemoved": "所有受信任设备已成功移除",
+      "loadFailed": "加载受信任设备失败",
+      "removeFailed": "移除受信任设备失败",
+      "removeAllFailed": "移除所有受信任设备失败",
+      "loading": "正在加载受信任设备...",
+      "noDevicesDescription": "当您在双重认证验证时选择信任设备时，设备将显示在此处",
+      "tableHeaders": {
+        "device": "设备",
+        "added": "添加时间",
+        "expires": "过期时间",
+        "lastUsed": "最后使用",
+        "ipAddress": "IP地址",
+        "actions": "操作"
+      },
+      "status": {
+        "never": "从未",
+        "expired": "已过期"
+      },
+      "modals": {
+        "removeDevice": {
+          "title": "移除受信任设备",
+          "added": "添加时间：",
+          "ip": "IP地址："
+        },
+        "removeAllDevices": {
+          "title": "移除所有受信任设备",
+          "description": "这将移除 {count} 个受信任设备。您需要在所有设备上重新进行双重认证验证。"
+        },
+        "buttons": {
+          "cancel": "取消",
+          "removing": "正在移除...",
+          "removeDevice": "移除设备",
+          "removeAllDevices": "移除所有设备"
+        }
+      }
+    }
   },
   "uploadFile": {
     "title": "上传文件",
@@ -1450,7 +1659,8 @@
       "title": "拖放文件以上传",
       "description": "松开以上传您的文件"
     },
-    "pasteSuccess": "{count, plural, =1 {图片已成功粘贴并上传} other {# 张图片已成功粘贴并上传}}"
+    "pasteSuccess": "{count, plural, =1 {图片已成功粘贴并上传} other {# 张图片已成功粘贴并上传}}",
+    "filesQueued": "{count, plural, one {# 文件正在等待上传} other {# 文件正在等待上传}}"
   },
   "users": {
     "modes": {
@@ -1535,20 +1745,5 @@
     "passwordRequired": "密码为必填项",
     "nameRequired": "名称为必填项",
     "required": "此字段为必填项"
-  },
-  "iconPicker": {
-    "title": "选择图标",
-    "placeholder": "选择一个图标",
-    "searchPlaceholder": "搜索图标...",
-    "loadingMore": "正在加载更多图标...",
-    "allIconsLoaded": "已加载全部 {count} 个图标",
-    "noIconsFound": "未找到与\"{search}\"相关的图标",
-    "tabs": {
-      "all": "所有图标",
-      "popular": "常用",
-      "auth": "认证提供商"
-    },
-    "stats": "来自 {libraryCount} 个库的 {iconCount} 个图标",
-    "categoryBadge": "{category}（{count} 个图标）"
   }
 }

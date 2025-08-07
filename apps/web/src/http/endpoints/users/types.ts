@@ -1,6 +1,5 @@
 import type { AxiosResponse } from "axios";
 
-// Base interface that is reused across all user operations
 export interface User {
   id: string;
   firstName: string;
@@ -14,18 +13,15 @@ export interface User {
   updatedAt: string;
 }
 
-// Common response patterns
 export interface UserWithMessageResponse {
   user: User;
   message: string;
 }
 
-// Response interfaces using base User type
 export interface ListUsers200 {
   users: User[];
 }
 
-// Request body interfaces
 export interface RegisterUserBody {
   firstName: string;
   lastName: string;
@@ -64,7 +60,6 @@ export type UpdateUserImage200 = User;
 export type UploadAvatar200 = User;
 export type RegisterUser201 = UserWithMessageResponse;
 
-// Axios response types
 export type RegisterUserResult = AxiosResponse<RegisterUser201>;
 export type ListUsersResult = AxiosResponse<User[]>;
 export type UpdateUserResult = AxiosResponse<UpdateUser200>;

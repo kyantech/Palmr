@@ -13,6 +13,7 @@ export const PROVIDER_PATTERNS = [
   { pattern: "okta.com", type: "okta" },
   { pattern: "kinde.com", type: "kinde" },
   { pattern: "zitadel.com", type: "zitadel" },
+  { pattern: "pocketid", type: "pocketid" },
 ] as const;
 
 export const DEFAULT_SCOPES_BY_TYPE: Record<string, string[]> = {
@@ -28,6 +29,7 @@ export const DEFAULT_SCOPES_BY_TYPE: Record<string, string[]> = {
   okta: ["openid", "profile", "email"],
   kinde: ["openid", "profile", "email"],
   zitadel: ["openid", "profile", "email"],
+  pocketid: ["openid", "profile", "email"],
 } as const;
 
 export const DISCOVERY_SUPPORTED_PROVIDERS = [
@@ -41,6 +43,7 @@ export const DISCOVERY_SUPPORTED_PROVIDERS = [
   "microsoft",
   "kinde",
   "zitadel",
+  "pocketid",
 ] as const;
 
 export const DISCOVERY_PATHS = [
@@ -74,6 +77,11 @@ export const FALLBACK_ENDPOINTS: Record<string, any> = {
     authorizationEndpoint: "/oauth2/authorize",
     tokenEndpoint: "/oauth2/token",
     userInfoEndpoint: "/oauth2/userinfo",
+  },
+  pocketid: {
+    authorizationEndpoint: "/authorize",
+    tokenEndpoint: "/api/oidc/token",
+    userInfoEndpoint: "/api/oidc/userinfo",
   },
 } as const;
 
@@ -233,6 +241,29 @@ const fronteggConfig: ProviderConfig = {
 };
 
 /**
+ * Configuração técnica oficial do Pocket ID
+ * OIDC com discovery automático
+ * Endpoints vêm do banco de dados
+ */
+const pocketidConfig: ProviderConfig = {
+  supportsDiscovery: true,
+  discoveryEndpoint: "/.well-known/openid-configuration",
+  authMethod: "body",
+  fieldMappings: {
+    id: ["sub"],
+    email: ["email"],
+    name: ["name", "preferred_username"],
+    firstName: ["given_name"],
+    lastName: ["family_name"],
+    avatar: ["picture"],
+  },
+  specialHandling: {
+    emailFetchRequired: false,
+    responseFormat: "json",
+  },
+};
+
+/**
  * Template genérico ULTRA-INTELIGENTE para providers customizados
  * Detecta automaticamente padrões comuns e se adapta
  */
@@ -275,6 +306,7 @@ export const providersConfig: ProvidersConfigFile = {
     zitadel: zitadelConfig,
     authentik: authentikConfig,
     frontegg: fronteggConfig,
+    pocketid: pocketidConfig,
   },
   genericProviderTemplate,
 };

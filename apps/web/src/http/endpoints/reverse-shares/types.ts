@@ -1,10 +1,8 @@
 import type { AxiosResponse } from "axios";
 
-// Base types and enums
 export type FieldRequirement = "HIDDEN" | "OPTIONAL" | "REQUIRED";
 export type PageLayout = "WETRANSFER" | "DEFAULT";
 
-// Base interfaces that are reused across different operations
 export interface ReverseShareFile {
   id: string;
   name: string;
@@ -63,7 +61,6 @@ export interface ReverseShareForUpload {
   emailFieldRequired: string;
 }
 
-// Response interfaces using base types
 export interface CreateReverseShare201 {
   reverseShare: BaseReverseShare;
 }
@@ -126,7 +123,6 @@ export interface UpdateReverseShareFile200 {
   file: ReverseShareFile;
 }
 
-// Request body interfaces
 export interface CreateReverseShareBody {
   name?: string;
   description?: string;
@@ -182,7 +178,6 @@ export interface UpdateReverseShareFileBody {
   description?: string | null;
 }
 
-// Query parameter interfaces
 export interface GetReverseShareForUploadParams {
   password?: string;
 }
@@ -191,7 +186,6 @@ export interface RegisterFileUploadParams {
   password?: string;
 }
 
-// Axios response types
 export type CreateReverseShareResult = AxiosResponse<CreateReverseShare201>;
 export type UpdateReverseShareResult = AxiosResponse<UpdateReverseShare200>;
 export type ListUserReverseSharesResult = AxiosResponse<ListUserReverseShares200>;

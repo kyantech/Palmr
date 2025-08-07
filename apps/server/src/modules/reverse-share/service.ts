@@ -1,6 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 
+import { env } from "../../env";
+import { EmailService } from "../email/service";
 import { FileService } from "../file/service";
+import { UserService } from "../user/service";
 import {
   CreateReverseShareInput,
   ReverseShareResponseSchema,
@@ -40,6 +43,19 @@ const prisma = new PrismaClient();
 export class ReverseShareService {
   private reverseShareRepository = new ReverseShareRepository();
   private fileService = new FileService();
+  private emailService = new EmailService();
+  private userService = new UserService();
+
+  private uploadSessions = new Map<
+    string,
+    {
+      reverseShareId: string;
+      uploaderName: string;
+      uploaderEmail?: string;
+      files: string[];
+      timeout: NodeJS.Timeout;
+    }
+  >();
 
   async createReverseShare(data: CreateReverseShareInput, creatorId: string) {
     const reverseShare = await this.reverseShareRepository.create(data, creatorId);
@@ -294,6 +310,8 @@ export class ReverseShareService {
       size: BigInt(fileData.size),
     });
 
+    this.addFileToUploadSession(reverseShare, fileData);
+
     return this.formatFileResponse(file);
   }
 
@@ -343,6 +361,8 @@ export class ReverseShareService {
       ...fileData,
       size: BigInt(fileData.size),
     });
+
+    this.addFileToUploadSession(reverseShare, fileData);
 
     return this.formatFileResponse(file);
   }
@@ -533,46 +553,72 @@ export class ReverseShareService {
       const { FilesystemStorageProvider } = await import("../../providers/filesystem-storage.provider.js");
       const provider = FilesystemStorageProvider.getInstance();
 
-      // Use streaming copy for filesystem mode
       const sourcePath = provider.getFilePath(file.objectName);
       const fs = await import("fs");
-      const { pipeline } = await import("stream/promises");
 
-      const sourceStream = fs.createReadStream(sourcePath);
-      const decryptStream = provider.createDecryptStream();
+      const targetPath = provider.getFilePath(newObjectName);
 
-      // Create a passthrough stream to get the decrypted content
-      const { PassThrough } = await import("stream");
-      const passThrough = new PassThrough();
+      const path = await import("path");
+      const targetDir = path.dirname(targetPath);
+      if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true });
+      }
 
-      // First, decrypt the source file into the passthrough stream
-      await pipeline(sourceStream, decryptStream, passThrough);
-
-      // Then upload the decrypted content
-      await provider.uploadFileFromStream(newObjectName, passThrough);
+      const { copyFile } = await import("fs/promises");
+      await copyFile(sourcePath, targetPath);
     } else {
+      const fileSizeMB = Number(file.size) / (1024 * 1024);
+      const needsStreaming = fileSizeMB > 100;
+
       const downloadUrl = await this.fileService.getPresignedGetUrl(file.objectName, 300);
       const uploadUrl = await this.fileService.getPresignedPutUrl(newObjectName, 300);
 
-      const response = await fetch(downloadUrl);
-      if (!response.ok) {
-        throw new Error(`Failed to download file: ${response.statusText}`);
-      }
+      let retries = 0;
+      const maxRetries = 3;
+      let success = false;
 
-      if (!response.body) {
-        throw new Error("No response body received");
-      }
+      while (retries < maxRetries && !success) {
+        try {
+          const response = await fetch(downloadUrl, {
+            signal: AbortSignal.timeout(600000), // 10 minutes timeout
+          });
 
-      const uploadResponse = await fetch(uploadUrl, {
-        method: "PUT",
-        body: response.body,
-        headers: {
-          "Content-Type": "application/octet-stream",
-        },
-      });
+          if (!response.ok) {
+            throw new Error(`Failed to download file: ${response.statusText}`);
+          }
 
-      if (!uploadResponse.ok) {
-        throw new Error(`Failed to upload file: ${uploadResponse.statusText}`);
+          if (!response.body) {
+            throw new Error("No response body received");
+          }
+
+          const uploadOptions: any = {
+            method: "PUT",
+            body: response.body,
+            headers: {
+              "Content-Type": "application/octet-stream",
+              "Content-Length": file.size.toString(),
+            },
+            signal: AbortSignal.timeout(600000), // 10 minutes timeout
+          };
+
+          const uploadResponse = await fetch(uploadUrl, uploadOptions);
+
+          if (!uploadResponse.ok) {
+            const errorText = await uploadResponse.text();
+            throw new Error(`Failed to upload file: ${uploadResponse.statusText} - ${errorText}`);
+          }
+
+          success = true;
+        } catch (error: any) {
+          retries++;
+
+          if (retries >= maxRetries) {
+            throw new Error(`Failed to copy file after ${maxRetries} attempts: ${error.message}`);
+          }
+
+          const delay = Math.min(1000 * Math.pow(2, retries - 1), 10000);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
       }
     }
 
@@ -598,6 +644,55 @@ export class ReverseShareService {
       createdAt: newFileRecord.createdAt.toISOString(),
       updatedAt: newFileRecord.updatedAt.toISOString(),
     };
+  }
+
+  private generateSessionKey(reverseShareId: string, uploaderIdentifier: string): string {
+    return `${reverseShareId}-${uploaderIdentifier}`;
+  }
+
+  private async sendBatchFileUploadNotification(reverseShare: any, uploaderName: string, fileNames: string[]) {
+    try {
+      const creator = await this.userService.getUserById(reverseShare.creatorId);
+      const reverseShareName = reverseShare.name || "Unnamed Reverse Share";
+      const fileCount = fileNames.length;
+      const fileList = fileNames.join(", ");
+
+      await this.emailService.sendReverseShareBatchFileNotification(
+        creator.email,
+        reverseShareName,
+        fileCount,
+        fileList,
+        uploaderName
+      );
+    } catch (error) {
+      console.error("Failed to send reverse share batch file notification:", error);
+    }
+  }
+
+  private addFileToUploadSession(reverseShare: any, fileData: UploadToReverseShareInput) {
+    const uploaderIdentifier = fileData.uploaderEmail || fileData.uploaderName || "anonymous";
+    const sessionKey = this.generateSessionKey(reverseShare.id, uploaderIdentifier);
+    const uploaderName = fileData.uploaderName || "Someone";
+
+    const existingSession = this.uploadSessions.get(sessionKey);
+    if (existingSession) {
+      clearTimeout(existingSession.timeout);
+      existingSession.files.push(fileData.name);
+    } else {
+      this.uploadSessions.set(sessionKey, {
+        reverseShareId: reverseShare.id,
+        uploaderName,
+        uploaderEmail: fileData.uploaderEmail,
+        files: [fileData.name],
+        timeout: null as any,
+      });
+    }
+
+    const session = this.uploadSessions.get(sessionKey)!;
+    session.timeout = setTimeout(async () => {
+      await this.sendBatchFileUploadNotification(reverseShare, session.uploaderName, session.files);
+      this.uploadSessions.delete(sessionKey);
+    }, 5000);
   }
 
   private formatReverseShareResponse(reverseShare: ReverseShareData) {

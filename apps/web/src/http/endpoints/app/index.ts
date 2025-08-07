@@ -7,6 +7,7 @@ import type {
   CheckUploadAllowedResult,
   GetAppInfoResult,
   GetDiskSpaceResult,
+  GetSystemInfoResult,
   RemoveLogoResult,
   UploadLogoBody,
   UploadLogoResult,
@@ -18,6 +19,14 @@ import type {
  */
 export const getAppInfo = <TData = GetAppInfoResult>(options?: AxiosRequestConfig): Promise<TData> => {
   return apiInstance.get(`/api/app/info`, options);
+};
+
+/**
+ * Get system information including storage provider
+ * @summary Get system information
+ */
+export const getSystemInfo = <TData = GetSystemInfoResult>(options?: AxiosRequestConfig): Promise<TData> => {
+  return apiInstance.get(`/api/app/system-info`, options);
 };
 
 /**

@@ -24,7 +24,7 @@ export async function buildApp() {
       },
     },
     logger: {
-      level: "info",
+      level: "warn",
     },
     bodyLimit: 1024 * 1024 * 1024 * 1024 * 1024,
     connectionTimeout: 0,

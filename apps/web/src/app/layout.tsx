@@ -4,6 +4,7 @@ import { getLocale } from "next-intl/server";
 
 import "./globals.css";
 
+import { RedirectHandler } from "@/components/auth/redirect-handler";
 import { Favicon } from "@/components/layout/favicon";
 import { DynamicToaster } from "@/components/ui/dynamic-toaster";
 import { useAppInfo } from "@/contexts/app-info-context";
@@ -39,7 +40,9 @@ export default async function RootLayout({
         <NextIntlClientProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             <AuthProvider>
-              <ShareProvider>{children}</ShareProvider>
+              <RedirectHandler>
+                <ShareProvider>{children}</ShareProvider>
+              </RedirectHandler>
             </AuthProvider>
             <DynamicToaster />
           </ThemeProvider>

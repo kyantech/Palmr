@@ -1,0 +1,37 @@
+{
+  "general": [
+    "appName",
+    "showHomePage",
+    "appDescription",
+    "appLogo",
+    "firstUserAccess",
+    "serverUrl"
+  ],
+  "storage": [
+    "maxFileSize",
+    "maxTotalStoragePerUser"
+  ],
+  "security": [
+    "jwtSecret",
+    "maxLoginAttempts",
+    "loginBlockDuration",
+    "passwordMinLength",
+    "passwordAuthEnabled",
+    "passwordResetTokenExpiration"
+  ],
+  "email": [
+    "smtpEnabled",
+    "smtpHost",
+    "smtpPort",
+    "smtpUser",
+    "smtpPass",
+    "smtpFromName",
+    "smtpFromEmail",
+    "smtpSecure",
+    "smtpNoAuth",
+    "smtpTrustSelfSigned"
+  ],
+  "auth-providers": [
+    "authProvidersEnabled"
+  ]
+}

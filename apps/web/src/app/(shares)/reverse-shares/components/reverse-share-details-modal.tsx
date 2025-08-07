@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   IconCopy,
+  IconDownload,
   IconEdit,
   IconLink,
   IconLock,
@@ -11,6 +12,7 @@ import {
   IconToggleRight,
 } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
+import QRCode from "react-qr-code";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,6 +44,7 @@ interface ReverseShareDetailsModalProps {
   onCopyLink?: (reverseShare: ReverseShare) => void;
   onToggleActive?: (id: string, isActive: boolean) => Promise<void>;
   onUpdatePassword?: (id: string, data: { hasPassword: boolean; password?: string }) => Promise<void>;
+  onViewQrCode?: (reverseShare: ReverseShare) => void;
   refreshTrigger?: number;
   onSuccess?: () => void;
 }
@@ -55,10 +58,12 @@ export function ReverseShareDetailsModal({
   onCopyLink,
   onToggleActive,
   onUpdatePassword,
+  onViewQrCode,
   onSuccess,
 }: ReverseShareDetailsModalProps) {
   const t = useTranslations();
   const [pendingChanges, setPendingChanges] = useState<Record<string, any>>({});
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const {
     showAliasModal,
@@ -140,46 +145,119 @@ export function ReverseShareDetailsModal({
               isActive={reverseShare.isActive}
             />
 
-            {/* Informações Básicas */}
-            <div className="space-y-3">
-              <h3 className="text-base font-medium text-foreground border-b pb-2">
-                {t("reverseShares.modals.details.basicInfo")}
-              </h3>
+            <div className="grid grid-cols-2 gap-4">
+              {/* Informações Básicas */}
+              <div className="space-y-3">
+                <h3 className="text-base font-medium text-foreground border-b pb-2">
+                  {t("reverseShares.modals.details.basicInfo")}
+                </h3>
 
-              <EditableField
-                label={t("reverseShares.form.name.label")}
-                value={getDisplayValue(reverseShare, "name", pendingChanges)}
-                onSave={(value) => handleUpdateField("name", value)}
-                placeholder={t("reverseShares.card.untitled")}
-                disabled={!onUpdateReverseShare}
-              />
+                <EditableField
+                  label={t("reverseShares.form.name.label")}
+                  value={getDisplayValue(reverseShare, "name", pendingChanges)}
+                  onSave={(value) => handleUpdateField("name", value)}
+                  placeholder={t("reverseShares.card.untitled")}
+                  disabled={!onUpdateReverseShare}
+                />
 
-              <EditableField
-                label={t("reverseShares.labels.description")}
-                value={getDisplayValue(reverseShare, "description", pendingChanges)}
-                onSave={(value) => handleUpdateField("description", value)}
-                placeholder={t("reverseShares.card.noDescription")}
-                disabled={!onUpdateReverseShare}
-              />
+                <EditableField
+                  label={t("reverseShares.labels.description")}
+                  value={getDisplayValue(reverseShare, "description", pendingChanges)}
+                  onSave={(value) => handleUpdateField("description", value)}
+                  placeholder={t("reverseShares.card.noDescription")}
+                  disabled={!onUpdateReverseShare}
+                />
 
-              <EditableField
-                label={t("reverseShares.labels.pageLayout")}
-                value={getDisplayValue(reverseShare, "pageLayout", pendingChanges)}
-                onSave={(value) => handleUpdateField("pageLayout", value)}
-                type="select"
-                options={[
-                  { value: "DEFAULT", label: t("reverseShares.labels.layoutOptions.default") },
-                  { value: "WETRANSFER", label: t("reverseShares.labels.layoutOptions.wetransfer") },
-                ]}
-                disabled={!onUpdateReverseShare}
-                renderValue={(value) => (
-                  <Badge variant="secondary" className="bg-purple-500/20 text-purple-700 border-purple-200">
-                    {value === "WETRANSFER"
-                      ? t("reverseShares.labels.layoutOptions.wetransfer")
-                      : t("reverseShares.labels.layoutOptions.default")}
-                  </Badge>
-                )}
-              />
+                <EditableField
+                  label={t("reverseShares.labels.pageLayout")}
+                  value={getDisplayValue(reverseShare, "pageLayout", pendingChanges)}
+                  onSave={(value) => handleUpdateField("pageLayout", value)}
+                  type="select"
+                  options={[
+                    { value: "DEFAULT", label: t("reverseShares.labels.layoutOptions.default") },
+                    { value: "WETRANSFER", label: t("reverseShares.labels.layoutOptions.wetransfer") },
+                  ]}
+                  disabled={!onUpdateReverseShare}
+                  renderValue={(value) => (
+                    <Badge variant="secondary" className="bg-purple-500/20 text-purple-700 border-purple-200">
+                      {value === "WETRANSFER"
+                        ? t("reverseShares.labels.layoutOptions.wetransfer")
+                        : t("reverseShares.labels.layoutOptions.default")}
+                    </Badge>
+                  )}
+                />
+              </div>
+
+              {/* QR Code */}
+              {reverseShareLink && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 border-b pb-2">
+                    <h3
+                      className="text-base font-medium text-foreground cursor-pointer"
+                      onClick={() => onViewQrCode && onViewQrCode(reverseShare)}
+                    >
+                      {t("qrCodeModal.title")}
+                    </h3>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-5 w-5 text-muted-foreground hover:text-foreground"
+                      onClick={() => {
+                        const svg = document.getElementById("reverse-share-details-qr-code");
+                        if (!svg) return;
+
+                        setIsDownloading(true);
+                        const canvas = document.createElement("canvas");
+                        const ctx = canvas.getContext("2d");
+                        const padding = 20;
+                        canvas.width = 200 + padding * 2;
+                        canvas.height = 200 + padding * 2;
+
+                        if (ctx) {
+                          ctx.fillStyle = "#FFFFFF";
+                          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                          const svgData = new XMLSerializer().serializeToString(svg);
+                          const img = new Image();
+
+                          img.onload = () => {
+                            ctx.drawImage(img, padding, padding, 200, 200);
+                            const link = document.createElement("a");
+                            link.download = `${reverseShare?.name?.replace(/[^a-z0-9]/gi, "-").toLowerCase() || "reverse-share"}-qr-code.png`;
+                            link.href = canvas.toDataURL("image/png");
+                            link.click();
+                            setIsDownloading(false);
+                          };
+
+                          img.src = `data:image/svg+xml;base64,${btoa(svgData)}`;
+                        } else {
+                          setIsDownloading(false);
+                        }
+                      }}
+                      disabled={isDownloading}
+                      title={t("qrCodeModal.download")}
+                    >
+                      <IconDownload className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  <div className="flex flex-col items-start justify-start">
+                    <div
+                      className="p-2 bg-white rounded-lg cursor-pointer hover:opacity-80 transition-opacity duration-300"
+                      onClick={() => onViewQrCode && onViewQrCode(reverseShare)}
+                      title={t("reverseShares.actions.viewQrCode")}
+                    >
+                      <QRCode
+                        id="reverse-share-details-qr-code"
+                        value={reverseShareLink}
+                        size={100}
+                        level="H"
+                        fgColor="#000000"
+                        bgColor="#FFFFFF"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Link de Compartilhamento */}

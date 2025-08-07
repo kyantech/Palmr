@@ -1,6 +1,5 @@
 import type { AxiosResponse } from "axios";
 
-// Base types that are reused across different operations
 export interface BaseUser {
   id: string;
   firstName: string;
@@ -19,7 +18,6 @@ export interface User extends BaseUser {
 
 export type LoginUser = BaseUser;
 
-// Common API response patterns
 export interface ApiResponse<T> {
   success: boolean;
   data: T;
@@ -34,7 +32,6 @@ export interface SimpleMessageResponse {
   message: string;
 }
 
-// Auth response types using base types
 export interface GetCurrentUser200 {
   user: User;
 }
@@ -50,7 +47,6 @@ export interface OidcConfig200 {
   scopes?: string[];
 }
 
-// Request body types
 export interface LoginBody {
   emailOrUsername: string;
   password: string;
@@ -66,7 +62,6 @@ export interface ResetPasswordBody {
   password: string;
 }
 
-// Auth Provider types
 export interface AuthProvider {
   id: string;
   name: string;
@@ -117,7 +112,6 @@ export interface UpdateProvidersOrderBody {
   }>;
 }
 
-// Response types using common patterns
 export type AuthProvidersResponse = ApiResponse<AuthProvider[]>;
 export type EnabledProvidersResponse = ApiResponse<EnabledAuthProvider[]>;
 export type AuthProviderResponse = ApiResponse<AuthProvider>;
@@ -126,7 +120,6 @@ export type Logout200 = SimpleMessageResponse;
 export type RequestPasswordReset200 = SimpleMessageResponse;
 export type ResetPassword200 = SimpleMessageResponse;
 
-// Axios response types
 export type GetEnabledProvidersResult = AxiosResponse<EnabledProvidersResponse>;
 export type GetAllProvidersResult = AxiosResponse<AuthProvidersResponse>;
 export type CreateProviderResult = AxiosResponse<AuthProviderResponse>;

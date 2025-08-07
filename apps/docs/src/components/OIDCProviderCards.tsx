@@ -52,6 +52,12 @@ const providers = [
     icon: <Users className="w-4 h-" />,
   },
   {
+    name: "Pocket ID",
+    description: "Open-source identity provider with OIDC support",
+    href: "/docs/3.1-beta/oidc-authentication/pocket-id",
+    icon: <Key className="w-4 h-4" />,
+  },
+  {
     name: "Other",
     description: "Configure any other OIDC-compliant identity provider",
     href: "/docs/3.1-beta/oidc-authentication/other",

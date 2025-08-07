@@ -9,15 +9,15 @@ Configure user and group permissions for seamless bind mount compatibility acros
 
 Palmr. supports runtime UID/GID configuration to resolve permission conflicts when using bind mounts. This eliminates the need for manual permission management on your host system.
 
-**⚠️ Important**: Palmr uses **UID 1001, GID 1001** by default, which is different from the standard Linux convention of **UID 1000, GID 1000**. This is the most common cause of permission issues with bind mounts.
+**⚠️ Important**: Palmr uses **UID 1000, GID 1000** by default, which matches the standard Linux convention. However, some systems may use different UID/GID values, which can cause permission issues with bind mounts.
 
 ## The Permission Problem
 
 ### Why This Happens
 
-- **Palmr Default**: UID 1001, GID 1001 (container)
+- **Palmr Default**: UID 1000, GID 1000 (container)
 - **Linux Standard**: UID 1000, GID 1000 (most host systems)
-- **Result**: Container can't write to host directories
+- **Result**: Usually compatible, but some systems may use different values
 
 ### Common Error Scenarios
 
@@ -30,7 +30,7 @@ EACCES: permission denied, open '/app/server/uploads/file.txt'
 # Or when checking permissions:
 $ ls -la uploads/
 drwxr-xr-x 2 user user 4096 Jan 15 10:00 uploads/
-# Container tries to write as UID 1001, but directory is owned by UID 1000
+# Container tries to write with different UID/GID than directory owner
 ```
 
 ## Quick Fix
@@ -45,15 +45,13 @@ services:
     image: kyantech/palmr:latest
     container_name: palmr
     environment:
-      - ENABLE_S3=false
-      - ENCRYPTION_KEY=your-secure-key-min-32-chars
       - PALMR_UID=1000
       - PALMR_GID=1000
     ports:
       - "5487:5487"
     volumes:
       - ./uploads:/app/server/uploads:rw
-      - ./temp-chunks:/app/server/temp-chunks:rw
+      - ./temp-uploads:/app/server/temp-uploads:rw
     restart: unless-stopped
 ```
 
@@ -63,8 +61,8 @@ If you prefer to keep Palmr's defaults:
 
 ```bash
 # Create directories with correct ownership
-mkdir -p uploads temp-chunks
-chown -R 1001:1001 uploads temp-chunks
+mkdir -p uploads temp-uploads
+chown -R 1001:1001 uploads temp-uploads
 ```
 
 ## Environment Variables
@@ -104,8 +102,6 @@ services:
     image: kyantech/palmr:latest
     container_name: palmr
     environment:
-      - ENABLE_S3=false
-      - ENCRYPTION_KEY=your-secure-key-min-32-chars
       - PALMR_UID=1000
       - PALMR_GID=1000
     ports:
@@ -123,8 +119,6 @@ services:
     image: kyantech/palmr:latest
     container_name: palmr
     environment:
-      - ENABLE_S3=false
-      - ENCRYPTION_KEY=your-secure-key-min-32-chars
       - PALMR_UID=1026
       - PALMR_GID=100
     ports:
@@ -142,8 +136,6 @@ services:
     image: kyantech/palmr:latest
     container_name: palmr
     environment:
-      - ENABLE_S3=false
-      - ENCRYPTION_KEY=your-secure-key-min-32-chars
       - PALMR_UID=1000
       - PALMR_GID=100
     ports:
@@ -166,7 +158,7 @@ services:
 id
 
 # 2. Check directory ownership
-ls -la uploads/ temp-chunks/
+ls -la uploads/ temp-uploads/
 
 # 3. Fix via environment variables (preferred)
 # Add to docker-compose.yaml:
@@ -174,7 +166,7 @@ ls -la uploads/ temp-chunks/
 # - PALMR_GID=1000
 
 # 4. Or fix via chown (alternative)
-chown -R 1001:1001 uploads temp-chunks
+chown -R 1001:1001 uploads temp-uploads
 ```
 
 **Error**: Container starts but files aren't accessible
@@ -225,11 +217,11 @@ cat /etc/passwd | grep -v nobody
 ```bash
 # Check if directories exist and are writable
 test -w uploads && echo "uploads writable" || echo "uploads NOT writable"
-test -w temp-chunks && echo "temp-chunks writable" || echo "temp-chunks NOT writable"
+test -w temp-uploads && echo "temp-uploads writable" || echo "temp-uploads NOT writable"
 
 # Create directories with correct permissions
-mkdir -p uploads temp-chunks
-sudo chown -R $(id -u):$(id -g) uploads temp-chunks
+mkdir -p uploads temp-uploads
+sudo chown -R $(id -u):$(id -g) uploads temp-uploads
 ```
 
 ---
@@ -270,7 +262,7 @@ To add UID/GID configuration to running installations:
    cp -r ./data ./data-backup
    # or
    cp -r ./uploads ./uploads-backup
-   cp -r ./temp-chunks ./temp-chunks-backup
+   cp -r ./temp-uploads ./temp-uploads-backup
    ```
 
 3. **Check your UID/GID**
@@ -344,4 +336,4 @@ For most users experiencing permission issues with bind mounts:
    ```
 3. **Restart**: `docker-compose down && docker-compose up -d`
 
-This resolves the mismatch between Palmr's default UID 1001 and the standard Linux UID 1000.
+This ensures compatibility between Palmr's UID/GID and your host system's file ownership.

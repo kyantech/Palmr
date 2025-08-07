@@ -8,21 +8,28 @@ import { pipeline } from "stream/promises";
 import { directoriesConfig, getTempFilePath } from "../config/directories.config";
 import { env } from "../env";
 import { StorageProvider } from "../types/storage";
-import { IS_RUNNING_IN_CONTAINER } from "../utils/container-detection";
 
 export class FilesystemStorageProvider implements StorageProvider {
   private static instance: FilesystemStorageProvider;
   private uploadsDir: string;
   private encryptionKey = env.ENCRYPTION_KEY;
+  private isEncryptionDisabled = env.DISABLE_FILESYSTEM_ENCRYPTION === "true";
   private uploadTokens = new Map<string, { objectName: string; expiresAt: number }>();
   private downloadTokens = new Map<string, { objectName: string; expiresAt: number; fileName?: string }>();
 
   private constructor() {
     this.uploadsDir = directoriesConfig.uploads;
 
+    if (!this.isEncryptionDisabled && !this.encryptionKey) {
+      throw new Error(
+        "Encryption is enabled but ENCRYPTION_KEY is not provided. " +
+          "Please set ENCRYPTION_KEY environment variable or set DISABLE_FILESYSTEM_ENCRYPTION=true to disable encryption."
+      );
+    }
+
     this.ensureUploadsDir();
     setInterval(() => this.cleanExpiredTokens(), 5 * 60 * 1000);
-    setInterval(() => this.cleanupEmptyTempDirs(), 10 * 60 * 1000); // Every 10 minutes
+    setInterval(() => this.cleanupEmptyTempDirs(), 10 * 60 * 1000);
   }
 
   public static getInstance(): FilesystemStorageProvider {
@@ -62,10 +69,24 @@ export class FilesystemStorageProvider implements StorageProvider {
   }
 
   private createEncryptionKey(): Buffer {
+    if (!this.encryptionKey) {
+      throw new Error(
+        "Encryption key is required when encryption is enabled. Please set ENCRYPTION_KEY environment variable."
+      );
+    }
     return crypto.scryptSync(this.encryptionKey, "salt", 32);
   }
 
   public createEncryptStream(): Transform {
+    if (this.isEncryptionDisabled) {
+      return new Transform({
+        transform(chunk, encoding, callback) {
+          this.push(chunk);
+          callback();
+        },
+      });
+    }
+
     const key = this.createEncryptionKey();
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
@@ -101,6 +122,15 @@ export class FilesystemStorageProvider implements StorageProvider {
   }
 
   public createDecryptStream(): Transform {
+    if (this.isEncryptionDisabled) {
+      return new Transform({
+        transform(chunk, encoding, callback) {
+          this.push(chunk);
+          callback();
+        },
+      });
+    }
+
     const key = this.createEncryptionKey();
     let iv: Buffer | null = null;
     let decipher: crypto.Decipher | null = null;
@@ -179,7 +209,6 @@ export class FilesystemStorageProvider implements StorageProvider {
   }
 
   async uploadFile(objectName: string, buffer: Buffer): Promise<void> {
-    // For backward compatibility, convert buffer to stream and use streaming upload
     const filePath = this.getFilePath(objectName);
     const dir = path.dirname(filePath);
 
@@ -197,7 +226,6 @@ export class FilesystemStorageProvider implements StorageProvider {
 
     await fs.mkdir(dir, { recursive: true });
 
-    // Use the new temp file system for better organization
     const tempPath = getTempFilePath(objectName);
     const tempDir = path.dirname(tempPath);
 
@@ -215,32 +243,203 @@ export class FilesystemStorageProvider implements StorageProvider {
     }
   }
 
-  private encryptFileBuffer(buffer: Buffer): Buffer {
-    const key = this.createEncryptionKey();
-    const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
-
-    const encrypted = Buffer.concat([iv, cipher.update(buffer), cipher.final()]);
-
-    return encrypted;
-  }
-
   async downloadFile(objectName: string): Promise<Buffer> {
     const filePath = this.getFilePath(objectName);
-    const encryptedBuffer = await fs.readFile(filePath);
+    const fileBuffer = await fs.readFile(filePath);
 
-    if (encryptedBuffer.length > 16) {
+    if (this.isEncryptionDisabled) {
+      return fileBuffer;
+    }
+
+    if (fileBuffer.length > 16) {
       try {
-        return this.decryptFileBuffer(encryptedBuffer);
+        return this.decryptFileBuffer(fileBuffer);
       } catch (error: unknown) {
         if (error instanceof Error) {
           console.warn("Failed to decrypt with new method, trying legacy format", error.message);
         }
-        return this.decryptFileLegacy(encryptedBuffer);
+        return this.decryptFileLegacy(fileBuffer);
       }
     }
 
-    return this.decryptFileLegacy(encryptedBuffer);
+    return this.decryptFileLegacy(fileBuffer);
+  }
+
+  createDownloadStream(objectName: string): NodeJS.ReadableStream {
+    const filePath = this.getFilePath(objectName);
+    const fileStream = fsSync.createReadStream(filePath);
+
+    if (this.isEncryptionDisabled) {
+      fileStream.on("end", () => {
+        if (global.gc) {
+          global.gc();
+        }
+      });
+
+      fileStream.on("close", () => {
+        if (global.gc) {
+          global.gc();
+        }
+      });
+
+      return fileStream;
+    }
+
+    const decryptStream = this.createDecryptStream();
+    let isDestroyed = false;
+
+    const cleanup = () => {
+      if (isDestroyed) return;
+      isDestroyed = true;
+
+      try {
+        if (fileStream && !fileStream.destroyed) {
+          fileStream.destroy();
+        }
+        if (decryptStream && !decryptStream.destroyed) {
+          decryptStream.destroy();
+        }
+      } catch (error) {
+        console.warn("Error during download stream cleanup:", error);
+      }
+
+      if (global.gc) {
+        global.gc();
+      }
+    };
+
+    fileStream.on("error", cleanup);
+    decryptStream.on("error", cleanup);
+    decryptStream.on("end", cleanup);
+    decryptStream.on("close", cleanup);
+
+    decryptStream.on("pipe", (src: any) => {
+      if (src && src.on) {
+        src.on("close", cleanup);
+        src.on("error", cleanup);
+      }
+    });
+
+    return fileStream.pipe(decryptStream);
+  }
+
+  async createDownloadRangeStream(objectName: string, start: number, end: number): Promise<NodeJS.ReadableStream> {
+    if (!this.isEncryptionDisabled) {
+      return this.createRangeStreamFromDecrypted(objectName, start, end);
+    }
+
+    const filePath = this.getFilePath(objectName);
+    return fsSync.createReadStream(filePath, { start, end });
+  }
+
+  private createRangeStreamFromDecrypted(objectName: string, start: number, end: number): NodeJS.ReadableStream {
+    const { Transform, PassThrough } = require("stream");
+    const filePath = this.getFilePath(objectName);
+    const fileStream = fsSync.createReadStream(filePath);
+    const decryptStream = this.createDecryptStream();
+    const rangeStream = new PassThrough();
+
+    let bytesRead = 0;
+    let rangeEnded = false;
+    let isDestroyed = false;
+
+    const rangeTransform = new Transform({
+      transform(chunk: Buffer, encoding: any, callback: any) {
+        if (rangeEnded || isDestroyed) {
+          callback();
+          return;
+        }
+
+        const chunkStart = bytesRead;
+        const chunkEnd = bytesRead + chunk.length - 1;
+        bytesRead += chunk.length;
+
+        if (chunkEnd < start) {
+          callback();
+          return;
+        }
+
+        if (chunkStart > end) {
+          rangeEnded = true;
+          this.end();
+          callback();
+          return;
+        }
+
+        let sliceStart = 0;
+        let sliceEnd = chunk.length;
+
+        if (chunkStart < start) {
+          sliceStart = start - chunkStart;
+        }
+
+        if (chunkEnd > end) {
+          sliceEnd = end - chunkStart + 1;
+          rangeEnded = true;
+        }
+
+        const slicedChunk = chunk.slice(sliceStart, sliceEnd);
+        this.push(slicedChunk);
+
+        if (rangeEnded) {
+          this.end();
+        }
+
+        callback();
+      },
+
+      flush(callback: any) {
+        if (global.gc) {
+          global.gc();
+        }
+        callback();
+      },
+    });
+
+    const cleanup = () => {
+      if (isDestroyed) return;
+      isDestroyed = true;
+
+      try {
+        if (fileStream && !fileStream.destroyed) {
+          fileStream.destroy();
+        }
+        if (decryptStream && !decryptStream.destroyed) {
+          decryptStream.destroy();
+        }
+        if (rangeTransform && !rangeTransform.destroyed) {
+          rangeTransform.destroy();
+        }
+        if (rangeStream && !rangeStream.destroyed) {
+          rangeStream.destroy();
+        }
+      } catch (error) {
+        console.warn("Error during stream cleanup:", error);
+      }
+
+      if (global.gc) {
+        global.gc();
+      }
+    };
+
+    fileStream.on("error", cleanup);
+    decryptStream.on("error", cleanup);
+    rangeTransform.on("error", cleanup);
+    rangeStream.on("error", cleanup);
+
+    rangeStream.on("close", cleanup);
+    rangeStream.on("end", cleanup);
+
+    rangeStream.on("pipe", (src: any) => {
+      if (src && src.on) {
+        src.on("close", cleanup);
+        src.on("error", cleanup);
+      }
+    });
+
+    fileStream.pipe(decryptStream).pipe(rangeTransform).pipe(rangeStream);
+
+    return rangeStream;
   }
 
   private decryptFileBuffer(encryptedBuffer: Buffer): Buffer {
@@ -254,9 +453,67 @@ export class FilesystemStorageProvider implements StorageProvider {
   }
 
   private decryptFileLegacy(encryptedBuffer: Buffer): Buffer {
+    if (!this.encryptionKey) {
+      throw new Error(
+        "Encryption key is required when encryption is enabled. Please set ENCRYPTION_KEY environment variable."
+      );
+    }
     const CryptoJS = require("crypto-js");
     const decrypted = CryptoJS.AES.decrypt(encryptedBuffer.toString("utf8"), this.encryptionKey);
     return Buffer.from(decrypted.toString(CryptoJS.enc.Utf8), "base64");
+  }
+
+  static logMemoryUsage(context: string = "Unknown"): void {
+    const memUsage = process.memoryUsage();
+    const formatBytes = (bytes: number) => {
+      const mb = bytes / 1024 / 1024;
+      return `${mb.toFixed(2)} MB`;
+    };
+
+    const rssInMB = memUsage.rss / 1024 / 1024;
+    const heapUsedInMB = memUsage.heapUsed / 1024 / 1024;
+
+    if (rssInMB > 1024 || heapUsedInMB > 512) {
+      console.warn(`[MEMORY WARNING] ${context} - High memory usage detected:`);
+      console.warn(`  RSS: ${formatBytes(memUsage.rss)}`);
+      console.warn(`  Heap Used: ${formatBytes(memUsage.heapUsed)}`);
+      console.warn(`  Heap Total: ${formatBytes(memUsage.heapTotal)}`);
+      console.warn(`  External: ${formatBytes(memUsage.external)}`);
+
+      if (global.gc) {
+        console.warn("  Forcing garbage collection...");
+        global.gc();
+
+        const afterGC = process.memoryUsage();
+        console.warn(`  After GC - RSS: ${formatBytes(afterGC.rss)}, Heap: ${formatBytes(afterGC.heapUsed)}`);
+      }
+    } else {
+      console.log(
+        `[MEMORY INFO] ${context} - RSS: ${formatBytes(memUsage.rss)}, Heap: ${formatBytes(memUsage.heapUsed)}`
+      );
+    }
+  }
+
+  static forceGarbageCollection(context: string = "Manual"): void {
+    if (global.gc) {
+      const beforeGC = process.memoryUsage();
+      global.gc();
+      const afterGC = process.memoryUsage();
+
+      const formatBytes = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+
+      console.log(`[GC] ${context} - Before: RSS ${formatBytes(beforeGC.rss)}, Heap ${formatBytes(beforeGC.heapUsed)}`);
+      console.log(`[GC] ${context} - After:  RSS ${formatBytes(afterGC.rss)}, Heap ${formatBytes(afterGC.heapUsed)}`);
+
+      const rssSaved = beforeGC.rss - afterGC.rss;
+      const heapSaved = beforeGC.heapUsed - afterGC.heapUsed;
+
+      if (rssSaved > 0 || heapSaved > 0) {
+        console.log(`[GC] ${context} - Freed: RSS ${formatBytes(rssSaved)}, Heap ${formatBytes(heapSaved)}`);
+      }
+    } else {
+      console.warn(`[GC] ${context} - Garbage collection not available. Start Node.js with --expose-gc flag.`);
+    }
   }
 
   async fileExists(objectName: string): Promise<boolean> {
@@ -303,15 +560,10 @@ export class FilesystemStorageProvider implements StorageProvider {
     this.downloadTokens.delete(token);
   }
 
-  /**
-   * Clean up temporary file and its parent directory if empty
-   */
   private async cleanupTempFile(tempPath: string): Promise<void> {
     try {
-      // Remove the temp file
       await fs.unlink(tempPath);
 
-      // Try to remove the parent directory if it's empty
       const tempDir = path.dirname(tempPath);
       try {
         const files = await fs.readdir(tempDir);
@@ -319,7 +571,6 @@ export class FilesystemStorageProvider implements StorageProvider {
           await fs.rmdir(tempDir);
         }
       } catch (dirError: any) {
-        // Ignore errors when trying to remove directory (might not be empty or might not exist)
         if (dirError.code !== "ENOTEMPTY" && dirError.code !== "ENOENT") {
           console.warn("Warning: Could not remove temp directory:", dirError.message);
         }
@@ -331,18 +582,14 @@ export class FilesystemStorageProvider implements StorageProvider {
     }
   }
 
-  /**
-   * Clean up empty temporary directories periodically
-   */
   private async cleanupEmptyTempDirs(): Promise<void> {
     try {
       const tempUploadsDir = directoriesConfig.tempUploads;
 
-      // Check if temp-uploads directory exists
       try {
         await fs.access(tempUploadsDir);
       } catch {
-        return; // Directory doesn't exist, nothing to clean
+        return;
       }
 
       const items = await fs.readdir(tempUploadsDir);
@@ -354,14 +601,12 @@ export class FilesystemStorageProvider implements StorageProvider {
           const stat = await fs.stat(itemPath);
 
           if (stat.isDirectory()) {
-            // Check if directory is empty
             const dirContents = await fs.readdir(itemPath);
             if (dirContents.length === 0) {
               await fs.rmdir(itemPath);
               console.log(`🧹 Cleaned up empty temp directory: ${itemPath}`);
             }
           } else if (stat.isFile()) {
-            // Check if file is older than 1 hour (stale temp files)
             const oneHourAgo = Date.now() - 60 * 60 * 1000;
             if (stat.mtime.getTime() < oneHourAgo) {
               await fs.unlink(itemPath);
@@ -369,7 +614,6 @@ export class FilesystemStorageProvider implements StorageProvider {
             }
           }
         } catch (error: any) {
-          // Ignore errors for individual items
           if (error.code !== "ENOENT") {
             console.warn(`Warning: Could not process temp item ${itemPath}:`, error.message);
           }

@@ -2,7 +2,6 @@ import { FastifyReply, FastifyRequest } from "fastify";
 
 import {
   CreateReverseShareSchema,
-  GetPresignedUrlSchema,
   ReverseSharePasswordSchema,
   UpdateReverseSharePasswordSchema,
   UpdateReverseShareSchema,
@@ -454,6 +453,7 @@ export class ReverseShareController {
   async copyFileToUserFiles(request: FastifyRequest, reply: FastifyReply) {
     try {
       await request.jwtVerify();
+
       const { fileId } = request.params as { fileId: string };
       const userId = (request as any).user?.userId;
 
@@ -461,9 +461,16 @@ export class ReverseShareController {
         return reply.status(401).send({ error: "Unauthorized" });
       }
 
+      console.log(`Copy to my files: User ${userId} copying file ${fileId}`);
+
       const file = await this.reverseShareService.copyReverseShareFileToUserFiles(fileId, userId);
+
+      console.log(`Copy to my files: Successfully copied file ${fileId}`);
+
       return reply.send({ file, message: "File copied to your files successfully" });
     } catch (error: any) {
+      console.error(`Copy to my files: Error:`, error.message);
+
       if (error.message === "File not found") {
         return reply.status(404).send({ error: "File not found" });
       }

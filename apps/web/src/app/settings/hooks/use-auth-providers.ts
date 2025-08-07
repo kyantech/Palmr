@@ -29,7 +29,6 @@ export function useAuthProviders() {
   } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Load initial state from localStorage
   useEffect(() => {
     const savedState = localStorage.getItem("hideDisabledProviders");
     if (savedState !== null) {
@@ -56,7 +55,6 @@ export function useAuthProviders() {
     }
   }, [t]);
 
-  // Load providers on mount
   useEffect(() => {
     loadProviders();
   }, [loadProviders]);
@@ -226,7 +224,6 @@ export function useAuthProviders() {
     setEditingFormData({});
   };
 
-  // Computed values
   const enabledCount = providers.filter((p) => p.enabled).length;
   const filteredProviders = hideDisabledProviders ? providers.filter((p) => p.enabled) : providers;
 

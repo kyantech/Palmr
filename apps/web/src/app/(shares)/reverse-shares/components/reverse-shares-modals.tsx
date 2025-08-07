@@ -1,3 +1,4 @@
+import { QrCodeModal } from "@/components/modals/qr-code-modal";
 import type { CreateReverseShareBody, UpdateReverseShareBody } from "@/http/endpoints/reverse-shares/types";
 import { ReverseShare } from "../hooks/use-reverse-shares";
 import { CreateReverseShareModal } from "./create-reverse-share-modal";
@@ -20,14 +21,17 @@ interface ReverseSharesModalsProps {
   reverseShareToGenerateLink: ReverseShare | null;
   reverseShareToDelete: ReverseShare | null;
   reverseShareToViewFiles: ReverseShare | null;
+  reverseShareToViewQrCode: ReverseShare | null;
   isDeleting: boolean;
   onCloseViewDetails: () => void;
   onCloseGenerateLink: () => void;
   onCloseDeleteModal: () => void;
   onCloseViewFiles: () => void;
+  onCloseViewQrCode: () => void;
   onConfirmDelete: (reverseShare: ReverseShare) => Promise<void>;
   onCreateAlias: (reverseShareId: string, alias: string) => Promise<void>;
   onCopyLink: (reverseShare: ReverseShare) => void;
+  onViewQrCode: (reverseShare: ReverseShare) => void;
   onUpdateReverseShareData?: (id: string, data: any) => Promise<any>;
   onUpdatePassword?: (id: string, data: { hasPassword: boolean; password?: string }) => Promise<any>;
   onToggleActive?: (id: string, isActive: boolean) => Promise<any>;
@@ -48,14 +52,17 @@ export function ReverseSharesModals({
   reverseShareToGenerateLink,
   reverseShareToDelete,
   reverseShareToViewFiles,
+  reverseShareToViewQrCode,
   isDeleting,
   onCloseViewDetails,
   onCloseGenerateLink,
   onCloseDeleteModal,
   onCloseViewFiles,
+  onCloseViewQrCode,
   onConfirmDelete,
   onCreateAlias,
   onCopyLink,
+  onViewQrCode,
   onUpdateReverseShareData,
   onUpdatePassword,
   onToggleActive,
@@ -103,9 +110,7 @@ export function ReverseSharesModals({
         onCopyLink={onCopyLink}
         onUpdatePassword={onUpdatePassword}
         onToggleActive={onToggleActive}
-        onSuccess={() => {
-          console.log("Operation completed successfully - data updated");
-        }}
+        onViewQrCode={onViewQrCode}
       />
 
       <ReceivedFilesModal
@@ -114,6 +119,17 @@ export function ReverseSharesModals({
         onClose={onCloseViewFiles}
         onRefresh={onRefreshData}
         refreshReverseShare={refreshReverseShare}
+      />
+
+      <QrCodeModal
+        isOpen={!!reverseShareToViewQrCode}
+        onClose={onCloseViewQrCode}
+        shareLink={
+          reverseShareToViewQrCode?.alias?.alias
+            ? `${typeof window !== "undefined" ? window.location.origin : ""}/r/${reverseShareToViewQrCode.alias.alias}`
+            : ""
+        }
+        shareName={reverseShareToViewQrCode?.name || "Reverse Share"}
       />
     </>
   );

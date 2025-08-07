@@ -143,7 +143,8 @@
     "saving": "Opslaan...",
     "update": "Bijwerken",
     "click": "Klik om",
-    "creating": "Maken..."
+    "creating": "Maken...",
+    "loadingSimple": "Laden..."
   },
   "createShare": {
     "title": "Delen Maken",
@@ -158,7 +159,8 @@
     "passwordLabel": "Wachtwoord",
     "create": "Delen Maken",
     "success": "Delen succesvol aangemaakt",
-    "error": "Fout bij het aanmaken van delen"
+    "error": "Fout bij het aanmaken van delen",
+    "namePlaceholder": "Voer een naam in voor uw delen"
   },
   "dashboard": {
     "loadError": "Fout bij het laden van controlepaneel gegevens",
@@ -182,7 +184,15 @@
     "invalidCredentials": "Ongeldig e-mail of wachtwoord",
     "userNotFound": "Gebruiker niet gevonden",
     "accountLocked": "Account vergrendeld. Probeer het later opnieuw",
-    "unexpectedError": "Er is een onverwachte fout opgetreden. Probeer het opnieuw"
+    "unexpectedError": "Er is een onverwachte fout opgetreden. Probeer het opnieuw",
+    "Invalid password": "Ongeldig wachtwoord",
+    "Invalid two-factor authentication code": "Ongeldige tweefactorauthenticatiecode",
+    "Invalid verification code": "Ongeldige verificatiecode",
+    "Password verification required": "Wachtwoordverificatie vereist",
+    "Two-factor authentication is already enabled": "Tweefactorauthenticatie is al ingeschakeld",
+    "Two-factor authentication is not enabled": "Tweefactorauthenticatie is niet ingeschakeld",
+    "Two-factor authentication required": "Tweefactorauthenticatie vereist",
+    "noUserData": "Geen gebruikersgegevens"
   },
   "fileActions": {
     "editFile": "Bestand Bewerken",
@@ -304,7 +314,8 @@
     "title": "Wachtwoord Vergeten",
     "description": "Voer je e-mailadres in en we sturen je instructies om je wachtwoord te resetten.",
     "resetInstructions": "Reset instructies verzonden naar je e-mail",
-    "pageTitle": "Wachtwoord Vergeten"
+    "pageTitle": "Wachtwoord Vergeten",
+    "passwordAuthDisabled": "Wachtwoordauthenticatie is uitgeschakeld. Neem contact op met uw beheerder of gebruik een externe authenticatieprovider."
   },
   "generateShareLink": {
     "generateTitle": "Deel-link genereren",
@@ -318,7 +329,12 @@
     "copyButton": "Link kopiëren",
     "success": "Link succesvol gegenereerd",
     "error": "Fout bij het genereren van link",
-    "copied": "Link gekopieerd naar klembord"
+    "copied": "Link gekopieerd naar klembord",
+    "readyDescription": "Uw deel-link is klaar. U kunt de QR-code direct scannen, downloaden voor later gebruik, of de link hieronder kopiëren.",
+    "tabs": {
+      "link": "Link",
+      "qrcode": "QR Code"
+    }
   },
   "home": {
     "description": "Het open-source alternatief voor WeTransfer. Deel bestanden veilig, zonder tracking of beperkingen.",
@@ -330,6 +346,27 @@
       "tagline": "eenvoudig en gratis"
     },
     "pageTitle": "Startpagina"
+  },
+  "iconPicker": {
+    "title": "Selecteer Pictogram",
+    "placeholder": "Selecteer een pictogram",
+    "searchPlaceholder": "Zoek pictogrammen...",
+    "loadingMore": "Meer pictogrammen laden...",
+    "allIconsLoaded": "Alle {count} pictogrammen geladen",
+    "noIconsFound": "Geen pictogrammen gevonden voor \"{search}\"",
+    "tabs": {
+      "all": "Alle Pictogrammen",
+      "popular": "Populair",
+      "auth": "Authenticatie Providers"
+    },
+    "stats": "{iconCount} pictogrammen van {libraryCount} bibliotheken",
+    "categoryBadge": "{category} ({count} pictogrammen)"
+  },
+  "imageEdit": {
+    "title": "Afbeelding bewerken",
+    "rotate": "Draai",
+    "zoom": "Vergroot",
+    "cropInstructions": "Sleep om te herpositioneren, verander de grootte van de hoeken om de uitsnijdgebied aan te passen"
   },
   "login": {
     "welcome": "Welkom bij",
@@ -417,6 +454,11 @@
       "imageRemoved": "Profielafbeelding succesvol verwijderd"
     },
     "pageTitle": "Profiel"
+  },
+  "qrCodeModal": {
+    "title": "QR Code Delen",
+    "description": "Scan deze QR-code om toegang te krijgen tot de link.",
+    "download": "QR Code Downloaden"
   },
   "quickAccess": {
     "files": {
@@ -589,7 +631,8 @@
       "createLink": "Link Aanmaken",
       "delete": "Verwijderen",
       "copyLinkTitle": "Link kopiëren",
-      "createLinkCTA": "Ontvangstlink Aanmaken"
+      "createLinkCTA": "Ontvangstlink Aanmaken",
+      "viewQrCode": "QR Code Bekijken"
     },
     "status": {
       "active": "Actief",
@@ -605,7 +648,8 @@
       "viewDetails": "Details Bekijken",
       "edit": "Bewerken",
       "delete": "Verwijderen",
-      "viewFiles": "Ontvangen Bestanden"
+      "viewFiles": "Ontvangen Bestanden",
+      "viewQrCode": "QR Code Bekijken"
     },
     "empty": {
       "title": "Geen ontvangstlinks aangemaakt",
@@ -746,7 +790,12 @@
         "selectAll": "Alles selecteren",
         "selectFile": "Selecteer bestand {fileName}",
         "deleteError": "Fout bij verwijderen bestand",
-        "deleteSuccess": "Bestand succesvol verwijderd"
+        "deleteSuccess": "Bestand succesvol verwijderd",
+        "copyErrors": {
+          "timeout": "Kopieeroperatie verlopen. Probeer het opnieuw met een kleiner bestand of controleer uw verbinding.",
+          "failed": "Kopieeroperatie mislukt. Probeer het opnieuw.",
+          "aborted": "Kopieeroperatie is geannuleerd vanwege een time-out."
+        }
       }
     },
     "form": {
@@ -897,7 +946,8 @@
       "fileList": {
         "title": "Geselecteerde bestanden:",
         "statusUploaded": "Geüpload",
-        "statusError": "Fout"
+        "statusError": "Fout",
+        "retry": "Opnieuw proberen"
       },
       "form": {
         "nameLabel": "Naam",
@@ -1085,6 +1135,10 @@
       "smtpTrustSelfSigned": {
         "title": "Vertrouw Zelf-Ondertekende Certificaten",
         "description": "Schakel dit in om zelf-ondertekende SSL/TLS certificaten te vertrouwen (handig voor ontwikkelomgevingen)"
+      },
+      "passwordAuthEnabled": {
+        "title": "Wachtwoord Authenticatie",
+        "description": "Wachtwoord-gebaseerde authenticatie inschakelen of uitschakelen"
       }
     },
     "buttons": {
@@ -1094,7 +1148,8 @@
     },
     "errors": {
       "loadFailed": "Fout bij het laden van instellingen",
-      "updateFailed": "Fout bij het bijwerken van instellingen"
+      "updateFailed": "Fout bij het bijwerken van instellingen",
+      "passwordAuthRequiresProvider": "Wachtwoordauthenticatie kan niet worden uitgeschakeld zonder ten minste één actieve authenticatieprovider"
     },
     "messages": {
       "noChanges": "Geen wijzigingen om op te slaan",
@@ -1200,7 +1255,10 @@
     "invalidDate": "Ongeldige datum",
     "loadError": "Fout bij laden van delen details",
     "editSecurity": "Beveiliging Bewerken",
-    "editExpiration": "Vervaldatum Bewerken"
+    "editExpiration": "Vervaldatum Bewerken",
+    "clickToEnlargeQrCode": "Klik om QR Code te vergroten",
+    "downloadQrCode": "QR Code Downloaden",
+    "qrCode": "QR Code"
   },
   "shareExpiration": {
     "neverExpires": "Verloopt Nooit",
@@ -1387,7 +1445,8 @@
       "copyLink": "Link Kopiëren",
       "notifyRecipients": "Ontvangers Informeren",
       "delete": "Verwijderen",
-      "downloadShareFiles": "Download alle bestanden"
+      "downloadShareFiles": "Download alle bestanden",
+      "viewQrCode": "QR Code Bekijken"
     },
     "bulkActions": {
       "delete": "Verwijderen",
@@ -1418,6 +1477,160 @@
     "light": "Licht",
     "dark": "Donker",
     "system": "Systeem"
+  },
+  "twoFactor": {
+    "title": "Twee-Factor Authenticatie",
+    "description": "Voeg een extra beveiligingslaag toe aan uw account",
+    "enabled": "Uw account is beveiligd met twee-factor authenticatie",
+    "disabled": "Twee-factor authenticatie is niet ingeschakeld",
+    "setup": {
+      "title": "Twee-Factor Authenticatie Inschakelen",
+      "description": "Scan de QR-code met uw authenticator-app en voer vervolgens de verificatiecode in.",
+      "qrCode": "QR-Code",
+      "manualEntryKey": "Handmatige Invoersleutel",
+      "verificationCode": "Verificatiecode",
+      "verificationCodePlaceholder": "Voer 6-cijferige code in",
+      "verificationCodeDescription": "Voer de 6-cijferige code van uw authenticator-app in",
+      "verifyAndEnable": "Verifiëren & Inschakelen",
+      "cancel": "Annuleren"
+    },
+    "disable": {
+      "title": "Twee-Factor Authenticatie Uitschakelen",
+      "description": "Voer uw wachtwoord in om het uitschakelen van twee-factor authenticatie te bevestigen.",
+      "password": "Wachtwoord",
+      "passwordPlaceholder": "Voer uw wachtwoord in",
+      "confirm": "Bevestig Uitschakelen",
+      "cancel": "Annuleren"
+    },
+    "backupCodes": {
+      "title": "Back-upcodes",
+      "description": "Bewaar deze back-upcodes op een veilige plaats. U kunt ze gebruiken om toegang te krijgen tot uw account als u uw authenticator-apparaat verliest.",
+      "warning": "Belangrijk:",
+      "warningText": "Elke back-upcode kan slechts één keer worden gebruikt. Bewaar ze veilig en deel ze met niemand.",
+      "generateNew": "Genereer Nieuwe Back-upcodes",
+      "download": "Download Back-upcodes",
+      "copyToClipboard": "Kopiëren naar Klembord",
+      "savedMessage": "Ik heb mijn back-upcodes opgeslagen",
+      "available": "{count} back-upcodes beschikbaar",
+      "instructions": [
+        "• Bewaar deze codes op een veilige plaats",
+        "• Elke back-upcode kan slechts één keer worden gebruikt",
+        "• U kunt op elk moment nieuwe codes genereren"
+      ]
+    },
+    "verification": {
+      "title": "Twee-Factor Authenticatie",
+      "description": "Voer de 6-cijferige code van uw authenticator-app in",
+      "backupDescription": "Voer een van uw back-upcodes in om door te gaan",
+      "verificationCode": "Verificatiecode",
+      "backupCode": "Back-upcode",
+      "verificationCodePlaceholder": "000000",
+      "backupCodePlaceholder": "XXXX-XXXX",
+      "verify": "Verifiëren",
+      "verifying": "Verifiëren...",
+      "useBackupCode": "Gebruik in plaats daarvan een back-upcode",
+      "useAuthenticatorCode": "Gebruik in plaats daarvan authenticator-code",
+      "rememberDevice": "Onthoud dit apparaat voor 30 dagen",
+      "rememberDeviceDescription": "U hoeft gedurende 30 dagen geen 2FA-codes in te voeren op dit apparaat"
+    },
+    "messages": {
+      "enabledSuccess": "Twee-factor authenticatie succesvol ingeschakeld!",
+      "disabledSuccess": "Twee-factor authenticatie succesvol uitgeschakeld",
+      "backupCodesGenerated": "Nieuwe back-upcodes succesvol gegenereerd",
+      "backupCodesCopied": "Back-upcodes gekopieerd naar klembord",
+      "setupFailed": "Genereren van 2FA-configuratie mislukt",
+      "verificationFailed": "Ongeldige verificatiecode",
+      "disableFailed": "Uitschakelen van 2FA mislukt. Controleer uw wachtwoord.",
+      "backupCodesFailed": "Genereren van back-upcodes mislukt",
+      "backupCodesCopyFailed": "Kopiëren van back-upcodes mislukt",
+      "statusLoadFailed": "Laden van 2FA-status mislukt",
+      "enterVerificationCode": "Voer de verificatiecode in",
+      "enterPassword": "Voer uw wachtwoord in",
+      "deviceTrusted": "Dit apparaat is als vertrouwd gemarkeerd voor 30 dagen"
+    },
+    "errors": {
+      "invalidVerificationCode": "Ongeldige verificatiecode",
+      "invalidTwoFactorCode": "Ongeldige twee-factor authenticatiecode",
+      "twoFactorRequired": "Twee-factor authenticatie vereist",
+      "twoFactorAlreadyEnabled": "Twee-factor authenticatie is al ingeschakeld",
+      "twoFactorNotEnabled": "Twee-factor authenticatie is niet ingeschakeld",
+      "passwordVerificationRequired": "Wachtwoordverificatie vereist",
+      "invalidPassword": "Ongeldig wachtwoord",
+      "userNotFound": "Gebruiker niet gevonden"
+    },
+    "buttons": {
+      "enable2FA": "2FA Inschakelen",
+      "disable2FA": "2FA Uitschakelen"
+    },
+    "deviceNames": {
+      "unknownDevice": "Onbekend Apparaat",
+      "browsers": {
+        "chrome": "Chrome",
+        "firefox": "Firefox",
+        "safari": "Safari",
+        "edge": "Edge"
+      },
+      "platforms": {
+        "windows": " op Windows",
+        "macos": " op macOS",
+        "linux": " op Linux",
+        "iphone": " op iPhone",
+        "android": " op Android"
+      }
+    },
+    "status": {
+      "label": "Status:",
+      "enabled": "Ingeschakeld",
+      "disabled": "Uitgeschakeld"
+    },
+    "trustedDevices": {
+      "title": "Vertrouwde Apparaten - 2FA",
+      "description": "Apparaten die geen 2FA-verificatie vereisen",
+      "noDevices": "Geen vertrouwde apparaten",
+      "deviceName": "Apparaat",
+      "addedOn": "Toegevoegd op",
+      "expiresOn": "Verloopt op",
+      "remove": "Verwijderen",
+      "removeAll": "Alles Verwijderen",
+      "confirmRemove": "Weet u zeker dat u dit vertrouwde apparaat wilt verwijderen?",
+      "confirmRemoveAll": "Weet u zeker dat u alle vertrouwde apparaten wilt verwijderen?",
+      "deviceRemoved": "Vertrouwd apparaat succesvol verwijderd",
+      "allDevicesRemoved": "Alle vertrouwde apparaten succesvol verwijderd",
+      "loadFailed": "Laden van vertrouwde apparaten mislukt",
+      "removeFailed": "Verwijderen van vertrouwd apparaat mislukt",
+      "removeAllFailed": "Verwijderen van alle vertrouwde apparaten mislukt",
+      "loading": "Vertrouwde apparaten laden...",
+      "noDevicesDescription": "Apparaten verschijnen hier wanneer u ervoor kiest om ze te vertrouwen tijdens 2FA-verificatie",
+      "tableHeaders": {
+        "device": "Apparaat",
+        "added": "Toegevoegd",
+        "expires": "Verloopt",
+        "lastUsed": "Laatst Gebruikt",
+        "ipAddress": "IP-Adres",
+        "actions": "Acties"
+      },
+      "status": {
+        "never": "Nooit",
+        "expired": "Verlopen"
+      },
+      "modals": {
+        "removeDevice": {
+          "title": "Vertrouwd Apparaat Verwijderen",
+          "added": "Toegevoegd:",
+          "ip": "IP:"
+        },
+        "removeAllDevices": {
+          "title": "Alle Vertrouwde Apparaten Verwijderen",
+          "description": "Dit zal {count} vertrouwd{count, plural, =1 { apparaat} other {e apparaten}} verwijderen. U moet 2FA opnieuw verifiëren op alle apparaten."
+        },
+        "buttons": {
+          "cancel": "Annuleren",
+          "removing": "Verwijderen...",
+          "removeDevice": "Apparaat Verwijderen",
+          "removeAllDevices": "Alle Apparaten Verwijderen"
+        }
+      }
+    }
   },
   "uploadFile": {
     "title": "Bestand uploaden",
@@ -1450,7 +1663,8 @@
       "title": "Sleep bestanden om te uploaden",
       "description": "Laat los om je bestanden te uploaden"
     },
-    "pasteSuccess": "{count, plural, =1 {Afbeelding geplakt en succesvol geüpload} other {# afbeeldingen geplakt en succesvol geüpload}}"
+    "pasteSuccess": "{count, plural, =1 {Afbeelding geplakt en succesvol geüpload} other {# afbeeldingen geplakt en succesvol geüpload}}",
+    "filesQueued": "{count, plural, one {# bestand in de wachtrij voor upload} other {# bestanden in de wachtrij voor upload}}"
   },
   "users": {
     "modes": {
@@ -1535,20 +1749,5 @@
     "passwordMinLength": "Wachtwoord moet minimaal 6 tekens bevatten",
     "nameRequired": "Naam is verplicht",
     "required": "Dit veld is verplicht"
-  },
-  "iconPicker": {
-    "title": "Selecteer Pictogram",
-    "placeholder": "Selecteer een pictogram",
-    "searchPlaceholder": "Zoek pictogrammen...",
-    "loadingMore": "Meer pictogrammen laden...",
-    "allIconsLoaded": "Alle {count} pictogrammen geladen",
-    "noIconsFound": "Geen pictogrammen gevonden voor \"{search}\"",
-    "tabs": {
-      "all": "Alle Pictogrammen",
-      "popular": "Populair",
-      "auth": "Authenticatie Providers"
-    },
-    "stats": "{iconCount} pictogrammen van {libraryCount} bibliotheken",
-    "categoryBadge": "{category} ({count} pictogrammen)"
   }
 }

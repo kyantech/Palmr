@@ -43,6 +43,16 @@ Palmr. uses **filesystem storage** as the default storage solution, keeping thin
 - Excellent performance for local file operations
 - Optional S3-compatible storage support for cloud deployments and scalability
 
+#### Performance Considerations with Encryption
+
+By default, filesystem storage operates without encryption for optimal performance, providing fast uploads and downloads with minimal CPU overhead. This approach is ideal for most use cases where performance is prioritized.
+
+If you need to protect sensitive files at rest, you can enable encryption by setting `DISABLE_FILESYSTEM_ENCRYPTION=false` and providing an `ENCRYPTION_KEY` in your configuration. When enabled, Palmr uses AES-256-CBC encryption, which adds CPU overhead during uploads (encryption) and downloads (decryption), particularly for large files or in resource-constrained environments like containers or low-end VMs.
+
+For optimal performance with encryption enabled, ensure your hardware supports AES-NI acceleration (check with `cat /proc/cpuinfo | grep aes` on Linux).
+
+As an alternative, consider using S3-compatible object storage (e.g., AWS S3 or MinIO), which can offload file storage from the local filesystem and potentially reduce local CPU overhead for encryption/decryption. See [S3 Providers](/docs/3.1-beta/s3-providers) for setup instructions.
+
 ### Fastify + Zod + TypeScript
 
 The backend of Palmr. is powered by **Fastify**, **Zod**, and **TypeScript**, creating a robust and type-safe API layer. Fastify is a super-fast Node.js web framework optimized for performance and low overhead, designed to handle lots of concurrent requests with minimal resource usage. Zod provides runtime type validation and schema definition, ensuring all incoming data is properly validated before reaching business logic. TypeScript adds compile-time type safety throughout the entire backend codebase. This combination creates a highly reliable and maintainable backend that prevents bugs and security issues while maintaining excellent performance.

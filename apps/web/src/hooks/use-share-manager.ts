@@ -24,6 +24,7 @@ export interface ShareManagerHook {
   shareToManageExpiration: Share | null;
   shareToViewDetails: Share | null;
   shareToGenerateLink: Share | null;
+  shareToViewQrCode: Share | null;
   sharesToDelete: Share[] | null;
   setShareToDelete: (share: Share | null) => void;
   setShareToEdit: (share: Share | null) => void;
@@ -33,6 +34,7 @@ export interface ShareManagerHook {
   setShareToManageExpiration: (share: Share | null) => void;
   setShareToViewDetails: (share: Share | null) => void;
   setShareToGenerateLink: (share: Share | null) => void;
+  setShareToViewQrCode: (share: Share | null) => void;
   setSharesToDelete: (shares: Share[] | null) => void;
   handleDelete: (shareId: string) => Promise<void>;
   handleBulkDelete: (shares: Share[]) => void;
@@ -62,6 +64,7 @@ export function useShareManager(onSuccess: () => void) {
   const [shareToManageExpiration, setShareToManageExpiration] = useState<Share | null>(null);
   const [shareToViewDetails, setShareToViewDetails] = useState<Share | null>(null);
   const [shareToGenerateLink, setShareToGenerateLink] = useState<Share | null>(null);
+  const [shareToViewQrCode, setShareToViewQrCode] = useState<Share | null>(null);
   const [sharesToDelete, setSharesToDelete] = useState<Share[] | null>(null);
   const [clearSelectionCallback, setClearSelectionCallbackState] = useState<(() => void) | null>(null);
 
@@ -308,6 +311,7 @@ export function useShareManager(onSuccess: () => void) {
     shareToManageExpiration,
     shareToViewDetails,
     shareToGenerateLink,
+    shareToViewQrCode,
     sharesToDelete,
     setShareToDelete,
     setShareToEdit,
@@ -317,6 +321,7 @@ export function useShareManager(onSuccess: () => void) {
     setShareToManageExpiration,
     setShareToViewDetails,
     setShareToGenerateLink,
+    setShareToViewQrCode,
     setSharesToDelete,
     handleDelete,
     handleBulkDelete,

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   IconCheck,
   IconCopy,
+  IconDownload,
   IconEdit,
   IconExternalLink,
   IconLock,
@@ -13,6 +14,7 @@ import {
 } from "@tabler/icons-react";
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
+import QRCode from "react-qr-code";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +32,7 @@ import { Loader } from "@/components/ui/loader";
 import { getShare } from "@/http/endpoints";
 import { getFileIcon } from "@/utils/file-icons";
 import { GenerateShareLinkModal } from "./generate-share-link-modal";
+import { QrCodeModal } from "./qr-code-modal";
 import { ShareExpirationModal } from "./share-expiration-modal";
 import { ShareSecurityModal } from "./share-security-modal";
 
@@ -86,6 +89,8 @@ export function ShareDetailsModal({
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showSecurityModal, setShowSecurityModal] = useState(false);
   const [showExpirationModal, setShowExpirationModal] = useState(false);
+  const [showQrCodeModal, setShowQrCodeModal] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const loadShareDetails = useCallback(async () => {
@@ -209,6 +214,53 @@ export function ShareDetailsModal({
     }
   };
 
+  const downloadQRCode = () => {
+    setIsDownloading(true);
+
+    // Get the SVG element
+    const svg = document.getElementById("share-details-qr-code");
+    if (!svg) {
+      setIsDownloading(false);
+      return;
+    }
+
+    // Create a canvas
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    // Set dimensions (with some padding)
+    const padding = 20;
+    canvas.width = 200 + padding * 2;
+    canvas.height = 200 + padding * 2;
+
+    // Fill white background
+    if (ctx) {
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Convert SVG to data URL
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const img = new Image();
+
+      img.onload = () => {
+        // Draw the image in the center of the canvas with padding
+        ctx.drawImage(img, padding, padding, 200, 200);
+
+        // Create a download link
+        const link = document.createElement("a");
+        link.download = `${share?.name?.replace(/[^a-z0-9]/gi, "-").toLowerCase() || "share"}-qr-code.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+
+        setIsDownloading(false);
+      };
+
+      img.src = `data:image/svg+xml;base64,${btoa(svgData)}`;
+    } else {
+      setIsDownloading(false);
+    }
+  };
+
   const handleLinkGenerated = async () => {
     setShowLinkModal(false);
     await loadShareDetails();
@@ -258,7 +310,7 @@ export function ShareDetailsModal({
               <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-3">
                   <div className="text-center p-2 bg-muted/30 rounded-lg">
-                    <p className="text-lg font-semibold text-green-600">{share.viewCount || 0}</p>
+                    <p className="text-lg font-semibold text-green-600">{share.views || 0}</p>
                     <p className="text-xs text-muted-foreground">{t("shareDetails.views")}</p>
                   </div>
                   <div className="text-center p-2 bg-muted/30 rounded-lg">
@@ -271,105 +323,148 @@ export function ShareDetailsModal({
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 border-b pb-2">
-                    <h3 className="text-base font-medium text-foreground">{t("shareDetails.basicInfo")}</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Basic Information */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 border-b pb-2">
+                      <h3 className="text-base font-medium text-foreground">{t("shareDetails.basicInfo")}</h3>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <label className="text-sm font-medium text-muted-foreground">{t("shareDetails.name")}</label>
+                        {onUpdateName && !isEditingName && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-5 w-5 text-muted-foreground hover:text-foreground"
+                            onClick={() => startEdit("name", displayName || "")}
+                          >
+                            <IconEdit className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                      {isEditingName ? (
+                        <div className="flex items-center gap-2">
+                          <Input
+                            ref={inputRef}
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            className="h-8 flex-1 text-sm"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6 text-green-600 hover:text-green-700"
+                            onClick={saveEdit}
+                          >
+                            <IconCheck className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6 text-red-600 hover:text-red-700"
+                            onClick={cancelEdit}
+                          >
+                            <IconX className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <span className="text-sm font-medium block">{displayName || t("shareDetails.untitled")}</span>
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <label className="text-sm font-medium text-muted-foreground">
+                          {t("shareDetails.description")}
+                        </label>
+                        {onUpdateDescription && !isEditingDescription && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-5 w-5 text-muted-foreground hover:text-foreground"
+                            onClick={() => startEdit("description", displayDescription || "")}
+                          >
+                            <IconEdit className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                      {isEditingDescription ? (
+                        <div className="flex items-center gap-2">
+                          <Input
+                            ref={inputRef}
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            className="h-8 flex-1 text-sm"
+                            placeholder={t("shareDetails.noDescription")}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6 text-green-600 hover:text-green-700"
+                            onClick={saveEdit}
+                          >
+                            <IconCheck className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6 text-red-600 hover:text-red-700"
+                            onClick={cancelEdit}
+                          >
+                            <IconX className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <span className="text-sm block">{displayDescription || t("shareDetails.noDescription")}</span>
+                      )}
+                    </div>
                   </div>
 
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <label className="text-sm font-medium text-muted-foreground">{t("shareDetails.name")}</label>
-                      {onUpdateName && !isEditingName && (
+                  {/* QR Code */}
+                  {shareLink && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 border-b pb-2">
+                        <h3
+                          className="text-base font-medium text-foreground cursor-pointer"
+                          onClick={() => setShowQrCodeModal(true)}
+                        >
+                          {t("shareDetails.qrCode", { defaultValue: "QR Code" })}
+                        </h3>
                         <Button
                           size="icon"
                           variant="ghost"
                           className="h-5 w-5 text-muted-foreground hover:text-foreground"
-                          onClick={() => startEdit("name", displayName || "")}
+                          onClick={downloadQRCode}
+                          disabled={isDownloading}
+                          title={t("shareDetails.downloadQrCode")}
                         >
-                          <IconEdit className="h-3 w-3" />
-                        </Button>
-                      )}
-                    </div>
-                    {isEditingName ? (
-                      <div className="flex items-center gap-2">
-                        <Input
-                          ref={inputRef}
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          onKeyDown={handleKeyDown}
-                          className="h-8 flex-1 text-sm"
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-6 w-6 text-green-600 hover:text-green-700"
-                          onClick={saveEdit}
-                        >
-                          <IconCheck className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-6 w-6 text-red-600 hover:text-red-700"
-                          onClick={cancelEdit}
-                        >
-                          <IconX className="h-3 w-3" />
+                          <IconDownload className="h-3 w-3" />
                         </Button>
                       </div>
-                    ) : (
-                      <span className="text-sm font-medium block">{displayName || t("shareDetails.untitled")}</span>
-                    )}
-                  </div>
-
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <label className="text-sm font-medium text-muted-foreground">
-                        {t("shareDetails.description")}
-                      </label>
-                      {onUpdateDescription && !isEditingDescription && (
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-5 w-5 text-muted-foreground hover:text-foreground"
-                          onClick={() => startEdit("description", displayDescription || "")}
+                      <div className="flex flex-col items-start justify-start ">
+                        <div
+                          className="p-2 bg-white rounded-lg cursor-pointer hover:opacity-80 transition-opacity duration-300"
+                          onClick={() => setShowQrCodeModal(true)}
+                          title={t("shareDetails.clickToEnlargeQrCode", { defaultValue: "Click to enlarge QR Code" })}
                         >
-                          <IconEdit className="h-3 w-3" />
-                        </Button>
-                      )}
-                    </div>
-                    {isEditingDescription ? (
-                      <div className="flex items-center gap-2">
-                        <Input
-                          ref={inputRef}
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          onKeyDown={handleKeyDown}
-                          className="h-8 flex-1 text-sm"
-                          placeholder={t("shareDetails.noDescription")}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-6 w-6 text-green-600 hover:text-green-700"
-                          onClick={saveEdit}
-                        >
-                          <IconCheck className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-6 w-6 text-red-600 hover:text-red-700"
-                          onClick={cancelEdit}
-                        >
-                          <IconX className="h-3 w-3" />
-                        </Button>
+                          <QRCode
+                            id="share-details-qr-code"
+                            value={shareLink}
+                            size={100}
+                            level="H"
+                            fgColor="#000000"
+                            bgColor="#FFFFFF"
+                          />
+                        </div>
                       </div>
-                    ) : (
-                      <span className="text-sm block">{displayDescription || t("shareDetails.noDescription")}</span>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-3">
@@ -556,16 +651,16 @@ export function ShareDetailsModal({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      {showLinkModal && onGenerateLink && (
+      {showLinkModal && shareId && (
         <GenerateShareLinkModal
           shareId={shareId}
           share={share}
           onClose={() => setShowLinkModal(false)}
-          onGenerate={onGenerateLink}
           onSuccess={handleLinkGenerated}
+          onGenerate={onGenerateLink || (() => Promise.resolve())}
         />
       )}
-      {showSecurityModal && (
+      {showSecurityModal && shareId && onUpdateSecurity && (
         <ShareSecurityModal
           shareId={shareId}
           share={share}
@@ -573,12 +668,20 @@ export function ShareDetailsModal({
           onSuccess={handleSecurityUpdated}
         />
       )}
-      {showExpirationModal && (
+      {showExpirationModal && shareId && onUpdateExpiration && (
         <ShareExpirationModal
           shareId={shareId}
           share={share}
           onClose={() => setShowExpirationModal(false)}
           onSuccess={handleExpirationUpdated}
+        />
+      )}
+      {showQrCodeModal && shareLink && (
+        <QrCodeModal
+          isOpen={showQrCodeModal}
+          onClose={() => setShowQrCodeModal(false)}
+          shareLink={shareLink}
+          shareName={share?.name || "Share"}
         />
       )}
     </>

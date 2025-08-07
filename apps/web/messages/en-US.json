@@ -129,6 +129,7 @@
   },
   "common": {
     "loading": "Loading, please wait...",
+    "loadingSimple": "Loading...",
     "cancel": "Cancel",
     "save": "Save",
     "saving": "Saving...",
@@ -148,6 +149,7 @@
   "createShare": {
     "title": "Create Share",
     "nameLabel": "Share Name",
+    "namePlaceholder": "Enter a name for your share",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Enter a description (optional)",
     "expirationLabel": "Expiration Date",
@@ -182,7 +184,15 @@
     "invalidCredentials": "Invalid email or password",
     "userNotFound": "User not found",
     "accountLocked": "Account locked. Please try again later",
-    "unexpectedError": "An unexpected error occurred. Please try again"
+    "unexpectedError": "An unexpected error occurred. Please try again",
+    "Invalid verification code": "Invalid verification code",
+    "Two-factor authentication is already enabled": "Two-factor authentication is already enabled",
+    "Two-factor authentication is not enabled": "Two-factor authentication is not enabled",
+    "Invalid password": "Invalid password",
+    "Password verification required": "Password verification required",
+    "Invalid two-factor authentication code": "Invalid two-factor authentication code",
+    "Two-factor authentication required": "Two-factor authentication required",
+    "noUserData": "No user data"
   },
   "fileActions": {
     "editFile": "Edit File",
@@ -304,21 +314,27 @@
     "title": "Forgot Password",
     "description": "Enter your email address and we'll send you instructions to reset your password",
     "resetInstructions": "Reset instructions sent to your email",
-    "pageTitle": "Forgot Password"
+    "pageTitle": "Forgot Password",
+    "passwordAuthDisabled": "Password authentication is disabled. Please contact your administrator or use an external authentication provider."
   },
   "generateShareLink": {
     "generateTitle": "Generate Share Link",
     "updateTitle": "Update Share Link",
-    "generateDescription": "Generate a link to share your files",
-    "updateDescription": "Update the alias for this share link",
-    "aliasPlaceholder": "Enter alias",
-    "linkReady": "Your share link is ready:",
+    "generateDescription": "Generate a custom link for this share. You can customize the URL to make it more memorable.",
+    "updateDescription": "Update the custom link for this share. You can customize the URL to make it more memorable.",
+    "aliasPlaceholder": "Custom ID for link",
+    "linkReady": "Your share link is ready. You can copy it now.",
+    "readyDescription": "Your share link is ready. You can scan the QR code directly, download it for later use, or copy the link below.",
     "generateButton": "Generate Link",
     "updateButton": "Update Link",
     "copyButton": "Copy Link",
     "success": "Link generated successfully",
     "error": "Failed to generate link",
-    "copied": "Link copied to clipboard"
+    "copied": "Link copied to clipboard",
+    "tabs": {
+      "link": "Link",
+      "qrcode": "QR Code"
+    }
   },
   "home": {
     "description": "The open-source alternative to WeTransfer. Share files securely, without tracking or limitations.",
@@ -330,6 +346,27 @@
       "tagline": "made simple and free"
     },
     "pageTitle": "Home"
+  },
+  "iconPicker": {
+    "title": "Select Icon",
+    "placeholder": "Select an icon",
+    "searchPlaceholder": "Search icons...",
+    "loadingMore": "Loading more icons...",
+    "allIconsLoaded": "All {count} icons loaded",
+    "noIconsFound": "No icons found for \"{search}\"",
+    "tabs": {
+      "all": "All Icons",
+      "popular": "Popular",
+      "auth": "Auth Providers"
+    },
+    "stats": "{iconCount} icons from {libraryCount} libraries",
+    "categoryBadge": "{category} ({count} icons)"
+  },
+  "imageEdit": {
+    "title": "Edit Image",
+    "rotate": "Rotate",
+    "zoom": "Zoom",
+    "cropInstructions": "Drag to reposition, resize corners to adjust crop area"
   },
   "login": {
     "welcome": "Welcome to",
@@ -417,6 +454,11 @@
       "imageRemoved": "Profile image removed successfully"
     },
     "pageTitle": "Profile"
+  },
+  "qrCodeModal": {
+    "title": "Share QR Code",
+    "description": "Scan this QR code to access the link.",
+    "download": "Download QR Code"
   },
   "quickAccess": {
     "files": {
@@ -583,6 +625,7 @@
       "expired": "Expired",
       "expires": "Expires",
       "viewDetails": "View details",
+      "viewQrCode": "View QR Code",
       "copyLink": "Copy Link",
       "openInNewTab": "Open in New Tab",
       "editLink": "Edit Link",
@@ -605,7 +648,8 @@
       "viewDetails": "View Details",
       "edit": "Edit",
       "delete": "Delete",
-      "viewFiles": "Received Files"
+      "viewFiles": "Received Files",
+      "viewQrCode": "View QR Code"
     },
     "empty": {
       "title": "No receive links created",
@@ -746,7 +790,12 @@
           "delete": "Delete Selected"
         },
         "selectAll": "Select all",
-        "selectFile": "Select file {fileName}"
+        "selectFile": "Select file {fileName}",
+        "copyErrors": {
+          "timeout": "Copy operation timed out. Please try again with a smaller file or check your connection.",
+          "failed": "Copy operation failed. Please try again.",
+          "aborted": "Copy operation was cancelled due to timeout."
+        }
       }
     },
     "form": {
@@ -898,7 +947,8 @@
       "fileList": {
         "title": "Selected files:",
         "statusUploaded": "Uploaded",
-        "statusError": "Error"
+        "statusError": "Error",
+        "retry": "Retry"
       },
       "form": {
         "nameLabel": "Name",
@@ -944,8 +994,6 @@
       },
       "fileActions": {
         "edit": "Edit",
-        "save": "Save",
-        "cancel": "Cancel",
         "preview": "Preview",
         "download": "Download",
         "delete": "Delete",
@@ -1085,6 +1133,10 @@
       "serverUrl": {
         "title": "Server URL",
         "description": "Base URL of the Palmr server (e.g.: https://palmr.example.com)"
+      },
+      "passwordAuthEnabled": {
+        "title": "Password Authentication",
+        "description": "Enable or disable password-based authentication"
       }
     },
     "buttons": {
@@ -1094,7 +1146,8 @@
     },
     "errors": {
       "loadFailed": "Failed to load settings",
-      "updateFailed": "Failed to update settings"
+      "updateFailed": "Failed to update settings",
+      "passwordAuthRequiresProvider": "Cannot disable password authentication without having at least one active authentication provider"
     },
     "messages": {
       "noChanges": "No changes to save",
@@ -1172,34 +1225,36 @@
   },
   "shareDetails": {
     "title": "Share Details",
-    "subtitle": "Detailed information about this share",
+    "subtitle": "View and manage details for this share",
     "basicInfo": "Basic Information",
     "name": "Name",
     "description": "Description",
-    "noDescription": "No description provided",
-    "untitled": "Untitled",
     "shareLink": "Share Link",
-    "editLink": "Edit Link",
-    "generateLink": "Generate Link",
-    "noLink": "No link generated yet",
-    "copyLink": "Copy link",
-    "openLink": "Open in new tab",
-    "linkCopied": "Link copied to clipboard",
-    "views": "Views",
     "dates": "Dates",
+    "security": "Security",
+    "files": "Files",
+    "recipients": "Recipients",
+    "views": "Views",
     "created": "Created",
     "expires": "Expires",
     "never": "Never",
-    "security": "Security",
-    "editSecurity": "Edit Security",
-    "editExpiration": "Edit Expiration",
+    "untitled": "Untitled Share",
+    "noDescription": "No description",
+    "notAvailable": "N/A",
+    "invalidDate": "Invalid date",
     "passwordProtected": "Password Protected",
     "publicAccess": "Public Access",
     "maxViews": "Max Views:",
-    "files": "Files",
-    "recipients": "Recipients",
-    "notAvailable": "N/A",
-    "invalidDate": "Invalid date",
+    "noLink": "No link generated",
+    "generateLink": "Generate Link",
+    "editLink": "Edit Link",
+    "copyLink": "Copy Link",
+    "openLink": "Open Link",
+    "editSecurity": "Edit Security",
+    "editExpiration": "Edit Expiration",
+    "qrCode": "QR Code",
+    "downloadQrCode": "Download QR Code",
+    "clickToEnlargeQrCode": "Click to enlarge QR Code",
     "loadError": "Failed to load share details"
   },
   "shareExpiration": {
@@ -1385,6 +1440,7 @@
       "generateLink": "Generate Link",
       "editLink": "Edit Link",
       "copyLink": "Copy Link",
+      "viewQrCode": "View QR Code",
       "notifyRecipients": "Notify Recipients",
       "downloadShareFiles": "Download All Files",
       "delete": "Delete"
@@ -1419,12 +1475,167 @@
     "dark": "Dark",
     "system": "System"
   },
+  "twoFactor": {
+    "title": "Two-Factor Authentication",
+    "description": "Add an extra layer of security to your account",
+    "enabled": "Your account is protected with two-factor authentication",
+    "disabled": "Two-factor authentication is not enabled",
+    "status": {
+      "label": "Status:",
+      "enabled": "Enabled",
+      "disabled": "Disabled"
+    },
+    "buttons": {
+      "enable2FA": "Enable 2FA",
+      "disable2FA": "Disable 2FA"
+    },
+    "setup": {
+      "title": "Enable Two-Factor Authentication",
+      "description": "Scan the QR code with your authenticator app, then enter the verification code.",
+      "qrCode": "QR Code",
+      "manualEntryKey": "Manual Entry Key",
+      "verificationCode": "Verification Code",
+      "verificationCodePlaceholder": "Enter 6-digit code",
+      "verificationCodeDescription": "Enter the 6-digit code from your authenticator app",
+      "verifyAndEnable": "Verify & Enable",
+      "cancel": "Cancel"
+    },
+    "disable": {
+      "title": "Disable Two-Factor Authentication",
+      "description": "Enter your password to confirm disabling two-factor authentication.",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "confirm": "Confirm Disable",
+      "cancel": "Cancel"
+    },
+    "backupCodes": {
+      "title": "Backup Codes",
+      "description": "Save these backup codes in a safe place. You can use them to access your account if you lose your authenticator device.",
+      "warning": "Important:",
+      "warningText": "Each backup code can only be used once. Keep them secure and don't share them with anyone.",
+      "generateNew": "Generate New Backup Codes",
+      "download": "Download Backup Codes",
+      "copyToClipboard": "Copy to Clipboard",
+      "savedMessage": "I've Saved My Backup Codes",
+      "available": "{count} backup codes available",
+      "instructions": [
+        "• Save these codes in a secure location",
+        "• Each backup code can only be used once",
+        "• You can generate new codes anytime"
+      ]
+    },
+    "verification": {
+      "title": "Two-Factor Authentication",
+      "description": "Enter the 6-digit code from your authenticator app",
+      "backupDescription": "Enter one of your backup codes to continue",
+      "verificationCode": "Verification Code",
+      "backupCode": "Backup Code",
+      "verificationCodePlaceholder": "000000",
+      "backupCodePlaceholder": "XXXX-XXXX",
+      "verify": "Verify",
+      "verifying": "Verifying...",
+      "useBackupCode": "Use backup code instead",
+      "useAuthenticatorCode": "Use authenticator code instead",
+      "rememberDevice": "Remember this device for 30 days",
+      "rememberDeviceDescription": "You won't need to enter 2FA codes on this device for 30 days"
+    },
+    "trustedDevices": {
+      "title": "Trusted Devices - 2FA",
+      "description": "Devices that don't require 2FA verification",
+      "noDevices": "No trusted devices",
+      "deviceName": "Device",
+      "addedOn": "Added on",
+      "expiresOn": "Expires on",
+      "remove": "Remove",
+      "removeAll": "Remove All",
+      "confirmRemove": "Are you sure you want to remove this trusted device?",
+      "confirmRemoveAll": "Are you sure you want to remove all trusted devices?",
+      "deviceRemoved": "Trusted device removed successfully",
+      "allDevicesRemoved": "All trusted devices removed successfully",
+      "loadFailed": "Failed to load trusted devices",
+      "removeFailed": "Failed to remove trusted device",
+      "removeAllFailed": "Failed to remove all trusted devices",
+      "loading": "Loading trusted devices...",
+      "noDevicesDescription": "Devices will appear here when you choose to trust them during 2FA verification",
+      "tableHeaders": {
+        "device": "Device",
+        "added": "Added",
+        "expires": "Expires",
+        "lastUsed": "Last Used",
+        "ipAddress": "IP Address",
+        "actions": "Actions"
+      },
+      "status": {
+        "never": "Never",
+        "expired": "Expired"
+      },
+      "modals": {
+        "removeDevice": {
+          "title": "Remove Trusted Device",
+          "added": "Added:",
+          "ip": "IP:"
+        },
+        "removeAllDevices": {
+          "title": "Remove All Trusted Devices",
+          "description": "This will remove {count} trusted device{count, plural, =1 {} other {s}}. You will need to verify 2FA on all devices again."
+        },
+        "buttons": {
+          "cancel": "Cancel",
+          "removing": "Removing...",
+          "removeDevice": "Remove Device",
+          "removeAllDevices": "Remove All Devices"
+        }
+      }
+    },
+    "messages": {
+      "enabledSuccess": "Two-factor authentication enabled successfully!",
+      "disabledSuccess": "Two-factor authentication disabled successfully",
+      "backupCodesGenerated": "New backup codes generated successfully",
+      "backupCodesCopied": "Backup codes copied to clipboard",
+      "setupFailed": "Failed to generate 2FA setup",
+      "verificationFailed": "Invalid verification code",
+      "disableFailed": "Failed to disable 2FA. Please check your password.",
+      "backupCodesFailed": "Failed to generate backup codes",
+      "backupCodesCopyFailed": "Failed to copy backup codes",
+      "statusLoadFailed": "Failed to load 2FA status",
+      "enterVerificationCode": "Please enter the verification code",
+      "enterPassword": "Please enter your password",
+      "deviceTrusted": "This device has been marked as trusted for 30 days"
+    },
+    "errors": {
+      "invalidVerificationCode": "Invalid verification code",
+      "invalidTwoFactorCode": "Invalid two-factor authentication code",
+      "twoFactorRequired": "Two-factor authentication required",
+      "twoFactorAlreadyEnabled": "Two-factor authentication is already enabled",
+      "twoFactorNotEnabled": "Two-factor authentication is not enabled",
+      "passwordVerificationRequired": "Password verification required",
+      "invalidPassword": "Invalid password",
+      "userNotFound": "User not found"
+    },
+    "deviceNames": {
+      "unknownDevice": "Unknown Device",
+      "browsers": {
+        "chrome": "Chrome",
+        "firefox": "Firefox",
+        "safari": "Safari",
+        "edge": "Edge"
+      },
+      "platforms": {
+        "windows": " on Windows",
+        "macos": " on macOS",
+        "linux": " on Linux",
+        "iphone": " on iPhone",
+        "android": " on Android"
+      }
+    }
+  },
   "uploadFile": {
     "title": "Upload File",
     "multipleTitle": "Upload Files",
     "selectFile": "Click to select a file",
     "selectMultipleFiles": "Click to select one or multiple files",
     "dragAndDrop": "or drag and drop files here",
+    "filesQueued": "{count, plural, one {# file queued for upload} other {# files queued for upload}}",
     "preview": "Preview",
     "uploadProgress": "Upload progress",
     "upload": "Upload",
@@ -1500,8 +1711,8 @@
     "status": {
       "title": "Confirm Status Change",
       "confirmation": "Are you sure you want to {action} user {firstName} {lastName}?",
-      "activate": "activate",
-      "deactivate": "deactivate",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
       "user": "User"
     },
     "header": {
@@ -1535,20 +1746,5 @@
     "passwordMinLength": "Password must be at least 6 characters",
     "nameRequired": "Name is required",
     "required": "This field is required"
-  },
-  "iconPicker": {
-    "title": "Select Icon",
-    "placeholder": "Select an icon",
-    "searchPlaceholder": "Search icons...",
-    "loadingMore": "Loading more icons...",
-    "allIconsLoaded": "All {count} icons loaded",
-    "noIconsFound": "No icons found for \"{search}\"",
-    "tabs": {
-      "all": "All Icons",
-      "popular": "Popular",
-      "auth": "Auth Providers"
-    },
-    "stats": "{iconCount} icons from {libraryCount} libraries",
-    "categoryBadge": "{category} ({count} icons)"
   }
 }

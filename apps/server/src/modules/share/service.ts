@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 
 import { prisma } from "../../shared/prisma";
 import { EmailService } from "../email/service";
+import { UserService } from "../user/service";
 import { CreateShareInput, ShareResponseSchema, UpdateShareInput } from "./dto";
 import { IShareRepository, PrismaShareRepository } from "./repository";
 
@@ -9,6 +10,7 @@ export class ShareService {
   constructor(private readonly shareRepository: IShareRepository = new PrismaShareRepository()) {}
 
   private emailService = new EmailService();
+  private userService = new UserService();
 
   private formatShareResponse(share: any) {
     return {
@@ -339,11 +341,26 @@ export class ShareService {
       throw new Error("No recipients found for this share");
     }
 
+    // Get sender information
+    let senderName = "Someone";
+    try {
+      const sender = await this.userService.getUserById(userId);
+      if (sender.firstName && sender.lastName) {
+        senderName = `${sender.firstName} ${sender.lastName}`;
+      } else if (sender.firstName) {
+        senderName = sender.firstName;
+      } else if (sender.username) {
+        senderName = sender.username;
+      }
+    } catch (error) {
+      console.error(`Failed to get sender information for user ${userId}:`, error);
+    }
+
     const notifiedRecipients: string[] = [];
 
     for (const recipient of share.recipients) {
       try {
-        await this.emailService.sendShareNotification(recipient.email, shareLink, share.name || undefined);
+        await this.emailService.sendShareNotification(recipient.email, shareLink, share.name || undefined, senderName);
         notifiedRecipients.push(recipient.email);
       } catch (error) {
         console.error(`Failed to send email to ${recipient.email}:`, error);

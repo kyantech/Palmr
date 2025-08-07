@@ -143,7 +143,8 @@
     "dashboard": "Panel główny",
     "back": "Wróć",
     "click": "Kliknij, aby",
-    "creating": "Tworzenie..."
+    "creating": "Tworzenie...",
+    "loadingSimple": "Ładowanie..."
   },
   "createShare": {
     "title": "Utwórz Udostępnienie",
@@ -158,7 +159,8 @@
     "passwordLabel": "Hasło",
     "create": "Utwórz Udostępnienie",
     "success": "Udostępnienie utworzone pomyślnie",
-    "error": "Nie udało się utworzyć udostępnienia"
+    "error": "Nie udało się utworzyć udostępnienia",
+    "namePlaceholder": "Wprowadź nazwę dla swojego udostępnienia"
   },
   "dashboard": {
     "loadError": "Nie udało się załadować danych panelu głównego",
@@ -182,7 +184,15 @@
     "invalidCredentials": "Nieprawidłowy adres e-mail lub hasło",
     "userNotFound": "Użytkownik nie znaleziony",
     "accountLocked": "Konto zablokowane. Spróbuj ponownie później",
-    "unexpectedError": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie."
+    "unexpectedError": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie.",
+    "Invalid password": "Nieprawidłowe hasło",
+    "Invalid two-factor authentication code": "Nieprawidłowy kod uwierzytelniania dwuskładnikowego",
+    "Invalid verification code": "Nieprawidłowy kod weryfikacyjny",
+    "Password verification required": "Wymagana weryfikacja hasła",
+    "Two-factor authentication is already enabled": "Uwierzytelnianie dwuskładnikowe jest już włączone",
+    "Two-factor authentication is not enabled": "Uwierzytelnianie dwuskładnikowe nie jest włączone",
+    "Two-factor authentication required": "Wymagane uwierzytelnianie dwuskładnikowe",
+    "noUserData": "Brak danych użytkownika"
   },
   "fileActions": {
     "editFile": "Edytuj plik",
@@ -304,7 +314,8 @@
     "title": "Zapomniałeś hasła?",
     "description": "Wprowadź swój adres e-mail, a wyślemy Ci instrukcje resetowania hasła",
     "resetInstructions": "Instrukcje resetowania wysłane na Twój adres e-mail",
-    "pageTitle": "Zapomniałeś hasła?"
+    "pageTitle": "Zapomniałeś hasła?",
+    "passwordAuthDisabled": "Uwierzytelnianie hasłem jest wyłączone. Skontaktuj się z administratorem lub użyj zewnętrznego dostawcy uwierzytelniania."
   },
   "generateShareLink": {
     "generateTitle": "Generuj link do udostępniania",
@@ -318,7 +329,12 @@
     "copyButton": "Skopiuj link",
     "success": "Link wygenerowany pomyślnie",
     "error": "Nie udało się wygenerować linku",
-    "copied": "Link skopiowany do schowka"
+    "copied": "Link skopiowany do schowka",
+    "readyDescription": "Twój link do udostępniania jest gotowy. Możesz skanować kod QR bezpośrednio, pobrać go do późniejszego użycia lub skopiować link poniżej.",
+    "tabs": {
+      "link": "Link",
+      "qrcode": "QR Code"
+    }
   },
   "home": {
     "description": "Otwartoźródłowa alternatywa dla WeTransfer. Udostępniaj pliki bezpiecznie, bez śledzenia i ograniczeń.",
@@ -330,6 +346,27 @@
       "tagline": "proste i darmowe"
     },
     "pageTitle": "Strona główna"
+  },
+  "iconPicker": {
+    "title": "Wybierz ikonę",
+    "placeholder": "Wybierz ikonę",
+    "searchPlaceholder": "Szukaj ikon...",
+    "loadingMore": "Ładowanie kolejnych ikon...",
+    "allIconsLoaded": "Załadowano wszystkie {count} ikon",
+    "noIconsFound": "Nie znaleziono ikon dla \"{search}\"",
+    "tabs": {
+      "all": "Wszystkie ikony",
+      "popular": "Popularne",
+      "auth": "Dostawcy uwierzytelniania"
+    },
+    "stats": "{iconCount} ikon z {libraryCount} bibliotek",
+    "categoryBadge": "{category} ({count} ikon)"
+  },
+  "imageEdit": {
+    "title": "Edytuj obraz",
+    "rotate": "Obróć",
+    "zoom": "Powiększ",
+    "cropInstructions": "Przeciągnij, aby przesunąć, zmień rozmiar rogów, aby dostosować obszar przycięcia"
   },
   "login": {
     "welcome": "Witaj w",
@@ -417,6 +454,11 @@
       "imageRemoved": "Obraz profilowy usunięty pomyślnie"
     },
     "pageTitle": "Profil"
+  },
+  "qrCodeModal": {
+    "title": "Udostępnij kod QR",
+    "description": "Skanuj ten kod QR, aby uzyskać dostęp do linku.",
+    "download": "Pobierz kod QR"
   },
   "quickAccess": {
     "files": {
@@ -589,7 +631,8 @@
       "createLink": "Utwórz link",
       "delete": "Usuń",
       "copyLinkTitle": "Skopiuj link",
-      "createLinkCTA": "Utwórz link do odbierania"
+      "createLinkCTA": "Utwórz link do odbierania",
+      "viewQrCode": "Wyświetl kod QR"
     },
     "status": {
       "active": "Aktywny",
@@ -605,7 +648,8 @@
       "viewDetails": "Wyświetl szczegóły",
       "edit": "Edytuj",
       "delete": "Usuń",
-      "viewFiles": "Odebrane pliki"
+      "viewFiles": "Odebrane pliki",
+      "viewQrCode": "Wyświetl kod QR"
     },
     "empty": {
       "title": "Brak utworzonych linków do odbierania",
@@ -746,7 +790,12 @@
         "selectAll": "Zaznacz wszystko",
         "selectFile": "Wybierz plik {fileName}",
         "deleteError": "Błąd usuwania pliku",
-        "deleteSuccess": "Plik usunięty pomyślnie"
+        "deleteSuccess": "Plik usunięty pomyślnie",
+        "copyErrors": {
+          "timeout": "Operacja kopiowania przekroczyła limit czasu. Spróbuj ponownie z mniejszym plikiem lub sprawdź swoje połączenie.",
+          "failed": "Operacja kopiowania nie powiodła się. Spróbuj ponownie.",
+          "aborted": "Operacja kopiowania została anulowana z powodu przekroczenia limitu czasu."
+        }
       }
     },
     "form": {
@@ -897,7 +946,8 @@
       "fileList": {
         "title": "Wybrane pliki:",
         "statusUploaded": "Przesłano",
-        "statusError": "Błąd"
+        "statusError": "Błąd",
+        "retry": "Spróbuj Ponownie"
       },
       "form": {
         "nameLabel": "Imię",
@@ -1085,6 +1135,10 @@
       "smtpTrustSelfSigned": {
         "title": "Zaufaj certyfikatom samopodpisanym",
         "description": "Włącz tę opcję, aby zaufać samopodpisanym certyfikatom SSL/TLS (przydatne w środowiskach deweloperskich)"
+      },
+      "passwordAuthEnabled": {
+        "title": "Uwierzytelnianie hasłem",
+        "description": "Włącz lub wyłącz uwierzytelnianie oparte na haśle"
       }
     },
     "buttons": {
@@ -1094,7 +1148,8 @@
     },
     "errors": {
       "loadFailed": "Nie udało się załadować ustawień",
-      "updateFailed": "Nie udało się zaktualizować ustawień"
+      "updateFailed": "Nie udało się zaktualizować ustawień",
+      "passwordAuthRequiresProvider": "Uwierzytelnianie oparte na haśle nie może być wyłączone, jeśli nie ma co najmniej jednego aktywnego dostawcy uwierzytelniania"
     },
     "messages": {
       "noChanges": "Brak zmian do zapisania",
@@ -1145,7 +1200,7 @@
       "description": "To udostępnienie mogło zostać usunięte lub wygasło."
     },
     "pageTitle": "Udostępnij",
-    "downloadAll": "[TO_TRANSLATE] Download All"
+    "downloadAll": "Pobierz wszystkie"
   },
   "shareActions": {
     "deleteTitle": "Usuń udostępnienie",
@@ -1200,7 +1255,10 @@
     "recipients": "Odbiorcy",
     "notAvailable": "N/A",
     "invalidDate": "Nieprawidłowa data",
-    "loadError": "Nie udało się załadować szczegółów udostępnienia"
+    "loadError": "Nie udało się załadować szczegółów udostępnienia",
+    "clickToEnlargeQrCode": "Kliknij, aby powiększyć kod QR",
+    "downloadQrCode": "Pobierz kod QR",
+    "qrCode": "Kod QR"
   },
   "shareExpiration": {
     "title": "Ustawienia wygaśnięcia udostępnienia",
@@ -1387,7 +1445,8 @@
       "copyLink": "Skopiuj link",
       "notifyRecipients": "Powiadom odbiorców",
       "delete": "Usuń",
-      "downloadShareFiles": "Pobierz wszystkie pliki"
+      "downloadShareFiles": "Pobierz wszystkie pliki",
+      "viewQrCode": "Wyświetl kod QR"
     },
     "bulkActions": {
       "delete": "Usuń",
@@ -1418,6 +1477,160 @@
     "light": "Jasny",
     "dark": "Ciemny",
     "system": "Systemowy"
+  },
+  "twoFactor": {
+    "title": "Uwierzytelnianie dwuskładnikowe",
+    "description": "Dodaj dodatkową warstwę zabezpieczeń do swojego konta",
+    "enabled": "Twoje konto jest chronione uwierzytelnianiem dwuskładnikowym",
+    "disabled": "Uwierzytelnianie dwuskładnikowe nie jest włączone",
+    "setup": {
+      "title": "Włącz uwierzytelnianie dwuskładnikowe",
+      "description": "Zeskanuj kod QR za pomocą aplikacji uwierzytelniającej, a następnie wprowadź kod weryfikacyjny.",
+      "qrCode": "Kod QR",
+      "manualEntryKey": "Klucz do ręcznego wprowadzenia",
+      "verificationCode": "Kod weryfikacyjny",
+      "verificationCodePlaceholder": "Wprowadź 6-cyfrowy kod",
+      "verificationCodeDescription": "Wprowadź 6-cyfrowy kod z aplikacji uwierzytelniającej",
+      "verifyAndEnable": "Zweryfikuj i włącz",
+      "cancel": "Anuluj"
+    },
+    "disable": {
+      "title": "Wyłącz uwierzytelnianie dwuskładnikowe",
+      "description": "Wprowadź hasło, aby potwierdzić wyłączenie uwierzytelniania dwuskładnikowego.",
+      "password": "Hasło",
+      "passwordPlaceholder": "Wprowadź swoje hasło",
+      "confirm": "Potwierdź wyłączenie",
+      "cancel": "Anuluj"
+    },
+    "backupCodes": {
+      "title": "Kody zapasowe",
+      "description": "Zapisz te kody zapasowe w bezpiecznym miejscu. Możesz ich użyć, aby uzyskać dostęp do swojego konta w przypadku utraty urządzenia uwierzytelniającego.",
+      "warning": "Ważne:",
+      "warningText": "Każdy kod zapasowy może być użyty tylko raz. Przechowuj je bezpiecznie i nie udostępniaj nikomu.",
+      "generateNew": "Wygeneruj nowe kody zapasowe",
+      "download": "Pobierz kody zapasowe",
+      "copyToClipboard": "Kopiuj do schowka",
+      "savedMessage": "Zapisałem moje kody zapasowe",
+      "available": "{count} dostępnych kodów zapasowych",
+      "instructions": [
+        "• Zapisz te kody w bezpiecznym miejscu",
+        "• Każdy kod zapasowy może być użyty tylko raz",
+        "• Możesz wygenerować nowe kody w dowolnym momencie"
+      ]
+    },
+    "verification": {
+      "title": "Uwierzytelnianie dwuskładnikowe",
+      "description": "Wprowadź 6-cyfrowy kod z aplikacji uwierzytelniającej",
+      "backupDescription": "Wprowadź jeden z kodów zapasowych, aby kontynuować",
+      "verificationCode": "Kod weryfikacyjny",
+      "backupCode": "Kod zapasowy",
+      "verificationCodePlaceholder": "000000",
+      "backupCodePlaceholder": "XXXX-XXXX",
+      "verify": "Zweryfikuj",
+      "verifying": "Weryfikacja...",
+      "useBackupCode": "Użyj kodu zapasowego",
+      "useAuthenticatorCode": "Użyj kodu z aplikacji uwierzytelniającej",
+      "rememberDevice": "Zapamiętaj to urządzenie na 30 dni",
+      "rememberDeviceDescription": "Nie będziesz musiał wprowadzać kodów 2FA na tym urządzeniu przez 30 dni"
+    },
+    "messages": {
+      "enabledSuccess": "Uwierzytelnianie dwuskładnikowe zostało pomyślnie włączone!",
+      "disabledSuccess": "Uwierzytelnianie dwuskładnikowe zostało pomyślnie wyłączone",
+      "backupCodesGenerated": "Nowe kody zapasowe zostały pomyślnie wygenerowane",
+      "backupCodesCopied": "Kody zapasowe skopiowane do schowka",
+      "setupFailed": "Nie udało się wygenerować konfiguracji 2FA",
+      "verificationFailed": "Nieprawidłowy kod weryfikacyjny",
+      "disableFailed": "Nie udało się wyłączyć 2FA. Sprawdź swoje hasło.",
+      "backupCodesFailed": "Nie udało się wygenerować kodów zapasowych",
+      "backupCodesCopyFailed": "Nie udało się skopiować kodów zapasowych",
+      "statusLoadFailed": "Nie udało się załadować statusu 2FA",
+      "enterVerificationCode": "Wprowadź kod weryfikacyjny",
+      "enterPassword": "Wprowadź swoje hasło",
+      "deviceTrusted": "To urządzenie zostało oznaczone jako zaufane na 30 dni"
+    },
+    "errors": {
+      "invalidVerificationCode": "Nieprawidłowy kod weryfikacyjny",
+      "invalidTwoFactorCode": "Nieprawidłowy kod uwierzytelniania dwuskładnikowego",
+      "twoFactorRequired": "Wymagane uwierzytelnianie dwuskładnikowe",
+      "twoFactorAlreadyEnabled": "Uwierzytelnianie dwuskładnikowe jest już włączone",
+      "twoFactorNotEnabled": "Uwierzytelnianie dwuskładnikowe nie jest włączone",
+      "passwordVerificationRequired": "Wymagana weryfikacja hasła",
+      "invalidPassword": "Nieprawidłowe hasło",
+      "userNotFound": "Nie znaleziono użytkownika"
+    },
+    "buttons": {
+      "enable2FA": "Włącz 2FA",
+      "disable2FA": "Wyłącz 2FA"
+    },
+    "deviceNames": {
+      "unknownDevice": "Nieznane urządzenie",
+      "browsers": {
+        "chrome": "Chrome",
+        "firefox": "Firefox",
+        "safari": "Safari",
+        "edge": "Edge"
+      },
+      "platforms": {
+        "windows": " na Windows",
+        "macos": " na macOS",
+        "linux": " na Linux",
+        "iphone": " na iPhone",
+        "android": " na Android"
+      }
+    },
+    "status": {
+      "label": "Status:",
+      "enabled": "Włączone",
+      "disabled": "Wyłączone"
+    },
+    "trustedDevices": {
+      "title": "Zaufane urządzenia - 2FA",
+      "description": "Urządzenia, które nie wymagają weryfikacji 2FA",
+      "noDevices": "Brak zaufanych urządzeń",
+      "deviceName": "Urządzenie",
+      "addedOn": "Dodano",
+      "expiresOn": "Wygasa",
+      "remove": "Usuń",
+      "removeAll": "Usuń wszystkie",
+      "confirmRemove": "Czy na pewno chcesz usunąć to zaufane urządzenie?",
+      "confirmRemoveAll": "Czy na pewno chcesz usunąć wszystkie zaufane urządzenia?",
+      "deviceRemoved": "Zaufane urządzenie zostało pomyślnie usunięte",
+      "allDevicesRemoved": "Wszystkie zaufane urządzenia zostały pomyślnie usunięte",
+      "loadFailed": "Nie udało się załadować zaufanych urządzeń",
+      "removeFailed": "Nie udało się usunąć zaufanego urządzenia",
+      "removeAllFailed": "Nie udało się usunąć wszystkich zaufanych urządzeń",
+      "loading": "Ładowanie zaufanych urządzeń...",
+      "noDevicesDescription": "Urządzenia pojawią się tutaj, gdy zdecydujesz się im zaufać podczas weryfikacji 2FA",
+      "tableHeaders": {
+        "device": "Urządzenie",
+        "added": "Dodano",
+        "expires": "Wygasa",
+        "lastUsed": "Ostatnio użyte",
+        "ipAddress": "Adres IP",
+        "actions": "Akcje"
+      },
+      "status": {
+        "never": "Nigdy",
+        "expired": "Wygasło"
+      },
+      "modals": {
+        "removeDevice": {
+          "title": "Usuń zaufane urządzenie",
+          "added": "Dodano:",
+          "ip": "IP:"
+        },
+        "removeAllDevices": {
+          "title": "Usuń wszystkie zaufane urządzenia",
+          "description": "Spowoduje to usunięcie {count} zaufanych urządzeń. Będziesz musiał zweryfikować 2FA na wszystkich urządzeniach ponownie."
+        },
+        "buttons": {
+          "cancel": "Anuluj",
+          "removing": "Usuwanie...",
+          "removeDevice": "Usuń urządzenie",
+          "removeAllDevices": "Usuń wszystkie urządzenia"
+        }
+      }
+    }
   },
   "uploadFile": {
     "title": "Prześlij plik",
@@ -1450,7 +1663,8 @@
       "title": "Upuść pliki, aby przesłać",
       "description": "Zwolnij, aby przesłać pliki"
     },
-    "pasteSuccess": "{count, plural, =1 {Obraz wklejony i przesłany pomyślnie} other {# obrazy wklejone i przesłane pomyślnie}}"
+    "pasteSuccess": "{count, plural, =1 {Obraz wklejony i przesłany pomyślnie} other {# obrazy wklejone i przesłane pomyślnie}}",
+    "filesQueued": "{count, plural, one {# plik w kolejce do przesyłania} other {# pliki w kolejce do przesyłania}}"
   },
   "users": {
     "modes": {
@@ -1535,20 +1749,5 @@
     "passwordMinLength": "Hasło musi mieć co najmniej 6 znaków",
     "nameRequired": "Nazwa jest wymagana",
     "required": "To pole jest wymagane"
-  },
-  "iconPicker": {
-    "title": "Wybierz ikonę",
-    "placeholder": "Wybierz ikonę",
-    "searchPlaceholder": "Szukaj ikon...",
-    "loadingMore": "Ładowanie kolejnych ikon...",
-    "allIconsLoaded": "Załadowano wszystkie {count} ikon",
-    "noIconsFound": "Nie znaleziono ikon dla \"{search}\"",
-    "tabs": {
-      "all": "Wszystkie ikony",
-      "popular": "Popularne",
-      "auth": "Dostawcy uwierzytelniania"
-    },
-    "stats": "{iconCount} ikon z {libraryCount} bibliotek",
-    "categoryBadge": "{category} ({count} ikon)"
   }
 }

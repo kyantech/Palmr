@@ -143,7 +143,8 @@
     "saving": "Kaydediliyor...",
     "update": "Güncelle",
     "click": "Tıklayın",
-    "creating": "Oluşturuluyor..."
+    "creating": "Oluşturuluyor...",
+    "loadingSimple": "Yükleniyor..."
   },
   "createShare": {
     "title": "Paylaşım Oluştur",
@@ -158,7 +159,8 @@
     "success": "Paylaşım başarıyla oluşturuldu",
     "error": "Paylaşım oluşturulamadı",
     "descriptionLabel": "Açıklama",
-    "descriptionPlaceholder": "Açıklama girin (isteğe bağlı)"
+    "descriptionPlaceholder": "Açıklama girin (isteğe bağlı)",
+    "namePlaceholder": "Paylaşımınız için bir ad girin"
   },
   "dashboard": {
     "loadError": "Gösterge paneli verileri yüklenemedi",
@@ -182,7 +184,15 @@
     "invalidCredentials": "Geçersiz e-posta veya şifre",
     "userNotFound": "Kullanıcı bulunamadı",
     "accountLocked": "Hesap kilitlendi. Lütfen daha sonra tekrar deneyin",
-    "unexpectedError": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin"
+    "unexpectedError": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin",
+    "Invalid password": "Geçersiz şifre",
+    "Invalid two-factor authentication code": "Geçersiz iki faktörlü kimlik doğrulama kodu",
+    "Invalid verification code": "Geçersiz doğrulama kodu",
+    "Password verification required": "Şifre doğrulaması gerekli",
+    "Two-factor authentication is already enabled": "İki faktörlü kimlik doğrulama zaten etkin",
+    "Two-factor authentication is not enabled": "İki faktörlü kimlik doğrulama etkin değil",
+    "Two-factor authentication required": "İki faktörlü kimlik doğrulama gerekli",
+    "noUserData": "Kullanıcı verisi yok"
   },
   "fileActions": {
     "editFile": "Dosyayı Düzenle",
@@ -304,7 +314,8 @@
     "title": "Şifrenizi mi Unuttunuz?",
     "description": "E-posta adresinizi girin, şifre sıfırlama talimatlarını göndereceğiz.",
     "resetInstructions": "Şifre sıfırlama talimatları e-posta adresinize gönderildi",
-    "pageTitle": "Şifrenizi mi Unuttunuz?"
+    "pageTitle": "Şifrenizi mi Unuttunuz?",
+    "passwordAuthDisabled": "Şifre doğrulama devre dışı. Lütfen yöneticinize başvurun veya dış doğrulama sağlayıcısı kullanın."
   },
   "generateShareLink": {
     "generateTitle": "Paylaşım Bağlantısı Oluştur",
@@ -318,7 +329,12 @@
     "copyButton": "Bağlantıyı Kopyala",
     "success": "Bağlantı başarıyla oluşturuldu",
     "error": "Bağlantı oluşturulamadı",
-    "copied": "Bağlantı panoya kopyalandı"
+    "copied": "Bağlantı panoya kopyalandı",
+    "readyDescription": "Paylaşım bağlantınız hazır. QR kodu doğrudan tarayabilir, daha sonra kullanmak için indirebilir veya aşağıdaki bağlantıyı kopyalayabilirsiniz.",
+    "tabs": {
+      "link": "Bağlantı",
+      "qrcode": "QR Kodu"
+    }
   },
   "home": {
     "description": "WeTransfer'e açık kaynaklı alternatif. Takip veya kısıtlama olmadan dosyalarınızı güvenle paylaşın.",
@@ -330,6 +346,27 @@
       "tagline": "Basit ve Ücretsiz"
     },
     "pageTitle": "Ana Sayfa"
+  },
+  "iconPicker": {
+    "title": "Simge Seç",
+    "placeholder": "Bir simge seç",
+    "searchPlaceholder": "Simgeleri ara...",
+    "loadingMore": "Daha fazla simge yükleniyor...",
+    "allIconsLoaded": "Tüm {count} simge yüklendi",
+    "noIconsFound": "\"{search}\" için simge bulunamadı",
+    "tabs": {
+      "all": "Tüm Simgeler",
+      "popular": "Popüler",
+      "auth": "Kimlik Doğrulama Sağlayıcıları"
+    },
+    "stats": "{libraryCount} kütüphaneden {iconCount} simge",
+    "categoryBadge": "{category} ({count} simge)"
+  },
+  "imageEdit": {
+    "title": "Resmi Düzenle",
+    "rotate": "Döndür",
+    "zoom": "Yakınlaştır",
+    "cropInstructions": "Yerleştirmek için sürükleyin, kırpma alanını ayarlamak için köşeleri yeniden boyutlandırın"
   },
   "login": {
     "welcome": "Hoş geldiniz'e",
@@ -417,6 +454,11 @@
       "imageRemoved": "Profil resmi başarıyla kaldırıldı"
     },
     "pageTitle": "Profil"
+  },
+  "qrCodeModal": {
+    "title": "QR Kodu Paylaş",
+    "description": "Bu QR kodu tarayarak bağlantıya erişebilirsiniz.",
+    "download": "QR Kodu İndir"
   },
   "quickAccess": {
     "files": {
@@ -589,7 +631,8 @@
       "createLink": "Bağlantı Oluştur",
       "delete": "Sil",
       "copyLinkTitle": "Bağlantıyı kopyala",
-      "createLinkCTA": "Alma Bağlantısı Oluştur"
+      "createLinkCTA": "Alma Bağlantısı Oluştur",
+      "viewQrCode": "QR Kodu Görüntüle"
     },
     "status": {
       "active": "Aktif",
@@ -605,7 +648,8 @@
       "viewDetails": "Detayları Görüntüle",
       "edit": "Düzenle",
       "delete": "Sil",
-      "viewFiles": "Alınan Dosyalar"
+      "viewFiles": "Alınan Dosyalar",
+      "viewQrCode": "QR Kodu Görüntüle"
     },
     "empty": {
       "title": "Alma bağlantısı oluşturulmadı",
@@ -746,7 +790,12 @@
         "selectAll": "Tümünü seç",
         "selectFile": "{fileName} dosyasını seç",
         "deleteError": "Dosya silinirken hata oluştu",
-        "deleteSuccess": "Dosya başarıyla silindi"
+        "deleteSuccess": "Dosya başarıyla silindi",
+        "copyErrors": {
+          "timeout": "Kopyalama işlemi zaman aşımına uğradı. Lütfen daha küçük bir dosya ile tekrar deneyin veya bağlantınızı kontrol edin.",
+          "failed": "Kopyalama işlemi başarısız oldu. Lütfen tekrar deneyin.",
+          "aborted": "Kopyalama işlemi zaman aşımı nedeniyle iptal edildi."
+        }
       }
     },
     "form": {
@@ -897,7 +946,8 @@
       "fileList": {
         "title": "Seçilen dosyalar:",
         "statusUploaded": "Yüklendi",
-        "statusError": "Hata"
+        "statusError": "Hata",
+        "retry": "Tekrar Dene"
       },
       "form": {
         "nameLabel": "Ad",
@@ -1085,6 +1135,10 @@
       "smtpTrustSelfSigned": {
         "title": "Kendinden İmzalı Sertifikalara Güven",
         "description": "Kendinden imzalı SSL/TLS sertifikalarına güvenmek için bunu etkinleştirin (geliştirme ortamları için kullanışlıdır)"
+      },
+      "passwordAuthEnabled": {
+        "title": "Şifre Doğrulama",
+        "description": "Şifre tabanlı doğrulamayı etkinleştirme veya devre dışı bırakma"
       }
     },
     "buttons": {
@@ -1094,7 +1148,8 @@
     },
     "errors": {
       "loadFailed": "Ayarlar yüklenemedi",
-      "updateFailed": "Ayarlar güncellenemedi"
+      "updateFailed": "Ayarlar güncellenemedi",
+      "passwordAuthRequiresProvider": "En az bir aktif kimlik doğrulama sağlayıcısı olmadan şifre doğrulaması devre dışı bırakılamaz"
     },
     "messages": {
       "noChanges": "Kaydedilecek değişiklik yok",
@@ -1200,7 +1255,10 @@
     "invalidDate": "Geçersiz tarih",
     "loadError": "Paylaşım detaylarını yükleme başarısız",
     "editSecurity": "Güvenlik Düzenle",
-    "editExpiration": "Son Kullanma Düzenle"
+    "editExpiration": "Son Kullanma Düzenle",
+    "clickToEnlargeQrCode": "QR Kodu Büyüt",
+    "downloadQrCode": "QR Kodu İndir",
+    "qrCode": "QR Kodu"
   },
   "shareExpiration": {
     "neverExpires": "Asla Sona Ermez",
@@ -1387,7 +1445,8 @@
       "copyLink": "Bağlantıyı Kopyala",
       "notifyRecipients": "Alıcıları Bilgilendir",
       "delete": "Sil",
-      "downloadShareFiles": "Tüm dosyaları indirin"
+      "downloadShareFiles": "Tüm dosyaları indirin",
+      "viewQrCode": "QR Kodu Görüntüle"
     },
     "bulkActions": {
       "delete": "Sil",
@@ -1418,6 +1477,160 @@
     "light": "Açık",
     "dark": "Koyu",
     "system": "Sistem"
+  },
+  "twoFactor": {
+    "title": "İki Faktörlü Kimlik Doğrulama",
+    "description": "Hesabınıza ekstra bir güvenlik katmanı ekleyin",
+    "enabled": "Hesabınız iki faktörlü kimlik doğrulama ile korunuyor",
+    "disabled": "İki faktörlü kimlik doğrulama etkin değil",
+    "setup": {
+      "title": "İki Faktörlü Kimlik Doğrulamayı Etkinleştir",
+      "description": "QR kodunu kimlik doğrulayıcı uygulamanızla tarayın, ardından doğrulama kodunu girin.",
+      "qrCode": "QR Kodu",
+      "manualEntryKey": "Manuel Giriş Anahtarı",
+      "verificationCode": "Doğrulama Kodu",
+      "verificationCodePlaceholder": "6 haneli kodu girin",
+      "verificationCodeDescription": "Kimlik doğrulayıcı uygulamanızdan 6 haneli kodu girin",
+      "verifyAndEnable": "Doğrula ve Etkinleştir",
+      "cancel": "İptal"
+    },
+    "disable": {
+      "title": "İki Faktörlü Kimlik Doğrulamayı Devre Dışı Bırak",
+      "description": "İki faktörlü kimlik doğrulamayı devre dışı bırakmayı onaylamak için şifrenizi girin.",
+      "password": "Şifre",
+      "passwordPlaceholder": "Şifrenizi girin",
+      "confirm": "Devre Dışı Bırakmayı Onayla",
+      "cancel": "İptal"
+    },
+    "backupCodes": {
+      "title": "Yedek Kodlar",
+      "description": "Bu yedek kodları güvenli bir yerde saklayın. Kimlik doğrulayıcı cihazınızı kaybederseniz hesabınıza erişmek için bunları kullanabilirsiniz.",
+      "warning": "Önemli:",
+      "warningText": "Her yedek kod yalnızca bir kez kullanılabilir. Güvenli tutun ve kimseyle paylaşmayın.",
+      "generateNew": "Yeni Yedek Kodlar Oluştur",
+      "download": "Yedek Kodları İndir",
+      "copyToClipboard": "Panoya Kopyala",
+      "savedMessage": "Yedek Kodlarımı Kaydettim",
+      "available": "{count} yedek kod mevcut",
+      "instructions": [
+        "• Bu kodları güvenli bir yerde saklayın",
+        "• Her yedek kod yalnızca bir kez kullanılabilir",
+        "• İstediğiniz zaman yeni kodlar oluşturabilirsiniz"
+      ]
+    },
+    "verification": {
+      "title": "İki Faktörlü Kimlik Doğrulama",
+      "description": "Kimlik doğrulayıcı uygulamanızdan 6 haneli kodu girin",
+      "backupDescription": "Devam etmek için yedek kodlarınızdan birini girin",
+      "verificationCode": "Doğrulama Kodu",
+      "backupCode": "Yedek Kod",
+      "verificationCodePlaceholder": "000000",
+      "backupCodePlaceholder": "XXXX-XXXX",
+      "verify": "Doğrula",
+      "verifying": "Doğrulanıyor...",
+      "useBackupCode": "Bunun yerine yedek kod kullan",
+      "useAuthenticatorCode": "Bunun yerine kimlik doğrulayıcı kodu kullan",
+      "rememberDevice": "Bu cihazı 30 gün boyunca hatırla",
+      "rememberDeviceDescription": "Bu cihazda 30 gün boyunca 2FA kodları girmeniz gerekmeyecek"
+    },
+    "messages": {
+      "enabledSuccess": "İki faktörlü kimlik doğrulama başarıyla etkinleştirildi!",
+      "disabledSuccess": "İki faktörlü kimlik doğrulama başarıyla devre dışı bırakıldı",
+      "backupCodesGenerated": "Yeni yedek kodlar başarıyla oluşturuldu",
+      "backupCodesCopied": "Yedek kodlar panoya kopyalandı",
+      "setupFailed": "2FA kurulumu oluşturulamadı",
+      "verificationFailed": "Geçersiz doğrulama kodu",
+      "disableFailed": "2FA devre dışı bırakılamadı. Lütfen şifrenizi kontrol edin.",
+      "backupCodesFailed": "Yedek kodlar oluşturulamadı",
+      "backupCodesCopyFailed": "Yedek kodlar kopyalanamadı",
+      "statusLoadFailed": "2FA durumu yüklenemedi",
+      "enterVerificationCode": "Lütfen doğrulama kodunu girin",
+      "enterPassword": "Lütfen şifrenizi girin",
+      "deviceTrusted": "Bu cihaz 30 gün boyunca güvenilir olarak işaretlendi"
+    },
+    "errors": {
+      "invalidVerificationCode": "Geçersiz doğrulama kodu",
+      "invalidTwoFactorCode": "Geçersiz iki faktörlü kimlik doğrulama kodu",
+      "twoFactorRequired": "İki faktörlü kimlik doğrulama gerekli",
+      "twoFactorAlreadyEnabled": "İki faktörlü kimlik doğrulama zaten etkin",
+      "twoFactorNotEnabled": "İki faktörlü kimlik doğrulama etkin değil",
+      "passwordVerificationRequired": "Şifre doğrulaması gerekli",
+      "invalidPassword": "Geçersiz şifre",
+      "userNotFound": "Kullanıcı bulunamadı"
+    },
+    "buttons": {
+      "enable2FA": "2FA'yı Etkinleştir",
+      "disable2FA": "2FA'yı Devre Dışı Bırak"
+    },
+    "deviceNames": {
+      "unknownDevice": "Bilinmeyen Cihaz",
+      "browsers": {
+        "chrome": "Chrome",
+        "firefox": "Firefox",
+        "safari": "Safari",
+        "edge": "Edge"
+      },
+      "platforms": {
+        "windows": " Windows'ta",
+        "macos": " macOS'ta",
+        "linux": " Linux'ta",
+        "iphone": " iPhone'da",
+        "android": " Android'de"
+      }
+    },
+    "status": {
+      "label": "Durum:",
+      "enabled": "Etkin",
+      "disabled": "Devre Dışı"
+    },
+    "trustedDevices": {
+      "title": "Güvenilir Cihazlar - 2FA",
+      "description": "2FA doğrulaması gerektirmeyen cihazlar",
+      "noDevices": "Güvenilir cihaz yok",
+      "deviceName": "Cihaz",
+      "addedOn": "Eklenme tarihi",
+      "expiresOn": "Bitiş tarihi",
+      "remove": "Kaldır",
+      "removeAll": "Tümünü Kaldır",
+      "confirmRemove": "Bu güvenilir cihazı kaldırmak istediğinizden emin misiniz?",
+      "confirmRemoveAll": "Tüm güvenilir cihazları kaldırmak istediğinizden emin misiniz?",
+      "deviceRemoved": "Güvenilir cihaz başarıyla kaldırıldı",
+      "allDevicesRemoved": "Tüm güvenilir cihazlar başarıyla kaldırıldı",
+      "loadFailed": "Güvenilir cihazlar yüklenemedi",
+      "removeFailed": "Güvenilir cihaz kaldırılamadı",
+      "removeAllFailed": "Tüm güvenilir cihazlar kaldırılamadı",
+      "loading": "Güvenilir cihazlar yükleniyor...",
+      "noDevicesDescription": "2FA doğrulaması sırasında cihazları güvenilir olarak işaretlediğinizde burada görünecekler",
+      "tableHeaders": {
+        "device": "Cihaz",
+        "added": "Eklenme",
+        "expires": "Bitiş",
+        "lastUsed": "Son Kullanım",
+        "ipAddress": "IP Adresi",
+        "actions": "İşlemler"
+      },
+      "status": {
+        "never": "Hiç",
+        "expired": "Süresi Doldu"
+      },
+      "modals": {
+        "removeDevice": {
+          "title": "Güvenilir Cihazı Kaldır",
+          "added": "Eklenme:",
+          "ip": "IP:"
+        },
+        "removeAllDevices": {
+          "title": "Tüm Güvenilir Cihazları Kaldır",
+          "description": "Bu işlem {count} güvenilir cihaz{count, plural, =1 {ı} other {ı}} kaldıracak. Tüm cihazlarda 2FA doğrulaması yapmanız gerekecek."
+        },
+        "buttons": {
+          "cancel": "İptal",
+          "removing": "Kaldırılıyor...",
+          "removeDevice": "Cihazı Kaldır",
+          "removeAllDevices": "Tüm Cihazları Kaldır"
+        }
+      }
+    }
   },
   "uploadFile": {
     "title": "Dosya Yükle",
@@ -1450,7 +1663,8 @@
       "title": "Yüklemek için dosyaları bırakın",
       "description": "Dosyalarınızı yüklemek için bırakın"
     },
-    "pasteSuccess": "{count, plural, =1 {Görüntü yapıştırıldı ve başarıyla yüklendi} other {# görüntü yapıştırıldı ve başarıyla yüklendi}}"
+    "pasteSuccess": "{count, plural, =1 {Görüntü yapıştırıldı ve başarıyla yüklendi} other {# görüntü yapıştırıldı ve başarıyla yüklendi}}",
+    "filesQueued": "{count, plural, one {# dosya yükleme için bekliyor} other {# dosya yükleme için bekliyor}}"
   },
   "users": {
     "modes": {
@@ -1535,20 +1749,5 @@
     "passwordRequired": "Şifre gerekli",
     "nameRequired": "İsim gereklidir",
     "required": "Bu alan zorunludur"
-  },
-  "iconPicker": {
-    "title": "Simge Seç",
-    "placeholder": "Bir simge seç",
-    "searchPlaceholder": "Simgeleri ara...",
-    "loadingMore": "Daha fazla simge yükleniyor...",
-    "allIconsLoaded": "Tüm {count} simge yüklendi",
-    "noIconsFound": "\"{search}\" için simge bulunamadı",
-    "tabs": {
-      "all": "Tüm Simgeler",
-      "popular": "Popüler",
-      "auth": "Kimlik Doğrulama Sağlayıcıları"
-    },
-    "stats": "{libraryCount} kütüphaneden {iconCount} simge",
-    "categoryBadge": "{category} ({count} simge)"
   }
 }

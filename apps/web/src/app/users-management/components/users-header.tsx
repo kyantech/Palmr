@@ -24,7 +24,7 @@ export function UsersHeader({ onCreateUser }: UsersHeaderProps) {
           <h1 className="text-2xl font-bold">{t("users.header.title")}</h1>
         </div>
         <Button className="font-semibold" onClick={onCreateUser}>
-          <IconUserPlus size={18} className="mr-2" />
+          <IconUserPlus size={18} />
           {t("users.header.addUser")}
         </Button>
       </div>

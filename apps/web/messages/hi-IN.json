@@ -143,7 +143,8 @@
     "saving": "सहेज रहा है...",
     "update": "अपडेट करें",
     "click": "क्लिक करें",
-    "creating": "बना रहा है..."
+    "creating": "बना रहा है...",
+    "loadingSimple": "लोड हो रहा है..."
   },
   "createShare": {
     "title": "साझाकरण बनाएं",
@@ -158,7 +159,8 @@
     "passwordLabel": "पासवर्ड",
     "create": "साझाकरण बनाएं",
     "success": "साझाकरण सफलतापूर्वक बनाया गया",
-    "error": "साझाकरण बनाने में विफल"
+    "error": "साझाकरण बनाने में विफल",
+    "namePlaceholder": "अपने साझाकरण के लिए एक नाम दर्ज करें"
   },
   "dashboard": {
     "loadError": "डैशबोर्ड डेटा लोड करने में त्रुटि",
@@ -182,7 +184,15 @@
     "invalidCredentials": "गलत ईमेल या पासवर्ड",
     "userNotFound": "उपयोगकर्ता नहीं मिला",
     "accountLocked": "खाता लॉक है। कृपया बाद में प्रयास करें",
-    "unexpectedError": "एक अप्रत्याशित त्रुटि हुई। कृपया पुनः प्रयास करें"
+    "unexpectedError": "एक अप्रत्याशित त्रुटि हुई। कृपया पुनः प्रयास करें",
+    "Invalid password": "अमान्य पासवर्ड",
+    "Invalid two-factor authentication code": "अमान्य दो-कारक प्रमाणीकरण कोड",
+    "Invalid verification code": "अमान्य सत्यापन कोड",
+    "Password verification required": "पासवर्ड सत्यापन आवश्यक है",
+    "Two-factor authentication is already enabled": "दो-कारक प्रमाणीकरण पहले से सक्षम है",
+    "Two-factor authentication is not enabled": "दो-कारक प्रमाणीकरण सक्षम नहीं है",
+    "Two-factor authentication required": "दो-कारक प्रमाणीकरण आवश्यक है",
+    "noUserData": "उपयोगकर्ता डेटा नहीं मिला"
   },
   "fileActions": {
     "editFile": "फाइल संपादित करें",
@@ -304,7 +314,8 @@
     "title": "पासवर्ड भूल गए",
     "description": "अपना ईमेल पता दर्ज करें और हम आपको पासवर्ड रीसेट करने के निर्देश भेजेंगे।",
     "resetInstructions": "रीसेट निर्देश आपके ईमेल पर भेज दिए गए हैं",
-    "pageTitle": "पासवर्ड भूल गए"
+    "pageTitle": "पासवर्ड भूल गए",
+    "passwordAuthDisabled": "पासवर्ड ऑथेंटिकेशन अक्टिवेटेड है। कृपया अपने एडमिन से संपर्क करें या एक बाहरी ऑथेंटिकेशन प्रोवाइडर का उपयोग करें।"
   },
   "generateShareLink": {
     "generateTitle": "साझाकरण लिंक उत्पन्न करें",
@@ -318,7 +329,12 @@
     "copyButton": "लिंक कॉपी करें",
     "success": "लिंक सफलतापूर्वक उत्पन्न हुआ",
     "error": "लिंक उत्पन्न करने में विफल",
-    "copied": "लिंक क्लिपबोर्ड में कॉपी किया गया"
+    "copied": "लिंक क्लिपबोर्ड में कॉपी किया गया",
+    "readyDescription": "आपका साझाकरण लिंक तैयार है। आप डायरेक्ट रूप से QR कोड स्कैन कर सकते हैं, इसे बाद में उपयोग के लिए डाउनलोड कर सकते हैं, या नीचे लिंक कॉपी कर सकते हैं।",
+    "tabs": {
+      "link": "लिंक",
+      "qrcode": "QR कोड"
+    }
   },
   "home": {
     "description": "WeTransfer का ओपन-सोर्स विकल्प। फाइलें सुरक्षित रूप से साझा करें, बिना ट्रैकिंग या सीमाओं के।",
@@ -330,6 +346,27 @@
       "tagline": "सरल और मुफ्त"
     },
     "pageTitle": "होम"
+  },
+  "iconPicker": {
+    "title": "आइकन चुनें",
+    "placeholder": "एक आइकन चुनें",
+    "searchPlaceholder": "आइकन खोजें...",
+    "loadingMore": "अधिक आइकन लोड हो रहे हैं...",
+    "allIconsLoaded": "सभी {count} आइकन लोड हो गए",
+    "noIconsFound": "\"{search}\" के लिए कोई आइकन नहीं मिला",
+    "tabs": {
+      "all": "सभी आइकन",
+      "popular": "लोकप्रिय",
+      "auth": "प्रमाणीकरण प्रदाता"
+    },
+    "stats": "{libraryCount} लाइब्रेरी से {iconCount} आइकन",
+    "categoryBadge": "{category} ({count} आइकन)"
+  },
+  "imageEdit": {
+    "title": "छवि संपादित करें",
+    "rotate": "घुमाएं",
+    "zoom": "ज़ूम",
+    "cropInstructions": "छवि को पुनः स्थानांतरित करने के लिए खींचें, कोणों को समायोजित करने के लिए आकार बदलें"
   },
   "login": {
     "welcome": "स्वागत है में",
@@ -417,6 +454,11 @@
       "imageRemoved": "प्रोफ़ाइल चित्र सफलतापूर्वक हटाया गया"
     },
     "pageTitle": "प्रोफ़ाइल"
+  },
+  "qrCodeModal": {
+    "title": "QR कोड साझा करें",
+    "description": "इस QR कोड को स्कैन करके लिंक तक पहुंच सकते हैं।",
+    "download": "QR कोड डाउनलोड करें"
   },
   "quickAccess": {
     "files": {
@@ -589,7 +631,8 @@
       "createLink": "लिंक बनाएं",
       "delete": "हटाएं",
       "copyLinkTitle": "लिंक कॉपी करें",
-      "createLinkCTA": "प्राप्ति लिंक बनाएं"
+      "createLinkCTA": "प्राप्ति लिंक बनाएं",
+      "viewQrCode": "QR कोड देखें"
     },
     "status": {
       "active": "सक्रिय",
@@ -605,7 +648,8 @@
       "viewDetails": "विवरण देखें",
       "edit": "संपादित करें",
       "delete": "हटाएं",
-      "viewFiles": "प्राप्त फ़ाइलें"
+      "viewFiles": "प्राप्त फ़ाइलें",
+      "viewQrCode": "QR कोड देखें"
     },
     "empty": {
       "title": "कोई प्राप्ति लिंक नहीं बनाया गया",
@@ -746,7 +790,12 @@
         "selectAll": "सभी चुनें",
         "selectFile": "फ़ाइल {fileName} चुनें",
         "deleteError": "फ़ाइल हटाने में त्रुटि",
-        "deleteSuccess": "फ़ाइल सफलतापूर्वक हटा दी गई"
+        "deleteSuccess": "फ़ाइल सफलतापूर्वक हटा दी गई",
+        "copyErrors": {
+          "timeout": "कॉपी ऑपरेशन का समय समाप्त हो गया। कृपया छोटी फ़ाइल के साथ पुनः प्रयास करें या अपना कनेक्शन जांचें।",
+          "failed": "कॉपी ऑपरेशन विफल हो गया। कृपया पुनः प्रयास करें।",
+          "aborted": "टाइमआउट के कारण कॉपी ऑपरेशन रद्द कर दिया गया।"
+        }
       }
     },
     "form": {
@@ -897,7 +946,8 @@
       "fileList": {
         "title": "चयनित फ़ाइलें:",
         "statusUploaded": "अपलोड की गई",
-        "statusError": "त्रुटि"
+        "statusError": "त्रुटि",
+        "retry": "पुनः प्रयास करें"
       },
       "form": {
         "nameLabel": "नाम",
@@ -1085,6 +1135,10 @@
       "smtpTrustSelfSigned": {
         "title": "स्व-हस्ताक्षरित प्रमाणपत्रों पर विश्वास करें",
         "description": "स्व-हस्ताक्षरित SSL/TLS प्रमाणपत्रों पर विश्वास करने के लिए इसे सक्षम करें (विकास वातावरण के लिए उपयोगी)"
+      },
+      "passwordAuthEnabled": {
+        "title": "पासवर्ड प्रमाणीकरण",
+        "description": "पासवर्ड आधारित प्रमाणीकरण सक्षम या अक्षम करें"
       }
     },
     "buttons": {
@@ -1094,7 +1148,8 @@
     },
     "errors": {
       "loadFailed": "सेटिंग्स लोड करने में विफल",
-      "updateFailed": "सेटिंग्स अपडेट करने में विफल"
+      "updateFailed": "सेटिंग्स अपडेट करने में विफल",
+      "passwordAuthRequiresProvider": "कम से कम एक सक्रिय प्रमाणीकरण प्रदाता के बिना पासवर्ड प्रमाणीकरण अक्षम नहीं किया जा सकता"
     },
     "messages": {
       "noChanges": "सहेजने के लिए कोई परिवर्तन नहीं",
@@ -1200,7 +1255,10 @@
     "invalidDate": "अमान्य तिथि",
     "loadError": "साझाकरण विवरण लोड करने में विफल",
     "editSecurity": "सुरक्षा संपादित करें",
-    "editExpiration": "समाप्ति संपादित करें"
+    "editExpiration": "समाप्ति संपादित करें",
+    "clickToEnlargeQrCode": "QR कोड को बड़ा करने के लिए क्लिक करें",
+    "downloadQrCode": "QR कोड डाउनलोड करें",
+    "qrCode": "QR कोड"
   },
   "shareExpiration": {
     "neverExpires": "कभी समाप्त नहीं होता",
@@ -1387,7 +1445,8 @@
       "copyLink": "लिंक कॉपी करें",
       "notifyRecipients": "प्राप्तकर्ताओं को सूचित करें",
       "delete": "हटाएं",
-      "downloadShareFiles": "सभी फ़ाइलें डाउनलोड करें"
+      "downloadShareFiles": "सभी फ़ाइलें डाउनलोड करें",
+      "viewQrCode": "QR कोड देखें"
     },
     "bulkActions": {
       "delete": "हटाएं",
@@ -1418,6 +1477,160 @@
     "light": "लाइट",
     "dark": "डार्क",
     "system": "सिस्टम"
+  },
+  "twoFactor": {
+    "title": "दो-कारक प्रमाणीकरण",
+    "description": "अपने खाते में अतिरिक्त सुरक्षा स्तर जोड़ें",
+    "enabled": "आपका खाता दो-कारक प्रमाणीकरण से सुरक्षित है",
+    "disabled": "दो-कारक प्रमाणीकरण सक्षम नहीं है",
+    "setup": {
+      "title": "दो-कारक प्रमाणीकरण सक्षम करें",
+      "description": "अपने प्रमाणीकरण ऐप से QR कोड स्कैन करें, फिर सत्यापन कोड दर्ज करें।",
+      "qrCode": "QR कोड",
+      "manualEntryKey": "मैनुअल एंट्री कुंजी",
+      "verificationCode": "सत्यापन कोड",
+      "verificationCodePlaceholder": "6-अंकों का कोड दर्ज करें",
+      "verificationCodeDescription": "अपने प्रमाणीकरण ऐप से 6-अंकों का कोड दर्ज करें",
+      "verifyAndEnable": "सत्यापित करें और सक्षम करें",
+      "cancel": "रद्द करें"
+    },
+    "disable": {
+      "title": "दो-कारक प्रमाणीकरण अक्षम करें",
+      "description": "दो-कारक प्रमाणीकरण को अक्षम करने की पुष्टि के लिए अपना पासवर्ड दर्ज करें।",
+      "password": "पासवर्ड",
+      "passwordPlaceholder": "अपना पासवर्ड दर्ज करें",
+      "confirm": "अक्षम करने की पुष्टि करें",
+      "cancel": "रद्द करें"
+    },
+    "backupCodes": {
+      "title": "बैकअप कोड",
+      "description": "इन बैकअप कोड को सुरक्षित स्थान पर सहेजें। यदि आप अपना प्रमाणीकरण डिवाइस खो देते हैं तो आप इनका उपयोग अपने खाते तक पहुंचने के लिए कर सकते हैं।",
+      "warning": "महत्वपूर्ण:",
+      "warningText": "प्रत्येक बैकअप कोड का उपयोग केवल एक बार किया जा सकता है। उन्हें सुरक्षित रखें और किसी के साथ साझा न करें।",
+      "generateNew": "नए बैकअप कोड जनरेट करें",
+      "download": "बैकअप कोड डाउनलोड करें",
+      "copyToClipboard": "क्लिपबोर्ड पर कॉपी करें",
+      "savedMessage": "मैंने अपने बैकअप कोड सहेज लिए हैं",
+      "available": "{count} बैकअप कोड उपलब्ध हैं",
+      "instructions": [
+        "• इन कोड को सुरक्षित स्थान पर सहेजें",
+        "• प्रत्येक बैकअप कोड का उपयोग केवल एक बार किया जा सकता है",
+        "• आप कभी भी नए कोड जनरेट कर सकते हैं"
+      ]
+    },
+    "verification": {
+      "title": "दो-कारक प्रमाणीकरण",
+      "description": "अपने प्रमाणीकरण ऐप से 6-अंकों का कोड दर्ज करें",
+      "backupDescription": "जारी रखने के लिए अपने बैकअप कोड में से एक दर्ज करें",
+      "verificationCode": "सत्यापन कोड",
+      "backupCode": "बैकअप कोड",
+      "verificationCodePlaceholder": "000000",
+      "backupCodePlaceholder": "XXXX-XXXX",
+      "verify": "सत्यापित करें",
+      "verifying": "सत्यापन हो रहा है...",
+      "useBackupCode": "इसके बजाय बैकअप कोड का उपयोग करें",
+      "useAuthenticatorCode": "इसके बजाय प्रमाणीकरण कोड का उपयोग करें",
+      "rememberDevice": "इस डिवाइस को 30 दिनों के लिए याद रखें",
+      "rememberDeviceDescription": "आपको इस डिवाइस पर 30 दिनों तक 2FA कोड दर्ज करने की आवश्यकता नहीं होगी"
+    },
+    "messages": {
+      "enabledSuccess": "दो-कारक प्रमाणीकरण सफलतापूर्वक सक्षम किया गया!",
+      "disabledSuccess": "दो-कारक प्रमाणीकरण सफलतापूर्वक अक्षम किया गया",
+      "backupCodesGenerated": "नए बैकअप कोड सफलतापूर्वक जनरेट किए गए",
+      "backupCodesCopied": "बैकअप कोड क्लिपबोर्ड पर कॉपी किए गए",
+      "setupFailed": "2FA सेटअप जनरेट करने में विफल",
+      "verificationFailed": "अमान्य सत्यापन कोड",
+      "disableFailed": "2FA अक्षम करने में विफल। कृपया अपना पासवर्ड जांचें।",
+      "backupCodesFailed": "बैकअप कोड जनरेट करने में विफल",
+      "backupCodesCopyFailed": "बैकअप कोड कॉपी करने में विफल",
+      "statusLoadFailed": "2FA स्थिति लोड करने में विफल",
+      "enterVerificationCode": "कृपया सत्यापन कोड दर्ज करें",
+      "enterPassword": "कृपया अपना पासवर्ड दर्ज करें",
+      "deviceTrusted": "यह डिवाइस 30 दिनों के लिए विश्वसनीय के रूप में चिह्नित किया गया है"
+    },
+    "errors": {
+      "invalidVerificationCode": "अमान्य सत्यापन कोड",
+      "invalidTwoFactorCode": "अमान्य दो-कारक प्रमाणीकरण कोड",
+      "twoFactorRequired": "दो-कारक प्रमाणीकरण आवश्यक है",
+      "twoFactorAlreadyEnabled": "दो-कारक प्रमाणीकरण पहले से सक्षम है",
+      "twoFactorNotEnabled": "दो-कारक प्रमाणीकरण सक्षम नहीं है",
+      "passwordVerificationRequired": "पासवर्ड सत्यापन आवश्यक है",
+      "invalidPassword": "अमान्य पासवर्ड",
+      "userNotFound": "उपयोगकर्ता नहीं मिला"
+    },
+    "buttons": {
+      "enable2FA": "2FA सक्षम करें",
+      "disable2FA": "2FA अक्षम करें"
+    },
+    "deviceNames": {
+      "unknownDevice": "अज्ञात डिवाइस",
+      "browsers": {
+        "chrome": "Chrome",
+        "firefox": "Firefox",
+        "safari": "Safari",
+        "edge": "Edge"
+      },
+      "platforms": {
+        "windows": " Windows पर",
+        "macos": " macOS पर",
+        "linux": " Linux पर",
+        "iphone": " iPhone पर",
+        "android": " Android पर"
+      }
+    },
+    "status": {
+      "label": "स्थिति:",
+      "enabled": "सक्षम",
+      "disabled": "अक्षम"
+    },
+    "trustedDevices": {
+      "title": "विश्वसनीय डिवाइस - 2FA",
+      "description": "डिवाइस जिन्हें 2FA सत्यापन की आवश्यकता नहीं है",
+      "noDevices": "कोई विश्वसनीय डिवाइस नहीं",
+      "deviceName": "डिवाइस",
+      "addedOn": "जोड़ा गया",
+      "expiresOn": "समाप्ति तिथि",
+      "remove": "हटाएं",
+      "removeAll": "सभी हटाएं",
+      "confirmRemove": "क्या आप वाकई इस विश्वसनीय डिवाइस को हटाना चाहते हैं?",
+      "confirmRemoveAll": "क्या आप वाकई सभी विश्वसनीय डिवाइस हटाना चाहते हैं?",
+      "deviceRemoved": "विश्वसनीय डिवाइस सफलतापूर्वक हटाया गया",
+      "allDevicesRemoved": "सभी विश्वसनीय डिवाइस सफलतापूर्वक हटाए गए",
+      "loadFailed": "विश्वसनीय डिवाइस लोड करने में विफल",
+      "removeFailed": "विश्वसनीय डिवाइस हटाने में विफल",
+      "removeAllFailed": "सभी विश्वसनीय डिवाइस हटाने में विफल",
+      "loading": "विश्वसनीय डिवाइस लोड हो रहे हैं...",
+      "noDevicesDescription": "जब आप 2FA सत्यापन के दौरान उन्हें विश्वसनीय मानने का चयन करेंगे तो डिवाइस यहां दिखाई देंगे",
+      "tableHeaders": {
+        "device": "डिवाइस",
+        "added": "जोड़ा गया",
+        "expires": "समाप्ति",
+        "lastUsed": "अंतिम उपयोग",
+        "ipAddress": "IP पता",
+        "actions": "कार्रवाई"
+      },
+      "status": {
+        "never": "कभी नहीं",
+        "expired": "समाप्त"
+      },
+      "modals": {
+        "removeDevice": {
+          "title": "विश्वसनीय डिवाइस हटाएं",
+          "added": "जोड़ा गया:",
+          "ip": "IP:"
+        },
+        "removeAllDevices": {
+          "title": "सभी विश्वसनीय डिवाइस हटाएं",
+          "description": "यह {count} विश्वसनीय डिवाइस{count, plural, =1 {} other {s}} को हटा देगा। आपको सभी डिवाइस पर फिर से 2FA सत्यापित करना होगा।"
+        },
+        "buttons": {
+          "cancel": "रद्द करें",
+          "removing": "हटाया जा रहा है...",
+          "removeDevice": "डिवाइस हटाएं",
+          "removeAllDevices": "सभी डिवाइस हटाएं"
+        }
+      }
+    }
   },
   "uploadFile": {
     "title": "फ़ाइल अपलोड करें",
@@ -1450,7 +1663,8 @@
       "title": "अपलोड करने के लिए फ़ाइलें छोड़ें",
       "description": "अपनी फ़ाइलें अपलोड करने के लिए छोड़ें"
     },
-    "pasteSuccess": "{count, plural, =1 {छवि सफलतापूर्वक चिपकाई और अपलोड की गई} other {# छवियाँ सफलतापूर्वक चिपकाई और अपलोड की गईं}}"
+    "pasteSuccess": "{count, plural, =1 {छवि सफलतापूर्वक चिपकाई और अपलोड की गई} other {# छवियाँ सफलतापूर्वक चिपकाई और अपलोड की गईं}}",
+    "filesQueued": "{count, plural, one {# फ़ाइल अपलोड के लिए इंतजार में है} other {# फ़ाइलें अपलोड के लिए इंतजार में हैं}}"
   },
   "users": {
     "modes": {
@@ -1535,20 +1749,5 @@
     "passwordRequired": "पासवर्ड आवश्यक है",
     "nameRequired": "नाम आवश्यक है",
     "required": "यह फ़ील्ड आवश्यक है"
-  },
-  "iconPicker": {
-    "title": "आइकन चुनें",
-    "placeholder": "एक आइकन चुनें",
-    "searchPlaceholder": "आइकन खोजें...",
-    "loadingMore": "अधिक आइकन लोड हो रहे हैं...",
-    "allIconsLoaded": "सभी {count} आइकन लोड हो गए",
-    "noIconsFound": "\"{search}\" के लिए कोई आइकन नहीं मिला",
-    "tabs": {
-      "all": "सभी आइकन",
-      "popular": "लोकप्रिय",
-      "auth": "प्रमाणीकरण प्रदाता"
-    },
-    "stats": "{libraryCount} लाइब्रेरी से {iconCount} आइकन",
-    "categoryBadge": "{category} ({count} आइकन)"
   }
 }

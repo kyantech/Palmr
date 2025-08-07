@@ -67,4 +67,57 @@ export async function filesystemRoutes(app: FastifyInstance) {
     },
     filesystemController.download.bind(filesystemController)
   );
+
+  app.get(
+    "/filesystem/upload-progress/:fileId",
+    {
+      schema: {
+        tags: ["Filesystem"],
+        operationId: "getUploadProgress",
+        summary: "Get chunked upload progress",
+        description: "Get the progress of a chunked upload",
+        params: z.object({
+          fileId: z.string().describe("File ID"),
+        }),
+        response: {
+          200: z.object({
+            uploaded: z.number(),
+            total: z.number(),
+            percentage: z.number(),
+          }),
+          404: z.object({
+            error: z.string(),
+          }),
+          500: z.object({
+            error: z.string(),
+          }),
+        },
+      },
+    },
+    filesystemController.getUploadProgress.bind(filesystemController)
+  );
+
+  app.delete(
+    "/filesystem/cancel-upload/:fileId",
+    {
+      schema: {
+        tags: ["Filesystem"],
+        operationId: "cancelUpload",
+        summary: "Cancel chunked upload",
+        description: "Cancel an ongoing chunked upload",
+        params: z.object({
+          fileId: z.string().describe("File ID"),
+        }),
+        response: {
+          200: z.object({
+            message: z.string(),
+          }),
+          500: z.object({
+            error: z.string(),
+          }),
+        },
+      },
+    },
+    filesystemController.cancelUpload.bind(filesystemController)
+  );
 }

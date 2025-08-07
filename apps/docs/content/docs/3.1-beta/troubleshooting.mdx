@@ -17,7 +17,7 @@ docker-compose logs palmr | grep -i "permission\|denied\|eacces"
 
 # Common error messages:
 # EACCES: permission denied, open '/app/server/uploads/file.txt'
-# Error: EACCES: permission denied, mkdir '/app/server/temp-chunks'
+# Error: EACCES: permission denied, mkdir '/app/server/temp-uploads'
 ```
 
 ### The Root Cause
@@ -25,7 +25,7 @@ docker-compose logs palmr | grep -i "permission\|denied\|eacces"
 **Palmr. defaults**: UID 1001, GID 1001  
 **Linux standard**: UID 1000, GID 1000
 
-When using bind mounts, your host directories are owned by UID 1000, but Palmr. runs as UID 1001.
+When using bind mounts, your host directories may have different ownership than Palmr's default UID/GID.
 
 ### Solution 1: Environment Variables (Recommended)
 
@@ -63,8 +63,8 @@ If you prefer to keep Palmr's defaults:
 chown -R 1001:1001 ./data
 
 # For separate upload/temp directories
-mkdir -p uploads temp-chunks
-chown -R 1001:1001 uploads temp-chunks
+mkdir -p uploads temp-uploads
+chown -R 1001:1001 uploads temp-uploads
 ```
 
 ### Solution 3: Docker Volume (Avoid the Issue)
@@ -109,16 +109,19 @@ docker-compose logs palmr
 2. **Invalid encryption key**
 
    ```bash
-   # Error: Encryption key must be at least 32 characters
-   # Fix: Update ENCRYPTION_KEY in docker-compose.yaml
+   # Error: Encryption key must be at least 32 characters (only if encryption is enabled)
+   # Fix: Either disable encryption or provide a valid key
    environment:
-     - ENCRYPTION_KEY=your-very-long-secure-key-at-least-32-characters
+     - DISABLE_FILESYSTEM_ENCRYPTION=true  # Disable encryption (default)
+     # OR enable encryption with:
+     # - DISABLE_FILESYSTEM_ENCRYPTION=false
+     # - ENCRYPTION_KEY=your-very-long-secure-key-at-least-32-characters
    ```
 
 3. **Missing environment variables**
    ```bash
-   # Check required variables are set
-   docker exec palmr env | grep -E "ENCRYPTION_KEY|DATABASE_URL"
+   # Check variables are set (encryption is optional)
+   docker exec palmr env | grep -E "DISABLE_FILESYSTEM_ENCRYPTION|ENCRYPTION_KEY|DATABASE_URL"
    ```
 
 ### Container Starts But App Doesn't Load
@@ -151,7 +154,7 @@ curl http://localhost:3333/health
 
    ```bash
    docker exec palmr ls -la /app/server/uploads/
-   # Should show ownership by palmr user
+   # Should show ownership by palmr user (UID 1001)
    ```
 
 3. **Check upload limits:**
@@ -178,13 +181,13 @@ docker exec palmr stat /app/server/uploads/your-file.txt
 
    ```bash
    # Using the built-in reset script
-   docker exec -it palmr /app/reset-password.sh
+   docker exec -it palmr /app/palmr-app/reset-password.sh
    ```
 
 2. **Check database permissions:**
    ```bash
    docker exec palmr ls -la /app/server/prisma/
-   # palmr.db should be writable by palmr user
+   # palmr.db should be writable by palmr user (UID 1001)
    ```
 
 ### OIDC Authentication Not Working
@@ -243,8 +246,8 @@ docker exec palmr ls -la /app/server/prisma/palmr.db
 # Check database logs
 docker-compose logs palmr | grep -i database
 
-# Verify Prisma schema
-docker exec palmr npx prisma db push --schema=./prisma/schema.prisma
+# Verify Prisma schema (run from palmr-app directory)
+docker exec palmr sh -c "cd /app/palmr-app && npx prisma db push"
 ```
 
 ### Database Corruption
@@ -283,7 +286,7 @@ docker-compose up -d
 
 3. **Check temp directory permissions:**
    ```bash
-   docker exec palmr ls -la /app/server/temp-chunks/
+   docker exec palmr ls -la /app/server/temp-uploads/
    ```
 
 ### High Memory Usage
@@ -318,16 +321,19 @@ docker port palmr
 echo "4. File Permissions:"
 docker exec palmr ls -la /app/server/
 
-echo "5. Environment Variables:"
-docker exec palmr env | grep -E "PALMR_|ENCRYPTION_|DATABASE_"
+echo "5. Application Files:"
+docker exec palmr ls -la /app/palmr-app/
 
-echo "6. API Health:"
+echo "6. Environment Variables:"
+docker exec palmr env | grep -E "PALMR_|DISABLE_FILESYSTEM_ENCRYPTION|ENCRYPTION_|DATABASE_"
+
+echo "7. API Health:"
 curl -s http://localhost:3333/health || echo "API not accessible"
 
-echo "7. Web Interface:"
+echo "8. Web Interface:"
 curl -s -o /dev/null -w "%{http_code}" http://localhost:5487 || echo "Web interface not accessible"
 
-echo "8. Disk Space:"
+echo "9. Disk Space:"
 df -h
 
 echo "=== End Health Check ==="

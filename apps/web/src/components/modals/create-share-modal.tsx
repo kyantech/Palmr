@@ -37,7 +37,15 @@ export function CreateShareModal({ isOpen, onClose, onSuccess }: CreateShareModa
         name: formData.name,
         description: formData.description || undefined,
         password: formData.isPasswordProtected ? formData.password : undefined,
-        expiration: formData.expiresAt ? new Date(formData.expiresAt).toISOString() : undefined,
+        expiration: formData.expiresAt
+          ? (() => {
+              const dateValue = formData.expiresAt;
+              if (dateValue.length === 10) {
+                return new Date(dateValue + "T23:59:59").toISOString();
+              }
+              return new Date(dateValue).toISOString();
+            })()
+          : undefined,
         maxViews: formData.maxViews ? parseInt(formData.maxViews) : undefined,
         files: [],
       });
@@ -71,7 +79,16 @@ export function CreateShareModal({ isOpen, onClose, onSuccess }: CreateShareModa
         <div className="flex flex-col gap-4">
           <div className="space-y-2">
             <Label>{t("createShare.nameLabel")}</Label>
-            <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+            <Input
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onPaste={(e) => {
+                e.preventDefault();
+                const pastedText = e.clipboardData.getData("text");
+                setFormData({ ...formData, name: pastedText });
+              }}
+              placeholder={t("createShare.namePlaceholder")}
+            />
           </div>
 
           <div className="space-y-2">
@@ -93,6 +110,12 @@ export function CreateShareModal({ isOpen, onClose, onSuccess }: CreateShareModa
               type="datetime-local"
               value={formData.expiresAt}
               onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
+              onBlur={(e) => {
+                const value = e.target.value;
+                if (value && value.length === 10) {
+                  setFormData({ ...formData, expiresAt: value + "T23:59" });
+                }
+              }}
             />
           </div>
 

@@ -14,6 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { getPresignedUrlForUploadByAlias, registerFileUploadByAlias } from "@/http/endpoints";
+import { getSystemInfo } from "@/http/endpoints/app";
+import { ChunkedUploader } from "@/utils/chunked-upload";
 import { formatFileSize } from "@/utils/format-file-size";
 import { FILE_STATUS, UPLOAD_CONFIG, UPLOAD_PROGRESS } from "../constants";
 import { FileUploadSectionProps, FileWithProgress } from "../types";
@@ -24,8 +26,23 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
   const [uploaderEmail, setUploaderEmail] = useState("");
   const [description, setDescription] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [isS3Enabled, setIsS3Enabled] = useState<boolean | null>(null);
 
   const t = useTranslations();
+
+  useEffect(() => {
+    const fetchSystemInfo = async () => {
+      try {
+        const response = await getSystemInfo();
+        setIsS3Enabled(response.data.s3Enabled);
+      } catch (error) {
+        console.warn("Failed to fetch system info, defaulting to filesystem mode:", error);
+        setIsS3Enabled(false);
+      }
+    };
+
+    fetchSystemInfo();
+  }, []);
 
   const validateFileSize = useCallback(
     (file: File): string | null => {
@@ -138,17 +155,35 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
     presignedUrl: string,
     onProgress?: (progress: number) => void
   ): Promise<void> => {
-    await axios.put(presignedUrl, file, {
-      headers: {
-        "Content-Type": file.type,
-      },
-      onUploadProgress: (progressEvent) => {
-        if (onProgress && progressEvent.total) {
-          const progress = (progressEvent.loaded / progressEvent.total) * 100;
-          onProgress(Math.round(progress));
-        }
-      },
-    });
+    const shouldUseChunked = ChunkedUploader.shouldUseChunkedUpload(file.size, isS3Enabled ?? undefined);
+
+    if (shouldUseChunked) {
+      const chunkSize = ChunkedUploader.calculateOptimalChunkSize(file.size);
+
+      const result = await ChunkedUploader.uploadFile({
+        file,
+        url: presignedUrl,
+        chunkSize,
+        isS3Enabled: isS3Enabled ?? undefined,
+        onProgress,
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || "Chunked upload failed");
+      }
+    } else {
+      await axios.put(presignedUrl, file, {
+        headers: {
+          "Content-Type": file.type,
+        },
+        onUploadProgress: (progressEvent) => {
+          if (onProgress && progressEvent.total) {
+            const progress = (progressEvent.loaded / progressEvent.total) * 100;
+            onProgress(Math.round(progress));
+          }
+        },
+      });
+    }
   };
 
   const registerUploadedFile = async (file: File, objectName: string): Promise<void> => {
@@ -195,7 +230,6 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
 
       updateFileStatus(index, { status: FILE_STATUS.SUCCESS });
     } catch (error: any) {
-      console.error("Upload error:", error);
       const errorMessage = error.response?.data?.error || t("reverseShares.upload.errors.uploadFailed");
 
       updateFileStatus(index, {
@@ -213,7 +247,6 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
       return false;
     }
 
-    // Check if either name or email is required
     const nameRequired = reverseShare.nameFieldRequired === "REQUIRED";
     const emailRequired = reverseShare.emailFieldRequired === "REQUIRED";
 
@@ -226,9 +259,6 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
       toast.error(t("reverseShares.upload.errors.provideEmailRequired"));
       return false;
     }
-
-    // Remove the validation that requires at least one field when both are optional
-    // When both fields are OPTIONAL, they should be truly optional (can be empty)
 
     return true;
   };
@@ -275,8 +305,6 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
 
     if (emailRequired && !uploaderEmail.trim()) return false;
 
-    // When both fields are OPTIONAL, they should be truly optional (can be empty)
-    // Remove the check that requires at least one field to be filled
     return true;
   };
 

@@ -12,6 +12,7 @@ import {
   IconLock,
   IconLockOpen,
   IconMail,
+  IconQrcode,
   IconTrash,
   IconUsers,
   IconX,
@@ -46,6 +47,7 @@ export interface SharesTableProps {
   onGenerateLink: (share: any) => void;
   onCopyLink: (share: any) => void;
   onNotifyRecipients: (share: any) => void;
+  onViewQrCode?: (share: any) => void;
   onDownloadShareFiles?: (share: any) => void;
   onBulkDelete?: (shares: any[]) => void;
   onBulkDownload?: (shares: any[]) => void;
@@ -66,6 +68,7 @@ export function SharesTable({
   onGenerateLink,
   onCopyLink,
   onNotifyRecipients,
+  onViewQrCode,
   onDownloadShareFiles,
   onBulkDelete,
   onBulkDownload,
@@ -602,6 +605,12 @@ export function SharesTable({
                           <DropdownMenuItem className="cursor-pointer py-2" onClick={() => onCopyLink(share)}>
                             <IconCopy className="h-4 w-4" />
                             {t("sharesTable.actions.copyLink")}
+                          </DropdownMenuItem>
+                        )}
+                        {share.alias && onViewQrCode && (
+                          <DropdownMenuItem className="cursor-pointer py-2" onClick={() => onViewQrCode(share)}>
+                            <IconQrcode className="h-4 w-4" />
+                            {t("sharesTable.actions.viewQrCode", { defaultValue: "View QR Code" })}
                           </DropdownMenuItem>
                         )}
                         {share.recipients?.length > 0 && share.alias && smtpEnabled === "true" && (

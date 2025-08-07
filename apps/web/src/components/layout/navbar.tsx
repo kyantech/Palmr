@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { IconLogout, IconSettings, IconUser, IconUsers } from "@tabler/icons-react";
@@ -21,8 +22,22 @@ import { logout as logoutAPI } from "@/http/endpoints";
 export function Navbar() {
   const t = useTranslations();
   const router = useRouter();
-  const { user, isAdmin, logout } = useAuth();
+  const { user, isAdmin, logout, isAuthenticated } = useAuth();
   const { appName, appLogo } = useAppInfo();
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  const handleLogoClick = async () => {
+    if (isNavigating || !isAuthenticated) return;
+
+    try {
+      setIsNavigating(true);
+      router.replace("/dashboard");
+    } catch (err) {
+      console.error("Error navigating to dashboard:", err);
+    } finally {
+      setTimeout(() => setIsNavigating(false), 500);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -39,10 +54,15 @@ export function Navbar() {
       <div className="container flex h-16 max-w-screen-xl items-center mx-auto lg:px-6">
         <div className="flex flex-1 items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="flex items-center gap-2 cursor-pointer">
+            <div
+              onClick={handleLogoClick}
+              className={`flex items-center gap-2 cursor-pointer transition-opacity ${
+                isNavigating ? "opacity-50" : "opacity-100"
+              }`}
+            >
               {appLogo && <img alt={t("navbar.logoAlt")} className="h-8 w-8 object-contain rounded" src={appLogo} />}
               <p className="font-bold text-2xl">{appName}</p>
-            </Link>
+            </div>
           </div>
 
           <div className="flex items-center gap-2 cursor-pointer">

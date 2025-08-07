@@ -13,6 +13,26 @@ export class ConfigService {
     return config.value;
   }
 
+  async setValue(key: string, value: string): Promise<void> {
+    await prisma.appConfig.update({
+      where: { key },
+      data: { value },
+    });
+  }
+
+  async validatePasswordAuthDisable(): Promise<boolean> {
+    const enabledProviders = await prisma.authProvider.findMany({
+      where: { enabled: true },
+    });
+
+    return enabledProviders.length > 0;
+  }
+
+  async validateAllProvidersDisable(): Promise<boolean> {
+    const passwordAuthEnabled = await this.getValue("passwordAuthEnabled");
+    return passwordAuthEnabled === "true";
+  }
+
   async getGroupConfigs(group: string) {
     const configs = await prisma.appConfig.findMany({
       where: { group },

@@ -3,200 +3,250 @@ title: Quick Start (Docker)
 icon: "Rocket"
 ---
 
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
+import { Card, CardGrid } from "@/components/ui/card";
+
 Welcome to the fastest way to deploy <span className="font-bold">Palmr.</span> - your secure, self-hosted file sharing solution. This guide will have you up and running in minutes, whether you're new to self-hosting or an experienced developer.
 
 Palmr. offers flexible deployment options to match your infrastructure needs. This guide focuses on Docker deployment with our recommended filesystem storage, perfect for most use cases.
 
 ## Prerequisites
 
-Ensure you have the following installed on your system:
+Before you begin, make sure you have:
 
 - **Docker** - Container runtime ([installation guide](https://docs.docker.com/get-docker/))
 - **Docker Compose** - Multi-container orchestration ([installation guide](https://docs.docker.com/compose/install/))
+- **2GB+ available disk space** for the application and your files
+- **Port 5487** available for the web interface
+- **Port 3333** available for API access (optional)
 
-> **Platform Support**: Palmr. is developed on macOS and extensively tested on Linux servers. While we haven't formally tested other platforms, Docker's cross-platform nature should ensure compatibility. Report any issues on our [GitHub repository](https://github.com/kyantech/Palmr/issues).
+<Callout>
+  **Platform Support**: Palmr. is developed on macOS and extensively tested on Linux servers. While we haven't formally
+  tested other platforms, Docker's cross-platform nature should ensure compatibility. Report any issues on our [GitHub
+  repository](https://github.com/kyantech/Palmr/issues).
+</Callout>
 
 ## Storage Options
 
 Palmr. supports two storage approaches for persistent data:
 
-### Named Volumes (Recommended)
+- **Named Volumes (Recommended)** - Docker-managed storage with optimal performance and no permission issues
+- **Bind Mounts** - Direct host filesystem access, ideal for development and direct file management
 
-**Best for**: Production environments, automated deployments
+## Deployment Options
 
-- ✅ **Managed by Docker**: No permission issues or manual path management
-- ✅ **Optimized Performance**: Docker-native storage optimization
-- ✅ **Cross-platform**: Consistent behavior across operating systems
-- ✅ **Simplified Backups**: Docker volume commands for backup/restore
+Choose your storage method based on your needs:
 
-### Bind Mounts
+<Tabs items={['Named Volumes (Recommended)', 'Bind Mounts']}>
+  <Tab value="Named Volumes (Recommended)">
+    Docker-managed storage that provides the best balance of performance, security, and ease of use:
 
-**Best for**: Development, direct file access requirements
+    - **No Permission Issues**: Docker handles all permission management automatically
+    - **Performance**: Optimized for container workloads with better I/O performance
+    - **Production Ready**: Recommended for production deployments
 
-- ✅ **Direct Access**: Files stored in local directory you specify
-- ✅ **Transparent Storage**: Direct filesystem access from host
-- ✅ **Custom Backup**: Use existing file system backup solutions
-- ⚠️ **Permission Considerations**: **Common Issue** - Requires UID/GID configuration (see troubleshooting below)
+    ### Configuration
 
----
+    Create a `docker-compose.yml` file:
 
-## Option 1: Named Volumes (Recommended)
+    ```yaml
+    services:
+      palmr:
+        image: kyantech/palmr:latest
+        container_name: palmr
+        restart: unless-stopped
+        ports:
+          - "5487:5487" # Web interface
+          # - "3333:3333" # API (optional)
+        environment:
+          # Optional: Uncomment and configure as needed (if you don`t use, you can remove)
+          # - ENABLE_S3=true # Set to true to enable S3-compatible storage
+          # - DISABLE_FILESYSTEM_ENCRYPTION=true # Set to false to enable file encryption
+          # - ENCRYPTION_KEY=your-secure-key-min-32-chars # Required only if encryption is enabled
+          # - PALMR_UID=1000 # UID for the container processes (default is 1000)
+          # - PALMR_GID=1000 # GID for the container processes (default is 1000)
+          # - SECURE_SITE=false # Set to true if you are using a reverse proxy
+          # - DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US)
+        volumes:
+          - palmr_data:/app/server
 
-Named volumes provide the best performance and are managed entirely by Docker.
-
-### Configuration
-
-Use the provided `docker-compose.yaml` for named volumes:
-
-```yaml
-services:
-  palmr:
-    image: kyantech/palmr:latest
-    container_name: palmr
-    environment:
-      - ENABLE_S3=false
-      - ENCRYPTION_KEY=change-this-key-in-production-min-32-chars # CHANGE THIS KEY FOR SECURITY
-      # - SECURE_SITE=false # Set to true if you are using a reverse proxy
-    ports:
-      - "5487:5487" # Web interface
-      - "3333:3333" # API port (OPTIONAL EXPOSED - ONLY IF YOU WANT TO ACCESS THE API DIRECTLY)
     volumes:
-      - palmr_data:/app/server # Named volume for the application data
-    restart: unless-stopped # Restart the container unless it is stopped
+      palmr_data:
+    ```
 
-volumes:
-  palmr_data:
-```
+    <Callout type="info">
+      **Having upload or permission issues?** Add `PALMR_UID=1000` and `PALMR_GID=1000` to your environment variables. Check our [UID/GID Configuration](/docs/3.1-beta/uid-gid-configuration) guide for more details.
+    </Callout>
 
-> **Note:** If you haveing problem with uploading files, try to change the `PALMR_UID` and `PALMR_GID` to the UID and GID of the user running the container. You can find the UID and GID of the user running the container with the command `id -u` and `id -g`. in Linux systems the default user is `1000` and the default group is `1000`. For test you can add the environment variables below to the `docker-compose.yaml` file and restart the container.
+    ### Deploy
 
-```yaml
-environment:
-  - PALMR_UID=1000 # UID for the container processes (default is 1001)
-  - PALMR_GID=1000 # GID for the container processes (default is 1001)
-```
+    ```bash
+    docker-compose up -d
+    ```
 
-> **Note:** For more information about UID and GID, see our [UID/GID Configuration](/docs/3.1-beta/uid-gid-configuration) guide.
+  </Tab>
+  <Tab value="Bind Mounts">
+    Direct mapping to host filesystem directories, providing direct file access:
 
-### Deployment
+    - **Direct Access**: Files are directly accessible from your host system
+    - **Development Friendly**: Easy to inspect, modify, or backup files manually
+    - **Platform Dependent**: May require UID/GID configuration, especially on NAS systems
 
-```bash
-docker-compose up -d
-```
+    ### Configuration
 
----
+    Create a `docker-compose.yml` file:
 
-## Option 2: Bind Mounts
+    ```yaml
+    services:
+      palmr:
+        image: kyantech/palmr:latest
+        container_name: palmr
+        restart: unless-stopped
+        ports:
+          - "5487:5487" # Web interface
+          # - "3333:3333" # API (optional) 
+        environment:
+          # Optional: Uncomment and configure as needed (if you don`t use, you can remove)
+          # - ENABLE_S3=true # Set to true to enable S3-compatible storage
+          # - DISABLE_FILESYSTEM_ENCRYPTION=false # Set to false to enable file encryption
+          # - ENCRYPTION_KEY=your-secure-key-min-32-chars # Required only if encryption is enabled
+          # - PALMR_UID=1000 # UID for the container processes (default is 1000)
+          # - PALMR_GID=1000 # GID for the container processes (default is 1000)
+          # - SECURE_SITE=false # Set to true if you are using a reverse proxy
+          # - DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US)
+        volumes:
+          - ./data:/app/server
+    ```
 
-Bind mounts store data in a local directory, providing direct file system access.
+    <Callout type="info">
+      **Having upload or permission issues?** Add `PALMR_UID=1000` and `PALMR_GID=1000` to your environment variables. Check our [UID/GID Configuration](/docs/3.1-beta/uid-gid-configuration) guide for more details.
+    </Callout>
 
-### Configuration
+    ### Deploy
 
-To use bind mounts, **replace the content** of your `docker-compose.yaml` with the following configuration (you can also reference `docker-compose-bind-mount-example.yaml` as a template):
+    ```bash
+    docker-compose up -d
+    ```
 
-```yaml
-services:
-  palmr:
-    image: kyantech/palmr:latest
-    container_name: palmr
-    environment:
-      - ENABLE_S3=false
-      - ENCRYPTION_KEY=change-this-key-in-production-min-32-chars # CHANGE THIS KEY FOR SECURITY
-      # - SECURE_SITE=false # Set to true if you are using a reverse proxy
-      - PALMR_UID=1000 # UID for the container processes (default is 1001)
-      - PALMR_GID=1000 # GID for the container processes (default is 1001)
-    ports:
-      - "5487:5487" # Web port
-      - "3333:3333" # API port (OPTIONAL EXPOSED - ONLY IF YOU WANT TO ACCESS THE API DIRECTLY)
-    volumes:
-      # Bind mount for persistent data (uploads, database, temp files)
-      - ./data:/app/server # Local directory for the application data
-    restart: unless-stopped # Restart the container unless it is stopped
-```
+  </Tab>
+</Tabs>
 
-### Deployment
+## Configuration
 
-```bash
-docker-compose up -d
-```
+Customize Palmr's behavior with these environment variables:
 
-> **Permission Configuration**: If you encounter permission issues with bind mounts (common on NAS systems), see our [UID/GID Configuration](/docs/3.1-beta/uid-gid-configuration) guide for automatic permission handling.
+| Variable                        | Default | Description                                                                                  |
+| ------------------------------- | ------- | -------------------------------------------------------------------------------------------- |
+| `ENABLE_S3`                     | `false` | Enable S3-compatible storage backends                                                        |
+| `ENCRYPTION_KEY`                | -       | **Required when encryption is enabled**: 32+ character key for file encryption               |
+| `DISABLE_FILESYSTEM_ENCRYPTION` | `true`  | Disable file encryption for better performance (set to `false` to enable encryption)         |
+| `SECURE_SITE`                   | `false` | Enable secure cookies for HTTPS/reverse proxy deployments                                    |
+| `DEFAULT_LANGUAGE`              | `en-US` | Default application language ([see available languages](/docs/3.1-beta/available-languages)) |
+| `PALMR_UID`                     | `1000`  | User ID for container processes (helps with file permissions)                                |
+| `PALMR_GID`                     | `1000`  | Group ID for container processes (helps with file permissions)                               |
 
----
+<Callout type="info">
+  **Performance First**: Palmr runs without encryption by default for optimal speed and lower resource usage—perfect for
+  most use cases.
+</Callout>
 
-## Environment Variables
+<Callout type="warn">
+  **Encryption Notice**: To enable encryption, set `DISABLE_FILESYSTEM_ENCRYPTION=false` and provide a 32+ character
+  `ENCRYPTION_KEY`. **Important**: This choice is permanent—switching encryption modes after uploading files will break
+  access to existing uploads.
+</Callout>
 
-Configure Palmr. behavior through environment variables:
+<Callout>
+  **Using a Reverse Proxy?** Set `SECURE_SITE=true` and check our [Reverse Proxy
+  Configuration](/docs/3.1-beta/reverse-proxy-configuration) guide for proper HTTPS setup.
+</Callout>
 
-| Variable         | Default | Description                                             |
-| ---------------- | ------- | ------------------------------------------------------- |
-| `ENABLE_S3`      | `false` | Enable S3-compatible storage                            |
-| `ENCRYPTION_KEY` | -       | **Required**: Minimum 32 characters for file encryption |
-| `SECURE_SITE`    | `false` | Enable secure cookies for HTTPS/reverse proxy setups    |
+### Generate Encryption Keys (Optional)
 
-> **⚠️ Security Warning**: Always change the `ENCRYPTION_KEY` in production. This key encrypts your files - losing it makes files permanently inaccessible.
-
-> **🔗 Reverse Proxy**: If deploying behind a reverse proxy (Traefik, Nginx, etc.), set `SECURE_SITE=true` and review our [Reverse Proxy Configuration](/docs/3.1-beta/reverse-proxy-configuration) guide for proper setup.
-
-### Generate Secure Encryption Keys
-
-Need a strong key for `ENCRYPTION_KEY`? Use our built-in generator to create cryptographically secure keys:
+Need file encryption? Generate a secure key:
 
 <KeyGenerator />
 
----
+> **Pro Tip**: Only enable encryption if you're handling sensitive data. For most users, the default unencrypted mode provides better performance.
 
-## Accessing Palmr.
+## Access Your Instance
 
-Once deployed, access Palmr. through your web browser:
+Once deployed, open Palmr in your browser:
 
-- **Local**: `http://localhost:5487`
-- **Server**: `http://YOUR_SERVER_IP:5487`
+- **Web Interface**: `http://localhost:5487` (local) or `http://YOUR_SERVER_IP:5487` (remote)
+- **API Documentation**: `http://localhost:3333/docs` (if port 3333 is exposed)
 
-### API Access (Optional)
+<Callout type="info">
+  **Learn More**: For complete API documentation, authentication, and integration examples, see our [API
+  Reference](/docs/3.1-beta/api) guide
+</Callout>
 
-If you exposed port 3333 in your configuration, you can also access:
-
-- **API Documentation**: `http://localhost:3333/docs` (local) or `http://YOUR_SERVER_IP:3333/docs` (server)
-- **API Endpoints**: Available at `http://localhost:3333` (local) or `http://YOUR_SERVER_IP:3333` (server)
-
-> **📚 Learn More**: For complete API documentation, authentication, and integration examples, see our [API Reference](/docs/3.1-beta/api) guide.
-
-> **💡 Production Tip**: For production deployments, configure HTTPS with a valid SSL certificate for enhanced security.
+<Callout type="warn">
+  **Production Ready?** Configure HTTPS with a valid SSL certificate for secure production deployments.
+</Callout>
 
 ---
 
 ## Docker CLI Alternative
 
-Prefer using Docker directly? Both storage options are supported:
+Prefer Docker commands over Compose? Here are the equivalent commands:
 
-**Named Volume:**
+<Tabs items={["Named Volume", "Bind Mount"]}>
+  <Tab value="Named Volume">
 
-```bash
-docker run -d \
-  --name palmr \
-  -e ENABLE_S3=false \
-  -e ENCRYPTION_KEY=your-secure-key-min-32-chars \
-  -p 5487:5487 \
-  -p 3333:3333 \
-  -v palmr_data:/app/server \
-  --restart unless-stopped \
-  kyantech/palmr:latest
-```
+    ```bash
+    docker run -d \
+      --name palmr \
+      # Optional: Uncomment and configure as needed (if you don`t use, you can remove)
+      # -e ENABLE_S3=true \ # Set to true to enable S3-compatible storage (OPTIONAL - default is false)
+      # -e DISABLE_FILESYSTEM_ENCRYPTION=false \ # Set to false to enable file encryption (ENCRYPTION_KEY becomes required) | (OPTIONAL - default is true)
+      # -e ENCRYPTION_KEY=your-secure-key-min-32-chars # Required only if encryption is enabled
+      # -e PALMR_UID=1000 # UID for the container processes (default is 1000)
+      # -e PALMR_GID=1000 # GID for the container processes (default is 1000)
+      # -e SECURE_SITE=false # Set to true if you are using a reverse proxy
+      # -e DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US)
+      -p 5487:5487 \
+      -p 3333:3333 \
+      -v palmr_data:/app/server \
+      --restart unless-stopped \
+      kyantech/palmr:latest
+    ```
 
-**Bind Mount:**
 
-```bash
-docker run -d \
-  --name palmr \
-  -e ENABLE_S3=false \
-  -e ENCRYPTION_KEY=your-secure-key-min-32-chars \
-  -p 5487:5487 \
-  -p 3333:3333 \
-  -v $(pwd)/data:/app/server \
-  --restart unless-stopped \
-  kyantech/palmr:latest
-```
+    <Callout type="info">
+      **Permission Issues?** Add `-e PALMR_UID=1000 -e PALMR_GID=1000` to the command above. See our [UID/GID Configuration](/docs/3.1-beta/uid-gid-configuration) guide for details.
+    </Callout>
+
+  </Tab>
+
+  <Tab value="Bind Mount">
+
+    ```bash
+    docker run -d \
+      --name palmr \
+      # Optional: Uncomment and configure as needed (if you don`t use, you can remove)
+      # -e ENABLE_S3=true \ # Set to true to enable S3-compatible storage (OPTIONAL - default is false)
+      # -e DISABLE_FILESYSTEM_ENCRYPTION=true \ # Set to false to enable file encryption (ENCRYPTION_KEY becomes required) | (OPTIONAL - default is true)
+      # -e ENCRYPTION_KEY=your-secure-key-min-32-chars # Required only if encryption is enabled
+      # -e PALMR_UID=1000 # UID for the container processes (default is 1000)
+      # -e PALMR_GID=1000 # GID for the container processes (default is 1000)
+      # -e SECURE_SITE=false # Set to true if you are using a reverse proxy
+      # -e DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US)
+      -p 5487:5487 \
+      -p 3333:3333 \
+      -v $(pwd)/data:/app/server \
+      --restart unless-stopped \
+      kyantech/palmr:latest
+    ```
+
+    <Callout type="info">
+      **Permission Issues?** Add `-e PALMR_UID=1000 -e PALMR_GID=1000` to the command above. See our [UID/GID Configuration](/docs/3.1-beta/uid-gid-configuration) guide for details.
+    </Callout>
+
+  </Tab>
+</Tabs>
 
 ---
 
@@ -204,52 +254,50 @@ docker run -d \
 
 ### Updates
 
-Keep Palmr. current with the latest features and security fixes:
+Keep Palmr up to date with the latest features and security patches:
 
 ```bash
 docker-compose pull
 docker-compose up -d
 ```
 
-### Backup & Restore
+### Backup Your Data
 
-The backup method depends on which storage option you're using:
-
-**Named Volume Backup:**
+**Named Volumes:**
 
 ```bash
-docker run --rm \
-  -v palmr_data:/data \
-  -v $(pwd):/backup \
-  alpine tar czf /backup/palmr-backup.tar.gz -C /data .
+docker run --rm -v palmr_data:/data -v $(pwd):/backup alpine tar czf /backup/palmr-backup.tar.gz -C /data .
 ```
 
-**Named Volume Restore:**
-
-```bash
-docker run --rm \
-  -v palmr_data:/data \
-  -v $(pwd):/backup \
-  alpine tar xzf /backup/palmr-backup.tar.gz -C /data
-```
-
-**Bind Mount Backup:**
+**Bind Mounts:**
 
 ```bash
 tar czf palmr-backup.tar.gz ./data
 ```
 
-**Bind Mount Restore:**
+### Restore From Backup
+
+**Named Volumes:**
 
 ```bash
+docker-compose down
+docker run --rm -v palmr_data:/data -v $(pwd):/backup alpine tar xzf /backup/palmr-backup.tar.gz -C /data
+docker-compose up -d
+```
+
+**Bind Mounts:**
+
+```bash
+docker-compose down
 tar xzf palmr-backup.tar.gz
+docker-compose up -d
 ```
 
 ---
 
-## Next Steps
+## What's Next?
 
-Your Palmr. instance is now ready! Explore additional configuration options:
+Your Palmr instance is ready! Here's what you can explore:
 
 ### Advanced Configuration
 
@@ -260,8 +308,11 @@ Your Palmr. instance is now ready! Explore additional configuration options:
 ### Integration & Development
 
 - **[API Reference](/docs/3.1-beta/api)** - Integrate Palmr. with your applications
-- **[Architecture Guide](/docs/3.1-beta/architecture)** - Understanding Palmr. components and design
+
+<Callout type="info">
+  **Need help?** Check our [Troubleshooting Guide](/docs/3.1-beta/troubleshooting) for common issues and solutions.
+</Callout>
 
 ---
 
-Need help? Visit our [GitHub Issues](https://github.com/kyantech/Palmr/issues) or community discussions.
+**Questions?** Visit our [GitHub Issues](https://github.com/kyantech/Palmr/issues) or join the community discussions.

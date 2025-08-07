@@ -32,7 +32,6 @@ export interface ShareSecurity {
   hasPassword: boolean;
 }
 
-// Full share object used in most responses
 export interface Share {
   id: string;
   name: string | null;
@@ -48,14 +47,12 @@ export interface Share {
   alias: ShareAlias;
 }
 
-// Simplified share object for specific operations
 export interface SimpleShare {
   id: string;
   name: string;
   description: string | null;
 }
 
-// Response types using base types
 export interface CreateShare201 {
   share: Share;
 }
@@ -115,7 +112,6 @@ export interface NotifyRecipients200 {
   notifiedRecipients: string[];
 }
 
-// Request body types
 export interface CreateShareBody {
   name?: string;
   description?: string;
@@ -164,7 +160,6 @@ export interface NotifyRecipientsBody {
   shareLink: string;
 }
 
-// Query parameter types
 export interface GetShareParams {
   password?: string;
 }
@@ -173,7 +168,6 @@ export interface GetShareByAliasParams {
   password?: string;
 }
 
-// Axios response types
 export type CreateShareResult = AxiosResponse<CreateShare201>;
 export type UpdateShareResult = AxiosResponse<UpdateShare200>;
 export type ListUserSharesResult = AxiosResponse<ListUserShares200>;

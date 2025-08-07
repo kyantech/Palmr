@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
@@ -8,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { requestPasswordReset } from "@/http/endpoints";
+import { getAuthConfig, requestPasswordReset } from "@/http/endpoints";
 
 export type ForgotPasswordFormData = {
   email: string;
@@ -17,16 +18,39 @@ export type ForgotPasswordFormData = {
 export function useForgotPassword() {
   const t = useTranslations();
   const router = useRouter();
+  const [passwordAuthEnabled, setPasswordAuthEnabled] = useState(true);
+  const [authConfigLoading, setAuthConfigLoading] = useState(true);
 
   const forgotPasswordSchema = z.object({
     email: z.string().email(t("validation.invalidEmail")),
   });
+
+  useEffect(() => {
+    const fetchAuthConfig = async () => {
+      try {
+        const response = await getAuthConfig();
+        setPasswordAuthEnabled((response as any).data.passwordAuthEnabled);
+      } catch (error) {
+        console.error("Failed to fetch auth config:", error);
+        setPasswordAuthEnabled(true);
+      } finally {
+        setAuthConfigLoading(false);
+      }
+    };
+
+    fetchAuthConfig();
+  }, []);
 
   const form = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
   });
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
+    if (!passwordAuthEnabled) {
+      toast.error(t("errors.passwordAuthDisabled"));
+      return;
+    }
+
     try {
       await requestPasswordReset({
         email: data.email,
@@ -46,5 +70,7 @@ export function useForgotPassword() {
   return {
     form,
     onSubmit,
+    passwordAuthEnabled,
+    authConfigLoading,
   };
 }

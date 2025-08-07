@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/contexts/auth-context";
@@ -14,16 +14,21 @@ type ProtectedRouteProps = {
 export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
   const { isAuthenticated, isAdmin } = useAuth();
   const router = useRouter();
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated === false) {
-      router.replace("/login");
-    } else if (requireAdmin && isAdmin === false) {
-      router.replace("/dashboard");
+    if (isAuthenticated !== null) {
+      setHasCheckedAuth(true);
+
+      if (isAuthenticated === false) {
+        router.replace("/login");
+      } else if (requireAdmin && isAdmin === false) {
+        router.replace("/dashboard");
+      }
     }
   }, [isAuthenticated, isAdmin, requireAdmin, router]);
 
-  if (isAuthenticated === null || (requireAdmin && isAdmin === null)) {
+  if (!hasCheckedAuth || isAuthenticated === null || (requireAdmin && isAdmin === null)) {
     return <LoadingScreen />;
   }
 

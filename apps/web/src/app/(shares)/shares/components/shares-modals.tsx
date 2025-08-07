@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { CreateShareModal } from "@/components/modals/create-share-modal";
 import { DeleteConfirmationModal } from "@/components/modals/delete-confirmation-modal";
 import { GenerateShareLinkModal } from "@/components/modals/generate-share-link-modal";
+import { QrCodeModal } from "@/components/modals/qr-code-modal";
 import { ShareActionsModals } from "@/components/modals/share-actions-modals";
 import { ShareDetailsModal } from "@/components/modals/share-details-modal";
 import { ShareExpirationModal } from "@/components/modals/share-expiration-modal";
@@ -30,6 +31,11 @@ export function SharesModals({
     onSuccess();
   };
 
+  const getShareLink = (share: any) => {
+    if (!share?.alias?.alias) return "";
+    return `${window.location.origin}/s/${share.alias.alias}`;
+  };
+
   return (
     <>
       <CreateShareModal isOpen={isCreateModalOpen} onClose={onCloseCreateModal} onSuccess={handleShareSuccess} />
@@ -49,6 +55,13 @@ export function SharesModals({
         onManageRecipients={shareManager.handleManageRecipients}
         onSuccess={handleShareSuccess}
         onEditFile={fileManager.handleRename}
+      />
+
+      <QrCodeModal
+        isOpen={!!shareManager.shareToViewQrCode}
+        onClose={() => shareManager.setShareToViewQrCode(null)}
+        shareLink={getShareLink(shareManager.shareToViewQrCode)}
+        shareName={shareManager.shareToViewQrCode?.name || "Share"}
       />
 
       <DeleteConfirmationModal

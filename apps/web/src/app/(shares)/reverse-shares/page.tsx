@@ -23,6 +23,7 @@ export default function ReverseSharesPage() {
     reverseShareToDelete,
     reverseShareToEdit,
     reverseShareToViewFiles,
+    reverseShareToViewQrCode,
     isDeleting,
     isCreateModalOpen,
     isCreating,
@@ -37,6 +38,7 @@ export default function ReverseSharesPage() {
     setReverseShareToDelete,
     setReverseShareToEdit,
     setReverseShareToViewFiles,
+    setReverseShareToViewQrCode,
     handleCreateAlias,
     handleUpdatePassword,
     handleUpdateReverseShareData,
@@ -77,6 +79,7 @@ export default function ReverseSharesPage() {
                     onGenerateLink={setReverseShareToGenerateLink}
                     onViewDetails={setReverseShareToViewDetails}
                     onViewFiles={setReverseShareToViewFiles}
+                    onViewQrCode={setReverseShareToViewQrCode}
                     onCreateReverseShare={() => setIsCreateModalOpen(true)}
                     onUpdateReverseShare={handleUpdateReverseShareData}
                     onToggleActive={handleToggleActive}
@@ -99,14 +102,17 @@ export default function ReverseSharesPage() {
               reverseShareToViewDetails={reverseShareToViewDetails}
               reverseShareToDelete={reverseShareToDelete}
               reverseShareToViewFiles={reverseShareToViewFiles}
+              reverseShareToViewQrCode={reverseShareToViewQrCode}
               isDeleting={isDeleting}
               onCloseGenerateLink={() => setReverseShareToGenerateLink(null)}
               onCloseViewDetails={() => setReverseShareToViewDetails(null)}
               onCloseDeleteModal={() => setReverseShareToDelete(null)}
               onCloseViewFiles={() => setReverseShareToViewFiles(null)}
+              onCloseViewQrCode={() => setReverseShareToViewQrCode(null)}
               onConfirmDelete={handleDeleteReverseShare}
               onCreateAlias={handleCreateAlias}
               onCopyLink={handleCopyLink}
+              onViewQrCode={setReverseShareToViewQrCode}
               onUpdateReverseShareData={handleUpdateReverseShareData}
               onUpdatePassword={handleUpdatePassword}
               onToggleActive={handleToggleActive}

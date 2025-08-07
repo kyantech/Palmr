@@ -3,14 +3,17 @@ services:
     image: kyantech/palmr:latest
     container_name: palmr
     environment:
-      - ENABLE_S3=false
-      - ENCRYPTION_KEY=change-this-key-in-production-min-32-chars # CHANGE THIS KEY FOR SECURITY
+      # Optional: Uncomment and configure as needed (if you don`t use, you can remove)
+      # - ENABLE_S3=false # Set to true to enable S3-compatible storage (OPTIONAL - default is false)
+      # - DISABLE_FILESYSTEM_ENCRYPTION=true # Set to false to enable file encryption (ENCRYPTION_KEY becomes required) | (OPTIONAL - default is true)
+      # - ENCRYPTION_KEY=change-this-key-in-production-min-32-chars # CHANGE THIS KEY FOR SECURITY (REQUIRED if DISABLE_FILESYSTEM_ENCRYPTION is false)
+      # - PALMR_UID=1000 # UID for the container processes (OPTIONAL - default is 1000) | See our UID/GID Documentation for more information
+      # - PALMR_GID=1000 # GID for the container processes (OPTIONAL - default is 1000) | See our UID/GID Documentation for more information
+      # - DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US) | See the docs to see all supported languages
+      # - SECURE_SITE=true # Set to true if you are using a reverse proxy (OPTIONAL - default is false)
     ports:
       - "5487:5487" # Web port
       - "3333:3333" # API port (OPTIONAL EXPOSED - ONLY IF YOU WANT TO ACCESS THE API DIRECTLY)
-      - PALMR_UID=1000 # UID for the container processes (default is 1001) you can change it to the UID of the user running the container
-      - PALMR_GID=1000 # GID for the container processes (default is 1001) you can change it to the GID of the user running the container
-      - SECURE_SITE=false # Set to true if you are using a reverse proxy
     volumes:
       - palmr_data:/app/server # Volume for the application data (changed from /data to /app/server)
     restart: unless-stopped # Restart the container unless it is stopped

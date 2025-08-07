@@ -36,3 +36,11 @@ export const createResetPasswordSchema = async () => {
 export type ResetPasswordInput = BaseResetPasswordInput & {
   password: string;
 };
+
+export const CompleteTwoFactorLoginSchema = z.object({
+  userId: z.string().min(1, "User ID is required").describe("User ID"),
+  token: z.string().min(6, "Two-factor authentication code must be at least 6 characters").describe("2FA token"),
+  rememberDevice: z.boolean().optional().default(false).describe("Remember this device for 30 days"),
+});
+
+export type CompleteTwoFactorLoginInput = z.infer<typeof CompleteTwoFactorLoginSchema>;

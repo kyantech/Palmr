@@ -143,7 +143,8 @@
     "saving": "Speichere...",
     "update": "Aktualisieren",
     "click": "Klicken Sie auf",
-    "creating": "Erstellen..."
+    "creating": "Erstellen...",
+    "loadingSimple": "Lade..."
   },
   "createShare": {
     "title": "Freigabe Erstellen",
@@ -158,7 +159,8 @@
     "passwordLabel": "Passwort",
     "create": "Freigabe Erstellen",
     "success": "Freigabe erfolgreich erstellt",
-    "error": "Fehler beim Erstellen der Freigabe"
+    "error": "Fehler beim Erstellen der Freigabe",
+    "namePlaceholder": "Geben Sie einen Namen für Ihre Freigabe ein"
   },
   "dashboard": {
     "loadError": "Fehler beim Laden der Dashboard-Daten",
@@ -182,7 +184,15 @@
     "invalidCredentials": "Ungültige E-Mail oder Passwort",
     "userNotFound": "Benutzer nicht gefunden",
     "accountLocked": "Konto gesperrt. Bitte versuchen Sie es später erneut",
-    "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut"
+    "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut",
+    "Invalid password": "Ungültiges Passwort",
+    "Invalid two-factor authentication code": "Ungültiger Zwei-Faktor-Authentifizierungscode",
+    "Invalid verification code": "Ungültiger Verifizierungscode",
+    "Password verification required": "Passwortüberprüfung erforderlich",
+    "Two-factor authentication is already enabled": "Zwei-Faktor-Authentifizierung ist bereits aktiviert",
+    "Two-factor authentication is not enabled": "Zwei-Faktor-Authentifizierung ist nicht aktiviert",
+    "Two-factor authentication required": "Zwei-Faktor-Authentifizierung erforderlich",
+    "noUserData": "Keine Benutzerdaten"
   },
   "fileActions": {
     "editFile": "Datei bearbeiten",
@@ -304,7 +314,8 @@
     "title": "Passwort vergessen",
     "description": "Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen Anweisungen zum Zurücksetzen Ihres Passworts.",
     "resetInstructions": "Anweisungen zum Zurücksetzen wurden an Ihre E-Mail gesendet",
-    "pageTitle": "Passwort vergessen"
+    "pageTitle": "Passwort vergessen",
+    "passwordAuthDisabled": "Passwortauthentifizierung ist deaktiviert. Bitte kontaktieren Sie Ihren Administrator oder verwenden Sie einen externen Authentifizierungsanbieter."
   },
   "generateShareLink": {
     "generateTitle": "Freigabe-Link generieren",
@@ -318,7 +329,12 @@
     "copyButton": "Link kopieren",
     "success": "Link erfolgreich generiert",
     "error": "Fehler beim Generieren des Links",
-    "copied": "Link in die Zwischenablage kopiert"
+    "copied": "Link in die Zwischenablage kopiert",
+    "readyDescription": "Ihr Freigabe-Link ist bereit. Sie können den QR-Code direkt scannen, ihn für die spätere Verwendung herunterladen oder den Link unten kopieren.",
+    "tabs": {
+      "link": "Link",
+      "qrcode": "QR-Code"
+    }
   },
   "home": {
     "description": "Die Open-Source-Alternative zu WeTransfer. Teilen Sie Dateien sicher, ohne Tracking oder Einschränkungen.",
@@ -330,6 +346,27 @@
       "tagline": "einfach und kostenlos"
     },
     "pageTitle": "Startseite"
+  },
+  "iconPicker": {
+    "title": "Symbol auswählen",
+    "placeholder": "Wählen Sie ein Symbol",
+    "searchPlaceholder": "Symbole suchen...",
+    "loadingMore": "Weitere Symbole werden geladen...",
+    "allIconsLoaded": "Alle {count} Symbole geladen",
+    "noIconsFound": "Keine Symbole für \"{search}\" gefunden",
+    "tabs": {
+      "all": "Alle Symbole",
+      "popular": "Beliebt",
+      "auth": "Authentifizierungsanbieter"
+    },
+    "stats": "{iconCount} Symbole aus {libraryCount} Bibliotheken",
+    "categoryBadge": "{category} ({count} Symbole)"
+  },
+  "imageEdit": {
+    "title": "Bild bearbeiten",
+    "rotate": "Drehen",
+    "zoom": "Zoom",
+    "cropInstructions": "Ziehen Sie, um die Position zu ändern, ändern Sie die Größe der Ecken, um die Zuschneidefläche anzupassen"
   },
   "login": {
     "welcome": "Willkommen zu",
@@ -417,6 +454,11 @@
       "imageRemoved": "Profilbild erfolgreich entfernt"
     },
     "pageTitle": "Profil"
+  },
+  "qrCodeModal": {
+    "title": "QR-Code teilen",
+    "description": "Scannen Sie diesen QR-Code, um auf den Link zuzugreifen.",
+    "download": "QR-Code herunterladen"
   },
   "quickAccess": {
     "files": {
@@ -589,7 +631,8 @@
       "createLink": "Link erstellen",
       "delete": "Löschen",
       "copyLinkTitle": "Link kopieren",
-      "createLinkCTA": "Empfangslink erstellen"
+      "createLinkCTA": "Empfangslink erstellen",
+      "viewQrCode": "QR-Code anzeigen"
     },
     "status": {
       "active": "Aktiv",
@@ -605,7 +648,8 @@
       "viewDetails": "Details anzeigen",
       "edit": "Bearbeiten",
       "delete": "Löschen",
-      "viewFiles": "Empfangene Dateien"
+      "viewFiles": "Empfangene Dateien",
+      "viewQrCode": "QR-Code anzeigen"
     },
     "empty": {
       "title": "Keine Empfangslinks erstellt",
@@ -746,7 +790,12 @@
         "selectAll": "Alle auswählen",
         "selectFile": "Datei {fileName} auswählen",
         "deleteError": "Fehler beim Löschen der Datei",
-        "deleteSuccess": "Datei erfolgreich gelöscht"
+        "deleteSuccess": "Datei erfolgreich gelöscht",
+        "copyErrors": {
+          "timeout": "Zeitüberschreitung beim Kopiervorgang. Bitte versuchen Sie es erneut mit einer kleineren Datei oder überprüfen Sie Ihre Verbindung.",
+          "failed": "Kopiervorgang fehlgeschlagen. Bitte versuchen Sie es erneut.",
+          "aborted": "Kopiervorgang wurde wegen Zeitüberschreitung abgebrochen."
+        }
       }
     },
     "form": {
@@ -897,7 +946,8 @@
       "fileList": {
         "title": "Ausgewählte Dateien:",
         "statusUploaded": "Hochgeladen",
-        "statusError": "Fehler"
+        "statusError": "Fehler",
+        "retry": "Wiederholen"
       },
       "form": {
         "nameLabel": "Name",
@@ -1085,6 +1135,10 @@
           "tls": "STARTTLS (Port 587)",
           "none": "Keine (Unsicher)"
         }
+      },
+      "passwordAuthEnabled": {
+        "title": "Passwort-Authentifizierung",
+        "description": "Passwort-basierte Authentifizierung aktivieren oder deaktivieren"
       }
     },
     "buttons": {
@@ -1094,7 +1148,8 @@
     },
     "errors": {
       "loadFailed": "Fehler beim Laden der Einstellungen",
-      "updateFailed": "Fehler beim Aktualisieren der Einstellungen"
+      "updateFailed": "Fehler beim Aktualisieren der Einstellungen",
+      "passwordAuthRequiresProvider": "Passwort-basierte Authentifizierung kann nicht deaktiviert werden, wenn kein aktiver Authentifizierungsanbieter vorhanden ist"
     },
     "messages": {
       "noChanges": "Keine Änderungen zum Speichern",
@@ -1200,7 +1255,10 @@
     "invalidDate": "Ungültiges Datum",
     "loadError": "Fehler beim Laden der Freigabe-Details",
     "editSecurity": "Sicherheit bearbeiten",
-    "editExpiration": "Ablauf bearbeiten"
+    "editExpiration": "Ablauf bearbeiten",
+    "clickToEnlargeQrCode": "Klicken Sie zum Vergrößern des QR-Codes",
+    "downloadQrCode": "QR-Code herunterladen",
+    "qrCode": "QR-Code"
   },
   "shareExpiration": {
     "neverExpires": "Läuft nie ab",
@@ -1387,7 +1445,8 @@
       "copyLink": "Link Kopieren",
       "notifyRecipients": "Empfänger Benachrichtigen",
       "delete": "Löschen",
-      "downloadShareFiles": "Laden Sie alle Dateien herunter"
+      "downloadShareFiles": "Laden Sie alle Dateien herunter",
+      "viewQrCode": "QR-Code anzeigen"
     },
     "bulkActions": {
       "delete": "Löschen",
@@ -1418,6 +1477,160 @@
     "light": "Hell",
     "dark": "Dunkel",
     "system": "System"
+  },
+  "twoFactor": {
+    "title": "Zwei-Faktor-Authentifizierung",
+    "description": "Fügen Sie Ihrem Konto eine zusätzliche Sicherheitsebene hinzu",
+    "enabled": "Ihr Konto ist mit Zwei-Faktor-Authentifizierung geschützt",
+    "disabled": "Zwei-Faktor-Authentifizierung ist nicht aktiviert",
+    "setup": {
+      "title": "Zwei-Faktor-Authentifizierung aktivieren",
+      "description": "Scannen Sie den QR-Code mit Ihrer Authenticator-App und geben Sie dann den Bestätigungscode ein.",
+      "qrCode": "QR-Code",
+      "manualEntryKey": "Manueller Eingabeschlüssel",
+      "verificationCode": "Bestätigungscode",
+      "verificationCodePlaceholder": "6-stelligen Code eingeben",
+      "verificationCodeDescription": "Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein",
+      "verifyAndEnable": "Überprüfen & Aktivieren",
+      "cancel": "Abbrechen"
+    },
+    "disable": {
+      "title": "Zwei-Faktor-Authentifizierung deaktivieren",
+      "description": "Geben Sie Ihr Passwort ein, um die Deaktivierung der Zwei-Faktor-Authentifizierung zu bestätigen.",
+      "password": "Passwort",
+      "passwordPlaceholder": "Geben Sie Ihr Passwort ein",
+      "confirm": "Deaktivierung bestätigen",
+      "cancel": "Abbrechen"
+    },
+    "backupCodes": {
+      "title": "Backup-Codes",
+      "description": "Speichern Sie diese Backup-Codes an einem sicheren Ort. Sie können sie verwenden, um auf Ihr Konto zuzugreifen, wenn Sie Ihr Authentifizierungsgerät verlieren.",
+      "warning": "Wichtig:",
+      "warningText": "Jeder Backup-Code kann nur einmal verwendet werden. Bewahren Sie sie sicher auf und teilen Sie sie mit niemandem.",
+      "generateNew": "Neue Backup-Codes generieren",
+      "download": "Backup-Codes herunterladen",
+      "copyToClipboard": "In die Zwischenablage kopieren",
+      "savedMessage": "Ich habe meine Backup-Codes gespeichert",
+      "available": "{count} Backup-Codes verfügbar",
+      "instructions": [
+        "• Speichern Sie diese Codes an einem sicheren Ort",
+        "• Jeder Backup-Code kann nur einmal verwendet werden",
+        "• Sie können jederzeit neue Codes generieren"
+      ]
+    },
+    "verification": {
+      "title": "Zwei-Faktor-Authentifizierung",
+      "description": "Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein",
+      "backupDescription": "Geben Sie einen Ihrer Backup-Codes ein, um fortzufahren",
+      "verificationCode": "Bestätigungscode",
+      "backupCode": "Backup-Code",
+      "verificationCodePlaceholder": "000000",
+      "backupCodePlaceholder": "XXXX-XXXX",
+      "verify": "Überprüfen",
+      "verifying": "Überprüfung läuft...",
+      "useBackupCode": "Stattdessen Backup-Code verwenden",
+      "useAuthenticatorCode": "Stattdessen Authenticator-Code verwenden",
+      "rememberDevice": "Dieses Gerät für 30 Tage merken",
+      "rememberDeviceDescription": "Sie müssen auf diesem Gerät 30 Tage lang keine 2FA-Codes eingeben"
+    },
+    "messages": {
+      "enabledSuccess": "Zwei-Faktor-Authentifizierung erfolgreich aktiviert!",
+      "disabledSuccess": "Zwei-Faktor-Authentifizierung erfolgreich deaktiviert",
+      "backupCodesGenerated": "Neue Backup-Codes erfolgreich generiert",
+      "backupCodesCopied": "Backup-Codes in die Zwischenablage kopiert",
+      "setupFailed": "2FA-Setup konnte nicht generiert werden",
+      "verificationFailed": "Ungültiger Bestätigungscode",
+      "disableFailed": "2FA konnte nicht deaktiviert werden. Bitte überprüfen Sie Ihr Passwort.",
+      "backupCodesFailed": "Backup-Codes konnten nicht generiert werden",
+      "backupCodesCopyFailed": "Backup-Codes konnten nicht kopiert werden",
+      "statusLoadFailed": "2FA-Status konnte nicht geladen werden",
+      "enterVerificationCode": "Bitte geben Sie den Bestätigungscode ein",
+      "enterPassword": "Bitte geben Sie Ihr Passwort ein",
+      "deviceTrusted": "Dieses Gerät wurde für 30 Tage als vertrauenswürdig markiert"
+    },
+    "errors": {
+      "invalidVerificationCode": "Ungültiger Bestätigungscode",
+      "invalidTwoFactorCode": "Ungültiger Zwei-Faktor-Authentifizierungscode",
+      "twoFactorRequired": "Zwei-Faktor-Authentifizierung erforderlich",
+      "twoFactorAlreadyEnabled": "Zwei-Faktor-Authentifizierung ist bereits aktiviert",
+      "twoFactorNotEnabled": "Zwei-Faktor-Authentifizierung ist nicht aktiviert",
+      "passwordVerificationRequired": "Passwortüberprüfung erforderlich",
+      "invalidPassword": "Ungültiges Passwort",
+      "userNotFound": "Benutzer nicht gefunden"
+    },
+    "buttons": {
+      "enable2FA": "2FA aktivieren",
+      "disable2FA": "2FA deaktivieren"
+    },
+    "deviceNames": {
+      "unknownDevice": "Unbekanntes Gerät",
+      "browsers": {
+        "chrome": "Chrome",
+        "firefox": "Firefox",
+        "safari": "Safari",
+        "edge": "Edge"
+      },
+      "platforms": {
+        "windows": " auf Windows",
+        "macos": " auf macOS",
+        "linux": " auf Linux",
+        "iphone": " auf iPhone",
+        "android": " auf Android"
+      }
+    },
+    "status": {
+      "label": "Status:",
+      "enabled": "Aktiviert",
+      "disabled": "Deaktiviert"
+    },
+    "trustedDevices": {
+      "title": "Vertrauenswürdige Geräte - 2FA",
+      "description": "Geräte, die keine 2FA-Verifizierung benötigen",
+      "noDevices": "Keine vertrauenswürdigen Geräte",
+      "deviceName": "Gerät",
+      "addedOn": "Hinzugefügt am",
+      "expiresOn": "Läuft ab am",
+      "remove": "Entfernen",
+      "removeAll": "Alle entfernen",
+      "confirmRemove": "Möchten Sie dieses vertrauenswürdige Gerät wirklich entfernen?",
+      "confirmRemoveAll": "Möchten Sie wirklich alle vertrauenswürdigen Geräte entfernen?",
+      "deviceRemoved": "Vertrauenswürdiges Gerät erfolgreich entfernt",
+      "allDevicesRemoved": "Alle vertrauenswürdigen Geräte erfolgreich entfernt",
+      "loadFailed": "Fehler beim Laden der vertrauenswürdigen Geräte",
+      "removeFailed": "Fehler beim Entfernen des vertrauenswürdigen Geräts",
+      "removeAllFailed": "Fehler beim Entfernen aller vertrauenswürdigen Geräte",
+      "loading": "Lade vertrauenswürdige Geräte...",
+      "noDevicesDescription": "Geräte erscheinen hier, wenn Sie sie während der 2FA-Verifizierung als vertrauenswürdig markieren",
+      "tableHeaders": {
+        "device": "Gerät",
+        "added": "Hinzugefügt",
+        "expires": "Läuft ab",
+        "lastUsed": "Zuletzt verwendet",
+        "ipAddress": "IP-Adresse",
+        "actions": "Aktionen"
+      },
+      "status": {
+        "never": "Nie",
+        "expired": "Abgelaufen"
+      },
+      "modals": {
+        "removeDevice": {
+          "title": "Vertrauenswürdiges Gerät entfernen",
+          "added": "Hinzugefügt:",
+          "ip": "IP:"
+        },
+        "removeAllDevices": {
+          "title": "Alle vertrauenswürdigen Geräte entfernen",
+          "description": "Dies wird {count} vertrauenswürdige{count, plural, =1 {s Gerät} other { Geräte}} entfernen. Sie müssen die 2FA auf allen Geräten erneut verifizieren."
+        },
+        "buttons": {
+          "cancel": "Abbrechen",
+          "removing": "Wird entfernt...",
+          "removeDevice": "Gerät entfernen",
+          "removeAllDevices": "Alle Geräte entfernen"
+        }
+      }
+    }
   },
   "uploadFile": {
     "title": "Datei hochladen",
@@ -1450,7 +1663,8 @@
       "title": "Dateien zum Hochladen ablegen",
       "description": "Loslassen, um Ihre Dateien hochzuladen"
     },
-    "pasteSuccess": "{count, plural, =1 {Bild erfolgreich eingefügt und hochgeladen} other {# Bilder erfolgreich eingefügt und hochgeladen}}"
+    "pasteSuccess": "{count, plural, =1 {Bild erfolgreich eingefügt und hochgeladen} other {# Bilder erfolgreich eingefügt und hochgeladen}}",
+    "filesQueued": "{count, plural, one {# Datei in der Warteschlange} other {# Dateien in der Warteschlange}}"
   },
   "users": {
     "modes": {
@@ -1535,20 +1749,5 @@
     "passwordRequired": "Passwort ist erforderlich",
     "nameRequired": "Name ist erforderlich",
     "required": "Dieses Feld ist erforderlich"
-  },
-  "iconPicker": {
-    "title": "Symbol auswählen",
-    "placeholder": "Wählen Sie ein Symbol",
-    "searchPlaceholder": "Symbole suchen...",
-    "loadingMore": "Weitere Symbole werden geladen...",
-    "allIconsLoaded": "Alle {count} Symbole geladen",
-    "noIconsFound": "Keine Symbole für \"{search}\" gefunden",
-    "tabs": {
-      "all": "Alle Symbole",
-      "popular": "Beliebt",
-      "auth": "Authentifizierungsanbieter"
-    },
-    "stats": "{iconCount} Symbole aus {libraryCount} Bibliotheken",
-    "categoryBadge": "{category} ({count} Symbole)"
   }
 }

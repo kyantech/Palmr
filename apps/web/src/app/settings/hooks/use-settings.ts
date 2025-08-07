@@ -172,8 +172,19 @@ export function useSettings() {
       }
 
       await refreshAppInfo();
-    } catch {
-      toast.error(t("settings.errors.updateFailed"));
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.error || error?.message || "";
+
+      if (
+        errorMessage.includes("autenticação por senha") ||
+        errorMessage.includes("provedor de autenticação ativo") ||
+        errorMessage.includes("password authentication") ||
+        errorMessage.includes("authentication provider")
+      ) {
+        toast.error(t("settings.errors.passwordAuthRequiresProvider"));
+      } else {
+        toast.error(t("settings.errors.updateFailed"));
+      }
     }
   };
 

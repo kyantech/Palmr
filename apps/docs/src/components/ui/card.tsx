@@ -5,14 +5,15 @@ import { cn } from "@/lib/utils";
 
 interface CardProps {
   title: string;
-  description: string;
+  description?: string;
   href?: string;
   icon?: ReactNode;
   className?: string;
   onClick?: () => void;
+  children?: ReactNode;
 }
 
-export const Card = ({ title, description, href, icon, className, onClick }: CardProps) => {
+export const Card = ({ title, description, href, icon, className, onClick, children }: CardProps) => {
   const cardContent = (
     <div
       className={cn(
@@ -37,9 +38,16 @@ export const Card = ({ title, description, href, icon, className, onClick }: Car
           <h3 className="font-medium text-sm text-foreground mb-1 group-hover:text-primary transition-colors duration-200 mt-3 text-decoration-none">
             {title}
           </h3>
-          <p className="text-xs text-muted-foreground/80 leading-relaxed line-clamp-2 group-hover:text-muted-foreground transition-colors duration-200">
-            {description}
-          </p>
+          {description && (
+            <p className="text-xs text-muted-foreground/80 leading-relaxed line-clamp-2 group-hover:text-muted-foreground transition-colors duration-200">
+              {description}
+            </p>
+          )}
+          {children && (
+            <div className="text-xs text-muted-foreground/80 leading-relaxed group-hover:text-muted-foreground transition-colors duration-200 mt-2">
+              {children}
+            </div>
+          )}
         </div>
         <div className="flex-shrink-0 ml-2">
           <div className="w-5 h-5 rounded-full bg-muted/40 flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:bg-primary/10 transition-all duration-200">

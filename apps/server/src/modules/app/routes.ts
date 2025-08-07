@@ -53,6 +53,26 @@ export async function appRoutes(app: FastifyInstance) {
     appController.getAppInfo.bind(appController)
   );
 
+  app.get(
+    "/app/system-info",
+    {
+      schema: {
+        tags: ["App"],
+        operationId: "getSystemInfo",
+        summary: "Get system information",
+        description: "Get system information including storage provider",
+        response: {
+          200: z.object({
+            storageProvider: z.enum(["s3", "filesystem"]).describe("The active storage provider"),
+            s3Enabled: z.boolean().describe("Whether S3 storage is enabled"),
+          }),
+          400: z.object({ error: z.string().describe("Error message") }),
+        },
+      },
+    },
+    appController.getSystemInfo.bind(appController)
+  );
+
   app.patch(
     "/app/configs/:key",
     {

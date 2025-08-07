@@ -30,6 +30,7 @@ apps/server/dist/*
 
 #DEFAULT
 .env
+.steering
 data/
 
 node_modules/

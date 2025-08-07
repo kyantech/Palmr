@@ -84,6 +84,7 @@ export function AddProviderForm({ showAddForm, onToggleForm, onAddProvider, savi
       { pattern: "linear.app", scopes: ["read"] },
       { pattern: "kinde.com", scopes: ["openid", "profile", "email"] },
       { pattern: "zitadel.com", scopes: ["openid", "profile", "email"] },
+      { pattern: "pocketid", scopes: ["openid", "profile", "email"] },
     ];
 
     for (const { pattern, scopes } of providerPatterns) {

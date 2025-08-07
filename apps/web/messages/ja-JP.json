@@ -143,7 +143,8 @@
     "saving": "保存中...",
     "update": "更新",
     "click": "クリックして",
-    "creating": "作成中..."
+    "creating": "作成中...",
+    "loadingSimple": "読み込み中..."
   },
   "createShare": {
     "title": "共有を作成",
@@ -158,7 +159,8 @@
     "passwordLabel": "パスワード",
     "create": "共有を作成",
     "success": "共有が正常に作成されました",
-    "error": "共有の作成に失敗しました"
+    "error": "共有の作成に失敗しました",
+    "namePlaceholder": "共有の名前を入力してください"
   },
   "dashboard": {
     "loadError": "ダッシュボードデータの読み込みに失敗しました",
@@ -182,7 +184,15 @@
     "invalidCredentials": "無効なメールアドレスまたはパスワードです",
     "userNotFound": "ユーザーが見つかりません",
     "accountLocked": "アカウントがロックされています。後でもう一度お試しください",
-    "unexpectedError": "予期しないエラーが発生しました。もう一度お試しください"
+    "unexpectedError": "予期しないエラーが発生しました。もう一度お試しください",
+    "Invalid password": "パスワードが無効です",
+    "Invalid two-factor authentication code": "二要素認証コードが無効です",
+    "Invalid verification code": "認証コードが無効です",
+    "Password verification required": "パスワードの確認が必要です",
+    "Two-factor authentication is already enabled": "二要素認証は既に有効になっています",
+    "Two-factor authentication is not enabled": "二要素認証が有効になっていません",
+    "Two-factor authentication required": "二要素認証が必要です",
+    "noUserData": "ユーザーデータがありません"
   },
   "fileActions": {
     "editFile": "ファイルを編集",
@@ -304,7 +314,8 @@
     "title": "パスワードをお忘れですか？",
     "description": "メールアドレスを入力すると、パスワードリセットの指示を送信します。",
     "resetInstructions": "パスワードリセットの指示がメールに送信されました",
-    "pageTitle": "パスワードをお忘れですか？"
+    "pageTitle": "パスワードをお忘れですか？",
+    "passwordAuthDisabled": "パスワード認証が無効になっています。管理者に連絡するか、外部認証プロバイダーを使用してください。"
   },
   "generateShareLink": {
     "generateTitle": "共有リンクを生成",
@@ -318,7 +329,12 @@
     "copyButton": "リンクをコピー",
     "success": "リンクが正常に生成されました",
     "error": "リンクの生成に失敗しました",
-    "copied": "リンクがクリップボードにコピーされました"
+    "copied": "リンクがクリップボードにコピーされました",
+    "readyDescription": "共有リンクが準備できました。QRコードを直接スキャンして、後で使用するためにダウンロードするか、リンクをコピーしてください。",
+    "tabs": {
+      "link": "リンク",
+      "qrcode": "QRコード"
+    }
   },
   "home": {
     "description": "WeTransferのオープンソース代替です。トラッキングや制限なしに安全にファイルを共有します。",
@@ -330,6 +346,27 @@
       "tagline": "シンプルで無料"
     },
     "pageTitle": "ホーム"
+  },
+  "iconPicker": {
+    "title": "アイコンを選択",
+    "placeholder": "アイコンを選択してください",
+    "searchPlaceholder": "アイコンを検索...",
+    "loadingMore": "アイコンを読み込み中...",
+    "allIconsLoaded": "全{count}個のアイコンを読み込みました",
+    "noIconsFound": "\"{search}\"に一致するアイコンが見つかりませんでした",
+    "tabs": {
+      "all": "すべてのアイコン",
+      "popular": "人気",
+      "auth": "認証プロバイダー"
+    },
+    "stats": "{libraryCount}ライブラリから{iconCount}個のアイコン",
+    "categoryBadge": "{category}（{count}個のアイコン）"
+  },
+  "imageEdit": {
+    "title": "画像を編集",
+    "rotate": "回転",
+    "zoom": "ズーム",
+    "cropInstructions": "位置を変更するにはドラッグし、カット領域を調整するには角をリサイズしてください"
   },
   "login": {
     "welcome": "ようこそへ",
@@ -417,6 +454,11 @@
       "imageRemoved": "プロフィール画像が正常に削除されました"
     },
     "pageTitle": "プロフィール"
+  },
+  "qrCodeModal": {
+    "title": "QRコードを共有",
+    "description": "このQRコードをスキャンしてリンクにアクセスしてください。",
+    "download": "QRコードをダウンロード"
   },
   "quickAccess": {
     "files": {
@@ -589,7 +631,8 @@
       "createLink": "リンクを作成",
       "delete": "削除",
       "copyLinkTitle": "リンクをコピー",
-      "createLinkCTA": "受信リンクを作成"
+      "createLinkCTA": "受信リンクを作成",
+      "viewQrCode": "QRコードを表示"
     },
     "status": {
       "active": "有効",
@@ -605,7 +648,8 @@
       "viewDetails": "詳細を表示",
       "edit": "編集",
       "delete": "削除",
-      "viewFiles": "受信済みファイル"
+      "viewFiles": "受信済みファイル",
+      "viewQrCode": "QRコードを表示"
     },
     "empty": {
       "title": "受信リンクが作成されていません",
@@ -746,7 +790,12 @@
         "selectAll": "すべて選択",
         "selectFile": "ファイル{fileName}を選択",
         "deleteError": "ファイルの削除に失敗しました",
-        "deleteSuccess": "ファイルを正常に削除しました"
+        "deleteSuccess": "ファイルを正常に削除しました",
+        "copyErrors": {
+          "timeout": "コピー操作がタイムアウトしました。より小さいファイルで再試行するか、接続を確認してください。",
+          "failed": "コピー操作に失敗しました。もう一度お試しください。",
+          "aborted": "タイムアウトによりコピー操作がキャンセルされました。"
+        }
       }
     },
     "form": {
@@ -897,7 +946,8 @@
       "fileList": {
         "title": "選択されたファイル:",
         "statusUploaded": "アップロード済み",
-        "statusError": "エラー"
+        "statusError": "エラー",
+        "retry": "再試行"
       },
       "form": {
         "nameLabel": "名前",
@@ -1085,6 +1135,10 @@
       "smtpTrustSelfSigned": {
         "title": "自己署名証明書を信頼",
         "description": "自己署名SSL/TLS証明書を信頼するように設定します（開発環境で便利）"
+      },
+      "passwordAuthEnabled": {
+        "title": "パスワード認証",
+        "description": "パスワード認証を有効または無効にする"
       }
     },
     "buttons": {
@@ -1094,7 +1148,8 @@
     },
     "errors": {
       "loadFailed": "設定の読み込みに失敗しました",
-      "updateFailed": "設定の更新に失敗しました"
+      "updateFailed": "設定の更新に失敗しました",
+      "passwordAuthRequiresProvider": "少なくとも1つのアクティブな認証プロバイダーがない場合、パスワード認証を無効にできません"
     },
     "messages": {
       "noChanges": "保存する変更はありません",
@@ -1200,7 +1255,10 @@
     "invalidDate": "無効な日付",
     "loadError": "共有詳細の読み込みに失敗しました",
     "editSecurity": "セキュリティを編集",
-    "editExpiration": "期限を編集"
+    "editExpiration": "期限を編集",
+    "clickToEnlargeQrCode": "QRコードを拡大",
+    "downloadQrCode": "QRコードをダウンロード",
+    "qrCode": "QRコード"
   },
   "shareExpiration": {
     "neverExpires": "期限なし",
@@ -1387,7 +1445,8 @@
       "copyLink": "リンクコピー",
       "notifyRecipients": "受信者に通知",
       "delete": "削除",
-      "downloadShareFiles": "すべてのファイルをダウンロードします"
+      "downloadShareFiles": "すべてのファイルをダウンロードします",
+      "viewQrCode": "QRコードを表示"
     },
     "bulkActions": {
       "delete": "削除",
@@ -1418,6 +1477,160 @@
     "light": "ライト",
     "dark": "ダーク",
     "system": "システム"
+  },
+  "twoFactor": {
+    "title": "二要素認証",
+    "description": "アカウントにセキュリティ層を追加",
+    "enabled": "アカウントは二要素認証で保護されています",
+    "disabled": "二要素認証は有効になっていません",
+    "setup": {
+      "title": "二要素認証を有効にする",
+      "description": "認証アプリでQRコードをスキャンし、確認コードを入力してください。",
+      "qrCode": "QRコード",
+      "manualEntryKey": "手動入力キー",
+      "verificationCode": "確認コード",
+      "verificationCodePlaceholder": "6桁のコードを入力",
+      "verificationCodeDescription": "認証アプリから6桁のコードを入力してください",
+      "verifyAndEnable": "確認して有効化",
+      "cancel": "キャンセル"
+    },
+    "disable": {
+      "title": "二要素認証を無効にする",
+      "description": "二要素認証を無効にするには、パスワードを入力して確認してください。",
+      "password": "パスワード",
+      "passwordPlaceholder": "パスワードを入力",
+      "confirm": "無効化を確認",
+      "cancel": "キャンセル"
+    },
+    "backupCodes": {
+      "title": "バックアップコード",
+      "description": "これらのバックアップコードを安全な場所に保管してください。認証デバイスを紛失した場合、アカウントへのアクセスに使用できます。",
+      "warning": "重要：",
+      "warningText": "各バックアップコードは1回のみ使用できます。安全に保管し、誰とも共有しないでください。",
+      "generateNew": "新しいバックアップコードを生成",
+      "download": "バックアップコードをダウンロード",
+      "copyToClipboard": "クリップボードにコピー",
+      "savedMessage": "バックアップコードを保存しました",
+      "available": "利用可能なバックアップコード：{count}個",
+      "instructions": [
+        "• これらのコードを安全な場所に保管してください",
+        "• 各バックアップコードは1回のみ使用できます",
+        "• いつでも新しいコードを生成できます"
+      ]
+    },
+    "verification": {
+      "title": "二要素認証",
+      "description": "認証アプリから6桁のコードを入力してください",
+      "backupDescription": "続行するにはバックアップコードを入力してください",
+      "verificationCode": "確認コード",
+      "backupCode": "バックアップコード",
+      "verificationCodePlaceholder": "000000",
+      "backupCodePlaceholder": "XXXX-XXXX",
+      "verify": "確認",
+      "verifying": "確認中...",
+      "useBackupCode": "代わりにバックアップコードを使用",
+      "useAuthenticatorCode": "代わりに認証アプリのコードを使用",
+      "rememberDevice": "このデバイスを30日間記憶する",
+      "rememberDeviceDescription": "このデバイスでは30日間2FAコードを入力する必要はありません"
+    },
+    "messages": {
+      "enabledSuccess": "二要素認証が正常に有効化されました！",
+      "disabledSuccess": "二要素認証が正常に無効化されました",
+      "backupCodesGenerated": "新しいバックアップコードが正常に生成されました",
+      "backupCodesCopied": "バックアップコードがクリップボードにコピーされました",
+      "setupFailed": "2FA設定の生成に失敗しました",
+      "verificationFailed": "確認コードが無効です",
+      "disableFailed": "2FAの無効化に失敗しました。パスワードを確認してください。",
+      "backupCodesFailed": "バックアップコードの生成に失敗しました",
+      "backupCodesCopyFailed": "バックアップコードのコピーに失敗しました",
+      "statusLoadFailed": "2FAステータスの読み込みに失敗しました",
+      "enterVerificationCode": "確認コードを入力してください",
+      "enterPassword": "パスワードを入力してください",
+      "deviceTrusted": "このデバイスは30日間信頼できるデバイスとしてマークされました"
+    },
+    "errors": {
+      "invalidVerificationCode": "確認コードが無効です",
+      "invalidTwoFactorCode": "二要素認証コードが無効です",
+      "twoFactorRequired": "二要素認証が必要です",
+      "twoFactorAlreadyEnabled": "二要素認証はすでに有効になっています",
+      "twoFactorNotEnabled": "二要素認証が有効になっていません",
+      "passwordVerificationRequired": "パスワードの確認が必要です",
+      "invalidPassword": "パスワードが無効です",
+      "userNotFound": "ユーザーが見つかりません"
+    },
+    "buttons": {
+      "enable2FA": "2FAを有効にする",
+      "disable2FA": "2FAを無効にする"
+    },
+    "deviceNames": {
+      "unknownDevice": "不明なデバイス",
+      "browsers": {
+        "chrome": "Chrome",
+        "firefox": "Firefox",
+        "safari": "Safari",
+        "edge": "Edge"
+      },
+      "platforms": {
+        "windows": " on Windows",
+        "macos": " on macOS",
+        "linux": " on Linux",
+        "iphone": " on iPhone",
+        "android": " on Android"
+      }
+    },
+    "status": {
+      "label": "状態：",
+      "enabled": "有効",
+      "disabled": "無効"
+    },
+    "trustedDevices": {
+      "title": "信頼済みデバイス - 2FA",
+      "description": "2FA認証が不要なデバイス",
+      "noDevices": "信頼済みデバイスはありません",
+      "deviceName": "デバイス",
+      "addedOn": "追加日",
+      "expiresOn": "有効期限",
+      "remove": "削除",
+      "removeAll": "すべて削除",
+      "confirmRemove": "この信頼済みデバイスを削除してもよろしいですか？",
+      "confirmRemoveAll": "すべての信頼済みデバイスを削除してもよろしいですか？",
+      "deviceRemoved": "信頼済みデバイスが正常に削除されました",
+      "allDevicesRemoved": "すべての信頼済みデバイスが正常に削除されました",
+      "loadFailed": "信頼済みデバイスの読み込みに失敗しました",
+      "removeFailed": "信頼済みデバイスの削除に失敗しました",
+      "removeAllFailed": "すべての信頼済みデバイスの削除に失敗しました",
+      "loading": "信頼済みデバイスを読み込み中...",
+      "noDevicesDescription": "2FA認証時にデバイスを信頼するように選択すると、ここに表示されます",
+      "tableHeaders": {
+        "device": "デバイス",
+        "added": "追加日",
+        "expires": "有効期限",
+        "lastUsed": "最終使用日",
+        "ipAddress": "IPアドレス",
+        "actions": "アクション"
+      },
+      "status": {
+        "never": "なし",
+        "expired": "期限切れ"
+      },
+      "modals": {
+        "removeDevice": {
+          "title": "信頼済みデバイスを削除",
+          "added": "追加日：",
+          "ip": "IP："
+        },
+        "removeAllDevices": {
+          "title": "すべての信頼済みデバイスを削除",
+          "description": "{count}個の信頼済みデバイスを削除します。すべてのデバイスで再度2FA認証が必要になります。"
+        },
+        "buttons": {
+          "cancel": "キャンセル",
+          "removing": "削除中...",
+          "removeDevice": "デバイスを削除",
+          "removeAllDevices": "すべてのデバイスを削除"
+        }
+      }
+    }
   },
   "uploadFile": {
     "title": "ファイルをアップロード",
@@ -1450,7 +1663,8 @@
       "title": "アップロードするファイルをドロップ",
       "description": "ファイルをアップロードするにはリリースしてください"
     },
-    "pasteSuccess": "{count, plural, =1 {画像が貼り付けられ、正常にアップロードされました} other {#個の画像が貼り付けられ、正常にアップロードされました}}"
+    "pasteSuccess": "{count, plural, =1 {画像が貼り付けられ、正常にアップロードされました} other {#個の画像が貼り付けられ、正常にアップロードされました}}",
+    "filesQueued": "{count, plural, one {# ファイルがアップロード待ち} other {# ファイルがアップロード待ち}}"
   },
   "users": {
     "modes": {
@@ -1535,20 +1749,5 @@
     "passwordRequired": "パスワードは必須です",
     "nameRequired": "名前は必須です",
     "required": "このフィールドは必須です"
-  },
-  "iconPicker": {
-    "title": "アイコンを選択",
-    "placeholder": "アイコンを選択してください",
-    "searchPlaceholder": "アイコンを検索...",
-    "loadingMore": "アイコンを読み込み中...",
-    "allIconsLoaded": "全{count}個のアイコンを読み込みました",
-    "noIconsFound": "\"{search}\"に一致するアイコンが見つかりませんでした",
-    "tabs": {
-      "all": "すべてのアイコン",
-      "popular": "人気",
-      "auth": "認証プロバイダー"
-    },
-    "stats": "{libraryCount}ライブラリから{iconCount}個のアイコン",
-    "categoryBadge": "{category}（{count}個のアイコン）"
   }
 }
