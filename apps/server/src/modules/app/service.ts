@@ -44,13 +44,13 @@ export class AppService {
   async getPublicConfigs() {
     const sensitiveKeys = [
       "smtpHost",
-      "smtpPort", 
+      "smtpPort",
       "smtpUser",
       "smtpPass",
       "smtpSecure",
       "smtpNoAuth",
       "smtpTrustSelfSigned",
-      "jwtSecret"
+      "jwtSecret",
     ];
 
     return prisma.appConfig.findMany({
