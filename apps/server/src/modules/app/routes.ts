@@ -103,14 +103,33 @@ export async function appRoutes(app: FastifyInstance) {
   );
 
   app.get(
+    "/app/configs/public",
+    {
+      schema: {
+        tags: ["App"],
+        operationId: "getPublicConfigs",
+        summary: "List public configurations",
+        description: "List public configurations (excludes sensitive data like SMTP credentials)",
+        response: {
+          200: z.object({
+            configs: z.array(ConfigResponseSchema),
+          }),
+          400: z.object({ error: z.string().describe("Error message") }),
+        },
+      },
+    },
+    appController.getPublicConfigs.bind(appController)
+  );
+
+  app.get(
     "/app/configs",
     {
-      // preValidation: adminPreValidation,
+      preValidation: adminPreValidation,
       schema: {
         tags: ["App"],
         operationId: "getAllConfigs",
         summary: "List all configurations",
-        description: "List all configurations (admin only)",
+        description: "List all configurations including sensitive data (admin only)",
         response: {
           200: z.object({
             configs: z.array(ConfigResponseSchema),

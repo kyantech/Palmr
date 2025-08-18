@@ -22,6 +22,14 @@ export const updateConfig = <TData = UpdateConfigResult>(
 };
 
 /**
+ * List public configurations (excludes sensitive data)
+ * @summary List public configurations
+ */
+export const getPublicConfigs = <TData = GetAllConfigsResult>(options?: AxiosRequestConfig): Promise<TData> => {
+  return apiInstance.get(`/api/app/configs/public`, options);
+};
+
+/**
  * List all configurations (admin only)
  * @summary List all configurations
  */
