@@ -36,7 +36,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
@@ -768,7 +767,7 @@ export function ReceivedFilesModal({
             <DialogDescription>{t("reverseShares.modals.receivedFiles.description")}</DialogDescription>
           </DialogHeader>
 
-          <div className="flex flex-col gap-4 flex-1 overflow-hidden">
+          <div className="flex flex-col gap-4 flex-1 min-h-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <Badge variant="secondary" className="text-sm">
@@ -848,53 +847,55 @@ export function ReceivedFilesModal({
                 </div>
               </div>
             ) : (
-              <ScrollArea className="flex-1">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]">
-                        <Checkbox
-                          checked={isAllSelected}
-                          onCheckedChange={handleSelectAll}
-                          aria-label={t("reverseShares.modals.receivedFiles.selectAll")}
+              <div className="h-[450px] w-full overflow-y-auto rounded-lg border bg-background shadow-sm [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/20">
+                <div className="p-1">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[50px]">
+                          <Checkbox
+                            checked={isAllSelected}
+                            onCheckedChange={handleSelectAll}
+                            aria-label={t("reverseShares.modals.receivedFiles.selectAll")}
+                          />
+                        </TableHead>
+                        <TableHead>{t("reverseShares.modals.receivedFiles.columns.file")}</TableHead>
+                        <TableHead>{t("reverseShares.modals.receivedFiles.columns.size")}</TableHead>
+                        <TableHead>{t("reverseShares.modals.receivedFiles.columns.sender")}</TableHead>
+                        <TableHead>{t("reverseShares.modals.receivedFiles.columns.date")}</TableHead>
+                        <TableHead className="text-right">
+                          {t("reverseShares.modals.receivedFiles.columns.actions")}
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {files.map((file) => (
+                        <FileRow
+                          key={file.id}
+                          file={file}
+                          editingFile={editingFile}
+                          editValue={editValue}
+                          inputRef={inputRef}
+                          hoveredFile={hoveredFile}
+                          copyingFile={copyingFile}
+                          isSelected={selectedFiles.has(file.id)}
+                          onStartEdit={startEdit}
+                          onSaveEdit={saveEdit}
+                          onCancelEdit={cancelEdit}
+                          onEditValueChange={setEditValue}
+                          onKeyDown={handleKeyDown}
+                          onSetHoveredFile={setHoveredFile}
+                          onPreview={handlePreview}
+                          onDownload={handleDownload}
+                          onDelete={handleDeleteFile}
+                          onCopy={handleCopyFile}
+                          onSelectFile={handleSelectFile}
                         />
-                      </TableHead>
-                      <TableHead>{t("reverseShares.modals.receivedFiles.columns.file")}</TableHead>
-                      <TableHead>{t("reverseShares.modals.receivedFiles.columns.size")}</TableHead>
-                      <TableHead>{t("reverseShares.modals.receivedFiles.columns.sender")}</TableHead>
-                      <TableHead>{t("reverseShares.modals.receivedFiles.columns.date")}</TableHead>
-                      <TableHead className="text-right">
-                        {t("reverseShares.modals.receivedFiles.columns.actions")}
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {files.map((file) => (
-                      <FileRow
-                        key={file.id}
-                        file={file}
-                        editingFile={editingFile}
-                        editValue={editValue}
-                        inputRef={inputRef}
-                        hoveredFile={hoveredFile}
-                        copyingFile={copyingFile}
-                        isSelected={selectedFiles.has(file.id)}
-                        onStartEdit={startEdit}
-                        onSaveEdit={saveEdit}
-                        onCancelEdit={cancelEdit}
-                        onEditValueChange={setEditValue}
-                        onKeyDown={handleKeyDown}
-                        onSetHoveredFile={setHoveredFile}
-                        onPreview={handlePreview}
-                        onDownload={handleDownload}
-                        onDelete={handleDeleteFile}
-                        onCopy={handleCopyFile}
-                        onSelectFile={handleSelectFile}
-                      />
-                    ))}
-                  </TableBody>
-                </Table>
-              </ScrollArea>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
             )}
           </div>
         </DialogContent>
