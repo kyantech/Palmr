@@ -201,6 +201,7 @@
     "extension": "Erweiterung",
     "descriptionLabel": "Beschreibung",
     "descriptionPlaceholder": "Dateibeschreibung eingeben",
+    "addDescriptionPlaceholder": "Beschreibung hinzufügen...",
     "deleteFile": "Datei löschen",
     "deleteConfirmation": "Sind Sie sicher, dass Sie  löschen möchten?",
     "deleteWarning": "Diese Aktion kann nicht rückgängig gemacht werden."
@@ -267,6 +268,8 @@
     "bulkDownloadFileError": "Fehler beim Herunterladen der Datei {fileName}",
     "bulkDeleteSuccess": "{count, plural, =1 {1 Datei erfolgreich gelöscht} other {# Dateien erfolgreich gelöscht}}",
     "bulkDeleteError": "Fehler beim Löschen der ausgewählten Dateien",
+    "bulkDeleteTitle": "Ausgewählte Dateien Löschen",
+    "bulkDeleteConfirmation": "Sind Sie sicher, dass Sie {count, plural, =1 {1 Datei} other {# Dateien}} löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
     "viewMode": {
       "table": "Tabelle",
       "grid": "Raster"
@@ -750,6 +753,7 @@
         "noFiles": "Noch keine Dateien empfangen",
         "noFilesDescription": "Über diesen Link gesendete Dateien erscheinen hier",
         "fileCount": "{count, plural, =0 {Keine Dateien} =1 {1 Datei} other {# Dateien}}",
+        "invalidDate": "Ungültiges Datum",
         "totalSize": "Gesamtgröße: {size}",
         "columns": {
           "file": "Datei",
@@ -1205,6 +1209,7 @@
   "shareActions": {
     "deleteTitle": "Freigabe Löschen",
     "deleteConfirmation": "Sind Sie sicher, dass Sie diese Freigabe löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "addDescriptionPlaceholder": "Beschreibung hinzufügen...",
     "editTitle": "Freigabe Bearbeiten",
     "nameLabel": "Freigabe-Name",
     "descriptionLabel": "Beschreibung",

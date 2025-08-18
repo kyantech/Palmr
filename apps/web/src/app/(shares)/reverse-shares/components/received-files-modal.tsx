@@ -110,11 +110,11 @@ const formatFileSize = (sizeString: string) => {
   return `${parseFloat((sizeInBytes / Math.pow(k, i)).toFixed(1))} ${units[i]}`;
 };
 
-const formatDate = (dateString: string) => {
+const formatDate = (dateString: string, t: any) => {
   try {
     return format(new Date(dateString), "dd/MM/yyyy HH:mm", { locale: ptBR });
   } catch {
-    return "Data inválida";
+    return t("reverseShares.modals.receivedFiles.invalidDate");
   }
 };
 
@@ -380,7 +380,7 @@ function FileRow({
           </span>
         </div>
       </TableCell>
-      <TableCell className="text-sm text-muted-foreground">{formatDate(file.createdAt)}</TableCell>
+      <TableCell className="text-sm text-muted-foreground">{formatDate(file.createdAt, t)}</TableCell>
       <TableCell className="text-right">
         <div className="flex items-center justify-end gap-1">
           <Button

@@ -203,7 +203,8 @@
     "descriptionPlaceholder": "ファイルの説明を入力してください",
     "deleteFile": "ファイルを削除",
     "deleteConfirmation": "を削除してもよろしいですか？",
-    "deleteWarning": "この操作は元に戻せません。"
+    "deleteWarning": "この操作は元に戻せません。",
+    "addDescriptionPlaceholder": "説明を追加..."
   },
   "fileManager": {
     "downloadError": "ファイルのダウンロードに失敗しました",
@@ -271,7 +272,9 @@
       "table": "テーブル",
       "grid": "グリッド"
     },
-    "totalFiles": "{count, plural, =0 {ファイルなし} =1 {1ファイル} other {#ファイル}}"
+    "totalFiles": "{count, plural, =0 {ファイルなし} =1 {1ファイル} other {#ファイル}}",
+    "bulkDeleteConfirmation": "{count, plural, =1 {1つのファイル} other {#つのファイル}}を削除してよろしいですか？この操作は元に戻せません。",
+    "bulkDeleteTitle": "選択したファイルを削除"
   },
   "filesTable": {
     "ariaLabel": "ファイルテーブル",
@@ -795,7 +798,8 @@
           "timeout": "コピー操作がタイムアウトしました。より小さいファイルで再試行するか、接続を確認してください。",
           "failed": "コピー操作に失敗しました。もう一度お試しください。",
           "aborted": "タイムアウトによりコピー操作がキャンセルされました。"
-        }
+        },
+        "invalidDate": "無効な日付"
       }
     },
     "form": {
@@ -1223,7 +1227,8 @@
     "editSuccess": "共有が正常に更新されました",
     "editError": "共有の更新に失敗しました",
     "bulkDeleteConfirmation": "{count, plural, =1 {1つの共有} other {#つの共有}}を削除してもよろしいですか？この操作は元に戻せません。",
-    "bulkDeleteTitle": "選択した共有を削除"
+    "bulkDeleteTitle": "選択した共有を削除",
+    "addDescriptionPlaceholder": "説明を追加..."
   },
   "shareDetails": {
     "title": "共有詳細",

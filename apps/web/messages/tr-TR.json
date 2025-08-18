@@ -203,7 +203,8 @@
     "descriptionPlaceholder": "Dosya açıklamasını girin",
     "deleteFile": "Dosyayı Sil",
     "deleteConfirmation": " dosyasını silmek istediğinize emin misiniz?",
-    "deleteWarning": "Bu işlem geri alınamaz."
+    "deleteWarning": "Bu işlem geri alınamaz.",
+    "addDescriptionPlaceholder": "Açıklama ekle..."
   },
   "fileManager": {
     "downloadError": "Dosya indirilemedi",
@@ -271,7 +272,9 @@
     "viewMode": {
       "table": "Tablo",
       "grid": "Izgara"
-    }
+    },
+    "bulkDeleteConfirmation": "{count, plural, =1 {1 dosyayı} other {# dosyayı}} silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+    "bulkDeleteTitle": "Seçili Dosyaları Sil"
   },
   "filesTable": {
     "ariaLabel": "Dosya Tablosu",
@@ -795,7 +798,8 @@
           "timeout": "Kopyalama işlemi zaman aşımına uğradı. Lütfen daha küçük bir dosya ile tekrar deneyin veya bağlantınızı kontrol edin.",
           "failed": "Kopyalama işlemi başarısız oldu. Lütfen tekrar deneyin.",
           "aborted": "Kopyalama işlemi zaman aşımı nedeniyle iptal edildi."
-        }
+        },
+        "invalidDate": "Geçersiz tarih"
       }
     },
     "form": {
@@ -1223,7 +1227,8 @@
     "editSuccess": "Paylaşım başarıyla güncellendi",
     "editError": "Paylaşım güncelleme başarısız",
     "bulkDeleteConfirmation": "{count, plural, =1 {1 paylaşımı} other {# paylaşımı}} silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
-    "bulkDeleteTitle": "Seçili Paylaşımları Sil"
+    "bulkDeleteTitle": "Seçili Paylaşımları Sil",
+    "addDescriptionPlaceholder": "Açıklama ekle..."
   },
   "shareDetails": {
     "title": "Paylaşım Detayları",

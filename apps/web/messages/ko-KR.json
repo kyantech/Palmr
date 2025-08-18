@@ -203,7 +203,8 @@
     "descriptionPlaceholder": "파일 설명을 입력하세요",
     "deleteFile": "파일 삭제",
     "deleteConfirmation": "을(를) 삭제하시겠습니까?",
-    "deleteWarning": "이 작업은 취소할 수 없습니다."
+    "deleteWarning": "이 작업은 취소할 수 없습니다.",
+    "addDescriptionPlaceholder": "설명 추가..."
   },
   "fileManager": {
     "downloadError": "파일 다운로드에 실패했습니다",
@@ -271,7 +272,9 @@
       "table": "테이블",
       "grid": "그리드"
     },
-    "totalFiles": "{count, plural, =0 {파일 없음} =1 {1개 파일} other {#개 파일}}"
+    "totalFiles": "{count, plural, =0 {파일 없음} =1 {1개 파일} other {#개 파일}}",
+    "bulkDeleteConfirmation": "{count, plural, =1 {1개 파일} other {#개 파일}}을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+    "bulkDeleteTitle": "선택한 파일 삭제"
   },
   "filesTable": {
     "ariaLabel": "파일 테이블",
@@ -795,7 +798,8 @@
           "timeout": "복사 작업 시간이 초과되었습니다. 더 작은 파일로 다시 시도하거나 연결을 확인하십시오.",
           "failed": "복사 작업이 실패했습니다. 다시 시도해 주세요.",
           "aborted": "시간 초과로 인해 복사 작업이 취소되었습니다."
-        }
+        },
+        "invalidDate": "잘못된 날짜"
       }
     },
     "form": {
@@ -1223,7 +1227,8 @@
     "editSuccess": "공유가 성공적으로 업데이트되었습니다",
     "editError": "공유 업데이트에 실패했습니다",
     "bulkDeleteConfirmation": "{count, plural, =1 {1개의 공유} other {#개의 공유}}를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
-    "bulkDeleteTitle": "선택한 공유 삭제"
+    "bulkDeleteTitle": "선택한 공유 삭제",
+    "addDescriptionPlaceholder": "설명 추가..."
   },
   "shareDetails": {
     "title": "공유 세부 정보",

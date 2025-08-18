@@ -438,7 +438,7 @@ export function ReverseShareDetailsModal({
                   onSave={(value) => handleUpdateField("expiration", value)}
                   type="datetime-local"
                   disabled={!onUpdateReverseShare}
-                  renderValue={(value) => (value ? formatDate(value) : "Nunca")}
+                  renderValue={(value) => (value ? formatDate(value) : t("shareDetails.never"))}
                 />
               </div>
             </div>

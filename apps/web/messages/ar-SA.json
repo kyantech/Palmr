@@ -203,7 +203,8 @@
     "descriptionPlaceholder": "أدخل وصف الملف",
     "deleteFile": "حذف الملف",
     "deleteConfirmation": "هل أنت متأكد أنك تريد حذف ؟",
-    "deleteWarning": "هذا الإجراء لا يمكن التراجع عنه."
+    "deleteWarning": "هذا الإجراء لا يمكن التراجع عنه.",
+    "addDescriptionPlaceholder": "إضافة وصف..."
   },
   "fileManager": {
     "downloadError": "فشل في تنزيل الملف",
@@ -271,7 +272,9 @@
       "table": "جدول",
       "grid": "شبكة"
     },
-    "totalFiles": "{count, plural, =0 {لا توجد ملفات} =1 {ملف واحد} other {# ملفات}}"
+    "totalFiles": "{count, plural, =0 {لا توجد ملفات} =1 {ملف واحد} other {# ملفات}}",
+    "bulkDeleteConfirmation": "هل أنت متأكد من رغبتك في حذف {count, plural, =1 {ملف واحد} other {# ملفات}}؟ لا يمكن التراجع عن هذا الإجراء.",
+    "bulkDeleteTitle": "حذف الملفات المحددة"
   },
   "filesTable": {
     "ariaLabel": "جدول الملفات",
@@ -795,7 +798,8 @@
           "timeout": "انتهت مهلة عملية النسخ. يرجى المحاولة مرة أخرى باستخدام ملف أصغر أو التحقق من اتصالك.",
           "failed": "فشلت عملية النسخ. يرجى المحاولة مرة أخرى.",
           "aborted": "تم إلغاء عملية النسخ بسبب انتهاء المهلة."
-        }
+        },
+        "invalidDate": "تاريخ غير صحيح"
       }
     },
     "form": {
@@ -1225,7 +1229,8 @@
     "editSuccess": "تم تحديث المشاركة بنجاح",
     "editError": "فشل في تحديث المشاركة",
     "bulkDeleteConfirmation": "هل أنت متأكد من أنك تريد حذف {count, plural, =1 {مشاركة واحدة} other {# مشاركات}} محددة؟ لا يمكن التراجع عن هذا الإجراء.",
-    "bulkDeleteTitle": "حذف المشاركات المحددة"
+    "bulkDeleteTitle": "حذف المشاركات المحددة",
+    "addDescriptionPlaceholder": "إضافة وصف..."
   },
   "shareDetails": {
     "title": "تفاصيل المشاركة",

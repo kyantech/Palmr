@@ -201,6 +201,7 @@
     "extension": "Extension",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Entrez la description du fichier",
+    "addDescriptionPlaceholder": "Ajouter une description...",
     "deleteFile": "Supprimer le Fichier",
     "deleteConfirmation": "Êtes-vous sûr de vouloir supprimer  ?",
     "deleteWarning": "Cette action ne peut pas être annulée."
@@ -267,6 +268,8 @@
     "bulkDownloadFileError": "Erreur lors du téléchargement du fichier {fileName}",
     "bulkDeleteSuccess": "{count, plural, =1 {1 fichier supprimé avec succès} other {# fichiers supprimés avec succès}}",
     "bulkDeleteError": "Erreur lors de la suppression des fichiers sélectionnés",
+    "bulkDeleteTitle": "Supprimer les Fichiers Sélectionnés",
+    "bulkDeleteConfirmation": "Êtes-vous sûr de vouloir supprimer {count, plural, =1 {1 fichier} other {# fichiers}} ? Cette action ne peut pas être annulée.",
     "viewMode": {
       "table": "Tableau",
       "grid": "Grille"
@@ -750,6 +753,7 @@
         "noFiles": "Aucun fichier reçu pour le moment",
         "noFilesDescription": "Les fichiers envoyés via ce lien apparaîtront ici",
         "fileCount": "{count, plural, =0 {Aucun fichier} =1 {1 fichier} other {# fichiers}}",
+        "invalidDate": "Date invalide",
         "totalSize": "Taille totale : {size}",
         "columns": {
           "file": "Fichier",
@@ -1205,6 +1209,7 @@
   "shareActions": {
     "deleteTitle": "Supprimer le Partage",
     "deleteConfirmation": "Êtes-vous sûr de vouloir supprimer ce partage ? Cette action ne peut pas être annulée.",
+    "addDescriptionPlaceholder": "Ajouter une description...",
     "editTitle": "Modifier le Partage",
     "nameLabel": "Nom du Partage",
     "descriptionLabel": "Description",

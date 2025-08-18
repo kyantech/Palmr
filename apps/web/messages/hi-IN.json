@@ -203,7 +203,8 @@
     "descriptionPlaceholder": "फाइल का विवरण दर्ज करें",
     "deleteFile": "फाइल हटाएं",
     "deleteConfirmation": "क्या आप वाकई  हटाना चाहते हैं?",
-    "deleteWarning": "यह क्रिया अपरिवर्तनीय है।"
+    "deleteWarning": "यह क्रिया अपरिवर्तनीय है।",
+    "addDescriptionPlaceholder": "विवरण जोड़ें..."
   },
   "fileManager": {
     "downloadError": "फाइल डाउनलोड करने में त्रुटि",
@@ -271,7 +272,9 @@
       "table": "तालिका",
       "grid": "ग्रिड"
     },
-    "totalFiles": "{count, plural, =0 {कोई फ़ाइल नहीं} =1 {1 फ़ाइल} other {# फ़ाइलें}}"
+    "totalFiles": "{count, plural, =0 {कोई फ़ाइल नहीं} =1 {1 फ़ाइल} other {# फ़ाइलें}}",
+    "bulkDeleteConfirmation": "क्या आप वास्तव में {count, plural, =1 {1 फाइल} other {# फाइलों}} को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
+    "bulkDeleteTitle": "चयनित फाइलों को हटाएं"
   },
   "filesTable": {
     "ariaLabel": "फाइल तालिका",
@@ -795,7 +798,8 @@
           "timeout": "कॉपी ऑपरेशन का समय समाप्त हो गया। कृपया छोटी फ़ाइल के साथ पुनः प्रयास करें या अपना कनेक्शन जांचें।",
           "failed": "कॉपी ऑपरेशन विफल हो गया। कृपया पुनः प्रयास करें।",
           "aborted": "टाइमआउट के कारण कॉपी ऑपरेशन रद्द कर दिया गया।"
-        }
+        },
+        "invalidDate": "अमान्य दिनांक"
       }
     },
     "form": {
@@ -1223,7 +1227,8 @@
     "editSuccess": "साझाकरण सफलतापूर्वक अपडेट किया गया",
     "editError": "साझाकरण अपडेट करने में विफल",
     "bulkDeleteConfirmation": "क्या आप वाकई {count, plural, =1 {1 साझाकरण} other {# साझाकरण}} हटाना चाहते हैं? इस क्रिया को पूर्ववत नहीं किया जा सकता।",
-    "bulkDeleteTitle": "चयनित साझाकरण हटाएं"
+    "bulkDeleteTitle": "चयनित साझाकरण हटाएं",
+    "addDescriptionPlaceholder": "विवरण जोड़ें..."
   },
   "shareDetails": {
     "title": "साझाकरण विवरण",

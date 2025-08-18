@@ -413,7 +413,7 @@ export function FilesTable({
                             value={editValue}
                             onChange={(e) => setEditValue(e.target.value)}
                             onKeyDown={handleKeyDown}
-                            placeholder="Add description..."
+                            placeholder={t("fileActions.addDescriptionPlaceholder")}
                             className="h-8 text-sm"
                             onClick={(e) => e.stopPropagation()}
                           />

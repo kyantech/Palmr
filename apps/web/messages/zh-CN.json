@@ -203,7 +203,8 @@
     "descriptionPlaceholder": "请输入文件描述",
     "deleteFile": "删除文件",
     "deleteConfirmation": "您确定要删除{fileName}吗？",
-    "deleteWarning": "此操作不可撤销。"
+    "deleteWarning": "此操作不可撤销。",
+    "addDescriptionPlaceholder": "添加描述..."
   },
   "fileManager": {
     "downloadError": "文件下载失败",
@@ -271,7 +272,9 @@
       "table": "表格",
       "grid": "网格"
     },
-    "totalFiles": "{count, plural, =0 {无文件} =1 {1个文件} other {#个文件}}"
+    "totalFiles": "{count, plural, =0 {无文件} =1 {1个文件} other {#个文件}}",
+    "bulkDeleteConfirmation": "您确定要删除 {count, plural, =1 {1 个文件} other {# 个文件}}吗？此操作无法撤销。",
+    "bulkDeleteTitle": "删除所选文件"
   },
   "filesTable": {
     "ariaLabel": "文件表格",
@@ -795,7 +798,8 @@
           "timeout": "复制操作超时。请尝试使用较小的文件或检查您的连接。",
           "failed": "复制操作失败。请重试。",
           "aborted": "由于超时，复制操作已取消。"
-        }
+        },
+        "invalidDate": "无效日期"
       }
     },
     "form": {
@@ -1223,7 +1227,8 @@
     "descriptionPlaceholder": "输入描述（可选）",
     "descriptionLabel": "描述",
     "bulkDeleteConfirmation": "您确定要删除{count, plural, =1 {1个共享} other {#个共享}}吗？此操作无法撤销。",
-    "bulkDeleteTitle": "删除选中的共享"
+    "bulkDeleteTitle": "删除选中的共享",
+    "addDescriptionPlaceholder": "添加描述..."
   },
   "shareDetails": {
     "title": "共享详情",
@@ -1512,7 +1517,11 @@
       "copyToClipboard": "复制到剪贴板",
       "savedMessage": "我已保存备用码",
       "available": "可用备用码：{count}个",
-      "instructions": ["• 将这些代码保存在安全的位置", "• 每个备用码只能使用一次", "• 您可以随时生成新的备用码"]
+      "instructions": [
+        "• 将这些代码保存在安全的位置",
+        "• 每个备用码只能使用一次",
+        "• 您可以随时生成新的备用码"
+      ]
     },
     "verification": {
       "title": "双重认证",

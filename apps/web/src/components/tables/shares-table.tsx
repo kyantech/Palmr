@@ -382,7 +382,7 @@ export function SharesTable({
                             onChange={(e) => setEditValue(e.target.value)}
                             onKeyDown={handleKeyDown}
                             className="h-8 text-sm min-w-[250px]"
-                            placeholder="Adicionar descrição..."
+                            placeholder={t("shareActions.addDescriptionPlaceholder")}
                             onClick={(e) => e.stopPropagation()}
                           />
                           <Button

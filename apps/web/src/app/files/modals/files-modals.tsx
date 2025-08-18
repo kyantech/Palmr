@@ -1,3 +1,5 @@
+import { useTranslations } from "next-intl";
+
 import { BulkDownloadModal } from "@/components/modals/bulk-download-modal";
 import { DeleteConfirmationModal } from "@/components/modals/delete-confirmation-modal";
 import { FileActionsModals } from "@/components/modals/file-actions-modals";
@@ -8,6 +10,8 @@ import { UploadFileModal } from "@/components/modals/upload-file-modal";
 import type { FilesModalsProps } from "../types";
 
 export function FilesModals({ fileManager, modals, onSuccess }: FilesModalsProps) {
+  const t = useTranslations();
+
   return (
     <>
       <UploadFileModal isOpen={modals.isUploadModalOpen} onClose={modals.onCloseUploadModal} onSuccess={onSuccess} />
@@ -50,8 +54,8 @@ export function FilesModals({ fileManager, modals, onSuccess }: FilesModalsProps
         isOpen={!!fileManager.filesToDelete}
         onClose={() => fileManager.setFilesToDelete(null)}
         onConfirm={fileManager.handleDeleteBulk}
-        title="Excluir Arquivos Selecionados"
-        description={`Tem certeza que deseja excluir ${fileManager.filesToDelete?.length || 0} arquivo(s)? Esta ação não pode ser desfeita.`}
+        title={t("files.bulkDeleteTitle")}
+        description={t("files.bulkDeleteConfirmation", { count: fileManager.filesToDelete?.length || 0 })}
         files={fileManager.filesToDelete?.map((f) => f.name) || []}
       />
 

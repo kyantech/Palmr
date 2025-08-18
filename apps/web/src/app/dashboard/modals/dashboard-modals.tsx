@@ -72,8 +72,8 @@ export function DashboardModals({ modals, fileManager, shareManager, onSuccess }
         isOpen={!!fileManager.filesToDelete}
         onClose={() => fileManager.setFilesToDelete(null)}
         onConfirm={fileManager.handleDeleteBulk}
-        title="Excluir Arquivos Selecionados"
-        description={`Tem certeza que deseja excluir ${fileManager.filesToDelete?.length || 0} arquivo(s)? Esta ação não pode ser desfeita.`}
+        title={t("files.bulkDeleteTitle")}
+        description={t("files.bulkDeleteConfirmation", { count: fileManager.filesToDelete?.length || 0 })}
         files={fileManager.filesToDelete?.map((f) => f.name) || []}
       />
 

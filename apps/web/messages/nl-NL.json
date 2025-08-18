@@ -203,7 +203,8 @@
     "descriptionPlaceholder": "Voer bestandsbeschrijving in",
     "deleteFile": "Bestand Verwijderen",
     "deleteConfirmation": "Weet je zeker dat je  wilt verwijderen?",
-    "deleteWarning": "Deze actie kan niet ongedaan worden gemaakt."
+    "deleteWarning": "Deze actie kan niet ongedaan worden gemaakt.",
+    "addDescriptionPlaceholder": "Beschrijving toevoegen..."
   },
   "fileManager": {
     "downloadError": "Fout bij het downloaden van bestand",
@@ -271,7 +272,9 @@
       "table": "Tabel",
       "grid": "Raster"
     },
-    "totalFiles": "{count, plural, =0 {Geen bestanden} =1 {1 bestand} other {# bestanden}}"
+    "totalFiles": "{count, plural, =0 {Geen bestanden} =1 {1 bestand} other {# bestanden}}",
+    "bulkDeleteConfirmation": "Weet je zeker dat je {count, plural, =1 {1 bestand} other {# bestanden}} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+    "bulkDeleteTitle": "Geselecteerde Bestanden Verwijderen"
   },
   "filesTable": {
     "ariaLabel": "Bestanden tabel",
@@ -795,7 +798,8 @@
           "timeout": "Kopieeroperatie verlopen. Probeer het opnieuw met een kleiner bestand of controleer uw verbinding.",
           "failed": "Kopieeroperatie mislukt. Probeer het opnieuw.",
           "aborted": "Kopieeroperatie is geannuleerd vanwege een time-out."
-        }
+        },
+        "invalidDate": "Ongeldige datum"
       }
     },
     "form": {
@@ -1223,7 +1227,8 @@
     "editSuccess": "Delen succesvol bijgewerkt",
     "editError": "Fout bij bijwerken van delen",
     "bulkDeleteConfirmation": "Weet je zeker dat je {count, plural, =1 {1 deel} other {# delen}} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
-    "bulkDeleteTitle": "Geselecteerde Delen Verwijderen"
+    "bulkDeleteTitle": "Geselecteerde Delen Verwijderen",
+    "addDescriptionPlaceholder": "Beschrijving toevoegen..."
   },
   "shareDetails": {
     "title": "Delen Details",

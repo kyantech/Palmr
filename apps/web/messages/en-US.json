@@ -201,6 +201,7 @@
     "extension": "Extension",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Enter file description",
+    "addDescriptionPlaceholder": "Add description...",
     "deleteFile": "Delete File",
     "deleteConfirmation": "Are you sure you want to delete this file?",
     "deleteWarning": "This action cannot be undone."
@@ -267,6 +268,8 @@
     "bulkDownloadFileError": "Error downloading file {fileName}",
     "bulkDeleteSuccess": "{count, plural, =1 {1 file deleted successfully} other {# files deleted successfully}}",
     "bulkDeleteError": "Error deleting selected files",
+    "bulkDeleteTitle": "Delete Selected Files",
+    "bulkDeleteConfirmation": "Are you sure you want to delete {count, plural, =1 {1 file} other {# files}}? This action cannot be undone.",
     "totalFiles": "{count, plural, =0 {No files} =1 {1 file} other {# files}}",
     "viewMode": {
       "table": "Table",
@@ -750,6 +753,7 @@
         "noFiles": "No files received yet",
         "noFilesDescription": "Files sent through this link will appear here",
         "fileCount": "{count, plural, =0 {No files} =1 {1 file} other {# files}}",
+        "invalidDate": "Invalid date",
         "totalSize": "Total size: {size}",
         "columns": {
           "file": "File",
@@ -1203,6 +1207,7 @@
   "shareActions": {
     "deleteTitle": "Delete Share",
     "deleteConfirmation": "Are you sure you want to delete this share? This action cannot be undone.",
+    "addDescriptionPlaceholder": "Add description...",
     "editTitle": "Edit Share",
     "nameLabel": "Share Name",
     "descriptionLabel": "Description",

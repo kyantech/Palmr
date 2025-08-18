@@ -203,7 +203,8 @@
     "descriptionPlaceholder": "Wprowadź opis pliku",
     "deleteFile": "Usuń plik",
     "deleteConfirmation": "Czy na pewno chcesz usunąć ten plik?",
-    "deleteWarning": "Tej operacji nie można cofnąć."
+    "deleteWarning": "Tej operacji nie można cofnąć.",
+    "addDescriptionPlaceholder": "Dodaj opis..."
   },
   "fileManager": {
     "downloadError": "Nie udało się pobrać pliku",
@@ -271,7 +272,9 @@
     "viewMode": {
       "table": "Tabela",
       "grid": "Siatka"
-    }
+    },
+    "bulkDeleteConfirmation": "Czy na pewno chcesz usunąć {count, plural, =1 {1 plik} other {# plików}}? Ta akcja nie może zostać cofnięta.",
+    "bulkDeleteTitle": "Usuń Wybrane Pliki"
   },
   "filesTable": {
     "ariaLabel": "Tabela plików",
@@ -795,7 +798,8 @@
           "timeout": "Operacja kopiowania przekroczyła limit czasu. Spróbuj ponownie z mniejszym plikiem lub sprawdź swoje połączenie.",
           "failed": "Operacja kopiowania nie powiodła się. Spróbuj ponownie.",
           "aborted": "Operacja kopiowania została anulowana z powodu przekroczenia limitu czasu."
-        }
+        },
+        "invalidDate": "Nieprawidłowa data"
       }
     },
     "form": {
@@ -1223,7 +1227,8 @@
     "editSuccess": "Udostępnienie zaktualizowane pomyślnie",
     "editError": "Nie udało się zaktualizować udostępnienia",
     "bulkDeleteConfirmation": "Czy na pewno chcesz usunąć {count, plural, =1 {1 udostępnienie} other {# udostępnień}}? Tej operacji nie można cofnąć.",
-    "bulkDeleteTitle": "Usuń wybrane udostępnienia"
+    "bulkDeleteTitle": "Usuń wybrane udostępnienia",
+    "addDescriptionPlaceholder": "Dodaj opis..."
   },
   "shareDetails": {
     "title": "Szczegóły udostępnienia",
