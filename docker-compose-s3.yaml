@@ -12,6 +12,7 @@ services:
       - S3_REGION=${S3_REGION:-us-east-1} # S3 region (us-east-1 is the default region) but it depends on your s3 server region
       - S3_BUCKET_NAME=${S3_BUCKET_NAME:-palmr-files} # Bucket name for the S3 storage (here we are using palmr-files as the bucket name to understand that this is the bucket for palmr)
       - S3_FORCE_PATH_STYLE=false # For S3 compatibility we have to set this to false
+      # - S3_REJECT_UNAUTHORIZED=false # Set to false to allow self-signed certificates (default: true)
       # - PALMR_UID=1000 # UID for the container processes (OPTIONAL - default is 1000) | See our UID/GID Documentation for more information
       # - PALMR_GID=1000 # GID for the container processes (OPTIONAL - default is 1000) | See our UID/GID Documentation for more information
       # - DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US) | See the docs for see all supported languages

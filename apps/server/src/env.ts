@@ -12,6 +12,7 @@ const envSchema = z.object({
   S3_REGION: z.string().optional(),
   S3_BUCKET_NAME: z.string().optional(),
   S3_FORCE_PATH_STYLE: z.union([z.literal("true"), z.literal("false")]).default("false"),
+  S3_REJECT_UNAUTHORIZED: z.union([z.literal("true"), z.literal("false")]).default("true"),
   SECURE_SITE: z.union([z.literal("true"), z.literal("false")]).default("false"),
   DATABASE_URL: z.string().optional().default("file:/app/server/prisma/palmr.db"),
 });

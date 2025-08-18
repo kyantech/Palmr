@@ -140,6 +140,7 @@ Customize Palmr's behavior with these environment variables:
 | Variable                        | Default | Description                                                                                  |
 | ------------------------------- | ------- | -------------------------------------------------------------------------------------------- |
 | `ENABLE_S3`                     | `false` | Enable S3-compatible storage backends                                                        |
+| `S3_REJECT_UNAUTHORIZED`        | `true`  | Enable strict SSL certificate validation for S3 (set to `false` for self-signed certificates) |
 | `ENCRYPTION_KEY`                | -       | **Required when encryption is enabled**: 32+ character key for file encryption               |
 | `DISABLE_FILESYSTEM_ENCRYPTION` | `true`  | Disable file encryption for better performance (set to `false` to enable encryption)         |
 | `SECURE_SITE`                   | `false` | Enable secure cookies for HTTPS/reverse proxy deployments                                    |

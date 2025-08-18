@@ -1,3 +1,4 @@
+import process from "node:process";
 import { S3Client } from "@aws-sdk/client-s3";
 
 import { env } from "../env";
@@ -13,6 +14,14 @@ export const storageConfig: StorageConfig = {
   bucketName: env.S3_BUCKET_NAME || "",
   forcePathStyle: env.S3_FORCE_PATH_STYLE === "true",
 };
+
+if (storageConfig.useSSL && env.S3_REJECT_UNAUTHORIZED === "false") {
+  const originalRejectUnauthorized = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+  if (!originalRejectUnauthorized) {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+    (global as any).PALMR_ORIGINAL_TLS_SETTING = originalRejectUnauthorized;
+  }
+}
 
 export const s3Client =
   env.ENABLE_S3 === "true"

@@ -21,16 +21,17 @@ Consider using S3-compatible storage when you need:
 
 To enable S3-compatible storage, set `ENABLE_S3=true` and configure the following environment variables:
 
-| Variable              | Description                   | Required | Default           |
-| --------------------- | ----------------------------- | -------- | ----------------- |
-| `S3_ENDPOINT`         | S3 provider endpoint URL      | Yes      | -                 |
-| `S3_PORT`             | Connection port               | No       | Based on protocol |
-| `S3_USE_SSL`          | Enable SSL/TLS encryption     | Yes      | `true`            |
-| `S3_ACCESS_KEY`       | Access key for authentication | Yes      | -                 |
-| `S3_SECRET_KEY`       | Secret key for authentication | Yes      | -                 |
-| `S3_REGION`           | Storage region                | Yes      | -                 |
-| `S3_BUCKET_NAME`      | Bucket/container name         | Yes      | -                 |
-| `S3_FORCE_PATH_STYLE` | Use path-style URLs           | No       | `false`           |
+| Variable                | Description                           | Required | Default           |
+| ----------------------- | ------------------------------------- | -------- | ----------------- |
+| `S3_ENDPOINT`           | S3 provider endpoint URL              | Yes      | -                 |
+| `S3_PORT`               | Connection port                       | No       | Based on protocol |
+| `S3_USE_SSL`            | Enable SSL/TLS encryption             | Yes      | `true`            |
+| `S3_ACCESS_KEY`         | Access key for authentication         | Yes      | -                 |
+| `S3_SECRET_KEY`         | Secret key for authentication         | Yes      | -                 |
+| `S3_REGION`             | Storage region                        | Yes      | -                 |
+| `S3_BUCKET_NAME`        | Bucket/container name                 | Yes      | -                 |
+| `S3_FORCE_PATH_STYLE`   | Use path-style URLs                   | No       | `false`           |
+| `S3_REJECT_UNAUTHORIZED`| Enable strict SSL certificate validation | No    | `true`            |
 
 ## Provider configurations
 
@@ -80,6 +81,21 @@ S3_FORCE_PATH_STYLE=true
 - Use `S3_FORCE_PATH_STYLE=true` for MinIO
 - Default MinIO port is 9000
 - SSL can be disabled for local development
+
+**For MinIO with self-signed SSL certificates:**
+
+```bash
+ENABLE_S3=true
+S3_ENDPOINT=your-minio-domain.com
+S3_PORT=9000
+S3_USE_SSL=true
+S3_ACCESS_KEY=your-minio-access-key
+S3_SECRET_KEY=your-minio-secret-key
+S3_REGION=us-east-1
+S3_BUCKET_NAME=your-bucket-name
+S3_FORCE_PATH_STYLE=true
+S3_REJECT_UNAUTHORIZED=false  # Allows self-signed certificates
+```
 
 ### Google Cloud Storage
 
@@ -211,6 +227,19 @@ S3_FORCE_PATH_STYLE=false
 - Verify endpoint URL and port settings
 - Check firewall and network connectivity
 - Ensure SSL/TLS settings match provider requirements
+
+**SSL certificate errors (self-signed certificates):**
+
+If you encounter errors like `unable to verify the first certificate` or `UNABLE_TO_VERIFY_LEAF_SIGNATURE`, you're likely using self-signed SSL certificates. This is common with self-hosted MinIO or other S3-compatible services.
+
+**Solution:**
+Set `S3_REJECT_UNAUTHORIZED=false` in your environment variables to allow self-signed certificates:
+
+```bash
+S3_REJECT_UNAUTHORIZED=false
+```
+
+**Note:** SSL certificate validation is enabled by default (`true`) for security. Set it to `false` only when using self-hosted S3 services with self-signed certificates.
 
 **Authentication failures:**
 

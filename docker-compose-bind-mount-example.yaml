@@ -5,6 +5,7 @@ services:
     environment:
       # Optional: Uncomment and configure as needed (if you don`t use, you can remove)
       # - ENABLE_S3=true # Set to true to enable S3-compatible storage (OPTIONAL - default is false)
+      # - S3_REJECT_UNAUTHORIZED=false # Set to false to allow self-signed certificates (OPTIONAL - default is true)
       # - DISABLE_FILESYSTEM_ENCRYPTION=false # Set to false to enable file encryption (ENCRYPTION_KEY becomes required) | (OPTIONAL - default is true)
       # - ENCRYPTION_KEY=change-this-key-in-production-min-32-chars # CHANGE THIS KEY FOR SECURITY (REQUIRED if DISABLE_FILESYSTEM_ENCRYPTION is false)
       # - PALMR_UID=1000 # UID for the container processes (OPTIONAL - default is 1000) | See our UID/GID Documentation for more information
