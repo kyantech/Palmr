@@ -421,7 +421,7 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
                 );
               }}
               disabled={isUploading}
-              title={t("reverseShares.upload.retry")}
+              title={t("reverseShares.upload.errors.retry")}
             >
               <IconUpload className="h-4 w-4" />
             </Button>
