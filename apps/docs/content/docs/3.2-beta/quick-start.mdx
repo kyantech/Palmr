@@ -70,8 +70,6 @@ Choose your storage method based on your needs:
           # - SECURE_SITE=false # Set to true if you are using a reverse proxy
           # - DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US)
           # - PRESIGNED_URL_EXPIRATION=3600 # Duration in seconds for presigned URL expiration (optional, defaults to 3600 seconds / 1 hour)
-
-          # Download Memory Management (OPTIONAL - See Download Memory Management documentation)
           # - DOWNLOAD_MAX_CONCURRENT=5 # Maximum simultaneous downloads (auto-scales if not set)
           # - DOWNLOAD_MEMORY_THRESHOLD_MB=2048 # Memory threshold in MB before throttling (auto-scales if not set)
           # - DOWNLOAD_QUEUE_SIZE=25 # Maximum queue size for pending downloads (auto-scales if not set)
@@ -126,8 +124,6 @@ Choose your storage method based on your needs:
           # - SECURE_SITE=false # Set to true if you are using a reverse proxy
           # - DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US)
           # - PRESIGNED_URL_EXPIRATION=3600 # Duration in seconds for presigned URL expiration (optional, defaults to 3600 seconds / 1 hour)
-
-          # Download Memory Management (OPTIONAL - See Download Memory Management documentation)
           # - DOWNLOAD_MAX_CONCURRENT=5 # Maximum simultaneous downloads (auto-scales if not set)
           # - DOWNLOAD_MEMORY_THRESHOLD_MB=2048 # Memory threshold in MB before throttling (auto-scales if not set)
           # - DOWNLOAD_QUEUE_SIZE=25 # Maximum queue size for pending downloads (auto-scales if not set)
@@ -156,15 +152,25 @@ Choose your storage method based on your needs:
 Customize Palmr's behavior with these environment variables:
 
 | Variable                        | Default    | Description                                                                                                            |
-| ------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------- |
+| ------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------- | --- |
 | `ENABLE_S3`                     | `false`    | Enable S3-compatible storage backends                                                                                  |
+| `S3_ENDPOINT`                   | -          | S3 server endpoint URL (required when using S3)                                                                        |
+| `S3_PORT`                       | -          | S3 server port (optional when using S3)                                                                                |
+| `S3_USE_SSL`                    | -          | Enable SSL for S3 connections (optional when using S3)                                                                 |
+| `S3_ACCESS_KEY`                 | -          | S3 access key for authentication (required when using S3)                                                              |
+| `S3_SECRET_KEY`                 | -          | S3 secret key for authentication (required when using S3)                                                              |
+| `S3_REGION`                     | -          | S3 region configuration (optional when using S3)                                                                       |
+| `S3_BUCKET_NAME`                | -          | S3 bucket name for file storage (required when using S3)                                                               |
+| `S3_FORCE_PATH_STYLE`           | `false`    | Force path-style S3 URLs (optional when using S3)                                                                      |
 | `S3_REJECT_UNAUTHORIZED`        | `true`     | Enable strict SSL certificate validation for S3 (set to `false` for self-signed certificates)                          |
 | `ENCRYPTION_KEY`                | -          | **Required when encryption is enabled**: 32+ character key for file encryption                                         |
 | `DISABLE_FILESYSTEM_ENCRYPTION` | `true`     | Disable file encryption for better performance (set to `false` to enable encryption)                                   |
+| `PRESIGNED_URL_EXPIRATION`      | `3600`     | Duration in seconds for presigned URL expiration (applies to both filesystem and S3 storage)                           |
 | `SECURE_SITE`                   | `false`    | Enable secure cookies for HTTPS/reverse proxy deployments                                                              |
-| `DEFAULT_LANGUAGE`              | `en-US`    | Default application language ([see available languages](/docs/3.2-beta/available-languages))                           |
+| `DEFAULT_LANGUAGE`              | `en-US`    | Default application language ([see available languages](/docs/3.2-beta/available-languages))                           |     |
 | `PALMR_UID`                     | `1000`     | User ID for container processes (helps with file permissions)                                                          |
 | `PALMR_GID`                     | `1000`     | Group ID for container processes (helps with file permissions)                                                         |
+| `NODE_OPTIONS`                  | -          | Node.js options (recommended: `--expose-gc` for garbage collection in production)                                      |
 | `DOWNLOAD_MAX_CONCURRENT`       | auto-scale | Maximum number of simultaneous downloads (see [Download Memory Management](/docs/3.2-beta/download-memory-management)) |
 | `DOWNLOAD_MEMORY_THRESHOLD_MB`  | auto-scale | Memory threshold in MB before throttling                                                                               |
 | `DOWNLOAD_QUEUE_SIZE`           | auto-scale | Maximum queue size for pending downloads                                                                               |
