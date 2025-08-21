@@ -59,7 +59,7 @@ const images = [
   "https://res.cloudinary.com/technical-intelligence/image/upload/v1745546005/Palmr./profile_mizwvg.png",
 ];
 
-const docsLink = "/docs/3.1-beta";
+const docsLink = "/docs/3.2-beta";
 
 function Hero() {
   return (

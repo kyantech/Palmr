@@ -70,7 +70,7 @@ Choose your storage method based on your needs:
           # - SECURE_SITE=false # Set to true if you are using a reverse proxy
           # - DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US)
           # - PRESIGNED_URL_EXPIRATION=3600 # Duration in seconds for presigned URL expiration (optional, defaults to 3600 seconds / 1 hour)
-          
+
           # Download Memory Management (OPTIONAL - See Download Memory Management documentation)
           # - DOWNLOAD_MAX_CONCURRENT=5 # Maximum simultaneous downloads (auto-scales if not set)
           # - DOWNLOAD_MEMORY_THRESHOLD_MB=2048 # Memory threshold in MB before throttling (auto-scales if not set)
@@ -86,7 +86,7 @@ Choose your storage method based on your needs:
     ```
 
     <Callout type="info">
-      **Having upload or permission issues?** Add `PALMR_UID=1000` and `PALMR_GID=1000` to your environment variables. Check our [UID/GID Configuration](/docs/3.1-beta/uid-gid-configuration) guide for more details.
+      **Having upload or permission issues?** Add `PALMR_UID=1000` and `PALMR_GID=1000` to your environment variables. Check our [UID/GID Configuration](/docs/3.2-beta/uid-gid-configuration) guide for more details.
     </Callout>
 
     ### Deploy
@@ -115,7 +115,7 @@ Choose your storage method based on your needs:
         restart: unless-stopped
         ports:
           - "5487:5487" # Web interface
-          # - "3333:3333" # API (optional) 
+          # - "3333:3333" # API (optional)
         environment:
           # Optional: Uncomment and configure as needed (if you don`t use, you can remove)
           # - ENABLE_S3=true # Set to true to enable S3-compatible storage
@@ -126,7 +126,7 @@ Choose your storage method based on your needs:
           # - SECURE_SITE=false # Set to true if you are using a reverse proxy
           # - DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US)
           # - PRESIGNED_URL_EXPIRATION=3600 # Duration in seconds for presigned URL expiration (optional, defaults to 3600 seconds / 1 hour)
-          
+
           # Download Memory Management (OPTIONAL - See Download Memory Management documentation)
           # - DOWNLOAD_MAX_CONCURRENT=5 # Maximum simultaneous downloads (auto-scales if not set)
           # - DOWNLOAD_MEMORY_THRESHOLD_MB=2048 # Memory threshold in MB before throttling (auto-scales if not set)
@@ -139,7 +139,7 @@ Choose your storage method based on your needs:
     ```
 
     <Callout type="info">
-      **Having upload or permission issues?** Add `PALMR_UID=1000` and `PALMR_GID=1000` to your environment variables. Check our [UID/GID Configuration](/docs/3.1-beta/uid-gid-configuration) guide for more details.
+      **Having upload or permission issues?** Add `PALMR_UID=1000` and `PALMR_GID=1000` to your environment variables. Check our [UID/GID Configuration](/docs/3.2-beta/uid-gid-configuration) guide for more details.
     </Callout>
 
     ### Deploy
@@ -155,21 +155,21 @@ Choose your storage method based on your needs:
 
 Customize Palmr's behavior with these environment variables:
 
-| Variable                        | Default | Description                                                                                  |
-| ------------------------------- | ------- | -------------------------------------------------------------------------------------------- |
-| `ENABLE_S3`                     | `false` | Enable S3-compatible storage backends                                                        |
-| `S3_REJECT_UNAUTHORIZED`        | `true`  | Enable strict SSL certificate validation for S3 (set to `false` for self-signed certificates) |
-| `ENCRYPTION_KEY`                | -       | **Required when encryption is enabled**: 32+ character key for file encryption               |
-| `DISABLE_FILESYSTEM_ENCRYPTION` | `true`  | Disable file encryption for better performance (set to `false` to enable encryption)         |
-| `SECURE_SITE`                   | `false` | Enable secure cookies for HTTPS/reverse proxy deployments                                    |
-| `DEFAULT_LANGUAGE`              | `en-US` | Default application language ([see available languages](/docs/3.1-beta/available-languages)) |
-| `PALMR_UID`                     | `1000`  | User ID for container processes (helps with file permissions)                                |
-| `PALMR_GID`                     | `1000`  | Group ID for container processes (helps with file permissions)                               |
-| `DOWNLOAD_MAX_CONCURRENT`        | auto-scale | Maximum number of simultaneous downloads (see [Download Memory Management](/docs/3.1-beta/download-memory-management)) |
-| `DOWNLOAD_MEMORY_THRESHOLD_MB`   | auto-scale | Memory threshold in MB before throttling |
-| `DOWNLOAD_QUEUE_SIZE`            | auto-scale | Maximum queue size for pending downloads |
-| `DOWNLOAD_MIN_FILE_SIZE_GB`      | `3.0`      | Minimum file size in GB to activate memory management |
-| `DOWNLOAD_AUTO_SCALE`            | `true`     | Enable auto-scaling based on system memory |
+| Variable                        | Default    | Description                                                                                                            |
+| ------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `ENABLE_S3`                     | `false`    | Enable S3-compatible storage backends                                                                                  |
+| `S3_REJECT_UNAUTHORIZED`        | `true`     | Enable strict SSL certificate validation for S3 (set to `false` for self-signed certificates)                          |
+| `ENCRYPTION_KEY`                | -          | **Required when encryption is enabled**: 32+ character key for file encryption                                         |
+| `DISABLE_FILESYSTEM_ENCRYPTION` | `true`     | Disable file encryption for better performance (set to `false` to enable encryption)                                   |
+| `SECURE_SITE`                   | `false`    | Enable secure cookies for HTTPS/reverse proxy deployments                                                              |
+| `DEFAULT_LANGUAGE`              | `en-US`    | Default application language ([see available languages](/docs/3.2-beta/available-languages))                           |
+| `PALMR_UID`                     | `1000`     | User ID for container processes (helps with file permissions)                                                          |
+| `PALMR_GID`                     | `1000`     | Group ID for container processes (helps with file permissions)                                                         |
+| `DOWNLOAD_MAX_CONCURRENT`       | auto-scale | Maximum number of simultaneous downloads (see [Download Memory Management](/docs/3.2-beta/download-memory-management)) |
+| `DOWNLOAD_MEMORY_THRESHOLD_MB`  | auto-scale | Memory threshold in MB before throttling                                                                               |
+| `DOWNLOAD_QUEUE_SIZE`           | auto-scale | Maximum queue size for pending downloads                                                                               |
+| `DOWNLOAD_MIN_FILE_SIZE_GB`     | `3.0`      | Minimum file size in GB to activate memory management                                                                  |
+| `DOWNLOAD_AUTO_SCALE`           | `true`     | Enable auto-scaling based on system memory                                                                             |
 
 <Callout type="info">
   **Performance First**: Palmr runs without encryption by default for optimal speed and lower resource usage—perfect for
@@ -184,7 +184,7 @@ Customize Palmr's behavior with these environment variables:
 
 <Callout>
   **Using a Reverse Proxy?** Set `SECURE_SITE=true` and check our [Reverse Proxy
-  Configuration](/docs/3.1-beta/reverse-proxy-configuration) guide for proper HTTPS setup.
+  Configuration](/docs/3.2-beta/reverse-proxy-configuration) guide for proper HTTPS setup.
 </Callout>
 
 ### Generate Encryption Keys (Optional)
@@ -204,7 +204,7 @@ Once deployed, open Palmr in your browser:
 
 <Callout type="info">
   **Learn More**: For complete API documentation, authentication, and integration examples, see our [API
-  Reference](/docs/3.1-beta/api) guide
+  Reference](/docs/3.2-beta/api) guide
 </Callout>
 
 <Callout type="warn">
@@ -240,7 +240,7 @@ Prefer Docker commands over Compose? Here are the equivalent commands:
 
 
     <Callout type="info">
-      **Permission Issues?** Add `-e PALMR_UID=1000 -e PALMR_GID=1000` to the command above. See our [UID/GID Configuration](/docs/3.1-beta/uid-gid-configuration) guide for details.
+      **Permission Issues?** Add `-e PALMR_UID=1000 -e PALMR_GID=1000` to the command above. See our [UID/GID Configuration](/docs/3.2-beta/uid-gid-configuration) guide for details.
     </Callout>
 
   </Tab>
@@ -266,7 +266,7 @@ Prefer Docker commands over Compose? Here are the equivalent commands:
     ```
 
     <Callout type="info">
-      **Permission Issues?** Add `-e PALMR_UID=1000 -e PALMR_GID=1000` to the command above. See our [UID/GID Configuration](/docs/3.1-beta/uid-gid-configuration) guide for details.
+      **Permission Issues?** Add `-e PALMR_UID=1000 -e PALMR_GID=1000` to the command above. See our [UID/GID Configuration](/docs/3.2-beta/uid-gid-configuration) guide for details.
     </Callout>
 
   </Tab>
@@ -286,10 +286,11 @@ You can customize this for all storage types (filesystem or S3) by adding:
 
 ```yaml
 environment:
-  - PRESIGNED_URL_EXPIRATION=7200  # 2 hours
+  - PRESIGNED_URL_EXPIRATION=7200 # 2 hours
 ```
 
 **When to adjust:**
+
 - **Shorter time (1800 = 30 min):** Higher security, but users may need to refresh download links
 - **Longer time (7200-21600 = 2-6 hours):** Better for large file transfers, but URLs stay valid longer
 - **Default (3600 = 1 hour):** Good balance for most use cases
@@ -359,17 +360,17 @@ Your Palmr instance is ready! Here's what you can explore:
 
 ### Advanced Configuration
 
-- **[UID/GID Configuration](/docs/3.1-beta/uid-gid-configuration)** - Configure user permissions for NAS systems and custom environments
-- **[Download Memory Management](/docs/3.1-beta/download-memory-management)** - Configure large file download handling and queue system
-- **[S3 Storage](/docs/3.1-beta/s3-configuration)** - Scale with Amazon S3 or compatible storage providers
-- **[Manual Installation](/docs/3.1-beta/manual-installation)** - Manual installation and custom configurations
+- **[UID/GID Configuration](/docs/3.2-beta/uid-gid-configuration)** - Configure user permissions for NAS systems and custom environments
+- **[Download Memory Management](/docs/3.2-beta/download-memory-management)** - Configure large file download handling and queue system
+- **[S3 Storage](/docs/3.2-beta/s3-configuration)** - Scale with Amazon S3 or compatible storage providers
+- **[Manual Installation](/docs/3.2-beta/manual-installation)** - Manual installation and custom configurations
 
 ### Integration & Development
 
-- **[API Reference](/docs/3.1-beta/api)** - Integrate Palmr. with your applications
+- **[API Reference](/docs/3.2-beta/api)** - Integrate Palmr. with your applications
 
 <Callout type="info">
-  **Need help?** Check our [Troubleshooting Guide](/docs/3.1-beta/troubleshooting) for common issues and solutions.
+  **Need help?** Check our [Troubleshooting Guide](/docs/3.2-beta/troubleshooting) for common issues and solutions.
 </Callout>
 
 ---
