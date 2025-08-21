@@ -162,6 +162,46 @@
     "error": "Fout bij het aanmaken van delen",
     "namePlaceholder": "Voer een naam in voor uw delen"
   },
+  "customization": {
+    "breadcrumb": "Aanpassing",
+    "colors": {
+      "title": "Thema Kleuren",
+      "description": "Kies je gewenste primaire kleurenthema",
+      "presets": "Beschikbare Kleuren",
+      "presetsDescription": "Selecteer uit beschikbare kleurenthema's",
+      "reset": "Standaardinstellingen Herstellen"
+    },
+    "fonts": {
+      "title": "Typografie",
+      "description": "Kies je gewenste lettertype",
+      "available": "Beschikbare Lettertypen",
+      "availableDescription": "Selecteer uit beschikbare lettertypen",
+      "reset": "Standaardinstellingen Herstellen"
+    },
+    "radius": {
+      "title": "Randradius",
+      "description": "Pas de rondheid van interface-elementen aan",
+      "available": "Rondheidsopties",
+      "availableDescription": "Kies hoe afgerond hoeken moeten verschijnen",
+      "reset": "Standaardinstellingen Herstellen"
+    },
+    "background": {
+      "title": "Achtergrondkleuren",
+      "description": "Pas achtergrondkleuren aan voor lichte en donkere modi",
+      "lightMode": "Lichte Modus",
+      "darkMode": "Donkere Modus",
+      "availableDescription": "Kies achtergrondkleuren voor zowel lichte als donkere thema's",
+      "reset": "Standaardinstellingen Herstellen"
+    },
+    "theme": {
+      "title": "Thema Modus",
+      "description": "Kies tussen licht, donker of systeemthema",
+      "selectTheme": "Thema Voorkeur",
+      "availableDescription": "Selecteer je gewenste thema modus",
+      "reset": "Terugzetten naar Systeem"
+    },
+    "pageTitle": "Aanpassing"
+  },
   "dashboard": {
     "loadError": "Fout bij het laden van controlepaneel gegevens",
     "linkCopied": "Link gekopieerd naar klembord",
@@ -175,6 +215,39 @@
   "deleteConfirmation": {
     "filesToDelete": "Te verwijderen bestanden",
     "sharesToDelete": "Delen die worden verwijderd"
+  },
+  "downloadQueue": {
+    "downloadQueued": "Download in wachtrij: {fileName}",
+    "queuedDescription": "Je download start automatisch wanneer er een slot beschikbaar komt",
+    "queuePosition": "Download in wachtrij op positie {position}: {fileName}",
+    "estimatedWait": "Geschatte wachttijd: {time}",
+    "queueFull": "Downloadwachtrij is vol",
+    "queueFullDescription": "Probeer het over enkele minuten opnieuw wanneer er ruimte is in de wachtrij",
+    "cancelSuccess": "Download succesvol geannuleerd",
+    "cancelError": "Download annuleren mislukt: {error}",
+    "status": {
+      "pending": "Voorbereiden...",
+      "queued": "In wachtrij",
+      "downloading": "Downloaden",
+      "completed": "Voltooid",
+      "failed": "Mislukt"
+    },
+    "waitTime": {
+      "seconds": "{seconds}s",
+      "minutes": "{minutes}m",
+      "hoursMinutes": "{hours}u {minutes}m"
+    },
+    "indicator": {
+      "title": "Downloads",
+      "downloads": "Download Wachtrij",
+      "active": "Actief",
+      "queued": "In Wachtrij",
+      "position": "Positie {position}",
+      "estimatedWait": "Wachttijd: {time}",
+      "unknownFile": "Onbekend bestand",
+      "noDownloads": "Geen downloads actief",
+      "refresh": "Wachtrij Vernieuwen"
+    }
   },
   "emptyState": {
     "noFiles": "Nog geen bestanden geüpload",
@@ -411,10 +484,29 @@
     "profile": "Profiel",
     "settings": "Instellingen",
     "usersManagement": "Gebruikersbeheer",
-    "logout": "Uitloggen"
+    "logout": "Uitloggen",
+    "customization": "Aanpassen"
   },
   "navigation": {
     "dashboard": "Controlepaneel"
+  },
+  "notifications": {
+    "permissionGranted": "Download meldingen ingeschakeld",
+    "permissionDenied": "Download meldingen uitgeschakeld",
+    "downloadComplete": {
+      "title": "Download Voltooid",
+      "body": "{fileName} is klaar met downloaden"
+    },
+    "downloadFailed": {
+      "title": "Download Mislukt",
+      "body": "Downloaden van {fileName} mislukt: {error}",
+      "unknownError": "Onbekende fout"
+    },
+    "queueProcessing": {
+      "title": "Download Start",
+      "body": "{fileName} wordt nu gedownload{position}",
+      "position": " (was #{position} in wachtrij)"
+    }
   },
   "profile": {
     "password": {

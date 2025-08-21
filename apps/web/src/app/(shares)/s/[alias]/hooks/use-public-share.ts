@@ -5,8 +5,9 @@ import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
-import { getDownloadUrl, getShareByAlias } from "@/http/endpoints";
+import { getShareByAlias } from "@/http/endpoints";
 import type { Share } from "@/http/endpoints/shares/types";
+import { bulkDownloadWithQueue, downloadFileWithQueue } from "@/utils/download-queue-utils";
 
 export function usePublicShare() {
   const t = useTranslations();
@@ -56,19 +57,12 @@ export function usePublicShare() {
 
   const handleDownload = async (objectName: string, fileName: string) => {
     try {
-      const encodedObjectName = encodeURIComponent(objectName);
-      const response = await getDownloadUrl(encodedObjectName);
-      const downloadUrl = response.data.url;
-
-      const link = document.createElement("a");
-      link.href = downloadUrl;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      toast.success(t("share.messages.downloadStarted"));
+      await downloadFileWithQueue(objectName, fileName, {
+        onStart: () => toast.success(t("share.messages.downloadStarted")),
+        onFail: () => toast.error(t("share.errors.downloadFailed")),
+      });
     } catch {
-      toast.error(t("share.errors.downloadFailed"));
+      // Error already handled in downloadFileWithQueue
     }
   };
 
@@ -79,44 +73,17 @@ export function usePublicShare() {
     }
 
     try {
+      const zipName = `${share.name || t("shareManager.defaultShareName")}.zip`;
+
       toast.promise(
-        (async () => {
-          const JSZip = (await import("jszip")).default;
-          const zip = new JSZip();
-
-          const downloadPromises = share.files.map(async (file) => {
-            try {
-              const encodedObjectName = encodeURIComponent(file.objectName);
-              const downloadResponse = await getDownloadUrl(encodedObjectName);
-              const downloadUrl = downloadResponse.data.url;
-              const response = await fetch(downloadUrl);
-
-              if (!response.ok) {
-                throw new Error(`Failed to download ${file.name}`);
-              }
-
-              const blob = await response.blob();
-              zip.file(file.name, blob);
-            } catch (error) {
-              console.error(`Error downloading file ${file.name}:`, error);
-              throw error;
-            }
-          });
-
-          await Promise.all(downloadPromises);
-
-          const zipBlob = await zip.generateAsync({ type: "blob" });
-          const zipName = `${share.name || t("shareManager.defaultShareName")}.zip`;
-
-          const url = URL.createObjectURL(zipBlob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = zipName;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        })(),
+        bulkDownloadWithQueue(
+          share.files.map((file) => ({
+            objectName: file.objectName,
+            name: file.name,
+            isReverseShare: false,
+          })),
+          zipName
+        ),
         {
           loading: t("shareManager.creatingZip"),
           success: t("shareManager.zipDownloadSuccess"),

@@ -162,6 +162,46 @@
     "error": "Échec de la création du partage",
     "namePlaceholder": "Entrez un nom pour votre partage"
   },
+  "customization": {
+    "breadcrumb": "Personnalisation",
+    "colors": {
+      "title": "Couleurs du Thème",
+      "description": "Choisissez votre thème de couleur principale préféré",
+      "presets": "Couleurs Disponibles",
+      "presetsDescription": "Sélectionnez parmi les thèmes de couleurs disponibles",
+      "reset": "Réinitialiser par Défaut"
+    },
+    "fonts": {
+      "title": "Typographie",
+      "description": "Choisissez votre famille de polices préférée",
+      "available": "Polices Disponibles",
+      "availableDescription": "Sélectionnez parmi les familles de polices disponibles",
+      "reset": "Réinitialiser par Défaut"
+    },
+    "radius": {
+      "title": "Rayon des Bordures",
+      "description": "Personnalisez l'arrondi des éléments de l'interface",
+      "available": "Options d'Arrondi",
+      "availableDescription": "Choisissez l'apparence des coins arrondis",
+      "reset": "Réinitialiser par Défaut"
+    },
+    "background": {
+      "title": "Couleurs d'Arrière-plan",
+      "description": "Personnalisez les couleurs d'arrière-plan pour les modes clair et sombre",
+      "lightMode": "Mode Clair",
+      "darkMode": "Mode Sombre",
+      "availableDescription": "Choisissez les couleurs d'arrière-plan pour les thèmes clair et sombre",
+      "reset": "Réinitialiser par Défaut"
+    },
+    "theme": {
+      "title": "Mode de Thème",
+      "description": "Choisissez entre le thème clair, sombre ou système",
+      "selectTheme": "Préférence de Thème",
+      "availableDescription": "Sélectionnez votre mode de thème préféré",
+      "reset": "Réinitialiser au Système"
+    },
+    "pageTitle": "Personnalisation"
+  },
   "dashboard": {
     "loadError": "Échec du chargement des données du tableau de bord",
     "linkCopied": "Lien copié dans le presse-papiers",
@@ -175,6 +215,39 @@
   "deleteConfirmation": {
     "filesToDelete": "Fichiers à supprimer",
     "sharesToDelete": "Partages qui seront supprimés"
+  },
+  "downloadQueue": {
+    "downloadQueued": "Téléchargement en file d'attente : {fileName}",
+    "queuedDescription": "Votre téléchargement démarrera automatiquement lorsqu'un emplacement sera disponible",
+    "queuePosition": "Téléchargement en position {position} : {fileName}",
+    "estimatedWait": "Temps d'attente estimé : {time}",
+    "queueFull": "La file d'attente est pleine",
+    "queueFullDescription": "Veuillez réessayer dans quelques minutes lorsque la file d'attente aura de l'espace",
+    "cancelSuccess": "Téléchargement annulé avec succès",
+    "cancelError": "Échec de l'annulation du téléchargement : {error}",
+    "status": {
+      "pending": "En préparation...",
+      "queued": "En file d'attente",
+      "downloading": "Téléchargement en cours",
+      "completed": "Terminé",
+      "failed": "Échoué"
+    },
+    "waitTime": {
+      "seconds": "{seconds}s",
+      "minutes": "{minutes}m",
+      "hoursMinutes": "{hours}h {minutes}m"
+    },
+    "indicator": {
+      "title": "Téléchargements",
+      "downloads": "File d'Attente des Téléchargements",
+      "active": "Actif",
+      "queued": "En Attente",
+      "position": "Position {position}",
+      "estimatedWait": "Attente : {time}",
+      "unknownFile": "Fichier inconnu",
+      "noDownloads": "Aucun téléchargement en cours",
+      "refresh": "Actualiser la File d'Attente"
+    }
   },
   "emptyState": {
     "noFiles": "Aucun fichier téléchargé pour le moment",
@@ -411,10 +484,29 @@
     "profile": "Profil",
     "settings": "Paramètres",
     "usersManagement": "Gestion des Utilisateurs",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "customization": "Personnalisation"
   },
   "navigation": {
     "dashboard": "Tableau de bord"
+  },
+  "notifications": {
+    "permissionGranted": "Notifications de téléchargement activées",
+    "permissionDenied": "Notifications de téléchargement désactivées",
+    "downloadComplete": {
+      "title": "Téléchargement Terminé",
+      "body": "{fileName} a fini de télécharger"
+    },
+    "downloadFailed": {
+      "title": "Échec du Téléchargement",
+      "body": "Échec du téléchargement de {fileName} : {error}",
+      "unknownError": "Erreur inconnue"
+    },
+    "queueProcessing": {
+      "title": "Démarrage du Téléchargement",
+      "body": "{fileName} est en cours de téléchargement{position}",
+      "position": " (était n°{position} dans la file d'attente)"
+    }
   },
   "profile": {
     "password": {

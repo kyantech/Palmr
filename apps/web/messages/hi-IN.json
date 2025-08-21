@@ -162,6 +162,46 @@
     "error": "साझाकरण बनाने में विफल",
     "namePlaceholder": "अपने साझाकरण के लिए एक नाम दर्ज करें"
   },
+  "customization": {
+    "breadcrumb": "अनुकूलन",
+    "colors": {
+      "title": "थीम रंग",
+      "description": "अपना पसंदीदा प्राथमिक रंग थीम चुनें",
+      "presets": "उपलब्ध रंग",
+      "presetsDescription": "उपलब्ध रंग थीम में से चुनें",
+      "reset": "डिफ़ॉल्ट पर रीसेट करें"
+    },
+    "fonts": {
+      "title": "टाइपोग्राफी",
+      "description": "अपना पसंदीदा फ़ॉन्ट परिवार चुनें",
+      "available": "उपलब्ध फ़ॉन्ट",
+      "availableDescription": "उपलब्ध फ़ॉन्ट परिवारों में से चुनें",
+      "reset": "डिफ़ॉल्ट पर रीसेट करें"
+    },
+    "radius": {
+      "title": "बॉर्डर रेडियस",
+      "description": "इंटरफ़ेस तत्वों की गोलाई को अनुकूलित करें",
+      "available": "गोलाई विकल्प",
+      "availableDescription": "कोने कितने गोल दिखाई दें यह चुनें",
+      "reset": "डिफ़ॉल्ट पर रीसेट करें"
+    },
+    "background": {
+      "title": "पृष्ठभूमि रंग",
+      "description": "लाइट और डार्क मोड के लिए पृष्ठभूमि रंग अनुकूलित करें",
+      "lightMode": "लाइट मोड",
+      "darkMode": "डार्क मोड",
+      "availableDescription": "लाइट और डार्क थीम दोनों के लिए पृष्ठभूमि रंग चुनें",
+      "reset": "डिफ़ॉल्ट पर रीसेट करें"
+    },
+    "theme": {
+      "title": "थीम मोड",
+      "description": "लाइट, डार्क या सिस्टम थीम में से चुनें",
+      "selectTheme": "थीम प्राथमिकता",
+      "availableDescription": "अपना पसंदीदा थीम मोड चुनें",
+      "reset": "सिस्टम पर रीसेट करें"
+    },
+    "pageTitle": "अनुकूलन"
+  },
   "dashboard": {
     "loadError": "डैशबोर्ड डेटा लोड करने में त्रुटि",
     "linkCopied": "लिंक क्लिपबोर्ड में कॉपी हुआ",
@@ -175,6 +215,39 @@
   "deleteConfirmation": {
     "filesToDelete": "हटाई जाने वाली फाइलें",
     "sharesToDelete": "साझाकरण जो हटाए जाएंगे"
+  },
+  "downloadQueue": {
+    "downloadQueued": "डाउनलोड कतार में: {fileName}",
+    "queuedDescription": "जब स्लॉट उपलब्ध होगा तब आपका डाउनलोड स्वचालित रूप से शुरू हो जाएगा",
+    "queuePosition": "स्थिति {position} पर डाउनलोड कतारबद्ध: {fileName}",
+    "estimatedWait": "अनुमानित प्रतीक्षा समय: {time}",
+    "queueFull": "डाउनलोड कतार भरी हुई है",
+    "queueFullDescription": "कृपया कुछ मिनटों में फिर से प्रयास करें जब कतार में जगह हो",
+    "cancelSuccess": "डाउनलोड सफलतापूर्वक रद्द किया गया",
+    "cancelError": "डाउनलोड रद्द करने में विफल: {error}",
+    "status": {
+      "pending": "तैयारी हो रही है...",
+      "queued": "कतार में",
+      "downloading": "डाउनलोड हो रहा है",
+      "completed": "पूर्ण",
+      "failed": "विफल"
+    },
+    "waitTime": {
+      "seconds": "{seconds}से",
+      "minutes": "{minutes}मि",
+      "hoursMinutes": "{hours}घं {minutes}मि"
+    },
+    "indicator": {
+      "title": "डाउनलोड",
+      "downloads": "डाउनलोड कतार",
+      "active": "सक्रिय",
+      "queued": "कतारबद्ध",
+      "position": "स्थिति {position}",
+      "estimatedWait": "प्रतीक्षा: {time}",
+      "unknownFile": "अज्ञात फ़ाइल",
+      "noDownloads": "कोई डाउनलोड प्रगति में नहीं है",
+      "refresh": "कतार रीफ्रेश करें"
+    }
   },
   "emptyState": {
     "noFiles": "अभी तक कोई फाइल अपलोड नहीं हुई",
@@ -411,10 +484,29 @@
     "profile": "प्रोफ़ाइल",
     "settings": "सेटिंग्स",
     "usersManagement": "उपयोगकर्ता प्रबंधन",
-    "logout": "लॉग आउट"
+    "logout": "लॉग आउट",
+    "customization": "अनुकूलन"
   },
   "navigation": {
     "dashboard": "डैशबोर्ड"
+  },
+  "notifications": {
+    "permissionGranted": "डाउनलोड सूचनाएं सक्षम की गईं",
+    "permissionDenied": "डाउनलोड सूचनाएं अक्षम की गईं",
+    "downloadComplete": {
+      "title": "डाउनलोड पूर्ण",
+      "body": "{fileName} का डाउनलोड समाप्त हो गया है"
+    },
+    "downloadFailed": {
+      "title": "डाउनलोड विफल",
+      "body": "{fileName} डाउनलोड करने में विफल: {error}",
+      "unknownError": "अज्ञात त्रुटि"
+    },
+    "queueProcessing": {
+      "title": "डाउनलोड प्रारंभ",
+      "body": "{fileName} अब डाउनलोड हो रहा है{position}",
+      "position": " (कतार में #{position} था)"
+    }
   },
   "profile": {
     "password": {

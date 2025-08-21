@@ -162,6 +162,46 @@
     "error": "Errore nella creazione della condivisione",
     "namePlaceholder": "Inserisci un nome per la tua condivisione"
   },
+  "customization": {
+    "breadcrumb": "Personalizzazione",
+    "colors": {
+      "title": "Colori del Tema",
+      "description": "Scegli il tuo colore primario preferito per il tema",
+      "presets": "Colori Disponibili",
+      "presetsDescription": "Seleziona tra i temi colore disponibili",
+      "reset": "Ripristina Predefinito"
+    },
+    "fonts": {
+      "title": "Tipografia",
+      "description": "Scegli la tua famiglia di caratteri preferita",
+      "available": "Caratteri Disponibili",
+      "availableDescription": "Seleziona tra le famiglie di caratteri disponibili",
+      "reset": "Ripristina Predefinito"
+    },
+    "radius": {
+      "title": "Raggio dei Bordi",
+      "description": "Personalizza la rotondità degli elementi dell'interfaccia",
+      "available": "Opzioni di Rotondità",
+      "availableDescription": "Scegli come dovrebbero apparire gli angoli arrotondati",
+      "reset": "Ripristina Predefinito"
+    },
+    "background": {
+      "title": "Colori di Sfondo",
+      "description": "Personalizza i colori di sfondo per le modalità chiara e scura",
+      "lightMode": "Modalità Chiara",
+      "darkMode": "Modalità Scura",
+      "availableDescription": "Scegli i colori di sfondo per entrambi i temi chiari e scuri",
+      "reset": "Ripristina Predefinito"
+    },
+    "theme": {
+      "title": "Modalità Tema",
+      "description": "Scegli tra tema chiaro, scuro o di sistema",
+      "selectTheme": "Preferenza Tema",
+      "availableDescription": "Seleziona la tua modalità tema preferita",
+      "reset": "Ripristina Sistema"
+    },
+    "pageTitle": "Personalizzazione"
+  },
   "dashboard": {
     "loadError": "Errore durante il caricamento dei dati del pannello di controllo",
     "linkCopied": "Link copiato negli appunti",
@@ -175,6 +215,39 @@
   "deleteConfirmation": {
     "filesToDelete": "File da eliminare",
     "sharesToDelete": "Condivisioni che saranno eliminate"
+  },
+  "downloadQueue": {
+    "downloadQueued": "Download in coda: {fileName}",
+    "queuedDescription": "Il tuo download inizierà automaticamente quando si libera uno slot",
+    "queuePosition": "Download in coda alla posizione {position}: {fileName}",
+    "estimatedWait": "Tempo di attesa stimato: {time}",
+    "queueFull": "Coda di download piena",
+    "queueFullDescription": "Riprova tra qualche minuto quando la coda avrà spazio",
+    "cancelSuccess": "Download annullato con successo",
+    "cancelError": "Impossibile annullare il download: {error}",
+    "status": {
+      "pending": "Preparazione...",
+      "queued": "In coda",
+      "downloading": "Download in corso",
+      "completed": "Completato",
+      "failed": "Fallito"
+    },
+    "waitTime": {
+      "seconds": "{seconds}s",
+      "minutes": "{minutes}m",
+      "hoursMinutes": "{hours}h {minutes}m"
+    },
+    "indicator": {
+      "title": "Download",
+      "downloads": "Coda Download",
+      "active": "Attivi",
+      "queued": "In Coda",
+      "position": "Posizione {position}",
+      "estimatedWait": "Attesa: {time}",
+      "unknownFile": "File sconosciuto",
+      "noDownloads": "Nessun download in corso",
+      "refresh": "Aggiorna Coda"
+    }
   },
   "emptyState": {
     "noFiles": "Nessun file caricato ancora",
@@ -411,10 +484,29 @@
     "profile": "Profilo",
     "settings": "Impostazioni",
     "usersManagement": "Gestione Utenti",
-    "logout": "Logout"
+    "logout": "Logout",
+    "customization": "Personalizzazione"
   },
   "navigation": {
     "dashboard": "Pannello di controllo"
+  },
+  "notifications": {
+    "permissionGranted": "Notifiche download abilitate",
+    "permissionDenied": "Notifiche download disabilitate",
+    "downloadComplete": {
+      "title": "Download Completato",
+      "body": "Il download di {fileName} è terminato"
+    },
+    "downloadFailed": {
+      "title": "Download Fallito",
+      "body": "Impossibile scaricare {fileName}: {error}",
+      "unknownError": "Errore sconosciuto"
+    },
+    "queueProcessing": {
+      "title": "Download in Avvio",
+      "body": "{fileName} sta ora scaricando{position}",
+      "position": " (era #{position} in coda)"
+    }
   },
   "profile": {
     "password": {

@@ -1,0 +1,391 @@
+---
+title: Memory Management
+icon: Download
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
+Palmr implements an intelligent memory management system that prevents crashes during large file downloads (3GB+ by default), maintaining unlimited download capacity through adaptive resource control and an automatic queue system.
+
+## How It Works
+
+### Automatic Resource Detection
+
+The system automatically detects available container/system memory and configures appropriate limits based on available infrastructure:
+
+```typescript
+const totalMemoryGB = require("os").totalmem() / 1024 ** 3;
+```
+
+### System Configuration
+
+The system supports two configuration approaches that you can choose based on your needs:
+
+<Tabs items={["Manual Configuration", "Auto-scaling (Default)"]}>
+  <Tab value="Manual Configuration">
+    Manually configure all parameters for total control over the system:
+
+    ```bash
+    # Custom configuration (overrides auto-scaling)
+    DOWNLOAD_MAX_CONCURRENT=8              # Maximum simultaneous downloads
+    DOWNLOAD_MEMORY_THRESHOLD_MB=1536      # Memory threshold in MB
+    DOWNLOAD_QUEUE_SIZE=40                 # Maximum queue size
+    DOWNLOAD_AUTO_SCALE=false              # Disable auto-scaling
+    ```
+
+    <Callout>
+      Manual configuration offers total control and predictability for specific environments where you know exactly the available resources.
+    </Callout>
+
+  </Tab>
+  <Tab value="Auto-scaling (Default)">
+    Automatic configuration based on detected system memory:
+
+    | Available Memory | Concurrent Downloads | Memory Threshold | Queue Size | Recommended Use    |
+    |------------------|----------------------|-------------------|------------|--------------------|
+    | ≤ 2GB            | 1                    | 256MB            | 5          | Development        |
+    | 2GB - 4GB        | 2                    | 512MB            | 10         | Small Environment  |
+    | 4GB - 8GB        | 3                    | 1GB              | 15         | Standard Production|
+    | 8GB - 16GB       | 5                    | 2GB              | 25         | High Performance   |
+    | > 16GB           | 10                   | 4GB              | 50         | Enterprise         |
+
+    <Callout>
+      Auto-scaling automatically adapts to different environments without manual configuration, perfect for flexible deployment.
+    </Callout>
+
+  </Tab>
+</Tabs>
+
+<Callout type="info">If environment variables are configured, they take **priority** over auto-scaling.</Callout>
+
+## Download Queue System
+
+### How It Works
+
+The memory management system only activates for files larger than the configured minimum size (3GB by default). Smaller files bypass the queue system entirely and download immediately without memory management.
+
+When a user requests a download for a large file but all slots are occupied, the system automatically queues the download instead of returning a 429 error. The queue processes downloads in FIFO order (first in, first out).
+
+### Practical Example
+
+Consider a system with 8GB RAM (5 concurrent downloads, queue of 25, 3GB minimum) where users want to download files of various sizes:
+
+```bash
+# Small files (< 3GB): Bypass queue entirely
+[DOWNLOAD MANAGER] File document.pdf (0.05GB) below threshold (3.0GB), bypassing queue
+
+# Large files 1-5: Start immediately
+[DOWNLOAD MANAGER] Immediate start: 1734567890-abc123def
+[DOWNLOAD MANAGER] Starting video1.mp4 (5.2GB)
+
+# Large files 6-10: Automatically queued
+[DOWNLOAD MANAGER] Queued: 1734567891-def456ghi (Position: 1/25)
+[DOWNLOAD MANAGER] Queued file: video2.mp4 (8.1GB)
+
+# When download 1 finishes: download 6 starts automatically
+[DOWNLOAD MANAGER] Processing queue: 1734567891-def456ghi (4 remaining)
+[DOWNLOAD MANAGER] Starting queued file: video2.mp4 (8.1GB)
+```
+
+### System Benefits
+
+**User Experience**
+
+- Users don't receive errors, they simply wait in queue
+- Downloads start automatically when slots become available
+- Transparent operation without client changes
+- Fair processing order with FIFO queue
+
+**Technical Features**
+
+- Limited buffers (64KB per stream) for controlled memory usage
+- Automatic backpressure control with pipeline streams
+- Adaptive memory throttling based on usage patterns
+- Forced garbage collection after large downloads
+- Smart timeout handling (30 minutes for queued downloads)
+- Automatic cleanup of orphaned downloads every 30 seconds
+
+## Container Compatibility
+
+The system works with Docker, Kubernetes, and any containerized environment:
+
+<Tabs items={["Docker", "Kubernetes", "Docker Compose"]}>
+  <Tab value="Docker">
+
+    ```bash
+    # Example: Container with 8GB
+    docker run -m 8g palmr/server
+    # Result: 5 concurrent downloads, queue of 25, threshold 2GB
+    ```
+
+  </Tab>
+  <Tab value="Kubernetes">
+
+    ```yaml
+    apiVersion: apps/v1
+    kind: Deployment
+    spec:
+      template:
+        spec:
+          containers:
+          - name: palmr-server
+            resources:
+              limits:
+                memory: "4Gi"     # Detects 4GB
+                cpu: "2"
+              requests:
+                memory: "2Gi"
+                cpu: "1"
+    # Result: 3 concurrent downloads, queue of 15, threshold 1GB
+    ```
+
+  </Tab>
+  <Tab value="Docker Compose">
+
+    ```yaml
+    services:
+      palmr-server:
+        image: palmr/server
+        deploy:
+          resources:
+            limits:
+              memory: 16G       # Detects 16GB
+    # Result: 10 concurrent downloads, queue of 50, threshold 4GB
+    ```
+
+  </Tab>
+</Tabs>
+
+## Configuration
+
+### Environment Variables
+
+Configure the download memory management system using these environment variables:
+
+| Variable                       | Default    | Description                                           |
+| ------------------------------ | ---------- | ----------------------------------------------------- |
+| `DOWNLOAD_MAX_CONCURRENT`      | auto-scale | Maximum number of simultaneous downloads              |
+| `DOWNLOAD_MEMORY_THRESHOLD_MB` | auto-scale | Memory limit in MB before throttling                  |
+| `DOWNLOAD_QUEUE_SIZE`          | auto-scale | Maximum download queue size                           |
+| `DOWNLOAD_AUTO_SCALE`          | `true`     | Enable/disable auto-scaling based on system memory    |
+| `DOWNLOAD_MIN_FILE_SIZE_GB`    | `3.0`      | Minimum file size in GB to activate memory management |
+
+### Configuration Examples by Scenario
+
+<Tabs items={["Home Server", "Enterprise", "High Performance", "Conservative"]}>
+  <Tab value="Home Server">
+    Configuration optimized for personal use or small groups (4GB RAM):
+
+    ```bash
+    DOWNLOAD_MAX_CONCURRENT=2
+    DOWNLOAD_MEMORY_THRESHOLD_MB=1024
+    DOWNLOAD_QUEUE_SIZE=8
+    DOWNLOAD_MIN_FILE_SIZE_GB=2.0
+    DOWNLOAD_AUTO_SCALE=false
+    ```
+
+  </Tab>
+  <Tab value="Enterprise">
+    Configuration for corporate environments with multiple users (16GB RAM):
+
+    ```bash
+    DOWNLOAD_MAX_CONCURRENT=12
+    DOWNLOAD_MEMORY_THRESHOLD_MB=4096
+    DOWNLOAD_QUEUE_SIZE=60
+    DOWNLOAD_MIN_FILE_SIZE_GB=5.0
+    DOWNLOAD_AUTO_SCALE=false
+    ```
+
+  </Tab>
+  <Tab value="High Performance">
+    Configuration for maximum performance and throughput (32GB RAM):
+
+    ```bash
+    DOWNLOAD_MAX_CONCURRENT=20
+    DOWNLOAD_MEMORY_THRESHOLD_MB=8192
+    DOWNLOAD_QUEUE_SIZE=100
+    DOWNLOAD_MIN_FILE_SIZE_GB=10.0
+    DOWNLOAD_AUTO_SCALE=false
+    ```
+
+  </Tab>
+  <Tab value="Conservative">
+    For environments with limited or shared resources:
+
+    ```bash
+    DOWNLOAD_MAX_CONCURRENT=3
+    DOWNLOAD_MEMORY_THRESHOLD_MB=1024
+    DOWNLOAD_QUEUE_SIZE=15
+    DOWNLOAD_MIN_FILE_SIZE_GB=1.0
+    DOWNLOAD_AUTO_SCALE=false
+    ```
+
+  </Tab>
+</Tabs>
+
+### Additional Configuration
+
+For optimal performance with large downloads, consider these additional settings:
+
+```bash
+# Force garbage collection (recommended for large downloads)
+NODE_OPTIONS="--expose-gc"
+
+# Adjust timeout for very large downloads
+KEEP_ALIVE_TIMEOUT=300000
+REQUEST_TIMEOUT=0
+```
+
+## Monitoring and Logs
+
+### System Logs
+
+The system provides detailed logs to track operation:
+
+```bash
+[DOWNLOAD MANAGER] System Memory: 8.0GB, Max Concurrent: 5, Memory Threshold: 2048MB, Queue Size: 25
+[DOWNLOAD] Requesting slot for 1734567890-abc123def: video.mp4 (15.2GB)
+[DOWNLOAD MANAGER] Queued: 1734567890-abc123def (Position: 3/25)
+[DOWNLOAD MANAGER] Processing queue: 1734567890-abc123def (2 remaining)
+[DOWNLOAD] Starting 1734567890-abc123def: video.mp4 (15.2GB)
+[MEMORY THROTTLE] video.mp4 - Pausing stream due to high memory usage: 1843MB
+[DOWNLOAD] Applying throttling: 100ms delay for 1734567890-abc123def
+```
+
+### Configuration Validation
+
+The system automatically validates configurations at startup and provides warnings or errors:
+
+**Warnings**
+
+- `DOWNLOAD_MAX_CONCURRENT > 50`: May cause performance issues
+- `DOWNLOAD_MEMORY_THRESHOLD_MB < 128MB`: Downloads may be throttled frequently
+- `DOWNLOAD_MEMORY_THRESHOLD_MB > 16GB`: System may run out of memory
+- `DOWNLOAD_QUEUE_SIZE > 1000`: May consume significant memory
+- `DOWNLOAD_QUEUE_SIZE < DOWNLOAD_MAX_CONCURRENT`: Queue smaller than concurrent downloads
+
+**Errors**
+
+- `DOWNLOAD_MAX_CONCURRENT < 1`: Invalid value
+- `DOWNLOAD_QUEUE_SIZE < 1`: Invalid value
+
+## Queue Management APIs
+
+The system provides REST APIs to monitor and manage the download queue:
+
+### Get Queue Status
+
+```http
+GET /api/filesystem/download-queue/status
+```
+
+**Response:**
+
+```json
+{
+  "data": {
+    "queueLength": 3,
+    "maxQueueSize": 25,
+    "activeDownloads": 5,
+    "maxConcurrent": 5,
+    "queuedDownloads": [
+      {
+        "downloadId": "1734567890-abc123def",
+        "position": 1,
+        "waitTime": 45000,
+        "fileName": "video.mp4",
+        "fileSize": 16106127360
+      }
+    ]
+  },
+  "status": "success"
+}
+```
+
+### Cancel Download
+
+```http
+DELETE /api/filesystem/download-queue/{downloadId}
+```
+
+**Response:**
+
+```json
+{
+  "downloadId": "1734567890-abc123def",
+  "message": "Download cancelled successfully"
+}
+```
+
+### Clear Queue (Admin)
+
+```http
+DELETE /api/filesystem/download-queue
+```
+
+**Response:**
+
+```json
+{
+  "clearedCount": 8,
+  "message": "Download queue cleared successfully"
+}
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**Downloads failing with "Download queue is full"**
+
+_Cause:_ Too many simultaneous downloads with a full queue
+
+_Solutions:_
+
+- Wait for some downloads to finish
+- Check for orphaned downloads in queue
+- Consider increasing container resources
+- Use API to clear queue if necessary
+
+**Downloads stay too long in queue**
+
+_Cause:_ Active downloads are slow or stuck
+
+_Solutions:_
+
+- Check logs for orphaned downloads
+- Use API to cancel specific downloads
+- Check client network connections
+- Monitor memory throttling
+
+**Very slow downloads**
+
+_Cause:_ Active throttling due to high memory usage
+
+_Solutions:_
+
+- Check other processes consuming memory
+- Consider increasing container resources
+- Monitor throttling logs
+- Check number of simultaneous downloads
+
+## Summary
+
+This system enables unlimited downloads (including 50TB+ files) without compromising system stability through:
+
+**Key Features**
+
+- Auto-configuration based on available resources
+- Automatic FIFO queue system for pending downloads
+- Adaptive control of simultaneous downloads
+- Intelligent throttling when needed
+
+**System Benefits**
+
+- Management APIs to monitor and control queue
+- Automatic cleanup of resources and orphaned downloads
+- Full compatibility with Docker/Kubernetes
+- Perfect user experience with no 429 errors
+
+The system maintains high performance for small/medium files while preventing crashes with gigantic files, offering a seamless experience where users never see 429 errors, they simply wait in queue until their download starts automatically.

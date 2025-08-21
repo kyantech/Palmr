@@ -1,4 +1,4 @@
-import { FileManagerHook } from "@/hooks/use-file-manager";
+import { EnhancedFileManagerHook } from "@/hooks/use-enhanced-file-manager";
 
 export interface EmptyStateProps {
   onUpload: () => void;
@@ -11,7 +11,7 @@ export interface HeaderProps {
 export interface FileListProps {
   files: any[];
   filteredFiles: any[];
-  fileManager: FileManagerHook;
+  fileManager: EnhancedFileManagerHook;
   searchQuery: string;
   onSearch: (query: string) => void;
   onUpload: () => void;
@@ -25,7 +25,7 @@ export interface SearchBarProps {
 }
 
 export interface FilesModalsProps {
-  fileManager: FileManagerHook;
+  fileManager: EnhancedFileManagerHook;
   modals: {
     isUploadModalOpen: boolean;
     onCloseUploadModal: () => void;

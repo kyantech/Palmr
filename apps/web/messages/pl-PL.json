@@ -162,6 +162,46 @@
     "error": "Nie udało się utworzyć udostępnienia",
     "namePlaceholder": "Wprowadź nazwę dla swojego udostępnienia"
   },
+  "customization": {
+    "breadcrumb": "Personalizacja",
+    "colors": {
+      "title": "Kolory motywu",
+      "description": "Wybierz preferowany kolor podstawowy motywu",
+      "presets": "Dostępne kolory",
+      "presetsDescription": "Wybierz spośród dostępnych motywów kolorystycznych",
+      "reset": "Przywróć domyślne"
+    },
+    "fonts": {
+      "title": "Typografia",
+      "description": "Wybierz preferowaną rodzinę czcionek",
+      "available": "Dostępne czcionki",
+      "availableDescription": "Wybierz spośród dostępnych rodzin czcionek",
+      "reset": "Przywróć domyślne"
+    },
+    "radius": {
+      "title": "Zaokrąglenie krawędzi",
+      "description": "Dostosuj zaokrąglenie elementów interfejsu",
+      "available": "Opcje zaokrąglenia",
+      "availableDescription": "Wybierz stopień zaokrąglenia narożników",
+      "reset": "Przywróć domyślne"
+    },
+    "background": {
+      "title": "Kolory tła",
+      "description": "Dostosuj kolory tła dla trybów jasnego i ciemnego",
+      "lightMode": "Tryb jasny",
+      "darkMode": "Tryb ciemny",
+      "availableDescription": "Wybierz kolory tła dla motywów jasnego i ciemnego",
+      "reset": "Przywróć domyślne"
+    },
+    "theme": {
+      "title": "Tryb motywu",
+      "description": "Wybierz między trybem jasnym, ciemnym lub systemowym",
+      "selectTheme": "Preferencje motywu",
+      "availableDescription": "Wybierz preferowany tryb motywu",
+      "reset": "Przywróć ustawienia systemowe"
+    },
+    "pageTitle": "Personalizacja"
+  },
   "dashboard": {
     "loadError": "Nie udało się załadować danych panelu głównego",
     "linkCopied": "Link skopiowany do schowka",
@@ -175,6 +215,39 @@
   "deleteConfirmation": {
     "filesToDelete": "Pliki do usunięcia",
     "sharesToDelete": "Udostępnienia do usunięcia"
+  },
+  "downloadQueue": {
+    "downloadQueued": "Pobieranie w kolejce: {fileName}",
+    "queuedDescription": "Pobieranie rozpocznie się automatycznie, gdy zwolni się miejsce",
+    "queuePosition": "Pobieranie w kolejce na pozycji {position}: {fileName}",
+    "estimatedWait": "Szacowany czas oczekiwania: {time}",
+    "queueFull": "Kolejka pobierania jest pełna",
+    "queueFullDescription": "Spróbuj ponownie za kilka minut, gdy w kolejce będzie miejsce",
+    "cancelSuccess": "Pobieranie anulowane pomyślnie",
+    "cancelError": "Nie udało się anulować pobierania: {error}",
+    "status": {
+      "pending": "Przygotowywanie...",
+      "queued": "W kolejce",
+      "downloading": "Pobieranie",
+      "completed": "Zakończone",
+      "failed": "Nie powiodło się"
+    },
+    "waitTime": {
+      "seconds": "{seconds}s",
+      "minutes": "{minutes}m",
+      "hoursMinutes": "{hours}g {minutes}m"
+    },
+    "indicator": {
+      "title": "Pobierania",
+      "downloads": "Kolejka pobierania",
+      "active": "Aktywne",
+      "queued": "W kolejce",
+      "position": "Pozycja {position}",
+      "estimatedWait": "Oczekiwanie: {time}",
+      "unknownFile": "Nieznany plik",
+      "noDownloads": "Brak aktywnych pobierań",
+      "refresh": "Odśwież kolejkę"
+    }
   },
   "emptyState": {
     "noFiles": "Brak przesłanych plików",
@@ -411,10 +484,29 @@
     "profile": "Profil",
     "settings": "Ustawienia",
     "usersManagement": "Zarządzanie użytkownikami",
-    "logout": "Wyloguj się"
+    "logout": "Wyloguj się",
+    "customization": "Dostosowanie"
   },
   "navigation": {
     "dashboard": "Panel główny"
+  },
+  "notifications": {
+    "permissionGranted": "Powiadomienia o pobieraniu włączone",
+    "permissionDenied": "Powiadomienia o pobieraniu wyłączone",
+    "downloadComplete": {
+      "title": "Pobieranie zakończone",
+      "body": "Plik {fileName} został pobrany"
+    },
+    "downloadFailed": {
+      "title": "Błąd pobierania",
+      "body": "Nie udało się pobrać pliku {fileName}: {error}",
+      "unknownError": "Nieznany błąd"
+    },
+    "queueProcessing": {
+      "title": "Rozpoczęcie pobierania",
+      "body": "Trwa pobieranie pliku {fileName}{position}",
+      "position": " (był #{position} w kolejce)"
+    }
   },
   "profile": {
     "password": {

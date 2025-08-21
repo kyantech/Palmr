@@ -3,11 +3,14 @@ import { pipeline } from "stream/promises";
 import { FastifyReply, FastifyRequest } from "fastify";
 
 import { FilesystemStorageProvider } from "../../providers/filesystem-storage.provider";
+import { DownloadCancelResponse, QueueClearResponse, QueueStatusResponse } from "../../types/download-queue";
+import { DownloadMemoryManager } from "../../utils/download-memory-manager";
 import { getContentType } from "../../utils/mime-types";
 import { ChunkManager, ChunkMetadata } from "./chunk-manager";
 
 export class FilesystemController {
   private chunkManager = ChunkManager.getInstance();
+  private memoryManager = DownloadMemoryManager.getInstance();
 
   private encodeFilenameForHeader(filename: string): string {
     if (!filename || filename.trim() === "") {
@@ -166,9 +169,10 @@ export class FilesystemController {
   }
 
   async download(request: FastifyRequest, reply: FastifyReply) {
+    const downloadId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+
     try {
       const { token } = request.params as { token: string };
-
       const provider = FilesystemStorageProvider.getInstance();
 
       const tokenData = provider.validateDownloadToken(token);
@@ -180,44 +184,87 @@ export class FilesystemController {
       const filePath = provider.getFilePath(tokenData.objectName);
       const stats = await fs.promises.stat(filePath);
       const fileSize = stats.size;
-
       const fileName = tokenData.fileName || "download";
+
+      const fileSizeMB = fileSize / (1024 * 1024);
+      console.log(`[DOWNLOAD] Requesting slot for ${downloadId}: ${tokenData.objectName} (${fileSizeMB.toFixed(1)}MB)`);
+
+      try {
+        await this.memoryManager.requestDownloadSlot(downloadId, {
+          fileName,
+          fileSize,
+          objectName: tokenData.objectName,
+        });
+      } catch (error: any) {
+        console.warn(`[DOWNLOAD] Queue full for ${downloadId}: ${error.message}`);
+        return reply.status(503).send({
+          error: "Download queue is full",
+          message: error.message,
+          retryAfter: 60,
+        });
+      }
+
+      console.log(`[DOWNLOAD] Starting ${downloadId}: ${tokenData.objectName} (${fileSizeMB.toFixed(1)}MB)`);
+      this.memoryManager.startDownload(downloadId);
+
       const range = request.headers.range;
 
       reply.header("Content-Disposition", this.encodeFilenameForHeader(fileName));
       reply.header("Content-Type", getContentType(fileName));
       reply.header("Accept-Ranges", "bytes");
+      reply.header("X-Download-ID", downloadId);
 
-      if (range) {
-        const parts = range.replace(/bytes=/, "").split("-");
-        const start = parseInt(parts[0], 10);
-        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+      reply.raw.on("close", () => {
+        this.memoryManager.endDownload(downloadId);
+        console.log(`[DOWNLOAD] Client disconnected: ${downloadId}`);
+      });
 
-        reply.status(206);
-        reply.header("Content-Range", `bytes ${start}-${end}/${fileSize}`);
-        reply.header("Content-Length", end - start + 1);
+      reply.raw.on("error", () => {
+        this.memoryManager.endDownload(downloadId);
+        console.log(`[DOWNLOAD] Client error: ${downloadId}`);
+      });
 
-        await this.downloadFileRange(reply, provider, tokenData.objectName, start, end);
-      } else {
-        reply.header("Content-Length", fileSize);
-        await this.downloadFileStream(reply, provider, tokenData.objectName);
+      try {
+        if (range) {
+          const parts = range.replace(/bytes=/, "").split("-");
+          const start = parseInt(parts[0], 10);
+          const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+
+          reply.status(206);
+          reply.header("Content-Range", `bytes ${start}-${end}/${fileSize}`);
+          reply.header("Content-Length", end - start + 1);
+
+          await this.downloadFileRange(reply, provider, tokenData.objectName, start, end, downloadId);
+        } else {
+          reply.header("Content-Length", fileSize);
+          await this.downloadFileStream(reply, provider, tokenData.objectName, downloadId);
+        }
+
+        provider.consumeDownloadToken(token);
+      } finally {
+        this.memoryManager.endDownload(downloadId);
       }
-
-      provider.consumeDownloadToken(token);
     } catch (error) {
+      this.memoryManager.endDownload(downloadId);
+      console.error(`[DOWNLOAD] Error in ${downloadId}:`, error);
       return reply.status(500).send({ error: "Internal server error" });
     }
   }
 
-  private async downloadFileStream(reply: FastifyReply, provider: FilesystemStorageProvider, objectName: string) {
+  private async downloadFileStream(
+    reply: FastifyReply,
+    provider: FilesystemStorageProvider,
+    objectName: string,
+    downloadId?: string
+  ) {
     try {
-      FilesystemStorageProvider.logMemoryUsage(`Download start: ${objectName}`);
+      FilesystemStorageProvider.logMemoryUsage(`Download start: ${objectName} (${downloadId})`);
 
       const downloadStream = provider.createDownloadStream(objectName);
 
       downloadStream.on("error", (error) => {
         console.error("Download stream error:", error);
-        FilesystemStorageProvider.logMemoryUsage(`Download error: ${objectName}`);
+        FilesystemStorageProvider.logMemoryUsage(`Download error: ${objectName} (${downloadId})`);
         if (!reply.sent) {
           reply.status(500).send({ error: "Download failed" });
         }
@@ -227,15 +274,40 @@ export class FilesystemController {
         if (downloadStream.readable && typeof (downloadStream as any).destroy === "function") {
           (downloadStream as any).destroy();
         }
-        FilesystemStorageProvider.logMemoryUsage(`Download client disconnect: ${objectName}`);
+        FilesystemStorageProvider.logMemoryUsage(`Download client disconnect: ${objectName} (${downloadId})`);
       });
 
-      await pipeline(downloadStream, reply.raw);
+      if (this.memoryManager.shouldThrottleStream()) {
+        console.log(
+          `[MEMORY THROTTLE] ${objectName} - Pausing stream due to high memory usage: ${this.memoryManager.getCurrentMemoryUsageMB().toFixed(0)}MB`
+        );
 
-      FilesystemStorageProvider.logMemoryUsage(`Download complete: ${objectName}`);
+        const { Transform } = require("stream");
+        const memoryManager = this.memoryManager;
+        const throttleStream = new Transform({
+          highWaterMark: 256 * 1024,
+          transform(chunk: Buffer, _encoding: BufferEncoding, callback: (error?: Error | null, data?: any) => void) {
+            if (memoryManager.shouldThrottleStream()) {
+              setImmediate(() => {
+                this.push(chunk);
+                callback();
+              });
+            } else {
+              this.push(chunk);
+              callback();
+            }
+          },
+        });
+
+        await pipeline(downloadStream, throttleStream, reply.raw);
+      } else {
+        await pipeline(downloadStream, reply.raw);
+      }
+
+      FilesystemStorageProvider.logMemoryUsage(`Download complete: ${objectName} (${downloadId})`);
     } catch (error) {
       console.error("Download error:", error);
-      FilesystemStorageProvider.logMemoryUsage(`Download failed: ${objectName}`);
+      FilesystemStorageProvider.logMemoryUsage(`Download failed: ${objectName} (${downloadId})`);
       if (!reply.sent) {
         reply.status(500).send({ error: "Download failed" });
       }
@@ -247,16 +319,19 @@ export class FilesystemController {
     provider: FilesystemStorageProvider,
     objectName: string,
     start: number,
-    end: number
+    end: number,
+    downloadId?: string
   ) {
     try {
-      FilesystemStorageProvider.logMemoryUsage(`Range download start: ${objectName} (${start}-${end})`);
+      FilesystemStorageProvider.logMemoryUsage(`Range download start: ${objectName} (${start}-${end}) (${downloadId})`);
 
       const rangeStream = await provider.createDownloadRangeStream(objectName, start, end);
 
       rangeStream.on("error", (error) => {
         console.error("Range download stream error:", error);
-        FilesystemStorageProvider.logMemoryUsage(`Range download error: ${objectName} (${start}-${end})`);
+        FilesystemStorageProvider.logMemoryUsage(
+          `Range download error: ${objectName} (${start}-${end}) (${downloadId})`
+        );
         if (!reply.sent) {
           reply.status(500).send({ error: "Download failed" });
         }
@@ -266,18 +341,76 @@ export class FilesystemController {
         if (rangeStream.readable && typeof (rangeStream as any).destroy === "function") {
           (rangeStream as any).destroy();
         }
-        FilesystemStorageProvider.logMemoryUsage(`Range download client disconnect: ${objectName} (${start}-${end})`);
+        FilesystemStorageProvider.logMemoryUsage(
+          `Range download client disconnect: ${objectName} (${start}-${end}) (${downloadId})`
+        );
       });
 
       await pipeline(rangeStream, reply.raw);
 
-      FilesystemStorageProvider.logMemoryUsage(`Range download complete: ${objectName} (${start}-${end})`);
+      FilesystemStorageProvider.logMemoryUsage(
+        `Range download complete: ${objectName} (${start}-${end}) (${downloadId})`
+      );
     } catch (error) {
       console.error("Range download error:", error);
-      FilesystemStorageProvider.logMemoryUsage(`Range download failed: ${objectName} (${start}-${end})`);
+      FilesystemStorageProvider.logMemoryUsage(
+        `Range download failed: ${objectName} (${start}-${end}) (${downloadId})`
+      );
       if (!reply.sent) {
         reply.status(500).send({ error: "Download failed" });
       }
+    }
+  }
+
+  async getQueueStatus(_request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const queueStatus = this.memoryManager.getQueueStatus();
+      const response: QueueStatusResponse = {
+        status: "success",
+        data: queueStatus,
+      };
+      reply.status(200).send(response);
+    } catch (error) {
+      console.error("Error getting queue status:", error);
+      return reply.status(500).send({ error: "Internal server error" });
+    }
+  }
+
+  async cancelQueuedDownload(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { downloadId } = request.params as { downloadId: string };
+
+      const cancelled = this.memoryManager.cancelQueuedDownload(downloadId);
+
+      if (cancelled) {
+        const response: DownloadCancelResponse = {
+          message: "Download cancelled successfully",
+          downloadId,
+        };
+        reply.status(200).send(response);
+      } else {
+        reply.status(404).send({
+          error: "Download not found in queue",
+          downloadId,
+        });
+      }
+    } catch (error) {
+      console.error("Error cancelling queued download:", error);
+      return reply.status(500).send({ error: "Internal server error" });
+    }
+  }
+
+  async clearDownloadQueue(_request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const clearedCount = this.memoryManager.clearQueue();
+      const response: QueueClearResponse = {
+        message: "Download queue cleared successfully",
+        clearedCount,
+      };
+      reply.status(200).send(response);
+    } catch (error) {
+      console.error("Error clearing download queue:", error);
+      return reply.status(500).send({ error: "Internal server error" });
     }
   }
 }

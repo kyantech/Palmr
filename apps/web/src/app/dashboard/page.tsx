@@ -46,6 +46,8 @@ export default function DashboardPage() {
           icon={<IconLayoutDashboardFilled className="text-xl" />}
           showBreadcrumb={false}
           title={t("dashboard.pageTitle")}
+          pendingDownloads={fileManager.pendingDownloads}
+          onCancelDownload={fileManager.cancelPendingDownload}
         >
           <StorageUsage diskSpace={diskSpace} diskSpaceError={diskSpaceError} onRetry={handleRetryDiskSpace} />
           <QuickAccessCards />

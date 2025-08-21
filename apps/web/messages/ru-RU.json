@@ -162,6 +162,46 @@
     "descriptionPlaceholder": "Введите описание (опционально)",
     "namePlaceholder": "Введите имя для вашего общего доступа"
   },
+  "customization": {
+    "breadcrumb": "Настройка",
+    "colors": {
+      "title": "Цвета темы",
+      "description": "Выберите предпочтительный основной цвет темы",
+      "presets": "Доступные цвета",
+      "presetsDescription": "Выберите из доступных цветовых тем",
+      "reset": "Сбросить по умолчанию"
+    },
+    "fonts": {
+      "title": "Типография",
+      "description": "Выберите предпочтительное семейство шрифтов",
+      "available": "Доступные шрифты",
+      "availableDescription": "Выберите из доступных семейств шрифтов",
+      "reset": "Сбросить по умолчанию"
+    },
+    "radius": {
+      "title": "Радиус границ",
+      "description": "Настройте закругление элементов интерфейса",
+      "available": "Варианты закругления",
+      "availableDescription": "Выберите, как должны выглядеть закругленные углы",
+      "reset": "Сбросить по умолчанию"
+    },
+    "background": {
+      "title": "Цвета фона",
+      "description": "Настройте цвета фона для светлого и темного режимов",
+      "lightMode": "Светлый режим",
+      "darkMode": "Темный режим",
+      "availableDescription": "Выберите цвета фона для светлой и темной тем",
+      "reset": "Сбросить по умолчанию"
+    },
+    "theme": {
+      "title": "Режим темы",
+      "description": "Выберите между светлой, темной или системной темой",
+      "selectTheme": "Предпочтительная тема",
+      "availableDescription": "Выберите предпочтительный режим темы",
+      "reset": "Сбросить на системную"
+    },
+    "pageTitle": "Настройка"
+  },
   "dashboard": {
     "loadError": "Ошибка загрузки данных панели управления",
     "linkCopied": "Ссылка скопирована в буфер обмена",
@@ -175,6 +215,39 @@
   "deleteConfirmation": {
     "filesToDelete": "Файлы для удаления",
     "sharesToDelete": "Общие папки, которые будут удалены"
+  },
+  "downloadQueue": {
+    "downloadQueued": "Загрузка в очереди: {fileName}",
+    "queuedDescription": "Ваша загрузка начнется автоматически, когда освободится слот",
+    "queuePosition": "Загрузка в очереди на позиции {position}: {fileName}",
+    "estimatedWait": "Расчетное время ожидания: {time}",
+    "queueFull": "Очередь загрузки заполнена",
+    "queueFullDescription": "Пожалуйста, повторите попытку через несколько минут, когда в очереди появится место",
+    "cancelSuccess": "Загрузка успешно отменена",
+    "cancelError": "Не удалось отменить загрузку: {error}",
+    "status": {
+      "pending": "Подготовка...",
+      "queued": "В очереди",
+      "downloading": "Загрузка",
+      "completed": "Завершено",
+      "failed": "Не удалось"
+    },
+    "waitTime": {
+      "seconds": "{seconds} сек",
+      "minutes": "{minutes} мин",
+      "hoursMinutes": "{hours}ч {minutes}мин"
+    },
+    "indicator": {
+      "title": "Загрузки",
+      "downloads": "Очередь загрузки",
+      "active": "Активные",
+      "queued": "В очереди",
+      "position": "Позиция {position}",
+      "estimatedWait": "Ожидание: {time}",
+      "unknownFile": "Неизвестный файл",
+      "noDownloads": "Нет активных загрузок",
+      "refresh": "Обновить очередь"
+    }
   },
   "emptyState": {
     "noFiles": "Файлы еще не загружены",
@@ -411,10 +484,29 @@
     "profile": "Профиль",
     "settings": "Настройки",
     "usersManagement": "Управление пользователями",
-    "logout": "Выйти"
+    "logout": "Выйти",
+    "customization": "Настройки"
   },
   "navigation": {
     "dashboard": "Панель управления"
+  },
+  "notifications": {
+    "permissionGranted": "Уведомления о загрузках включены",
+    "permissionDenied": "Уведомления о загрузках отключены",
+    "downloadComplete": {
+      "title": "Загрузка завершена",
+      "body": "Файл {fileName} успешно загружен"
+    },
+    "downloadFailed": {
+      "title": "Ошибка загрузки",
+      "body": "Не удалось загрузить {fileName}: {error}",
+      "unknownError": "Неизвестная ошибка"
+    },
+    "queueProcessing": {
+      "title": "Начало загрузки",
+      "body": "Файл {fileName} загружается{position}",
+      "position": " (был №{position} в очереди)"
+    }
   },
   "profile": {
     "password": {

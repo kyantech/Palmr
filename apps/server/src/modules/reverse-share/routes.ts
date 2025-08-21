@@ -401,6 +401,12 @@ export async function reverseShareRoutes(app: FastifyInstance) {
             url: z.string().describe("Presigned download URL - expires after 1 hour"),
             expiresIn: z.number().describe("URL expiration time in seconds (3600 = 1 hour)"),
           }),
+          202: z.object({
+            queued: z.boolean().describe("Download was queued due to memory constraints"),
+            downloadId: z.string().describe("Download identifier for tracking"),
+            message: z.string().describe("Queue status message"),
+            estimatedWaitTime: z.number().describe("Estimated wait time in seconds"),
+          }),
           401: z.object({ error: z.string() }),
           404: z.object({ error: z.string() }),
         },

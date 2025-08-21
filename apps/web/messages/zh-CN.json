@@ -162,6 +162,46 @@
     "error": "创建分享失败",
     "namePlaceholder": "输入分享名称"
   },
+  "customization": {
+    "breadcrumb": "自定义",
+    "colors": {
+      "title": "主题颜色",
+      "description": "选择您喜欢的主题颜色",
+      "presets": "可用颜色",
+      "presetsDescription": "从可用的颜色主题中选择",
+      "reset": "恢复默认值"
+    },
+    "fonts": {
+      "title": "字体",
+      "description": "选择您喜欢的字体系列",
+      "available": "可用字体",
+      "availableDescription": "从可用的字体系列中选择",
+      "reset": "恢复默认值"
+    },
+    "radius": {
+      "title": "边框圆角",
+      "description": "自定义界面元素的圆角程度",
+      "available": "圆角选项",
+      "availableDescription": "选择圆角的显示方式",
+      "reset": "恢复默认值"
+    },
+    "background": {
+      "title": "背景颜色",
+      "description": "自定义明暗模式的背景颜色",
+      "lightMode": "明亮模式",
+      "darkMode": "暗黑模式",
+      "availableDescription": "为明暗主题选择背景颜色",
+      "reset": "恢复默认值"
+    },
+    "theme": {
+      "title": "主题模式",
+      "description": "在明亮、暗黑或系统主题之间选择",
+      "selectTheme": "主题偏好",
+      "availableDescription": "选择您喜欢的主题模式",
+      "reset": "恢复系统设置"
+    },
+    "pageTitle": "自定义"
+  },
   "dashboard": {
     "loadError": "加载仪表盘数据失败",
     "linkCopied": "链接已复制到剪贴板",
@@ -175,6 +215,39 @@
   "deleteConfirmation": {
     "filesToDelete": "要删除的文件",
     "sharesToDelete": "将被删除的共享"
+  },
+  "downloadQueue": {
+    "downloadQueued": "已加入下载队列：{fileName}",
+    "queuedDescription": "当有空闲位置时，您的下载将自动开始",
+    "queuePosition": "在队列位置 {position} 等待下载：{fileName}",
+    "estimatedWait": "预计等待时间：{time}",
+    "queueFull": "下载队列已满",
+    "queueFullDescription": "请等待几分钟后当队列有空位时再试",
+    "cancelSuccess": "下载已成功取消",
+    "cancelError": "取消下载失败：{error}",
+    "status": {
+      "pending": "准备中...",
+      "queued": "排队中",
+      "downloading": "下载中",
+      "completed": "已完成",
+      "failed": "失败"
+    },
+    "waitTime": {
+      "seconds": "{seconds}秒",
+      "minutes": "{minutes}分",
+      "hoursMinutes": "{hours}小时 {minutes}分"
+    },
+    "indicator": {
+      "title": "下载",
+      "downloads": "下载队列",
+      "active": "进行中",
+      "queued": "排队中",
+      "position": "位置 {position}",
+      "estimatedWait": "等待：{time}",
+      "unknownFile": "未知文件",
+      "noDownloads": "当前没有下载任务",
+      "refresh": "刷新队列"
+    }
   },
   "emptyState": {
     "noFiles": "尚未上传任何文件",
@@ -411,10 +484,29 @@
     "profile": "个人资料",
     "settings": "设置",
     "usersManagement": "用户管理",
-    "logout": "退出登录"
+    "logout": "退出登录",
+    "customization": "自定义"
   },
   "navigation": {
     "dashboard": "仪表盘"
+  },
+  "notifications": {
+    "permissionGranted": "下载通知已启用",
+    "permissionDenied": "下载通知已禁用",
+    "downloadComplete": {
+      "title": "下载完成",
+      "body": "{fileName} 已下载完成"
+    },
+    "downloadFailed": {
+      "title": "下载失败",
+      "body": "下载 {fileName} 失败：{error}",
+      "unknownError": "未知错误"
+    },
+    "queueProcessing": {
+      "title": "开始下载",
+      "body": "{fileName} 正在下载{position}",
+      "position": "（队列中第 {position} 位）"
+    }
   },
   "profile": {
     "password": {
@@ -1517,11 +1609,7 @@
       "copyToClipboard": "复制到剪贴板",
       "savedMessage": "我已保存备用码",
       "available": "可用备用码：{count}个",
-      "instructions": [
-        "• 将这些代码保存在安全的位置",
-        "• 每个备用码只能使用一次",
-        "• 您可以随时生成新的备用码"
-      ]
+      "instructions": ["• 将这些代码保存在安全的位置", "• 每个备用码只能使用一次", "• 您可以随时生成新的备用码"]
     },
     "verification": {
       "title": "双重认证",

@@ -162,6 +162,46 @@
     "error": "共有の作成に失敗しました",
     "namePlaceholder": "共有の名前を入力してください"
   },
+  "customization": {
+    "breadcrumb": "カスタマイズ",
+    "colors": {
+      "title": "テーマカラー",
+      "description": "お好みのプライマリカラーテーマを選択してください",
+      "presets": "利用可能な色",
+      "presetsDescription": "利用可能なカラーテーマから選択",
+      "reset": "デフォルトにリセット"
+    },
+    "fonts": {
+      "title": "タイポグラフィ",
+      "description": "お好みのフォントファミリーを選択してください",
+      "available": "利用可能なフォント",
+      "availableDescription": "利用可能なフォントファミリーから選択",
+      "reset": "デフォルトにリセット"
+    },
+    "radius": {
+      "title": "角丸",
+      "description": "インターフェース要素の丸みをカスタマイズ",
+      "available": "丸みのオプション",
+      "availableDescription": "角の丸みの表示方法を選択",
+      "reset": "デフォルトにリセット"
+    },
+    "background": {
+      "title": "背景色",
+      "description": "ライトモードとダークモードの背景色をカスタマイズ",
+      "lightMode": "ライトモード",
+      "darkMode": "ダークモード",
+      "availableDescription": "ライトテーマとダークテーマの背景色を選択",
+      "reset": "デフォルトにリセット"
+    },
+    "theme": {
+      "title": "テーマモード",
+      "description": "ライト、ダーク、またはシステムテーマから選択",
+      "selectTheme": "テーマ設定",
+      "availableDescription": "お好みのテーマモードを選択",
+      "reset": "システム設定に戻す"
+    },
+    "pageTitle": "カスタマイズ"
+  },
   "dashboard": {
     "loadError": "ダッシュボードデータの読み込みに失敗しました",
     "linkCopied": "リンクがクリップボードにコピーされました",
@@ -175,6 +215,39 @@
   "deleteConfirmation": {
     "filesToDelete": "削除するファイル",
     "sharesToDelete": "削除される共有"
+  },
+  "downloadQueue": {
+    "downloadQueued": "ダウンロードキューに追加: {fileName}",
+    "queuedDescription": "空きスロットができ次第、自動的にダウンロードが開始されます",
+    "queuePosition": "順番{position}でキューに追加: {fileName}",
+    "estimatedWait": "推定待ち時間: {time}",
+    "queueFull": "ダウンロードキューが満杯です",
+    "queueFullDescription": "キューに空きができるまで数分お待ちください",
+    "cancelSuccess": "ダウンロードをキャンセルしました",
+    "cancelError": "ダウンロードのキャンセルに失敗: {error}",
+    "status": {
+      "pending": "準備中...",
+      "queued": "キュー待ち",
+      "downloading": "ダウンロード中",
+      "completed": "完了",
+      "failed": "失敗"
+    },
+    "waitTime": {
+      "seconds": "{seconds}秒",
+      "minutes": "{minutes}分",
+      "hoursMinutes": "{hours}時間{minutes}分"
+    },
+    "indicator": {
+      "title": "ダウンロード",
+      "downloads": "ダウンロードキュー",
+      "active": "実行中",
+      "queued": "待機中",
+      "position": "順番 {position}",
+      "estimatedWait": "待ち時間: {time}",
+      "unknownFile": "不明なファイル",
+      "noDownloads": "進行中のダウンロードはありません",
+      "refresh": "キューを更新"
+    }
   },
   "emptyState": {
     "noFiles": "まだファイルがアップロードされていません",
@@ -411,10 +484,29 @@
     "profile": "プロフィール",
     "settings": "設定",
     "usersManagement": "ユーザー管理",
-    "logout": "ログアウト"
+    "logout": "ログアウト",
+    "customization": "カスタマイズ"
   },
   "navigation": {
     "dashboard": "ダッシュボード"
+  },
+  "notifications": {
+    "permissionGranted": "ダウンロード通知が有効になりました",
+    "permissionDenied": "ダウンロード通知が無効になりました",
+    "downloadComplete": {
+      "title": "ダウンロード完了",
+      "body": "{fileName}のダウンロードが完了しました"
+    },
+    "downloadFailed": {
+      "title": "ダウンロード失敗",
+      "body": "{fileName}のダウンロードに失敗: {error}",
+      "unknownError": "不明なエラー"
+    },
+    "queueProcessing": {
+      "title": "ダウンロード開始",
+      "body": "{fileName}のダウンロードを開始しています{position}",
+      "position": "（キュー内{position}番目）"
+    }
   },
   "profile": {
     "password": {

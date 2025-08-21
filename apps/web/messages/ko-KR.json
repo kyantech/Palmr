@@ -162,6 +162,46 @@
     "error": "공유 생성에 실패했습니다",
     "namePlaceholder": "공유 이름을 입력하세요"
   },
+  "customization": {
+    "breadcrumb": "커스터마이징",
+    "colors": {
+      "title": "테마 색상",
+      "description": "선호하는 기본 색상 테마를 선택하세요",
+      "presets": "사용 가능한 색상",
+      "presetsDescription": "사용 가능한 색상 테마에서 선택하세요",
+      "reset": "기본값으로 재설정"
+    },
+    "fonts": {
+      "title": "타이포그래피",
+      "description": "선호하는 글꼴을 선택하세요",
+      "available": "사용 가능한 글꼴",
+      "availableDescription": "사용 가능한 글꼴 중에서 선택하세요",
+      "reset": "기본값으로 재설정"
+    },
+    "radius": {
+      "title": "테두리 반경",
+      "description": "인터페이스 요소의 둥근 정도를 조정하세요",
+      "available": "둥근 정도 옵션",
+      "availableDescription": "모서리의 둥근 정도를 선택하세요",
+      "reset": "기본값으로 재설정"
+    },
+    "background": {
+      "title": "배경 색상",
+      "description": "라이트 모드와 다크 모드의 배경 색상을 조정하세요",
+      "lightMode": "라이트 모드",
+      "darkMode": "다크 모드",
+      "availableDescription": "라이트와 다크 테마의 배경 색상을 선택하세요",
+      "reset": "기본값으로 재설정"
+    },
+    "theme": {
+      "title": "테마 모드",
+      "description": "라이트, 다크 또는 시스템 테마 중 선택하세요",
+      "selectTheme": "테마 설정",
+      "availableDescription": "선호하는 테마 모드를 선택하세요",
+      "reset": "시스템 설정으로 재설정"
+    },
+    "pageTitle": "커스터마이징"
+  },
   "dashboard": {
     "loadError": "대시보드 데이터를 불러오는데 실패했습니다",
     "linkCopied": "링크가 클립보드에 복사되었습니다",
@@ -175,6 +215,39 @@
   "deleteConfirmation": {
     "filesToDelete": "삭제할 파일",
     "sharesToDelete": "삭제될 공유"
+  },
+  "downloadQueue": {
+    "downloadQueued": "다운로드 대기 중: {fileName}",
+    "queuedDescription": "슬롯이 사용 가능해지면 자동으로 다운로드가 시작됩니다",
+    "queuePosition": "다운로드 대기 순서 {position}번: {fileName}",
+    "estimatedWait": "예상 대기 시간: {time}",
+    "queueFull": "다운로드 대기열이 가득 찼습니다",
+    "queueFullDescription": "대기열에 여유가 생길 때까지 잠시 후 다시 시도해 주세요",
+    "cancelSuccess": "다운로드가 성공적으로 취소되었습니다",
+    "cancelError": "다운로드 취소 실패: {error}",
+    "status": {
+      "pending": "준비 중...",
+      "queued": "대기 중",
+      "downloading": "다운로드 중",
+      "completed": "완료됨",
+      "failed": "실패"
+    },
+    "waitTime": {
+      "seconds": "{seconds}초",
+      "minutes": "{minutes}분",
+      "hoursMinutes": "{hours}시간 {minutes}분"
+    },
+    "indicator": {
+      "title": "다운로드",
+      "downloads": "다운로드 대기열",
+      "active": "진행 중",
+      "queued": "대기 중",
+      "position": "순서 {position}",
+      "estimatedWait": "대기: {time}",
+      "unknownFile": "알 수 없는 파일",
+      "noDownloads": "진행 중인 다운로드 없음",
+      "refresh": "대기열 새로고침"
+    }
   },
   "emptyState": {
     "noFiles": "아직 파일이 업로드되지 않았습니다",
@@ -411,10 +484,29 @@
     "profile": "프로필",
     "settings": "설정",
     "usersManagement": "사용자 관리",
-    "logout": "로그아웃"
+    "logout": "로그아웃",
+    "customization": "사용자 정의"
   },
   "navigation": {
     "dashboard": "대시보드"
+  },
+  "notifications": {
+    "permissionGranted": "다운로드 알림이 활성화되었습니다",
+    "permissionDenied": "다운로드 알림이 비활성화되었습니다",
+    "downloadComplete": {
+      "title": "다운로드 완료",
+      "body": "{fileName} 다운로드가 완료되었습니다"
+    },
+    "downloadFailed": {
+      "title": "다운로드 실패",
+      "body": "{fileName} 다운로드 실패: {error}",
+      "unknownError": "알 수 없는 오류"
+    },
+    "queueProcessing": {
+      "title": "다운로드 시작",
+      "body": "{fileName} 다운로드가 시작되었습니다{position}",
+      "position": " (대기열 #{position}번이었음)"
+    }
   },
   "profile": {
     "password": {

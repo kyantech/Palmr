@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
-import { useFileManager } from "@/hooks/use-file-manager";
+import { useEnhancedFileManager } from "@/hooks/use-enhanced-file-manager";
 import { listFiles } from "@/http/endpoints";
 
 export function useFiles() {
@@ -35,7 +35,7 @@ export function useFiles() {
     }
   }, [t]);
 
-  const fileManager = useFileManager(loadFiles, clearSelectionCallback);
+  const fileManager = useEnhancedFileManager(loadFiles, clearSelectionCallback);
   const filteredFiles = files.filter((file) => file.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   useEffect(() => {

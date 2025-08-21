@@ -162,6 +162,46 @@
     "error": "Falha ao criar compartilhamento",
     "namePlaceholder": "Digite um nome para seu compartilhamento"
   },
+  "customization": {
+    "breadcrumb": "Personalização",
+    "colors": {
+      "title": "Cores do Tema",
+      "description": "Escolha sua cor primária preferida para o tema",
+      "presets": "Cores Disponíveis",
+      "presetsDescription": "Selecione entre os temas de cores disponíveis",
+      "reset": "Restaurar Padrão"
+    },
+    "fonts": {
+      "title": "Tipografia",
+      "description": "Escolha sua família de fontes preferida",
+      "available": "Fontes Disponíveis",
+      "availableDescription": "Selecione entre as famílias de fontes disponíveis",
+      "reset": "Restaurar Padrão"
+    },
+    "radius": {
+      "title": "Borda Arredondada",
+      "description": "Personalize o arredondamento dos elementos da interface",
+      "available": "Opções de Arredondamento",
+      "availableDescription": "Escolha como os cantos arredondados devem aparecer",
+      "reset": "Restaurar Padrão"
+    },
+    "background": {
+      "title": "Cores de Fundo",
+      "description": "Personalize as cores de fundo para os modos claro e escuro",
+      "lightMode": "Modo Claro",
+      "darkMode": "Modo Escuro",
+      "availableDescription": "Escolha as cores de fundo para os temas claro e escuro",
+      "reset": "Restaurar Padrão"
+    },
+    "theme": {
+      "title": "Modo do Tema",
+      "description": "Escolha entre tema claro, escuro ou do sistema",
+      "selectTheme": "Preferência de Tema",
+      "availableDescription": "Selecione seu modo de tema preferido",
+      "reset": "Restaurar para Sistema"
+    },
+    "pageTitle": "Personalização"
+  },
   "dashboard": {
     "loadError": "Falha ao carregar dados do painel",
     "linkCopied": "Link copiado para a área de transferência",
@@ -175,6 +215,39 @@
   "deleteConfirmation": {
     "filesToDelete": "Arquivos que serão excluídos",
     "sharesToDelete": "Compartilhamentos que serão excluídos"
+  },
+  "downloadQueue": {
+    "downloadQueued": "Download na fila: {fileName}",
+    "queuedDescription": "Seu download começará automaticamente quando uma vaga estiver disponível",
+    "queuePosition": "Download na posição {position} da fila: {fileName}",
+    "estimatedWait": "Tempo estimado de espera: {time}",
+    "queueFull": "Fila de download está cheia",
+    "queueFullDescription": "Por favor, tente novamente em alguns minutos quando houver espaço na fila",
+    "cancelSuccess": "Download cancelado com sucesso",
+    "cancelError": "Falha ao cancelar download: {error}",
+    "status": {
+      "pending": "Preparando...",
+      "queued": "Na fila",
+      "downloading": "Baixando",
+      "completed": "Concluído",
+      "failed": "Falhou"
+    },
+    "waitTime": {
+      "seconds": "{seconds}s",
+      "minutes": "{minutes}m",
+      "hoursMinutes": "{hours}h {minutes}m"
+    },
+    "indicator": {
+      "title": "Downloads",
+      "downloads": "Fila de Download",
+      "active": "Ativos",
+      "queued": "Na Fila",
+      "position": "Posição {position}",
+      "estimatedWait": "Espera: {time}",
+      "unknownFile": "Arquivo desconhecido",
+      "noDownloads": "Nenhum download em andamento",
+      "refresh": "Atualizar Fila"
+    }
   },
   "emptyState": {
     "noFiles": "Nenhum arquivo enviado ainda",
@@ -411,10 +484,29 @@
     "profile": "Perfil",
     "settings": "Configurações",
     "usersManagement": "Gerenciar usuários",
-    "logout": "Sair"
+    "logout": "Sair",
+    "customization": "Personalização"
   },
   "navigation": {
     "dashboard": "Painel"
+  },
+  "notifications": {
+    "permissionGranted": "Notificações de download ativadas",
+    "permissionDenied": "Notificações de download desativadas",
+    "downloadComplete": {
+      "title": "Download Concluído",
+      "body": "{fileName} terminou de baixar"
+    },
+    "downloadFailed": {
+      "title": "Download Falhou",
+      "body": "Falha ao baixar {fileName}: {error}",
+      "unknownError": "Erro desconhecido"
+    },
+    "queueProcessing": {
+      "title": "Download Iniciando",
+      "body": "{fileName} está sendo baixado agora{position}",
+      "position": " (estava na posição #{position} da fila)"
+    }
   },
   "profile": {
     "password": {

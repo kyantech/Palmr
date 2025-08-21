@@ -9,11 +9,11 @@ import {
   addRecipients,
   createShareAlias,
   deleteShare,
-  getDownloadUrl,
   notifyRecipients,
   updateShare,
 } from "@/http/endpoints";
 import type { Share } from "@/http/endpoints/shares/types";
+import { bulkDownloadWithQueue, downloadFileWithQueue } from "@/utils/download-queue-utils";
 
 export interface ShareManagerHook {
   shareToDelete: Share | null;
@@ -196,60 +196,32 @@ export function useShareManager(onSuccess: () => void) {
 
   const handleBulkDownloadWithZip = async (shares: Share[], zipName: string) => {
     try {
+      const allFiles: Array<{ objectName: string; name: string; shareName: string }> = [];
+      shares.forEach((share) => {
+        if (share.files) {
+          share.files.forEach((file) => {
+            allFiles.push({
+              objectName: file.objectName,
+              name: shares.length > 1 ? `${share.name || t("shareManager.defaultShareName")}/${file.name}` : file.name,
+              shareName: share.name || t("shareManager.defaultShareName"),
+            });
+          });
+        }
+      });
+
       toast.promise(
-        (async () => {
-          const JSZip = (await import("jszip")).default;
-          const zip = new JSZip();
-
-          const allFiles: any[] = [];
-          shares.forEach((share) => {
-            if (share.files) {
-              share.files.forEach((file) => {
-                allFiles.push({
-                  ...file,
-                  shareName: share.name || t("shareManager.defaultShareName"),
-                });
-              });
-            }
-          });
-
-          const downloadPromises = allFiles.map(async (file) => {
-            try {
-              const encodedObjectName = encodeURIComponent(file.objectName);
-              const downloadResponse = await getDownloadUrl(encodedObjectName);
-              const downloadUrl = downloadResponse.data.url;
-              const response = await fetch(downloadUrl);
-
-              if (!response.ok) {
-                throw new Error(`Failed to download ${file.name}`);
-              }
-
-              const blob = await response.blob();
-              const fileName = shares.length > 1 ? `${file.shareName}/${file.name}` : file.name;
-              zip.file(fileName, blob);
-            } catch (error) {
-              console.error(`Error downloading file ${file.name}:`, error);
-              throw error;
-            }
-          });
-
-          await Promise.all(downloadPromises);
-
-          const zipBlob = await zip.generateAsync({ type: "blob" });
-
-          const url = URL.createObjectURL(zipBlob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = zipName.endsWith(".zip") ? zipName : `${zipName}.zip`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-
+        bulkDownloadWithQueue(
+          allFiles.map((file) => ({
+            objectName: file.objectName,
+            name: file.name,
+            isReverseShare: false,
+          })),
+          zipName
+        ).then(() => {
           if (clearSelectionCallback) {
             clearSelectionCallback();
           }
-        })(),
+        }),
         {
           loading: t("shareManager.creatingZip"),
           success: t("shareManager.zipDownloadSuccess"),
@@ -279,20 +251,13 @@ export function useShareManager(onSuccess: () => void) {
     if (share.files.length === 1) {
       const file = share.files[0];
       try {
-        const encodedObjectName = encodeURIComponent(file.objectName);
-        const response = await getDownloadUrl(encodedObjectName);
-        const downloadUrl = response.data.url;
-
-        const link = document.createElement("a");
-        link.href = downloadUrl;
-        link.download = file.name;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        toast.success(t("shareManager.downloadSuccess"));
+        await downloadFileWithQueue(file.objectName, file.name, {
+          onComplete: () => toast.success(t("shareManager.downloadSuccess")),
+          onFail: () => toast.error(t("shareManager.downloadError")),
+        });
       } catch (error) {
         console.error("Download error:", error);
-        toast.error(t("shareManager.downloadError"));
+        // Error already handled in downloadFileWithQueue
       }
     } else {
       const zipName = t("shareManager.singleShareZipName", {

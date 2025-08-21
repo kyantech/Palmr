@@ -18,7 +18,7 @@ export function TransparentFooter() {
           title={t("footer.kyanHomepage")}
         >
           <span className="text-white/70 text-xs sm:text-sm">{t("footer.poweredBy")}</span>
-          <p className="text-white text-xs sm:text-sm font-medium cursor-pointer hover:text-primary">
+          <p className="text-primary text-xs sm:text-sm font-medium cursor-pointer hover:text-primary/80">
             Kyantech Solutions
           </p>
         </Link>

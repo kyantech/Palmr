@@ -162,6 +162,46 @@
     "descriptionPlaceholder": "Açıklama girin (isteğe bağlı)",
     "namePlaceholder": "Paylaşımınız için bir ad girin"
   },
+  "customization": {
+    "breadcrumb": "Özelleştirme",
+    "colors": {
+      "title": "Tema Renkleri",
+      "description": "Tercih ettiğiniz birincil renk temasını seçin",
+      "presets": "Mevcut Renkler",
+      "presetsDescription": "Mevcut renk temalarından seçim yapın",
+      "reset": "Varsayılana Sıfırla"
+    },
+    "fonts": {
+      "title": "Tipografi",
+      "description": "Tercih ettiğiniz yazı tipini seçin",
+      "available": "Mevcut Yazı Tipleri",
+      "availableDescription": "Mevcut yazı tipi ailelerinden seçim yapın",
+      "reset": "Varsayılana Sıfırla"
+    },
+    "radius": {
+      "title": "Kenar Yuvarlaklığı",
+      "description": "Arayüz öğelerinin yuvarlaklığını özelleştirin",
+      "available": "Yuvarlaklık Seçenekleri",
+      "availableDescription": "Köşelerin ne kadar yuvarlak görüneceğini seçin",
+      "reset": "Varsayılana Sıfırla"
+    },
+    "background": {
+      "title": "Arka Plan Renkleri",
+      "description": "Açık ve karanlık modlar için arka plan renklerini özelleştirin",
+      "lightMode": "Açık Mod",
+      "darkMode": "Karanlık Mod",
+      "availableDescription": "Hem açık hem de karanlık temalar için arka plan renklerini seçin",
+      "reset": "Varsayılana Sıfırla"
+    },
+    "theme": {
+      "title": "Tema Modu",
+      "description": "Açık, karanlık veya sistem teması arasından seçim yapın",
+      "selectTheme": "Tema Tercihi",
+      "availableDescription": "Tercih ettiğiniz tema modunu seçin",
+      "reset": "Sisteme Sıfırla"
+    },
+    "pageTitle": "Özelleştirme"
+  },
   "dashboard": {
     "loadError": "Gösterge paneli verileri yüklenemedi",
     "linkCopied": "Bağlantı panoya kopyalandı",
@@ -175,6 +215,39 @@
   "deleteConfirmation": {
     "filesToDelete": "Silinecek dosyalar",
     "sharesToDelete": "Silinecek paylaşımlar"
+  },
+  "downloadQueue": {
+    "downloadQueued": "İndirme sıraya alındı: {fileName}",
+    "queuedDescription": "Bir slot uygun hale geldiğinde indirmeniz otomatik olarak başlayacak",
+    "queuePosition": "{position}. sırada indirme: {fileName}",
+    "estimatedWait": "Tahmini bekleme süresi: {time}",
+    "queueFull": "İndirme kuyruğu dolu",
+    "queueFullDescription": "Lütfen kuyrukta yer açıldığında birkaç dakika sonra tekrar deneyin",
+    "cancelSuccess": "İndirme başarıyla iptal edildi",
+    "cancelError": "İndirme iptal edilemedi: {error}",
+    "status": {
+      "pending": "Hazırlanıyor...",
+      "queued": "Kuyrukta",
+      "downloading": "İndiriliyor",
+      "completed": "Tamamlandı",
+      "failed": "Başarısız"
+    },
+    "waitTime": {
+      "seconds": "{seconds}sn",
+      "minutes": "{minutes}dk",
+      "hoursMinutes": "{hours}sa {minutes}dk"
+    },
+    "indicator": {
+      "title": "İndirmeler",
+      "downloads": "İndirme Kuyruğu",
+      "active": "Aktif",
+      "queued": "Sırada",
+      "position": "Konum {position}",
+      "estimatedWait": "Bekleme: {time}",
+      "unknownFile": "Bilinmeyen dosya",
+      "noDownloads": "Devam eden indirme yok",
+      "refresh": "Kuyruğu Yenile"
+    }
   },
   "emptyState": {
     "noFiles": "Henüz dosya yüklenmedi",
@@ -411,10 +484,29 @@
     "profile": "Profil",
     "settings": "Ayarlar",
     "usersManagement": "Kullanıcı Yönetimi",
-    "logout": "Oturumu Kapat"
+    "logout": "Oturumu Kapat",
+    "customization": "Özelleştirme"
   },
   "navigation": {
     "dashboard": "Gösterge Paneli"
+  },
+  "notifications": {
+    "permissionGranted": "İndirme bildirimleri etkinleştirildi",
+    "permissionDenied": "İndirme bildirimleri devre dışı bırakıldı",
+    "downloadComplete": {
+      "title": "İndirme Tamamlandı",
+      "body": "{fileName} indirmesi tamamlandı"
+    },
+    "downloadFailed": {
+      "title": "İndirme Başarısız",
+      "body": "{fileName} indirilemedi: {error}",
+      "unknownError": "Bilinmeyen hata"
+    },
+    "queueProcessing": {
+      "title": "İndirme Başlıyor",
+      "body": "{fileName} şimdi indiriliyor{position}",
+      "position": " (kuyrukta #{position} sıradaydı)"
+    }
   },
   "profile": {
     "password": {

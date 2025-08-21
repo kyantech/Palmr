@@ -162,6 +162,46 @@
     "error": "فشل في إنشاء المشاركة",
     "namePlaceholder": "أدخل اسمًا لمشاركتك"
   },
+  "customization": {
+    "breadcrumb": "التخصيص",
+    "colors": {
+      "title": "ألوان السمة",
+      "description": "اختر لون السمة الرئيسي المفضل لديك",
+      "presets": "الألوان المتاحة",
+      "presetsDescription": "اختر من بين السمات اللونية المتاحة",
+      "reset": "إعادة التعيين إلى الافتراضي"
+    },
+    "fonts": {
+      "title": "الخطوط",
+      "description": "اختر عائلة الخط المفضلة لديك",
+      "available": "الخطوط المتاحة",
+      "availableDescription": "اختر من بين عائلات الخطوط المتاحة",
+      "reset": "إعادة التعيين إلى الافتراضي"
+    },
+    "radius": {
+      "title": "حواف الإطار",
+      "description": "تخصيص استدارة عناصر الواجهة",
+      "available": "خيارات الاستدارة",
+      "availableDescription": "اختر كيف يجب أن تظهر الزوايا المستديرة",
+      "reset": "إعادة التعيين إلى الافتراضي"
+    },
+    "background": {
+      "title": "ألوان الخلفية",
+      "description": "تخصيص ألوان الخلفية للوضعين الفاتح والداكن",
+      "lightMode": "الوضع الفاتح",
+      "darkMode": "الوضع الداكن",
+      "availableDescription": "اختر ألوان الخلفية لكل من السمات الفاتحة والداكنة",
+      "reset": "إعادة التعيين إلى الافتراضي"
+    },
+    "theme": {
+      "title": "وضع السمة",
+      "description": "اختر بين السمة الفاتحة أو الداكنة أو سمة النظام",
+      "selectTheme": "تفضيلات السمة",
+      "availableDescription": "حدد وضع السمة المفضل لديك",
+      "reset": "إعادة التعيين إلى النظام"
+    },
+    "pageTitle": "التخصيص"
+  },
   "dashboard": {
     "loadError": "فشل في تحميل بيانات لوحة التحكم",
     "linkCopied": "تم نسخ الرابط إلى الحافظة",
@@ -175,6 +215,39 @@
   "deleteConfirmation": {
     "filesToDelete": "الملفات المراد حذفها",
     "sharesToDelete": "المشاركات التي سيتم حذفها"
+  },
+  "downloadQueue": {
+    "downloadQueued": "تم إضافة التنزيل إلى قائمة الانتظار: {fileName}",
+    "queuedDescription": "سيبدأ التنزيل تلقائياً عندما يتوفر موقع",
+    "queuePosition": "التنزيل في قائمة الانتظار في الموقع {position}: {fileName}",
+    "estimatedWait": "وقت الانتظار المقدر: {time}",
+    "queueFull": "قائمة انتظار التنزيل ممتلئة",
+    "queueFullDescription": "يرجى المحاولة مرة أخرى بعد بضع دقائق عندما تتوفر مساحة في قائمة الانتظار",
+    "cancelSuccess": "تم إلغاء التنزيل بنجاح",
+    "cancelError": "فشل إلغاء التنزيل: {error}",
+    "status": {
+      "pending": "جارٍ التحضير...",
+      "queued": "في قائمة الانتظار",
+      "downloading": "جارٍ التنزيل",
+      "completed": "مكتمل",
+      "failed": "فشل"
+    },
+    "waitTime": {
+      "seconds": "{seconds} ثانية",
+      "minutes": "{minutes} دقيقة",
+      "hoursMinutes": "{hours} ساعة {minutes} دقيقة"
+    },
+    "indicator": {
+      "title": "التنزيلات",
+      "downloads": "قائمة التنزيل",
+      "active": "نشط",
+      "queued": "في قائمة الانتظار",
+      "position": "الموقع {position}",
+      "estimatedWait": "الانتظار: {time}",
+      "unknownFile": "ملف غير معروف",
+      "noDownloads": "لا توجد تنزيلات قيد التقدم",
+      "refresh": "تحديث قائمة الانتظار"
+    }
   },
   "emptyState": {
     "noFiles": "لم يتم رفع أي ملفات بعد",
@@ -411,10 +484,29 @@
     "profile": "الملف الشخصي",
     "settings": "الإعدادات",
     "usersManagement": "إدارة المستخدمين",
-    "logout": "تسجيل الخروج"
+    "logout": "تسجيل الخروج",
+    "customization": "التخصيص"
   },
   "navigation": {
     "dashboard": "لوحة التحكم"
+  },
+  "notifications": {
+    "permissionGranted": "تم تمكين إشعارات التنزيل",
+    "permissionDenied": "تم تعطيل إشعارات التنزيل",
+    "downloadComplete": {
+      "title": "اكتمل التنزيل",
+      "body": "اكتمل تنزيل {fileName}"
+    },
+    "downloadFailed": {
+      "title": "فشل التنزيل",
+      "body": "فشل تنزيل {fileName}: {error}",
+      "unknownError": "خطأ غير معروف"
+    },
+    "queueProcessing": {
+      "title": "بدء التنزيل",
+      "body": "يتم الآن تنزيل {fileName}{position}",
+      "position": " (كان #{position} في قائمة الانتظار)"
+    }
   },
   "profile": {
     "password": {

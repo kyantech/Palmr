@@ -367,6 +367,25 @@ export class ReverseShareService {
     return this.formatFileResponse(file);
   }
 
+  async getFileInfo(fileId: string, creatorId: string) {
+    const file = await this.reverseShareRepository.findFileById(fileId);
+    if (!file) {
+      throw new Error("File not found");
+    }
+
+    if (file.reverseShare.creatorId !== creatorId) {
+      throw new Error("Unauthorized to access this file");
+    }
+
+    return {
+      id: file.id,
+      name: file.name,
+      size: file.size,
+      objectName: file.objectName,
+      extension: file.extension,
+    };
+  }
+
   async downloadReverseShareFile(fileId: string, creatorId: string) {
     const file = await this.reverseShareRepository.findFileById(fileId);
     if (!file) {

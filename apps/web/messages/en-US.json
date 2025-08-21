@@ -162,6 +162,46 @@
     "success": "Share created successfully",
     "error": "Failed to create share"
   },
+  "customization": {
+    "breadcrumb": "Customization",
+    "colors": {
+      "title": "Theme Colors",
+      "description": "Choose your preferred primary color theme",
+      "presets": "Available Colors",
+      "presetsDescription": "Select from available color themes",
+      "reset": "Reset to Default"
+    },
+    "fonts": {
+      "title": "Typography",
+      "description": "Choose your preferred font family",
+      "available": "Available Fonts",
+      "availableDescription": "Select from available font families",
+      "reset": "Reset to Default"
+    },
+    "radius": {
+      "title": "Border Radius",
+      "description": "Customize the roundness of interface elements",
+      "available": "Roundness Options",
+      "availableDescription": "Choose how rounded corners should appear",
+      "reset": "Reset to Default"
+    },
+    "background": {
+      "title": "Background Colors",
+      "description": "Customize background colors for light and dark modes",
+      "lightMode": "Light Mode",
+      "darkMode": "Dark Mode",
+      "availableDescription": "Choose background colors for both light and dark themes",
+      "reset": "Reset to Default"
+    },
+    "theme": {
+      "title": "Theme Mode",
+      "description": "Choose between light, dark, or system theme",
+      "selectTheme": "Theme Preference",
+      "availableDescription": "Select your preferred theme mode",
+      "reset": "Reset to System"
+    },
+    "pageTitle": "Customization"
+  },
   "dashboard": {
     "loadError": "Failed to load dashboard data",
     "linkCopied": "Link copied to clipboard",
@@ -175,6 +215,39 @@
   "deleteConfirmation": {
     "filesToDelete": "Files to be deleted",
     "sharesToDelete": "Shares to be deleted"
+  },
+  "downloadQueue": {
+    "downloadQueued": "Download queued: {fileName}",
+    "queuedDescription": "Your download will start automatically when a slot becomes available",
+    "queuePosition": "Download queued at position {position}: {fileName}",
+    "estimatedWait": "Estimated wait time: {time}",
+    "queueFull": "Download queue is full",
+    "queueFullDescription": "Please try again in a few minutes when the queue has space",
+    "cancelSuccess": "Download cancelled successfully",
+    "cancelError": "Failed to cancel download: {error}",
+    "status": {
+      "pending": "Preparing...",
+      "queued": "In queue",
+      "downloading": "Downloading",
+      "completed": "Completed",
+      "failed": "Failed"
+    },
+    "waitTime": {
+      "seconds": "{seconds}s",
+      "minutes": "{minutes}m",
+      "hoursMinutes": "{hours}h {minutes}m"
+    },
+    "indicator": {
+      "title": "Downloads",
+      "downloads": "Download Queue",
+      "active": "Active",
+      "queued": "Queued",
+      "position": "Position {position}",
+      "estimatedWait": "Wait: {time}",
+      "unknownFile": "Unknown file",
+      "noDownloads": "No downloads in progress",
+      "refresh": "Refresh Queue"
+    }
   },
   "emptyState": {
     "noFiles": "No files uploaded yet",
@@ -409,12 +482,31 @@
     "logoAlt": "App Logo",
     "profileMenu": "Profile Menu",
     "profile": "Profile",
+    "customization": "Customization",
     "settings": "Settings",
     "usersManagement": "User Management",
     "logout": "Log Out"
   },
   "navigation": {
     "dashboard": "Dashboard"
+  },
+  "notifications": {
+    "permissionGranted": "Download notifications enabled",
+    "permissionDenied": "Download notifications disabled",
+    "downloadComplete": {
+      "title": "Download Complete",
+      "body": "{fileName} has finished downloading"
+    },
+    "downloadFailed": {
+      "title": "Download Failed",
+      "body": "Failed to download {fileName}: {error}",
+      "unknownError": "Unknown error"
+    },
+    "queueProcessing": {
+      "title": "Download Starting",
+      "body": "{fileName} is now downloading{position}",
+      "position": " (was #{position} in queue)"
+    }
   },
   "profile": {
     "password": {

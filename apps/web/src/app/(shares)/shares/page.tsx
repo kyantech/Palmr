@@ -6,7 +6,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { DefaultFooter } from "@/components/ui/default-footer";
 import { useDisclosure } from "@/hooks/use-disclosure";
-import { useFileManager } from "@/hooks/use-file-manager";
+import { useEnhancedFileManager } from "@/hooks/use-enhanced-file-manager";
 import { useShareManager } from "@/hooks/use-share-manager";
 import { SharesHeader } from "./components/shares-header";
 import { SharesModals } from "./components/shares-modals";
@@ -30,7 +30,7 @@ export default function SharesPage() {
 
   const { isOpen: isCreateModalOpen, onOpen: onOpenCreateModal, onClose: onCloseCreateModal } = useDisclosure();
   const shareManager = useShareManager(loadShares);
-  const fileManager = useFileManager(loadShares);
+  const fileManager = useEnhancedFileManager(loadShares);
 
   if (isLoading) {
     return <LoadingScreen />;

@@ -162,6 +162,46 @@
     "error": "Fehler beim Erstellen der Freigabe",
     "namePlaceholder": "Geben Sie einen Namen für Ihre Freigabe ein"
   },
+  "customization": {
+    "breadcrumb": "Anpassung",
+    "colors": {
+      "title": "Farbthema",
+      "description": "Wählen Sie Ihre bevorzugte Primärfarbe für das Theme",
+      "presets": "Verfügbare Farben",
+      "presetsDescription": "Wählen Sie aus verfügbaren Farbthemen",
+      "reset": "Auf Standard zurücksetzen"
+    },
+    "fonts": {
+      "title": "Typografie",
+      "description": "Wählen Sie Ihre bevorzugte Schriftart",
+      "available": "Verfügbare Schriftarten",
+      "availableDescription": "Wählen Sie aus verfügbaren Schriftfamilien",
+      "reset": "Auf Standard zurücksetzen"
+    },
+    "radius": {
+      "title": "Rahmenradius",
+      "description": "Passen Sie die Rundung der Oberflächenelemente an",
+      "available": "Rundungsoptionen",
+      "availableDescription": "Wählen Sie, wie abgerundet die Ecken erscheinen sollen",
+      "reset": "Auf Standard zurücksetzen"
+    },
+    "background": {
+      "title": "Hintergrundfarben",
+      "description": "Passen Sie Hintergrundfarben für Hell- und Dunkelmodus an",
+      "lightMode": "Hellmodus",
+      "darkMode": "Dunkelmodus",
+      "availableDescription": "Wählen Sie Hintergrundfarben für helle und dunkle Themes",
+      "reset": "Auf Standard zurücksetzen"
+    },
+    "theme": {
+      "title": "Themenmodus",
+      "description": "Wählen Sie zwischen hellem, dunklem oder Systemmodus",
+      "selectTheme": "Theme-Einstellung",
+      "availableDescription": "Wählen Sie Ihren bevorzugten Themenmodus",
+      "reset": "Auf System zurücksetzen"
+    },
+    "pageTitle": "Anpassung"
+  },
   "dashboard": {
     "loadError": "Fehler beim Laden der Dashboard-Daten",
     "linkCopied": "Link in die Zwischenablage kopiert",
@@ -175,6 +215,39 @@
   "deleteConfirmation": {
     "filesToDelete": "Zu löschende Dateien",
     "sharesToDelete": "Freigaben, die gelöscht werden"
+  },
+  "downloadQueue": {
+    "downloadQueued": "Download in Warteschlange: {fileName}",
+    "queuedDescription": "Ihr Download startet automatisch, sobald ein Platz frei wird",
+    "queuePosition": "Download an Position {position} in der Warteschlange: {fileName}",
+    "estimatedWait": "Geschätzte Wartezeit: {time}",
+    "queueFull": "Download-Warteschlange ist voll",
+    "queueFullDescription": "Bitte versuchen Sie es in einigen Minuten erneut, wenn die Warteschlange Platz hat",
+    "cancelSuccess": "Download erfolgreich abgebrochen",
+    "cancelError": "Download konnte nicht abgebrochen werden: {error}",
+    "status": {
+      "pending": "Wird vorbereitet...",
+      "queued": "In Warteschlange",
+      "downloading": "Wird heruntergeladen",
+      "completed": "Abgeschlossen",
+      "failed": "Fehlgeschlagen"
+    },
+    "waitTime": {
+      "seconds": "{seconds}s",
+      "minutes": "{minutes}m",
+      "hoursMinutes": "{hours}h {minutes}m"
+    },
+    "indicator": {
+      "title": "Downloads",
+      "downloads": "Download-Warteschlange",
+      "active": "Aktiv",
+      "queued": "In Warteschlange",
+      "position": "Position {position}",
+      "estimatedWait": "Wartezeit: {time}",
+      "unknownFile": "Unbekannte Datei",
+      "noDownloads": "Keine laufenden Downloads",
+      "refresh": "Warteschlange aktualisieren"
+    }
   },
   "emptyState": {
     "noFiles": "Noch keine Dateien hochgeladen",
@@ -411,10 +484,29 @@
     "profile": "Profil",
     "settings": "Einstellungen",
     "usersManagement": "Benutzerverwaltung",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "customization": "Anpassung"
   },
   "navigation": {
     "dashboard": "Übersicht"
+  },
+  "notifications": {
+    "permissionGranted": "Download-Benachrichtigungen aktiviert",
+    "permissionDenied": "Download-Benachrichtigungen deaktiviert",
+    "downloadComplete": {
+      "title": "Download abgeschlossen",
+      "body": "{fileName} wurde erfolgreich heruntergeladen"
+    },
+    "downloadFailed": {
+      "title": "Download fehlgeschlagen",
+      "body": "Fehler beim Herunterladen von {fileName}: {error}",
+      "unknownError": "Unbekannter Fehler"
+    },
+    "queueProcessing": {
+      "title": "Download startet",
+      "body": "{fileName} wird jetzt heruntergeladen{position}",
+      "position": " (war #{position} in der Warteschlange)"
+    }
   },
   "profile": {
     "password": {

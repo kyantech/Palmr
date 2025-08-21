@@ -70,6 +70,14 @@ Choose your storage method based on your needs:
           # - SECURE_SITE=false # Set to true if you are using a reverse proxy
           # - DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US)
           # - PRESIGNED_URL_EXPIRATION=3600 # Duration in seconds for presigned URL expiration (optional, defaults to 3600 seconds / 1 hour)
+          
+          # Download Memory Management (OPTIONAL - See Download Memory Management documentation)
+          # - DOWNLOAD_MAX_CONCURRENT=5 # Maximum simultaneous downloads (auto-scales if not set)
+          # - DOWNLOAD_MEMORY_THRESHOLD_MB=2048 # Memory threshold in MB before throttling (auto-scales if not set)
+          # - DOWNLOAD_QUEUE_SIZE=25 # Maximum queue size for pending downloads (auto-scales if not set)
+          # - DOWNLOAD_MIN_FILE_SIZE_GB=3.0 # Minimum file size in GB to activate memory management (default: 3.0)
+          # - DOWNLOAD_AUTO_SCALE=true # Enable auto-scaling based on system memory (default: true)
+          # - NODE_OPTIONS=--expose-gc # Enable garbage collection for large downloads (recommended for production)
         volumes:
           - palmr_data:/app/server
 
@@ -118,6 +126,14 @@ Choose your storage method based on your needs:
           # - SECURE_SITE=false # Set to true if you are using a reverse proxy
           # - DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US)
           # - PRESIGNED_URL_EXPIRATION=3600 # Duration in seconds for presigned URL expiration (optional, defaults to 3600 seconds / 1 hour)
+          
+          # Download Memory Management (OPTIONAL - See Download Memory Management documentation)
+          # - DOWNLOAD_MAX_CONCURRENT=5 # Maximum simultaneous downloads (auto-scales if not set)
+          # - DOWNLOAD_MEMORY_THRESHOLD_MB=2048 # Memory threshold in MB before throttling (auto-scales if not set)
+          # - DOWNLOAD_QUEUE_SIZE=25 # Maximum queue size for pending downloads (auto-scales if not set)
+          # - DOWNLOAD_MIN_FILE_SIZE_GB=3.0 # Minimum file size in GB to activate memory management (default: 3.0)
+          # - DOWNLOAD_AUTO_SCALE=true # Enable auto-scaling based on system memory (default: true)
+          # - NODE_OPTIONS=--expose-gc # Enable garbage collection for large downloads (recommended for production)
         volumes:
           - ./data:/app/server
     ```
@@ -149,6 +165,11 @@ Customize Palmr's behavior with these environment variables:
 | `DEFAULT_LANGUAGE`              | `en-US` | Default application language ([see available languages](/docs/3.1-beta/available-languages)) |
 | `PALMR_UID`                     | `1000`  | User ID for container processes (helps with file permissions)                                |
 | `PALMR_GID`                     | `1000`  | Group ID for container processes (helps with file permissions)                               |
+| `DOWNLOAD_MAX_CONCURRENT`        | auto-scale | Maximum number of simultaneous downloads (see [Download Memory Management](/docs/3.1-beta/download-memory-management)) |
+| `DOWNLOAD_MEMORY_THRESHOLD_MB`   | auto-scale | Memory threshold in MB before throttling |
+| `DOWNLOAD_QUEUE_SIZE`            | auto-scale | Maximum queue size for pending downloads |
+| `DOWNLOAD_MIN_FILE_SIZE_GB`      | `3.0`      | Minimum file size in GB to activate memory management |
+| `DOWNLOAD_AUTO_SCALE`            | `true`     | Enable auto-scaling based on system memory |
 
 <Callout type="info">
   **Performance First**: Palmr runs without encryption by default for optimal speed and lower resource usage—perfect for
@@ -339,6 +360,7 @@ Your Palmr instance is ready! Here's what you can explore:
 ### Advanced Configuration
 
 - **[UID/GID Configuration](/docs/3.1-beta/uid-gid-configuration)** - Configure user permissions for NAS systems and custom environments
+- **[Download Memory Management](/docs/3.1-beta/download-memory-management)** - Configure large file download handling and queue system
 - **[S3 Storage](/docs/3.1-beta/s3-configuration)** - Scale with Amazon S3 or compatible storage providers
 - **[Manual Installation](/docs/3.1-beta/manual-installation)** - Manual installation and custom configurations
 
