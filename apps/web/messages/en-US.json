@@ -136,6 +136,7 @@
     "update": "Update",
     "updating": "Updating...",
     "delete": "Delete",
+    "deleting": "Deleting...",
     "close": "Close",
     "download": "Download",
     "unexpectedError": "An unexpected error occurred. Please try again.",
@@ -144,7 +145,12 @@
     "dashboard": "Dashboard",
     "back": "Back",
     "click": "Click to",
-    "creating": "Creating..."
+    "creating": "Creating...",
+    "create": "Create",
+    "rename": "Rename",
+    "move": "Move",
+    "share": "Share",
+    "search": "Search"
   },
   "createShare": {
     "title": "Create Share",
@@ -160,7 +166,13 @@
     "passwordLabel": "Password",
     "create": "Create Share",
     "success": "Share created successfully",
-    "error": "Failed to create share"
+    "error": "Failed to create share",
+    "tabs": {
+      "shareDetails": "Share Details",
+      "selectFiles": "Select Files"
+    },
+    "nextSelectFiles": "Next: Select Files",
+    "searchLabel": "Search"
   },
   "customization": {
     "breadcrumb": "Customization",
@@ -214,6 +226,8 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "Files to be deleted",
+    "foldersToDelete": "Folders to be deleted",
+    "itemsToDelete": "Items to be deleted",
     "sharesToDelete": "Shares to be deleted"
   },
   "downloadQueue": {
@@ -319,6 +333,7 @@
     "fileCount": "{count, plural, =1 {file} other {files}}",
     "filesSelected": "{count, plural, =0 {No files selected} =1 {1 file selected} other {# files selected}}",
     "editFile": "Edit file",
+    "editFolder": "Edit folder",
     "previewFile": "Preview file",
     "addToShare": "Add to share",
     "removeFromShare": "Remove from share",
@@ -339,11 +354,22 @@
     "bulkDownloadSuccess": "Files download started successfully",
     "bulkDownloadError": "Error creating ZIP file",
     "bulkDownloadFileError": "Error downloading file {fileName}",
-    "bulkDeleteSuccess": "{count, plural, =1 {1 file deleted successfully} other {# files deleted successfully}}",
-    "bulkDeleteError": "Error deleting selected files",
-    "bulkDeleteTitle": "Delete Selected Files",
-    "bulkDeleteConfirmation": "Are you sure you want to delete {count, plural, =1 {1 file} other {# files}}? This action cannot be undone.",
+    "bulkDeleteSuccess": "{count, plural, =1 {1 item deleted successfully} other {# items deleted successfully}}",
+    "bulkDeleteError": "Error deleting selected items",
+    "bulkDeleteTitle": "Delete Selected Items",
+    "bulkDeleteConfirmation": "Are you sure you want to delete {count, plural, =1 {1 item} other {# items}}? This action cannot be undone.",
     "totalFiles": "{count, plural, =0 {No files} =1 {1 file} other {# files}}",
+    "empty": {
+      "title": "No files or folders yet",
+      "description": "Upload your first file or create a folder to get started"
+    },
+    "files": "files",
+    "folders": "folders",
+    "actions": {
+      "open": "Open",
+      "rename": "Rename",
+      "delete": "Delete"
+    },
     "viewMode": {
       "table": "Table",
       "grid": "Grid"
@@ -376,6 +402,34 @@
       "share": "Share Selected",
       "delete": "Delete Selected"
     }
+  },
+  "folderActions": {
+    "editFolder": "Edit Folder",
+    "folderName": "Folder Name",
+    "folderNamePlaceholder": "Enter folder name",
+    "folderDescription": "Description",
+    "folderDescriptionPlaceholder": "Enter folder description (optional)",
+    "createFolder": "Create New Folder",
+    "createFolderButton": "Create Folder",
+    "renameFolder": "Rename Folder",
+    "moveFolder": "Move Folder",
+    "shareFolder": "Share Folder",
+    "deleteFolder": "Delete Folder",
+    "moveTo": "Move to",
+    "selectDestination": "Select destination folder",
+    "rootFolder": "Root",
+    "folderCreated": "Folder created successfully",
+    "folderRenamed": "Folder renamed successfully",
+    "folderMoved": "Folder moved successfully",
+    "folderDeleted": "Folder deleted successfully",
+    "folderShared": "Folder shared successfully",
+    "createFolderError": "Error creating folder",
+    "renameFolderError": "Error renaming folder",
+    "moveFolderError": "Error moving folder",
+    "deleteFolderError": "Error deleting folder",
+    "shareFolderError": "Error sharing folder",
+    "deleteConfirmation": "Are you sure you want to delete this folder?",
+    "deleteWarning": "This action cannot be undone."
   },
   "footer": {
     "poweredBy": "Powered by",
@@ -477,6 +531,13 @@
       "uploadFailed": "Failed to upload logo",
       "removeFailed": "Failed to remove logo"
     }
+  },
+  "moveItems": {
+    "itemsToMove": "Items to move:",
+    "movingTo": "Moving to:",
+    "title": "Move {count, plural, =1 {Item} other {Items}}",
+    "description": "Move {count, plural, =1 {item} other {items}} to a new location",
+    "success": "Successfully moved {count} {count, plural, =1 {item} other {items}}"
   },
   "navbar": {
     "logoAlt": "App Logo",
@@ -1104,7 +1165,8 @@
   },
   "searchBar": {
     "placeholder": "Search files...",
-    "results": "Found {filtered} of {total} files"
+    "placeholderFolders": "Search folders...",
+    "results": "Showing {filtered} of {total} files"
   },
   "settings": {
     "groups": {
@@ -1297,20 +1359,20 @@
     "pageTitle": "Share"
   },
   "shareActions": {
+    "fileTitle": "Share File",
+    "folderTitle": "Share Folder",
+    "linkTitle": "Generate Link",
+    "linkDescriptionFile": "Generate a custom link to share the file",
+    "linkDescriptionFolder": "Generate a custom link to share the folder",
+    "aliasLabel": "Link Alias",
+    "aliasPlaceholder": "Enter custom alias",
+    "linkReady": "Your share link is ready:",
+    "generateLink": "Generate Link",
+    "copyLink": "Copy Link",
     "deleteTitle": "Delete Share",
     "deleteConfirmation": "Are you sure you want to delete this share? This action cannot be undone.",
     "addDescriptionPlaceholder": "Add description...",
     "editTitle": "Edit Share",
-    "nameLabel": "Share Name",
-    "descriptionLabel": "Description",
-    "descriptionPlaceholder": "Enter a description (optional)",
-    "expirationLabel": "Expiration Date",
-    "expirationPlaceholder": "MM/DD/YYYY HH:MM",
-    "maxViewsLabel": "Max Views",
-    "maxViewsPlaceholder": "Leave empty for unlimited",
-    "passwordProtection": "Password Protected",
-    "passwordLabel": "Password",
-    "passwordPlaceholder": "Enter password",
     "newPasswordLabel": "New Password (leave empty to keep current)",
     "newPasswordPlaceholder": "Enter new password",
     "manageFilesTitle": "Manage Files",
@@ -1381,28 +1443,6 @@
       "noExpiration": "This share will never expire and will remain accessible indefinitely."
     }
   },
-  "shareFile": {
-    "title": "Share File",
-    "linkTitle": "Generate Link",
-    "nameLabel": "Share Name",
-    "namePlaceholder": "Enter share name",
-    "descriptionLabel": "Description",
-    "descriptionPlaceholder": "Enter a description (optional)",
-    "expirationLabel": "Expiration Date",
-    "expirationPlaceholder": "MM/DD/YYYY HH:MM",
-    "maxViewsLabel": "Maximum Views",
-    "maxViewsPlaceholder": "Leave empty for unlimited",
-    "passwordProtection": "Password Protected",
-    "passwordLabel": "Password",
-    "passwordPlaceholder": "Enter password",
-    "linkDescription": "Generate a custom link to share the file",
-    "aliasLabel": "Link Alias",
-    "aliasPlaceholder": "Enter custom alias",
-    "linkReady": "Your share link is ready:",
-    "createShare": "Create Share",
-    "generateLink": "Generate Link",
-    "copyLink": "Copy Link"
-  },
   "shareManager": {
     "deleteSuccess": "Share deleted successfully",
     "deleteError": "Failed to delete share",
@@ -1440,11 +1480,12 @@
     "shareNamePlaceholder": "Enter share name",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Enter a description (optional)",
-    "filesToShare": "Files to share",
+    "filesToShare": "Files to Share",
     "files": "files",
     "totalSize": "Total size",
-    "creating": "Creating...",
-    "create": "Create Share"
+    "creating": "Creating share...",
+    "create": "Create Share",
+    "itemsToShare": "Items to share ({count} {count, plural, =1 {item} other {items}})"
   },
   "shareSecurity": {
     "title": "Share Security Settings",
@@ -1527,6 +1568,7 @@
       "public": "Public"
     },
     "filesCount": "files",
+    "folderCount": "folders",
     "recipientsCount": "recipients",
     "actions": {
       "menu": "Share actions menu",

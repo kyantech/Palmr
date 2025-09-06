@@ -144,7 +144,13 @@
     "update": "Actualizar",
     "click": "Haga clic para",
     "creating": "Creando...",
-    "loadingSimple": "Cargando..."
+    "loadingSimple": "Cargando...",
+    "create": "Crear",
+    "deleting": "Eliminando...",
+    "move": "Mover",
+    "rename": "Renombrar",
+    "search": "Buscar",
+    "share": "Compartir"
   },
   "createShare": {
     "title": "Crear Compartir",
@@ -160,7 +166,13 @@
     "create": "Crear Compartir",
     "success": "Compartir creado exitosamente",
     "error": "Error al crear compartir",
-    "namePlaceholder": "Ingrese un nombre para su compartir"
+    "namePlaceholder": "Ingrese un nombre para su compartir",
+    "nextSelectFiles": "Siguiente: Seleccionar archivos",
+    "searchLabel": "Buscar",
+    "tabs": {
+      "shareDetails": "Detalles del compartido",
+      "selectFiles": "Seleccionar archivos"
+    }
   },
   "customization": {
     "breadcrumb": "Personalización",
@@ -214,7 +226,9 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "Archivos que serán eliminados",
-    "sharesToDelete": "Compartidos que serán eliminados"
+    "sharesToDelete": "Compartidos que serán eliminados",
+    "foldersToDelete": "Carpetas a eliminar",
+    "itemsToDelete": "Elementos a eliminar"
   },
   "downloadQueue": {
     "downloadQueued": "Descarga en cola: {fileName}",
@@ -322,7 +336,8 @@
     "previewFile": "Vista previa del archivo",
     "addToShare": "Agregar a compartición",
     "removeFromShare": "Quitar de compartición",
-    "saveChanges": "Guardar Cambios"
+    "saveChanges": "Guardar Cambios",
+    "editFolder": "Editar carpeta"
   },
   "files": {
     "title": "Todos los Archivos",
@@ -347,7 +362,18 @@
       "table": "Tabla",
       "grid": "Cuadrícula"
     },
-    "totalFiles": "{count, plural, =0 {Sin archivos} =1 {1 archivo} other {# archivos}}"
+    "totalFiles": "{count, plural, =0 {Sin archivos} =1 {1 archivo} other {# archivos}}",
+    "actions": {
+      "open": "Abrir",
+      "rename": "Renombrar",
+      "delete": "Eliminar"
+    },
+    "empty": {
+      "title": "Aún no hay archivos o carpetas",
+      "description": "Suba su primer archivo o cree una carpeta para comenzar"
+    },
+    "files": "archivos",
+    "folders": "carpetas"
   },
   "filesTable": {
     "ariaLabel": "Tabla de archivos",
@@ -376,6 +402,34 @@
       "share": "Compartir Seleccionados",
       "delete": "Eliminar Seleccionados"
     }
+  },
+  "folderActions": {
+    "editFolder": "Editar carpeta",
+    "folderName": "Nombre de carpeta",
+    "folderNamePlaceholder": "Ingrese nombre de carpeta",
+    "folderDescription": "Descripción",
+    "folderDescriptionPlaceholder": "Ingrese descripción de carpeta (opcional)",
+    "createFolder": "Crear nueva carpeta",
+    "createFolderButton": "Crear carpeta",
+    "renameFolder": "Renombrar carpeta",
+    "moveFolder": "Mover carpeta",
+    "shareFolder": "Compartir carpeta",
+    "deleteFolder": "Eliminar carpeta",
+    "moveTo": "Mover a",
+    "selectDestination": "Seleccionar carpeta destino",
+    "rootFolder": "Raíz",
+    "folderCreated": "Carpeta creada exitosamente",
+    "folderRenamed": "Carpeta renombrada exitosamente",
+    "folderMoved": "Carpeta movida exitosamente",
+    "folderDeleted": "Carpeta eliminada exitosamente",
+    "folderShared": "Carpeta compartida exitosamente",
+    "createFolderError": "Error al crear carpeta",
+    "renameFolderError": "Error al renombrar carpeta",
+    "moveFolderError": "Error al mover carpeta",
+    "deleteFolderError": "Error al eliminar carpeta",
+    "shareFolderError": "Error al compartir carpeta",
+    "deleteConfirmation": "¿Está seguro de que desea eliminar esta carpeta?",
+    "deleteWarning": "Esta acción no se puede deshacer."
   },
   "footer": {
     "poweredBy": "Desarrollado por",
@@ -477,6 +531,13 @@
       "uploadFailed": "Error al subir el logo",
       "removeFailed": "Error al eliminar el logo"
     }
+  },
+  "moveItems": {
+    "itemsToMove": "Elementos a mover:",
+    "movingTo": "Moviendo a:",
+    "title": "Mover {count, plural, =1 {elemento} other {elementos}}",
+    "description": "Mover {count, plural, =1 {elemento} other {elementos}} a una nueva ubicación",
+    "success": "Se movieron exitosamente {count} {count, plural, =1 {elemento} other {elementos}}"
   },
   "navbar": {
     "logoAlt": "Logo de la aplicación",
@@ -1106,7 +1167,8 @@
   },
   "searchBar": {
     "placeholder": "Buscar archivos...",
-    "results": "Se encontraron {filtered} de {total} archivos"
+    "results": "Se encontraron {filtered} de {total} archivos",
+    "placeholderFolders": "Buscar carpetas..."
   },
   "settings": {
     "groups": {
@@ -1320,7 +1382,17 @@
     "editSuccess": "Compartir actualizado exitosamente",
     "editError": "Error al actualizar compartir",
     "bulkDeleteConfirmation": "¿Estás seguro de que quieres eliminar {count, plural, =1 {1 compartido} other {# compartidos}}? Esta acción no se puede deshacer.",
-    "bulkDeleteTitle": "Eliminar Compartidos Seleccionados"
+    "bulkDeleteTitle": "Eliminar Compartidos Seleccionados",
+    "aliasLabel": "Alias del enlace",
+    "aliasPlaceholder": "Ingrese alias personalizado",
+    "copyLink": "Copiar enlace",
+    "fileTitle": "Compartir archivo",
+    "folderTitle": "Compartir carpeta",
+    "generateLink": "Generar enlace",
+    "linkDescriptionFile": "Genere un enlace personalizado para compartir el archivo",
+    "linkDescriptionFolder": "Genere un enlace personalizado para compartir la carpeta",
+    "linkReady": "Su enlace de compartición está listo:",
+    "linkTitle": "Generar enlace"
   },
   "shareDetails": {
     "title": "Detalles del Compartir",
@@ -1447,7 +1519,8 @@
     "files": "archivos",
     "totalSize": "Tamaño total",
     "creating": "Creando...",
-    "create": "Crear Compartir"
+    "create": "Crear Compartir",
+    "itemsToShare": "Elementos a compartir ({count} {count, plural, =1 {elemento} other {elementos}})"
   },
   "shareSecurity": {
     "subtitle": "Configurar protección por contraseña y opciones de seguridad para este compartir",
@@ -1530,6 +1603,7 @@
       "public": "Público"
     },
     "filesCount": "archivos",
+    "folderCount": "carpetas",
     "recipientsCount": "destinatarios",
     "actions": {
       "menu": "Menú de acciones de compartir",
@@ -1552,7 +1626,8 @@
       "download": "Descargar Seleccionados"
     },
     "selectAll": "Seleccionar todo",
-    "selectShare": "Seleccionar compartido {shareName}"
+    "selectShare": "Seleccionar compartido {shareName}",
+    "folderCount": "carpetas"
   },
   "storageUsage": {
     "title": "Uso de almacenamiento",

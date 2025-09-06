@@ -144,7 +144,13 @@
     "update": "Bijwerken",
     "click": "Klik om",
     "creating": "Maken...",
-    "loadingSimple": "Laden..."
+    "loadingSimple": "Laden...",
+    "create": "Aanmaken",
+    "deleting": "Verwijderen...",
+    "move": "Verplaatsen",
+    "rename": "Hernoemen",
+    "search": "Zoeken",
+    "share": "Delen"
   },
   "createShare": {
     "title": "Delen Maken",
@@ -160,7 +166,13 @@
     "create": "Delen Maken",
     "success": "Delen succesvol aangemaakt",
     "error": "Fout bij het aanmaken van delen",
-    "namePlaceholder": "Voer een naam in voor uw delen"
+    "namePlaceholder": "Voer een naam in voor uw delen",
+    "nextSelectFiles": "Volgende: Bestanden selecteren",
+    "searchLabel": "Zoeken",
+    "tabs": {
+      "shareDetails": "Deel details",
+      "selectFiles": "Bestanden selecteren"
+    }
   },
   "customization": {
     "breadcrumb": "Aanpassing",
@@ -214,7 +226,9 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "Te verwijderen bestanden",
-    "sharesToDelete": "Delen die worden verwijderd"
+    "sharesToDelete": "Delen die worden verwijderd",
+    "foldersToDelete": "Mappen die worden verwijderd",
+    "itemsToDelete": "Items die worden verwijderd"
   },
   "downloadQueue": {
     "downloadQueued": "Download in wachtrij: {fileName}",
@@ -322,7 +336,8 @@
     "previewFile": "Bestand bekijken",
     "addToShare": "Toevoegen aan share",
     "removeFromShare": "Verwijderen uit share",
-    "saveChanges": "Wijzigingen Opslaan"
+    "saveChanges": "Wijzigingen Opslaan",
+    "editFolder": "Map bewerken"
   },
   "files": {
     "title": "Alle Bestanden",
@@ -347,7 +362,18 @@
     },
     "totalFiles": "{count, plural, =0 {Geen bestanden} =1 {1 bestand} other {# bestanden}}",
     "bulkDeleteConfirmation": "Weet je zeker dat je {count, plural, =1 {1 bestand} other {# bestanden}} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
-    "bulkDeleteTitle": "Geselecteerde Bestanden Verwijderen"
+    "bulkDeleteTitle": "Geselecteerde Bestanden Verwijderen",
+    "actions": {
+      "open": "Openen",
+      "rename": "Hernoemen",
+      "delete": "Verwijderen"
+    },
+    "empty": {
+      "title": "Nog geen bestanden of mappen",
+      "description": "Upload uw eerste bestand of maak een map om te beginnen"
+    },
+    "files": "bestanden",
+    "folders": "mappen"
   },
   "filesTable": {
     "ariaLabel": "Bestanden tabel",
@@ -376,6 +402,34 @@
       "share": "Geselecteerde Delen",
       "delete": "Geselecteerde Verwijderen"
     }
+  },
+  "folderActions": {
+    "editFolder": "Map bewerken",
+    "folderName": "Mapnaam",
+    "folderNamePlaceholder": "Voer mapnaam in",
+    "folderDescription": "Beschrijving",
+    "folderDescriptionPlaceholder": "Voer mapbeschrijving in (optioneel)",
+    "createFolder": "Nieuwe map maken",
+    "createFolderButton": "Map maken",
+    "renameFolder": "Map hernoemen",
+    "moveFolder": "Map verplaatsen",
+    "shareFolder": "Map delen",
+    "deleteFolder": "Map verwijderen",
+    "moveTo": "Verplaatsen naar",
+    "selectDestination": "Bestemmingsmap selecteren",
+    "rootFolder": "Hoofdmap",
+    "folderCreated": "Map succesvol aangemaakt",
+    "folderRenamed": "Map succesvol hernoemd",
+    "folderMoved": "Map succesvol verplaatst",
+    "folderDeleted": "Map succesvol verwijderd",
+    "folderShared": "Map succesvol gedeeld",
+    "createFolderError": "Fout bij maken van map",
+    "renameFolderError": "Fout bij hernoemen van map",
+    "moveFolderError": "Fout bij verplaatsen van map",
+    "deleteFolderError": "Fout bij verwijderen van map",
+    "shareFolderError": "Fout bij delen van map",
+    "deleteConfirmation": "Weet u zeker dat u deze map wilt verwijderen?",
+    "deleteWarning": "Deze actie kan niet ongedaan worden gemaakt."
   },
   "footer": {
     "poweredBy": "Mogelijk gemaakt door",
@@ -477,6 +531,13 @@
       "uploadFailed": "Fout bij het uploaden van logo",
       "removeFailed": "Fout bij het verwijderen van logo"
     }
+  },
+  "moveItems": {
+    "itemsToMove": "Items om te verplaatsen:",
+    "movingTo": "Verplaatsen naar:",
+    "title": "{count, plural, =1 {Item} other {Items}} verplaatsen",
+    "description": "{count, plural, =1 {Item} other {Items}} naar een nieuwe locatie verplaatsen",
+    "success": "{count} {count, plural, =1 {item} other {items}} succesvol verplaatst"
   },
   "navbar": {
     "logoAlt": "Applicatie Logo",
@@ -1106,7 +1167,8 @@
   },
   "searchBar": {
     "placeholder": "Bestanden zoeken...",
-    "results": "{filtered} van {total} bestanden gevonden"
+    "results": "{filtered} van {total} bestanden gevonden",
+    "placeholderFolders": "Zoek mappen..."
   },
   "settings": {
     "groups": {
@@ -1320,7 +1382,17 @@
     "editError": "Fout bij bijwerken van delen",
     "bulkDeleteConfirmation": "Weet je zeker dat je {count, plural, =1 {1 deel} other {# delen}} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
     "bulkDeleteTitle": "Geselecteerde Delen Verwijderen",
-    "addDescriptionPlaceholder": "Beschrijving toevoegen..."
+    "addDescriptionPlaceholder": "Beschrijving toevoegen...",
+    "aliasLabel": "Link alias",
+    "aliasPlaceholder": "Voer aangepaste alias in",
+    "copyLink": "Link kopiëren",
+    "fileTitle": "Bestand delen",
+    "folderTitle": "Map delen",
+    "generateLink": "Link genereren",
+    "linkDescriptionFile": "Genereer een aangepaste link om het bestand te delen",
+    "linkDescriptionFolder": "Genereer een aangepaste link om de map te delen",
+    "linkReady": "Uw deel-link is klaar:",
+    "linkTitle": "Link genereren"
   },
   "shareDetails": {
     "title": "Delen Details",
@@ -1447,7 +1519,8 @@
     "files": "bestanden",
     "totalSize": "Totale grootte",
     "creating": "Aanmaken...",
-    "create": "Delen Maken"
+    "create": "Delen Maken",
+    "itemsToShare": "Items om te delen ({count} {count, plural, =1 {item} other {items}})"
   },
   "shareSecurity": {
     "subtitle": "Configureer wachtwoordbeveiliging en beveiligingsopties voor dit delen",
@@ -1552,7 +1625,8 @@
       "download": "Download geselecteerd"
     },
     "selectAll": "Alles selecteren",
-    "selectShare": "Deel {shareName} selecteren"
+    "selectShare": "Deel {shareName} selecteren",
+    "folderCount": "mappen"
   },
   "storageUsage": {
     "title": "Opslaggebruik",

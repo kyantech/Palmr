@@ -144,7 +144,13 @@
     "update": "Güncelle",
     "click": "Tıklayın",
     "creating": "Oluşturuluyor...",
-    "loadingSimple": "Yükleniyor..."
+    "loadingSimple": "Yükleniyor...",
+    "create": "Oluştur",
+    "deleting": "Siliniyor...",
+    "move": "Taşı",
+    "rename": "Yeniden Adlandır",
+    "search": "Ara",
+    "share": "Paylaş"
   },
   "createShare": {
     "title": "Paylaşım Oluştur",
@@ -160,7 +166,13 @@
     "error": "Paylaşım oluşturulamadı",
     "descriptionLabel": "Açıklama",
     "descriptionPlaceholder": "Açıklama girin (isteğe bağlı)",
-    "namePlaceholder": "Paylaşımınız için bir ad girin"
+    "namePlaceholder": "Paylaşımınız için bir ad girin",
+    "nextSelectFiles": "İleri: Dosyaları Seç",
+    "searchLabel": "Ara",
+    "tabs": {
+      "shareDetails": "Paylaşım Detayları",
+      "selectFiles": "Dosyaları Seç"
+    }
   },
   "customization": {
     "breadcrumb": "Özelleştirme",
@@ -214,7 +226,9 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "Silinecek dosyalar",
-    "sharesToDelete": "Silinecek paylaşımlar"
+    "sharesToDelete": "Silinecek paylaşımlar",
+    "foldersToDelete": "Silinecek klasörler",
+    "itemsToDelete": "Silinecek öğeler"
   },
   "downloadQueue": {
     "downloadQueued": "İndirme sıraya alındı: {fileName}",
@@ -322,7 +336,8 @@
     "previewFile": "Dosyayı önizle",
     "addToShare": "Paylaşıma ekle",
     "removeFromShare": "Paylaşımdan kaldır",
-    "saveChanges": "Değişiklikleri Kaydet"
+    "saveChanges": "Değişiklikleri Kaydet",
+    "editFolder": "Klasörü düzenle"
   },
   "files": {
     "title": "Tüm Dosyalar",
@@ -347,7 +362,18 @@
       "grid": "Izgara"
     },
     "bulkDeleteConfirmation": "{count, plural, =1 {1 dosyayı} other {# dosyayı}} silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
-    "bulkDeleteTitle": "Seçili Dosyaları Sil"
+    "bulkDeleteTitle": "Seçili Dosyaları Sil",
+    "actions": {
+      "open": "Aç",
+      "rename": "Yeniden Adlandır",
+      "delete": "Sil"
+    },
+    "empty": {
+      "title": "Henüz dosya veya klasör yok",
+      "description": "Başlamak için ilk dosyanızı yükleyin veya bir klasör oluşturun"
+    },
+    "files": "dosyalar",
+    "folders": "klasörler"
   },
   "filesTable": {
     "ariaLabel": "Dosya Tablosu",
@@ -376,6 +402,34 @@
       "share": "Seçilenleri Paylaş",
       "delete": "Seçilenleri Sil"
     }
+  },
+  "folderActions": {
+    "editFolder": "Klasörü düzenle",
+    "folderName": "Klasör Adı",
+    "folderNamePlaceholder": "Klasör adını girin",
+    "folderDescription": "Açıklama",
+    "folderDescriptionPlaceholder": "Klasör açıklaması girin (isteğe bağlı)",
+    "createFolder": "Yeni Klasör Oluştur",
+    "createFolderButton": "Klasör Oluştur",
+    "renameFolder": "Klasörü Yeniden Adlandır",
+    "moveFolder": "Klasörü Taşı",
+    "shareFolder": "Klasörü Paylaş",
+    "deleteFolder": "Klasörü Sil",
+    "moveTo": "Taşı",
+    "selectDestination": "Hedef klasörü seç",
+    "rootFolder": "Kök",
+    "folderCreated": "Klasör başarıyla oluşturuldu",
+    "folderRenamed": "Klasör başarıyla yeniden adlandırıldı",
+    "folderMoved": "Klasör başarıyla taşındı",
+    "folderDeleted": "Klasör başarıyla silindi",
+    "folderShared": "Klasör başarıyla paylaşıldı",
+    "createFolderError": "Klasör oluşturulurken hata",
+    "renameFolderError": "Klasör yeniden adlandırılırken hata",
+    "moveFolderError": "Klasör taşınırken hata",
+    "deleteFolderError": "Klasör silinirken hata",
+    "shareFolderError": "Klasör paylaşılırken hata",
+    "deleteConfirmation": "Bu klasörü silmek istediğinizden emin misiniz?",
+    "deleteWarning": "Bu işlem geri alınamaz."
   },
   "footer": {
     "poweredBy": "Tarafından destekleniyor:",
@@ -477,6 +531,13 @@
       "uploadFailed": "Logo yüklenemedi",
       "removeFailed": "Logo kaldırılamadı"
     }
+  },
+  "moveItems": {
+    "itemsToMove": "Taşınacak öğeler:",
+    "movingTo": "Taşınıyor:",
+    "title": "{count, plural, =1 {Öğe} other {Öğeler}} Taşı",
+    "description": "{count, plural, =1 {Öğeyi} other {Öğeleri}} yeni konuma taşı",
+    "success": "{count} {count, plural, =1 {öğe} other {öğe}} başarıyla taşındı"
   },
   "navbar": {
     "logoAlt": "Uygulama Logosu",
@@ -1106,7 +1167,8 @@
   },
   "searchBar": {
     "placeholder": "Dosya ara...",
-    "results": "Toplam {total} dosya içinde {filtered} dosya bulundu"
+    "results": "Toplam {total} dosya içinde {filtered} dosya bulundu",
+    "placeholderFolders": "Klasörleri ara..."
   },
   "settings": {
     "groups": {
@@ -1320,7 +1382,17 @@
     "editError": "Paylaşım güncelleme başarısız",
     "bulkDeleteConfirmation": "{count, plural, =1 {1 paylaşımı} other {# paylaşımı}} silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
     "bulkDeleteTitle": "Seçili Paylaşımları Sil",
-    "addDescriptionPlaceholder": "Açıklama ekle..."
+    "addDescriptionPlaceholder": "Açıklama ekle...",
+    "aliasLabel": "Bağlantı Takma Adı",
+    "aliasPlaceholder": "Özel takma ad girin",
+    "copyLink": "Bağlantıyı Kopyala",
+    "fileTitle": "Dosyayı Paylaş",
+    "folderTitle": "Klasörü Paylaş",
+    "generateLink": "Bağlantı Oluştur",
+    "linkDescriptionFile": "Dosyayı paylaşmak için özel bağlantı oluşturun",
+    "linkDescriptionFolder": "Klasörü paylaşmak için özel bağlantı oluşturun",
+    "linkReady": "Paylaşım bağlantınız hazır:",
+    "linkTitle": "Bağlantı Oluştur"
   },
   "shareDetails": {
     "title": "Paylaşım Detayları",
@@ -1447,7 +1519,8 @@
     "files": "dosya",
     "totalSize": "Toplam boyut",
     "creating": "Oluşturuluyor...",
-    "create": "Paylaşım Oluştur"
+    "create": "Paylaşım Oluştur",
+    "itemsToShare": "Paylaşılacak öğeler ({count} {count, plural, =1 {öğe} other {öğe}})"
   },
   "shareSecurity": {
     "subtitle": "Bu paylaşım için şifre koruması ve güvenlik seçeneklerini yapılandırın",
@@ -1552,7 +1625,8 @@
       "download": "Seçili indir"
     },
     "selectAll": "Tümünü seç",
-    "selectShare": "Paylaşım {shareName} seç"
+    "selectShare": "Paylaşım {shareName} seç",
+    "folderCount": "klasörler"
   },
   "storageUsage": {
     "title": "Depolama Kullanımı",

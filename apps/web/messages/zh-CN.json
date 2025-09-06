@@ -144,7 +144,13 @@
     "update": "更新",
     "click": "点击",
     "creating": "创建中...",
-    "loadingSimple": "加载中..."
+    "loadingSimple": "加载中...",
+    "create": "创建",
+    "deleting": "删除中...",
+    "move": "移动",
+    "rename": "重命名",
+    "search": "搜索",
+    "share": "分享"
   },
   "createShare": {
     "title": "创建分享",
@@ -160,7 +166,13 @@
     "create": "创建分享",
     "success": "分享创建成功",
     "error": "创建分享失败",
-    "namePlaceholder": "输入分享名称"
+    "namePlaceholder": "输入分享名称",
+    "nextSelectFiles": "下一步：选择文件",
+    "searchLabel": "搜索",
+    "tabs": {
+      "shareDetails": "分享详情",
+      "selectFiles": "选择文件"
+    }
   },
   "customization": {
     "breadcrumb": "自定义",
@@ -214,7 +226,9 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "要删除的文件",
-    "sharesToDelete": "将被删除的共享"
+    "sharesToDelete": "将被删除的共享",
+    "foldersToDelete": "要删除的文件夹",
+    "itemsToDelete": "要删除的项目"
   },
   "downloadQueue": {
     "downloadQueued": "已加入下载队列：{fileName}",
@@ -322,7 +336,8 @@
     "previewFile": "预览文件",
     "addToShare": "添加到共享",
     "removeFromShare": "从共享中移除",
-    "saveChanges": "保存更改"
+    "saveChanges": "保存更改",
+    "editFolder": "编辑文件夹"
   },
   "files": {
     "title": "所有文件",
@@ -347,7 +362,18 @@
     },
     "totalFiles": "{count, plural, =0 {无文件} =1 {1个文件} other {#个文件}}",
     "bulkDeleteConfirmation": "您确定要删除 {count, plural, =1 {1 个文件} other {# 个文件}}吗？此操作无法撤销。",
-    "bulkDeleteTitle": "删除所选文件"
+    "bulkDeleteTitle": "删除所选文件",
+    "actions": {
+      "open": "打开",
+      "rename": "重命名",
+      "delete": "删除"
+    },
+    "empty": {
+      "title": "还没有文件或文件夹",
+      "description": "上传您的第一个文件或创建文件夹以开始使用"
+    },
+    "files": "文件",
+    "folders": "文件夹"
   },
   "filesTable": {
     "ariaLabel": "文件表格",
@@ -376,6 +402,34 @@
       "share": "分享选中项",
       "delete": "删除选中项"
     }
+  },
+  "folderActions": {
+    "editFolder": "编辑文件夹",
+    "folderName": "文件夹名称",
+    "folderNamePlaceholder": "输入文件夹名称",
+    "folderDescription": "描述",
+    "folderDescriptionPlaceholder": "输入文件夹描述（可选）",
+    "createFolder": "创建新文件夹",
+    "createFolderButton": "创建文件夹",
+    "renameFolder": "重命名文件夹",
+    "moveFolder": "移动文件夹",
+    "shareFolder": "分享文件夹",
+    "deleteFolder": "删除文件夹",
+    "moveTo": "移动到",
+    "selectDestination": "选择目标文件夹",
+    "rootFolder": "根目录",
+    "folderCreated": "文件夹创建成功",
+    "folderRenamed": "文件夹重命名成功",
+    "folderMoved": "文件夹移动成功",
+    "folderDeleted": "文件夹删除成功",
+    "folderShared": "文件夹分享成功",
+    "createFolderError": "创建文件夹时出错",
+    "renameFolderError": "重命名文件夹时出错",
+    "moveFolderError": "移动文件夹时出错",
+    "deleteFolderError": "删除文件夹时出错",
+    "shareFolderError": "分享文件夹时出错",
+    "deleteConfirmation": "您确定要删除此文件夹吗？",
+    "deleteWarning": "此操作无法撤销。"
   },
   "footer": {
     "poweredBy": "技术支持：",
@@ -477,6 +531,13 @@
       "uploadFailed": "Logo上传失败",
       "removeFailed": "Logo删除失败"
     }
+  },
+  "moveItems": {
+    "itemsToMove": "要移动的项目：",
+    "movingTo": "移动到：",
+    "title": "移动 {count, plural, =1 {项目} other {项目}}",
+    "description": "将 {count, plural, =1 {项目} other {项目}} 移动到新位置",
+    "success": "成功移动了 {count} 个项目"
   },
   "navbar": {
     "logoAlt": "应用Logo",
@@ -1106,7 +1167,8 @@
   },
   "searchBar": {
     "placeholder": "搜索文件...",
-    "results": "共{total}个文件，找到{filtered}个"
+    "results": "共{total}个文件，找到{filtered}个",
+    "placeholderFolders": "搜索文件夹..."
   },
   "settings": {
     "groups": {
@@ -1320,7 +1382,17 @@
     "descriptionLabel": "描述",
     "bulkDeleteConfirmation": "您确定要删除{count, plural, =1 {1个共享} other {#个共享}}吗？此操作无法撤销。",
     "bulkDeleteTitle": "删除选中的共享",
-    "addDescriptionPlaceholder": "添加描述..."
+    "addDescriptionPlaceholder": "添加描述...",
+    "aliasLabel": "链接别名",
+    "aliasPlaceholder": "输入自定义别名",
+    "copyLink": "复制链接",
+    "fileTitle": "分享文件",
+    "folderTitle": "分享文件夹",
+    "generateLink": "生成链接",
+    "linkDescriptionFile": "生成自定义链接以分享文件",
+    "linkDescriptionFolder": "生成自定义链接以分享文件夹",
+    "linkReady": "您的分享链接已准备好：",
+    "linkTitle": "生成链接"
   },
   "shareDetails": {
     "title": "共享详情",
@@ -1447,7 +1519,8 @@
     "files": "文件",
     "totalSize": "总大小",
     "creating": "创建中...",
-    "create": "创建分享"
+    "create": "创建分享",
+    "itemsToShare": "要分享的项目（{count} 个项目）"
   },
   "shareSecurity": {
     "subtitle": "为此分享配置密码保护和安全选项",
@@ -1552,7 +1625,8 @@
       "download": "选择下载"
     },
     "selectAll": "全选",
-    "selectShare": "选择共享 {shareName}"
+    "selectShare": "选择共享 {shareName}",
+    "folderCount": "文件夹"
   },
   "storageUsage": {
     "title": "存储使用情况",

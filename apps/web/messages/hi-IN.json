@@ -144,7 +144,13 @@
     "update": "अपडेट करें",
     "click": "क्लिक करें",
     "creating": "बना रहा है...",
-    "loadingSimple": "लोड हो रहा है..."
+    "loadingSimple": "लोड हो रहा है...",
+    "create": "बनाएं",
+    "deleting": "हटा रहे हैं...",
+    "move": "स्थानांतरित करें",
+    "rename": "नाम बदलें",
+    "search": "खोजें",
+    "share": "साझा करें"
   },
   "createShare": {
     "title": "साझाकरण बनाएं",
@@ -160,7 +166,13 @@
     "create": "साझाकरण बनाएं",
     "success": "साझाकरण सफलतापूर्वक बनाया गया",
     "error": "साझाकरण बनाने में विफल",
-    "namePlaceholder": "अपने साझाकरण के लिए एक नाम दर्ज करें"
+    "namePlaceholder": "अपने साझाकरण के लिए एक नाम दर्ज करें",
+    "nextSelectFiles": "आगे: फ़ाइलें चुनें",
+    "searchLabel": "खोजें",
+    "tabs": {
+      "shareDetails": "साझाकरण विवरण",
+      "selectFiles": "फ़ाइलें चुनें"
+    }
   },
   "customization": {
     "breadcrumb": "अनुकूलन",
@@ -214,7 +226,9 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "हटाई जाने वाली फाइलें",
-    "sharesToDelete": "साझाकरण जो हटाए जाएंगे"
+    "sharesToDelete": "साझाकरण जो हटाए जाएंगे",
+    "foldersToDelete": "हटाए जाने वाले फ़ोल्डर",
+    "itemsToDelete": "हटाए जाने वाले आइटम"
   },
   "downloadQueue": {
     "downloadQueued": "डाउनलोड कतार में: {fileName}",
@@ -322,7 +336,8 @@
     "previewFile": "फाइल पूर्वावलोकन",
     "addToShare": "साझाकरण में जोड़ें",
     "removeFromShare": "साझाकरण से हटाएं",
-    "saveChanges": "परिवर्तन सहेजें"
+    "saveChanges": "परिवर्तन सहेजें",
+    "editFolder": "फ़ोल्डर संपादित करें"
   },
   "files": {
     "title": "सभी फाइलें",
@@ -347,7 +362,18 @@
     },
     "totalFiles": "{count, plural, =0 {कोई फ़ाइल नहीं} =1 {1 फ़ाइल} other {# फ़ाइलें}}",
     "bulkDeleteConfirmation": "क्या आप वास्तव में {count, plural, =1 {1 फाइल} other {# फाइलों}} को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
-    "bulkDeleteTitle": "चयनित फाइलों को हटाएं"
+    "bulkDeleteTitle": "चयनित फाइलों को हटाएं",
+    "actions": {
+      "open": "खोलें",
+      "rename": "नाम बदलें",
+      "delete": "हटाएं"
+    },
+    "empty": {
+      "title": "अभी तक कोई फ़ाइल या फ़ोल्डर नहीं",
+      "description": "आरंभ करने के लिए अपनी पहली फ़ाइल अपलोड करें या फ़ोल्डर बनाएं"
+    },
+    "files": "फ़ाइलें",
+    "folders": "फ़ोल्डर"
   },
   "filesTable": {
     "ariaLabel": "फाइल तालिका",
@@ -376,6 +402,34 @@
       "share": "चयनित साझा करें",
       "delete": "चयनित हटाएं"
     }
+  },
+  "folderActions": {
+    "editFolder": "फ़ोल्डर संपादित करें",
+    "folderName": "फ़ोल्डर नाम",
+    "folderNamePlaceholder": "फ़ोल्डर नाम दर्ज करें",
+    "folderDescription": "विवरण",
+    "folderDescriptionPlaceholder": "फ़ोल्डर विवरण दर्ज करें (वैकल्पिक)",
+    "createFolder": "नया फ़ोल्डर बनाएं",
+    "createFolderButton": "फ़ोल्डर बनाएं",
+    "renameFolder": "फ़ोल्डर का नाम बदलें",
+    "moveFolder": "फ़ोल्डर स्थानांतरित करें",
+    "shareFolder": "फ़ोल्डर साझा करें",
+    "deleteFolder": "फ़ोल्डर हटाएं",
+    "moveTo": "यहाँ स्थानांतरित करें",
+    "selectDestination": "गंतव्य फ़ोल्डर चुनें",
+    "rootFolder": "मूल",
+    "folderCreated": "फ़ोल्डर सफलतापूर्वक बनाया गया",
+    "folderRenamed": "फ़ोल्डर का नाम सफलतापूर्वक बदला गया",
+    "folderMoved": "फ़ोल्डर सफलतापूर्वक स्थानांतरित किया गया",
+    "folderDeleted": "फ़ोल्डर सफलतापूर्वक हटाया गया",
+    "folderShared": "फ़ोल्डर सफलतापूर्वक साझा किया गया",
+    "createFolderError": "फ़ोल्डर बनाने में त्रुटि",
+    "renameFolderError": "फ़ोल्डर का नाम बदलने में त्रुटि",
+    "moveFolderError": "फ़ोल्डर स्थानांतरित करने में त्रुटि",
+    "deleteFolderError": "फ़ोल्डर हटाने में त्रुटि",
+    "shareFolderError": "फ़ोल्डर साझा करने में त्रुटि",
+    "deleteConfirmation": "क्या आप वाकई इस फ़ोल्डर को हटाना चाहते हैं?",
+    "deleteWarning": "यह कार्य पूर्ववत नहीं किया जा सकता।"
   },
   "footer": {
     "poweredBy": "द्वारा संचालित",
@@ -477,6 +531,13 @@
       "uploadFailed": "लोगो अपलोड करने में विफल",
       "removeFailed": "लोगो हटाने में विफल"
     }
+  },
+  "moveItems": {
+    "itemsToMove": "स्थानांतरित करने वाले आइटम:",
+    "movingTo": "यहाँ स्थानांतरित कर रहे हैं:",
+    "title": "आइटम स्थानांतरित करें",
+    "description": "आइटम को नए स्थान पर स्थानांतरित करें",
+    "success": "{count} आइटम सफलतापूर्वक स्थानांतरित किए गए"
   },
   "navbar": {
     "logoAlt": "एप्लिकेशन लोगो",
@@ -1106,7 +1167,8 @@
   },
   "searchBar": {
     "placeholder": "फाइलें खोजें...",
-    "results": "{total} में से {filtered} फाइलें मिलीं"
+    "results": "{total} में से {filtered} फाइलें मिलीं",
+    "placeholderFolders": "फ़ोल्डर खोजें..."
   },
   "settings": {
     "groups": {
@@ -1320,7 +1382,17 @@
     "editError": "साझाकरण अपडेट करने में विफल",
     "bulkDeleteConfirmation": "क्या आप वाकई {count, plural, =1 {1 साझाकरण} other {# साझाकरण}} हटाना चाहते हैं? इस क्रिया को पूर्ववत नहीं किया जा सकता।",
     "bulkDeleteTitle": "चयनित साझाकरण हटाएं",
-    "addDescriptionPlaceholder": "विवरण जोड़ें..."
+    "addDescriptionPlaceholder": "विवरण जोड़ें...",
+    "aliasLabel": "लिंक उपनाम",
+    "aliasPlaceholder": "कस्टम उपनाम दर्ज करें",
+    "copyLink": "लिंक कॉपी करें",
+    "fileTitle": "फ़ाइल साझा करें",
+    "folderTitle": "फ़ोल्डर साझा करें",
+    "generateLink": "लिंक जेनरेट करें",
+    "linkDescriptionFile": "फ़ाइल साझा करने के लिए कस्टम लिंक जेनरेट करें",
+    "linkDescriptionFolder": "फ़ोल्डर साझा करने के लिए कस्टम लिंक जेनरेट करें",
+    "linkReady": "आपका साझाकरण लिंक तैयार है:",
+    "linkTitle": "लिंक जेनरेट करें"
   },
   "shareDetails": {
     "title": "साझाकरण विवरण",
@@ -1447,7 +1519,8 @@
     "files": "फाइलें",
     "totalSize": "कुल आकार",
     "creating": "बनाया जा रहा है...",
-    "create": "साझाकरण बनाएं"
+    "create": "साझाकरण बनाएं",
+    "itemsToShare": "साझा करने वाले आइटम ({count} आइटम)"
   },
   "shareSecurity": {
     "subtitle": "इस साझाकरण के लिए पासवर्ड सुरक्षा और सुरक्षा विकल्प कॉन्फ़िगर करें",
@@ -1552,7 +1625,8 @@
       "download": "चयनित डाउनलोड करें"
     },
     "selectAll": "सभी चुनें",
-    "selectShare": "साझाकरण {shareName} चुनें"
+    "selectShare": "साझाकरण {shareName} चुनें",
+    "folderCount": "फ़ोल्डर"
   },
   "storageUsage": {
     "title": "स्टोरेज उपयोग",
