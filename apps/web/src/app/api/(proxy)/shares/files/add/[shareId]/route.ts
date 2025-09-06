@@ -6,7 +6,17 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ sha
   const cookieHeader = req.headers.get("cookie");
   const body = await req.text();
   const { shareId } = await params;
-  const url = `${API_BASE_URL}/shares/${shareId}/files`;
+
+  // Parse the request body to get files array
+  const requestData = JSON.parse(body);
+
+  // Transform to the unified items format expected by the new API
+  const itemsBody = {
+    files: requestData.files || [],
+    folders: [],
+  };
+
+  const url = `${API_BASE_URL}/shares/${shareId}/items`;
 
   const apiRes = await fetch(url, {
     method: "POST",
@@ -14,7 +24,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ sha
       "Content-Type": "application/json",
       cookie: cookieHeader || "",
     },
-    body,
+    body: JSON.stringify(itemsBody),
     redirect: "manual",
   });
 

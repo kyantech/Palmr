@@ -2,29 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 
 const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3333";
 
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ shareId: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ shareId: string; folderId: string }> }) {
   const cookieHeader = req.headers.get("cookie");
-  const body = await req.text();
-  const { shareId } = await params;
+  const url = new URL(req.url);
+  const searchParams = url.searchParams.toString();
+  const { shareId, folderId } = await params;
+  const fetchUrl = `${API_BASE_URL}/shares/${shareId}/folders/${folderId}/contents${searchParams ? `?${searchParams}` : ""}`;
 
-  // Parse the request body to get files array
-  const requestData = JSON.parse(body);
-
-  // Transform to the unified items format expected by the new API
-  const itemsBody = {
-    files: requestData.files || [],
-    folders: [],
-  };
-
-  const url = `${API_BASE_URL}/shares/${shareId}/items`;
-
-  const apiRes = await fetch(url, {
-    method: "DELETE",
+  const apiRes = await fetch(fetchUrl, {
+    method: "GET",
     headers: {
-      "Content-Type": "application/json",
       cookie: cookieHeader || "",
     },
-    body: JSON.stringify(itemsBody),
     redirect: "manual",
   });
 

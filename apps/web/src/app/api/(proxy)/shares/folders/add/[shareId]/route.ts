@@ -2,24 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 
 const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3333";
 
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ shareId: string }> }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ shareId: string }> }) {
   const cookieHeader = req.headers.get("cookie");
   const body = await req.text();
   const { shareId } = await params;
 
-  // Parse the request body to get files array
+  // Parse the request body to get folders array
   const requestData = JSON.parse(body);
 
   // Transform to the unified items format expected by the new API
   const itemsBody = {
-    files: requestData.files || [],
-    folders: [],
+    files: [],
+    folders: requestData.folders || [],
   };
 
   const url = `${API_BASE_URL}/shares/${shareId}/items`;
 
   const apiRes = await fetch(url, {
-    method: "DELETE",
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
       cookie: cookieHeader || "",
