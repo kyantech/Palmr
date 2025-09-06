@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { deleteFile, getDownloadUrl, updateFile } from "@/http/endpoints";
+import { deleteFolder, registerFolder, updateFolder } from "@/http/endpoints/folders";
 import { useDownloadQueue } from "./use-download-queue";
 import { usePushNotifications } from "./use-push-notifications";
 
@@ -33,6 +34,26 @@ interface FileToShare {
   updatedAt: string;
 }
 
+interface FolderToRename {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+interface FolderToDelete {
+  id: string;
+  name: string;
+}
+
+interface FolderToShare {
+  id: string;
+  name: string;
+  description?: string;
+  parentId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface BulkFile {
   id: string;
   name: string;
@@ -41,6 +62,23 @@ interface BulkFile {
   objectName: string;
   createdAt: string;
   updatedAt: string;
+  relativePath?: string;
+}
+
+interface BulkFolder {
+  id: string;
+  name: string;
+  description?: string;
+  objectName: string;
+  parentId?: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+  totalSize?: string;
+  _count?: {
+    files: number;
+    children: number;
+  };
 }
 
 interface PendingDownload {
@@ -52,6 +90,7 @@ interface PendingDownload {
 }
 
 export interface EnhancedFileManagerHook {
+  // File states
   previewFile: PreviewFile | null;
   fileToDelete: any;
   fileToRename: any;
@@ -59,8 +98,21 @@ export interface EnhancedFileManagerHook {
   filesToDelete: BulkFile[] | null;
   filesToShare: BulkFile[] | null;
   filesToDownload: BulkFile[] | null;
+  foldersToDelete: BulkFolder[] | null;
   isBulkDownloadModalOpen: boolean;
   pendingDownloads: PendingDownload[];
+
+  // Folder states
+  folderToDelete: FolderToDelete | null;
+  folderToRename: FolderToRename | null;
+  folderToShare: FolderToShare | null;
+  isCreateFolderModalOpen: boolean;
+
+  // Combined bulk states
+  foldersToShare: BulkFolder[] | null;
+  foldersToDownload: BulkFolder[] | null;
+
+  // File setters
   setFileToDelete: (file: any) => void;
   setFileToRename: (file: any) => void;
   setPreviewFile: (file: PreviewFile | null) => void;
@@ -68,16 +120,34 @@ export interface EnhancedFileManagerHook {
   setFilesToDelete: (files: BulkFile[] | null) => void;
   setFilesToShare: (files: BulkFile[] | null) => void;
   setFilesToDownload: (files: BulkFile[] | null) => void;
+  setFoldersToDelete: (folders: BulkFolder[] | null) => void;
   setBulkDownloadModalOpen: (open: boolean) => void;
+
+  // Folder setters
+  setFolderToDelete: (folder: FolderToDelete | null) => void;
+  setFolderToRename: (folder: FolderToRename | null) => void;
+  setFolderToShare: (folder: FolderToShare | null) => void;
+  setCreateFolderModalOpen: (open: boolean) => void;
+  setFoldersToShare: (folders: BulkFolder[] | null) => void;
+  setFoldersToDownload: (folders: BulkFolder[] | null) => void;
+
+  // File handlers
   handleDelete: (fileId: string) => Promise<void>;
   handleDownload: (objectName: string, fileName: string) => Promise<void>;
   handleRename: (fileId: string, newName: string, description?: string) => Promise<void>;
-  handleBulkDelete: (files: BulkFile[]) => void;
-  handleBulkShare: (files: BulkFile[]) => void;
-  handleBulkDownload: (files: BulkFile[]) => void;
+  handleBulkDelete: (files: BulkFile[], folders?: BulkFolder[]) => void;
+  handleBulkShare: (files: BulkFile[], folders?: BulkFolder[]) => void;
+  handleBulkDownload: (files: BulkFile[], folders?: BulkFolder[]) => void;
   handleBulkDownloadWithZip: (files: BulkFile[], zipName: string) => Promise<void>;
   handleDeleteBulk: () => Promise<void>;
   handleShareBulkSuccess: () => void;
+
+  // Folder handlers
+  handleCreateFolder: (data: { name: string; description?: string }, parentId?: string) => Promise<void>;
+  handleFolderDelete: (folderId: string) => Promise<void>;
+  handleFolderRename: (folderId: string, newName: string, description?: string) => Promise<void>;
+
+  // Common
   clearSelection?: () => void;
   setClearSelectionCallback?: (callback: () => void) => void;
   getDownloadStatus: (objectName: string) => PendingDownload | null;
@@ -90,6 +160,7 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
   const downloadQueue = useDownloadQueue(true, 3000);
   const notifications = usePushNotifications();
 
+  // File states
   const [previewFile, setPreviewFile] = useState<PreviewFile | null>(null);
   const [fileToRename, setFileToRename] = useState<FileToRename | null>(null);
   const [fileToDelete, setFileToDelete] = useState<FileToDelete | null>(null);
@@ -97,9 +168,20 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
   const [filesToDelete, setFilesToDelete] = useState<BulkFile[] | null>(null);
   const [filesToShare, setFilesToShare] = useState<BulkFile[] | null>(null);
   const [filesToDownload, setFilesToDownload] = useState<BulkFile[] | null>(null);
+  const [foldersToDelete, setFoldersToDelete] = useState<BulkFolder[] | null>(null);
+
+  // Folder states
+  const [folderToDelete, setFolderToDelete] = useState<FolderToDelete | null>(null);
+  const [folderToRename, setFolderToRename] = useState<FolderToRename | null>(null);
+  const [folderToShare, setFolderToShare] = useState<FolderToShare | null>(null);
+  const [isCreateFolderModalOpen, setCreateFolderModalOpen] = useState(false);
   const [isBulkDownloadModalOpen, setBulkDownloadModalOpen] = useState(false);
   const [pendingDownloads, setPendingDownloads] = useState<PendingDownload[]>([]);
   const [clearSelectionCallback, setClearSelectionCallbackState] = useState<(() => void) | null>(null);
+
+  // Combined bulk states
+  const [foldersToShare, setFoldersToShare] = useState<BulkFolder[] | null>(null);
+  const [foldersToDownload, setFoldersToDownload] = useState<BulkFolder[] | null>(null);
 
   const startActualDownload = async (
     downloadId: string,
@@ -192,48 +274,25 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
     setClearSelectionCallbackState(() => callback);
   }, []);
 
-  const generateDownloadId = useCallback(() => {
-    return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
-  }, []);
-
   const handleDownload = async (objectName: string, fileName: string) => {
-    const downloadId = generateDownloadId();
-
     try {
-      const encodedObjectName = encodeURIComponent(objectName);
-      const response = await getDownloadUrl(encodedObjectName);
+      // Use the original download pattern for consistency with promise-based toast
+      const { downloadFileWithQueue } = await import("@/utils/download-queue-utils");
 
-      if (response.status === 202) {
-        const pendingDownload: PendingDownload = {
-          downloadId,
-          fileName,
-          objectName,
-          startTime: Date.now(),
-          status: "queued",
-        };
-
-        setPendingDownloads((prev) => [...prev, pendingDownload]);
-
-        toast.info(t("downloadQueue.downloadQueued", { fileName }), {
-          description: t("downloadQueue.queuedDescription"),
-          duration: 5000,
-        });
-      } else {
-        await startActualDownload(downloadId, objectName, fileName, response.data.url);
-      }
-    } catch (error: any) {
-      setPendingDownloads((prev) => prev.filter((d) => d.downloadId !== downloadId));
-
-      if (error.response?.status === 503) {
-        toast.error(t("downloadQueue.queueFull"), {
-          description: t("downloadQueue.queueFullDescription"),
-        });
-      } else {
-        toast.error(t("files.downloadError"), {
-          description: error.response?.data?.message || error.message,
-        });
-      }
-      throw error;
+      await toast.promise(
+        downloadFileWithQueue(objectName, fileName, {
+          silent: true,
+          showToasts: false,
+        }),
+        {
+          loading: t("share.messages.downloadStarted"),
+          success: t("shareManager.downloadSuccess"),
+          error: t("share.errors.downloadFailed"),
+        }
+      );
+    } catch (error) {
+      console.error("Download error:", error);
+      // Error already handled in toast.promise
     }
   };
 
@@ -287,154 +346,186 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
     }
   };
 
-  const handleBulkDelete = (files: BulkFile[]) => {
-    setFilesToDelete(files);
+  const handleBulkDelete = (files: BulkFile[], folders?: BulkFolder[]) => {
+    setFilesToDelete(files.length > 0 ? files : null);
+    setFoldersToDelete(folders && folders.length > 0 ? folders : null);
   };
 
-  const handleBulkShare = (files: BulkFile[]) => {
+  const handleBulkShare = (files: BulkFile[], folders?: BulkFolder[]) => {
     setFilesToShare(files);
+    setFoldersToShare(folders || null);
   };
 
   const handleShareBulkSuccess = () => {
     setFilesToShare(null);
+    setFoldersToShare(null);
     if (clearSelectionCallback) {
       clearSelectionCallback();
     }
   };
 
-  const handleBulkDownload = (files: BulkFile[]) => {
+  const handleBulkDownload = (files: BulkFile[], folders?: BulkFolder[]) => {
     setFilesToDownload(files);
+    setFoldersToDownload(folders || null);
     setBulkDownloadModalOpen(true);
+
+    // Clear selection immediately when bulk download modal opens
+    if (clearSelectionCallback) {
+      clearSelectionCallback();
+    }
   };
 
-  const downloadFileAsBlobSilent = async (objectName: string, fileName: string): Promise<Blob> => {
+  const handleSingleFolderDownload = async (folderId: string, folderName: string) => {
     try {
-      const encodedObjectName = encodeURIComponent(objectName);
-      const response = await getDownloadUrl(encodedObjectName);
+      // Use the enhanced download queue utility for folders with promise-based toast
+      const { downloadFolderWithQueue } = await import("@/utils/download-queue-utils");
 
-      if (response.status === 202) {
-        const { downloadFileAsBlobWithQueue } = await import("@/utils/download-queue-utils");
-        return await downloadFileAsBlobWithQueue(objectName, fileName, false);
-      } else {
-        const fetchResponse = await fetch(response.data.url);
-        if (!fetchResponse.ok) throw new Error(`Failed to download ${fileName}`);
-        return await fetchResponse.blob();
-      }
-    } catch (error: any) {
-      throw error;
+      await toast.promise(
+        downloadFolderWithQueue(folderId, folderName, {
+          silent: true,
+          showToasts: false,
+        }),
+        {
+          loading: t("shareManager.creatingZip"),
+          success: t("shareManager.zipDownloadSuccess"),
+          error: t("share.errors.downloadFailed"),
+        }
+      );
+    } catch (error) {
+      console.error("Error downloading folder:", error);
+      // Error already handled in toast.promise
     }
   };
 
   const handleBulkDownloadWithZip = async (files: BulkFile[], zipName: string) => {
     try {
+      const folders = foldersToDownload || [];
+      const { bulkDownloadWithQueue } = await import("@/utils/download-queue-utils");
+
+      // Prepare items for the enhanced bulk download utility
+      const allItems = [
+        // Add individual files
+        ...files.map((file) => ({
+          objectName: file.objectName,
+          name: file.relativePath || file.name,
+          isReverseShare: false,
+          type: "file" as const,
+        })),
+        // Add folders
+        ...folders.map((folder) => ({
+          id: folder.id,
+          name: folder.name,
+          type: "folder" as const,
+        })),
+      ];
+
+      if (allItems.length === 0) {
+        toast.error(t("shareManager.noFilesToDownload"));
+        return;
+      }
+
       toast.promise(
-        (async () => {
-          const JSZip = (await import("jszip")).default;
-          const zip = new JSZip();
-
-          let bulkDownloadId: string | null = null;
-          let shouldShowInQueue = false;
-
-          if (files.length > 0) {
-            try {
-              const testFile = files[0];
-              const encodedObjectName = encodeURIComponent(testFile.objectName);
-              const testResponse = await getDownloadUrl(encodedObjectName);
-
-              if (testResponse.status === 202) {
-                shouldShowInQueue = true;
-              }
-            } catch (error) {
-              console.error("Error checking if file is queued:", error);
-              shouldShowInQueue = true;
-            }
-          }
-
-          if (shouldShowInQueue) {
-            bulkDownloadId = generateDownloadId();
-            const bulkPendingDownload: PendingDownload = {
-              downloadId: bulkDownloadId,
-              fileName: zipName.endsWith(".zip") ? zipName : `${zipName}.zip`,
-              objectName: "bulk-download",
-              startTime: Date.now(),
-              status: "pending",
-            };
-            setPendingDownloads((prev) => [...prev, bulkPendingDownload]);
-
-            setPendingDownloads((prev) =>
-              prev.map((d) => (d.downloadId === bulkDownloadId ? { ...d, status: "downloading" } : d))
-            );
-          }
-
-          const downloadPromises = files.map(async (file) => {
-            try {
-              const blob = await downloadFileAsBlobSilent(file.objectName, file.name);
-              zip.file(file.name, blob);
-            } catch (error) {
-              console.error(`Error downloading file ${file.name}:`, error);
-              throw error;
-            }
-          });
-
-          await Promise.all(downloadPromises);
-
-          const zipBlob = await zip.generateAsync({ type: "blob" });
-
-          const url = URL.createObjectURL(zipBlob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = zipName.endsWith(".zip") ? zipName : `${zipName}.zip`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-
-          if (bulkDownloadId && shouldShowInQueue) {
-            setPendingDownloads((prev) =>
-              prev.map((d) => (d.downloadId === bulkDownloadId ? { ...d, status: "completed" } : d))
-            );
-
-            setTimeout(() => {
-              setPendingDownloads((prev) => prev.filter((d) => d.downloadId !== bulkDownloadId));
-            }, 5000);
-          }
-
+        bulkDownloadWithQueue(allItems, zipName, undefined, false).then(() => {
+          setBulkDownloadModalOpen(false);
+          setFilesToDownload(null);
+          setFoldersToDownload(null);
           if (clearSelectionCallback) {
             clearSelectionCallback();
           }
-        })(),
+        }),
         {
           loading: t("shareManager.creatingZip"),
           success: t("shareManager.zipDownloadSuccess"),
           error: t("shareManager.zipDownloadError"),
         }
       );
-    } catch (error: any) {
-      console.error("Error creating ZIP:", error);
+    } catch (error) {
+      console.error("Error in bulk download:", error);
+      setBulkDownloadModalOpen(false);
+      setFilesToDownload(null);
+      setFoldersToDownload(null);
     }
   };
 
   const handleDeleteBulk = async () => {
-    if (!filesToDelete) return;
+    if (!filesToDelete && !foldersToDelete) return;
 
     try {
-      const deletePromises = filesToDelete.map((file) => deleteFile(file.id));
+      const deletePromises = [];
+
+      // Delete files
+      if (filesToDelete) {
+        deletePromises.push(...filesToDelete.map((file) => deleteFile(file.id)));
+      }
+
+      // Delete folders
+      if (foldersToDelete) {
+        deletePromises.push(...foldersToDelete.map((folder) => deleteFolder(folder.id)));
+      }
+
       await Promise.all(deletePromises);
 
-      toast.success(t("files.bulkDeleteSuccess", { count: filesToDelete.length }));
+      const totalCount = (filesToDelete?.length || 0) + (foldersToDelete?.length || 0);
+      toast.success(t("files.bulkDeleteSuccess", { count: totalCount }));
       setFilesToDelete(null);
+      setFoldersToDelete(null);
       onRefresh();
-
-      if (clearSelectionCallback) {
-        clearSelectionCallback();
-      }
     } catch (error) {
-      console.error("Failed to delete files:", error);
+      console.error("Failed to delete items:", error);
       toast.error(t("files.bulkDeleteError"));
     }
   };
 
+  // Folder handlers - following the same pattern as file handlers
+  const handleCreateFolder = async (data: { name: string; description?: string }, parentId?: string) => {
+    try {
+      const folderData = {
+        name: data.name,
+        description: data.description,
+        objectName: `folders/${Date.now()}-${data.name}`,
+        parentId: parentId || undefined,
+      };
+
+      await registerFolder(folderData);
+      toast.success(t("folderActions.folderCreated"));
+      await onRefresh();
+      setCreateFolderModalOpen(false);
+    } catch (error) {
+      console.error("Error creating folder:", error);
+      toast.error(t("folderActions.createFolderError"));
+      throw error;
+    }
+  };
+
+  const handleFolderRename = async (folderId: string, newName: string, description?: string) => {
+    try {
+      await updateFolder(folderId, { name: newName, description });
+      toast.success(t("folderActions.folderRenamed"));
+      await onRefresh();
+      setFolderToRename(null);
+    } catch (error) {
+      console.error("Error renaming folder:", error);
+      toast.error(t("folderActions.renameFolderError"));
+    }
+  };
+
+  const handleFolderDelete = async (folderId: string) => {
+    try {
+      await deleteFolder(folderId);
+      toast.success(t("folderActions.folderDeleted"));
+      await onRefresh();
+      setFolderToDelete(null);
+      if (clearSelectionCallback) {
+        clearSelectionCallback();
+      }
+    } catch (error) {
+      console.error("Error deleting folder:", error);
+      toast.error(t("folderActions.deleteFolderError"));
+    }
+  };
+
   return {
+    // File states and handlers
     previewFile,
     setPreviewFile,
     fileToRename,
@@ -449,6 +540,8 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
     setFilesToShare,
     filesToDownload,
     setFilesToDownload,
+    foldersToDelete,
+    setFoldersToDelete,
     isBulkDownloadModalOpen,
     setBulkDownloadModalOpen,
     pendingDownloads,
@@ -461,9 +554,31 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
     handleBulkDownloadWithZip,
     handleDeleteBulk,
     handleShareBulkSuccess,
+
+    // Folder states and handlers
+    folderToDelete,
+    setFolderToDelete,
+    folderToRename,
+    setFolderToRename,
+    folderToShare,
+    setFolderToShare,
+    isCreateFolderModalOpen,
+    setCreateFolderModalOpen,
+    handleCreateFolder,
+    handleFolderRename,
+    handleFolderDelete,
+
+    // Combined bulk states
+    foldersToShare,
+    setFoldersToShare,
+    foldersToDownload,
+    setFoldersToDownload,
+
+    // Common
     clearSelection,
     setClearSelectionCallback,
     getDownloadStatus,
+    handleSingleFolderDownload,
     cancelPendingDownload,
     isDownloadPending,
   };
