@@ -8,8 +8,21 @@ export interface ShareFile {
   createdAt: string;
 }
 
+export interface ShareFolder {
+  id: string;
+  name: string;
+  totalSize: string | null;
+  createdAt: string;
+}
+
 export interface ShareFilesTableProps {
   files: ShareFile[];
+  onDownload: (objectName: string, fileName: string) => Promise<void>;
+}
+
+export interface ShareContentTableProps {
+  files?: ShareFile[];
+  folders?: ShareFolder[];
   onDownload: (objectName: string, fileName: string) => Promise<void>;
 }
 
@@ -23,6 +36,7 @@ export interface PasswordModalProps {
 
 export interface ShareDetailsProps {
   share: Share;
+  password?: string;
   onDownload: (objectName: string, fileName: string) => Promise<void>;
   onBulkDownload?: () => Promise<void>;
 }
