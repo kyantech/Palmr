@@ -26,6 +26,7 @@ model User {
   twoFactorVerified    Boolean @default(false)
 
   files         File[]
+  folders       Folder[]
   shares        Share[]
   reverseShares ReverseShare[]
 
@@ -49,10 +50,15 @@ model File {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  folderId String?
+  folder   Folder? @relation(fields: [folderId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   shares Share[] @relation("ShareFiles")
+
+  @@index([folderId])
 
   @@map("files")
 }
@@ -73,6 +79,7 @@ model Share {
   security   ShareSecurity @relation(fields: [securityId], references: [id])
 
   files      File[]           @relation("ShareFiles")
+  folders    Folder[]         @relation("ShareFolders")
   recipients ShareRecipient[]
 
   alias ShareAlias?
@@ -284,4 +291,33 @@ model TrustedDevice {
   updatedAt    DateTime @updatedAt
 
   @@map("trusted_devices")
+}
+
+model Folder {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  objectName  String
+
+  // Hierarchical structure
+  parentId    String?
+  parent      Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Folder[] @relation("FolderHierarchy")
+
+  // Owner relationship
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Files in this folder
+  files       File[]
+
+  // Sharing support
+  shares      Share[]  @relation("ShareFolders")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([parentId])
+  @@map("folders")
 }
