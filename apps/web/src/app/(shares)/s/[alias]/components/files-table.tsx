@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { IconDownload, IconEye } from "@tabler/icons-react";
+import { IconDownload, IconEye, IconFolder } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 import { FilePreviewModal } from "@/components/modals/file-preview-modal";
@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getFileIcon } from "@/utils/file-icons";
 import { formatFileSize } from "@/utils/format-file-size";
-import { ShareFilesTableProps } from "../types";
+import { ShareContentTableProps } from "../types";
 
-export function ShareFilesTable({ files, onDownload }: ShareFilesTableProps) {
+export function ShareContentTable({ files, folders, onDownload }: ShareContentTableProps) {
   const t = useTranslations();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<{ name: string; objectName: string; type?: string } | null>(null);
@@ -36,6 +36,11 @@ export function ShareFilesTable({ files, onDownload }: ShareFilesTableProps) {
     setSelectedFile(null);
   };
 
+  const allItems = [
+    ...(folders || []).map((folder) => ({ ...folder, type: "folder" as const })),
+    ...(files || []).map((file) => ({ ...file, type: "file" as const })),
+  ];
+
   return (
     <div className="flex flex-col gap-4">
       <div className="rounded-lg border shadow-sm overflow-hidden">
@@ -57,44 +62,86 @@ export function ShareFilesTable({ files, onDownload }: ShareFilesTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {files.map((file) => {
-              const { icon: FileIcon, color } = getFileIcon(file.name);
-
-              return (
-                <TableRow key={file.id} className="hover:bg-muted/50 transition-colors border-0">
-                  <TableCell className="h-12 px-4 border-0">
-                    <div className="flex items-center gap-2">
-                      <FileIcon className={`h-5 w-5 ${color}`} />
-                      <span className="truncate max-w-[250px] font-medium">{file.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="h-12 px-4">{formatFileSize(Number(file.size))}</TableCell>
-                  <TableCell className="h-12 px-4">{formatDateTime(file.createdAt)}</TableCell>
-                  <TableCell className="h-12 px-4">
-                    <div className="flex items-center gap-1">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8 hover:bg-muted"
-                        onClick={() => handlePreview({ name: file.name, objectName: file.objectName })}
-                      >
-                        <IconEye className="h-4 w-4" />
-                        <span className="sr-only">{t("filesTable.actions.preview")}</span>
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8 hover:bg-muted"
-                        onClick={() => onDownload(file.objectName, file.name)}
-                      >
-                        <IconDownload className="h-4 w-4" />
-                        <span className="sr-only">{t("filesTable.actions.download")}</span>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+            {allItems.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="text-4xl">📁</div>
+                    <p className="font-medium">No files or folders shared</p>
+                    <p className="text-sm">This share is empty</p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : (
+              allItems.map((item) => {
+                if (item.type === "folder") {
+                  return (
+                    <TableRow key={`folder-${item.id}`} className="hover:bg-muted/50 transition-colors border-0">
+                      <TableCell className="h-12 px-4 border-0">
+                        <div className="flex items-center gap-2">
+                          <IconFolder className="h-5 w-5 text-blue-600" />
+                          <span className="truncate max-w-[250px] font-medium">{item.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="h-12 px-4">
+                        {item.totalSize ? formatFileSize(Number(item.totalSize)) : "—"}
+                      </TableCell>
+                      <TableCell className="h-12 px-4">{formatDateTime(item.createdAt)}</TableCell>
+                      <TableCell className="h-12 px-4">
+                        <div className="flex items-center gap-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 hover:bg-muted"
+                            onClick={() => onDownload(`folder:${item.id}`, item.name)}
+                            title={t("filesTable.actions.download")}
+                          >
+                            <IconDownload className="h-4 w-4" />
+                            <span className="sr-only">Download folder</span>
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                } else {
+                  const { icon: FileIcon, color } = getFileIcon(item.name);
+                  return (
+                    <TableRow key={`file-${item.id}`} className="hover:bg-muted/50 transition-colors border-0">
+                      <TableCell className="h-12 px-4 border-0">
+                        <div className="flex items-center gap-2">
+                          <FileIcon className={`h-5 w-5 ${color}`} />
+                          <span className="truncate max-w-[250px] font-medium">{item.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="h-12 px-4">{formatFileSize(Number(item.size))}</TableCell>
+                      <TableCell className="h-12 px-4">{formatDateTime(item.createdAt)}</TableCell>
+                      <TableCell className="h-12 px-4">
+                        <div className="flex items-center gap-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 hover:bg-muted"
+                            onClick={() => handlePreview({ name: item.name, objectName: item.objectName })}
+                          >
+                            <IconEye className="h-4 w-4" />
+                            <span className="sr-only">{t("filesTable.actions.preview")}</span>
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 hover:bg-muted"
+                            onClick={() => onDownload(item.objectName, item.name)}
+                          >
+                            <IconDownload className="h-4 w-4" />
+                            <span className="sr-only">{t("filesTable.actions.download")}</span>
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                }
+              })
+            )}
           </TableBody>
         </Table>
       </div>
