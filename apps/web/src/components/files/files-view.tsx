@@ -10,10 +10,29 @@ interface File {
   id: string;
   name: string;
   description?: string;
+  extension: string;
   size: number;
   objectName: string;
+  userId: string;
+  folderId?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+interface Folder {
+  id: string;
+  name: string;
+  description?: string;
+  objectName: string;
+  parentId?: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+  totalSize?: string;
+  _count?: {
+    files: number;
+    children: number;
+  };
 }
 
 interface FilesViewProps {
@@ -25,9 +44,9 @@ interface FilesViewProps {
   onDownload: (objectName: string, fileName: string) => void;
   onShare: (file: File) => void;
   onDelete: (file: File) => void;
-  onBulkDelete?: (files: File[]) => void;
-  onBulkShare?: (files: File[]) => void;
-  onBulkDownload?: (files: File[]) => void;
+  onBulkDelete?: (files: File[], folders: Folder[]) => void;
+  onBulkShare?: (files: File[], folders: Folder[]) => void;
+  onBulkDownload?: (files: File[], folders: Folder[]) => void;
   setClearSelectionCallback?: (callback: () => void) => void;
 }
 
@@ -52,6 +71,7 @@ export function FilesView({
 
   const commonProps = {
     files,
+    folders: [],
     onPreview,
     onRename,
     onUpdateName,
@@ -59,9 +79,9 @@ export function FilesView({
     onDownload,
     onShare,
     onDelete,
-    onBulkDelete,
-    onBulkShare,
-    onBulkDownload,
+    onBulkDelete: (files: File[], folders: Folder[]) => onBulkDelete?.(files, folders),
+    onBulkShare: (files: File[], folders: Folder[]) => onBulkShare?.(files, folders),
+    onBulkDownload: (files: File[], folders: Folder[]) => onBulkDownload?.(files, folders),
     setClearSelectionCallback,
   };
 
