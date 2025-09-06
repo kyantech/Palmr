@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { addFiles, createShare, createShareAlias } from "@/http/endpoints";
+import { createShare, createShareAlias, listFiles, listFolders } from "@/http/endpoints";
 import { customNanoid } from "@/lib/utils";
 
 interface File {
@@ -24,16 +24,28 @@ interface File {
   updatedAt: string;
 }
 
-interface ShareFileModalProps {
+interface Folder {
+  id: string;
+  name: string;
+  description?: string;
+  objectName: string;
+  parentId?: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ShareItemModalProps {
   isOpen: boolean;
-  file: File | null;
+  file?: File | null;
+  folder?: Folder | null;
   onClose: () => void;
   onSuccess: () => void;
 }
 
 const generateCustomId = () => customNanoid(10, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
 
-export function ShareFileModal({ isOpen, file, onClose, onSuccess }: ShareFileModalProps) {
+export function ShareItemModal({ isOpen, file, folder, onClose, onSuccess }: ShareItemModalProps) {
   const t = useTranslations();
   const [step, setStep] = useState<"create" | "link">("create");
   const [shareId, setShareId] = useState<string | null>(null);
@@ -49,10 +61,14 @@ export function ShareFileModal({ isOpen, file, onClose, onSuccess }: ShareFileMo
   const [generatedLink, setGeneratedLink] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const item = file || folder;
+  const itemType = file ? "file" : "folder";
+
   useEffect(() => {
-    if (isOpen && file) {
+    if (isOpen && item) {
+      const baseName = file ? file.name.split(".")[0] : folder!.name;
       setFormData({
-        name: `${file.name.split(".")[0]}`,
+        name: baseName,
         description: "",
         password: "",
         expiresAt: "",
@@ -64,26 +80,74 @@ export function ShareFileModal({ isOpen, file, onClose, onSuccess }: ShareFileMo
       setShareId(null);
       setGeneratedLink("");
     }
-  }, [isOpen, file]);
+  }, [isOpen, item, file, folder]);
+
+  // Recursively get all files and folders within a folder
+  const getAllFolderContents = async (folderId: string): Promise<{ files: string[]; folders: string[] }> => {
+    try {
+      // Get all files and folders
+      const [filesResponse, foldersResponse] = await Promise.all([listFiles(), listFolders()]);
+
+      const allFiles = filesResponse.data.files || [];
+      const allFolders = foldersResponse.data.folders || [];
+
+      // Find all files and subfolders that belong to this folder (recursively)
+      const collectContents = (parentId: string): { files: string[]; folders: string[] } => {
+        const folderFiles = allFiles.filter((f: any) => f.folderId === parentId).map((f: any) => f.id);
+
+        const subFolders = allFolders.filter((f: any) => f.parentId === parentId);
+        const subFolderIds = subFolders.map((f: any) => f.id);
+
+        // Recursively get contents of subfolders
+        let allSubFiles: string[] = [...folderFiles];
+        let allSubFolders: string[] = [...subFolderIds];
+
+        subFolders.forEach((subFolder: any) => {
+          const subContents = collectContents(subFolder.id);
+          allSubFiles = [...allSubFiles, ...subContents.files];
+          allSubFolders = [...allSubFolders, ...subContents.folders];
+        });
+
+        return { files: allSubFiles, folders: allSubFolders };
+      };
+
+      return collectContents(folderId);
+    } catch (error) {
+      console.error("Error getting folder contents:", error);
+      return { files: [], folders: [] };
+    }
+  };
 
   const handleCreateShare = async () => {
-    if (!file) return;
+    if (!item) return;
 
     try {
       setIsLoading(true);
+
+      let filesToShare: string[] = [];
+      let foldersToShare: string[] = [];
+
+      if (file) {
+        filesToShare = [file.id];
+      } else if (folder) {
+        // Get all contents of the folder recursively
+        const folderContents = await getAllFolderContents(folder.id);
+        filesToShare = folderContents.files;
+        foldersToShare = [folder.id, ...folderContents.folders];
+      }
+
       const shareResponse = await createShare({
         name: formData.name,
         description: formData.description || undefined,
         password: formData.isPasswordProtected ? formData.password : undefined,
         expiration: formData.expiresAt ? new Date(formData.expiresAt).toISOString() : undefined,
         maxViews: formData.maxViews ? parseInt(formData.maxViews) : undefined,
-        files: [],
+        files: filesToShare,
+        folders: foldersToShare,
       });
 
       const newShareId = shareResponse.data.share.id;
       setShareId(newShareId);
-
-      await addFiles(newShareId, { files: [file.id] });
 
       toast.success(t("createShare.success"));
       setStep("link");
@@ -125,10 +189,10 @@ export function ShareFileModal({ isOpen, file, onClose, onSuccess }: ShareFileMo
   };
 
   const downloadQRCode = () => {
-    const canvas = document.getElementById("share-file-qr-code") as HTMLCanvasElement;
+    const canvas = document.getElementById("share-item-qr-code") as HTMLCanvasElement;
     if (canvas) {
       const link = document.createElement("a");
-      link.download = "share-file-qr-code.png";
+      link.download = `share-${itemType}-qr-code.png`;
       link.href = canvas.toDataURL("image/png");
       document.body.appendChild(link);
       link.click();
@@ -166,12 +230,12 @@ export function ShareFileModal({ isOpen, file, onClose, onSuccess }: ShareFileMo
             {step === "create" ? (
               <>
                 <IconShare size={20} />
-                {t("shareFile.title")}
+                {itemType === "file" ? t("shareActions.fileTitle") : t("shareActions.folderTitle")}
               </>
             ) : (
               <>
                 <IconLink size={20} />
-                {t("shareFile.linkTitle")}
+                {t("shareActions.linkTitle")}
               </>
             )}
           </DialogTitle>
@@ -180,30 +244,30 @@ export function ShareFileModal({ isOpen, file, onClose, onSuccess }: ShareFileMo
         {step === "create" && (
           <div className="flex flex-col gap-4">
             <div className="space-y-2">
-              <Label>{t("shareFile.nameLabel")}</Label>
+              <Label>{t("createShare.nameLabel")}</Label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder={t("shareFile.namePlaceholder")}
+                placeholder={t("createShare.namePlaceholder")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>{t("shareFile.descriptionLabel")}</Label>
+              <Label>{t("createShare.descriptionLabel")}</Label>
               <Input
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder={t("shareFile.descriptionPlaceholder")}
+                placeholder={t("createShare.descriptionPlaceholder")}
               />
             </div>
 
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <IconCalendar size={16} />
-                {t("shareFile.expirationLabel")}
+                {t("createShare.expirationLabel")}
               </Label>
               <Input
-                placeholder={t("shareFile.expirationPlaceholder")}
+                placeholder={t("createShare.expirationPlaceholder")}
                 type="datetime-local"
                 value={formData.expiresAt}
                 onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
@@ -213,11 +277,11 @@ export function ShareFileModal({ isOpen, file, onClose, onSuccess }: ShareFileMo
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <IconEye size={16} />
-                {t("shareFile.maxViewsLabel")}
+                {t("createShare.maxViewsLabel")}
               </Label>
               <Input
                 min="1"
-                placeholder={t("shareFile.maxViewsPlaceholder")}
+                placeholder={t("createShare.maxViewsPlaceholder")}
                 type="number"
                 value={formData.maxViews}
                 onChange={(e) => setFormData({ ...formData, maxViews: e.target.value })}
@@ -238,18 +302,18 @@ export function ShareFileModal({ isOpen, file, onClose, onSuccess }: ShareFileMo
               />
               <Label htmlFor="password-protection" className="flex items-center gap-2">
                 <IconLock size={16} />
-                {t("shareFile.passwordProtection")}
+                {t("createShare.passwordProtection")}
               </Label>
             </div>
 
             {formData.isPasswordProtected && (
               <div className="space-y-2">
-                <Label>{t("shareFile.passwordLabel")}</Label>
+                <Label>{t("createShare.passwordLabel")}</Label>
                 <Input
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  placeholder={t("shareFile.passwordPlaceholder")}
+                  placeholder={t("createShare.passwordLabel")}
                 />
               </div>
             )}
@@ -260,11 +324,15 @@ export function ShareFileModal({ isOpen, file, onClose, onSuccess }: ShareFileMo
           <div className="space-y-4">
             {!generatedLink ? (
               <>
-                <p className="text-sm text-muted-foreground">{t("shareFile.linkDescription")}</p>
+                <p className="text-sm text-muted-foreground">
+                  {itemType === "file"
+                    ? t("shareActions.linkDescriptionFile")
+                    : t("shareActions.linkDescriptionFolder")}
+                </p>
                 <div className="space-y-2">
-                  <Label>{t("shareFile.aliasLabel")}</Label>
+                  <Label>{t("shareActions.aliasLabel")}</Label>
                   <Input
-                    placeholder={t("shareFile.aliasPlaceholder")}
+                    placeholder={t("shareActions.aliasPlaceholder")}
                     value={alias}
                     onChange={(e) => setAlias(e.target.value)}
                   />
@@ -276,7 +344,7 @@ export function ShareFileModal({ isOpen, file, onClose, onSuccess }: ShareFileMo
                   <div className="p-4 bg-white rounded-lg">
                     <svg style={{ display: "none" }} /> {/* For SSR safety */}
                     <QRCode
-                      id="share-file-qr-code"
+                      id="share-item-qr-code"
                       value={generatedLink}
                       size={250}
                       level="H"
@@ -285,10 +353,10 @@ export function ShareFileModal({ isOpen, file, onClose, onSuccess }: ShareFileMo
                     />
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground">{t("shareFile.linkReady")}</p>
+                <p className="text-sm text-muted-foreground">{t("shareActions.linkReady")}</p>
                 <div className="flex gap-2">
                   <Input readOnly value={generatedLink} className="flex-1" />
-                  <Button size="icon" variant="outline" onClick={handleCopyLink} title={t("shareFile.copyLink")}>
+                  <Button size="icon" variant="outline" onClick={handleCopyLink} title={t("shareActions.copyLink")}>
                     <IconCopy className="h-4 w-4" />
                   </Button>
                 </div>
@@ -304,7 +372,7 @@ export function ShareFileModal({ isOpen, file, onClose, onSuccess }: ShareFileMo
                 {t("common.cancel")}
               </Button>
               <Button disabled={isLoading || !formData.name.trim()} onClick={handleCreateShare}>
-                {isLoading ? <div className="animate-spin">⠋</div> : t("shareFile.createShare")}
+                {isLoading ? <div className="animate-spin">⠋</div> : t("createShare.create")}
               </Button>
             </>
           )}
@@ -315,7 +383,7 @@ export function ShareFileModal({ isOpen, file, onClose, onSuccess }: ShareFileMo
                 {t("common.back")}
               </Button>
               <Button disabled={!alias || isLoading} onClick={handleGenerateLink}>
-                {isLoading ? <div className="animate-spin">⠋</div> : t("shareFile.generateLink")}
+                {isLoading ? <div className="animate-spin">⠋</div> : t("shareActions.generateLink")}
               </Button>
             </>
           )}

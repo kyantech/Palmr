@@ -1,7 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { IconCalendar, IconCopy, IconDownload, IconEye, IconLink, IconLock, IconShare } from "@tabler/icons-react";
+import {
+  IconCalendar,
+  IconCopy,
+  IconDownload,
+  IconEye,
+  IconFolder,
+  IconLink,
+  IconLock,
+  IconShare,
+} from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 import QRCode from "react-qr-code";
 import { toast } from "sonner";
@@ -12,8 +21,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
-import { addFiles, createShare, createShareAlias } from "@/http/endpoints";
+import { createShare, createShareAlias, listFiles, listFolders } from "@/http/endpoints";
 import { customNanoid } from "@/lib/utils";
+import { getFileIcon } from "@/utils/file-icons";
 
 interface BulkFile {
   id: string;
@@ -25,8 +35,25 @@ interface BulkFile {
   updatedAt: string;
 }
 
-interface ShareMultipleFilesModalProps {
+interface BulkFolder {
+  id: string;
+  name: string;
+  description?: string;
+  objectName: string;
+  parentId?: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+  totalSize?: string;
+  _count?: {
+    files: number;
+    children: number;
+  };
+}
+
+interface ShareMultipleItemsModalProps {
   files: BulkFile[] | null;
+  folders: BulkFolder[] | null;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -34,7 +61,7 @@ interface ShareMultipleFilesModalProps {
 
 const generateCustomId = () => customNanoid(10, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
 
-export function ShareMultipleFilesModal({ files, isOpen, onClose, onSuccess }: ShareMultipleFilesModalProps) {
+export function ShareMultipleItemsModal({ files, folders, isOpen, onClose, onSuccess }: ShareMultipleItemsModalProps) {
   const t = useTranslations();
   const [step, setStep] = useState<"create" | "link">("create");
   const [shareId, setShareId] = useState<string | null>(null);
@@ -51,9 +78,27 @@ export function ShareMultipleFilesModal({ files, isOpen, onClose, onSuccess }: S
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (isOpen && files && files.length > 0) {
+    if (isOpen && ((files && files.length > 0) || (folders && folders.length > 0))) {
+      const fileCount = files ? files.length : 0;
+      const folderCount = folders ? folders.length : 0;
+      const totalCount = fileCount + folderCount;
+
+      let defaultName = "";
+      if (totalCount === 1) {
+        if (fileCount === 1 && files) {
+          defaultName = files[0].name.split(".")[0];
+        } else if (folderCount === 1 && folders) {
+          defaultName = folders[0].name;
+        }
+      } else {
+        const items = [];
+        if (fileCount > 0) items.push(`${fileCount} files`);
+        if (folderCount > 0) items.push(`${folderCount} folders`);
+        defaultName = `${items.join(" and ")} shared`;
+      }
+
       setFormData({
-        name: files.length === 1 ? `${files[0].name.split(".")[0]}` : `${files.length} arquivos compartilhados`,
+        name: defaultName,
         description: "",
         password: "",
         expiresAt: "",
@@ -65,26 +110,77 @@ export function ShareMultipleFilesModal({ files, isOpen, onClose, onSuccess }: S
       setShareId(null);
       setGeneratedLink("");
     }
-  }, [isOpen, files]);
+  }, [isOpen, files, folders]);
+
+  // Recursively get all files and folders within a folder
+  const getAllFolderContents = async (folderId: string): Promise<{ files: string[]; folders: string[] }> => {
+    try {
+      // Get all files and folders
+      const [filesResponse, foldersResponse] = await Promise.all([listFiles(), listFolders()]);
+
+      const allFiles = filesResponse.data.files || [];
+      const allFolders = foldersResponse.data.folders || [];
+
+      // Find all files and subfolders that belong to this folder (recursively)
+      const collectContents = (parentId: string): { files: string[]; folders: string[] } => {
+        const folderFiles = allFiles.filter((f: any) => f.folderId === parentId).map((f: any) => f.id);
+
+        const subFolders = allFolders.filter((f: any) => f.parentId === parentId);
+        const subFolderIds = subFolders.map((f: any) => f.id);
+
+        // Recursively get contents of subfolders
+        let allSubFiles: string[] = [...folderFiles];
+        let allSubFolders: string[] = [...subFolderIds];
+
+        subFolders.forEach((subFolder: any) => {
+          const subContents = collectContents(subFolder.id);
+          allSubFiles = [...allSubFiles, ...subContents.files];
+          allSubFolders = [...allSubFolders, ...subContents.folders];
+        });
+
+        return { files: allSubFiles, folders: allSubFolders };
+      };
+
+      return collectContents(folderId);
+    } catch (error) {
+      console.error("Error getting folder contents:", error);
+      return { files: [], folders: [] };
+    }
+  };
 
   const handleCreateShare = async () => {
-    if (!files || files.length === 0) return;
+    const fileCount = files ? files.length : 0;
+    const folderCount = folders ? folders.length : 0;
+
+    if (fileCount === 0 && folderCount === 0) return;
 
     try {
       setIsLoading(true);
+
+      let allFilesToShare: string[] = files ? files.map((f) => f.id) : [];
+      let allFoldersToShare: string[] = folders ? folders.map((f) => f.id) : [];
+
+      // For each folder, get all its contents recursively
+      if (folders && folders.length > 0) {
+        for (const folder of folders) {
+          const folderContents = await getAllFolderContents(folder.id);
+          allFilesToShare = [...allFilesToShare, ...folderContents.files];
+          allFoldersToShare = [...allFoldersToShare, ...folderContents.folders];
+        }
+      }
+
       const shareResponse = await createShare({
         name: formData.name,
         description: formData.description || undefined,
         password: formData.isPasswordProtected ? formData.password : undefined,
         expiration: formData.expiresAt ? new Date(formData.expiresAt).toISOString() : undefined,
         maxViews: formData.maxViews ? parseInt(formData.maxViews) : undefined,
-        files: [],
+        files: allFilesToShare,
+        folders: allFoldersToShare,
       });
 
       const newShareId = shareResponse.data.share.id;
       setShareId(newShareId);
-
-      await addFiles(newShareId, { files: files.map((f) => f.id) });
 
       toast.success(t("createShare.success"));
       setStep("link");
@@ -151,9 +247,34 @@ export function ShareMultipleFilesModal({ files, isOpen, onClose, onSuccess }: S
     handleClose();
   };
 
-  if (!files) return null;
+  if (!files && !folders) return null;
 
-  const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+  const filesList = files || [];
+  const foldersList = folders || [];
+  const allItems: BulkItem[] = [
+    ...filesList.map((file) => ({
+      id: file.id,
+      name: file.name,
+      description: file.description,
+      size: file.size,
+      type: "file" as const,
+      createdAt: file.createdAt,
+      updatedAt: file.updatedAt,
+    })),
+    ...foldersList.map((folder) => ({
+      id: folder.id,
+      name: folder.name,
+      description: folder.description,
+      size: folder.totalSize ? parseInt(folder.totalSize) : undefined,
+      type: "folder" as const,
+      createdAt: folder.createdAt,
+      updatedAt: folder.updatedAt,
+    })),
+  ];
+
+  const totalSize =
+    filesList.reduce((sum, file) => sum + file.size, 0) +
+    foldersList.reduce((sum, folder) => sum + (folder.totalSize ? parseInt(folder.totalSize) : 0), 0);
   const formatFileSize = (bytes: number) => {
     const sizes = ["B", "KB", "MB", "GB"];
     if (bytes === 0) return "0 B";
@@ -174,7 +295,7 @@ export function ShareMultipleFilesModal({ files, isOpen, onClose, onSuccess }: S
             ) : (
               <>
                 <IconLink size={20} />
-                {t("shareFile.linkTitle")}
+                {t("shareActions.linkTitle")}
               </>
             )}
           </DialogTitle>
@@ -205,10 +326,10 @@ export function ShareMultipleFilesModal({ files, isOpen, onClose, onSuccess }: S
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <IconCalendar size={16} />
-                  {t("shareFile.expirationLabel")}
+                  {t("createShare.expirationLabel")}
                 </Label>
                 <Input
-                  placeholder={t("shareFile.expirationPlaceholder")}
+                  placeholder={t("createShare.expirationPlaceholder")}
                   type="datetime-local"
                   value={formData.expiresAt}
                   onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
@@ -218,11 +339,11 @@ export function ShareMultipleFilesModal({ files, isOpen, onClose, onSuccess }: S
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <IconEye size={16} />
-                  {t("shareFile.maxViewsLabel")}
+                  {t("createShare.maxViewsLabel")}
                 </Label>
                 <Input
                   min="1"
-                  placeholder={t("shareFile.maxViewsPlaceholder")}
+                  placeholder={t("createShare.maxViewsPlaceholder")}
                   type="number"
                   value={formData.maxViews}
                   onChange={(e) => setFormData({ ...formData, maxViews: e.target.value })}
@@ -243,38 +364,48 @@ export function ShareMultipleFilesModal({ files, isOpen, onClose, onSuccess }: S
                 />
                 <Label htmlFor="password-protection" className="flex items-center gap-2">
                   <IconLock size={16} />
-                  {t("shareFile.passwordProtection")}
+                  {t("createShare.passwordProtection")}
                 </Label>
               </div>
 
               {formData.isPasswordProtected && (
                 <div className="space-y-2">
-                  <Label>{t("shareFile.passwordLabel")}</Label>
+                  <Label>{t("createShare.passwordLabel")}</Label>
                   <Input
                     type="password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    placeholder={t("shareFile.passwordPlaceholder")}
+                    placeholder={t("createShare.passwordLabel")}
                   />
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label>
-                  {t("shareMultipleFiles.filesToShare")} ({files.length} {t("shareMultipleFiles.files")})
-                </Label>
+                <Label>{t("shareMultipleFiles.itemsToShare", { count: allItems.length })}</Label>
                 <ScrollArea className="h-32 w-full rounded-md border p-2 bg-muted/30">
                   <div className="space-y-1">
-                    {files.map((file) => (
-                      <div key={file.id} className="flex justify-between items-center text-sm">
-                        <span className="truncate flex-1">{file.name}</span>
-                        <span className="text-muted-foreground ml-2">{formatFileSize(file.size)}</span>
-                      </div>
-                    ))}
+                    {allItems.map((item) => {
+                      const isFolder = item.type === "folder";
+                      const { icon: FileIcon, color } = isFolder
+                        ? { icon: IconFolder, color: "text-primary" }
+                        : getFileIcon(item.name);
+
+                      return (
+                        <div key={item.id} className="flex justify-between items-center text-sm">
+                          <div className="flex items-center gap-2 truncate flex-1">
+                            <FileIcon className={`h-4 w-4 ${color} flex-shrink-0`} />
+                            <span className="truncate">{item.name}</span>
+                          </div>
+                          <span className="text-muted-foreground ml-2">
+                            {item.size ? formatFileSize(item.size) : "—"}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </ScrollArea>
                 <p className="text-xs text-muted-foreground">
-                  {t("shareMultipleFiles.totalSize")}: {formatFileSize(totalSize)}
+                  Total size: {formatFileSize(totalSize)} ({filesList.length} files, {foldersList.length} folders)
                 </p>
               </div>
             </div>
@@ -284,11 +415,11 @@ export function ShareMultipleFilesModal({ files, isOpen, onClose, onSuccess }: S
             <div className="space-y-4">
               {!generatedLink ? (
                 <>
-                  <p className="text-sm text-muted-foreground">{t("shareFile.linkDescription")}</p>
+                  <p className="text-sm text-muted-foreground">{t("shareActions.linkDescriptionFile")}</p>
                   <div className="space-y-2">
-                    <Label>{t("shareFile.aliasLabel")}</Label>
+                    <Label>{t("shareActions.aliasLabel")}</Label>
                     <Input
-                      placeholder={t("shareFile.aliasPlaceholder")}
+                      placeholder={t("shareActions.aliasPlaceholder")}
                       value={alias}
                       onChange={(e) => setAlias(e.target.value)}
                     />
@@ -309,10 +440,10 @@ export function ShareMultipleFilesModal({ files, isOpen, onClose, onSuccess }: S
                       />
                     </div>
                   </div>
-                  <p className="text-sm text-muted-foreground">{t("shareFile.linkReady")}</p>
+                  <p className="text-sm text-muted-foreground">{t("shareActions.linkReady")}</p>
                   <div className="flex gap-2">
                     <Input readOnly value={generatedLink} className="flex-1" />
-                    <Button variant="outline" size="icon" onClick={handleCopyLink} title={t("shareFile.copyLink")}>
+                    <Button variant="outline" size="icon" onClick={handleCopyLink} title={t("shareActions.copyLink")}>
                       <IconCopy className="h-4 w-4" />
                     </Button>
                   </div>
@@ -345,7 +476,7 @@ export function ShareMultipleFilesModal({ files, isOpen, onClose, onSuccess }: S
                 {t("common.back")}
               </Button>
               <Button disabled={!alias || isLoading} onClick={handleGenerateLink}>
-                {isLoading ? <div className="animate-spin">⠋</div> : t("shareFile.generateLink")}
+                {isLoading ? <div className="animate-spin">⠋</div> : t("shareActions.generateLink")}
               </Button>
             </>
           )}
