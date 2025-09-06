@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 
 import { prisma } from "../../shared/prisma";
 import { EmailService } from "../email/service";
+import { FolderService } from "../folder/service";
 import { UserService } from "../user/service";
 import { CreateShareInput, ShareResponseSchema, UpdateShareInput } from "./dto";
 import { IShareRepository, PrismaShareRepository } from "./repository";
@@ -11,8 +12,9 @@ export class ShareService {
 
   private emailService = new EmailService();
   private userService = new UserService();
+  private folderService = new FolderService();
 
-  private formatShareResponse(share: any) {
+  private async formatShareResponse(share: any) {
     return {
       ...share,
       createdAt: share.createdAt.toISOString(),
@@ -36,6 +38,20 @@ export class ShareService {
           createdAt: file.createdAt.toISOString(),
           updatedAt: file.updatedAt.toISOString(),
         })) || [],
+      folders:
+        share.folders && share.folders.length > 0
+          ? await Promise.all(
+              share.folders.map(async (folder: any) => {
+                const totalSize = await this.folderService.calculateFolderSize(folder.id, folder.userId);
+                return {
+                  ...folder,
+                  totalSize: totalSize.toString(),
+                  createdAt: folder.createdAt.toISOString(),
+                  updatedAt: folder.updatedAt.toISOString(),
+                };
+              })
+            )
+          : [],
       recipients:
         share.recipients?.map((recipient: any) => ({
           ...recipient,
@@ -46,7 +62,40 @@ export class ShareService {
   }
 
   async createShare(data: CreateShareInput, userId: string) {
-    const { password, maxViews, ...shareData } = data;
+    const { password, maxViews, files, folders, ...shareData } = data;
+
+    // Validate files belong to user if provided
+    if (files && files.length > 0) {
+      const existingFiles = await prisma.file.findMany({
+        where: {
+          id: { in: files },
+          userId: userId,
+        },
+      });
+      const notFoundFiles = files.filter((id) => !existingFiles.some((file) => file.id === id));
+      if (notFoundFiles.length > 0) {
+        throw new Error(`Files not found or access denied: ${notFoundFiles.join(", ")}`);
+      }
+    }
+
+    // Validate folders belong to user if provided
+    if (folders && folders.length > 0) {
+      const existingFolders = await prisma.folder.findMany({
+        where: {
+          id: { in: folders },
+          userId: userId,
+        },
+      });
+      const notFoundFolders = folders.filter((id) => !existingFolders.some((folder) => folder.id === id));
+      if (notFoundFolders.length > 0) {
+        throw new Error(`Folders not found or access denied: ${notFoundFolders.join(", ")}`);
+      }
+    }
+
+    // Require at least one file or folder
+    if ((!files || files.length === 0) && (!folders || folders.length === 0)) {
+      throw new Error("At least one file or folder must be selected to create a share");
+    }
 
     const security = await prisma.shareSecurity.create({
       data: {
@@ -57,12 +106,14 @@ export class ShareService {
 
     const share = await this.shareRepository.createShare({
       ...shareData,
+      files,
+      folders,
       securityId: security.id,
       creatorId: userId,
     });
 
     const shareWithRelations = await this.shareRepository.findShareById(share.id);
-    return ShareResponseSchema.parse(this.formatShareResponse(shareWithRelations));
+    return ShareResponseSchema.parse(await this.formatShareResponse(shareWithRelations));
   }
 
   async getShare(shareId: string, password?: string, userId?: string) {
@@ -73,7 +124,7 @@ export class ShareService {
     }
 
     if (userId && share.creatorId === userId) {
-      return ShareResponseSchema.parse(this.formatShareResponse(share));
+      return ShareResponseSchema.parse(await this.formatShareResponse(share));
     }
 
     if (share.expiration && new Date() > new Date(share.expiration)) {
@@ -98,7 +149,7 @@ export class ShareService {
     await this.shareRepository.incrementViews(shareId);
 
     const updatedShare = await this.shareRepository.findShareById(shareId);
-    return ShareResponseSchema.parse(this.formatShareResponse(updatedShare));
+    return ShareResponseSchema.parse(await this.formatShareResponse(updatedShare));
   }
 
   async updateShare(shareId: string, data: Omit<UpdateShareInput, "id">, userId: string) {
@@ -136,7 +187,7 @@ export class ShareService {
     });
     const shareWithRelations = await this.shareRepository.findShareById(shareId);
 
-    return this.formatShareResponse(shareWithRelations);
+    return await this.formatShareResponse(shareWithRelations);
   }
 
   async deleteShare(id: string) {
@@ -172,12 +223,12 @@ export class ShareService {
       return deletedShare;
     });
 
-    return ShareResponseSchema.parse(this.formatShareResponse(deleted));
+    return ShareResponseSchema.parse(await this.formatShareResponse(deleted));
   }
 
   async listUserShares(userId: string) {
     const shares = await this.shareRepository.findSharesByUserId(userId);
-    return shares.map((share) => this.formatShareResponse(share));
+    return await Promise.all(shares.map(async (share) => await this.formatShareResponse(share)));
   }
 
   async updateSharePassword(shareId: string, userId: string, password: string | null) {
@@ -195,10 +246,10 @@ export class ShareService {
     });
 
     const updated = await this.shareRepository.findShareById(shareId);
-    return ShareResponseSchema.parse(this.formatShareResponse(updated));
+    return ShareResponseSchema.parse(await this.formatShareResponse(updated));
   }
 
-  async addFilesToShare(shareId: string, userId: string, fileIds: string[]) {
+  async addItemsToShare(shareId: string, userId: string, fileIds: string[], folderIds: string[]) {
     const share = await this.shareRepository.findShareById(shareId);
     if (!share) {
       throw new Error("Share not found");
@@ -208,19 +259,35 @@ export class ShareService {
       throw new Error("Unauthorized to update this share");
     }
 
-    const existingFiles = await this.shareRepository.findFilesByIds(fileIds);
-    const notFoundFiles = fileIds.filter((id) => !existingFiles.some((file) => file.id === id));
+    // Validate files if provided
+    if (fileIds.length > 0) {
+      const existingFiles = await this.shareRepository.findFilesByIds(fileIds);
+      const notFoundFiles = fileIds.filter((id) => !existingFiles.some((file) => file.id === id));
 
-    if (notFoundFiles.length > 0) {
-      throw new Error(`Files not found: ${notFoundFiles.join(", ")}`);
+      if (notFoundFiles.length > 0) {
+        throw new Error(`Files not found: ${notFoundFiles.join(", ")}`);
+      }
+
+      await this.shareRepository.addFilesToShare(shareId, fileIds);
     }
 
-    await this.shareRepository.addFilesToShare(shareId, fileIds);
+    // Validate folders if provided
+    if (folderIds.length > 0) {
+      const existingFolders = await this.shareRepository.findFoldersByIds(folderIds);
+      const notFoundFolders = folderIds.filter((id) => !existingFolders.some((folder) => folder.id === id));
+
+      if (notFoundFolders.length > 0) {
+        throw new Error(`Folders not found: ${notFoundFolders.join(", ")}`);
+      }
+
+      await this.shareRepository.addFoldersToShare(shareId, folderIds);
+    }
+
     const updated = await this.shareRepository.findShareById(shareId);
-    return ShareResponseSchema.parse(this.formatShareResponse(updated));
+    return ShareResponseSchema.parse(await this.formatShareResponse(updated));
   }
 
-  async removeFilesFromShare(shareId: string, userId: string, fileIds: string[]) {
+  async removeItemsFromShare(shareId: string, userId: string, fileIds: string[], folderIds: string[]) {
     const share = await this.shareRepository.findShareById(shareId);
     if (!share) {
       throw new Error("Share not found");
@@ -230,9 +297,18 @@ export class ShareService {
       throw new Error("Unauthorized to update this share");
     }
 
-    await this.shareRepository.removeFilesFromShare(shareId, fileIds);
+    // Remove files if provided
+    if (fileIds.length > 0) {
+      await this.shareRepository.removeFilesFromShare(shareId, fileIds);
+    }
+
+    // Remove folders if provided
+    if (folderIds.length > 0) {
+      await this.shareRepository.removeFoldersFromShare(shareId, folderIds);
+    }
+
     const updated = await this.shareRepository.findShareById(shareId);
-    return ShareResponseSchema.parse(this.formatShareResponse(updated));
+    return ShareResponseSchema.parse(await this.formatShareResponse(updated));
   }
 
   async findShareById(id: string) {
@@ -255,7 +331,7 @@ export class ShareService {
 
     await this.shareRepository.addRecipients(shareId, emails);
     const updated = await this.shareRepository.findShareById(shareId);
-    return ShareResponseSchema.parse(this.formatShareResponse(updated));
+    return ShareResponseSchema.parse(await this.formatShareResponse(updated));
   }
 
   async removeRecipients(shareId: string, userId: string, emails: string[]) {
@@ -270,7 +346,7 @@ export class ShareService {
 
     await this.shareRepository.removeRecipients(shareId, emails);
     const updated = await this.shareRepository.findShareById(shareId);
-    return ShareResponseSchema.parse(this.formatShareResponse(updated));
+    return ShareResponseSchema.parse(await this.formatShareResponse(updated));
   }
 
   async createOrUpdateAlias(shareId: string, alias: string, userId: string) {
