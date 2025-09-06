@@ -1,6 +1,8 @@
+// Direct exports for backward compatibility
 export * from "./auth";
 export * from "./users";
 export * from "./files";
+export * from "./folders";
 export * from "./shares";
 export * from "./reverse-shares";
 export * from "./config";

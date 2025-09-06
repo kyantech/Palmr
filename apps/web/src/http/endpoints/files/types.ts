@@ -8,6 +8,7 @@ export interface FileItem {
   size: string;
   objectName: string;
   userId: string;
+  folderId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -18,6 +19,7 @@ export interface FileOperationRequest {
   extension: string;
   size: number;
   objectName: string;
+  folderId?: string;
 }
 
 export interface FileOperationResponse {
@@ -53,6 +55,10 @@ export interface UpdateFileBody {
   description?: string | null;
 }
 
+export interface MoveFileBody {
+  folderId: string | null;
+}
+
 export interface GetPresignedUrlParams {
   filename: string;
   extension: string;
@@ -60,6 +66,7 @@ export interface GetPresignedUrlParams {
 
 export type RegisterFile201 = FileOperationResponse;
 export type UpdateFile200 = FileOperationResponse;
+export type MoveFile200 = FileOperationResponse;
 export type DeleteFile200 = MessageOnlyResponse;
 export type CheckFile201 = MessageOnlyResponse;
 export type GetPresignedUrl200 = PresignedUrlResponse;
@@ -72,3 +79,4 @@ export type ListFilesResult = AxiosResponse<ListFiles200>;
 export type GetDownloadUrlResult = AxiosResponse<GetDownloadUrl200>;
 export type DeleteFileResult = AxiosResponse<DeleteFile200>;
 export type UpdateFileResult = AxiosResponse<UpdateFile200>;
+export type MoveFileResult = AxiosResponse<MoveFile200>;
