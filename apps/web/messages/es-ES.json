@@ -410,7 +410,6 @@
     "folderDescription": "Descripción",
     "folderDescriptionPlaceholder": "Ingrese descripción de carpeta (opcional)",
     "createFolder": "Crear nueva carpeta",
-    "createFolderButton": "Crear carpeta",
     "renameFolder": "Renombrar carpeta",
     "moveFolder": "Mover carpeta",
     "shareFolder": "Compartir carpeta",
@@ -1626,8 +1625,7 @@
       "download": "Descargar Seleccionados"
     },
     "selectAll": "Seleccionar todo",
-    "selectShare": "Seleccionar compartido {shareName}",
-    "folderCount": "carpetas"
+    "selectShare": "Seleccionar compartido {shareName}"
   },
   "storageUsage": {
     "title": "Uso de almacenamiento",

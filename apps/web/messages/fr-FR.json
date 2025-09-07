@@ -410,7 +410,6 @@
     "folderDescription": "Description",
     "folderDescriptionPlaceholder": "Entrez la description du dossier (facultatif)",
     "createFolder": "Créer un nouveau dossier",
-    "createFolderButton": "Créer un dossier",
     "renameFolder": "Renommer le dossier",
     "moveFolder": "Déplacer le dossier",
     "shareFolder": "Partager le dossier",

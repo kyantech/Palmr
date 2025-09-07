@@ -410,7 +410,6 @@
     "folderDescription": "Описание",
     "folderDescriptionPlaceholder": "Введите описание папки (необязательно)",
     "createFolder": "Создать новую папку",
-    "createFolderButton": "Создать папку",
     "renameFolder": "Переименовать папку",
     "moveFolder": "Переместить папку",
     "shareFolder": "Поделиться папкой",

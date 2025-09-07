@@ -410,7 +410,6 @@
     "folderDescription": "설명",
     "folderDescriptionPlaceholder": "폴더 설명 입력 (선택사항)",
     "createFolder": "새 폴더 만들기",
-    "createFolderButton": "폴더 만들기",
     "renameFolder": "폴더 이름 변경",
     "moveFolder": "폴더 이동",
     "shareFolder": "폴더 공유",

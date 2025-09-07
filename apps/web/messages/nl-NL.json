@@ -410,7 +410,6 @@
     "folderDescription": "Beschrijving",
     "folderDescriptionPlaceholder": "Voer mapbeschrijving in (optioneel)",
     "createFolder": "Nieuwe map maken",
-    "createFolderButton": "Map maken",
     "renameFolder": "Map hernoemen",
     "moveFolder": "Map verplaatsen",
     "shareFolder": "Map delen",

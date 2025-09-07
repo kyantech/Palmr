@@ -410,7 +410,6 @@
     "folderDescription": "描述",
     "folderDescriptionPlaceholder": "输入文件夹描述（可选）",
     "createFolder": "创建新文件夹",
-    "createFolderButton": "创建文件夹",
     "renameFolder": "重命名文件夹",
     "moveFolder": "移动文件夹",
     "shareFolder": "分享文件夹",

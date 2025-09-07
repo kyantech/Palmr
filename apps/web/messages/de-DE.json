@@ -410,7 +410,6 @@
     "folderDescription": "Beschreibung",
     "folderDescriptionPlaceholder": "Ordnerbeschreibung eingeben (optional)",
     "createFolder": "Neuen Ordner erstellen",
-    "createFolderButton": "Ordner erstellen",
     "renameFolder": "Ordner umbenennen",
     "moveFolder": "Ordner verschieben",
     "shareFolder": "Ordner teilen",
