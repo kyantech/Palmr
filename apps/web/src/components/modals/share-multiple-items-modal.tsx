@@ -51,6 +51,16 @@ interface BulkFolder {
   };
 }
 
+interface BulkItem {
+  id: string;
+  name: string;
+  description?: string;
+  size?: number;
+  type: "file" | "folder";
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface ShareMultipleItemsModalProps {
   files: BulkFile[] | null;
   folders: BulkFolder[] | null;

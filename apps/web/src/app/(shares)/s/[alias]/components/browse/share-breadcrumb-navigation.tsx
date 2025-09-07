@@ -1,5 +1,6 @@
 import { Fragment } from "react";
 import { IconChevronRight, IconHome } from "@tabler/icons-react";
+
 import { Button } from "@/components/ui/button";
 
 interface ShareBreadcrumbNavigationProps {
@@ -25,7 +26,7 @@ export function ShareBreadcrumbNavigation({ path, onNavigate }: ShareBreadcrumbN
       </Button>
 
       {path.map((folder, index) => (
-        <Fragment key={folder.id}>
+        <Fragment key={`${folder.id}-${index}`}>
           <IconChevronRight className="h-4 w-4" />
           <Button
             variant="ghost"

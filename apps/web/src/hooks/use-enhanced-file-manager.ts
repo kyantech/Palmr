@@ -49,7 +49,9 @@ interface FolderToShare {
   id: string;
   name: string;
   description?: string;
+  objectName: string;
   parentId?: string;
+  userId: string;
   createdAt: string;
   updatedAt: string;
 }

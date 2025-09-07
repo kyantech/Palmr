@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { IconDownload, IconEye, IconFolder } from "@tabler/icons-react";
-import { useTranslations } from "next-intl";
 
 import { FilePreviewModal } from "@/components/modals/file-preview-modal";
 import { Button } from "@/components/ui/button";
@@ -38,7 +37,6 @@ export function ShareFilesTable({
   onDownloadFolder,
   onNavigateToFolder,
 }: ShareFilesTableProps) {
-  const t = useTranslations();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<{ name: string; objectName: string; type?: string } | null>(null);
 

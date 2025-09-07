@@ -8,7 +8,7 @@ interface File {
   size: number;
   objectName: string;
   userId: string;
-  folderId?: string | null;
+  folderId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -22,9 +22,9 @@ interface DashboardFilesViewProps {
   onDownload: (objectName: string, fileName: string) => void;
   onShare: (file: File) => void;
   onDelete: (file: File) => void;
-  onBulkDelete?: (files: File[], folders: any[]) => void;
-  onBulkShare?: (files: File[], folders: any[]) => void;
-  onBulkDownload?: (files: File[], folders: any[]) => void;
+  onBulkDelete?: (files: File[]) => void;
+  onBulkShare?: (files: File[]) => void;
+  onBulkDownload?: (files: File[]) => void;
   setClearSelectionCallback?: (callback: () => void) => void;
 }
 
@@ -53,9 +53,9 @@ export function DashboardFilesView({
       onDownload={onDownload}
       onShare={onShare}
       onDelete={onDelete}
-      onBulkDelete={(files, folders) => onBulkDelete?.(files, folders)}
-      onBulkShare={(files, folders) => onBulkShare?.(files, folders)}
-      onBulkDownload={(files, folders) => onBulkDownload?.(files, folders)}
+      onBulkDelete={onBulkDelete ? (files) => onBulkDelete(files) : undefined}
+      onBulkShare={onBulkShare ? (files) => onBulkShare(files) : undefined}
+      onBulkDownload={onBulkDownload ? (files) => onBulkDownload(files) : undefined}
       setClearSelectionCallback={setClearSelectionCallback}
     />
   );

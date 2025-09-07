@@ -7,13 +7,9 @@ import {
   IconEdit,
   IconEye,
   IconFolder,
-  IconFolderOpen,
-  IconPencil,
   IconShare,
   IconTrash,
 } from "@tabler/icons-react";
-import { formatDistance } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
@@ -22,7 +18,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getDownloadUrl } from "@/http/endpoints";
@@ -66,8 +61,7 @@ interface FilesGridProps {
   folders?: Folder[];
   onPreview?: (file: File) => void;
   onRename?: (file: File) => void;
-  onUpdateName?: (fileId: string, newName: string) => void;
-  onUpdateDescription?: (fileId: string, newDescription: string) => void;
+
   onDownload: (objectName: string, fileName: string) => void;
   onShare?: (file: File) => void;
   onDelete?: (file: File) => void;
@@ -92,8 +86,6 @@ export function FilesGrid({
   folders = [],
   onPreview,
   onRename,
-  onUpdateName,
-  onUpdateDescription,
   onDownload,
   onShare,
   onDelete,
@@ -116,7 +108,7 @@ export function FilesGrid({
 
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [selectedFolders, setSelectedFolders] = useState<Set<string>>(new Set());
-  const [hoveredFolder, setHoveredFolder] = useState<string | null>(null);
+
   const [filePreviewUrls, setFilePreviewUrls] = useState<Record<string, string>>({});
 
   const loadingUrls = useRef<Set<string>>(new Set());
@@ -138,9 +130,11 @@ export function FilesGrid({
     setClearSelectionCallback?.(clearSelection);
   }, [setClearSelectionCallback]);
 
+  const folderIds = folders?.map((f) => f.id).join(",");
+
   useEffect(() => {
     setSelectedFolders(new Set());
-  }, [folders?.map((f) => f.id).join(",")]);
+  }, [folderIds]);
 
   const isImageFile = (fileName: string) => {
     const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];

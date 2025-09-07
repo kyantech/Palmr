@@ -203,7 +203,7 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalD
         );
       }
     },
-    [t, isS3Enabled]
+    [t, isS3Enabled, currentFolderId]
   );
 
   const handleDrop = useCallback(

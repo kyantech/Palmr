@@ -101,7 +101,7 @@ export function FolderActionsModals({
                 }
               }}
             >
-              {t("folderActions.createFolderButton")}
+              {t("folderActions.createFolder")}
             </Button>
           </DialogFooter>
         </DialogContent>

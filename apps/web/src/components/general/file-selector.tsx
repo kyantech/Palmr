@@ -5,9 +5,9 @@ import { IconCheck, IconEdit, IconEye, IconFolder, IconMinus, IconPlus, IconSear
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
-import { RenameFolderModal } from "@/app/files/modals/rename-folder-modal";
 import { FileActionsModals } from "@/components/modals/file-actions-modals";
 import { FilePreviewModal } from "@/components/modals/file-preview-modal";
+import { FolderActionsModals } from "@/components/modals/folder-actions-modals";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -419,11 +419,16 @@ export function FileSelector({
         onCloseDelete={() => {}}
       />
 
-      <RenameFolderModal
-        folder={folderToEdit}
-        isOpen={!!folderToEdit}
-        onClose={() => setFolderToEdit(null)}
-        onRename={handleEditFolder}
+      <FolderActionsModals
+        folderToCreate={false}
+        onCreateFolder={async () => {}}
+        onCloseCreate={() => {}}
+        folderToEdit={folderToEdit}
+        onEditFolder={handleEditFolder}
+        onCloseEdit={() => setFolderToEdit(null)}
+        folderToDelete={null}
+        onDeleteFolder={async () => {}}
+        onCloseDelete={() => {}}
       />
     </>
   );

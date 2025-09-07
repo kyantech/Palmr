@@ -2,7 +2,6 @@ import { useState } from "react";
 import { IconDownload, IconShare } from "@tabler/icons-react";
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
 
 import { ShareEmptyState } from "@/app/(shares)/s/[alias]/components/browse/share-empty-state";
 import { FilesViewManager } from "@/app/files/components/files-view-manager";
@@ -10,8 +9,6 @@ import { FolderBreadcrumbs } from "@/components/general/folder-breadcrumbs";
 import { FilePreviewModal } from "@/components/modals/file-preview-modal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { getShare } from "@/http/endpoints/shares";
-import { bulkDownloadWithQueue } from "@/utils/download-queue-utils";
 import { useShareBrowse } from "../hooks/use-share-browse";
 import { ShareDetailsProps } from "../types";
 

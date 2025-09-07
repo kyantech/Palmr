@@ -69,13 +69,11 @@ export function FilesView({
   const t = useTranslations();
   const [viewMode, setViewMode] = useState<ViewMode>("table");
 
-  const commonProps = {
+  const baseProps = {
     files,
     folders: [],
     onPreview,
     onRename,
-    onUpdateName,
-    onUpdateDescription,
     onDownload,
     onShare,
     onDelete,
@@ -84,6 +82,14 @@ export function FilesView({
     onBulkDownload: (files: File[], folders: Folder[]) => onBulkDownload?.(files, folders),
     setClearSelectionCallback,
   };
+
+  const tableProps = {
+    ...baseProps,
+    onUpdateName,
+    onUpdateDescription,
+  };
+
+  const gridProps = baseProps;
 
   return (
     <div className="space-y-4">
@@ -115,7 +121,7 @@ export function FilesView({
         <div className="text-sm text-muted-foreground">{t("files.totalFiles", { count: files.length })}</div>
       </div>
 
-      {viewMode === "table" ? <FilesTable {...commonProps} /> : <FilesGrid {...commonProps} />}
+      {viewMode === "table" ? <FilesTable {...tableProps} /> : <FilesGrid {...gridProps} />}
     </div>
   );
 }

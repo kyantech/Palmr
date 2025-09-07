@@ -39,10 +39,10 @@ interface Folder {
 
 interface FilesViewManagerProps {
   files: File[];
-  folders: Folder[];
+  folders?: Folder[];
   searchQuery: string;
   onSearch: (query: string) => void;
-  onNavigateToFolder: (folderId?: string) => void;
+  onNavigateToFolder?: (folderId?: string) => void;
   onDownload: (objectName: string, fileName: string) => void;
   breadcrumbs?: React.ReactNode;
   isLoading?: boolean;
@@ -118,15 +118,15 @@ export function FilesViewManager({
     localStorage.setItem(VIEW_MODE_KEY, viewMode);
   }, [viewMode]);
 
-  const hasContent = folders.length > 0 || files.length > 0;
+  const hasContent = (folders?.length || 0) > 0 || files.length > 0;
   const showEmptyState = !hasContent && !searchQuery && !isLoading;
 
   // Determine if we're in files mode based on presence of file management actions
   const isFilesMode = !isShareMode && !!(onDeleteFolder || onRenameFolder || onShare || onDelete);
 
-  const commonProps = {
+  const baseProps = {
     files,
-    folders,
+    folders: folders || [],
     onNavigateToFolder,
     onDeleteFolder: isShareMode ? undefined : onDeleteFolder,
     onRenameFolder: isShareMode ? undefined : onRenameFolder,
@@ -136,8 +136,6 @@ export function FilesViewManager({
     onDownloadFolder,
     onPreview,
     onRename: isShareMode ? undefined : onRename,
-    onUpdateName: isShareMode ? undefined : onUpdateName,
-    onUpdateDescription: isShareMode ? undefined : onUpdateDescription,
     onDownload,
     onShare: isShareMode ? undefined : onShare,
     onDelete: isShareMode ? undefined : onDelete,
@@ -151,6 +149,14 @@ export function FilesViewManager({
     showBulkActions: isFilesMode || (isShareMode && !!onBulkDownload),
     isShareMode,
   };
+
+  const tableProps = {
+    ...baseProps,
+    onUpdateName: isShareMode ? undefined : onUpdateName,
+    onUpdateDescription: isShareMode ? undefined : onUpdateDescription,
+  };
+
+  const gridProps = baseProps;
 
   return (
     <div className="space-y-4">
@@ -204,7 +210,7 @@ export function FilesViewManager({
         )
       ) : (
         <div className="space-y-4">
-          {viewMode === "table" ? <FilesTable {...commonProps} /> : <FilesGrid {...commonProps} />}
+          {viewMode === "table" ? <FilesTable {...tableProps} /> : <FilesGrid {...gridProps} />}
 
           {/* No results message */}
           {searchQuery && !hasContent && (
