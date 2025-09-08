@@ -14,6 +14,7 @@
 - **Self-hosted** – Deploy on your own server or VPS.
 - **Full control** – No third-party dependencies, ensuring privacy and security.
 - **No artificial limits** – Share files without hidden restrictions or fees.
+- **Folder organization** – Create folders to organize and share files.
 - **Simple deployment** – SQLite database and filesystem storage for easy setup.
 - **Scalable storage** – Optional S3-compatible object storage for enterprise needs.
 
