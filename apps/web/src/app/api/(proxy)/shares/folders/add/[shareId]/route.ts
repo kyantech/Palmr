@@ -7,10 +7,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ sha
   const body = await req.text();
   const { shareId } = await params;
 
-  // Parse the request body to get folders array
   const requestData = JSON.parse(body);
 
-  // Transform to the unified items format expected by the new API
   const itemsBody = {
     files: [],
     folders: requestData.folders || [],

@@ -1,4 +1,3 @@
-// Direct exports for backward compatibility
 export * from "./auth";
 export * from "./users";
 export * from "./files";

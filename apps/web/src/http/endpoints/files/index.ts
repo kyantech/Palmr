@@ -61,7 +61,6 @@ export const listFiles = <TData = ListFilesResult>(
   params: { folderId?: string; recursive?: boolean } = {},
   options?: AxiosRequestConfig
 ): Promise<TData> => {
-  // Convert boolean recursive to string as expected by server
   const queryParams = {
     ...params,
     recursive: params.recursive !== undefined ? params.recursive.toString() : undefined,

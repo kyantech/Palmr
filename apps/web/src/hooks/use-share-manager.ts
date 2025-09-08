@@ -144,9 +144,6 @@ export function useShareManager(onSuccess: () => void) {
 
   const handleManageFiles = async () => {
     try {
-      // This function is called when the FileSelector save is complete
-      // The FileSelector handles adding/removing files and folders internally
-      // So we just need to show success and refresh
       toast.success(t("shareManager.filesUpdateSuccess"));
       onSuccess();
       setShareToManageFiles(null);
@@ -196,7 +193,6 @@ export function useShareManager(onSuccess: () => void) {
       if (shares.length === 1) {
         const share = shares[0];
 
-        // Prepare all items for the share-specific bulk download
         const allItems: Array<{
           objectName?: string;
           name: string;
@@ -204,10 +200,8 @@ export function useShareManager(onSuccess: () => void) {
           type?: "file" | "folder";
         }> = [];
 
-        // Add only root-level files (files not in any folder)
         if (share.files) {
           share.files.forEach((file) => {
-            // Only include files that are not in any folder
             if (!file.folderId) {
               allItems.push({
                 objectName: file.objectName,
@@ -218,11 +212,9 @@ export function useShareManager(onSuccess: () => void) {
           });
         }
 
-        // Add only top-level folders (folders that don't have a parent or whose parent isn't in the share)
         if (share.folders) {
           const folderIds = new Set(share.folders.map((f) => f.id));
           share.folders.forEach((folder) => {
-            // Only include folders that are at the root level or whose parent isn't also being downloaded
             if (!folder.parentId || !folderIds.has(folder.parentId)) {
               allItems.push({
                 id: folder.id,
@@ -238,7 +230,6 @@ export function useShareManager(onSuccess: () => void) {
           return;
         }
 
-        // Use share-specific bulk download with wrapper for download all
         toast.promise(
           bulkDownloadShareWithQueue(allItems, share.files || [], share.folders || [], zipName, undefined, true).then(
             () => {
@@ -279,7 +270,6 @@ export function useShareManager(onSuccess: () => void) {
       return;
     }
 
-    // If there's only one file and no folders, download it directly
     if (totalFiles === 1 && totalFolders === 0) {
       const file = share.files[0];
       try {
@@ -289,10 +279,8 @@ export function useShareManager(onSuccess: () => void) {
         });
       } catch (error) {
         console.error("Download error:", error);
-        // Error already handled in downloadFileWithQueue
       }
     } else {
-      // Multiple files or folders exist, create a ZIP using the original pattern
       const zipName = t("shareManager.singleShareZipName", {
         shareName: share.name || t("shareManager.defaultShareName"),
       });

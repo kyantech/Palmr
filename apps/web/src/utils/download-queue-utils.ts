@@ -217,7 +217,6 @@ export async function downloadFileAsBlobWithQueue(
   }
 }
 
-// Helper function to collect all files in a folder recursively
 function collectFolderFiles(
   folderId: string,
   allFiles: any[],
@@ -226,7 +225,6 @@ function collectFolderFiles(
 ): Array<{ objectName: string; name: string; zipPath: string }> {
   const result: Array<{ objectName: string; name: string; zipPath: string }> = [];
 
-  // Get direct files in this folder
   const directFiles = allFiles.filter((file: any) => file.folderId === folderId);
   for (const file of directFiles) {
     result.push({
@@ -236,7 +234,6 @@ function collectFolderFiles(
     });
   }
 
-  // Get subfolders and collect their files recursively
   const subfolders = allFolders.filter((folder: any) => folder.parentId === folderId);
   for (const subfolder of subfolders) {
     const subfolderPath = folderPath + subfolder.name + "/";
@@ -247,24 +244,19 @@ function collectFolderFiles(
   return result;
 }
 
-// Helper function to collect empty folders
 function collectEmptyFolders(folderId: string, allFiles: any[], allFolders: any[], folderPath: string = ""): string[] {
   const emptyFolders: string[] = [];
 
-  // Get subfolders
   const subfolders = allFolders.filter((folder: any) => folder.parentId === folderId);
   for (const subfolder of subfolders) {
     const subfolderPath = folderPath + subfolder.name + "/";
 
-    // Check if this subfolder has any files (recursively)
     const subfolderFiles = collectFolderFiles(subfolder.id, allFiles, allFolders, "");
 
     if (subfolderFiles.length === 0) {
-      // This folder is empty, add it
       emptyFolders.push(subfolderPath.slice(0, -1)); // Remove trailing slash
     }
 
-    // Recursively check for empty subfolders
     const nestedEmptyFolders = collectEmptyFolders(subfolder.id, allFiles, allFolders, subfolderPath);
     emptyFolders.push(...nestedEmptyFolders);
   }
@@ -272,7 +264,6 @@ function collectEmptyFolders(folderId: string, allFiles: any[], allFolders: any[
   return emptyFolders;
 }
 
-// Download a single folder from file manager
 export async function downloadFolderWithQueue(
   folderId: string,
   folderName: string,
@@ -286,7 +277,6 @@ export async function downloadFolderWithQueue(
       options.onStart?.(downloadId);
     }
 
-    // Get all files and folders from the system
     const { listFiles } = await import("@/http/endpoints/files");
     const { listFolders } = await import("@/http/endpoints/folders");
 
@@ -294,7 +284,6 @@ export async function downloadFolderWithQueue(
     const allFiles = allFilesResponse.data.files || [];
     const allFolders = allFoldersResponse.data.folders || [];
 
-    // Collect all files in this folder recursively, wrapped in folder name
     const folderFiles = collectFolderFiles(folderId, allFiles, allFolders, `${folderName}/`);
     const emptyFolders = collectEmptyFolders(folderId, allFiles, allFolders, `${folderName}/`);
 
@@ -306,27 +295,22 @@ export async function downloadFolderWithQueue(
       throw new Error(message);
     }
 
-    // Create ZIP following original pattern
     const JSZip = (await import("jszip")).default;
     const zip = new JSZip();
 
-    // Add empty folders first
     for (const emptyFolderPath of emptyFolders) {
       zip.folder(emptyFolderPath);
     }
 
-    // Download and add files to ZIP
     for (const file of folderFiles) {
       try {
         const blob = await downloadFileAsBlobWithQueue(file.objectName, file.name);
         zip.file(file.zipPath, blob);
       } catch (error) {
         console.error(`Error downloading file ${file.name}:`, error);
-        // Continue with other files
       }
     }
 
-    // Generate and download ZIP
     const zipBlob = await zip.generateAsync({ type: "blob" });
     const url = URL.createObjectURL(zipBlob);
     const a = document.createElement("a");
@@ -354,7 +338,6 @@ export async function downloadFolderWithQueue(
   }
 }
 
-// Download a single folder from share data
 export async function downloadShareFolderWithQueue(
   folderId: string,
   folderName: string,
@@ -370,7 +353,6 @@ export async function downloadShareFolderWithQueue(
       options.onStart?.(downloadId);
     }
 
-    // Collect all files in this folder recursively using share data, wrapped in folder name
     const folderFiles = collectFolderFiles(folderId, shareFiles, shareFolders, `${folderName}/`);
     const emptyFolders = collectEmptyFolders(folderId, shareFiles, shareFolders, `${folderName}/`);
 
@@ -382,27 +364,22 @@ export async function downloadShareFolderWithQueue(
       throw new Error(message);
     }
 
-    // Create ZIP following original pattern
     const JSZip = (await import("jszip")).default;
     const zip = new JSZip();
 
-    // Add empty folders first
     for (const emptyFolderPath of emptyFolders) {
       zip.folder(emptyFolderPath);
     }
 
-    // Download and add files to ZIP
     for (const file of folderFiles) {
       try {
         const blob = await downloadFileAsBlobWithQueue(file.objectName, file.name);
         zip.file(file.zipPath, blob);
       } catch (error) {
         console.error(`Error downloading file ${file.name}:`, error);
-        // Continue with other files
       }
     }
 
-    // Generate and download ZIP
     const zipBlob = await zip.generateAsync({ type: "blob" });
     const url = URL.createObjectURL(zipBlob);
     const a = document.createElement("a");
@@ -430,7 +407,6 @@ export async function downloadShareFolderWithQueue(
   }
 }
 
-// Bulk download from file manager - extends original pattern
 export async function bulkDownloadWithQueue(
   items: Array<{
     objectName?: string;
@@ -455,7 +431,6 @@ export async function bulkDownloadWithQueue(
     // eslint-disable-next-line prefer-const
     let allEmptyFolders: string[] = [];
 
-    // If we have folders, get system data to resolve them
     if (folders.length > 0) {
       const { listFiles } = await import("@/http/endpoints/files");
       const { listFolders } = await import("@/http/endpoints/folders");
@@ -464,10 +439,7 @@ export async function bulkDownloadWithQueue(
       const allFiles = allFilesResponse.data.files || [];
       const allFolders = allFoldersResponse.data.folders || [];
 
-      // Determine wrapper path
       const wrapperPath = wrapInFolder ? `${zipName.replace(".zip", "")}/` : "";
-
-      // Collect ALL files from ALL folders (no filtering by selected files)
       for (const folder of folders) {
         const folderPath = wrapperPath + `${folder.name}/`;
         const folderFiles = collectFolderFiles(folder.id!, allFiles, allFolders, folderPath);
@@ -476,16 +448,12 @@ export async function bulkDownloadWithQueue(
         allFilesToDownload.push(...folderFiles);
         allEmptyFolders.push(...emptyFolders);
 
-        // If this selected folder itself is empty (no files and no subfolders), add it to empty folders
         if (folderFiles.length === 0 && emptyFolders.length === 0) {
           allEmptyFolders.push(folderPath.slice(0, -1)); // Remove trailing slash
         }
       }
 
-      // Get set of files that are already included in folders
       const filesInFolders = new Set(allFilesToDownload.map((f) => f.objectName));
-
-      // Add individual files that aren't already included in folders
       for (const file of files) {
         if (!file.objectName || !filesInFolders.has(file.objectName)) {
           allFilesToDownload.push({
@@ -496,7 +464,6 @@ export async function bulkDownloadWithQueue(
         }
       }
     } else {
-      // No folders, just process files like original
       const wrapperPath = wrapInFolder ? `${zipName.replace(".zip", "")}/` : "";
       for (const file of files) {
         allFilesToDownload.push({
@@ -507,12 +474,10 @@ export async function bulkDownloadWithQueue(
       }
     }
 
-    // Add empty folders to ZIP
     for (const emptyFolderPath of allEmptyFolders) {
       zip.folder(emptyFolderPath);
     }
 
-    // Download and add all files to ZIP
     for (let i = 0; i < allFilesToDownload.length; i++) {
       const file = allFilesToDownload[i];
       try {
@@ -521,11 +486,9 @@ export async function bulkDownloadWithQueue(
         onProgress?.(i + 1, allFilesToDownload.length);
       } catch (error) {
         console.error(`Error downloading file ${file.name}:`, error);
-        // Continue with other files
       }
     }
 
-    // Generate and download ZIP like original
     const zipBlob = await zip.generateAsync({ type: "blob" });
     const url = URL.createObjectURL(zipBlob);
     const a = document.createElement("a");
@@ -541,7 +504,6 @@ export async function bulkDownloadWithQueue(
   }
 }
 
-// Bulk download from share data - clean version for shares
 export async function bulkDownloadShareWithQueue(
   items: Array<{
     objectName?: string;
@@ -567,10 +529,8 @@ export async function bulkDownloadShareWithQueue(
     // eslint-disable-next-line prefer-const
     let allEmptyFolders: string[] = [];
 
-    // Determine wrapper path
     const wrapperPath = wrapInFolder ? `${zipName.replace(".zip", "")}/` : "";
 
-    // Collect ALL files from ALL folders using share data (no filtering)
     for (const folder of folders) {
       const folderPath = wrapperPath + `${folder.name}/`;
       const folderFiles = collectFolderFiles(folder.id!, shareFiles, shareFolders, folderPath);
@@ -579,16 +539,12 @@ export async function bulkDownloadShareWithQueue(
       allFilesToDownload.push(...folderFiles);
       allEmptyFolders.push(...emptyFolders);
 
-      // If this selected folder itself is empty (no files and no subfolders), add it to empty folders
       if (folderFiles.length === 0 && emptyFolders.length === 0) {
         allEmptyFolders.push(folderPath.slice(0, -1)); // Remove trailing slash
       }
     }
 
-    // Get set of files that are already included in folders
     const filesInFolders = new Set(allFilesToDownload.map((f) => f.objectName));
-
-    // Add individual files that aren't already included in folders
     for (const file of files) {
       if (!file.objectName || !filesInFolders.has(file.objectName)) {
         allFilesToDownload.push({
@@ -599,12 +555,10 @@ export async function bulkDownloadShareWithQueue(
       }
     }
 
-    // Add empty folders to ZIP
     for (const emptyFolderPath of allEmptyFolders) {
       zip.folder(emptyFolderPath);
     }
 
-    // Download and add all files to ZIP
     for (let i = 0; i < allFilesToDownload.length; i++) {
       const file = allFilesToDownload[i];
       try {
@@ -613,11 +567,9 @@ export async function bulkDownloadShareWithQueue(
         onProgress?.(i + 1, allFilesToDownload.length);
       } catch (error) {
         console.error(`Error downloading file ${file.name}:`, error);
-        // Continue with other files
       }
     }
 
-    // Generate and download ZIP like original
     const zipBlob = await zip.generateAsync({ type: "blob" });
     const url = URL.createObjectURL(zipBlob);
     const a = document.createElement("a");

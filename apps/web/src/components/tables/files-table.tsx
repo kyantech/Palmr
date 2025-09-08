@@ -732,7 +732,6 @@ export function FilesTable({
                   key={file.id}
                   className="group hover:bg-muted/50 transition-colors border-0 cursor-pointer"
                   onClick={(e) => {
-                    // Don't trigger preview if clicking on checkbox, buttons, or dropdown
                     if (
                       (e.target as HTMLElement).closest(".checkbox-wrapper") ||
                       (e.target as HTMLElement).closest("button") ||

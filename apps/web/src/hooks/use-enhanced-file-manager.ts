@@ -92,7 +92,6 @@ interface PendingDownload {
 }
 
 export interface EnhancedFileManagerHook {
-  // File states
   previewFile: PreviewFile | null;
   fileToDelete: any;
   fileToRename: any;
@@ -104,17 +103,14 @@ export interface EnhancedFileManagerHook {
   isBulkDownloadModalOpen: boolean;
   pendingDownloads: PendingDownload[];
 
-  // Folder states
   folderToDelete: FolderToDelete | null;
   folderToRename: FolderToRename | null;
   folderToShare: FolderToShare | null;
   isCreateFolderModalOpen: boolean;
 
-  // Combined bulk states
   foldersToShare: BulkFolder[] | null;
   foldersToDownload: BulkFolder[] | null;
 
-  // File setters
   setFileToDelete: (file: any) => void;
   setFileToRename: (file: any) => void;
   setPreviewFile: (file: PreviewFile | null) => void;
@@ -125,7 +121,6 @@ export interface EnhancedFileManagerHook {
   setFoldersToDelete: (folders: BulkFolder[] | null) => void;
   setBulkDownloadModalOpen: (open: boolean) => void;
 
-  // Folder setters
   setFolderToDelete: (folder: FolderToDelete | null) => void;
   setFolderToRename: (folder: FolderToRename | null) => void;
   setFolderToShare: (folder: FolderToShare | null) => void;
@@ -133,7 +128,6 @@ export interface EnhancedFileManagerHook {
   setFoldersToShare: (folders: BulkFolder[] | null) => void;
   setFoldersToDownload: (folders: BulkFolder[] | null) => void;
 
-  // File handlers
   handleDelete: (fileId: string) => Promise<void>;
   handleDownload: (objectName: string, fileName: string) => Promise<void>;
   handleRename: (fileId: string, newName: string, description?: string) => Promise<void>;
@@ -144,12 +138,10 @@ export interface EnhancedFileManagerHook {
   handleDeleteBulk: () => Promise<void>;
   handleShareBulkSuccess: () => void;
 
-  // Folder handlers
   handleCreateFolder: (data: { name: string; description?: string }, parentId?: string) => Promise<void>;
   handleFolderDelete: (folderId: string) => Promise<void>;
   handleFolderRename: (folderId: string, newName: string, description?: string) => Promise<void>;
 
-  // Common
   clearSelection?: () => void;
   setClearSelectionCallback?: (callback: () => void) => void;
   getDownloadStatus: (objectName: string) => PendingDownload | null;
@@ -162,7 +154,6 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
   const downloadQueue = useDownloadQueue(true, 3000);
   const notifications = usePushNotifications();
 
-  // File states
   const [previewFile, setPreviewFile] = useState<PreviewFile | null>(null);
   const [fileToRename, setFileToRename] = useState<FileToRename | null>(null);
   const [fileToDelete, setFileToDelete] = useState<FileToDelete | null>(null);
@@ -172,7 +163,6 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
   const [filesToDownload, setFilesToDownload] = useState<BulkFile[] | null>(null);
   const [foldersToDelete, setFoldersToDelete] = useState<BulkFolder[] | null>(null);
 
-  // Folder states
   const [folderToDelete, setFolderToDelete] = useState<FolderToDelete | null>(null);
   const [folderToRename, setFolderToRename] = useState<FolderToRename | null>(null);
   const [folderToShare, setFolderToShare] = useState<FolderToShare | null>(null);
@@ -181,7 +171,6 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
   const [pendingDownloads, setPendingDownloads] = useState<PendingDownload[]>([]);
   const [clearSelectionCallback, setClearSelectionCallbackState] = useState<(() => void) | null>(null);
 
-  // Combined bulk states
   const [foldersToShare, setFoldersToShare] = useState<BulkFolder[] | null>(null);
   const [foldersToDownload, setFoldersToDownload] = useState<BulkFolder[] | null>(null);
 
@@ -278,7 +267,6 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
 
   const handleDownload = async (objectName: string, fileName: string) => {
     try {
-      // Use the original download pattern for consistency with promise-based toast
       const { downloadFileWithQueue } = await import("@/utils/download-queue-utils");
 
       await toast.promise(
@@ -294,7 +282,6 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
       );
     } catch (error) {
       console.error("Download error:", error);
-      // Error already handled in toast.promise
     }
   };
 
@@ -371,7 +358,6 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
     setFoldersToDownload(folders || null);
     setBulkDownloadModalOpen(true);
 
-    // Clear selection immediately when bulk download modal opens
     if (clearSelectionCallback) {
       clearSelectionCallback();
     }
@@ -379,7 +365,6 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
 
   const handleSingleFolderDownload = async (folderId: string, folderName: string) => {
     try {
-      // Use the enhanced download queue utility for folders with promise-based toast
       const { downloadFolderWithQueue } = await import("@/utils/download-queue-utils");
 
       await toast.promise(
@@ -395,7 +380,6 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
       );
     } catch (error) {
       console.error("Error downloading folder:", error);
-      // Error already handled in toast.promise
     }
   };
 
@@ -404,16 +388,13 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
       const folders = foldersToDownload || [];
       const { bulkDownloadWithQueue } = await import("@/utils/download-queue-utils");
 
-      // Prepare items for the enhanced bulk download utility
       const allItems = [
-        // Add individual files
         ...files.map((file) => ({
           objectName: file.objectName,
           name: file.relativePath || file.name,
           isReverseShare: false,
           type: "file" as const,
         })),
-        // Add folders
         ...folders.map((folder) => ({
           id: folder.id,
           name: folder.name,
@@ -455,12 +436,10 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
     try {
       const deletePromises = [];
 
-      // Delete files
       if (filesToDelete) {
         deletePromises.push(...filesToDelete.map((file) => deleteFile(file.id)));
       }
 
-      // Delete folders
       if (foldersToDelete) {
         deletePromises.push(...foldersToDelete.map((folder) => deleteFolder(folder.id)));
       }
@@ -478,7 +457,6 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
     }
   };
 
-  // Folder handlers - following the same pattern as file handlers
   const handleCreateFolder = async (data: { name: string; description?: string }, parentId?: string) => {
     try {
       const folderData = {
@@ -527,7 +505,6 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
   };
 
   return {
-    // File states and handlers
     previewFile,
     setPreviewFile,
     fileToRename,
@@ -557,7 +534,6 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
     handleDeleteBulk,
     handleShareBulkSuccess,
 
-    // Folder states and handlers
     folderToDelete,
     setFolderToDelete,
     folderToRename,
@@ -570,13 +546,11 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
     handleFolderRename,
     handleFolderDelete,
 
-    // Combined bulk states
     foldersToShare,
     setFoldersToShare,
     foldersToDownload,
     setFoldersToDownload,
 
-    // Common
     clearSelection,
     setClearSelectionCallback,
     getDownloadStatus,

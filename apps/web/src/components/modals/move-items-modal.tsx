@@ -76,7 +76,7 @@ export function MoveItemsModal({
   useEffect(() => {
     if (isOpen) {
       loadFolders();
-      // Pre-select current folder if provided, otherwise select root
+
       if (currentFolderId) {
         setSelectedItems([currentFolderId]);
       } else {
@@ -85,7 +85,6 @@ export function MoveItemsModal({
     }
   }, [isOpen, loadFolders, currentFolderId]);
 
-  // Get the first item being moved to auto-expand to its location
   const firstItemToMove = useMemo(() => {
     if (!itemsToMove) return null;
     if (itemsToMove.files.length > 0) return itemsToMove.files[0];
@@ -93,7 +92,6 @@ export function MoveItemsModal({
     return null;
   }, [itemsToMove]);
 
-  // Add root folder option to the tree structure
   const foldersWithRoot = useMemo(() => {
     const rootFolder: TreeFolder = {
       id: "root",
@@ -108,7 +106,6 @@ export function MoveItemsModal({
     try {
       setIsMoving(true);
 
-      // Only allow selecting one folder for move destination
       const targetFolderId = selectedItems.length > 0 && selectedItems[0] !== "root" ? selectedItems[0] : null;
 
       await onMove(targetFolderId);
@@ -129,7 +126,6 @@ export function MoveItemsModal({
   };
 
   const handleSelectionChange = (newSelection: string[]) => {
-    // Single selection is now handled by FileTree
     setSelectedItems(newSelection);
   };
 

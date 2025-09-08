@@ -221,7 +221,6 @@ export function UploadFileModal({ isOpen, onClose, onSuccess, currentFolderId }:
 
     if (upload.objectName && upload.status === UploadStatus.UPLOADING) {
       try {
-        // await deleteUploadedFile(upload.objectName);
       } catch (error) {
         console.error("Failed to delete uploaded file:", error);
       }
@@ -382,12 +381,11 @@ export function UploadFileModal({ isOpen, onClose, onSuccess, currentFolderId }:
           const errorCount = currentUploads.filter((u) => u.status === UploadStatus.ERROR).length;
 
           if (successCount > 0) {
-            // Show error toast only if there were errors, let parent handle success
             if (errorCount > 0) {
               toast.error(t("uploadFile.partialSuccess", { success: successCount, error: errorCount }));
             }
             setHasShownSuccessToast(true);
-            // Call onSuccess asynchronously to avoid render-during-render
+
             setTimeout(() => onSuccess?.(), 0);
           }
         }

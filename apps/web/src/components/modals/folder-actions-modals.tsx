@@ -25,17 +25,14 @@ interface FolderToDelete {
 }
 
 interface FolderActionsModalsProps {
-  // Create folder modal
   folderToCreate: boolean;
   onCreateFolder: (name: string, description?: string) => Promise<void>;
   onCloseCreate: () => void;
 
-  // Edit folder modal
   folderToEdit: FolderToEdit | null;
   onEditFolder: (folderId: string, newName: string, description?: string) => Promise<void>;
   onCloseEdit: () => void;
 
-  // Delete folder modal
   folderToDelete: FolderToDelete | null;
   onDeleteFolder: (folderId: string) => Promise<void>;
   onCloseDelete: () => void;
@@ -56,7 +53,6 @@ export function FolderActionsModals({
 
   return (
     <>
-      {/* Create Folder Modal */}
       <Dialog open={folderToCreate} onOpenChange={() => onCloseCreate()}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -107,7 +103,6 @@ export function FolderActionsModals({
         </DialogContent>
       </Dialog>
 
-      {/* Edit Folder Modal */}
       <Dialog open={!!folderToEdit} onOpenChange={() => onCloseEdit()}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -164,7 +159,6 @@ export function FolderActionsModals({
         </DialogContent>
       </Dialog>
 
-      {/* Delete Folder Modal */}
       <Dialog open={!!folderToDelete} onOpenChange={() => onCloseDelete()}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

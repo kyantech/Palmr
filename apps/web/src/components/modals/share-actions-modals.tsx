@@ -57,7 +57,6 @@ export function ShareActionsModals({
   const [allFiles, setAllFiles] = useState<any[]>([]);
   const [allFolders, setAllFolders] = useState<any[]>([]);
 
-  // Manage Files Modal State
   const [manageFilesSelectedItems, setManageFilesSelectedItems] = useState<string[]>([]);
   const [manageFilesTreeFiles, setManageFilesTreeFiles] = useState<TreeFile[]>([]);
   const [manageFilesTreeFolders, setManageFilesTreeFolders] = useState<TreeFolder[]>([]);
@@ -65,7 +64,6 @@ export function ShareActionsModals({
   const [isManageFilesSaving, setIsManageFilesSaving] = useState(false);
   const [manageFilesSearchQuery, setManageFilesSearchQuery] = useState("");
 
-  // Load all files and folders once when component mounts
   React.useEffect(() => {
     const loadAllData = async () => {
       try {
@@ -107,12 +105,10 @@ export function ShareActionsModals({
     }
   }, [shareToEdit]);
 
-  // Load data for manage files modal
   const loadManageFilesData = useCallback(async () => {
     try {
       setIsManageFilesLoading(true);
 
-      // Convert to tree format
       const treeFiles: TreeFile[] = allFiles.map((file) => ({
         id: file.id,
         name: file.name,
@@ -138,11 +134,10 @@ export function ShareActionsModals({
     }
   }, [allFiles, allFolders]);
 
-  // Load manage files data when modal opens
   useEffect(() => {
     if (shareToManageFiles) {
       loadManageFilesData();
-      // Set initial selection
+
       const initialSelectedFiles = shareToManageFiles?.files?.map((f: any) => f.id) || [];
       const initialSelectedFolders = shareToManageFiles?.folders?.map((f: any) => f.id) || [];
       setManageFilesSelectedItems([...initialSelectedFiles, ...initialSelectedFolders]);
@@ -202,11 +197,9 @@ export function ShareActionsModals({
       const currentFileIds = shareToManageFiles.files?.map((f: any) => f.id) || [];
       const currentFolderIds = shareToManageFiles.folders?.map((f: any) => f.id) || [];
 
-      // Files to add/remove
       const filesToAdd = selectedFiles.filter((id: string) => !currentFileIds.includes(id));
       const filesToRemove = currentFileIds.filter((id: string) => !selectedFiles.includes(id));
 
-      // Folders to add/remove
       const foldersToAdd = selectedFolders.filter((id: string) => !currentFolderIds.includes(id));
       const foldersToRemove = currentFolderIds.filter((id: string) => !selectedFolders.includes(id));
 

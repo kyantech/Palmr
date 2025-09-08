@@ -122,23 +122,19 @@ export function ShareMultipleItemsModal({ files, folders, isOpen, onClose, onSuc
     }
   }, [isOpen, files, folders]);
 
-  // Recursively get all files and folders within a folder
   const getAllFolderContents = async (folderId: string): Promise<{ files: string[]; folders: string[] }> => {
     try {
-      // Get all files and folders
       const [filesResponse, foldersResponse] = await Promise.all([listFiles(), listFolders()]);
 
       const allFiles = filesResponse.data.files || [];
       const allFolders = foldersResponse.data.folders || [];
 
-      // Find all files and subfolders that belong to this folder (recursively)
       const collectContents = (parentId: string): { files: string[]; folders: string[] } => {
         const folderFiles = allFiles.filter((f: any) => f.folderId === parentId).map((f: any) => f.id);
 
         const subFolders = allFolders.filter((f: any) => f.parentId === parentId);
         const subFolderIds = subFolders.map((f: any) => f.id);
 
-        // Recursively get contents of subfolders
         let allSubFiles: string[] = [...folderFiles];
         let allSubFolders: string[] = [...subFolderIds];
 
@@ -170,7 +166,6 @@ export function ShareMultipleItemsModal({ files, folders, isOpen, onClose, onSuc
       let allFilesToShare: string[] = files ? files.map((f) => f.id) : [];
       let allFoldersToShare: string[] = folders ? folders.map((f) => f.id) : [];
 
-      // For each folder, get all its contents recursively
       if (folders && folders.length > 0) {
         for (const folder of folders) {
           const folderContents = await getAllFolderContents(folder.id);

@@ -207,7 +207,6 @@ export function FileTree({
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const selectedSet = useMemo(() => new Set(selectedItems), [selectedItems]);
 
-  // Convert domain types to tree items
   const convertToTreeItems = useCallback((): TreeItem[] => {
     let treeFolders: TreeItem[] = folders.map((folder) => ({
       id: folder.id,
@@ -225,22 +224,18 @@ export function FileTree({
       parentId: file.folderId,
     }));
 
-    // Apply search filter if provided
     if (searchQuery.trim()) {
       const searchLower = searchQuery.toLowerCase();
 
-      // Filter items that match search or have matching descendants
       const getMatchingItems = (allItems: TreeItem[]): TreeItem[] => {
         const matching = new Set<string>();
 
-        // Add items that match directly (both files and folders)
         allItems.forEach((item) => {
           if (item.name.toLowerCase().includes(searchLower)) {
             matching.add(item.id);
           }
         });
 
-        // Add parent folders of matching items (to maintain tree structure)
         const addParents = (itemId: string) => {
           const item = allItems.find((i) => i.id === itemId);
           if (item && item.parentId) {
@@ -264,7 +259,6 @@ export function FileTree({
     return [...treeFolders, ...treeFiles];
   }, [files, folders, searchQuery]);
 
-  // Auto-expand to show the specified item
   useEffect(() => {
     if (autoExpandToItem) {
       const allItems = convertToTreeItems();
@@ -285,19 +279,16 @@ export function FileTree({
     }
   }, [autoExpandToItem, convertToTreeItems]);
 
-  // Build tree structure
   const tree = useMemo(() => {
     const allItems = convertToTreeItems();
     const itemMap = new Map<string, TreeItem>();
     const childrenMap = new Map<string, TreeItem[]>();
 
-    // Create maps for quick lookup
     allItems.forEach((item) => {
       itemMap.set(item.id, item);
       childrenMap.set(item.id, []);
     });
 
-    // Build parent-child relationships
     allItems.forEach((item) => {
       if (item.parentId) {
         const parentChildren = childrenMap.get(item.parentId);
@@ -307,14 +298,12 @@ export function FileTree({
       }
     });
 
-    // Build tree nodes recursively
     function buildTreeNode(item: TreeItem, level: number): TreeNode {
       const children = childrenMap.get(item.id) || [];
       return {
         item,
         children: children
           .sort((a, b) => {
-            // Folders first, then by name
             if (a.type !== b.type) {
               return a.type === "folder" ? -1 : 1;
             }
@@ -325,7 +314,6 @@ export function FileTree({
       };
     }
 
-    // Get root items (items with no parent)
     const rootItems = allItems.filter((item) => !item.parentId);
 
     return rootItems
@@ -338,7 +326,6 @@ export function FileTree({
       .map((item) => buildTreeNode(item, 0));
   }, [convertToTreeItems]);
 
-  // Get all descendants of a folder
   const getDescendants = useCallback(
     (folderId: string): string[] => {
       const descendants: string[] = [];
@@ -361,7 +348,6 @@ export function FileTree({
     [convertToTreeItems]
   );
 
-  // Get all ancestors of an item (parent folders up to root)
   const getAllAncestors = useCallback(
     (itemId: string): string[] => {
       const ancestors: string[] = [];
@@ -378,7 +364,6 @@ export function FileTree({
     [convertToTreeItems]
   );
 
-  // Toggle folder expansion
   const handleToggleExpand = useCallback((folderId: string) => {
     setExpandedFolders((prev) => {
       const next = new Set(prev);
@@ -391,7 +376,6 @@ export function FileTree({
     });
   }, []);
 
-  // Toggle item selection
   const handleToggleSelect = useCallback(
     (itemId: string) => {
       const allItems = convertToTreeItems();
@@ -399,7 +383,6 @@ export function FileTree({
       if (!item) return;
 
       if (singleSelection || useCheckboxAsRadio) {
-        // Single selection mode - only allow one item to be selected
         onSelectionChange([itemId]);
         return;
       }
@@ -407,29 +390,21 @@ export function FileTree({
       const newSelection = new Set(selectedItems);
 
       if (selectedSet.has(itemId)) {
-        // Deselecting item
         newSelection.delete(itemId);
 
         if (item.type === "folder") {
-          // When deselecting a folder, deselect all its descendants
           const descendants = getDescendants(itemId);
           descendants.forEach((id) => newSelection.delete(id));
         } else {
-          // Deselecting an item - check if any ancestors can be auto-deselected
           const ancestors = getAllAncestors(itemId);
           const allItems = convertToTreeItems();
 
-          // Check each ancestor from closest to root
           ancestors.forEach((ancestorId) => {
             const ancestorDescendants = getDescendants(ancestorId);
 
-            // Count remaining selected descendants after removing current item
             const selectedDescendants = ancestorDescendants.filter((id) => id !== itemId && newSelection.has(id));
 
-            // If no descendants are selected and ancestor wasn't explicitly selected
-            // (meaning it was only auto-selected), we can remove it
             if (selectedDescendants.length === 0) {
-              // Check if this ancestor has any siblings that are selected
               const ancestorSiblings = allItems.filter((i) => {
                 const ancestor = allItems.find((a) => a.id === ancestorId);
                 return ancestor && i.parentId === ancestor.parentId && i.id !== ancestorId;
@@ -437,7 +412,6 @@ export function FileTree({
 
               const selectedSiblings = ancestorSiblings.filter((sibling) => newSelection.has(sibling.id));
 
-              // Only auto-deselect if it was likely auto-selected (no selected siblings)
               if (selectedSiblings.length === 0) {
                 newSelection.delete(ancestorId);
               }
@@ -445,16 +419,13 @@ export function FileTree({
           });
         }
       } else {
-        // Selecting item
         newSelection.add(itemId);
 
-        // Auto-select all ancestors for any item to ensure visibility
         const ancestors = getAllAncestors(itemId);
         ancestors.forEach((ancestorId) => {
           newSelection.add(ancestorId);
         });
 
-        // If it's a folder, select all descendants
         if (item.type === "folder") {
           const descendants = getDescendants(itemId);
           const allItems = convertToTreeItems();
@@ -485,7 +456,6 @@ export function FileTree({
     ]
   );
 
-  // Calculate if a folder should be indeterminate (some but not all children selected)
   const isIndeterminate = useCallback(
     (folderId: string): boolean => {
       const descendants = getDescendants(folderId);
