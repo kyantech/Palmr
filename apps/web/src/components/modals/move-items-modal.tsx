@@ -173,7 +173,7 @@ export function MoveItemsModal({
 
           {/* Search */}
           <div className="space-y-2">
-            <Label htmlFor="search">{t("searchBar.placeholder")}</Label>
+            <Label htmlFor="search">{t("common.search")}</Label>
             <Input
               id="search"
               type="search"
