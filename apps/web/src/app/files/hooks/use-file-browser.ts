@@ -9,6 +9,51 @@ import { useEnhancedFileManager } from "@/hooks/use-enhanced-file-manager";
 import { listFiles } from "@/http/endpoints";
 import { listFolders } from "@/http/endpoints/folders";
 
+const createSlug = (name: string): string => {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+};
+
+const createFolderPathSlug = (allFolders: any[], folderId: string): string => {
+  const path: string[] = [];
+  let currentId: string | null = folderId;
+
+  while (currentId) {
+    const folder = allFolders.find((f) => f.id === currentId);
+    if (folder) {
+      const slug = createSlug(folder.name);
+      path.unshift(slug || folder.id);
+      currentId = folder.parentId;
+    } else {
+      break;
+    }
+  }
+
+  return path.join("/");
+};
+
+const findFolderByPathSlug = (folders: any[], pathSlug: string): any | null => {
+  const pathParts = pathSlug.split("/");
+  let currentFolders = folders.filter((f) => !f.parentId);
+  let currentFolder: any = null;
+
+  for (const slugPart of pathParts) {
+    currentFolder = currentFolders.find((folder) => {
+      const slug = createSlug(folder.name);
+      return slug === slugPart || folder.id === slugPart;
+    });
+
+    if (!currentFolder) return null;
+    currentFolders = folders.filter((f) => f.parentId === currentFolder.id);
+  }
+
+  return currentFolder;
+};
+
 export function useFileBrowser() {
   const t = useTranslations();
   const router = useRouter();
@@ -26,11 +71,22 @@ export function useFileBrowser() {
   const [dataLoaded, setDataLoaded] = useState(false);
   const isNavigatingRef = useRef(false);
 
-  const urlFolderId = searchParams.get("folder") || null;
-  const currentFolderId = urlFolderId;
+  const urlFolderSlug = searchParams.get("folder") || null;
+  const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
 
   const setClearSelectionCallback = useCallback((callback: () => void) => {
     setClearSelectionCallbackState(() => callback);
+  }, []);
+
+  const getFolderIdFromPathSlug = useCallback((pathSlug: string | null, folders: any[]): string | null => {
+    if (!pathSlug) return null;
+    const folder = findFolderByPathSlug(folders, pathSlug);
+    return folder ? folder.id : null;
+  }, []);
+
+  const getFolderPathSlugFromId = useCallback((folderId: string | null, folders: any[]): string | null => {
+    if (!folderId) return null;
+    return createFolderPathSlug(folders, folderId);
   }, []);
 
   const buildBreadcrumbPath = useCallback((allFolders: any[], folderId: string): any[] => {
@@ -71,7 +127,6 @@ export function useFileBrowser() {
 
   const navigateToFolderDirect = useCallback(
     (targetFolderId: string | null) => {
-      // Filter existing data for instant navigation
       const currentFiles = allFiles.filter((file: any) => (file.folderId || null) === targetFolderId);
       const currentFolders = allFolders.filter((folder: any) => (folder.parentId || null) === targetFolderId);
 
@@ -93,16 +148,20 @@ export function useFileBrowser() {
         setCurrentPath([]);
       }
 
-      // Update URL without triggering reload
       const params = new URLSearchParams(searchParams);
       if (targetFolderId) {
-        params.set("folder", targetFolderId);
+        const folderPathSlug = getFolderPathSlugFromId(targetFolderId, allFolders);
+        if (folderPathSlug) {
+          params.set("folder", folderPathSlug);
+        } else {
+          params.delete("folder");
+        }
       } else {
         params.delete("folder");
       }
       window.history.pushState({}, "", `/files?${params.toString()}`);
     },
-    [allFiles, allFolders, buildBreadcrumbPath, searchParams]
+    [allFiles, allFolders, buildBreadcrumbPath, searchParams, getFolderPathSlugFromId]
   );
 
   const navigateToFolder = useCallback(
@@ -110,25 +169,27 @@ export function useFileBrowser() {
       const targetFolderId = folderId || null;
 
       if (dataLoaded && allFiles.length > 0) {
-        // Use direct navigation
         isNavigatingRef.current = true;
         navigateToFolderDirect(targetFolderId);
-        // Reset flag after navigation
         setTimeout(() => {
           isNavigatingRef.current = false;
         }, 0);
       } else {
-        // Fallback to traditional navigation for initial load
         const params = new URLSearchParams(searchParams);
         if (folderId) {
-          params.set("folder", folderId);
+          const folderPathSlug = getFolderPathSlugFromId(folderId, allFolders);
+          if (folderPathSlug) {
+            params.set("folder", folderPathSlug);
+          } else {
+            params.delete("folder");
+          }
         } else {
           params.delete("folder");
         }
         router.push(`/files?${params.toString()}`);
       }
     },
-    [dataLoaded, allFiles.length, navigateToFolderDirect, searchParams, router]
+    [dataLoaded, allFiles.length, navigateToFolderDirect, searchParams, router, getFolderPathSlugFromId, allFolders]
   );
 
   const navigateToRoot = useCallback(() => {
@@ -148,8 +209,11 @@ export function useFileBrowser() {
       setAllFolders(fetchedFolders);
       setDataLoaded(true);
 
-      const currentFiles = fetchedFiles.filter((file: any) => (file.folderId || null) === urlFolderId);
-      const currentFolders = fetchedFolders.filter((folder: any) => (folder.parentId || null) === urlFolderId);
+      const resolvedFolderId = getFolderIdFromPathSlug(urlFolderSlug, fetchedFolders);
+      setCurrentFolderId(resolvedFolderId);
+
+      const currentFiles = fetchedFiles.filter((file: any) => (file.folderId || null) === resolvedFolderId);
+      const currentFolders = fetchedFolders.filter((folder: any) => (folder.parentId || null) === resolvedFolderId);
 
       const sortedFiles = [...currentFiles].sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -162,8 +226,8 @@ export function useFileBrowser() {
       setFiles(sortedFiles);
       setFolders(sortedFolders);
 
-      if (urlFolderId) {
-        const path = buildBreadcrumbPath(fetchedFolders, urlFolderId);
+      if (resolvedFolderId) {
+        const path = buildBreadcrumbPath(fetchedFolders, resolvedFolderId);
         setCurrentPath(path);
       } else {
         setCurrentPath([]);
@@ -173,7 +237,7 @@ export function useFileBrowser() {
     } finally {
       setIsLoading(false);
     }
-  }, [urlFolderId, buildBreadcrumbPath, t]);
+  }, [urlFolderSlug, buildBreadcrumbPath, t, getFolderIdFromPathSlug]);
 
   const fileManager = useEnhancedFileManager(loadFiles, clearSelectionCallback);
 

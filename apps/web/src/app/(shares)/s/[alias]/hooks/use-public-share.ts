@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
@@ -12,6 +12,51 @@ import {
   downloadFileWithQueue,
   downloadShareFolderWithQueue,
 } from "@/utils/download-queue-utils";
+
+const createSlug = (name: string): string => {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+};
+
+const createFolderPathSlug = (allFolders: any[], folderId: string): string => {
+  const path: string[] = [];
+  let currentId: string | null = folderId;
+
+  while (currentId) {
+    const folder = allFolders.find((f) => f.id === currentId);
+    if (folder) {
+      const slug = createSlug(folder.name);
+      path.unshift(slug || folder.id);
+      currentId = folder.parentId;
+    } else {
+      break;
+    }
+  }
+
+  return path.join("/");
+};
+
+const findFolderByPathSlug = (folders: any[], pathSlug: string): any | null => {
+  const pathParts = pathSlug.split("/");
+  let currentFolders = folders.filter((f) => !f.parentId);
+  let currentFolder: any = null;
+
+  for (const slugPart of pathParts) {
+    currentFolder = currentFolders.find((folder) => {
+      const slug = createSlug(folder.name);
+      return slug === slugPart || folder.id === slugPart;
+    });
+
+    if (!currentFolder) return null;
+    currentFolders = folders.filter((f) => f.parentId === currentFolder.id);
+  }
+
+  return currentFolder;
+};
 
 interface ShareBrowseState {
   folders: any[];
@@ -24,6 +69,8 @@ interface ShareBrowseState {
 export function usePublicShare() {
   const t = useTranslations();
   const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const alias = params?.alias as string;
   const [share, setShare] = useState<Share | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,8 +85,20 @@ export function usePublicShare() {
     isLoading: true,
     error: null,
   });
+  const urlFolderSlug = searchParams.get("folder") || null;
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const getFolderIdFromPathSlug = useCallback((pathSlug: string | null, folders: any[]): string | null => {
+    if (!pathSlug) return null;
+    const folder = findFolderByPathSlug(folders, pathSlug);
+    return folder ? folder.id : null;
+  }, []);
+
+  const getFolderPathSlugFromId = useCallback((folderId: string | null, folders: any[]): string | null => {
+    if (!folderId) return null;
+    return createFolderPathSlug(folders, folderId);
+  }, []);
 
   const loadShare = useCallback(
     async (sharePassword?: string) => {
@@ -139,8 +198,21 @@ export function usePublicShare() {
       const targetFolderId = folderId || null;
       setCurrentFolderId(targetFolderId);
       loadFolderContents(targetFolderId);
+
+      const params = new URLSearchParams(searchParams);
+      if (targetFolderId && share?.folders) {
+        const folderPathSlug = getFolderPathSlugFromId(targetFolderId, share.folders);
+        if (folderPathSlug) {
+          params.set("folder", folderPathSlug);
+        } else {
+          params.delete("folder");
+        }
+      } else {
+        params.delete("folder");
+      }
+      router.push(`/s/${alias}?${params.toString()}`);
     },
-    [loadFolderContents]
+    [loadFolderContents, searchParams, router, alias, share?.folders, getFolderPathSlugFromId]
   );
 
   const handleSearch = useCallback((query: string) => {
@@ -348,9 +420,11 @@ export function usePublicShare() {
 
   useEffect(() => {
     if (share) {
-      loadFolderContents(null);
+      const resolvedFolderId = getFolderIdFromPathSlug(urlFolderSlug, share.folders || []);
+      setCurrentFolderId(resolvedFolderId);
+      loadFolderContents(resolvedFolderId);
     }
-  }, [share, loadFolderContents]);
+  }, [share, loadFolderContents, urlFolderSlug, getFolderIdFromPathSlug]);
 
   return {
     // Original functionality
