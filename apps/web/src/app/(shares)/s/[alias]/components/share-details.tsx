@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { IconDownload, IconFolder, IconFolderOff, IconShare } from "@tabler/icons-react";
+import { IconDownload, IconFolderOff, IconShare } from "@tabler/icons-react";
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
 
