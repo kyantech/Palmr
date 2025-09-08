@@ -64,7 +64,6 @@ export function usePublicShare() {
         setShare(response.data.share);
         setIsPasswordModalOpen(false);
         setIsPasswordError(false);
-
       } catch (error: any) {
         handleShareError(error);
       } finally {
@@ -190,8 +189,7 @@ export function usePublicShare() {
           }
         );
       }
-    } catch {
-    }
+    } catch {}
   };
 
   const handleBulkDownload = async () => {
@@ -251,8 +249,7 @@ export function usePublicShare() {
 
       toast.promise(
         bulkDownloadShareWithQueue(allItems, share.files || [], share.folders || [], zipName, undefined, true).then(
-          () => {
-          }
+          () => {}
         ),
         {
           loading: t("shareManager.creatingZip"),
@@ -319,8 +316,7 @@ export function usePublicShare() {
 
       toast.promise(
         bulkDownloadShareWithQueue(allItems, share.files || [], share.folders || [], zipName, undefined, false).then(
-          () => {
-          }
+          () => {}
         ),
         {
           loading: t("shareManager.creatingZip"),
