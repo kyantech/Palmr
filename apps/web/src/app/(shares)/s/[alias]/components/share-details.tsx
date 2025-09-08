@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { IconDownload, IconFolder, IconShare } from "@tabler/icons-react";
+import { IconDownload, IconFolder, IconFolderOff, IconShare } from "@tabler/icons-react";
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
 
@@ -131,12 +131,7 @@ export function ShareDetails({
               emptyStateComponent={() => (
                 <div className="text-center py-16">
                   <div className="flex justify-center mb-6">
-                    <div className="relative">
-                      <IconFolder className="h-24 w-24 text-muted-foreground/30" />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-4xl">📭</div>
-                      </div>
-                    </div>
+                    <IconFolderOff className="h-24 w-24 text-muted-foreground/30" />
                   </div>
                   <h3 className="text-lg font-semibold text-foreground mb-2">{t("fileSelector.noFilesInShare")}</h3>
                   <p className="text-muted-foreground max-w-sm mx-auto">{t("files.empty.description")}</p>

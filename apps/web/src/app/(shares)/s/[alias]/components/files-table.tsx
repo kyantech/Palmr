@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { IconDownload, IconEye, IconFolder } from "@tabler/icons-react";
+import { IconDownload, IconEye, IconFolder, IconFolderOpen } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 import { FilePreviewModal } from "@/components/modals/file-preview-modal";
@@ -110,7 +110,7 @@ export function ShareFilesTable({
               <TableRow>
                 <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
                   <div className="flex flex-col items-center gap-2">
-                    <div className="text-4xl">📁</div>
+                    <IconFolderOpen className="h-16 w-16 text-muted-foreground/50" />
                     <p className="font-medium">
                       {enableNavigation ? "No files or folders" : "No files or folders shared"}
                     </p>

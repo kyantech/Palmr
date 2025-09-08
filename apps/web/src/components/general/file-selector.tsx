@@ -1,7 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { IconCheck, IconEdit, IconEye, IconFolder, IconMinus, IconPlus, IconSearch } from "@tabler/icons-react";
+import {
+  IconCheck,
+  IconEdit,
+  IconEye,
+  IconFile,
+  IconFolder,
+  IconFolderOpen,
+  IconMinus,
+  IconPlus,
+  IconSearch,
+} from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
@@ -333,7 +343,7 @@ export function FileSelector({
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground border rounded-lg bg-muted/20">
-              <div className="text-4xl mb-2">📁</div>
+              <IconFolderOpen className="h-16 w-16 mx-auto mb-2 text-muted-foreground/50" />
               <p className="font-medium">{t("fileSelector.noFilesInShare")}</p>
               <p className="text-sm">{t("fileSelector.addFilesFromList")}</p>
             </div>
@@ -371,13 +381,13 @@ export function FileSelector({
             </div>
           ) : searchFilter ? (
             <div className="text-center py-8 text-muted-foreground border rounded-lg bg-muted/20">
-              <div className="text-4xl mb-2">🔍</div>
+              <IconSearch className="h-16 w-16 mx-auto mb-2 text-muted-foreground/50" />
               <p className="font-medium">{t("fileSelector.noFilesFound")}</p>
               <p className="text-sm">{t("fileSelector.tryDifferentSearch")}</p>
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground border rounded-lg bg-muted/20">
-              <div className="text-4xl mb-2">📄</div>
+              <IconFile className="h-16 w-16 mx-auto mb-2 text-muted-foreground/50" />
               <p className="font-medium">{t("fileSelector.allFilesInShare")}</p>
               <p className="text-sm">{t("fileSelector.uploadNewFiles")}</p>
             </div>
