@@ -31,7 +31,6 @@ export function usePublicShare() {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isPasswordError, setIsPasswordError] = useState(false);
 
-  // Browse state for folder navigation
   const [browseState, setBrowseState] = useState<ShareBrowseState>({
     folders: [],
     files: [],
@@ -66,7 +65,6 @@ export function usePublicShare() {
         setIsPasswordModalOpen(false);
         setIsPasswordError(false);
 
-        // Load initial folder contents after setting share - will be called by useEffect
       } catch (error: any) {
         handleShareError(error);
       } finally {
@@ -90,29 +88,20 @@ export function usePublicShare() {
           return;
         }
 
-        // Build hierarchical structure client-side
         const allFiles = share.files || [];
         const allFolders = share.folders || [];
 
-        // Create a set of all folder IDs that are in the share for quick lookup
         const shareFolderIds = new Set(allFolders.map((f) => f.id));
 
-        // Filter for current folder level
-        // If we're at root level (folderId === null), include:
-        // 1. Folders with no parentId (true root folders)
-        // 2. Folders whose parent is NOT in the share (orphaned folders)
         const folders = allFolders.filter((folder: any) => {
           if (folderId === null) {
-            // At root level: show folders with no parent OR folders whose parent isn't in the share
             return !folder.parentId || !shareFolderIds.has(folder.parentId);
           } else {
-            // At specific folder level: show direct children
             return folder.parentId === folderId;
           }
         });
         const files = allFiles.filter((file: any) => (file.folderId || null) === folderId);
 
-        // Build breadcrumb path
         const path = [];
         if (folderId) {
           let currentId = folderId;
@@ -169,20 +158,18 @@ export function usePublicShare() {
         throw new Error("Share data not available");
       }
 
-      // Use the share-specific download function with share data
       await downloadShareFolderWithQueue(folderId, folderName, share.files || [], share.folders || [], {
         silent: true,
         showToasts: false,
       });
     } catch (error) {
       console.error("Error downloading folder:", error);
-      throw error; // Re-throw so toast.promise can handle it
+      throw error;
     }
   };
 
   const handleDownload = async (objectName: string, fileName: string) => {
     try {
-      // Check if this is a folder download request
       if (objectName.startsWith("folder:")) {
         const folderId = objectName.replace("folder:", "");
         await toast.promise(handleFolderDownload(folderId, fileName), {
@@ -204,7 +191,6 @@ export function usePublicShare() {
         );
       }
     } catch {
-      // Error already handled in toast.promise
     }
   };
 
@@ -233,10 +219,8 @@ export function usePublicShare() {
         type?: "file" | "folder";
       }> = [];
 
-      // Add only root-level files (files not in any folder)
       if (share.files) {
         share.files.forEach((file) => {
-          // Only include files that are not in any folder
           if (!file.folderId) {
             allItems.push({
               objectName: file.objectName,
@@ -247,11 +231,9 @@ export function usePublicShare() {
         });
       }
 
-      // Add only top-level folders (folders that don't have a parent or whose parent isn't in the share)
       if (share.folders) {
         const folderIds = new Set(share.folders.map((f) => f.id));
         share.folders.forEach((folder) => {
-          // Only include folders that are at the root level or whose parent isn't also being downloaded
           if (!folder.parentId || !folderIds.has(folder.parentId)) {
             allItems.push({
               id: folder.id,
@@ -270,7 +252,6 @@ export function usePublicShare() {
       toast.promise(
         bulkDownloadShareWithQueue(allItems, share.files || [], share.folders || [], zipName, undefined, true).then(
           () => {
-            // Success handled by toast.promise
           }
         ),
         {
@@ -315,7 +296,6 @@ export function usePublicShare() {
       }
 
       const allItems = [
-        // Add individual files that are NOT in selected folders
         ...files
           .filter((file) => !filesInSelectedFolders.has(file.id))
           .map((file) => ({
@@ -326,7 +306,6 @@ export function usePublicShare() {
         // Add only top-level folders (avoid duplicating nested folders)
         ...folders
           .filter((folder) => {
-            // Only include folders whose parent isn't also selected
             return !folder.parentId || !folders.some((f) => f.id === folder.parentId);
           })
           .map((folder) => ({
@@ -341,7 +320,6 @@ export function usePublicShare() {
       toast.promise(
         bulkDownloadShareWithQueue(allItems, share.files || [], share.folders || [], zipName, undefined, false).then(
           () => {
-            // Success handled by toast.promise
           }
         ),
         {
@@ -369,7 +347,6 @@ export function usePublicShare() {
     if (alias) {
       loadShare();
     }
-    // Only run on mount or when alias changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [alias]);
 

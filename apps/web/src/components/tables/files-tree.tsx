@@ -171,7 +171,7 @@ function TreeNodeComponent({
               node={childNode}
               isExpanded={expandedFolders.has(childNode.item.id)}
               isSelected={selectedSet.has(childNode.item.id)}
-              isIndeterminate={false} // Will be calculated in parent
+              isIndeterminate={false}
               onToggleExpand={onToggleExpand}
               onToggleSelect={onToggleSelect}
               expandedFolders={expandedFolders}

@@ -4,7 +4,6 @@ const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3333";
 export async function GET(req: NextRequest) {
   const cookieHeader = req.headers.get("cookie");
 
-  // Forward query parameters
   const { searchParams } = new URL(req.url);
   const queryString = searchParams.toString();
   const url = `${API_BASE_URL}/files${queryString ? `?${queryString}` : ""}`;

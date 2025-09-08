@@ -88,12 +88,10 @@ export default function FilesPage() {
     if (!itemsToMove) return;
 
     try {
-      // Move files
       if (itemsToMove.files.length > 0) {
         await Promise.all(itemsToMove.files.map((file) => moveFile(file.id, { folderId: targetFolderId })));
       }
 
-      // Move folders
       if (itemsToMove.folders.length > 0) {
         await Promise.all(itemsToMove.folders.map((folder) => moveFolder(folder.id, { parentId: targetFolderId })));
       }
@@ -101,7 +99,6 @@ export default function FilesPage() {
       const itemCount = itemsToMove.files.length + itemsToMove.folders.length;
       toast.success(t("moveItems.success", { count: itemCount }));
 
-      // Refresh the file list and close modal
       await loadFiles();
       setItemsToMove(null);
     } catch (error) {

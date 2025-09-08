@@ -23,7 +23,6 @@ export async function folderRoutes(app: FastifyInstance) {
     }
   };
 
-  // Register Folder Metadata
   app.post(
     "/folders",
     {
@@ -62,7 +61,6 @@ export async function folderRoutes(app: FastifyInstance) {
     folderController.registerFolder.bind(folderController)
   );
 
-  // Check Folder validity
   app.post(
     "/folders/check",
     {
@@ -92,7 +90,6 @@ export async function folderRoutes(app: FastifyInstance) {
     folderController.checkFolder.bind(folderController)
   );
 
-  // List Folders
   app.get(
     "/folders",
     {
@@ -132,7 +129,6 @@ export async function folderRoutes(app: FastifyInstance) {
     folderController.listFolders.bind(folderController)
   );
 
-  // Update Folder Metadata
   app.patch(
     "/folders/:id",
     {
@@ -177,7 +173,6 @@ export async function folderRoutes(app: FastifyInstance) {
     folderController.updateFolder.bind(folderController)
   );
 
-  // Move Folder
   app.put(
     "/folders/:id/move",
     {
@@ -222,7 +217,6 @@ export async function folderRoutes(app: FastifyInstance) {
     folderController.moveFolder.bind(folderController)
   );
 
-  // Delete Folder
   app.delete(
     "/folders/:id",
     {

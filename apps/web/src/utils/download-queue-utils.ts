@@ -254,7 +254,7 @@ function collectEmptyFolders(folderId: string, allFiles: any[], allFolders: any[
     const subfolderFiles = collectFolderFiles(subfolder.id, allFiles, allFolders, "");
 
     if (subfolderFiles.length === 0) {
-      emptyFolders.push(subfolderPath.slice(0, -1)); // Remove trailing slash
+      emptyFolders.push(subfolderPath.slice(0, -1));
     }
 
     const nestedEmptyFolders = collectEmptyFolders(subfolder.id, allFiles, allFolders, subfolderPath);
@@ -449,7 +449,7 @@ export async function bulkDownloadWithQueue(
         allEmptyFolders.push(...emptyFolders);
 
         if (folderFiles.length === 0 && emptyFolders.length === 0) {
-          allEmptyFolders.push(folderPath.slice(0, -1)); // Remove trailing slash
+          allEmptyFolders.push(folderPath.slice(0, -1));
         }
       }
 
@@ -540,7 +540,7 @@ export async function bulkDownloadShareWithQueue(
       allEmptyFolders.push(...emptyFolders);
 
       if (folderFiles.length === 0 && emptyFolders.length === 0) {
-        allEmptyFolders.push(folderPath.slice(0, -1)); // Remove trailing slash
+        allEmptyFolders.push(folderPath.slice(0, -1));
       }
     }
 

@@ -26,7 +26,6 @@ export function CreateShareModal({ isOpen, onClose, onSuccess, getAllFilesAndFol
   const t = useTranslations();
   const [currentTab, setCurrentTab] = useState("details");
 
-  // Form data
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -36,7 +35,6 @@ export function CreateShareModal({ isOpen, onClose, onSuccess, getAllFilesAndFol
     maxViews: "",
   });
 
-  // File selection
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [files, setFiles] = useState<TreeFile[]>([]);
   const [folders, setFolders] = useState<TreeFolder[]>([]);
@@ -50,7 +48,6 @@ export function CreateShareModal({ isOpen, onClose, onSuccess, getAllFilesAndFol
       setIsLoadingData(true);
       const data = await getAllFilesAndFolders();
 
-      // Convert to tree format
       const treeFiles: TreeFile[] = data.files.map((file) => ({
         id: file.id,
         name: file.name,
@@ -76,11 +73,9 @@ export function CreateShareModal({ isOpen, onClose, onSuccess, getAllFilesAndFol
     }
   }, [getAllFilesAndFolders]);
 
-  // Load files and folders when modal opens
   useEffect(() => {
     if (isOpen) {
       loadData();
-      // Reset form
       setFormData({
         name: "",
         description: "",
@@ -108,7 +103,6 @@ export function CreateShareModal({ isOpen, onClose, onSuccess, getAllFilesAndFol
     try {
       setIsLoading(true);
 
-      // Separate files and folders
       const selectedFiles = selectedItems.filter((id) => files.some((file) => file.id === id));
       const selectedFolders = selectedItems.filter((id) => folders.some((folder) => folder.id === id));
 

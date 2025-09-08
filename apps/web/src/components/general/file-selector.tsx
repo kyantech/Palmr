@@ -46,14 +46,12 @@ export function FileSelector({
 
   const loadFiles = useCallback(async () => {
     try {
-      // Load files
       const filesResponse = await listFiles();
       const allFiles = filesResponse.data.files || [];
 
       setShareFiles(allFiles.filter((file) => selectedFiles.includes(file.id)));
       setAvailableFiles(allFiles.filter((file) => !selectedFiles.includes(file.id)));
 
-      // Load folders
       const foldersResponse = await listFolders();
       const allFolders = foldersResponse.data.folders || [];
 

@@ -83,7 +83,6 @@ export class FileController {
         });
       }
 
-      // Validate folder if specified
       if (input.folderId) {
         const folder = await prisma.folder.findFirst({
           where: { id: input.folderId, userId },
@@ -218,27 +217,22 @@ export class FileController {
 
       let files: any[];
 
-      // Determine the starting folder
       let targetFolderId: string | null;
       if (folderId === "null" || folderId === "" || !folderId) {
         targetFolderId = null; // Root folder
       } else {
-        targetFolderId = folderId; // Specific folder
+        targetFolderId = folderId;
       }
 
       if (recursive) {
-        // Recursive listing - get all files in folder and subfolders
         if (targetFolderId === null) {
-          // For root, get all user files recursively
           files = await this.getAllUserFilesRecursively(userId);
         } else {
-          // For specific folder, use folder service to get recursive files
           const { FolderService } = await import("../folder/service.js");
           const folderService = new FolderService();
           files = await folderService.getAllFilesInFolder(targetFolderId, userId);
         }
       } else {
-        // Non-recursive listing - only files directly in the specified folder
         files = await prisma.file.findMany({
           where: { userId, folderId: targetFolderId },
         });
@@ -358,7 +352,6 @@ export class FileController {
       const { id } = request.params as { id: string };
       const input: MoveFileInput = MoveFileSchema.parse(request.body);
 
-      // Verify file exists and belongs to user
       const existingFile = await prisma.file.findFirst({
         where: { id, userId },
       });
@@ -367,7 +360,6 @@ export class FileController {
         return reply.status(404).send({ error: "File not found." });
       }
 
-      // Validate target folder if specified
       if (input.folderId) {
         const targetFolder = await prisma.folder.findFirst({
           where: { id: input.folderId, userId },
@@ -377,7 +369,6 @@ export class FileController {
         }
       }
 
-      // Move the file
       const updatedFile = await prisma.file.update({
         where: { id },
         data: { folderId: input.folderId },
@@ -407,18 +398,15 @@ export class FileController {
   }
 
   private async getAllUserFilesRecursively(userId: string): Promise<any[]> {
-    // Get all root files (files not in any folder)
     const rootFiles = await prisma.file.findMany({
       where: { userId, folderId: null },
     });
 
-    // Get all root folders
     const rootFolders = await prisma.folder.findMany({
       where: { userId, parentId: null },
       select: { id: true },
     });
 
-    // Get files from all root folders recursively
     let allFiles = [...rootFiles];
 
     if (rootFolders.length > 0) {

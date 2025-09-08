@@ -26,7 +26,6 @@ export class FolderController {
 
       const input = RegisterFolderSchema.parse(request.body);
 
-      // Validate parent folder belongs to user if specified
       if (input.parentId) {
         const parentFolder = await prisma.folder.findFirst({
           where: { id: input.parentId, userId },
@@ -36,7 +35,6 @@ export class FolderController {
         }
       }
 
-      // Check for duplicate folder names in the same parent
       const existingFolder = await prisma.folder.findFirst({
         where: {
           name: input.name,
@@ -105,7 +103,6 @@ export class FolderController {
 
       const input = CheckFolderSchema.parse(request.body);
 
-      // Basic folder validation
       if (input.name.length > 100) {
         return reply.status(400).send({
           code: "folderNameTooLong",
@@ -114,7 +111,6 @@ export class FolderController {
         });
       }
 
-      // Check for duplicate folder names in the same parent
       const existingFolder = await prisma.folder.findFirst({
         where: {
           name: input.name,
@@ -154,7 +150,6 @@ export class FolderController {
       let folders: any[];
 
       if (recursive) {
-        // Get all folders (default behavior)
         folders = await prisma.folder.findMany({
           where: { userId },
           include: {
@@ -187,7 +182,6 @@ export class FolderController {
         });
       }
 
-      // Calculate total size for each folder
       const foldersResponse = await Promise.all(
         folders.map(async (folder) => {
           const totalSize = await this.folderService.calculateFolderSize(folder.id, userId);
@@ -237,7 +231,6 @@ export class FolderController {
         return reply.status(403).send({ error: "Access denied." });
       }
 
-      // Check for duplicate names if name is being updated
       if (updateData.name && updateData.name !== folderRecord.name) {
         const duplicateFolder = await prisma.folder.findFirst({
           where: {
@@ -303,14 +296,12 @@ export class FolderController {
       const { id } = request.params as { id: string };
       const body = request.body as any;
 
-      // Ensure parentId is properly handled - convert undefined to null
       const input = {
         parentId: body.parentId === undefined ? null : body.parentId,
       };
 
       const validatedInput = MoveFolderSchema.parse(input);
 
-      // Verify folder exists and belongs to user
       const existingFolder = await prisma.folder.findFirst({
         where: { id, userId },
       });
@@ -319,7 +310,6 @@ export class FolderController {
         return reply.status(404).send({ error: "Folder not found." });
       }
 
-      // Validate parent folder if specified
       if (validatedInput.parentId) {
         const parentFolder = await prisma.folder.findFirst({
           where: { id: validatedInput.parentId, userId },
@@ -328,7 +318,6 @@ export class FolderController {
           return reply.status(400).send({ error: "Parent folder not found or access denied" });
         }
 
-        // Prevent moving a folder into itself or its descendants
         if (await this.isDescendantOf(validatedInput.parentId, id, userId)) {
           return reply.status(400).send({ error: "Cannot move a folder into itself or its subfolders" });
         }

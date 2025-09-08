@@ -47,24 +47,20 @@ export class FolderService {
   }
 
   async getAllFilesInFolder(folderId: string, userId: string, basePath: string = ""): Promise<any[]> {
-    // Get all files directly in this folder
     const files = await prisma.file.findMany({
       where: { folderId, userId },
     });
 
-    // Get all subfolders
     const subfolders = await prisma.folder.findMany({
       where: { parentId: folderId, userId },
       select: { id: true, name: true },
     });
 
-    // Add relative path to files in this folder
     let allFiles = files.map((file: any) => ({
       ...file,
       relativePath: basePath + file.name,
     }));
 
-    // Recursively get files from subfolders
     for (const subfolder of subfolders) {
       const subfolderPath = basePath + subfolder.name + "/";
       const subfolderFiles = await this.getAllFilesInFolder(subfolder.id, userId, subfolderPath);
@@ -75,22 +71,18 @@ export class FolderService {
   }
 
   async calculateFolderSize(folderId: string, userId: string): Promise<bigint> {
-    // Get all files directly in this folder
     const files = await prisma.file.findMany({
       where: { folderId, userId },
       select: { size: true },
     });
 
-    // Get all subfolders
     const subfolders = await prisma.folder.findMany({
       where: { parentId: folderId, userId },
       select: { id: true },
     });
 
-    // Sum up file sizes in this folder
     let totalSize = files.reduce((sum, file) => sum + file.size, BigInt(0));
 
-    // Recursively calculate sizes of subfolders
     for (const subfolder of subfolders) {
       const subfolderSize = await this.calculateFolderSize(subfolder.id, userId);
       totalSize += subfolderSize;

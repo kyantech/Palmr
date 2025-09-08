@@ -64,7 +64,6 @@ export class ShareService {
   async createShare(data: CreateShareInput, userId: string) {
     const { password, maxViews, files, folders, ...shareData } = data;
 
-    // Validate files belong to user if provided
     if (files && files.length > 0) {
       const existingFiles = await prisma.file.findMany({
         where: {
@@ -78,7 +77,6 @@ export class ShareService {
       }
     }
 
-    // Validate folders belong to user if provided
     if (folders && folders.length > 0) {
       const existingFolders = await prisma.folder.findMany({
         where: {
@@ -92,7 +90,6 @@ export class ShareService {
       }
     }
 
-    // Require at least one file or folder
     if ((!files || files.length === 0) && (!folders || folders.length === 0)) {
       throw new Error("At least one file or folder must be selected to create a share");
     }
@@ -259,7 +256,6 @@ export class ShareService {
       throw new Error("Unauthorized to update this share");
     }
 
-    // Validate files if provided
     if (fileIds.length > 0) {
       const existingFiles = await this.shareRepository.findFilesByIds(fileIds);
       const notFoundFiles = fileIds.filter((id) => !existingFiles.some((file) => file.id === id));
@@ -271,7 +267,6 @@ export class ShareService {
       await this.shareRepository.addFilesToShare(shareId, fileIds);
     }
 
-    // Validate folders if provided
     if (folderIds.length > 0) {
       const existingFolders = await this.shareRepository.findFoldersByIds(folderIds);
       const notFoundFolders = folderIds.filter((id) => !existingFolders.some((folder) => folder.id === id));
@@ -297,12 +292,10 @@ export class ShareService {
       throw new Error("Unauthorized to update this share");
     }
 
-    // Remove files if provided
     if (fileIds.length > 0) {
       await this.shareRepository.removeFilesFromShare(shareId, fileIds);
     }
 
-    // Remove folders if provided
     if (folderIds.length > 0) {
       await this.shareRepository.removeFoldersFromShare(shareId, folderIds);
     }
@@ -417,7 +410,6 @@ export class ShareService {
       throw new Error("No recipients found for this share");
     }
 
-    // Get sender information
     let senderName = "Someone";
     try {
       const sender = await this.userService.getUserById(userId);

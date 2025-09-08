@@ -29,7 +29,6 @@ interface ShareFilesTableProps {
   onDownload: (objectName: string, fileName: string) => Promise<void>;
   onDownloadFolder?: (folderId: string, folderName: string) => Promise<void>;
   onNavigateToFolder?: (folderId: string) => void;
-  // Support both browse mode (with navigation) and static mode
   enableNavigation?: boolean;
 }
 
@@ -77,7 +76,6 @@ export function ShareFilesTable({
     if (enableNavigation && onDownloadFolder) {
       await onDownloadFolder(folderId, folderName);
     } else {
-      // Fallback to standard download with folder prefix for static mode
       await onDownload(`folder:${folderId}`, folderName);
     }
   };
@@ -220,5 +218,4 @@ export function ShareFilesTable({
   );
 }
 
-// Export both component names for backward compatibility
 export const ShareContentTable = ShareFilesTable;

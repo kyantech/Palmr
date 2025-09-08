@@ -24,7 +24,6 @@ export interface ShareFilesTableProps {
   enableNavigation?: boolean;
 }
 
-// Alias for backward compatibility
 export type ShareContentTableProps = ShareFilesTableProps;
 
 export interface PasswordModalProps {

@@ -7,10 +7,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ s
   const body = await req.text();
   const { shareId } = await params;
 
-  // Parse the request body to get files array
   const requestData = JSON.parse(body);
 
-  // Transform to the unified items format expected by the new API
   const itemsBody = {
     files: requestData.files || [],
     folders: [],

@@ -46,9 +46,7 @@ interface FilesViewManagerProps {
   breadcrumbs?: React.ReactNode;
   isLoading?: boolean;
   emptyStateComponent?: React.ComponentType;
-  // Mode control
   isShareMode?: boolean;
-  // File management actions (optional - only for files mode)
   onDeleteFolder?: (folder: Folder) => void;
   onRenameFolder?: (folder: Folder) => void;
   onMoveFolder?: (folder: Folder) => void;
@@ -120,7 +118,6 @@ export function FilesViewManager({
   const hasContent = (folders?.length || 0) > 0 || files.length > 0;
   const showEmptyState = !hasContent && !searchQuery && !isLoading;
 
-  // Determine if we're in files mode based on presence of file management actions
   const isFilesMode = !isShareMode && !!(onDeleteFolder || onRenameFolder || onShare || onDelete);
 
   const baseProps = {

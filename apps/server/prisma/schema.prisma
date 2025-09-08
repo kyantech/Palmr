@@ -299,19 +299,15 @@ model Folder {
   description String?
   objectName  String
 
-  // Hierarchical structure
   parentId    String?
   parent      Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
   children    Folder[] @relation("FolderHierarchy")
 
-  // Owner relationship
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Files in this folder
   files       File[]
 
-  // Sharing support
   shares      Share[]  @relation("ShareFolders")
 
   createdAt   DateTime @default(now())

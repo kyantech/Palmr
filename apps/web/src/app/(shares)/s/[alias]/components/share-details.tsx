@@ -49,7 +49,6 @@ interface Folder {
 interface ShareDetailsPropsExtended extends Omit<ShareDetailsProps, "onBulkDownload" | "password"> {
   onBulkDownload?: () => Promise<void>;
   onSelectedItemsBulkDownload?: (files: File[], folders: Folder[]) => Promise<void>;
-  // Navigation props
   folders: Folder[];
   files: File[];
   path: Folder[];
@@ -76,7 +75,6 @@ export function ShareDetails({
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<{ name: string; objectName: string; type?: string } | null>(null);
 
-  // Check if share has any items (use the full share data, not current folder level)
   const shareHasItems = (share.files && share.files.length > 0) || (share.folders && share.folders.length > 0);
   const totalShareItems = (share.files?.length || 0) + (share.folders?.length || 0);
   const hasMultipleFiles = totalShareItems > 1;

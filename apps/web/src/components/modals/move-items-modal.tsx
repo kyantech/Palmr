@@ -51,7 +51,6 @@ export function MoveItemsModal({
       setIsLoading(true);
       const data = await getAllFolders();
 
-      // Convert to tree format and exclude folders being moved
       const excludedIds = new Set(itemsToMove?.folders.map((f) => f.id) || []);
 
       const treeFolders: TreeFolder[] = data
@@ -72,7 +71,6 @@ export function MoveItemsModal({
     }
   }, [getAllFolders, itemsToMove]);
 
-  // Load folders when modal opens
   useEffect(() => {
     if (isOpen) {
       loadFolders();
