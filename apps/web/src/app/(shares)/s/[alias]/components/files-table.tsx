@@ -7,9 +7,40 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getFileIcon } from "@/utils/file-icons";
 import { formatFileSize } from "@/utils/format-file-size";
-import { ShareContentTableProps } from "../types";
 
-export function ShareContentTable({ files, folders, onDownload }: ShareContentTableProps) {
+interface ShareFile {
+  id: string;
+  name: string;
+  size: string | number;
+  objectName: string;
+  createdAt: string;
+}
+
+interface ShareFolder {
+  id: string;
+  name: string;
+  totalSize?: string | number | null;
+  createdAt: string;
+}
+
+interface ShareFilesTableProps {
+  files?: ShareFile[];
+  folders?: ShareFolder[];
+  onDownload: (objectName: string, fileName: string) => Promise<void>;
+  onDownloadFolder?: (folderId: string, folderName: string) => Promise<void>;
+  onNavigateToFolder?: (folderId: string) => void;
+  // Support both browse mode (with navigation) and static mode
+  enableNavigation?: boolean;
+}
+
+export function ShareFilesTable({
+  files = [],
+  folders = [],
+  onDownload,
+  onDownloadFolder,
+  onNavigateToFolder,
+  enableNavigation = false,
+}: ShareFilesTableProps) {
   const t = useTranslations();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<{ name: string; objectName: string; type?: string } | null>(null);
@@ -36,9 +67,24 @@ export function ShareContentTable({ files, folders, onDownload }: ShareContentTa
     setSelectedFile(null);
   };
 
+  const handleFolderClick = (folderId: string) => {
+    if (enableNavigation && onNavigateToFolder) {
+      onNavigateToFolder(folderId);
+    }
+  };
+
+  const handleFolderDownload = async (folderId: string, folderName: string) => {
+    if (enableNavigation && onDownloadFolder) {
+      await onDownloadFolder(folderId, folderName);
+    } else {
+      // Fallback to standard download with folder prefix for static mode
+      await onDownload(`folder:${folderId}`, folderName);
+    }
+  };
+
   const allItems = [
-    ...(folders || []).map((folder) => ({ ...folder, type: "folder" as const })),
-    ...(files || []).map((file) => ({ ...file, type: "file" as const })),
+    ...folders.map((folder) => ({ ...folder, type: "folder" as const })),
+    ...files.map((file) => ({ ...file, type: "file" as const })),
   ];
 
   return (
@@ -67,8 +113,10 @@ export function ShareContentTable({ files, folders, onDownload }: ShareContentTa
                 <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
                   <div className="flex flex-col items-center gap-2">
                     <div className="text-4xl">📁</div>
-                    <p className="font-medium">No files or folders shared</p>
-                    <p className="text-sm">This share is empty</p>
+                    <p className="font-medium">
+                      {enableNavigation ? "No files or folders" : "No files or folders shared"}
+                    </p>
+                    <p className="text-sm">{enableNavigation ? "This location is empty" : "This share is empty"}</p>
                   </div>
                 </TableCell>
               </TableRow>
@@ -80,7 +128,16 @@ export function ShareContentTable({ files, folders, onDownload }: ShareContentTa
                       <TableCell className="h-12 px-4 border-0">
                         <div className="flex items-center gap-2">
                           <IconFolder className="h-5 w-5 text-blue-600" />
-                          <span className="truncate max-w-[250px] font-medium">{item.name}</span>
+                          {enableNavigation ? (
+                            <button
+                              className="truncate max-w-[250px] font-medium text-left hover:underline"
+                              onClick={() => handleFolderClick(item.id)}
+                            >
+                              {item.name}
+                            </button>
+                          ) : (
+                            <span className="truncate max-w-[250px] font-medium">{item.name}</span>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell className="h-12 px-4">
@@ -89,11 +146,23 @@ export function ShareContentTable({ files, folders, onDownload }: ShareContentTa
                       <TableCell className="h-12 px-4">{formatDateTime(item.createdAt)}</TableCell>
                       <TableCell className="h-12 px-4">
                         <div className="flex items-center gap-1">
+                          {enableNavigation && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 hover:bg-muted"
+                              onClick={() => handleFolderClick(item.id)}
+                              title="Open folder"
+                            >
+                              <IconFolder className="h-4 w-4" />
+                              <span className="sr-only">Open folder</span>
+                            </Button>
+                          )}
                           <Button
                             size="icon"
                             variant="ghost"
                             className="h-8 w-8 hover:bg-muted"
-                            onClick={() => onDownload(`folder:${item.id}`, item.name)}
+                            onClick={() => handleFolderDownload(item.id, item.name)}
                             title={t("filesTable.actions.download")}
                           >
                             <IconDownload className="h-4 w-4" />
@@ -150,3 +219,6 @@ export function ShareContentTable({ files, folders, onDownload }: ShareContentTa
     </div>
   );
 }
+
+// Export both component names for backward compatibility
+export const ShareContentTable = ShareFilesTable;

@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useShareBrowse } from "../hooks/use-share-browse";
 import { ShareDetailsProps } from "../types";
 
 interface File {
@@ -47,17 +46,31 @@ interface Folder {
   };
 }
 
-interface ShareDetailsPropsExtended extends Omit<ShareDetailsProps, "onBulkDownload"> {
+interface ShareDetailsPropsExtended extends Omit<ShareDetailsProps, "onBulkDownload" | "password"> {
   onBulkDownload?: () => Promise<void>;
   onSelectedItemsBulkDownload?: (files: File[], folders: Folder[]) => Promise<void>;
+  // Navigation props
+  folders: Folder[];
+  files: File[];
+  path: Folder[];
+  isBrowseLoading: boolean;
+  searchQuery: string;
+  navigateToFolder: (folderId?: string) => void;
+  handleSearch: (query: string) => void;
 }
 
 export function ShareDetails({
   share,
-  password,
   onDownload,
   onBulkDownload,
   onSelectedItemsBulkDownload,
+  folders,
+  files,
+  path,
+  isBrowseLoading,
+  searchQuery,
+  navigateToFolder,
+  handleSearch,
 }: ShareDetailsPropsExtended) {
   const t = useTranslations();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -67,12 +80,6 @@ export function ShareDetails({
   const shareHasItems = (share.files && share.files.length > 0) || (share.folders && share.folders.length > 0);
   const totalShareItems = (share.files?.length || 0) + (share.folders?.length || 0);
   const hasMultipleFiles = totalShareItems > 1;
-
-  // Use the share browse hook for folder navigation
-  const { folders, files, path, isLoading, searchQuery, navigateToFolder, handleSearch } = useShareBrowse({
-    shareId: share.id,
-    password: password,
-  });
 
   const handleFolderDownload = async (folderId: string, folderName: string) => {
     // Use the download handler from the hook which uses toast.promise
@@ -121,7 +128,7 @@ export function ShareDetails({
               onSearch={handleSearch}
               onDownload={onDownload}
               onBulkDownload={onSelectedItemsBulkDownload}
-              isLoading={isLoading}
+              isLoading={isBrowseLoading}
               isShareMode={true}
               emptyStateComponent={() => (
                 <div className="text-center py-16">

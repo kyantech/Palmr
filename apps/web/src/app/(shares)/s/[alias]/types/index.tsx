@@ -16,15 +16,16 @@ export interface ShareFolder {
 }
 
 export interface ShareFilesTableProps {
-  files: ShareFile[];
-  onDownload: (objectName: string, fileName: string) => Promise<void>;
-}
-
-export interface ShareContentTableProps {
   files?: ShareFile[];
   folders?: ShareFolder[];
   onDownload: (objectName: string, fileName: string) => Promise<void>;
+  onDownloadFolder?: (folderId: string, folderName: string) => Promise<void>;
+  onNavigateToFolder?: (folderId: string) => void;
+  enableNavigation?: boolean;
 }
+
+// Alias for backward compatibility
+export type ShareContentTableProps = ShareFilesTableProps;
 
 export interface PasswordModalProps {
   isOpen: boolean;

@@ -13,6 +13,14 @@ import {
   downloadShareFolderWithQueue,
 } from "@/utils/download-queue-utils";
 
+interface ShareBrowseState {
+  folders: any[];
+  files: any[];
+  path: any[];
+  isLoading: boolean;
+  error: string | null;
+}
+
 export function usePublicShare() {
   const t = useTranslations();
   const params = useParams();
@@ -22,6 +30,17 @@ export function usePublicShare() {
   const [password, setPassword] = useState("");
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isPasswordError, setIsPasswordError] = useState(false);
+
+  // Browse state for folder navigation
+  const [browseState, setBrowseState] = useState<ShareBrowseState>({
+    folders: [],
+    files: [],
+    path: [],
+    isLoading: true,
+    error: null,
+  });
+  const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const loadShare = useCallback(
     async (sharePassword?: string) => {
@@ -43,23 +62,102 @@ export function usePublicShare() {
         setIsLoading(true);
         const response = await getShareByAlias(alias, sharePassword ? { password: sharePassword } : undefined);
 
-        console.log("Share data received:", response.data.share);
-        console.log("Share files:", response.data.share.files);
-        console.log("Share folders:", response.data.share.folders);
-        console.log("Files count:", response.data.share.files?.length || 0);
-        console.log("Folders count:", response.data.share.folders?.length || 0);
-
         setShare(response.data.share);
         setIsPasswordModalOpen(false);
         setIsPasswordError(false);
+
+        // Load initial folder contents after setting share - will be called by useEffect
       } catch (error: any) {
         handleShareError(error);
       } finally {
         setIsLoading(false);
       }
     },
-    [alias, t]
+    [alias]
   );
+
+  const loadFolderContents = useCallback(
+    (folderId: string | null) => {
+      try {
+        setBrowseState((prev) => ({ ...prev, isLoading: true, error: null }));
+
+        if (!share) {
+          setBrowseState((prev) => ({
+            ...prev,
+            isLoading: false,
+            error: "No share data available",
+          }));
+          return;
+        }
+
+        // Build hierarchical structure client-side
+        const allFiles = share.files || [];
+        const allFolders = share.folders || [];
+
+        // Create a set of all folder IDs that are in the share for quick lookup
+        const shareFolderIds = new Set(allFolders.map((f) => f.id));
+
+        // Filter for current folder level
+        // If we're at root level (folderId === null), include:
+        // 1. Folders with no parentId (true root folders)
+        // 2. Folders whose parent is NOT in the share (orphaned folders)
+        const folders = allFolders.filter((folder: any) => {
+          if (folderId === null) {
+            // At root level: show folders with no parent OR folders whose parent isn't in the share
+            return !folder.parentId || !shareFolderIds.has(folder.parentId);
+          } else {
+            // At specific folder level: show direct children
+            return folder.parentId === folderId;
+          }
+        });
+        const files = allFiles.filter((file: any) => (file.folderId || null) === folderId);
+
+        // Build breadcrumb path
+        const path = [];
+        if (folderId) {
+          let currentId = folderId;
+          while (currentId) {
+            const folder = allFolders.find((f: any) => f.id === currentId);
+            if (folder) {
+              path.unshift(folder);
+              currentId = (folder as any).parentId;
+            } else {
+              break;
+            }
+          }
+        }
+
+        setBrowseState({
+          folders,
+          files,
+          path,
+          isLoading: false,
+          error: null,
+        });
+      } catch (error: any) {
+        console.error("Error loading folder contents:", error);
+        setBrowseState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: "Failed to load folder contents",
+        }));
+      }
+    },
+    [share]
+  );
+
+  const navigateToFolder = useCallback(
+    (folderId?: string) => {
+      const targetFolderId = folderId || null;
+      setCurrentFolderId(targetFolderId);
+      loadFolderContents(targetFolderId);
+    },
+    [loadFolderContents]
+  );
+
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+  }, []);
 
   const handlePasswordSubmit = async () => {
     await loadShare(password);
@@ -258,11 +356,31 @@ export function usePublicShare() {
     }
   };
 
+  // Filter content based on search query
+  const filteredFolders = browseState.folders.filter((folder) =>
+    folder.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredFiles = browseState.files.filter((file) =>
+    file.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   useEffect(() => {
-    loadShare();
-  }, [alias, loadShare]);
+    if (alias) {
+      loadShare();
+    }
+    // Only run on mount or when alias changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [alias]);
+
+  useEffect(() => {
+    if (share) {
+      loadFolderContents(null);
+    }
+  }, [share, loadFolderContents]);
 
   return {
+    // Original functionality
     isLoading,
     share,
     password,
@@ -273,5 +391,17 @@ export function usePublicShare() {
     handleDownload,
     handleBulkDownload,
     handleSelectedItemsBulkDownload,
+
+    // Browse functionality
+    folders: filteredFolders,
+    files: filteredFiles,
+    path: browseState.path,
+    isBrowseLoading: browseState.isLoading,
+    browseError: browseState.error,
+    currentFolderId,
+    searchQuery,
+    navigateToFolder,
+    handleSearch,
+    reload: () => loadFolderContents(currentFolderId),
   };
 }

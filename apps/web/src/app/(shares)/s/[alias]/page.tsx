@@ -20,6 +20,13 @@ export default function PublicSharePage() {
     handleDownload,
     handleBulkDownload,
     handleSelectedItemsBulkDownload,
+    folders,
+    files,
+    path,
+    isBrowseLoading,
+    searchQuery,
+    navigateToFolder,
+    handleSearch,
   } = usePublicShare();
 
   if (isLoading) {
@@ -36,10 +43,16 @@ export default function PublicSharePage() {
           {share && (
             <ShareDetails
               share={share}
-              password={password}
               onDownload={handleDownload}
               onBulkDownload={handleBulkDownload}
               onSelectedItemsBulkDownload={handleSelectedItemsBulkDownload}
+              folders={folders}
+              files={files}
+              path={path}
+              isBrowseLoading={isBrowseLoading}
+              searchQuery={searchQuery}
+              navigateToFolder={navigateToFolder}
+              handleSearch={handleSearch}
             />
           )}
         </div>
