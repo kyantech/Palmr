@@ -6,10 +6,17 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import { FolderBreadcrumbs } from "@/components/general/folder-breadcrumbs";
 import { GlobalDropZone } from "@/components/general/global-drop-zone";
 import { FileManagerLayout } from "@/components/layout/file-manager-layout";
 import { MoveItemsModal } from "@/components/modals/move-items-modal";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Card, CardContent } from "@/components/ui/card";
 import { moveFile } from "@/http/endpoints/files";
 import { listFolders, moveFolder } from "@/http/endpoints/folders";
@@ -134,11 +141,31 @@ export default function FilesPage() {
                   onDownload={fileManager.handleDownload}
                   isLoading={isLoading}
                   breadcrumbs={
-                    <FolderBreadcrumbs
-                      currentPath={currentPath}
-                      onNavigate={navigateToFolder}
-                      onNavigateToRoot={navigateToRoot}
-                    />
+                    <Breadcrumb>
+                      <BreadcrumbList>
+                        <BreadcrumbItem>
+                          <BreadcrumbLink className="flex items-center gap-1 cursor-pointer" onClick={navigateToRoot}>
+                            <IconFolderOpen size={16} />
+                            {t("folderActions.rootFolder")}
+                          </BreadcrumbLink>
+                        </BreadcrumbItem>
+
+                        {currentPath.map((folder, index) => (
+                          <div key={folder.id} className="contents">
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                              {index === currentPath.length - 1 ? (
+                                <BreadcrumbPage>{folder.name}</BreadcrumbPage>
+                              ) : (
+                                <BreadcrumbLink className="cursor-pointer" onClick={() => navigateToFolder(folder.id)}>
+                                  {folder.name}
+                                </BreadcrumbLink>
+                              )}
+                            </BreadcrumbItem>
+                          </div>
+                        ))}
+                      </BreadcrumbList>
+                    </Breadcrumb>
                   }
                   onNavigateToFolder={navigateToFolder}
                   onDeleteFolder={(folder) =>

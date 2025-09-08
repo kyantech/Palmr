@@ -4,8 +4,15 @@ import { format } from "date-fns";
 import { useTranslations } from "next-intl";
 
 import { FilesViewManager } from "@/app/files/components/files-view-manager";
-import { FolderBreadcrumbs } from "@/components/general/folder-breadcrumbs";
 import { FilePreviewModal } from "@/components/modals/file-preview-modal";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useShareBrowse } from "../hooks/use-share-browse";
@@ -131,11 +138,34 @@ export function ShareDetails({
                 </div>
               )}
               breadcrumbs={
-                <FolderBreadcrumbs
-                  currentPath={path}
-                  onNavigate={navigateToFolder}
-                  onNavigateToRoot={() => navigateToFolder()}
-                />
+                <Breadcrumb>
+                  <BreadcrumbList>
+                    <BreadcrumbItem>
+                      <BreadcrumbLink
+                        className="flex items-center gap-1 cursor-pointer"
+                        onClick={() => navigateToFolder()}
+                      >
+                        <IconShare size={16} />
+                        {t("folderActions.rootFolder")}
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+
+                    {path.map((folder, index) => (
+                      <div key={folder.id} className="contents">
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                          {index === path.length - 1 ? (
+                            <BreadcrumbPage>{folder.name}</BreadcrumbPage>
+                          ) : (
+                            <BreadcrumbLink className="cursor-pointer" onClick={() => navigateToFolder(folder.id)}>
+                              {folder.name}
+                            </BreadcrumbLink>
+                          )}
+                        </BreadcrumbItem>
+                      </div>
+                    ))}
+                  </BreadcrumbList>
+                </Breadcrumb>
               }
               onNavigateToFolder={navigateToFolder}
               onDownloadFolder={handleFolderDownload}
