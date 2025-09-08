@@ -475,6 +475,11 @@ export async function bulkDownloadWithQueue(
 
         allFilesToDownload.push(...folderFiles);
         allEmptyFolders.push(...emptyFolders);
+
+        // If this selected folder itself is empty (no files and no subfolders), add it to empty folders
+        if (folderFiles.length === 0 && emptyFolders.length === 0) {
+          allEmptyFolders.push(folderPath.slice(0, -1)); // Remove trailing slash
+        }
       }
 
       // Get set of files that are already included in folders
@@ -573,6 +578,11 @@ export async function bulkDownloadShareWithQueue(
 
       allFilesToDownload.push(...folderFiles);
       allEmptyFolders.push(...emptyFolders);
+
+      // If this selected folder itself is empty (no files and no subfolders), add it to empty folders
+      if (folderFiles.length === 0 && emptyFolders.length === 0) {
+        allEmptyFolders.push(folderPath.slice(0, -1)); // Remove trailing slash
+      }
     }
 
     // Get set of files that are already included in folders
