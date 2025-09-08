@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -23,31 +23,15 @@ export function useFileBrowser() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [clearSelectionCallback, setClearSelectionCallbackState] = useState<(() => void) | undefined>();
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const isNavigatingRef = useRef(false);
 
-  const currentFolderId = searchParams.get("folder") || null;
+  const urlFolderId = searchParams.get("folder") || null;
+  const currentFolderId = urlFolderId;
 
   const setClearSelectionCallback = useCallback((callback: () => void) => {
     setClearSelectionCallbackState(() => callback);
   }, []);
-
-  const navigateToFolder = useCallback(
-    (folderId?: string) => {
-      const params = new URLSearchParams(searchParams);
-      if (folderId) {
-        params.set("folder", folderId);
-      } else {
-        params.delete("folder");
-      }
-      router.push(`/files?${params.toString()}`);
-    },
-    [router, searchParams]
-  );
-
-  const navigateToRoot = useCallback(() => {
-    const params = new URLSearchParams(searchParams);
-    params.delete("folder");
-    router.push(`/files?${params.toString()}`);
-  }, [router, searchParams]);
 
   const buildBreadcrumbPath = useCallback((allFolders: any[], folderId: string): any[] => {
     const path: any[] = [];
@@ -85,20 +69,11 @@ export function useFileBrowser() {
     return pathParts.join(" / ");
   }, []);
 
-  const loadFiles = useCallback(async () => {
-    try {
-      setIsLoading(true);
-
-      const [filesResponse, foldersResponse] = await Promise.all([listFiles(), listFolders()]);
-
-      const fetchedFiles = filesResponse.data.files || [];
-      const fetchedFolders = foldersResponse.data.folders || [];
-
-      setAllFiles(fetchedFiles);
-      setAllFolders(fetchedFolders);
-
-      const currentFiles = fetchedFiles.filter((file: any) => (file.folderId || null) === currentFolderId);
-      const currentFolders = fetchedFolders.filter((folder: any) => (folder.parentId || null) === currentFolderId);
+  const navigateToFolderDirect = useCallback(
+    (targetFolderId: string | null) => {
+      // Filter existing data for instant navigation
+      const currentFiles = allFiles.filter((file: any) => (file.folderId || null) === targetFolderId);
+      const currentFolders = allFolders.filter((folder: any) => (folder.parentId || null) === targetFolderId);
 
       const sortedFiles = [...currentFiles].sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -111,8 +86,84 @@ export function useFileBrowser() {
       setFiles(sortedFiles);
       setFolders(sortedFolders);
 
-      if (currentFolderId) {
-        const path = buildBreadcrumbPath(fetchedFolders, currentFolderId);
+      if (targetFolderId) {
+        const path = buildBreadcrumbPath(allFolders, targetFolderId);
+        setCurrentPath(path);
+      } else {
+        setCurrentPath([]);
+      }
+
+      // Update URL without triggering reload
+      const params = new URLSearchParams(searchParams);
+      if (targetFolderId) {
+        params.set("folder", targetFolderId);
+      } else {
+        params.delete("folder");
+      }
+      window.history.pushState({}, "", `/files?${params.toString()}`);
+    },
+    [allFiles, allFolders, buildBreadcrumbPath, searchParams]
+  );
+
+  const navigateToFolder = useCallback(
+    (folderId?: string) => {
+      const targetFolderId = folderId || null;
+
+      if (dataLoaded && allFiles.length > 0) {
+        // Use direct navigation
+        isNavigatingRef.current = true;
+        navigateToFolderDirect(targetFolderId);
+        // Reset flag after navigation
+        setTimeout(() => {
+          isNavigatingRef.current = false;
+        }, 0);
+      } else {
+        // Fallback to traditional navigation for initial load
+        const params = new URLSearchParams(searchParams);
+        if (folderId) {
+          params.set("folder", folderId);
+        } else {
+          params.delete("folder");
+        }
+        router.push(`/files?${params.toString()}`);
+      }
+    },
+    [dataLoaded, allFiles.length, navigateToFolderDirect, searchParams, router]
+  );
+
+  const navigateToRoot = useCallback(() => {
+    navigateToFolder();
+  }, [navigateToFolder]);
+
+  const loadFiles = useCallback(async () => {
+    try {
+      setIsLoading(true);
+
+      const [filesResponse, foldersResponse] = await Promise.all([listFiles(), listFolders()]);
+
+      const fetchedFiles = filesResponse.data.files || [];
+      const fetchedFolders = foldersResponse.data.folders || [];
+
+      setAllFiles(fetchedFiles);
+      setAllFolders(fetchedFolders);
+      setDataLoaded(true);
+
+      const currentFiles = fetchedFiles.filter((file: any) => (file.folderId || null) === urlFolderId);
+      const currentFolders = fetchedFolders.filter((folder: any) => (folder.parentId || null) === urlFolderId);
+
+      const sortedFiles = [...currentFiles].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+
+      const sortedFolders = [...currentFolders].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+
+      setFiles(sortedFiles);
+      setFolders(sortedFolders);
+
+      if (urlFolderId) {
+        const path = buildBreadcrumbPath(fetchedFolders, urlFolderId);
         setCurrentPath(path);
       } else {
         setCurrentPath([]);
@@ -122,7 +173,7 @@ export function useFileBrowser() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentFolderId, buildBreadcrumbPath, t]);
+  }, [urlFolderId, buildBreadcrumbPath, t]);
 
   const fileManager = useEnhancedFileManager(loadFiles, clearSelectionCallback);
 
@@ -186,7 +237,9 @@ export function useFileBrowser() {
   const filteredFolders = searchQuery ? getImmediateChildFoldersWithMatches() : folders;
 
   useEffect(() => {
-    loadFiles();
+    if (!isNavigatingRef.current) {
+      loadFiles();
+    }
   }, [loadFiles]);
 
   return {
