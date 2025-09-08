@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import type { FileItem } from "@/http/endpoints/files/types";
 import type { FolderItem } from "@/http/endpoints/folders/types";
 import { cn } from "@/lib/utils";
+import { getFileIcon } from "@/utils/file-icons";
 
 export interface TreeFile {
   id: string;
@@ -146,7 +147,10 @@ function TreeNodeComponent({
               <IconFolder className="h-4 w-4 flex-shrink-0 text-primary" />
             )
           ) : (
-            <IconFile className="h-4 w-4 flex-shrink-0 text-gray-500" />
+            (() => {
+              const { icon: FileIcon, color } = getFileIcon(item.name);
+              return <FileIcon className={`h-4 w-4 flex-shrink-0 ${color}`} />;
+            })()
           )}
 
           <span className="truncate text-sm">{item.name}</span>
