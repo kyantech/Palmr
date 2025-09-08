@@ -9,16 +9,6 @@ import { useEnhancedFileManager } from "@/hooks/use-enhanced-file-manager";
 import { listFiles } from "@/http/endpoints";
 import { listFolders } from "@/http/endpoints/folders";
 
-interface FileWithPath extends Record<string, any> {
-  folderPath?: string;
-  _isSearchResult?: boolean;
-}
-
-interface FolderWithPath extends Record<string, any> {
-  folderPath?: string;
-  _isSearchResult?: boolean;
-}
-
 export function useFileBrowser() {
   const t = useTranslations();
   const router = useRouter();
