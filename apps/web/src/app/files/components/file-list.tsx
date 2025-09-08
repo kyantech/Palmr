@@ -6,7 +6,16 @@ import { FilesViewManager } from "./files-view-manager";
 import { Header } from "./header";
 import { SearchBar } from "./search-bar";
 
-export function FileList({ files, filteredFiles, fileManager, searchQuery, onSearch, onUpload }: FileListProps) {
+export function FileList({
+  files,
+  filteredFiles,
+  folders,
+  filteredFolders,
+  fileManager,
+  searchQuery,
+  onSearch,
+  onUpload,
+}: FileListProps) {
   const t = useTranslations();
 
   return (
@@ -16,8 +25,10 @@ export function FileList({ files, filteredFiles, fileManager, searchQuery, onSea
           <Header onUpload={onUpload} />
           <SearchBar
             filteredCount={filteredFiles.length}
+            filteredFolders={filteredFolders?.length || 0}
             searchQuery={searchQuery}
             totalFiles={files.length}
+            totalFolders={folders?.length || 0}
             onSearch={onSearch}
           />
 

@@ -9,6 +9,16 @@ import { useEnhancedFileManager } from "@/hooks/use-enhanced-file-manager";
 import { listFiles } from "@/http/endpoints";
 import { listFolders } from "@/http/endpoints/folders";
 
+interface FileWithPath extends Record<string, any> {
+  folderPath?: string;
+  _isSearchResult?: boolean;
+}
+
+interface FolderWithPath extends Record<string, any> {
+  folderPath?: string;
+  _isSearchResult?: boolean;
+}
+
 export function useFileBrowser() {
   const t = useTranslations();
   const router = useRouter();
@@ -17,6 +27,8 @@ export function useFileBrowser() {
   // State following original pattern with any[] type
   const [files, setFiles] = useState<any[]>([]);
   const [folders, setFolders] = useState<any[]>([]);
+  const [allFiles, setAllFiles] = useState<any[]>([]);
+  const [allFolders, setAllFolders] = useState<any[]>([]);
   const [currentPath, setCurrentPath] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -66,6 +78,25 @@ export function useFileBrowser() {
     return path;
   }, []);
 
+  const buildFolderPath = useCallback((allFolders: any[], folderId: string | null): string => {
+    if (!folderId) return "";
+
+    const pathParts: string[] = [];
+    let currentId: string | null = folderId;
+
+    while (currentId) {
+      const folder = allFolders.find((f) => f.id === currentId);
+      if (folder) {
+        pathParts.unshift(folder.name);
+        currentId = folder.parentId;
+      } else {
+        break;
+      }
+    }
+
+    return pathParts.join(" / ");
+  }, []);
+
   const loadFiles = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -73,12 +104,16 @@ export function useFileBrowser() {
       // Load files and folders in parallel following original async pattern
       const [filesResponse, foldersResponse] = await Promise.all([listFiles(), listFolders()]);
 
-      const allFiles = filesResponse.data.files || [];
-      const allFolders = foldersResponse.data.folders || [];
+      const fetchedFiles = filesResponse.data.files || [];
+      const fetchedFolders = foldersResponse.data.folders || [];
 
-      // Filter by current location
-      const currentFiles = allFiles.filter((file: any) => (file.folderId || null) === currentFolderId);
-      const currentFolders = allFolders.filter((folder: any) => (folder.parentId || null) === currentFolderId);
+      // Store all files and folders for global search
+      setAllFiles(fetchedFiles);
+      setAllFolders(fetchedFolders);
+
+      // Filter by current location for regular browsing
+      const currentFiles = fetchedFiles.filter((file: any) => (file.folderId || null) === currentFolderId);
+      const currentFolders = fetchedFolders.filter((folder: any) => (folder.parentId || null) === currentFolderId);
 
       // Sort by creation date (newest first) following original pattern
       const sortedFiles = [...currentFiles].sort(
@@ -94,7 +129,7 @@ export function useFileBrowser() {
 
       // Build breadcrumb path
       if (currentFolderId) {
-        const path = buildBreadcrumbPath(allFolders, currentFolderId);
+        const path = buildBreadcrumbPath(fetchedFolders, currentFolderId);
         setCurrentPath(path);
       } else {
         setCurrentPath([]);
@@ -109,9 +144,75 @@ export function useFileBrowser() {
   // File manager integration following original pattern
   const fileManager = useEnhancedFileManager(loadFiles, clearSelectionCallback);
 
-  // Filtered results following original pattern
-  const filteredFiles = files.filter((file) => file.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  const filteredFolders = folders.filter((folder) => folder.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  // Helper function to get immediate child folders that contain matching items
+  const getImmediateChildFoldersWithMatches = useCallback(() => {
+    if (!searchQuery) return [];
+
+    const matchingItems = new Set<string>();
+
+    // Find all files that match the search query
+    allFiles
+      .filter((file: any) => file.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      .forEach((file: any) => {
+        if (file.folderId) {
+          // Find the path from current location to this file
+          let currentId = file.folderId;
+          while (currentId) {
+            const folder = allFolders.find((f: any) => f.id === currentId);
+            if (folder) {
+              // If this folder is a direct child of current location, add it
+              if ((folder.parentId || null) === currentFolderId) {
+                matchingItems.add(folder.id);
+                break;
+              }
+              currentId = folder.parentId;
+            } else {
+              break;
+            }
+          }
+        } else if (!currentFolderId) {
+          // File is at root level and we're at root - this shouldn't be shown as we want folders
+        }
+      });
+
+    // Find all folders that match the search query
+    allFolders
+      .filter((folder: any) => folder.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      .forEach((folder: any) => {
+        // Find the path from current location to this folder
+        let currentId = folder.id;
+        while (currentId) {
+          const folderInPath = allFolders.find((f: any) => f.id === currentId);
+          if (folderInPath) {
+            // If this folder is a direct child of current location, add it
+            if ((folderInPath.parentId || null) === currentFolderId) {
+              matchingItems.add(folderInPath.id);
+              break;
+            }
+            currentId = folderInPath.parentId;
+          } else {
+            break;
+          }
+        }
+      });
+
+    // Return the actual folder objects for the matching IDs
+    return allFolders
+      .filter((folder: any) => matchingItems.has(folder.id))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [searchQuery, allFiles, allFolders, currentFolderId]);
+
+  // Filtered results - use global search when searching, local when browsing
+  const filteredFiles = searchQuery
+    ? allFiles
+        .filter(
+          (file: any) =>
+            file.name.toLowerCase().includes(searchQuery.toLowerCase()) && (file.folderId || null) === currentFolderId
+        )
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    : files;
+
+  const filteredFolders = searchQuery ? getImmediateChildFoldersWithMatches() : folders;
 
   useEffect(() => {
     loadFiles();
@@ -150,6 +251,11 @@ export function useFileBrowser() {
     // Actions
     handleSearch: setSearchQuery,
     loadFiles,
+
+    // Additional state for search functionality
+    allFiles,
+    allFolders,
+    buildFolderPath,
   };
 }
 

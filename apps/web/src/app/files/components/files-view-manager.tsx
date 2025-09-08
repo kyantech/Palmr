@@ -216,7 +216,7 @@ export function FilesViewManager({
           {/* No results message */}
           {searchQuery && !hasContent && (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">No results found for "{searchQuery}".</p>
+              <p className="text-muted-foreground">{t("searchBar.noResults", { query: searchQuery })}</p>
             </div>
           )}
         </div>
