@@ -6,7 +6,6 @@ import { FilesGrid } from "@/components/tables/files-grid";
 import { FilesTable } from "@/components/tables/files-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { EmptyState } from "./empty-state";
 
 interface File {
   id: string;
@@ -206,7 +205,9 @@ export function FilesViewManager({
         EmptyStateComponent ? (
           <EmptyStateComponent />
         ) : (
-          <EmptyState onUpload={() => {}} />
+          <div className="text-center py-6 flex flex-col items-center gap-2">
+            <p className="text-muted-foreground">{t("files.empty.title")}</p>
+          </div>
         )
       ) : (
         <div className="space-y-4">

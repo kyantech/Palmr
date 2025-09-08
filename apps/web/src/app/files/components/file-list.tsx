@@ -1,11 +1,14 @@
+import { useTranslations } from "next-intl";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { FileListProps } from "../types";
-import { EmptyState } from "./empty-state";
 import { FilesViewManager } from "./files-view-manager";
 import { Header } from "./header";
 import { SearchBar } from "./search-bar";
 
 export function FileList({ files, filteredFiles, fileManager, searchQuery, onSearch, onUpload }: FileListProps) {
+  const t = useTranslations();
+
   return (
     <Card>
       <CardContent>
@@ -46,7 +49,9 @@ export function FileList({ files, filteredFiles, fileManager, searchQuery, onSea
               }}
             />
           ) : (
-            <EmptyState onUpload={onUpload} />
+            <div className="text-center py-6 flex flex-col items-center gap-2">
+              <p className="text-muted-foreground">{t("files.empty.title")}</p>
+            </div>
           )}
         </div>
       </CardContent>
