@@ -1167,7 +1167,9 @@
   "searchBar": {
     "placeholder": "Rechercher des fichiers...",
     "results": "Trouvé {filtered} sur {total} fichiers",
-    "placeholderFolders": "Rechercher des dossiers..."
+    "placeholderFolders": "Rechercher des dossiers...",
+    "noResults": "Aucun résultat trouvé pour \"{query}\"",
+    "placeholderFiles": "Rechercher des fichiers..."
   },
   "settings": {
     "title": "Paramètres",

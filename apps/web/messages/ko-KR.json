@@ -1167,7 +1167,9 @@
   "searchBar": {
     "placeholder": "파일 검색...",
     "results": "전체 {total}개 중 {filtered}개 파일을 찾았습니다",
-    "placeholderFolders": "폴더 검색..."
+    "placeholderFolders": "폴더 검색...",
+    "noResults": "\"{query}\"에 대한 검색 결과가 없습니다",
+    "placeholderFiles": "파일 검색..."
   },
   "settings": {
     "groups": {

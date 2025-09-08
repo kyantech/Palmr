@@ -1167,7 +1167,9 @@
   "searchBar": {
     "placeholder": "फाइलें खोजें...",
     "results": "{total} में से {filtered} फाइलें मिलीं",
-    "placeholderFolders": "फ़ोल्डर खोजें..."
+    "placeholderFolders": "फ़ोल्डर खोजें...",
+    "noResults": "\"{query}\" के लिए कोई परिणाम नहीं मिला",
+    "placeholderFiles": "फाइलें खोजें..."
   },
   "settings": {
     "groups": {

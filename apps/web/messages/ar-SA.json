@@ -1169,7 +1169,9 @@
   "searchBar": {
     "placeholder": "ابحث عن الملفات...",
     "results": "تم العثور على {filtered} من {total} ملف",
-    "placeholderFolders": "البحث في المجلدات..."
+    "placeholderFolders": "البحث في المجلدات...",
+    "noResults": "لم يتم العثور على نتائج لـ \"{query}\"",
+    "placeholderFiles": "البحث في الملفات..."
   },
   "settings": {
     "groups": {

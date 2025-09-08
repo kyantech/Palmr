@@ -1167,7 +1167,9 @@
   "searchBar": {
     "placeholder": "Поиск файлов...",
     "results": "Найдено {filtered} из {total} файлов",
-    "placeholderFolders": "Поиск папок..."
+    "placeholderFolders": "Поиск папок...",
+    "noResults": "Не найдено результатов для \"{query}\"",
+    "placeholderFiles": "Поиск файлов..."
   },
   "settings": {
     "groups": {

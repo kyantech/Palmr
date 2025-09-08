@@ -1167,7 +1167,9 @@
   "searchBar": {
     "placeholder": "Dosya ara...",
     "results": "Toplam {total} dosya içinde {filtered} dosya bulundu",
-    "placeholderFolders": "Klasörleri ara..."
+    "placeholderFolders": "Klasörleri ara...",
+    "noResults": "\"{query}\" için sonuç bulunamadı",
+    "placeholderFiles": "Dosya ara..."
   },
   "settings": {
     "groups": {

@@ -1163,9 +1163,11 @@
     }
   },
   "searchBar": {
-    "placeholder": "Search files...",
+    "placeholder": "Search files and folders...",
+    "placeholderFiles": "Search files...",
     "placeholderFolders": "Search folders...",
-    "results": "Showing {filtered} of {total} files"
+    "results": "Showing {filtered} of {total} items",
+    "noResults": "No results found for \"{query}\""
   },
   "settings": {
     "groups": {

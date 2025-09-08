@@ -1167,7 +1167,9 @@
   "searchBar": {
     "placeholder": "Cerca file...",
     "results": "Trovati {filtered} di {total} file",
-    "placeholderFolders": "Cerca cartelle..."
+    "placeholderFolders": "Cerca cartelle...",
+    "noResults": "Nessun risultato trovato per \"{query}\"",
+    "placeholderFiles": "Cerca file..."
   },
   "settings": {
     "groups": {

@@ -1167,7 +1167,9 @@
   "searchBar": {
     "placeholder": "ファイルを検索...",
     "results": "全{total}件中{filtered}件が見つかりました",
-    "placeholderFolders": "フォルダを検索..."
+    "placeholderFolders": "フォルダを検索...",
+    "noResults": "\"{query}\"の検索結果が見つかりませんでした",
+    "placeholderFiles": "ファイルを検索..."
   },
   "settings": {
     "groups": {

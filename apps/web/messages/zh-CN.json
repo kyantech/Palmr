@@ -1167,7 +1167,9 @@
   "searchBar": {
     "placeholder": "搜索文件...",
     "results": "共{total}个文件，找到{filtered}个",
-    "placeholderFolders": "搜索文件夹..."
+    "placeholderFolders": "搜索文件夹...",
+    "noResults": "未找到 \"{query}\" 的搜索结果",
+    "placeholderFiles": "搜索文件..."
   },
   "settings": {
     "groups": {

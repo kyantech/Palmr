@@ -1167,7 +1167,9 @@
   "searchBar": {
     "placeholder": "Bestanden zoeken...",
     "results": "{filtered} van {total} bestanden gevonden",
-    "placeholderFolders": "Zoek mappen..."
+    "placeholderFolders": "Zoek mappen...",
+    "noResults": "Geen resultaten gevonden voor \"{query}\"",
+    "placeholderFiles": "Bestanden zoeken..."
   },
   "settings": {
     "groups": {
