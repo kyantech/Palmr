@@ -73,7 +73,7 @@ export function usePublicShare() {
         setIsLoading(false);
       }
     },
-    [alias]
+    [alias, t]
   );
 
   const loadFolderContents = useCallback(
