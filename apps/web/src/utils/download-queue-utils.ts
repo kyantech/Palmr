@@ -217,40 +217,360 @@ export async function downloadFileAsBlobWithQueue(
   }
 }
 
+function collectFolderFiles(
+  folderId: string,
+  allFiles: any[],
+  allFolders: any[],
+  folderPath: string = ""
+): Array<{ objectName: string; name: string; zipPath: string }> {
+  const result: Array<{ objectName: string; name: string; zipPath: string }> = [];
+
+  const directFiles = allFiles.filter((file: any) => file.folderId === folderId);
+  for (const file of directFiles) {
+    result.push({
+      objectName: file.objectName,
+      name: file.name,
+      zipPath: folderPath + file.name,
+    });
+  }
+
+  const subfolders = allFolders.filter((folder: any) => folder.parentId === folderId);
+  for (const subfolder of subfolders) {
+    const subfolderPath = folderPath + subfolder.name + "/";
+    const subFiles = collectFolderFiles(subfolder.id, allFiles, allFolders, subfolderPath);
+    result.push(...subFiles);
+  }
+
+  return result;
+}
+
+function collectEmptyFolders(folderId: string, allFiles: any[], allFolders: any[], folderPath: string = ""): string[] {
+  const emptyFolders: string[] = [];
+
+  const subfolders = allFolders.filter((folder: any) => folder.parentId === folderId);
+  for (const subfolder of subfolders) {
+    const subfolderPath = folderPath + subfolder.name + "/";
+
+    const subfolderFiles = collectFolderFiles(subfolder.id, allFiles, allFolders, "");
+
+    if (subfolderFiles.length === 0) {
+      emptyFolders.push(subfolderPath.slice(0, -1));
+    }
+
+    const nestedEmptyFolders = collectEmptyFolders(subfolder.id, allFiles, allFolders, subfolderPath);
+    emptyFolders.push(...nestedEmptyFolders);
+  }
+
+  return emptyFolders;
+}
+
+export async function downloadFolderWithQueue(
+  folderId: string,
+  folderName: string,
+  options: DownloadWithQueueOptions = {}
+): Promise<void> {
+  const { silent = false, showToasts = true } = options;
+  const downloadId = `folder-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+
+  try {
+    if (!silent) {
+      options.onStart?.(downloadId);
+    }
+
+    const { listFiles } = await import("@/http/endpoints/files");
+    const { listFolders } = await import("@/http/endpoints/folders");
+
+    const [allFilesResponse, allFoldersResponse] = await Promise.all([listFiles(), listFolders()]);
+    const allFiles = allFilesResponse.data.files || [];
+    const allFolders = allFoldersResponse.data.folders || [];
+
+    const folderFiles = collectFolderFiles(folderId, allFiles, allFolders, `${folderName}/`);
+    const emptyFolders = collectEmptyFolders(folderId, allFiles, allFolders, `${folderName}/`);
+
+    if (folderFiles.length === 0 && emptyFolders.length === 0) {
+      const message = "Folder is empty";
+      if (showToasts) {
+        toast.error(message);
+      }
+      throw new Error(message);
+    }
+
+    const JSZip = (await import("jszip")).default;
+    const zip = new JSZip();
+
+    for (const emptyFolderPath of emptyFolders) {
+      zip.folder(emptyFolderPath);
+    }
+
+    for (const file of folderFiles) {
+      try {
+        const blob = await downloadFileAsBlobWithQueue(file.objectName, file.name);
+        zip.file(file.zipPath, blob);
+      } catch (error) {
+        console.error(`Error downloading file ${file.name}:`, error);
+      }
+    }
+
+    const zipBlob = await zip.generateAsync({ type: "blob" });
+    const url = URL.createObjectURL(zipBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${folderName}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    if (!silent) {
+      options.onComplete?.(downloadId);
+      if (showToasts) {
+        toast.success(`${folderName} downloaded successfully`);
+      }
+    }
+  } catch (error: any) {
+    if (!silent) {
+      options.onFail?.(downloadId, error?.message || "Download failed");
+      if (showToasts) {
+        toast.error(`Failed to download ${folderName}`);
+      }
+    }
+    throw error;
+  }
+}
+
+export async function downloadShareFolderWithQueue(
+  folderId: string,
+  folderName: string,
+  shareFiles: any[],
+  shareFolders: any[],
+  options: DownloadWithQueueOptions = {}
+): Promise<void> {
+  const { silent = false, showToasts = true } = options;
+  const downloadId = `share-folder-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+
+  try {
+    if (!silent) {
+      options.onStart?.(downloadId);
+    }
+
+    const folderFiles = collectFolderFiles(folderId, shareFiles, shareFolders, `${folderName}/`);
+    const emptyFolders = collectEmptyFolders(folderId, shareFiles, shareFolders, `${folderName}/`);
+
+    if (folderFiles.length === 0 && emptyFolders.length === 0) {
+      const message = "Folder is empty";
+      if (showToasts) {
+        toast.error(message);
+      }
+      throw new Error(message);
+    }
+
+    const JSZip = (await import("jszip")).default;
+    const zip = new JSZip();
+
+    for (const emptyFolderPath of emptyFolders) {
+      zip.folder(emptyFolderPath);
+    }
+
+    for (const file of folderFiles) {
+      try {
+        const blob = await downloadFileAsBlobWithQueue(file.objectName, file.name);
+        zip.file(file.zipPath, blob);
+      } catch (error) {
+        console.error(`Error downloading file ${file.name}:`, error);
+      }
+    }
+
+    const zipBlob = await zip.generateAsync({ type: "blob" });
+    const url = URL.createObjectURL(zipBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${folderName}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    if (!silent) {
+      options.onComplete?.(downloadId);
+      if (showToasts) {
+        toast.success(`${folderName} downloaded successfully`);
+      }
+    }
+  } catch (error: any) {
+    if (!silent) {
+      options.onFail?.(downloadId, error?.message || "Download failed");
+      if (showToasts) {
+        toast.error(`Failed to download ${folderName}`);
+      }
+    }
+    throw error;
+  }
+}
+
 export async function bulkDownloadWithQueue(
-  files: Array<{
+  items: Array<{
     objectName?: string;
     name: string;
     id?: string;
     isReverseShare?: boolean;
+    type?: "file" | "folder";
   }>,
   zipName: string,
-  onProgress?: (current: number, total: number) => void
+  onProgress?: (current: number, total: number) => void,
+  wrapInFolder?: boolean
 ): Promise<void> {
   try {
     const JSZip = (await import("jszip")).default;
     const zip = new JSZip();
 
-    const downloadPromises = files.map(async (file, index) => {
+    const files = items.filter((item) => item.type !== "folder");
+    const folders = items.filter((item) => item.type === "folder");
+
+    // eslint-disable-next-line prefer-const
+    let allFilesToDownload: Array<{ objectName: string; name: string; zipPath: string }> = [];
+    // eslint-disable-next-line prefer-const
+    let allEmptyFolders: string[] = [];
+
+    if (folders.length > 0) {
+      const { listFiles } = await import("@/http/endpoints/files");
+      const { listFolders } = await import("@/http/endpoints/folders");
+
+      const [allFilesResponse, allFoldersResponse] = await Promise.all([listFiles(), listFolders()]);
+      const allFiles = allFilesResponse.data.files || [];
+      const allFolders = allFoldersResponse.data.folders || [];
+
+      const wrapperPath = wrapInFolder ? `${zipName.replace(".zip", "")}/` : "";
+      for (const folder of folders) {
+        const folderPath = wrapperPath + `${folder.name}/`;
+        const folderFiles = collectFolderFiles(folder.id!, allFiles, allFolders, folderPath);
+        const emptyFolders = collectEmptyFolders(folder.id!, allFiles, allFolders, folderPath);
+
+        allFilesToDownload.push(...folderFiles);
+        allEmptyFolders.push(...emptyFolders);
+
+        if (folderFiles.length === 0 && emptyFolders.length === 0) {
+          allEmptyFolders.push(folderPath.slice(0, -1));
+        }
+      }
+
+      const filesInFolders = new Set(allFilesToDownload.map((f) => f.objectName));
+      for (const file of files) {
+        if (!file.objectName || !filesInFolders.has(file.objectName)) {
+          allFilesToDownload.push({
+            objectName: file.objectName || file.name,
+            name: file.name,
+            zipPath: wrapperPath + file.name,
+          });
+        }
+      }
+    } else {
+      const wrapperPath = wrapInFolder ? `${zipName.replace(".zip", "")}/` : "";
+      for (const file of files) {
+        allFilesToDownload.push({
+          objectName: file.objectName || file.name,
+          name: file.name,
+          zipPath: wrapperPath + file.name,
+        });
+      }
+    }
+
+    for (const emptyFolderPath of allEmptyFolders) {
+      zip.folder(emptyFolderPath);
+    }
+
+    for (let i = 0; i < allFilesToDownload.length; i++) {
+      const file = allFilesToDownload[i];
       try {
-        const blob = await downloadFileAsBlobWithQueue(
-          file.objectName || file.name,
-          file.name,
-          file.isReverseShare,
-          file.id
-        );
-        zip.file(file.name, blob);
-        onProgress?.(index + 1, files.length);
+        const blob = await downloadFileAsBlobWithQueue(file.objectName, file.name);
+        zip.file(file.zipPath, blob);
+        onProgress?.(i + 1, allFilesToDownload.length);
       } catch (error) {
         console.error(`Error downloading file ${file.name}:`, error);
-        throw error;
       }
-    });
-
-    await Promise.all(downloadPromises);
+    }
 
     const zipBlob = await zip.generateAsync({ type: "blob" });
+    const url = URL.createObjectURL(zipBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = zipName.endsWith(".zip") ? zipName : `${zipName}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Error creating ZIP:", error);
+    throw error;
+  }
+}
 
+export async function bulkDownloadShareWithQueue(
+  items: Array<{
+    objectName?: string;
+    name: string;
+    id?: string;
+    type?: "file" | "folder";
+  }>,
+  shareFiles: any[],
+  shareFolders: any[],
+  zipName: string,
+  onProgress?: (current: number, total: number) => void,
+  wrapInFolder?: boolean
+): Promise<void> {
+  try {
+    const JSZip = (await import("jszip")).default;
+    const zip = new JSZip();
+
+    const files = items.filter((item) => item.type !== "folder");
+    const folders = items.filter((item) => item.type === "folder");
+
+    // eslint-disable-next-line prefer-const
+    let allFilesToDownload: Array<{ objectName: string; name: string; zipPath: string }> = [];
+    // eslint-disable-next-line prefer-const
+    let allEmptyFolders: string[] = [];
+
+    const wrapperPath = wrapInFolder ? `${zipName.replace(".zip", "")}/` : "";
+
+    for (const folder of folders) {
+      const folderPath = wrapperPath + `${folder.name}/`;
+      const folderFiles = collectFolderFiles(folder.id!, shareFiles, shareFolders, folderPath);
+      const emptyFolders = collectEmptyFolders(folder.id!, shareFiles, shareFolders, folderPath);
+
+      allFilesToDownload.push(...folderFiles);
+      allEmptyFolders.push(...emptyFolders);
+
+      if (folderFiles.length === 0 && emptyFolders.length === 0) {
+        allEmptyFolders.push(folderPath.slice(0, -1));
+      }
+    }
+
+    const filesInFolders = new Set(allFilesToDownload.map((f) => f.objectName));
+    for (const file of files) {
+      if (!file.objectName || !filesInFolders.has(file.objectName)) {
+        allFilesToDownload.push({
+          objectName: file.objectName!,
+          name: file.name,
+          zipPath: wrapperPath + file.name,
+        });
+      }
+    }
+
+    for (const emptyFolderPath of allEmptyFolders) {
+      zip.folder(emptyFolderPath);
+    }
+
+    for (let i = 0; i < allFilesToDownload.length; i++) {
+      const file = allFilesToDownload[i];
+      try {
+        const blob = await downloadFileAsBlobWithQueue(file.objectName, file.name);
+        zip.file(file.zipPath, blob);
+        onProgress?.(i + 1, allFilesToDownload.length);
+      } catch (error) {
+        console.error(`Error downloading file ${file.name}:`, error);
+      }
+    }
+
+    const zipBlob = await zip.generateAsync({ type: "blob" });
     const url = URL.createObjectURL(zipBlob);
     const a = document.createElement("a");
     a.href = url;

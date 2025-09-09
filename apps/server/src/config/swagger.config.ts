@@ -18,6 +18,7 @@ export function registerSwagger(app: any) {
         { name: "Auth Providers", description: "External authentication providers management" },
         { name: "User", description: "User management endpoints" },
         { name: "File", description: "File management endpoints" },
+        { name: "Folder", description: "Folder management endpoints" },
         { name: "Share", description: "File sharing endpoints" },
         { name: "Storage", description: "Storage management endpoints" },
         { name: "App", description: "Application configuration endpoints" },

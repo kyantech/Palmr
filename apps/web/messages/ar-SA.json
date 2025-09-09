@@ -144,7 +144,13 @@
     "update": "تحديث",
     "click": "انقر على",
     "creating": "جاري الإنشاء...",
-    "loadingSimple": "جاري التحميل..."
+    "loadingSimple": "جاري التحميل...",
+    "create": "إنشاء",
+    "deleting": "جاري الحذف...",
+    "move": "نقل",
+    "rename": "إعادة تسمية",
+    "search": "بحث",
+    "share": "مشاركة"
   },
   "createShare": {
     "title": "إنشاء مشاركة",
@@ -160,7 +166,13 @@
     "create": "إنشاء مشاركة",
     "success": "تم إنشاء المشاركة بنجاح",
     "error": "فشل في إنشاء المشاركة",
-    "namePlaceholder": "أدخل اسمًا لمشاركتك"
+    "namePlaceholder": "أدخل اسمًا لمشاركتك",
+    "nextSelectFiles": "التالي: اختيار الملفات",
+    "searchLabel": "بحث",
+    "tabs": {
+      "shareDetails": "تفاصيل المشاركة",
+      "selectFiles": "اختيار الملفات"
+    }
   },
   "customization": {
     "breadcrumb": "التخصيص",
@@ -214,7 +226,9 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "الملفات المراد حذفها",
-    "sharesToDelete": "المشاركات التي سيتم حذفها"
+    "sharesToDelete": "المشاركات التي سيتم حذفها",
+    "foldersToDelete": "المجلدات المراد حذفها",
+    "itemsToDelete": "العناصر المراد حذفها"
   },
   "downloadQueue": {
     "downloadQueued": "تم إضافة التنزيل إلى قائمة الانتظار: {fileName}",
@@ -322,7 +336,8 @@
     "previewFile": "معاينة الملف",
     "addToShare": "إضافة إلى المشاركة",
     "removeFromShare": "إزالة من المشاركة",
-    "saveChanges": "حفظ التغييرات"
+    "saveChanges": "حفظ التغييرات",
+    "editFolder": "تحرير المجلد"
   },
   "files": {
     "title": "جميع الملفات",
@@ -347,7 +362,18 @@
     },
     "totalFiles": "{count, plural, =0 {لا توجد ملفات} =1 {ملف واحد} other {# ملفات}}",
     "bulkDeleteConfirmation": "هل أنت متأكد من رغبتك في حذف {count, plural, =1 {ملف واحد} other {# ملفات}}؟ لا يمكن التراجع عن هذا الإجراء.",
-    "bulkDeleteTitle": "حذف الملفات المحددة"
+    "bulkDeleteTitle": "حذف الملفات المحددة",
+    "actions": {
+      "open": "فتح",
+      "rename": "إعادة تسمية",
+      "delete": "حذف"
+    },
+    "empty": {
+      "title": "لا توجد ملفات أو مجلدات بعد",
+      "description": "ارفع ملفك الأول أو أنشئ مجلدًا للبدء"
+    },
+    "files": "ملفات",
+    "folders": "مجلدات"
   },
   "filesTable": {
     "ariaLabel": "جدول الملفات",
@@ -376,6 +402,33 @@
       "share": "مشاركة المحدد",
       "delete": "حذف المحدد"
     }
+  },
+  "folderActions": {
+    "editFolder": "تحرير المجلد",
+    "folderName": "اسم المجلد",
+    "folderNamePlaceholder": "أدخل اسم المجلد",
+    "folderDescription": "الوصف",
+    "folderDescriptionPlaceholder": "أدخل وصف المجلد (اختياري)",
+    "createFolder": "إنشاء مجلد جديد",
+    "renameFolder": "إعادة تسمية المجلد",
+    "moveFolder": "نقل المجلد",
+    "shareFolder": "مشاركة المجلد",
+    "deleteFolder": "حذف المجلد",
+    "moveTo": "نقل إلى",
+    "selectDestination": "اختر مجلد الوجهة",
+    "rootFolder": "الجذر",
+    "folderCreated": "تم إنشاء المجلد بنجاح",
+    "folderRenamed": "تم إعادة تسمية المجلد بنجاح",
+    "folderMoved": "تم نقل المجلد بنجاح",
+    "folderDeleted": "تم حذف المجلد بنجاح",
+    "folderShared": "تم مشاركة المجلد بنجاح",
+    "createFolderError": "خطأ في إنشاء المجلد",
+    "renameFolderError": "خطأ في إعادة تسمية المجلد",
+    "moveFolderError": "خطأ في نقل المجلد",
+    "deleteFolderError": "خطأ في حذف المجلد",
+    "shareFolderError": "خطأ في مشاركة المجلد",
+    "deleteConfirmation": "هل أنت متأكد من أنك تريد حذف هذا المجلد؟",
+    "deleteWarning": "لا يمكن التراجع عن هذا الإجراء."
   },
   "footer": {
     "poweredBy": "مدعوم من",
@@ -477,6 +530,13 @@
       "uploadFailed": "فشل في رفع الشعار",
       "removeFailed": "فشل في حذف الشعار"
     }
+  },
+  "moveItems": {
+    "itemsToMove": "العناصر المراد نقلها:",
+    "movingTo": "النقل إلى:",
+    "title": "نقل {count, plural, =1 {عنصر} other {عناصر}}",
+    "description": "نقل {count, plural, =1 {عنصر} other {عناصر}} إلى موقع جديد",
+    "success": "تم نقل {count} {count, plural, =1 {عنصر} other {عناصر}} بنجاح"
   },
   "navbar": {
     "logoAlt": "شعار التطبيق",
@@ -1108,7 +1168,10 @@
   },
   "searchBar": {
     "placeholder": "ابحث عن الملفات...",
-    "results": "تم العثور على {filtered} من {total} ملف"
+    "results": "تم العثور على {filtered} من {total} ملف",
+    "placeholderFolders": "البحث في المجلدات...",
+    "noResults": "لم يتم العثور على نتائج لـ \"{query}\"",
+    "placeholderFiles": "البحث في الملفات..."
   },
   "settings": {
     "groups": {
@@ -1322,7 +1385,17 @@
     "editError": "فشل في تحديث المشاركة",
     "bulkDeleteConfirmation": "هل أنت متأكد من أنك تريد حذف {count, plural, =1 {مشاركة واحدة} other {# مشاركات}} محددة؟ لا يمكن التراجع عن هذا الإجراء.",
     "bulkDeleteTitle": "حذف المشاركات المحددة",
-    "addDescriptionPlaceholder": "إضافة وصف..."
+    "addDescriptionPlaceholder": "إضافة وصف...",
+    "aliasLabel": "اسم مستعار للرابط",
+    "aliasPlaceholder": "أدخل اسمًا مستعارًا مخصصًا",
+    "copyLink": "نسخ الرابط",
+    "fileTitle": "مشاركة ملف",
+    "folderTitle": "مشاركة مجلد",
+    "generateLink": "إنشاء رابط",
+    "linkDescriptionFile": "إنشاء رابط مخصص لمشاركة الملف",
+    "linkDescriptionFolder": "إنشاء رابط مخصص لمشاركة المجلد",
+    "linkReady": "رابط المشاركة جاهز:",
+    "linkTitle": "إنشاء رابط"
   },
   "shareDetails": {
     "title": "تفاصيل المشاركة",
@@ -1449,7 +1522,8 @@
     "files": "ملفات",
     "totalSize": "الحجم الإجمالي",
     "creating": "جاري الإنشاء...",
-    "create": "إنشاء مشاركة"
+    "create": "إنشاء مشاركة",
+    "itemsToShare": "العناصر للمشاركة ({count} {count, plural, =1 {عنصر} other {عناصر}})"
   },
   "shareSecurity": {
     "subtitle": "تكوين حماية كلمة المرور وخيارات الأمان لهذه المشاركة",
@@ -1554,7 +1628,8 @@
       "download": "تنزيل محدد"
     },
     "selectAll": "تحديد الكل",
-    "selectShare": "تحديد المشاركة {shareName}"
+    "selectShare": "تحديد المشاركة {shareName}",
+    "folderCount": "مجلدات"
   },
   "storageUsage": {
     "title": "استخدام التخزين",

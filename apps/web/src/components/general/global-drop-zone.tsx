@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { checkFile, getPresignedUrl, registerFile } from "@/http/endpoints";
+import { checkFile, getFilePresignedUrl, registerFile } from "@/http/endpoints";
 import { getSystemInfo } from "@/http/endpoints/app";
 import { ChunkedUploader } from "@/utils/chunked-upload";
 import { getFileIcon } from "@/utils/file-icons";
@@ -19,6 +19,7 @@ import getErrorData from "@/utils/getErrorData";
 interface GlobalDropZoneProps {
   onSuccess?: () => void;
   children: React.ReactNode;
+  currentFolderId?: string;
 }
 
 enum UploadStatus {
@@ -39,7 +40,7 @@ interface FileUpload {
   objectName?: string;
 }
 
-export function GlobalDropZone({ onSuccess, children }: GlobalDropZoneProps) {
+export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalDropZoneProps) {
   const t = useTranslations();
   const [isDragOver, setIsDragOver] = useState(false);
   const [fileUploads, setFileUploads] = useState<FileUpload[]>([]);
@@ -62,6 +63,18 @@ export function GlobalDropZone({ onSuccess, children }: GlobalDropZoneProps) {
     },
     [generateFileId]
   );
+
+  const calculateUploadTimeout = useCallback((fileSize: number): number => {
+    const baseTimeout = 300000;
+    const fileSizeMB = fileSize / (1024 * 1024);
+    if (fileSizeMB > 500) {
+      const extraMB = fileSizeMB - 500;
+      const extraMinutes = Math.ceil(extraMB / 100);
+      return baseTimeout + extraMinutes * 60000;
+    }
+
+    return baseTimeout;
+  }, []);
 
   const handleDragOver = useCallback((event: DragEvent) => {
     event.preventDefault();
@@ -90,6 +103,7 @@ export function GlobalDropZone({ onSuccess, children }: GlobalDropZoneProps) {
             objectName: safeObjectName,
             size: file.size,
             extension: extension,
+            folderId: currentFolderId,
           });
         } catch (error) {
           console.error("File check failed:", error);
@@ -114,7 +128,7 @@ export function GlobalDropZone({ onSuccess, children }: GlobalDropZoneProps) {
           prev.map((u) => (u.id === id ? { ...u, status: UploadStatus.UPLOADING, progress: 0 } : u))
         );
 
-        const presignedResponse = await getPresignedUrl({
+        const presignedResponse = await getFilePresignedUrl({
           filename: safeObjectName.replace(`.${extension}`, ""),
           extension: extension,
         });
@@ -153,13 +167,19 @@ export function GlobalDropZone({ onSuccess, children }: GlobalDropZoneProps) {
             objectName: finalObjectName,
             size: file.size,
             extension: extension,
+            folderId: currentFolderId,
           });
         } else {
+          const uploadTimeout = calculateUploadTimeout(file.size);
+
           await axios.put(url, file, {
             headers: {
               "Content-Type": file.type,
             },
             signal: abortController.signal,
+            timeout: uploadTimeout, // Dynamic timeout based on file size
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity,
             onUploadProgress: (progressEvent: any) => {
               const progress = (progressEvent.loaded / (progressEvent.total || file.size)) * 100;
               setFileUploads((prev) => prev.map((u) => (u.id === id ? { ...u, progress: Math.round(progress) } : u)));
@@ -171,6 +191,7 @@ export function GlobalDropZone({ onSuccess, children }: GlobalDropZoneProps) {
             objectName: objectName,
             size: file.size,
             extension: extension,
+            folderId: currentFolderId,
           });
         }
 
@@ -199,7 +220,7 @@ export function GlobalDropZone({ onSuccess, children }: GlobalDropZoneProps) {
         );
       }
     },
-    [t, isS3Enabled]
+    [t, isS3Enabled, currentFolderId, calculateUploadTimeout]
   );
 
   const handleDrop = useCallback(

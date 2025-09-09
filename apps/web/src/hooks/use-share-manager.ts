@@ -4,16 +4,10 @@ import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
-import {
-  addFiles,
-  addRecipients,
-  createShareAlias,
-  deleteShare,
-  notifyRecipients,
-  updateShare,
-} from "@/http/endpoints";
+import { addRecipients, createShareAlias, deleteShare, notifyRecipients, updateShare } from "@/http/endpoints";
+import { updateFolder } from "@/http/endpoints/folders";
 import type { Share } from "@/http/endpoints/shares/types";
-import { bulkDownloadWithQueue, downloadFileWithQueue } from "@/utils/download-queue-utils";
+import { bulkDownloadShareWithQueue, downloadFileWithQueue } from "@/utils/download-queue-utils";
 
 export interface ShareManagerHook {
   shareToDelete: Share | null;
@@ -47,11 +41,12 @@ export interface ShareManagerHook {
   handleUpdateDescription: (shareId: string, newDescription: string) => Promise<void>;
   handleUpdateSecurity: (share: Share) => Promise<void>;
   handleUpdateExpiration: (share: Share) => Promise<void>;
-  handleManageFiles: (shareId: string, files: any[]) => Promise<void>;
+  handleManageFiles: () => Promise<void>;
   handleManageRecipients: (shareId: string, recipients: any[]) => Promise<void>;
   handleGenerateLink: (shareId: string, alias: string) => Promise<void>;
   handleNotifyRecipients: (share: Share) => Promise<void>;
   setClearSelectionCallback?: (callback: () => void) => void;
+  handleEditFolder: (folderId: string, newName: string, description?: string) => Promise<void>;
 }
 
 export function useShareManager(onSuccess: () => void) {
@@ -147,9 +142,8 @@ export function useShareManager(onSuccess: () => void) {
     setShareToManageExpiration(share);
   };
 
-  const handleManageFiles = async (shareId: string, files: string[]) => {
+  const handleManageFiles = async () => {
     try {
-      await addFiles(shareId, { files });
       toast.success(t("shareManager.filesUpdateSuccess"));
       onSuccess();
       setShareToManageFiles(null);
@@ -196,38 +190,63 @@ export function useShareManager(onSuccess: () => void) {
 
   const handleBulkDownloadWithZip = async (shares: Share[], zipName: string) => {
     try {
-      const allFiles: Array<{ objectName: string; name: string; shareName: string }> = [];
-      shares.forEach((share) => {
+      if (shares.length === 1) {
+        const share = shares[0];
+
+        const allItems: Array<{
+          objectName?: string;
+          name: string;
+          id?: string;
+          type?: "file" | "folder";
+        }> = [];
+
         if (share.files) {
           share.files.forEach((file) => {
-            allFiles.push({
-              objectName: file.objectName,
-              name: shares.length > 1 ? `${share.name || t("shareManager.defaultShareName")}/${file.name}` : file.name,
-              shareName: share.name || t("shareManager.defaultShareName"),
-            });
+            if (!file.folderId) {
+              allItems.push({
+                objectName: file.objectName,
+                name: file.name,
+                type: "file",
+              });
+            }
           });
         }
-      });
 
-      toast.promise(
-        bulkDownloadWithQueue(
-          allFiles.map((file) => ({
-            objectName: file.objectName,
-            name: file.name,
-            isReverseShare: false,
-          })),
-          zipName
-        ).then(() => {
-          if (clearSelectionCallback) {
-            clearSelectionCallback();
-          }
-        }),
-        {
-          loading: t("shareManager.creatingZip"),
-          success: t("shareManager.zipDownloadSuccess"),
-          error: t("shareManager.zipDownloadError"),
+        if (share.folders) {
+          const folderIds = new Set(share.folders.map((f) => f.id));
+          share.folders.forEach((folder) => {
+            if (!folder.parentId || !folderIds.has(folder.parentId)) {
+              allItems.push({
+                id: folder.id,
+                name: folder.name,
+                type: "folder",
+              });
+            }
+          });
         }
-      );
+
+        if (allItems.length === 0) {
+          toast.error(t("shareManager.noFilesToDownload"));
+          return;
+        }
+
+        toast.promise(
+          bulkDownloadShareWithQueue(allItems, share.files || [], share.folders || [], zipName, undefined, true).then(
+            () => {
+              if (clearSelectionCallback) {
+                clearSelectionCallback();
+              }
+            }
+          ),
+          {
+            loading: t("shareManager.creatingZip"),
+            success: t("shareManager.zipDownloadSuccess"),
+            error: t("shareManager.zipDownloadError"),
+          }
+        );
+      } else {
+        toast.error("Multiple share download not yet supported - please download shares individually");
+      }
     } catch (error) {
       console.error("Error creating ZIP:", error);
     }
@@ -243,12 +262,15 @@ export function useShareManager(onSuccess: () => void) {
   };
 
   const handleDownloadShareFiles = async (share: Share) => {
-    if (!share.files || share.files.length === 0) {
+    const totalFiles = share.files?.length || 0;
+    const totalFolders = share.folders?.length || 0;
+
+    if (totalFiles === 0 && totalFolders === 0) {
       toast.error(t("shareManager.noFilesToDownload"));
       return;
     }
 
-    if (share.files.length === 1) {
+    if (totalFiles === 1 && totalFolders === 0) {
       const file = share.files[0];
       try {
         await downloadFileWithQueue(file.objectName, file.name, {
@@ -257,7 +279,6 @@ export function useShareManager(onSuccess: () => void) {
         });
       } catch (error) {
         console.error("Download error:", error);
-        // Error already handled in downloadFileWithQueue
       }
     } else {
       const zipName = t("shareManager.singleShareZipName", {
@@ -304,5 +325,14 @@ export function useShareManager(onSuccess: () => void) {
     handleDownloadShareFiles,
     handleBulkDownloadWithZip,
     setClearSelectionCallback,
+    handleEditFolder: async (folderId: string, newName: string, description?: string) => {
+      try {
+        await updateFolder(folderId, { name: newName, description });
+        toast.success(t("shareManager.updateSuccess"));
+        onSuccess();
+      } catch {
+        toast.error(t("shareManager.updateError"));
+      }
+    },
   };
 }

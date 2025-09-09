@@ -2,7 +2,7 @@ import { IconLock } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { PasswordModalProps } from "../types";
 
@@ -13,7 +13,7 @@ export function PasswordModal({ isOpen, password, isError, onPasswordChange, onS
     <Dialog open={isOpen} onOpenChange={() => {}} modal>
       <DialogContent>
         <DialogHeader className="flex flex-col gap-1">
-          <h2>{t("share.password.title")}</h2>
+          <DialogTitle>{t("share.password.title")}</DialogTitle>
           <div className="flex items-center gap-2 text-warning text-sm">
             <IconLock size={16} />
             <p>{t("share.password.protected")}</p>

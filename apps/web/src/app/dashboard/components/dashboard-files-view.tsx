@@ -4,8 +4,11 @@ interface File {
   id: string;
   name: string;
   description?: string;
+  extension: string;
   size: number;
   objectName: string;
+  userId: string;
+  folderId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -42,6 +45,7 @@ export function DashboardFilesView({
   return (
     <FilesTable
       files={files}
+      folders={[]}
       onPreview={onPreview}
       onRename={onRename}
       onUpdateName={onUpdateName}
@@ -49,9 +53,9 @@ export function DashboardFilesView({
       onDownload={onDownload}
       onShare={onShare}
       onDelete={onDelete}
-      onBulkDelete={onBulkDelete}
-      onBulkShare={onBulkShare}
-      onBulkDownload={onBulkDownload}
+      onBulkDelete={onBulkDelete ? (files) => onBulkDelete(files) : undefined}
+      onBulkShare={onBulkShare ? (files) => onBulkShare(files) : undefined}
+      onBulkDownload={onBulkDownload ? (files) => onBulkDownload(files) : undefined}
       setClearSelectionCallback={setClearSelectionCallback}
     />
   );
