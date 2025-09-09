@@ -64,6 +64,18 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalD
     [generateFileId]
   );
 
+  const calculateUploadTimeout = useCallback((fileSize: number): number => {
+    const baseTimeout = 300000;
+    const fileSizeMB = fileSize / (1024 * 1024);
+    if (fileSizeMB > 500) {
+      const extraMB = fileSizeMB - 500;
+      const extraMinutes = Math.ceil(extraMB / 100);
+      return baseTimeout + extraMinutes * 60000;
+    }
+
+    return baseTimeout;
+  }, []);
+
   const handleDragOver = useCallback((event: DragEvent) => {
     event.preventDefault();
     event.stopPropagation();
@@ -158,11 +170,16 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalD
             folderId: currentFolderId,
           });
         } else {
+          const uploadTimeout = calculateUploadTimeout(file.size);
+
           await axios.put(url, file, {
             headers: {
               "Content-Type": file.type,
             },
             signal: abortController.signal,
+            timeout: uploadTimeout, // Dynamic timeout based on file size
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity,
             onUploadProgress: (progressEvent: any) => {
               const progress = (progressEvent.loaded / (progressEvent.total || file.size)) * 100;
               setFileUploads((prev) => prev.map((u) => (u.id === id ? { ...u, progress: Math.round(progress) } : u)));
@@ -203,7 +220,7 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalD
         );
       }
     },
-    [t, isS3Enabled, currentFolderId]
+    [t, isS3Enabled, currentFolderId, calculateUploadTimeout]
   );
 
   const handleDrop = useCallback(
