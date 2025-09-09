@@ -231,6 +231,18 @@ export function UploadFileModal({ isOpen, onClose, onSuccess, currentFolderId }:
     );
   };
 
+  const calculateUploadTimeout = (fileSize: number): number => {
+    const baseTimeout = 300000;
+    const fileSizeMB = fileSize / (1024 * 1024);
+    if (fileSizeMB > 500) {
+      const extraMB = fileSizeMB - 500;
+      const extraMinutes = Math.ceil(extraMB / 100);
+      return baseTimeout + extraMinutes * 60000;
+    }
+
+    return baseTimeout;
+  };
+
   const uploadFile = async (fileUpload: FileUpload) => {
     const { file, id } = fileUpload;
 
@@ -312,12 +324,13 @@ export function UploadFileModal({ isOpen, onClose, onSuccess, currentFolderId }:
           folderId: currentFolderId,
         });
       } else {
+        const uploadTimeout = calculateUploadTimeout(file.size);
         await axios.put(url, file, {
           headers: {
             "Content-Type": file.type,
           },
           signal: abortController.signal,
-          timeout: 300000, // 5 minutes timeout for direct uploads
+          timeout: uploadTimeout,
           maxContentLength: Infinity,
           maxBodyLength: Infinity,
           onUploadProgress: (progressEvent) => {
