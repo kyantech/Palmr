@@ -284,7 +284,7 @@ export class StorageService {
   private async _getDiskSpaceMultiplePaths(): Promise<{ total: number; available: number } | null> {
     const basePaths = IS_RUNNING_IN_CONTAINER
       ? ["/app/server/uploads", "/app/server/temp-uploads", "/app/server/temp-chunks", "/app/server", "/app", "/"]
-      : [".", "./uploads", process.cwd()];
+      : [env.CUSTOM_PATH || ".", "./uploads", process.cwd()];
 
     const synologyPaths = await this._detectSynologyVolumes();
 

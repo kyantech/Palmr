@@ -201,6 +201,17 @@ You should see the full Palmr. application ready to go!
 
 This guide sets up Palmr. using the local file system for storage. Want to use an S3-compatible object storage instead? You can configure that in the `.env` file. Check the Palmr. documentation for details on setting up S3 storage just update the environment variables, then build and run as shown here.
 
+### Custom Installation Paths and Symlinks
+
+If you're using a custom installation setup with symlinks (for example, `/opt/palmr_data/uploads -> /mnt/data/uploads`), you might encounter issues with disk space detection. Palmr. includes a `CUSTOM_PATH` environment variable to handle these scenarios:
+
+```bash
+# In your .env file (apps/server/.env)
+CUSTOM_PATH=/opt/palmr_data
+```
+
+This tells Palmr. to check your custom path first when determining available disk space, ensuring proper detection even when using symlinks or non-standard directory structures.
+
 ---
 
 ## Command cheat sheet
