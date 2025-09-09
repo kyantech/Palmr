@@ -144,7 +144,13 @@
     "update": "Aggiorna",
     "click": "Clicca per",
     "creating": "Creazione in corso...",
-    "loadingSimple": "Caricamento..."
+    "loadingSimple": "Caricamento...",
+    "create": "Crea",
+    "deleting": "Eliminazione...",
+    "move": "Sposta",
+    "rename": "Rinomina",
+    "search": "Cerca",
+    "share": "Condividi"
   },
   "createShare": {
     "title": "Crea Condivisione",
@@ -160,7 +166,13 @@
     "create": "Crea Condivisione",
     "success": "Condivisione creata con successo",
     "error": "Errore nella creazione della condivisione",
-    "namePlaceholder": "Inserisci un nome per la tua condivisione"
+    "namePlaceholder": "Inserisci un nome per la tua condivisione",
+    "nextSelectFiles": "Avanti: Seleziona file",
+    "searchLabel": "Cerca",
+    "tabs": {
+      "shareDetails": "Dettagli condivisione",
+      "selectFiles": "Seleziona file"
+    }
   },
   "customization": {
     "breadcrumb": "Personalizzazione",
@@ -214,7 +226,9 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "File da eliminare",
-    "sharesToDelete": "Condivisioni che saranno eliminate"
+    "sharesToDelete": "Condivisioni che saranno eliminate",
+    "foldersToDelete": "Cartelle da eliminare",
+    "itemsToDelete": "Elementi da eliminare"
   },
   "downloadQueue": {
     "downloadQueued": "Download in coda: {fileName}",
@@ -322,7 +336,8 @@
     "previewFile": "Anteprima file",
     "addToShare": "Aggiungi alla condivisione",
     "removeFromShare": "Rimuovi dalla condivisione",
-    "saveChanges": "Salva Modifiche"
+    "saveChanges": "Salva Modifiche",
+    "editFolder": "Modifica cartella"
   },
   "files": {
     "title": "Tutti i File",
@@ -347,7 +362,18 @@
       "table": "Tabella",
       "grid": "Griglia"
     },
-    "totalFiles": "{count, plural, =0 {Nessun file} =1 {1 file} other {# file}}"
+    "totalFiles": "{count, plural, =0 {Nessun file} =1 {1 file} other {# file}}",
+    "actions": {
+      "open": "Apri",
+      "rename": "Rinomina",
+      "delete": "Elimina"
+    },
+    "empty": {
+      "title": "Ancora nessun file o cartella",
+      "description": "Carica il tuo primo file o crea una cartella per iniziare"
+    },
+    "files": "file",
+    "folders": "cartelle"
   },
   "filesTable": {
     "ariaLabel": "Tabella dei file",
@@ -376,6 +402,33 @@
       "share": "Condividi Selezionati",
       "delete": "Elimina Selezionati"
     }
+  },
+  "folderActions": {
+    "editFolder": "Modifica cartella",
+    "folderName": "Nome cartella",
+    "folderNamePlaceholder": "Inserisci nome cartella",
+    "folderDescription": "Descrizione",
+    "folderDescriptionPlaceholder": "Inserisci descrizione cartella (opzionale)",
+    "createFolder": "Crea nuova cartella",
+    "renameFolder": "Rinomina cartella",
+    "moveFolder": "Sposta cartella",
+    "shareFolder": "Condividi cartella",
+    "deleteFolder": "Elimina cartella",
+    "moveTo": "Sposta in",
+    "selectDestination": "Seleziona cartella destinazione",
+    "rootFolder": "Radice",
+    "folderCreated": "Cartella creata con successo",
+    "folderRenamed": "Cartella rinominata con successo",
+    "folderMoved": "Cartella spostata con successo",
+    "folderDeleted": "Cartella eliminata con successo",
+    "folderShared": "Cartella condivisa con successo",
+    "createFolderError": "Errore nella creazione della cartella",
+    "renameFolderError": "Errore nella rinominazione della cartella",
+    "moveFolderError": "Errore nello spostamento della cartella",
+    "deleteFolderError": "Errore nell'eliminazione della cartella",
+    "shareFolderError": "Errore nella condivisione della cartella",
+    "deleteConfirmation": "Sei sicuro di voler eliminare questa cartella?",
+    "deleteWarning": "Questa azione non può essere annullata."
   },
   "footer": {
     "poweredBy": "Sviluppato da",
@@ -477,6 +530,13 @@
       "uploadFailed": "Errore durante il caricamento del logo",
       "removeFailed": "Errore durante la rimozione del logo"
     }
+  },
+  "moveItems": {
+    "itemsToMove": "Elementi da spostare:",
+    "movingTo": "Spostamento in:",
+    "title": "Sposta {count, plural, =1 {elemento} other {elementi}}",
+    "description": "Sposta {count, plural, =1 {elemento} other {elementi}} in una nuova posizione",
+    "success": "Spostati con successo {count} {count, plural, =1 {elemento} other {elementi}}"
   },
   "navbar": {
     "logoAlt": "Logo dell'App",
@@ -1106,7 +1166,10 @@
   },
   "searchBar": {
     "placeholder": "Cerca file...",
-    "results": "Trovati {filtered} di {total} file"
+    "results": "Trovati {filtered} di {total} file",
+    "placeholderFolders": "Cerca cartelle...",
+    "noResults": "Nessun risultato trovato per \"{query}\"",
+    "placeholderFiles": "Cerca file..."
   },
   "settings": {
     "groups": {
@@ -1320,7 +1383,17 @@
     "editSuccess": "Condivisione aggiornata con successo",
     "editError": "Errore nell'aggiornamento della condivisione",
     "bulkDeleteConfirmation": "Sei sicuro di voler eliminare {count, plural, =1 {1 condivisione} other {# condivisioni}}? Questa azione non può essere annullata.",
-    "bulkDeleteTitle": "Elimina Condivisioni Selezionate"
+    "bulkDeleteTitle": "Elimina Condivisioni Selezionate",
+    "aliasLabel": "Alias collegamento",
+    "aliasPlaceholder": "Inserisci alias personalizzato",
+    "copyLink": "Copia collegamento",
+    "fileTitle": "Condividi file",
+    "folderTitle": "Condividi cartella",
+    "generateLink": "Genera collegamento",
+    "linkDescriptionFile": "Genera un collegamento personalizzato per condividere il file",
+    "linkDescriptionFolder": "Genera un collegamento personalizzato per condividere la cartella",
+    "linkReady": "Il tuo collegamento di condivisione è pronto:",
+    "linkTitle": "Genera collegamento"
   },
   "shareDetails": {
     "title": "Dettagli Condivisione",
@@ -1447,7 +1520,8 @@
     "files": "file",
     "totalSize": "Dimensione totale",
     "creating": "Creazione...",
-    "create": "Crea Condivisione"
+    "create": "Crea Condivisione",
+    "itemsToShare": "Elementi da condividere ({count} {count, plural, =1 {elemento} other {elementi}})"
   },
   "shareSecurity": {
     "subtitle": "Configura protezione password e opzioni di sicurezza per questa condivisione",
@@ -1552,7 +1626,8 @@
       "download": "Scarica selezionato"
     },
     "selectAll": "Seleziona tutto",
-    "selectShare": "Seleziona condivisione {shareName}"
+    "selectShare": "Seleziona condivisione {shareName}",
+    "folderCount": "cartelle"
   },
   "storageUsage": {
     "title": "Utilizzo Archiviazione",

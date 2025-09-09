@@ -144,7 +144,13 @@
     "back": "Wróć",
     "click": "Kliknij, aby",
     "creating": "Tworzenie...",
-    "loadingSimple": "Ładowanie..."
+    "loadingSimple": "Ładowanie...",
+    "create": "Utwórz",
+    "deleting": "Usuwanie...",
+    "move": "Przenieś",
+    "rename": "Zmień nazwę",
+    "search": "Szukaj",
+    "share": "Udostępnij"
   },
   "createShare": {
     "title": "Utwórz Udostępnienie",
@@ -160,7 +166,13 @@
     "create": "Utwórz Udostępnienie",
     "success": "Udostępnienie utworzone pomyślnie",
     "error": "Nie udało się utworzyć udostępnienia",
-    "namePlaceholder": "Wprowadź nazwę dla swojego udostępnienia"
+    "namePlaceholder": "Wprowadź nazwę dla swojego udostępnienia",
+    "nextSelectFiles": "Dalej: Wybierz pliki",
+    "searchLabel": "Szukaj",
+    "tabs": {
+      "shareDetails": "Szczegóły udostępniania",
+      "selectFiles": "Wybierz pliki"
+    }
   },
   "customization": {
     "breadcrumb": "Personalizacja",
@@ -214,7 +226,9 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "Pliki do usunięcia",
-    "sharesToDelete": "Udostępnienia do usunięcia"
+    "sharesToDelete": "Udostępnienia do usunięcia",
+    "foldersToDelete": "Foldery do usunięcia",
+    "itemsToDelete": "Elementy do usunięcia"
   },
   "downloadQueue": {
     "downloadQueued": "Pobieranie w kolejce: {fileName}",
@@ -322,7 +336,8 @@
     "previewFile": "Podgląd pliku",
     "addToShare": "Dodaj do udostępnienia",
     "removeFromShare": "Usuń z udostępnienia",
-    "saveChanges": "Zapisz zmiany"
+    "saveChanges": "Zapisz zmiany",
+    "editFolder": "Edytuj folder"
   },
   "files": {
     "title": "Wszystkie pliki",
@@ -347,7 +362,18 @@
       "grid": "Siatka"
     },
     "bulkDeleteConfirmation": "Czy na pewno chcesz usunąć {count, plural, =1 {1 plik} other {# plików}}? Ta akcja nie może zostać cofnięta.",
-    "bulkDeleteTitle": "Usuń Wybrane Pliki"
+    "bulkDeleteTitle": "Usuń Wybrane Pliki",
+    "actions": {
+      "open": "Otwórz",
+      "rename": "Zmień nazwę",
+      "delete": "Usuń"
+    },
+    "empty": {
+      "title": "Brak plików lub folderów",
+      "description": "Prześlij swój pierwszy plik lub utwórz folder, aby rozpocząć"
+    },
+    "files": "pliki",
+    "folders": "foldery"
   },
   "filesTable": {
     "ariaLabel": "Tabela plików",
@@ -376,6 +402,33 @@
       "share": "Udostępnij wybrane",
       "delete": "Usuń wybrane"
     }
+  },
+  "folderActions": {
+    "editFolder": "Edytuj folder",
+    "folderName": "Nazwa folderu",
+    "folderNamePlaceholder": "Wprowadź nazwę folderu",
+    "folderDescription": "Opis",
+    "folderDescriptionPlaceholder": "Wprowadź opis folderu (opcjonalnie)",
+    "createFolder": "Utwórz nowy folder",
+    "renameFolder": "Zmień nazwę folderu",
+    "moveFolder": "Przenieś folder",
+    "shareFolder": "Udostępnij folder",
+    "deleteFolder": "Usuń folder",
+    "moveTo": "Przenieś do",
+    "selectDestination": "Wybierz folder docelowy",
+    "rootFolder": "Katalog główny",
+    "folderCreated": "Folder utworzony pomyślnie",
+    "folderRenamed": "Nazwa folderu zmieniona pomyślnie",
+    "folderMoved": "Folder przeniesiony pomyślnie",
+    "folderDeleted": "Folder usunięty pomyślnie",
+    "folderShared": "Folder udostępniony pomyślnie",
+    "createFolderError": "Błąd podczas tworzenia folderu",
+    "renameFolderError": "Błąd podczas zmiany nazwy folderu",
+    "moveFolderError": "Błąd podczas przenoszenia folderu",
+    "deleteFolderError": "Błąd podczas usuwania folderu",
+    "shareFolderError": "Błąd podczas udostępniania folderu",
+    "deleteConfirmation": "Czy na pewno chcesz usunąć ten folder?",
+    "deleteWarning": "Ta operacja nie może zostać cofnięta."
   },
   "footer": {
     "poweredBy": "Zasilane przez",
@@ -477,6 +530,13 @@
       "uploadFailed": "Nie udało się przesłać logo",
       "removeFailed": "Nie udało się usunąć logo"
     }
+  },
+  "moveItems": {
+    "itemsToMove": "Elementy do przeniesienia:",
+    "movingTo": "Przenoszenie do:",
+    "title": "Przenieś {count, plural, =1 {element} other {elementy}}",
+    "description": "Przenieś {count, plural, =1 {element} other {elementy}} do nowej lokalizacji",
+    "success": "Pomyślnie przeniesiono {count} {count, plural, =1 {element} other {elementów}}"
   },
   "navbar": {
     "logoAlt": "Logo aplikacji",
@@ -1106,7 +1166,10 @@
   },
   "searchBar": {
     "placeholder": "Szukaj plików...",
-    "results": "Znaleziono {filtered} z {total} plików"
+    "results": "Znaleziono {filtered} z {total} plików",
+    "placeholderFolders": "Szukaj folderów...",
+    "noResults": "Nie znaleziono wyników dla \"{query}\"",
+    "placeholderFiles": "Szukaj plików..."
   },
   "settings": {
     "groups": {
@@ -1320,7 +1383,17 @@
     "editError": "Nie udało się zaktualizować udostępnienia",
     "bulkDeleteConfirmation": "Czy na pewno chcesz usunąć {count, plural, =1 {1 udostępnienie} other {# udostępnień}}? Tej operacji nie można cofnąć.",
     "bulkDeleteTitle": "Usuń wybrane udostępnienia",
-    "addDescriptionPlaceholder": "Dodaj opis..."
+    "addDescriptionPlaceholder": "Dodaj opis...",
+    "aliasLabel": "Alias linku",
+    "aliasPlaceholder": "Wprowadź niestandardowy alias",
+    "copyLink": "Kopiuj link",
+    "fileTitle": "Udostępnij plik",
+    "folderTitle": "Udostępnij folder",
+    "generateLink": "Generuj link",
+    "linkDescriptionFile": "Wygeneruj niestandardowy link do udostępnienia pliku",
+    "linkDescriptionFolder": "Wygeneruj niestandardowy link do udostępnienia folderu",
+    "linkReady": "Twój link udostępniania jest gotowy:",
+    "linkTitle": "Generuj link"
   },
   "shareDetails": {
     "title": "Szczegóły udostępnienia",
@@ -1447,7 +1520,8 @@
     "files": "plików",
     "totalSize": "Całkowity rozmiar",
     "creating": "Tworzenie...",
-    "create": "Utwórz udostępnienie"
+    "create": "Utwórz udostępnienie",
+    "itemsToShare": "Elementy do udostępnienia ({count} {count, plural, =1 {element} other {elementów}})"
   },
   "shareSecurity": {
     "title": "Ustawienia bezpieczeństwa udostępniania",
@@ -1552,7 +1626,8 @@
       "download": "Pobierz wybrany"
     },
     "selectAll": "Zaznacz wszystko",
-    "selectShare": "Wybierz udostępnienie {shareName}"
+    "selectShare": "Wybierz udostępnienie {shareName}",
+    "folderCount": "foldery"
   },
   "storageUsage": {
     "title": "Użycie pamięci",

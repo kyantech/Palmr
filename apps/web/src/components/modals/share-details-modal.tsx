@@ -217,36 +217,29 @@ export function ShareDetailsModal({
   const downloadQRCode = () => {
     setIsDownloading(true);
 
-    // Get the SVG element
     const svg = document.getElementById("share-details-qr-code");
     if (!svg) {
       setIsDownloading(false);
       return;
     }
 
-    // Create a canvas
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
 
-    // Set dimensions (with some padding)
     const padding = 20;
     canvas.width = 200 + padding * 2;
     canvas.height = 200 + padding * 2;
 
-    // Fill white background
     if (ctx) {
       ctx.fillStyle = "#FFFFFF";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Convert SVG to data URL
       const svgData = new XMLSerializer().serializeToString(svg);
       const img = new Image();
 
       img.onload = () => {
-        // Draw the image in the center of the canvas with padding
         ctx.drawImage(img, padding, padding, 200, 200);
 
-        // Create a download link
         const link = document.createElement("a");
         link.download = `${share?.name?.replace(/[^a-z0-9]/gi, "-").toLowerCase() || "share"}-qr-code.png`;
         link.href = canvas.toDataURL("image/png");

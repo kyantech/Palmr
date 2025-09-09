@@ -144,7 +144,13 @@
     "update": "Mettre à jour",
     "click": "Clique para",
     "creating": "Criando...",
-    "loadingSimple": "Chargement..."
+    "loadingSimple": "Chargement...",
+    "create": "Créer",
+    "deleting": "Suppression...",
+    "move": "Déplacer",
+    "rename": "Renommer",
+    "search": "Rechercher",
+    "share": "Partager"
   },
   "createShare": {
     "title": "Créer un Partage",
@@ -160,7 +166,13 @@
     "create": "Créer un Partage",
     "success": "Partage créé avec succès",
     "error": "Échec de la création du partage",
-    "namePlaceholder": "Entrez un nom pour votre partage"
+    "namePlaceholder": "Entrez un nom pour votre partage",
+    "nextSelectFiles": "Suivant : Sélectionner les fichiers",
+    "searchLabel": "Rechercher",
+    "tabs": {
+      "shareDetails": "Détails du partage",
+      "selectFiles": "Sélectionner les fichiers"
+    }
   },
   "customization": {
     "breadcrumb": "Personnalisation",
@@ -214,7 +226,9 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "Fichiers à supprimer",
-    "sharesToDelete": "Partages qui seront supprimés"
+    "sharesToDelete": "Partages qui seront supprimés",
+    "foldersToDelete": "Dossiers à supprimer",
+    "itemsToDelete": "Éléments à supprimer"
   },
   "downloadQueue": {
     "downloadQueued": "Téléchargement en file d'attente : {fileName}",
@@ -322,7 +336,8 @@
     "previewFile": "Aperçu du fichier",
     "addToShare": "Ajouter au partage",
     "removeFromShare": "Retirer du partage",
-    "saveChanges": "Sauvegarder les Modifications"
+    "saveChanges": "Sauvegarder les Modifications",
+    "editFolder": "Modifier le dossier"
   },
   "files": {
     "title": "Tous les Fichiers",
@@ -347,7 +362,18 @@
       "table": "Tableau",
       "grid": "Grille"
     },
-    "totalFiles": "{count, plural, =0 {Aucun fichier} =1 {1 fichier} other {# fichiers}}"
+    "totalFiles": "{count, plural, =0 {Aucun fichier} =1 {1 fichier} other {# fichiers}}",
+    "actions": {
+      "open": "Ouvrir",
+      "rename": "Renommer",
+      "delete": "Supprimer"
+    },
+    "empty": {
+      "title": "Aucun fichier ou dossier pour le moment",
+      "description": "Téléchargez votre premier fichier ou créez un dossier pour commencer"
+    },
+    "files": "fichiers",
+    "folders": "dossiers"
   },
   "filesTable": {
     "ariaLabel": "Tableau des fichiers",
@@ -376,6 +402,33 @@
       "share": "Partager les Sélectionnés",
       "delete": "Supprimer les Sélectionnés"
     }
+  },
+  "folderActions": {
+    "editFolder": "Modifier le dossier",
+    "folderName": "Nom du dossier",
+    "folderNamePlaceholder": "Entrez le nom du dossier",
+    "folderDescription": "Description",
+    "folderDescriptionPlaceholder": "Entrez la description du dossier (facultatif)",
+    "createFolder": "Créer un nouveau dossier",
+    "renameFolder": "Renommer le dossier",
+    "moveFolder": "Déplacer le dossier",
+    "shareFolder": "Partager le dossier",
+    "deleteFolder": "Supprimer le dossier",
+    "moveTo": "Déplacer vers",
+    "selectDestination": "Sélectionner le dossier de destination",
+    "rootFolder": "Racine",
+    "folderCreated": "Dossier créé avec succès",
+    "folderRenamed": "Dossier renommé avec succès",
+    "folderMoved": "Dossier déplacé avec succès",
+    "folderDeleted": "Dossier supprimé avec succès",
+    "folderShared": "Dossier partagé avec succès",
+    "createFolderError": "Erreur lors de la création du dossier",
+    "renameFolderError": "Erreur lors du renommage du dossier",
+    "moveFolderError": "Erreur lors du déplacement du dossier",
+    "deleteFolderError": "Erreur lors de la suppression du dossier",
+    "shareFolderError": "Erreur lors du partage du dossier",
+    "deleteConfirmation": "Êtes-vous sûr de vouloir supprimer ce dossier ?",
+    "deleteWarning": "Cette action ne peut pas être annulée."
   },
   "footer": {
     "poweredBy": "Propulsé par",
@@ -477,6 +530,13 @@
       "uploadFailed": "Échec du téléchargement du logo",
       "removeFailed": "Échec de la suppression du logo"
     }
+  },
+  "moveItems": {
+    "itemsToMove": "Éléments à déplacer :",
+    "movingTo": "Déplacement vers :",
+    "title": "Déplacer {count, plural, =1 {élément} other {éléments}}",
+    "description": "Déplacer {count, plural, =1 {élément} other {éléments}} vers un nouvel emplacement",
+    "success": "{count} {count, plural, =1 {élément déplacé} other {éléments déplacés}} avec succès"
   },
   "navbar": {
     "logoAlt": "Logo de l'Application",
@@ -1106,7 +1166,10 @@
   },
   "searchBar": {
     "placeholder": "Rechercher des fichiers...",
-    "results": "Trouvé {filtered} sur {total} fichiers"
+    "results": "Trouvé {filtered} sur {total} fichiers",
+    "placeholderFolders": "Rechercher des dossiers...",
+    "noResults": "Aucun résultat trouvé pour \"{query}\"",
+    "placeholderFiles": "Rechercher des fichiers..."
   },
   "settings": {
     "title": "Paramètres",
@@ -1320,7 +1383,17 @@
     "editSuccess": "Partage mis à jour avec succès",
     "editError": "Échec de la mise à jour du partage",
     "bulkDeleteConfirmation": "Êtes-vous sûr de vouloir supprimer {count, plural, =1 {1 partage} other {# partages}} ? Cette action ne peut pas être annulée.",
-    "bulkDeleteTitle": "Supprimer les Partages Sélectionnés"
+    "bulkDeleteTitle": "Supprimer les Partages Sélectionnés",
+    "aliasLabel": "Alias du lien",
+    "aliasPlaceholder": "Entrez un alias personnalisé",
+    "copyLink": "Copier le lien",
+    "fileTitle": "Partager le fichier",
+    "folderTitle": "Partager le dossier",
+    "generateLink": "Générer un lien",
+    "linkDescriptionFile": "Générez un lien personnalisé pour partager le fichier",
+    "linkDescriptionFolder": "Générez un lien personnalisé pour partager le dossier",
+    "linkReady": "Votre lien de partage est prêt :",
+    "linkTitle": "Générer un lien"
   },
   "shareDetails": {
     "title": "Détails du Partage",
@@ -1447,7 +1520,8 @@
     "files": "fichiers",
     "totalSize": "Taille totale",
     "creating": "Création...",
-    "create": "Créer un Partage"
+    "create": "Créer un Partage",
+    "itemsToShare": "Éléments à partager ({count} {count, plural, =1 {élément} other {éléments}})"
   },
   "shareSecurity": {
     "subtitle": "Configurer la protection par mot de passe et les options de sécurité pour ce partage",
@@ -1552,7 +1626,8 @@
       "download": "Télécharger sélectionné"
     },
     "selectAll": "Tout sélectionner",
-    "selectShare": "Sélectionner le partage {shareName}"
+    "selectShare": "Sélectionner le partage {shareName}",
+    "folderCount": "dossiers"
   },
   "storageUsage": {
     "title": "Utilisation du Stockage",
