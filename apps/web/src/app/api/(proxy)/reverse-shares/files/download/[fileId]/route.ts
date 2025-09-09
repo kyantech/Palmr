@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { detectMimeTypeWithFallback } from "@/utils/mime-types";
+
 const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3333";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ fileId: string }> }) {
@@ -25,13 +27,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ file
     });
   }
 
+  const serverContentType = apiRes.headers.get("Content-Type");
+  const contentDisposition = apiRes.headers.get("Content-Disposition");
+  const contentLength = apiRes.headers.get("Content-Length");
+  const acceptRanges = apiRes.headers.get("Accept-Ranges");
+  const contentRange = apiRes.headers.get("Content-Range");
+  const contentType = detectMimeTypeWithFallback(serverContentType, contentDisposition);
+
   const res = new NextResponse(apiRes.body, {
     status: apiRes.status,
     headers: {
-      "Content-Type": apiRes.headers.get("Content-Type") || "application/octet-stream",
-      "Content-Length": apiRes.headers.get("Content-Length") || "",
-      "Accept-Ranges": apiRes.headers.get("Accept-Ranges") || "",
-      "Content-Range": apiRes.headers.get("Content-Range") || "",
+      "Content-Type": contentType,
+      ...(contentLength && { "Content-Length": contentLength }),
+      ...(acceptRanges && { "Accept-Ranges": acceptRanges }),
+      ...(contentRange && { "Content-Range": contentRange }),
+      ...(contentDisposition && { "Content-Disposition": contentDisposition }),
     },
   });
 
