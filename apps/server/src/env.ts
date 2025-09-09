@@ -33,6 +33,7 @@ const envSchema = z.object({
     .string()
     .optional()
     .transform((val) => (val ? parseFloat(val) : undefined)),
+  CUSTOM_PATH: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);
