@@ -8,8 +8,10 @@ import { QrCodeModal } from "@/components/modals/qr-code-modal";
 import { ShareActionsModals } from "@/components/modals/share-actions-modals";
 import { ShareDetailsModal } from "@/components/modals/share-details-modal";
 import { ShareExpirationModal } from "@/components/modals/share-expiration-modal";
-import { ShareMultipleFilesModal } from "@/components/modals/share-multiple-files-modal";
+import { ShareMultipleItemsModal } from "@/components/modals/share-multiple-items-modal";
 import { ShareSecurityModal } from "@/components/modals/share-security-modal";
+import { listFiles } from "@/http/endpoints";
+import { listFolders } from "@/http/endpoints/folders";
 import { SharesModalsProps } from "../types";
 
 export function SharesModals({
@@ -38,7 +40,18 @@ export function SharesModals({
 
   return (
     <>
-      <CreateShareModal isOpen={isCreateModalOpen} onClose={onCloseCreateModal} onSuccess={handleShareSuccess} />
+      <CreateShareModal
+        isOpen={isCreateModalOpen}
+        onClose={onCloseCreateModal}
+        onSuccess={onSuccess}
+        getAllFilesAndFolders={async () => {
+          const [filesResponse, foldersResponse] = await Promise.all([listFiles(), listFolders()]);
+          return {
+            files: filesResponse.data.files || [],
+            folders: foldersResponse.data.folders || [],
+          };
+        }}
+      />
 
       <ShareActionsModals
         shareToDelete={shareManager.shareToDelete}
@@ -55,6 +68,7 @@ export function SharesModals({
         onManageRecipients={shareManager.handleManageRecipients}
         onSuccess={handleShareSuccess}
         onEditFile={fileManager.handleRename}
+        onEditFolder={shareManager.handleEditFolder}
       />
 
       <QrCodeModal
@@ -109,8 +123,9 @@ export function SharesModals({
         onSuccess={handleShareSuccess}
       />
 
-      <ShareMultipleFilesModal
+      <ShareMultipleItemsModal
         files={fileManager.filesToShare}
+        folders={null}
         isOpen={!!fileManager.filesToShare}
         onClose={() => fileManager.setFilesToShare(null)}
         onSuccess={() => {

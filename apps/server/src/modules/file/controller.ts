@@ -3,7 +3,18 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { env } from "../../env";
 import { prisma } from "../../shared/prisma";
 import { ConfigService } from "../config/service";
-import { CheckFileInput, CheckFileSchema, RegisterFileInput, RegisterFileSchema, UpdateFileSchema } from "./dto";
+import {
+  CheckFileInput,
+  CheckFileSchema,
+  ListFilesInput,
+  ListFilesSchema,
+  MoveFileInput,
+  MoveFileSchema,
+  RegisterFileInput,
+  RegisterFileSchema,
+  UpdateFileInput,
+  UpdateFileSchema,
+} from "./dto";
 import { FileService } from "./service";
 
 export class FileController {
@@ -72,6 +83,15 @@ export class FileController {
         });
       }
 
+      if (input.folderId) {
+        const folder = await prisma.folder.findFirst({
+          where: { id: input.folderId, userId },
+        });
+        if (!folder) {
+          return reply.status(400).send({ error: "Folder not found or access denied." });
+        }
+      }
+
       const fileRecord = await prisma.file.create({
         data: {
           name: input.name,
@@ -80,6 +100,7 @@ export class FileController {
           size: BigInt(input.size),
           objectName: input.objectName,
           userId,
+          folderId: input.folderId,
         },
       });
 
@@ -91,6 +112,7 @@ export class FileController {
         size: fileRecord.size.toString(),
         objectName: fileRecord.objectName,
         userId: fileRecord.userId,
+        folderId: fileRecord.folderId,
         createdAt: fileRecord.createdAt,
         updatedAt: fileRecord.updatedAt,
       };
@@ -189,18 +211,43 @@ export class FileController {
         return reply.status(401).send({ error: "Unauthorized: a valid token is required to access this resource." });
       }
 
-      const files = await prisma.file.findMany({
-        where: { userId },
-      });
+      const input: ListFilesInput = ListFilesSchema.parse(request.query);
+      const { folderId, recursive: recursiveStr } = input;
+      const recursive = recursiveStr === "false" ? false : true;
 
-      const filesResponse = files.map((file) => ({
+      let files: any[];
+
+      let targetFolderId: string | null;
+      if (folderId === "null" || folderId === "" || !folderId) {
+        targetFolderId = null; // Root folder
+      } else {
+        targetFolderId = folderId;
+      }
+
+      if (recursive) {
+        if (targetFolderId === null) {
+          files = await this.getAllUserFilesRecursively(userId);
+        } else {
+          const { FolderService } = await import("../folder/service.js");
+          const folderService = new FolderService();
+          files = await folderService.getAllFilesInFolder(targetFolderId, userId);
+        }
+      } else {
+        files = await prisma.file.findMany({
+          where: { userId, folderId: targetFolderId },
+        });
+      }
+
+      const filesResponse = files.map((file: any) => ({
         id: file.id,
         name: file.name,
         description: file.description,
         extension: file.extension,
-        size: file.size.toString(),
+        size: typeof file.size === "bigint" ? file.size.toString() : file.size,
         objectName: file.objectName,
         userId: file.userId,
+        folderId: file.folderId,
+        relativePath: file.relativePath || null,
         createdAt: file.createdAt,
         updatedAt: file.updatedAt,
       }));
@@ -278,6 +325,7 @@ export class FileController {
         size: updatedFile.size.toString(),
         objectName: updatedFile.objectName,
         userId: updatedFile.userId,
+        folderId: updatedFile.folderId,
         createdAt: updatedFile.createdAt,
         updatedAt: updatedFile.updatedAt,
       };
@@ -290,5 +338,87 @@ export class FileController {
       console.error("Error in updateFile:", error);
       return reply.status(400).send({ error: error.message });
     }
+  }
+
+  async moveFile(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      await request.jwtVerify();
+      const userId = (request as any).user?.userId;
+
+      if (!userId) {
+        return reply.status(401).send({ error: "Unauthorized: a valid token is required to access this resource." });
+      }
+
+      const { id } = request.params as { id: string };
+      const input: MoveFileInput = MoveFileSchema.parse(request.body);
+
+      const existingFile = await prisma.file.findFirst({
+        where: { id, userId },
+      });
+
+      if (!existingFile) {
+        return reply.status(404).send({ error: "File not found." });
+      }
+
+      if (input.folderId) {
+        const targetFolder = await prisma.folder.findFirst({
+          where: { id: input.folderId, userId },
+        });
+        if (!targetFolder) {
+          return reply.status(400).send({ error: "Target folder not found." });
+        }
+      }
+
+      const updatedFile = await prisma.file.update({
+        where: { id },
+        data: { folderId: input.folderId },
+      });
+
+      const fileResponse = {
+        id: updatedFile.id,
+        name: updatedFile.name,
+        description: updatedFile.description,
+        extension: updatedFile.extension,
+        size: updatedFile.size.toString(),
+        objectName: updatedFile.objectName,
+        userId: updatedFile.userId,
+        folderId: updatedFile.folderId,
+        createdAt: updatedFile.createdAt,
+        updatedAt: updatedFile.updatedAt,
+      };
+
+      return reply.send({
+        file: fileResponse,
+        message: "File moved successfully.",
+      });
+    } catch (error: any) {
+      console.error("Error moving file:", error);
+      return reply.status(400).send({ error: error.message });
+    }
+  }
+
+  private async getAllUserFilesRecursively(userId: string): Promise<any[]> {
+    const rootFiles = await prisma.file.findMany({
+      where: { userId, folderId: null },
+    });
+
+    const rootFolders = await prisma.folder.findMany({
+      where: { userId, parentId: null },
+      select: { id: true },
+    });
+
+    let allFiles = [...rootFiles];
+
+    if (rootFolders.length > 0) {
+      const { FolderService } = await import("../folder/service.js");
+      const folderService = new FolderService();
+
+      for (const folder of rootFolders) {
+        const folderFiles = await folderService.getAllFilesInFolder(folder.id, userId);
+        allFiles = [...allFiles, ...folderFiles];
+      }
+    }
+
+    return allFiles;
   }
 }

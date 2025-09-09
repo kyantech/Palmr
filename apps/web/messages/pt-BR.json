@@ -144,7 +144,13 @@
     "update": "Atualizar",
     "creating": "Criando...",
     "click": "Clique para",
-    "loadingSimple": "Carregando..."
+    "loadingSimple": "Carregando...",
+    "create": "Criar",
+    "deleting": "Excluindo...",
+    "move": "Mover",
+    "rename": "Renomear",
+    "search": "Pesquisar",
+    "share": "Compartilhar"
   },
   "createShare": {
     "title": "Criar compartilhamento",
@@ -160,7 +166,13 @@
     "create": "Criar compartilhamento",
     "success": "Compartilhamento criado com sucesso",
     "error": "Falha ao criar compartilhamento",
-    "namePlaceholder": "Digite um nome para seu compartilhamento"
+    "namePlaceholder": "Digite um nome para seu compartilhamento",
+    "nextSelectFiles": "Próximo: Selecionar arquivos",
+    "searchLabel": "Pesquisar",
+    "tabs": {
+      "shareDetails": "Detalhes do compartilhamento",
+      "selectFiles": "Selecionar arquivos"
+    }
   },
   "customization": {
     "breadcrumb": "Personalização",
@@ -214,7 +226,9 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "Arquivos que serão excluídos",
-    "sharesToDelete": "Compartilhamentos que serão excluídos"
+    "sharesToDelete": "Compartilhamentos que serão excluídos",
+    "foldersToDelete": "Pastas a serem excluídas",
+    "itemsToDelete": "Itens a serem excluídos"
   },
   "downloadQueue": {
     "downloadQueued": "Download na fila: {fileName}",
@@ -322,7 +336,8 @@
     "previewFile": "Visualizar arquivo",
     "addToShare": "Adicionar ao compartilhamento",
     "removeFromShare": "Remover do compartilhamento",
-    "saveChanges": "Salvar Alterações"
+    "saveChanges": "Salvar Alterações",
+    "editFolder": "Editar pasta"
   },
   "files": {
     "title": "Todos os Arquivos",
@@ -347,7 +362,18 @@
     "viewMode": {
       "table": "Tabela",
       "grid": "Grade"
-    }
+    },
+    "actions": {
+      "open": "Abrir",
+      "rename": "Renomear",
+      "delete": "Excluir"
+    },
+    "empty": {
+      "title": "Nenhum arquivo ou pasta ainda",
+      "description": "Carregue seu primeiro arquivo ou crie uma pasta para começar"
+    },
+    "files": "arquivos",
+    "folders": "pastas"
   },
   "filesTable": {
     "ariaLabel": "Tabela de arquivos",
@@ -376,6 +402,33 @@
       "share": "Compartilhar selecionados",
       "delete": "Excluir selecionados"
     }
+  },
+  "folderActions": {
+    "editFolder": "Editar pasta",
+    "folderName": "Nome da pasta",
+    "folderNamePlaceholder": "Digite o nome da pasta",
+    "folderDescription": "Descrição",
+    "folderDescriptionPlaceholder": "Digite a descrição da pasta (opcional)",
+    "createFolder": "Criar nova pasta",
+    "renameFolder": "Renomear pasta",
+    "moveFolder": "Mover pasta",
+    "shareFolder": "Compartilhar pasta",
+    "deleteFolder": "Excluir pasta",
+    "moveTo": "Mover para",
+    "selectDestination": "Selecionar pasta de destino",
+    "rootFolder": "Raiz",
+    "folderCreated": "Pasta criada com sucesso",
+    "folderRenamed": "Pasta renomeada com sucesso",
+    "folderMoved": "Pasta movida com sucesso",
+    "folderDeleted": "Pasta excluída com sucesso",
+    "folderShared": "Pasta compartilhada com sucesso",
+    "createFolderError": "Erro ao criar pasta",
+    "renameFolderError": "Erro ao renomear pasta",
+    "moveFolderError": "Erro ao mover pasta",
+    "deleteFolderError": "Erro ao excluir pasta",
+    "shareFolderError": "Erro ao compartilhar pasta",
+    "deleteConfirmation": "Tem certeza de que deseja excluir esta pasta?",
+    "deleteWarning": "Esta ação não pode ser desfeita."
   },
   "footer": {
     "poweredBy": "Desenvolvido por",
@@ -477,6 +530,13 @@
       "uploadFailed": "Falha ao enviar logo",
       "removeFailed": "Falha ao remover logo"
     }
+  },
+  "moveItems": {
+    "itemsToMove": "Itens para mover:",
+    "movingTo": "Movendo para:",
+    "title": "Mover {count, plural, =1 {item} other {itens}}",
+    "description": "Mover {count, plural, =1 {item} other {itens}} para um novo local",
+    "success": "Movidos com sucesso {count} {count, plural, =1 {item} other {itens}}"
   },
   "navbar": {
     "logoAlt": "Logo do aplicativo",
@@ -1107,7 +1167,10 @@
   },
   "searchBar": {
     "placeholder": "Buscar arquivos...",
-    "results": "Encontrados {filtered} de {total} arquivos"
+    "results": "Encontrados {filtered} de {total} arquivos",
+    "placeholderFolders": "Pesquisar pastas...",
+    "noResults": "Nenhum resultado encontrado para \"{query}\"",
+    "placeholderFiles": "Buscar arquivos..."
   },
   "settings": {
     "groups": {
@@ -1321,7 +1384,17 @@
     "manageFilesTitle": "Gerenciar Arquivos",
     "manageRecipientsTitle": "Gerenciar Destinatários",
     "editSuccess": "Compartilhamento atualizado com sucesso",
-    "editError": "Falha ao atualizar compartilhamento"
+    "editError": "Falha ao atualizar compartilhamento",
+    "aliasLabel": "Alias do link",
+    "aliasPlaceholder": "Digite alias personalizado",
+    "copyLink": "Copiar link",
+    "fileTitle": "Compartilhar arquivo",
+    "folderTitle": "Compartilhar pasta",
+    "generateLink": "Gerar link",
+    "linkDescriptionFile": "Gere um link personalizado para compartilhar o arquivo",
+    "linkDescriptionFolder": "Gere um link personalizado para compartilhar a pasta",
+    "linkReady": "Seu link de compartilhamento está pronto:",
+    "linkTitle": "Gerar link"
   },
   "shareDetails": {
     "title": "Detalhes do Compartilhamento",
@@ -1448,7 +1521,8 @@
     "files": "arquivos",
     "totalSize": "Tamanho total",
     "creating": "Criando...",
-    "create": "Criar Compartilhamento"
+    "create": "Criar Compartilhamento",
+    "itemsToShare": "Itens para compartilhar ({count} {count, plural, =1 {item} other {itens}})"
   },
   "shareSecurity": {
     "subtitle": "Configurar proteção por senha e opções de segurança para este compartilhamento",
@@ -1553,7 +1627,8 @@
       "delete": "Excluir",
       "downloadShareFiles": "Baixar todos os arquivos",
       "viewQrCode": "Visualizar QR Code"
-    }
+    },
+    "folderCount": "pastas"
   },
   "storageUsage": {
     "title": "Uso de armazenamento",

@@ -144,7 +144,13 @@
     "update": "업데이트",
     "click": "클릭하여",
     "creating": "생성 중...",
-    "loadingSimple": "로딩 중..."
+    "loadingSimple": "로딩 중...",
+    "create": "생성",
+    "deleting": "삭제 중...",
+    "move": "이동",
+    "rename": "이름 변경",
+    "search": "검색",
+    "share": "공유"
   },
   "createShare": {
     "title": "공유 생성",
@@ -160,7 +166,13 @@
     "create": "공유 생성",
     "success": "공유가 성공적으로 생성되었습니다",
     "error": "공유 생성에 실패했습니다",
-    "namePlaceholder": "공유 이름을 입력하세요"
+    "namePlaceholder": "공유 이름을 입력하세요",
+    "nextSelectFiles": "다음: 파일 선택",
+    "searchLabel": "검색",
+    "tabs": {
+      "shareDetails": "공유 세부사항",
+      "selectFiles": "파일 선택"
+    }
   },
   "customization": {
     "breadcrumb": "커스터마이징",
@@ -214,7 +226,9 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "삭제할 파일",
-    "sharesToDelete": "삭제될 공유"
+    "sharesToDelete": "삭제될 공유",
+    "foldersToDelete": "삭제할 폴더",
+    "itemsToDelete": "삭제할 항목"
   },
   "downloadQueue": {
     "downloadQueued": "다운로드 대기 중: {fileName}",
@@ -322,7 +336,8 @@
     "previewFile": "파일 미리보기",
     "addToShare": "공유에 추가",
     "removeFromShare": "공유에서 제거",
-    "saveChanges": "변경사항 저장"
+    "saveChanges": "변경사항 저장",
+    "editFolder": "폴더 편집"
   },
   "files": {
     "title": "모든 파일",
@@ -347,7 +362,18 @@
     },
     "totalFiles": "{count, plural, =0 {파일 없음} =1 {1개 파일} other {#개 파일}}",
     "bulkDeleteConfirmation": "{count, plural, =1 {1개 파일} other {#개 파일}}을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
-    "bulkDeleteTitle": "선택한 파일 삭제"
+    "bulkDeleteTitle": "선택한 파일 삭제",
+    "actions": {
+      "open": "열기",
+      "rename": "이름 변경",
+      "delete": "삭제"
+    },
+    "empty": {
+      "title": "아직 파일이나 폴더가 없습니다",
+      "description": "첫 번째 파일을 업로드하거나 폴더를 만들어 시작하세요"
+    },
+    "files": "파일",
+    "folders": "폴더"
   },
   "filesTable": {
     "ariaLabel": "파일 테이블",
@@ -376,6 +402,33 @@
       "share": "선택된 항목 공유",
       "delete": "선택된 항목 삭제"
     }
+  },
+  "folderActions": {
+    "editFolder": "폴더 편집",
+    "folderName": "폴더 이름",
+    "folderNamePlaceholder": "폴더 이름 입력",
+    "folderDescription": "설명",
+    "folderDescriptionPlaceholder": "폴더 설명 입력 (선택사항)",
+    "createFolder": "새 폴더 만들기",
+    "renameFolder": "폴더 이름 변경",
+    "moveFolder": "폴더 이동",
+    "shareFolder": "폴더 공유",
+    "deleteFolder": "폴더 삭제",
+    "moveTo": "이동 위치",
+    "selectDestination": "대상 폴더 선택",
+    "rootFolder": "루트",
+    "folderCreated": "폴더가 성공적으로 생성되었습니다",
+    "folderRenamed": "폴더 이름이 성공적으로 변경되었습니다",
+    "folderMoved": "폴더가 성공적으로 이동되었습니다",
+    "folderDeleted": "폴더가 성공적으로 삭제되었습니다",
+    "folderShared": "폴더가 성공적으로 공유되었습니다",
+    "createFolderError": "폴더 생성 중 오류 발생",
+    "renameFolderError": "폴더 이름 변경 중 오류 발생",
+    "moveFolderError": "폴더 이동 중 오류 발생",
+    "deleteFolderError": "폴더 삭제 중 오류 발생",
+    "shareFolderError": "폴더 공유 중 오류 발생",
+    "deleteConfirmation": "이 폴더를 삭제하시겠습니까?",
+    "deleteWarning": "이 작업은 되돌릴 수 없습니다."
   },
   "footer": {
     "poweredBy": "제공:",
@@ -477,6 +530,13 @@
       "uploadFailed": "로고 업로드에 실패했습니다",
       "removeFailed": "로고 삭제에 실패했습니다"
     }
+  },
+  "moveItems": {
+    "itemsToMove": "이동할 항목:",
+    "movingTo": "이동 위치:",
+    "title": "항목 이동",
+    "description": "항목을 새 위치로 이동",
+    "success": "{count}개 항목이 성공적으로 이동되었습니다"
   },
   "navbar": {
     "logoAlt": "애플리케이션 로고",
@@ -1106,7 +1166,10 @@
   },
   "searchBar": {
     "placeholder": "파일 검색...",
-    "results": "전체 {total}개 중 {filtered}개 파일을 찾았습니다"
+    "results": "전체 {total}개 중 {filtered}개 파일을 찾았습니다",
+    "placeholderFolders": "폴더 검색...",
+    "noResults": "\"{query}\"에 대한 검색 결과가 없습니다",
+    "placeholderFiles": "파일 검색..."
   },
   "settings": {
     "groups": {
@@ -1320,7 +1383,17 @@
     "editError": "공유 업데이트에 실패했습니다",
     "bulkDeleteConfirmation": "{count, plural, =1 {1개의 공유} other {#개의 공유}}를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
     "bulkDeleteTitle": "선택한 공유 삭제",
-    "addDescriptionPlaceholder": "설명 추가..."
+    "addDescriptionPlaceholder": "설명 추가...",
+    "aliasLabel": "링크 별칭",
+    "aliasPlaceholder": "사용자 정의 별칭 입력",
+    "copyLink": "링크 복사",
+    "fileTitle": "파일 공유",
+    "folderTitle": "폴더 공유",
+    "generateLink": "링크 생성",
+    "linkDescriptionFile": "파일을 공유할 사용자 정의 링크 생성",
+    "linkDescriptionFolder": "폴더를 공유할 사용자 정의 링크 생성",
+    "linkReady": "공유 링크가 준비되었습니다:",
+    "linkTitle": "링크 생성"
   },
   "shareDetails": {
     "title": "공유 세부 정보",
@@ -1447,7 +1520,8 @@
     "files": "파일",
     "totalSize": "전체 크기",
     "creating": "생성 중...",
-    "create": "공유 생성"
+    "create": "공유 생성",
+    "itemsToShare": "공유할 항목 ({count}개 항목)"
   },
   "shareSecurity": {
     "subtitle": "이 공유의 비밀번호 보호 및 보안 옵션을 구성하세요",
@@ -1552,7 +1626,8 @@
       "download": "선택한 다운로드"
     },
     "selectAll": "모두 선택",
-    "selectShare": "공유 {shareName} 선택"
+    "selectShare": "공유 {shareName} 선택",
+    "folderCount": "폴더"
   },
   "storageUsage": {
     "title": "스토리지 사용량",

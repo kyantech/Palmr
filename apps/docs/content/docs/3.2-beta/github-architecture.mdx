@@ -49,6 +49,7 @@ The frontend is organized with:
 - **Custom hooks** to isolate logic and side effects
 - A **route protection system** using session cookies and middleware
 - A **file management interface** integrated with the backend
+- **Folder support** for organizing files hierarchically
 - A **reusable modal system** used for file actions, confirmations, and more
 - **Dynamic, locale-aware routing** using next-intl
 
@@ -68,7 +69,7 @@ Data is stored in **SQLite**, which handles user info, file metadata, session to
 Key features include:
 
 - **Authentication/authorization** with JWT + cookie sessions
-- **File management logic** including uploads, deletes, and renames
+- **File management logic** including uploads, deletes, renames, and folders
 - **Storage operations** to handle file organization, usage tracking, and cleanup
 - A **share system** that generates tokenized public file links
 - Schema-based request validation for all endpoints
@@ -106,9 +107,10 @@ Volumes are used to persist data locally, and containers are networked together 
 
 ### File management
 
-Files are at the heart of Palmr. Users can upload files via the frontend, and they're stored directly in the filesystem. The backend handles metadata (name, size, type, ownership), and also handles deletion, renaming, and public sharing. Every file operation is tracked, and all actions can be scoped per user.
+Files are at the heart of Palmr. Users can upload files via the frontend, and they're stored directly in the filesystem. Users can also create folders to organize files. The backend handles metadata (name, size, type, ownership), and also handles deletion, renaming, and public sharing. Every file operation is tracked, and all actions can be scoped per user.
 
 - Upload/download with instant feedback
+- Create and organize files in folders
 - File previews, type validation, and size limits
 - Token-based sharing system
 - Disk usage tracking by user

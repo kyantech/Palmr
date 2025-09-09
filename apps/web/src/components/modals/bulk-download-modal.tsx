@@ -9,14 +9,21 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+interface BulkItem {
+  id: string;
+  name: string;
+  size?: number;
+  type: "file" | "folder";
+}
+
 interface BulkDownloadModalProps {
   isOpen: boolean;
   onClose: () => void;
   onDownload: (zipName: string) => void;
-  fileCount: number;
+  items?: BulkItem[];
 }
 
-export function BulkDownloadModal({ isOpen, onClose, onDownload, fileCount }: BulkDownloadModalProps) {
+export function BulkDownloadModal({ isOpen, onClose, onDownload, items = [] }: BulkDownloadModalProps) {
   const t = useTranslations();
   const [zipName, setZipName] = useState("");
 
@@ -53,7 +60,11 @@ export function BulkDownloadModal({ isOpen, onClose, onDownload, fileCount }: Bu
               className="w-full"
               autoFocus
             />
-            <p className="text-sm text-muted-foreground">{t("bulkDownload.description", { count: fileCount })}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("bulkDownload.description", { count: items.length })}(
+              {items.filter((item) => item.type === "file").length} files,{" "}
+              {items.filter((item) => item.type === "folder").length} folders)
+            </p>
           </div>
         </form>
 

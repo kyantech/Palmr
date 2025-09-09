@@ -144,7 +144,13 @@
     "update": "Обновить",
     "click": "Нажмите для",
     "creating": "Создание...",
-    "loadingSimple": "Загрузка..."
+    "loadingSimple": "Загрузка...",
+    "create": "Создать",
+    "deleting": "Удаление...",
+    "move": "Переместить",
+    "rename": "Переименовать",
+    "search": "Поиск",
+    "share": "Поделиться"
   },
   "createShare": {
     "title": "Создать общий доступ",
@@ -160,7 +166,13 @@
     "error": "Не удалось создать общий доступ",
     "descriptionLabel": "Описание",
     "descriptionPlaceholder": "Введите описание (опционально)",
-    "namePlaceholder": "Введите имя для вашего общего доступа"
+    "namePlaceholder": "Введите имя для вашего общего доступа",
+    "nextSelectFiles": "Далее: Выбор файлов",
+    "searchLabel": "Поиск",
+    "tabs": {
+      "shareDetails": "Детали общего доступа",
+      "selectFiles": "Выбрать файлы"
+    }
   },
   "customization": {
     "breadcrumb": "Настройка",
@@ -214,7 +226,9 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "Файлы для удаления",
-    "sharesToDelete": "Общие папки, которые будут удалены"
+    "sharesToDelete": "Общие папки, которые будут удалены",
+    "foldersToDelete": "Папки для удаления",
+    "itemsToDelete": "Элементы для удаления"
   },
   "downloadQueue": {
     "downloadQueued": "Загрузка в очереди: {fileName}",
@@ -322,7 +336,8 @@
     "previewFile": "Предпросмотр файла",
     "addToShare": "Добавить в общий доступ",
     "removeFromShare": "Удалить из общего доступа",
-    "saveChanges": "Сохранить Изменения"
+    "saveChanges": "Сохранить Изменения",
+    "editFolder": "Редактировать папку"
   },
   "files": {
     "title": "Все файлы",
@@ -347,7 +362,18 @@
       "grid": "Сетка"
     },
     "bulkDeleteConfirmation": "Вы уверены, что хотите удалить {count, plural, =1 {1 файл} other {# файлов}}? Это действие нельзя отменить.",
-    "bulkDeleteTitle": "Удалить Выбранные Файлы"
+    "bulkDeleteTitle": "Удалить Выбранные Файлы",
+    "actions": {
+      "open": "Открыть",
+      "rename": "Переименовать",
+      "delete": "Удалить"
+    },
+    "empty": {
+      "title": "Пока нет файлов или папок",
+      "description": "Загрузите свой первый файл или создайте папку для начала работы"
+    },
+    "files": "файлы",
+    "folders": "папки"
   },
   "filesTable": {
     "ariaLabel": "Таблица файлов",
@@ -376,6 +402,33 @@
       "share": "Поделиться Выбранными",
       "delete": "Удалить Выбранные"
     }
+  },
+  "folderActions": {
+    "editFolder": "Редактировать папку",
+    "folderName": "Имя папки",
+    "folderNamePlaceholder": "Введите имя папки",
+    "folderDescription": "Описание",
+    "folderDescriptionPlaceholder": "Введите описание папки (необязательно)",
+    "createFolder": "Создать новую папку",
+    "renameFolder": "Переименовать папку",
+    "moveFolder": "Переместить папку",
+    "shareFolder": "Поделиться папкой",
+    "deleteFolder": "Удалить папку",
+    "moveTo": "Переместить в",
+    "selectDestination": "Выберите папку назначения",
+    "rootFolder": "Корень",
+    "folderCreated": "Папка успешно создана",
+    "folderRenamed": "Папка успешно переименована",
+    "folderMoved": "Папка успешно перемещена",
+    "folderDeleted": "Папка успешно удалена",
+    "folderShared": "Папка успешно отправлена",
+    "createFolderError": "Ошибка создания папки",
+    "renameFolderError": "Ошибка переименования папки",
+    "moveFolderError": "Ошибка перемещения папки",
+    "deleteFolderError": "Ошибка удаления папки",
+    "shareFolderError": "Ошибка обмена папкой",
+    "deleteConfirmation": "Вы уверены, что хотите удалить эту папку?",
+    "deleteWarning": "Это действие нельзя отменить."
   },
   "footer": {
     "poweredBy": "При поддержке",
@@ -477,6 +530,13 @@
       "uploadFailed": "Ошибка загрузки логотипа",
       "removeFailed": "Ошибка удаления логотипа"
     }
+  },
+  "moveItems": {
+    "itemsToMove": "Элементы для перемещения:",
+    "movingTo": "Перемещение в:",
+    "title": "Переместить {count, plural, =1 {элемент} other {элементы}}",
+    "description": "Переместить {count, plural, =1 {элемент} other {элементы}} в новое место",
+    "success": "Успешно перемещено {count} {count, plural, =1 {элемент} other {элементов}}"
   },
   "navbar": {
     "logoAlt": "Логотип приложения",
@@ -1106,7 +1166,10 @@
   },
   "searchBar": {
     "placeholder": "Поиск файлов...",
-    "results": "Найдено {filtered} из {total} файлов"
+    "results": "Найдено {filtered} из {total} файлов",
+    "placeholderFolders": "Поиск папок...",
+    "noResults": "Не найдено результатов для \"{query}\"",
+    "placeholderFiles": "Поиск файлов..."
   },
   "settings": {
     "groups": {
@@ -1320,7 +1383,17 @@
     "editError": "Ошибка обновления общего доступа",
     "bulkDeleteConfirmation": "Вы уверены, что хотите удалить {count, plural, =1 {1 общую папку} other {# общих папок}}? Это действие нельзя отменить.",
     "bulkDeleteTitle": "Удалить Выбранные Общие Папки",
-    "addDescriptionPlaceholder": "Добавить описание..."
+    "addDescriptionPlaceholder": "Добавить описание...",
+    "aliasLabel": "Псевдоним ссылки",
+    "aliasPlaceholder": "Введите пользовательский псевдоним",
+    "copyLink": "Копировать ссылку",
+    "fileTitle": "Поделиться файлом",
+    "folderTitle": "Поделиться папкой",
+    "generateLink": "Создать ссылку",
+    "linkDescriptionFile": "Создайте пользовательскую ссылку для обмена файлом",
+    "linkDescriptionFolder": "Создайте пользовательскую ссылку для обмена папкой",
+    "linkReady": "Ваша ссылка для обмена готова:",
+    "linkTitle": "Создать ссылку"
   },
   "shareDetails": {
     "title": "Детали Общего Доступа",
@@ -1447,7 +1520,8 @@
     "files": "файлов",
     "totalSize": "Общий размер",
     "creating": "Создание...",
-    "create": "Создать Общий Доступ"
+    "create": "Создать Общий Доступ",
+    "itemsToShare": "Элементы для обмена ({count} {count, plural, =1 {элемент} other {элементов}})"
   },
   "shareSecurity": {
     "subtitle": "Настройте защиту паролем и параметры безопасности для этого общего доступа",
@@ -1552,7 +1626,8 @@
       "download": "Скачать выбранный"
     },
     "selectAll": "Выбрать все",
-    "selectShare": "Выбрать общую папку {shareName}"
+    "selectShare": "Выбрать общую папку {shareName}",
+    "folderCount": "папки"
   },
   "storageUsage": {
     "title": "Использование хранилища",

@@ -14,6 +14,7 @@ import { fileRoutes } from "./modules/file/routes";
 import { ChunkManager } from "./modules/filesystem/chunk-manager";
 import { downloadQueueRoutes } from "./modules/filesystem/download-queue-routes";
 import { filesystemRoutes } from "./modules/filesystem/routes";
+import { folderRoutes } from "./modules/folder/routes";
 import { healthRoutes } from "./modules/health/routes";
 import { reverseShareRoutes } from "./modules/reverse-share/routes";
 import { shareRoutes } from "./modules/share/routes";
@@ -75,6 +76,7 @@ async function startServer() {
   app.register(twoFactorRoutes, { prefix: "/auth" });
   app.register(userRoutes);
   app.register(fileRoutes);
+  app.register(folderRoutes);
   app.register(downloadQueueRoutes);
   app.register(shareRoutes);
   app.register(reverseShareRoutes);

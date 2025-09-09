@@ -1,6 +1,6 @@
 "use client";
 
-import { IconTrash, IconX } from "@tabler/icons-react";
+import { IconFolder, IconTrash, IconX } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,9 @@ interface DeleteConfirmationModalProps {
   onConfirm: () => void;
   title: string;
   description: string;
-  files: string[];
-  itemType?: "files" | "shares";
+  files?: string[];
+  folders?: string[];
+  itemType?: "files" | "shares" | "mixed";
 }
 
 export function DeleteConfirmationModal({
@@ -25,7 +26,8 @@ export function DeleteConfirmationModal({
   onConfirm,
   title,
   description,
-  files,
+  files = [],
+  folders = [],
   itemType,
 }: DeleteConfirmationModalProps) {
   const t = useTranslations();
@@ -48,19 +50,39 @@ export function DeleteConfirmationModal({
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">{description}</p>
 
-          {files.length > 0 && (
+          {(files.length > 0 || folders.length > 0) && (
             <div className="space-y-2">
               <p className="text-sm font-medium">
-                {itemType === "shares" ? t("deleteConfirmation.sharesToDelete") : t("deleteConfirmation.filesToDelete")}
+                {itemType === "shares"
+                  ? t("deleteConfirmation.sharesToDelete")
+                  : folders.length > 0 && files.length > 0
+                    ? t("deleteConfirmation.itemsToDelete")
+                    : folders.length > 0
+                      ? t("deleteConfirmation.foldersToDelete")
+                      : t("deleteConfirmation.filesToDelete")}
                 :
               </p>
               <ScrollArea className="h-32 w-full rounded-md border p-2">
                 <div className="space-y-1">
+                  {folders.map((folderName, index) => (
+                    <div
+                      key={`folder-${index}`}
+                      className="flex items-center gap-2 p-2 bg-muted/20 rounded text-sm min-w-0"
+                    >
+                      <IconFolder className="h-4 w-4 text-primary flex-shrink-0" />
+                      <span className="flex-1 break-all" title={folderName}>
+                        {truncateFileName(folderName)}
+                      </span>
+                    </div>
+                  ))}
                   {files.map((fileName, index) => {
                     const { icon: FileIcon, color } = getFileIcon(fileName);
                     const displayName = truncateFileName(fileName);
                     return (
-                      <div key={index} className="flex items-center gap-2 p-2 bg-muted/20 rounded text-sm min-w-0">
+                      <div
+                        key={`file-${index}`}
+                        className="flex items-center gap-2 p-2 bg-muted/20 rounded text-sm min-w-0"
+                      >
                         <FileIcon className={`h-4 w-4 ${color} flex-shrink-0`} />
                         <span className="flex-1 break-all" title={fileName}>
                           {displayName}

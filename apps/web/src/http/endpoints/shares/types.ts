@@ -16,8 +16,23 @@ export interface ShareFile {
   size: string;
   objectName: string;
   userId: string;
+  folderId: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ShareFolder {
+  id: string;
+  name: string;
+  description: string | null;
+  parentId: string | null;
+  totalSize: string | null;
+  createdAt: string;
+  updatedAt: string;
+  _count?: {
+    files: number;
+    children: number;
+  };
 }
 
 export interface ShareRecipient {
@@ -43,6 +58,7 @@ export interface Share {
   creatorId: string;
   security: ShareSecurity;
   files: ShareFile[];
+  folders: ShareFolder[];
   recipients: ShareRecipient[];
   alias: ShareAlias;
 }
@@ -116,7 +132,8 @@ export interface CreateShareBody {
   name?: string;
   description?: string;
   expiration?: string;
-  files: string[];
+  files?: string[];
+  folders?: string[];
   password?: string;
   maxViews?: number | null;
   recipients?: string[];

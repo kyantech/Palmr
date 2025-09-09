@@ -6,7 +6,7 @@ import {
   CreateShareSchema,
   ShareAliasResponseSchema,
   ShareResponseSchema,
-  UpdateShareFilesSchema,
+  UpdateShareItemsSchema,
   UpdateSharePasswordSchema,
   UpdateShareRecipientsSchema,
   UpdateShareSchema,
@@ -32,7 +32,7 @@ export async function shareRoutes(app: FastifyInstance) {
         tags: ["Share"],
         operationId: "createShare",
         summary: "Create a new share",
-        description: "Create a new share",
+        description: "Create a new share with files and/or folders",
         body: CreateShareSchema,
         response: {
           201: z.object({
@@ -164,17 +164,17 @@ export async function shareRoutes(app: FastifyInstance) {
   );
 
   app.post(
-    "/shares/:shareId/files",
+    "/shares/:shareId/items",
     {
       preValidation,
       schema: {
         tags: ["Share"],
-        operationId: "addFiles",
-        summary: "Add files to share",
+        operationId: "addItems",
+        summary: "Add files and/or folders to share",
         params: z.object({
           shareId: z.string().describe("The share ID"),
         }),
-        body: UpdateShareFilesSchema,
+        body: UpdateShareItemsSchema,
         response: {
           200: z.object({
             share: ShareResponseSchema,
@@ -185,21 +185,21 @@ export async function shareRoutes(app: FastifyInstance) {
         },
       },
     },
-    shareController.addFiles.bind(shareController)
+    shareController.addItems.bind(shareController)
   );
 
   app.delete(
-    "/shares/:shareId/files",
+    "/shares/:shareId/items",
     {
       preValidation,
       schema: {
         tags: ["Share"],
-        operationId: "removeFiles",
-        summary: "Remove files from share",
+        operationId: "removeItems",
+        summary: "Remove files and/or folders from share",
         params: z.object({
           shareId: z.string().describe("The share ID"),
         }),
-        body: UpdateShareFilesSchema,
+        body: UpdateShareItemsSchema,
         response: {
           200: z.object({
             share: ShareResponseSchema,
@@ -210,7 +210,7 @@ export async function shareRoutes(app: FastifyInstance) {
         },
       },
     },
-    shareController.removeFiles.bind(shareController)
+    shareController.removeItems.bind(shareController)
   );
 
   app.post(

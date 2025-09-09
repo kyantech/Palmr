@@ -4,8 +4,18 @@ import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import type { SearchBarProps } from "../types";
 
-export function SearchBar({ searchQuery, onSearch, totalFiles, filteredCount }: SearchBarProps) {
+export function SearchBar({
+  searchQuery,
+  onSearch,
+  totalFiles,
+  totalFolders = 0,
+  filteredCount,
+  filteredFolders = 0,
+}: SearchBarProps) {
   const t = useTranslations();
+
+  const totalItems = totalFiles + totalFolders;
+  const filteredItems = filteredCount + filteredFolders;
 
   return (
     <div className="flex items-center gap-2">
@@ -20,7 +30,7 @@ export function SearchBar({ searchQuery, onSearch, totalFiles, filteredCount }: 
       </div>
       {searchQuery && (
         <span className="text-sm text-muted-foreground">
-          {t("searchBar.results", { filtered: filteredCount, total: totalFiles })}
+          {t("searchBar.results", { filtered: filteredItems, total: totalItems })}
         </span>
       )}
     </div>
