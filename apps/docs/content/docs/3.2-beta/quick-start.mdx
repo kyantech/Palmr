@@ -152,7 +152,7 @@ Choose your storage method based on your needs:
 Customize Palmr's behavior with these environment variables:
 
 | Variable                        | Default    | Description                                                                                                            |
-| ------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------- | --- |
+| ------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------- |
 | `ENABLE_S3`                     | `false`    | Enable S3-compatible storage backends                                                                                  |
 | `S3_ENDPOINT`                   | -          | S3 server endpoint URL (required when using S3)                                                                        |
 | `S3_PORT`                       | -          | S3 server port (optional when using S3)                                                                                |
@@ -167,7 +167,7 @@ Customize Palmr's behavior with these environment variables:
 | `DISABLE_FILESYSTEM_ENCRYPTION` | `true`     | Disable file encryption for better performance (set to `false` to enable encryption)                                   |
 | `PRESIGNED_URL_EXPIRATION`      | `3600`     | Duration in seconds for presigned URL expiration (applies to both filesystem and S3 storage)                           |
 | `SECURE_SITE`                   | `false`    | Enable secure cookies for HTTPS/reverse proxy deployments                                                              |
-| `DEFAULT_LANGUAGE`              | `en-US`    | Default application language ([see available languages](/docs/3.2-beta/available-languages))                           |     |
+| `DEFAULT_LANGUAGE`              | `en-US`    | Default application language ([see available languages](/docs/3.2-beta/available-languages))                           |
 | `PALMR_UID`                     | `1000`     | User ID for container processes (helps with file permissions)                                                          |
 | `PALMR_GID`                     | `1000`     | Group ID for container processes (helps with file permissions)                                                         |
 | `NODE_OPTIONS`                  | -          | Node.js options (recommended: `--expose-gc` for garbage collection in production)                                      |
