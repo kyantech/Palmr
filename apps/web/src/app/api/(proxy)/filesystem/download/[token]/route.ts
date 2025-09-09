@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { detectMimeTypeWithFallback } from "@/utils/mime-types";
+
 const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3333";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ token: string }> }) {
@@ -14,9 +16,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
     },
   });
 
-  const contentType = apiRes.headers.get("Content-Type") || "application/octet-stream";
+  const serverContentType = apiRes.headers.get("Content-Type");
   const contentDisposition = apiRes.headers.get("Content-Disposition");
   const contentLength = apiRes.headers.get("Content-Length");
+  const contentType = detectMimeTypeWithFallback(serverContentType, contentDisposition);
 
   const res = new NextResponse(apiRes.body, {
     status: apiRes.status,
