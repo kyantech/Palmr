@@ -229,6 +229,7 @@ export function useFilePreview({ file, isOpen, isReverseShare = false, sharePass
     file.id,
     file.objectName,
     fileType,
+    sharePassword,
     loadVideoPreview,
     loadAudioPreview,
     loadPdfPreview,
@@ -254,7 +255,7 @@ export function useFilePreview({ file, isOpen, isReverseShare = false, sharePass
     } catch (error) {
       console.error("Download error:", error);
     }
-  }, [isReverseShare, file.id, file.objectName, file.name, t]);
+  }, [isReverseShare, file.id, file.objectName, file.name, sharePassword, t]);
 
   useEffect(() => {
     const fileKey = isReverseShare ? file.id : file.objectName;

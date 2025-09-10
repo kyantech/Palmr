@@ -329,7 +329,6 @@ export function usePublicShare() {
           zipName,
           undefined,
           true,
-          share.id,
           password
         ).then(() => {}),
         {
