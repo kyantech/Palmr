@@ -108,7 +108,6 @@ export async function fileRoutes(app: FastifyInstance) {
   app.get(
     "/files/:objectName/download",
     {
-      preValidation,
       schema: {
         tags: ["File"],
         operationId: "getDownloadUrl",
@@ -116,6 +115,10 @@ export async function fileRoutes(app: FastifyInstance) {
         description: "Generates a pre-signed URL for downloading a file",
         params: z.object({
           objectName: z.string().min(1, "The objectName is required"),
+        }),
+        querystring: z.object({
+          shareId: z.string().optional().describe("Share ID if downloading from a share"),
+          password: z.string().optional().describe("Share password if required"),
         }),
         response: {
           200: z.object({

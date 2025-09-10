@@ -183,6 +183,7 @@ export class FileController {
         objectName: string;
       };
       const objectName = decodeURIComponent(encodedObjectName);
+      const { shareId, password } = request.query as { shareId?: string; password?: string };
 
       if (!objectName) {
         return reply.status(400).send({ error: "The 'objectName' parameter is required." });
@@ -193,6 +194,71 @@ export class FileController {
       if (!fileRecord) {
         return reply.status(404).send({ error: "File not found." });
       }
+
+      let hasAccess = false;
+
+      if (shareId) {
+        const share = await prisma.share.findFirst({
+          where: {
+            id: shareId,
+            files: {
+              some: {
+                id: fileRecord.id,
+              },
+            },
+          },
+          include: {
+            security: true,
+          },
+        });
+
+        if (!share) {
+          return reply.status(404).send({ error: "File not found in share." });
+        }
+
+        if (!share.security.password) {
+          hasAccess = true;
+        } else if (password) {
+          const bcrypt = require("bcryptjs");
+          const isPasswordValid = await bcrypt.compare(password, share.security.password);
+          if (isPasswordValid) {
+            hasAccess = true;
+          }
+        }
+      } else {
+        const publicShare = await prisma.share.findFirst({
+          where: {
+            files: {
+              some: {
+                id: fileRecord.id,
+              },
+            },
+            security: {
+              password: null,
+            },
+          },
+          include: {
+            security: true,
+          },
+        });
+
+        if (publicShare) {
+          hasAccess = true;
+        } else {
+          try {
+            await request.jwtVerify();
+            const userId = (request as any).user?.userId;
+            if (userId && fileRecord.userId === userId) {
+              hasAccess = true;
+            }
+          } catch (err) {}
+        }
+      }
+
+      if (!hasAccess) {
+        return reply.status(401).send({ error: "Unauthorized access to file." });
+      }
+
       const fileName = fileRecord.name;
       const expires = parseInt(env.PRESIGNED_URL_EXPIRATION);
       const url = await this.fileService.getPresignedGetUrl(objectName, expires, fileName);
