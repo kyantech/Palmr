@@ -43,6 +43,7 @@ export default function PublicSharePage() {
           {share && (
             <ShareDetails
               share={share}
+              password={password}
               onDownload={handleDownload}
               onBulkDownload={handleBulkDownload}
               onSelectedItemsBulkDownload={handleSelectedItemsBulkDownload}
