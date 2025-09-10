@@ -30,6 +30,7 @@ interface ShareFilesTableProps {
   onDownloadFolder?: (folderId: string, folderName: string) => Promise<void>;
   onNavigateToFolder?: (folderId: string) => void;
   enableNavigation?: boolean;
+  sharePassword?: string;
 }
 
 export function ShareFilesTable({
@@ -39,6 +40,7 @@ export function ShareFilesTable({
   onDownloadFolder,
   onNavigateToFolder,
   enableNavigation = false,
+  sharePassword,
 }: ShareFilesTableProps) {
   const t = useTranslations();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -213,7 +215,14 @@ export function ShareFilesTable({
         </Table>
       </div>
 
-      {selectedFile && <FilePreviewModal isOpen={isPreviewOpen} onClose={handleClosePreview} file={selectedFile} />}
+      {selectedFile && (
+        <FilePreviewModal
+          isOpen={isPreviewOpen}
+          onClose={handleClosePreview}
+          file={selectedFile}
+          sharePassword={sharePassword}
+        />
+      )}
     </div>
   );
 }
