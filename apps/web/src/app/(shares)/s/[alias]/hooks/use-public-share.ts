@@ -232,7 +232,6 @@ export function usePublicShare() {
       await downloadShareFolderWithQueue(folderId, folderName, share.files || [], share.folders || [], {
         silent: true,
         showToasts: false,
-        shareId: share.id,
         sharePassword: password,
       });
     } catch (error) {
@@ -255,7 +254,6 @@ export function usePublicShare() {
           downloadFileWithQueue(objectName, fileName, {
             silent: true,
             showToasts: false,
-            shareId: share?.id,
             sharePassword: password,
           }),
           {
@@ -405,7 +403,6 @@ export function usePublicShare() {
           zipName,
           undefined,
           false,
-          share.id,
           password
         ).then(() => {}),
         {

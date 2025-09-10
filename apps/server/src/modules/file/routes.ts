@@ -117,7 +117,6 @@ export async function fileRoutes(app: FastifyInstance) {
           objectName: z.string().min(1, "The objectName is required"),
         }),
         querystring: z.object({
-          shareId: z.string().optional().describe("Share ID if downloading from a share"),
           password: z.string().optional().describe("Share password if required"),
         }),
         response: {
