@@ -27,9 +27,10 @@ interface UseFilePreviewProps {
   };
   isOpen: boolean;
   isReverseShare?: boolean;
+  sharePassword?: string;
 }
 
-export function useFilePreview({ file, isOpen, isReverseShare = false }: UseFilePreviewProps) {
+export function useFilePreview({ file, isOpen, isReverseShare = false, sharePassword }: UseFilePreviewProps) {
   const t = useTranslations();
   const [state, setState] = useState<FilePreviewState>({
     previewUrl: null,
@@ -181,7 +182,17 @@ export function useFilePreview({ file, isOpen, isReverseShare = false }: UseFile
         url = response.data.url;
       } else {
         const encodedObjectName = encodeURIComponent(file.objectName);
-        const response = await getDownloadUrl(encodedObjectName);
+        const params: Record<string, string> = {};
+        if (sharePassword) params.password = sharePassword;
+
+        const response = await getDownloadUrl(
+          encodedObjectName,
+          Object.keys(params).length > 0
+            ? {
+                params: { ...params },
+              }
+            : undefined
+        );
         url = response.data.url;
       }
 
@@ -218,6 +229,7 @@ export function useFilePreview({ file, isOpen, isReverseShare = false }: UseFile
     file.id,
     file.objectName,
     fileType,
+    sharePassword,
     loadVideoPreview,
     loadAudioPreview,
     loadPdfPreview,
@@ -236,13 +248,14 @@ export function useFilePreview({ file, isOpen, isReverseShare = false }: UseFile
         });
       } else {
         await downloadFileWithQueue(file.objectName, file.name, {
+          sharePassword,
           onFail: () => toast.error(t("filePreview.downloadError")),
         });
       }
     } catch (error) {
       console.error("Download error:", error);
     }
-  }, [isReverseShare, file.id, file.objectName, file.name, t]);
+  }, [isReverseShare, file.id, file.objectName, file.name, sharePassword, t]);
 
   useEffect(() => {
     const fileKey = isReverseShare ? file.id : file.objectName;

@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import { FastifyReply, FastifyRequest } from "fastify";
 
 import { env } from "../../env";
@@ -183,6 +184,7 @@ export class FileController {
         objectName: string;
       };
       const objectName = decodeURIComponent(encodedObjectName);
+      const { password } = request.query as { password?: string };
 
       if (!objectName) {
         return reply.status(400).send({ error: "The 'objectName' parameter is required." });
@@ -193,6 +195,51 @@ export class FileController {
       if (!fileRecord) {
         return reply.status(404).send({ error: "File not found." });
       }
+
+      let hasAccess = false;
+
+      console.log("Requested file with password " + password);
+
+      const shares = await prisma.share.findMany({
+        where: {
+          files: {
+            some: {
+              id: fileRecord.id,
+            },
+          },
+        },
+        include: {
+          security: true,
+        },
+      });
+
+      for (const share of shares) {
+        if (!share.security.password) {
+          hasAccess = true;
+          break;
+        } else if (password) {
+          const isPasswordValid = await bcrypt.compare(password, share.security.password);
+          if (isPasswordValid) {
+            hasAccess = true;
+            break;
+          }
+        }
+      }
+
+      if (!hasAccess) {
+        try {
+          await request.jwtVerify();
+          const userId = (request as any).user?.userId;
+          if (userId && fileRecord.userId === userId) {
+            hasAccess = true;
+          }
+        } catch (err) {}
+      }
+
+      if (!hasAccess) {
+        return reply.status(401).send({ error: "Unauthorized access to file." });
+      }
+
       const fileName = fileRecord.name;
       const expires = parseInt(env.PRESIGNED_URL_EXPIRATION);
       const url = await this.fileService.getPresignedGetUrl(objectName, expires, fileName);

@@ -46,7 +46,7 @@ interface Folder {
   };
 }
 
-interface ShareDetailsPropsExtended extends Omit<ShareDetailsProps, "onBulkDownload" | "password"> {
+interface ShareDetailsPropsExtended extends Omit<ShareDetailsProps, "onBulkDownload"> {
   onBulkDownload?: () => Promise<void>;
   onSelectedItemsBulkDownload?: (files: File[], folders: Folder[]) => Promise<void>;
   folders: Folder[];
@@ -60,6 +60,7 @@ interface ShareDetailsPropsExtended extends Omit<ShareDetailsProps, "onBulkDownl
 
 export function ShareDetails({
   share,
+  password,
   onDownload,
   onBulkDownload,
   onSelectedItemsBulkDownload,
@@ -186,6 +187,7 @@ export function ShareDetails({
             setSelectedFile(null);
           }}
           file={selectedFile}
+          sharePassword={password}
         />
       )}
     </>
