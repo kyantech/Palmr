@@ -82,7 +82,7 @@ function oklchToHex(oklch: string): string {
 
 export function ColorPickerForm() {
   const t = useTranslations();
-  const [selectedColor, setSelectedColor] = useState(PREDEFINED_COLORS[0].value);
+  const [selectedColor, setSelectedColor] = useState(PREDEFINED_COLORS[4].value);
   const [customColor, setCustomColor] = useState("#22c55e");
 
   const applyColor = useCallback((colorValue: string) => {
