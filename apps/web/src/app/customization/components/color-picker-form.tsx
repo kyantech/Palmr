@@ -55,7 +55,7 @@ const STORAGE_KEY = "palmr-custom-primary-color";
 
 export function ColorPickerForm() {
   const t = useTranslations();
-  const [selectedColor, setSelectedColor] = useState(PREDEFINED_COLORS[0].value);
+  const [selectedColor, setSelectedColor] = useState(PREDEFINED_COLORS[4].value);
   const [isCollapsed, setIsCollapsed] = useState(true);
 
   const applyColor = useCallback((colorValue: string) => {
@@ -81,7 +81,7 @@ export function ColorPickerForm() {
   };
 
   const resetToDefault = () => {
-    const defaultColor = PREDEFINED_COLORS[0].value;
+    const defaultColor = PREDEFINED_COLORS[4].value;
     handlePresetColorSelect(defaultColor);
     localStorage.removeItem(STORAGE_KEY);
   };
