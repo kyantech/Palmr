@@ -103,6 +103,9 @@ export default async function RootLayout({
   const locale = await getLocale();
   const isRTL = locale === "ar-SA";
 
+  const primaryLight = process.env.NEXT_PUBLIC_PRIMARY_COLOR_LIGHT;
+  const primaryDark = process.env.NEXT_PUBLIC_PRIMARY_COLOR_DARK;
+
   if (typeof window !== "undefined") {
     useAppInfo.getState().refreshAppInfo();
   }
@@ -114,6 +117,10 @@ export default async function RootLayout({
       </head>
       <body
         className={`${outfit.variable} ${inter.variable} ${roboto.variable} ${openSans.variable} ${poppins.variable} ${nunito.variable} ${lato.variable} ${montserrat.variable} ${sourceSans.variable} ${raleway.variable} ${workSans.variable} font-sans antialiased`}
+        style={{
+          ...(primaryLight ? ({ ["--primary-light" as any]: primaryLight }) : null),
+          ...(primaryDark ? ({ ["--primary-dark" as any]: primaryDark }) : null),
+        }}
       >
         <NextIntlClientProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
@@ -131,3 +138,4 @@ export default async function RootLayout({
     </html>
   );
 }
+
