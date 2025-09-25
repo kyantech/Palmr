@@ -4,7 +4,6 @@ import { toast } from "sonner";
 
 import { getDownloadUrl } from "@/http/endpoints";
 import { downloadReverseShareFile } from "@/http/endpoints/reverse-shares";
-import { downloadFileWithQueue, downloadReverseShareWithQueue } from "@/utils/download-queue-utils";
 import { getFileExtension, getFileType, type FileType } from "@/utils/file-types";
 
 interface FilePreviewState {
@@ -243,17 +242,40 @@ export function useFilePreview({ file, isOpen, isReverseShare = false, sharePass
 
     try {
       if (isReverseShare) {
-        await downloadReverseShareWithQueue(file.id!, file.name, {
-          onFail: () => toast.error(t("filePreview.downloadError")),
-        });
+        const response = await downloadReverseShareFile(file.id!);
+
+        // Direct S3 download
+        const link = document.createElement("a");
+        link.href = response.data.url;
+        link.download = file.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        toast.success(t("filePreview.downloadSuccess"));
       } else {
-        await downloadFileWithQueue(file.objectName, file.name, {
-          sharePassword,
-          onFail: () => toast.error(t("filePreview.downloadError")),
-        });
+        const encodedObjectName = encodeURIComponent(file.objectName);
+        const params: Record<string, string> = {};
+        if (sharePassword) params.password = sharePassword;
+
+        const response = await getDownloadUrl(
+          encodedObjectName,
+          Object.keys(params).length > 0 ? { params } : undefined
+        );
+
+        // Direct S3 download
+        const link = document.createElement("a");
+        link.href = response.data.url;
+        link.download = file.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        toast.success(t("filePreview.downloadSuccess"));
       }
     } catch (error) {
       console.error("Download error:", error);
+      toast.error(t("filePreview.downloadError"));
     }
   }, [isReverseShare, file.id, file.objectName, file.name, sharePassword, t]);
 

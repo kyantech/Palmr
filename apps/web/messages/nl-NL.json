@@ -550,24 +550,6 @@
   "navigation": {
     "dashboard": "Controlepaneel"
   },
-  "notifications": {
-    "permissionGranted": "Download meldingen ingeschakeld",
-    "permissionDenied": "Download meldingen uitgeschakeld",
-    "downloadComplete": {
-      "title": "Download Voltooid",
-      "body": "{fileName} is klaar met downloaden"
-    },
-    "downloadFailed": {
-      "title": "Download Mislukt",
-      "body": "Downloaden van {fileName} mislukt: {error}",
-      "unknownError": "Onbekende fout"
-    },
-    "queueProcessing": {
-      "title": "Download Start",
-      "body": "{fileName} wordt nu gedownload{position}",
-      "position": " (was #{position} in wachtrij)"
-    }
-  },
   "profile": {
     "password": {
       "title": "Wachtwoord Wijzigen",

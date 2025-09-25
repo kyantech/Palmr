@@ -4,10 +4,17 @@ import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
-import { addRecipients, createShareAlias, deleteShare, notifyRecipients, updateShare } from "@/http/endpoints";
+import {
+  addRecipients,
+  createShareAlias,
+  deleteShare,
+  getDownloadUrl,
+  notifyRecipients,
+  updateShare,
+} from "@/http/endpoints";
+import { bulkDownloadFiles } from "@/http/endpoints/bulk-download";
 import { updateFolder } from "@/http/endpoints/folders";
 import type { Share } from "@/http/endpoints/shares/types";
-import { bulkDownloadShareWithQueue, downloadFileWithQueue } from "@/utils/download-queue-utils";
 
 export interface ShareManagerHook {
   shareToDelete: Share | null;
@@ -230,20 +237,31 @@ export function useShareManager(onSuccess: () => void) {
           return;
         }
 
-        toast.promise(
-          bulkDownloadShareWithQueue(allItems, share.files || [], share.folders || [], zipName, undefined, true).then(
-            () => {
-              if (clearSelectionCallback) {
-                clearSelectionCallback();
-              }
-            }
-          ),
-          {
-            loading: t("shareManager.creatingZip"),
-            success: t("shareManager.zipDownloadSuccess"),
-            error: t("shareManager.zipDownloadError"),
-          }
-        );
+        const fileIds = share.files?.map((file) => file.id) || [];
+        const folderIds = share.folders?.map((folder) => folder.id) || [];
+
+        // Show creating ZIP toast
+        const creatingToast = toast.loading(t("bulkDownload.creatingZip"));
+
+        const blob = await bulkDownloadFiles({
+          fileIds,
+          folderIds,
+          zipName,
+        });
+
+        // Update toast to success
+        toast.dismiss(creatingToast);
+        toast.success(t("bulkDownload.zipCreated"));
+
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = zipName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
       } else {
         toast.error("Multiple share download not yet supported - please download shares individually");
       }
@@ -273,12 +291,21 @@ export function useShareManager(onSuccess: () => void) {
     if (totalFiles === 1 && totalFolders === 0) {
       const file = share.files[0];
       try {
-        await downloadFileWithQueue(file.objectName, file.name, {
-          onComplete: () => toast.success(t("shareManager.downloadSuccess")),
-          onFail: () => toast.error(t("shareManager.downloadError")),
-        });
+        const encodedObjectName = encodeURIComponent(file.objectName);
+        const response = await getDownloadUrl(encodedObjectName);
+
+        // Direct S3 download
+        const link = document.createElement("a");
+        link.href = response.data.url;
+        link.download = file.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        toast.success(t("shareManager.downloadSuccess"));
       } catch (error) {
         console.error("Download error:", error);
+        toast.error(t("shareManager.downloadError"));
       }
     } else {
       const zipName = t("shareManager.singleShareZipName", {

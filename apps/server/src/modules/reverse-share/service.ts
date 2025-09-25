@@ -568,76 +568,57 @@ export class ReverseShareService {
 
     const newObjectName = `${creatorId}/${Date.now()}-${file.name}`;
 
-    if (this.fileService.isFilesystemMode()) {
-      const { FilesystemStorageProvider } = await import("../../providers/filesystem-storage.provider.js");
-      const provider = FilesystemStorageProvider.getInstance();
+    const fileSizeMB = Number(file.size) / (1024 * 1024);
+    const needsStreaming = fileSizeMB > 100;
 
-      const sourcePath = provider.getFilePath(file.objectName);
-      const fs = await import("fs");
+    const downloadUrl = await this.fileService.getPresignedGetUrl(file.objectName, 300);
+    const uploadUrl = await this.fileService.getPresignedPutUrl(newObjectName, 300);
 
-      const targetPath = provider.getFilePath(newObjectName);
+    let retries = 0;
+    const maxRetries = 3;
+    let success = false;
 
-      const path = await import("path");
-      const targetDir = path.dirname(targetPath);
-      if (!fs.existsSync(targetDir)) {
-        fs.mkdirSync(targetDir, { recursive: true });
-      }
+    while (retries < maxRetries && !success) {
+      try {
+        const response = await fetch(downloadUrl, {
+          signal: AbortSignal.timeout(600000), // 10 minutes timeout
+        });
 
-      const { copyFile } = await import("fs/promises");
-      await copyFile(sourcePath, targetPath);
-    } else {
-      const fileSizeMB = Number(file.size) / (1024 * 1024);
-      const needsStreaming = fileSizeMB > 100;
-
-      const downloadUrl = await this.fileService.getPresignedGetUrl(file.objectName, 300);
-      const uploadUrl = await this.fileService.getPresignedPutUrl(newObjectName, 300);
-
-      let retries = 0;
-      const maxRetries = 3;
-      let success = false;
-
-      while (retries < maxRetries && !success) {
-        try {
-          const response = await fetch(downloadUrl, {
-            signal: AbortSignal.timeout(600000), // 10 minutes timeout
-          });
-
-          if (!response.ok) {
-            throw new Error(`Failed to download file: ${response.statusText}`);
-          }
-
-          if (!response.body) {
-            throw new Error("No response body received");
-          }
-
-          const uploadOptions: any = {
-            method: "PUT",
-            body: response.body,
-            headers: {
-              "Content-Type": "application/octet-stream",
-              "Content-Length": file.size.toString(),
-            },
-            signal: AbortSignal.timeout(600000), // 10 minutes timeout
-          };
-
-          const uploadResponse = await fetch(uploadUrl, uploadOptions);
-
-          if (!uploadResponse.ok) {
-            const errorText = await uploadResponse.text();
-            throw new Error(`Failed to upload file: ${uploadResponse.statusText} - ${errorText}`);
-          }
-
-          success = true;
-        } catch (error: any) {
-          retries++;
-
-          if (retries >= maxRetries) {
-            throw new Error(`Failed to copy file after ${maxRetries} attempts: ${error.message}`);
-          }
-
-          const delay = Math.min(1000 * Math.pow(2, retries - 1), 10000);
-          await new Promise((resolve) => setTimeout(resolve, delay));
+        if (!response.ok) {
+          throw new Error(`Failed to download file: ${response.statusText}`);
         }
+
+        if (!response.body) {
+          throw new Error("No response body received");
+        }
+
+        const uploadOptions: any = {
+          method: "PUT",
+          body: response.body,
+          headers: {
+            "Content-Type": "application/octet-stream",
+            "Content-Length": file.size.toString(),
+          },
+          signal: AbortSignal.timeout(600000), // 10 minutes timeout
+        };
+
+        const uploadResponse = await fetch(uploadUrl, uploadOptions);
+
+        if (!uploadResponse.ok) {
+          const errorText = await uploadResponse.text();
+          throw new Error(`Failed to upload file: ${uploadResponse.statusText} - ${errorText}`);
+        }
+
+        success = true;
+      } catch (error: any) {
+        retries++;
+
+        if (retries >= maxRetries) {
+          throw new Error(`Failed to copy file after ${maxRetries} attempts: ${error.message}`);
+        }
+
+        const delay = Math.min(1000 * Math.pow(2, retries - 1), 10000);
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 

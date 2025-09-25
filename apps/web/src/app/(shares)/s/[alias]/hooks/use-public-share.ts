@@ -5,13 +5,10 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
+import { getDownloadUrl } from "@/http/endpoints";
+import { bulkDownloadFiles, downloadFolder } from "@/http/endpoints/bulk-download";
 import { getShareByAlias } from "@/http/endpoints/index";
 import type { Share } from "@/http/endpoints/shares/types";
-import {
-  bulkDownloadShareWithQueue,
-  downloadFileWithQueue,
-  downloadShareFolderWithQueue,
-} from "@/utils/download-queue-utils";
 
 const createSlug = (name: string): string => {
   return name
@@ -229,11 +226,17 @@ export function usePublicShare() {
         throw new Error("Share data not available");
       }
 
-      await downloadShareFolderWithQueue(folderId, folderName, share.files || [], share.folders || [], {
-        silent: true,
-        showToasts: false,
-        sharePassword: password,
-      });
+      const blob = await downloadFolder(folderId, folderName);
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${folderName}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error downloading folder:", error);
       throw error;
@@ -250,18 +253,24 @@ export function usePublicShare() {
           error: t("share.errors.downloadFailed"),
         });
       } else {
-        await toast.promise(
-          downloadFileWithQueue(objectName, fileName, {
-            silent: true,
-            showToasts: false,
-            sharePassword: password,
-          }),
-          {
-            loading: t("share.messages.downloadStarted"),
-            success: t("shareManager.downloadSuccess"),
-            error: t("share.errors.downloadFailed"),
-          }
+        const encodedObjectName = encodeURIComponent(objectName);
+        const params: Record<string, string> = {};
+        if (password) params.password = password;
+
+        const response = await getDownloadUrl(
+          encodedObjectName,
+          Object.keys(params).length > 0 ? { params } : undefined
         );
+
+        // Direct S3 download
+        const link = document.createElement("a");
+        link.href = response.data.url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        toast.success(t("shareManager.downloadSuccess"));
       }
     } catch {}
   };
@@ -321,22 +330,31 @@ export function usePublicShare() {
         return;
       }
 
-      toast.promise(
-        bulkDownloadShareWithQueue(
-          allItems,
-          share.files || [],
-          share.folders || [],
-          zipName,
-          undefined,
-          true,
-          password
-        ).then(() => {}),
-        {
-          loading: t("shareManager.creatingZip"),
-          success: t("shareManager.zipDownloadSuccess"),
-          error: t("shareManager.zipDownloadError"),
-        }
-      );
+      const fileIds = share.files?.map((file) => file.id) || [];
+      const folderIds = share.folders?.map((folder) => folder.id) || [];
+
+      // Show creating ZIP toast
+      const creatingToast = toast.loading(t("bulkDownload.creatingZip"));
+
+      const blob = await bulkDownloadFiles({
+        fileIds,
+        folderIds,
+        zipName,
+      });
+
+      // Update toast to success
+      toast.dismiss(creatingToast);
+      toast.success(t("bulkDownload.zipCreated"));
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = zipName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error creating ZIP:", error);
     }
@@ -394,22 +412,31 @@ export function usePublicShare() {
 
       const zipName = `${share.name || t("shareManager.defaultShareName")}-selected.zip`;
 
-      toast.promise(
-        bulkDownloadShareWithQueue(
-          allItems,
-          share.files || [],
-          share.folders || [],
-          zipName,
-          undefined,
-          false,
-          password
-        ).then(() => {}),
-        {
-          loading: t("shareManager.creatingZip"),
-          success: t("shareManager.zipDownloadSuccess"),
-          error: t("shareManager.zipDownloadError"),
-        }
-      );
+      const fileIds = files.map((file) => file.id);
+      const folderIds = folders.map((folder) => folder.id);
+
+      // Show creating ZIP toast
+      const creatingToast = toast.loading(t("bulkDownload.creatingZip"));
+
+      const blob = await bulkDownloadFiles({
+        fileIds,
+        folderIds,
+        zipName,
+      });
+
+      // Update toast to success
+      toast.dismiss(creatingToast);
+      toast.success(t("bulkDownload.zipCreated"));
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = zipName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error creating ZIP:", error);
       toast.error(t("shareManager.zipDownloadError"));

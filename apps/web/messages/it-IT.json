@@ -550,24 +550,6 @@
   "navigation": {
     "dashboard": "Pannello di controllo"
   },
-  "notifications": {
-    "permissionGranted": "Notifiche download abilitate",
-    "permissionDenied": "Notifiche download disabilitate",
-    "downloadComplete": {
-      "title": "Download Completato",
-      "body": "Il download di {fileName} è terminato"
-    },
-    "downloadFailed": {
-      "title": "Download Fallito",
-      "body": "Impossibile scaricare {fileName}: {error}",
-      "unknownError": "Errore sconosciuto"
-    },
-    "queueProcessing": {
-      "title": "Download in Avvio",
-      "body": "{fileName} sta ora scaricando{position}",
-      "position": " (era #{position} in coda)"
-    }
-  },
   "profile": {
     "password": {
       "title": "Cambia Parola d'accesso",

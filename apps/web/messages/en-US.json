@@ -125,7 +125,10 @@
     "zipNameLabel": "ZIP file name",
     "zipNamePlaceholder": "Enter file name",
     "description": "{count, plural, =1 {1 file will be compressed} other {# files will be compressed}}",
-    "download": "Download ZIP"
+    "download": "Download ZIP",
+    "creatingZip": "Creating ZIP file...",
+    "zipCreated": "ZIP file created successfully, download started",
+    "zipError": "Failed to create ZIP file"
   },
   "common": {
     "loading": "Loading, please wait...",
@@ -549,24 +552,6 @@
   },
   "navigation": {
     "dashboard": "Dashboard"
-  },
-  "notifications": {
-    "permissionGranted": "Download notifications enabled",
-    "permissionDenied": "Download notifications disabled",
-    "downloadComplete": {
-      "title": "Download Complete",
-      "body": "{fileName} has finished downloading"
-    },
-    "downloadFailed": {
-      "title": "Download Failed",
-      "body": "Failed to download {fileName}: {error}",
-      "unknownError": "Unknown error"
-    },
-    "queueProcessing": {
-      "title": "Download Starting",
-      "body": "{fileName} is now downloading{position}",
-      "position": " (was #{position} in queue)"
-    }
   },
   "profile": {
     "password": {

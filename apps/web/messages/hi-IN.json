@@ -550,24 +550,6 @@
   "navigation": {
     "dashboard": "डैशबोर्ड"
   },
-  "notifications": {
-    "permissionGranted": "डाउनलोड सूचनाएं सक्षम की गईं",
-    "permissionDenied": "डाउनलोड सूचनाएं अक्षम की गईं",
-    "downloadComplete": {
-      "title": "डाउनलोड पूर्ण",
-      "body": "{fileName} का डाउनलोड समाप्त हो गया है"
-    },
-    "downloadFailed": {
-      "title": "डाउनलोड विफल",
-      "body": "{fileName} डाउनलोड करने में विफल: {error}",
-      "unknownError": "अज्ञात त्रुटि"
-    },
-    "queueProcessing": {
-      "title": "डाउनलोड प्रारंभ",
-      "body": "{fileName} अब डाउनलोड हो रहा है{position}",
-      "position": " (कतार में #{position} था)"
-    }
-  },
   "profile": {
     "password": {
       "title": "पासवर्ड बदलें",

@@ -550,24 +550,6 @@
   "navigation": {
     "dashboard": "仪表盘"
   },
-  "notifications": {
-    "permissionGranted": "下载通知已启用",
-    "permissionDenied": "下载通知已禁用",
-    "downloadComplete": {
-      "title": "下载完成",
-      "body": "{fileName} 已下载完成"
-    },
-    "downloadFailed": {
-      "title": "下载失败",
-      "body": "下载 {fileName} 失败：{error}",
-      "unknownError": "未知错误"
-    },
-    "queueProcessing": {
-      "title": "开始下载",
-      "body": "{fileName} 正在下载{position}",
-      "position": "（队列中第 {position} 位）"
-    }
-  },
   "profile": {
     "password": {
       "title": "修改密码",
@@ -1684,7 +1666,11 @@
       "copyToClipboard": "复制到剪贴板",
       "savedMessage": "我已保存备用码",
       "available": "可用备用码：{count}个",
-      "instructions": ["• 将这些代码保存在安全的位置", "• 每个备用码只能使用一次", "• 您可以随时生成新的备用码"]
+      "instructions": [
+        "• 将这些代码保存在安全的位置",
+        "• 每个备用码只能使用一次",
+        "• 您可以随时生成新的备用码"
+      ]
     },
     "verification": {
       "title": "双重认证",

@@ -550,24 +550,6 @@
   "navigation": {
     "dashboard": "Übersicht"
   },
-  "notifications": {
-    "permissionGranted": "Download-Benachrichtigungen aktiviert",
-    "permissionDenied": "Download-Benachrichtigungen deaktiviert",
-    "downloadComplete": {
-      "title": "Download abgeschlossen",
-      "body": "{fileName} wurde erfolgreich heruntergeladen"
-    },
-    "downloadFailed": {
-      "title": "Download fehlgeschlagen",
-      "body": "Fehler beim Herunterladen von {fileName}: {error}",
-      "unknownError": "Unbekannter Fehler"
-    },
-    "queueProcessing": {
-      "title": "Download startet",
-      "body": "{fileName} wird jetzt heruntergeladen{position}",
-      "position": " (war #{position} in der Warteschlange)"
-    }
-  },
   "profile": {
     "password": {
       "title": "Passwort ändern",

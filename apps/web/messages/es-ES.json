@@ -550,24 +550,6 @@
   "navigation": {
     "dashboard": "Panel de control"
   },
-  "notifications": {
-    "permissionGranted": "Notificaciones de descarga habilitadas",
-    "permissionDenied": "Notificaciones de descarga deshabilitadas",
-    "downloadComplete": {
-      "title": "Descarga Completada",
-      "body": "{fileName} ha terminado de descargarse"
-    },
-    "downloadFailed": {
-      "title": "Descarga Fallida",
-      "body": "Error al descargar {fileName}: {error}",
-      "unknownError": "Error desconocido"
-    },
-    "queueProcessing": {
-      "title": "Descarga Iniciando",
-      "body": "{fileName} está descargándose ahora{position}",
-      "position": " (estaba en posición #{position} en la cola)"
-    }
-  },
   "profile": {
     "password": {
       "title": "Cambiar contraseña",

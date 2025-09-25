@@ -38,13 +38,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { bulkDownloadReverseShareFiles } from "@/http/endpoints/bulk-download";
 import {
   copyReverseShareFileToUserFiles,
   deleteReverseShareFile,
+  downloadReverseShareFile,
   updateReverseShareFile,
 } from "@/http/endpoints/reverse-shares";
 import type { ReverseShareFile } from "@/http/endpoints/reverse-shares/types";
-import { bulkDownloadWithQueue, downloadReverseShareWithQueue } from "@/utils/download-queue-utils";
 import { getFileIcon } from "@/utils/file-icons";
 import { truncateFileName } from "@/utils/file-utils";
 import { ReverseShare } from "../hooks/use-reverse-shares";
@@ -471,13 +472,20 @@ export function ReceivedFilesModal({
 
   const handleDownload = async (file: ReverseShareFile) => {
     try {
-      await downloadReverseShareWithQueue(file.id, file.name, {
-        onComplete: () => toast.success(t("reverseShares.modals.receivedFiles.downloadSuccess")),
-        onFail: () => toast.error(t("reverseShares.modals.receivedFiles.downloadError")),
-      });
+      const response = await downloadReverseShareFile(file.id);
+
+      // Direct S3 download
+      const link = document.createElement("a");
+      link.href = response.data.url;
+      link.download = file.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success(t("reverseShares.modals.receivedFiles.downloadSuccess"));
     } catch (error) {
       console.error("Download error:", error);
-      // Error already handled in downloadReverseShareWithQueue
+      toast.error(t("reverseShares.modals.receivedFiles.downloadError"));
     }
   };
 
@@ -602,23 +610,31 @@ export function ReceivedFilesModal({
     try {
       const zipName = `${reverseShare.name || t("reverseShares.defaultLinkName")}_files.zip`;
 
-      toast.promise(
-        bulkDownloadWithQueue(
-          selectedFileObjects.map((file) => ({
-            name: file.name,
-            id: file.id,
-            isReverseShare: true,
-          })),
-          zipName
-        ).then(() => {
-          setSelectedFiles(new Set());
-        }),
-        {
-          loading: t("shareManager.creatingZip"),
-          success: t("shareManager.zipDownloadSuccess"),
-          error: t("shareManager.zipDownloadError"),
-        }
-      );
+      const fileIds = selectedFileObjects.map((file) => file.id);
+
+      // Show creating ZIP toast
+      const creatingToast = toast.loading(t("bulkDownload.creatingZip"));
+
+      const blob = await bulkDownloadReverseShareFiles({
+        fileIds,
+        zipName,
+      });
+
+      // Update toast to success
+      toast.dismiss(creatingToast);
+      toast.success(t("bulkDownload.zipCreated"));
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = zipName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      setSelectedFiles(new Set());
     } catch (error) {
       console.error("Error creating ZIP:", error);
     }

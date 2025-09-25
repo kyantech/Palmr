@@ -550,24 +550,6 @@
   "navigation": {
     "dashboard": "Gösterge Paneli"
   },
-  "notifications": {
-    "permissionGranted": "İndirme bildirimleri etkinleştirildi",
-    "permissionDenied": "İndirme bildirimleri devre dışı bırakıldı",
-    "downloadComplete": {
-      "title": "İndirme Tamamlandı",
-      "body": "{fileName} indirmesi tamamlandı"
-    },
-    "downloadFailed": {
-      "title": "İndirme Başarısız",
-      "body": "{fileName} indirilemedi: {error}",
-      "unknownError": "Bilinmeyen hata"
-    },
-    "queueProcessing": {
-      "title": "İndirme Başlıyor",
-      "body": "{fileName} şimdi indiriliyor{position}",
-      "position": " (kuyrukta #{position} sıradaydı)"
-    }
-  },
   "profile": {
     "password": {
       "title": "Şifreyi Değiştir",

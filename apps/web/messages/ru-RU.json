@@ -550,24 +550,6 @@
   "navigation": {
     "dashboard": "Панель управления"
   },
-  "notifications": {
-    "permissionGranted": "Уведомления о загрузках включены",
-    "permissionDenied": "Уведомления о загрузках отключены",
-    "downloadComplete": {
-      "title": "Загрузка завершена",
-      "body": "Файл {fileName} успешно загружен"
-    },
-    "downloadFailed": {
-      "title": "Ошибка загрузки",
-      "body": "Не удалось загрузить {fileName}: {error}",
-      "unknownError": "Неизвестная ошибка"
-    },
-    "queueProcessing": {
-      "title": "Начало загрузки",
-      "body": "Файл {fileName} загружается{position}",
-      "position": " (был №{position} в очереди)"
-    }
-  },
   "profile": {
     "password": {
       "title": "Изменить пароль",

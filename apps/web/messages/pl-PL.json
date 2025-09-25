@@ -550,24 +550,6 @@
   "navigation": {
     "dashboard": "Panel główny"
   },
-  "notifications": {
-    "permissionGranted": "Powiadomienia o pobieraniu włączone",
-    "permissionDenied": "Powiadomienia o pobieraniu wyłączone",
-    "downloadComplete": {
-      "title": "Pobieranie zakończone",
-      "body": "Plik {fileName} został pobrany"
-    },
-    "downloadFailed": {
-      "title": "Błąd pobierania",
-      "body": "Nie udało się pobrać pliku {fileName}: {error}",
-      "unknownError": "Nieznany błąd"
-    },
-    "queueProcessing": {
-      "title": "Rozpoczęcie pobierania",
-      "body": "Trwa pobieranie pliku {fileName}{position}",
-      "position": " (był #{position} w kolejce)"
-    }
-  },
   "profile": {
     "password": {
       "title": "Zmień hasło",

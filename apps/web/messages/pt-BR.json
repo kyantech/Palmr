@@ -550,24 +550,6 @@
   "navigation": {
     "dashboard": "Painel"
   },
-  "notifications": {
-    "permissionGranted": "Notificações de download ativadas",
-    "permissionDenied": "Notificações de download desativadas",
-    "downloadComplete": {
-      "title": "Download Concluído",
-      "body": "{fileName} terminou de baixar"
-    },
-    "downloadFailed": {
-      "title": "Download Falhou",
-      "body": "Falha ao baixar {fileName}: {error}",
-      "unknownError": "Erro desconhecido"
-    },
-    "queueProcessing": {
-      "title": "Download Iniciando",
-      "body": "{fileName} está sendo baixado agora{position}",
-      "position": " (estava na posição #{position} da fila)"
-    }
-  },
   "profile": {
     "password": {
       "title": "Alterar Senha",

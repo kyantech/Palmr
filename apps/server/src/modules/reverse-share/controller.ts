@@ -322,54 +322,15 @@ export class ReverseShareController {
       const fileInfo = await this.reverseShareService.getFileInfo(fileId, userId);
       const downloadId = `reverse-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 
-      const { DownloadMemoryManager } = await import("../../utils/download-memory-manager.js");
-      const memoryManager = DownloadMemoryManager.getInstance();
-
       const fileSizeMB = Number(fileInfo.size) / (1024 * 1024);
-      console.log(
-        `[REVERSE-DOWNLOAD] Requesting slot for ${downloadId}: ${fileInfo.name} (${fileSizeMB.toFixed(1)}MB)`
-      );
-
-      try {
-        await memoryManager.requestDownloadSlot(downloadId, {
-          fileName: fileInfo.name,
-          fileSize: Number(fileInfo.size),
-          objectName: fileInfo.objectName,
-        });
-      } catch (error: any) {
-        console.warn(`[REVERSE-DOWNLOAD] Queued ${downloadId}: ${error.message}`);
-        return reply.status(202).send({
-          queued: true,
-          downloadId: downloadId,
-          message: "Download queued due to memory constraints",
-          estimatedWaitTime: error.estimatedWaitTime || 60,
-        });
-      }
-
       console.log(`[REVERSE-DOWNLOAD] Starting ${downloadId}: ${fileInfo.name} (${fileSizeMB.toFixed(1)}MB)`);
-      memoryManager.startDownload(downloadId);
 
       try {
         const result = await this.reverseShareService.downloadReverseShareFile(fileId, userId);
-
-        const originalUrl = result.url;
         reply.header("X-Download-ID", downloadId);
-
-        reply.raw.on("finish", () => {
-          memoryManager.endDownload(downloadId);
-        });
-
-        reply.raw.on("close", () => {
-          memoryManager.endDownload(downloadId);
-        });
-
-        reply.raw.on("error", () => {
-          memoryManager.endDownload(downloadId);
-        });
 
         return reply.send(result);
       } catch (downloadError) {
-        memoryManager.endDownload(downloadId);
         throw downloadError;
       }
     } catch (error: any) {

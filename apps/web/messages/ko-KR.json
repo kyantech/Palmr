@@ -550,24 +550,6 @@
   "navigation": {
     "dashboard": "대시보드"
   },
-  "notifications": {
-    "permissionGranted": "다운로드 알림이 활성화되었습니다",
-    "permissionDenied": "다운로드 알림이 비활성화되었습니다",
-    "downloadComplete": {
-      "title": "다운로드 완료",
-      "body": "{fileName} 다운로드가 완료되었습니다"
-    },
-    "downloadFailed": {
-      "title": "다운로드 실패",
-      "body": "{fileName} 다운로드 실패: {error}",
-      "unknownError": "알 수 없는 오류"
-    },
-    "queueProcessing": {
-      "title": "다운로드 시작",
-      "body": "{fileName} 다운로드가 시작되었습니다{position}",
-      "position": " (대기열 #{position}번이었음)"
-    }
-  },
   "profile": {
     "password": {
       "title": "비밀번호 변경",

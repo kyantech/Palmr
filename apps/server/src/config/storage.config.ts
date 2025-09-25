@@ -23,21 +23,18 @@ if (storageConfig.useSSL && env.S3_REJECT_UNAUTHORIZED === "false") {
   }
 }
 
-export const s3Client =
-  env.ENABLE_S3 === "true"
-    ? new S3Client({
-        endpoint: storageConfig.useSSL
-          ? `https://${storageConfig.endpoint}${storageConfig.port ? `:${storageConfig.port}` : ""}`
-          : `http://${storageConfig.endpoint}${storageConfig.port ? `:${storageConfig.port}` : ""}`,
-        region: storageConfig.region,
-        credentials: {
-          accessKeyId: storageConfig.accessKey,
-          secretAccessKey: storageConfig.secretKey,
-        },
-        forcePathStyle: storageConfig.forcePathStyle,
-      })
-    : null;
+export const s3Client = new S3Client({
+  endpoint: storageConfig.useSSL
+    ? `https://${storageConfig.endpoint}${storageConfig.port ? `:${storageConfig.port}` : ""}`
+    : `http://${storageConfig.endpoint}${storageConfig.port ? `:${storageConfig.port}` : ""}`,
+  region: storageConfig.region,
+  credentials: {
+    accessKeyId: storageConfig.accessKey,
+    secretAccessKey: storageConfig.secretKey,
+  },
+  forcePathStyle: storageConfig.forcePathStyle,
+});
 
 export const bucketName = storageConfig.bucketName;
 
-export const isS3Enabled = env.ENABLE_S3 === "true";
+export const isS3Enabled = true;

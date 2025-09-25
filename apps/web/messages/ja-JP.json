@@ -550,24 +550,6 @@
   "navigation": {
     "dashboard": "ダッシュボード"
   },
-  "notifications": {
-    "permissionGranted": "ダウンロード通知が有効になりました",
-    "permissionDenied": "ダウンロード通知が無効になりました",
-    "downloadComplete": {
-      "title": "ダウンロード完了",
-      "body": "{fileName}のダウンロードが完了しました"
-    },
-    "downloadFailed": {
-      "title": "ダウンロード失敗",
-      "body": "{fileName}のダウンロードに失敗: {error}",
-      "unknownError": "不明なエラー"
-    },
-    "queueProcessing": {
-      "title": "ダウンロード開始",
-      "body": "{fileName}のダウンロードを開始しています{position}",
-      "position": "（キュー内{position}番目）"
-    }
-  },
   "profile": {
     "password": {
       "title": "パスワードを変更",

@@ -550,24 +550,6 @@
   "navigation": {
     "dashboard": "لوحة التحكم"
   },
-  "notifications": {
-    "permissionGranted": "تم تمكين إشعارات التنزيل",
-    "permissionDenied": "تم تعطيل إشعارات التنزيل",
-    "downloadComplete": {
-      "title": "اكتمل التنزيل",
-      "body": "اكتمل تنزيل {fileName}"
-    },
-    "downloadFailed": {
-      "title": "فشل التنزيل",
-      "body": "فشل تنزيل {fileName}: {error}",
-      "unknownError": "خطأ غير معروف"
-    },
-    "queueProcessing": {
-      "title": "بدء التنزيل",
-      "body": "يتم الآن تنزيل {fileName}{position}",
-      "position": " (كان #{position} في قائمة الانتظار)"
-    }
-  },
   "profile": {
     "password": {
       "title": "تغيير كلمة المرور",

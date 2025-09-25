@@ -1,19 +1,12 @@
-import * as fs from "fs/promises";
 import crypto from "node:crypto";
-import path from "path";
 import fastifyMultipart from "@fastify/multipart";
-import fastifyStatic from "@fastify/static";
 
 import { buildApp } from "./app";
-import { directoriesConfig } from "./config/directories.config";
-import { env } from "./env";
 import { appRoutes } from "./modules/app/routes";
 import { authProvidersRoutes } from "./modules/auth-providers/routes";
 import { authRoutes } from "./modules/auth/routes";
+import { bulkDownloadRoutes } from "./modules/bulk-download/routes";
 import { fileRoutes } from "./modules/file/routes";
-import { ChunkManager } from "./modules/filesystem/chunk-manager";
-import { downloadQueueRoutes } from "./modules/filesystem/download-queue-routes";
-import { filesystemRoutes } from "./modules/filesystem/routes";
 import { folderRoutes } from "./modules/folder/routes";
 import { healthRoutes } from "./modules/health/routes";
 import { reverseShareRoutes } from "./modules/reverse-share/routes";
@@ -21,7 +14,6 @@ import { shareRoutes } from "./modules/share/routes";
 import { storageRoutes } from "./modules/storage/routes";
 import { twoFactorRoutes } from "./modules/two-factor/routes";
 import { userRoutes } from "./modules/user/routes";
-import { IS_RUNNING_IN_CONTAINER } from "./utils/container-detection";
 
 if (typeof globalThis.crypto === "undefined") {
   globalThis.crypto = crypto.webcrypto as any;
@@ -31,26 +23,8 @@ if (typeof global.crypto === "undefined") {
   (global as any).crypto = crypto.webcrypto;
 }
 
-async function ensureDirectories() {
-  const dirsToCreate = [
-    { path: directoriesConfig.uploads, name: "uploads" },
-    { path: directoriesConfig.tempUploads, name: "temp-uploads" },
-  ];
-
-  for (const dir of dirsToCreate) {
-    try {
-      await fs.access(dir.path);
-    } catch {
-      await fs.mkdir(dir.path, { recursive: true });
-      console.log(`📁 Created ${dir.name} directory: ${dir.path}`);
-    }
-  }
-}
-
 async function startServer() {
   const app = await buildApp();
-
-  await ensureDirectories();
 
   await app.register(fastifyMultipart, {
     limits: {
@@ -63,30 +37,18 @@ async function startServer() {
     },
   });
 
-  if (env.ENABLE_S3 !== "true") {
-    await app.register(fastifyStatic, {
-      root: directoriesConfig.uploads,
-      prefix: "/uploads/",
-      decorateReply: false,
-    });
-  }
-
   app.register(authRoutes);
   app.register(authProvidersRoutes, { prefix: "/auth" });
   app.register(twoFactorRoutes, { prefix: "/auth" });
   app.register(userRoutes);
   app.register(fileRoutes);
   app.register(folderRoutes);
-  app.register(downloadQueueRoutes);
   app.register(shareRoutes);
   app.register(reverseShareRoutes);
   app.register(storageRoutes);
+  app.register(bulkDownloadRoutes);
   app.register(appRoutes);
   app.register(healthRoutes);
-
-  if (env.ENABLE_S3 !== "true") {
-    app.register(filesystemRoutes);
-  }
 
   await app.listen({
     port: 3333,
@@ -104,23 +66,16 @@ async function startServer() {
   }
 
   console.log(`🌴 Palmr server running on port 3333 🌴`);
-  console.log(
-    `📦 Storage mode: ${env.ENABLE_S3 === "true" ? "S3" : `Local Filesystem ${env.DISABLE_FILESYSTEM_ENCRYPTION === "true" ? "(Unencrypted)" : "(Encrypted)"}`}`
-  );
   console.log(`🔐 Auth Providers: ${authProviders}`);
 
   console.log("\n📚 API Documentation:");
   console.log(`   - API Reference: http://localhost:3333/docs\n`);
 
   process.on("SIGINT", async () => {
-    const chunkManager = ChunkManager.getInstance();
-    chunkManager.destroy();
     process.exit(0);
   });
 
   process.on("SIGTERM", async () => {
-    const chunkManager = ChunkManager.getInstance();
-    chunkManager.destroy();
     process.exit(0);
   });
 }
