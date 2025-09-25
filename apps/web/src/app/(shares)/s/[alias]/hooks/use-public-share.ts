@@ -390,26 +390,6 @@ export function usePublicShare() {
         checkNestedFolders(folder.id);
       }
 
-      const allItems = [
-        ...files
-          .filter((file) => !filesInSelectedFolders.has(file.id))
-          .map((file) => ({
-            objectName: file.objectName,
-            name: file.name,
-            type: "file" as const,
-          })),
-        // Add only top-level folders (avoid duplicating nested folders)
-        ...folders
-          .filter((folder) => {
-            return !folder.parentId || !folders.some((f) => f.id === folder.parentId);
-          })
-          .map((folder) => ({
-            id: folder.id,
-            name: folder.name,
-            type: "folder" as const,
-          })),
-      ];
-
       const zipName = `${share.name || t("shareManager.defaultShareName")}-selected.zip`;
 
       const fileIds = files.map((file) => file.id);
