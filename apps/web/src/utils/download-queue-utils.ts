@@ -7,6 +7,7 @@ interface DownloadWithQueueOptions {
   useQueue?: boolean;
   silent?: boolean;
   showToasts?: boolean;
+  sharePassword?: string;
   onStart?: (downloadId: string) => void;
   onComplete?: (downloadId: string) => void;
   onFail?: (downloadId: string, error: string) => void;
@@ -89,7 +90,7 @@ export async function downloadFileWithQueue(
   fileName: string,
   options: DownloadWithQueueOptions = {}
 ): Promise<void> {
-  const { useQueue = true, silent = false, showToasts = true } = options;
+  const { useQueue = true, silent = false, showToasts = true, sharePassword } = options;
   const downloadId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 
   try {
@@ -98,7 +99,18 @@ export async function downloadFileWithQueue(
     }
 
     const encodedObjectName = encodeURIComponent(objectName);
-    const response = await getDownloadUrl(encodedObjectName);
+
+    const params: Record<string, string> = {};
+    if (sharePassword) params.password = sharePassword;
+
+    const response = await getDownloadUrl(
+      encodedObjectName,
+      Object.keys(params).length > 0
+        ? {
+            params: { ...params },
+          }
+        : undefined
+    );
 
     if (response.status === 202 && useQueue) {
       if (!silent && showToasts) {
@@ -181,7 +193,8 @@ export async function downloadFileAsBlobWithQueue(
   objectName: string,
   fileName: string,
   isReverseShare: boolean = false,
-  fileId?: string
+  fileId?: string,
+  sharePassword?: string
 ): Promise<Blob> {
   try {
     let downloadUrl: string;
@@ -196,7 +209,18 @@ export async function downloadFileAsBlobWithQueue(
       }
     } else {
       const encodedObjectName = encodeURIComponent(objectName);
-      const response = await getDownloadUrl(encodedObjectName);
+
+      const params: Record<string, string> = {};
+      if (sharePassword) params.password = sharePassword;
+
+      const response = await getDownloadUrl(
+        encodedObjectName,
+        Object.keys(params).length > 0
+          ? {
+              params: { ...params },
+            }
+          : undefined
+      );
 
       if (response.status === 202) {
         downloadUrl = await waitForDownloadReady(objectName, fileName);
@@ -345,7 +369,7 @@ export async function downloadShareFolderWithQueue(
   shareFolders: any[],
   options: DownloadWithQueueOptions = {}
 ): Promise<void> {
-  const { silent = false, showToasts = true } = options;
+  const { silent = false, showToasts = true, sharePassword } = options;
   const downloadId = `share-folder-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 
   try {
@@ -373,7 +397,7 @@ export async function downloadShareFolderWithQueue(
 
     for (const file of folderFiles) {
       try {
-        const blob = await downloadFileAsBlobWithQueue(file.objectName, file.name);
+        const blob = await downloadFileAsBlobWithQueue(file.objectName, file.name, false, undefined, sharePassword);
         zip.file(file.zipPath, blob);
       } catch (error) {
         console.error(`Error downloading file ${file.name}:`, error);
@@ -515,7 +539,8 @@ export async function bulkDownloadShareWithQueue(
   shareFolders: any[],
   zipName: string,
   onProgress?: (current: number, total: number) => void,
-  wrapInFolder?: boolean
+  wrapInFolder?: boolean,
+  sharePassword?: string
 ): Promise<void> {
   try {
     const JSZip = (await import("jszip")).default;
@@ -562,7 +587,7 @@ export async function bulkDownloadShareWithQueue(
     for (let i = 0; i < allFilesToDownload.length; i++) {
       const file = allFilesToDownload[i];
       try {
-        const blob = await downloadFileAsBlobWithQueue(file.objectName, file.name);
+        const blob = await downloadFileAsBlobWithQueue(file.objectName, file.name, false, undefined, sharePassword);
         zip.file(file.zipPath, blob);
         onProgress?.(i + 1, allFilesToDownload.length);
       } catch (error) {

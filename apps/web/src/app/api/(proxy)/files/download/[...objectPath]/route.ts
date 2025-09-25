@@ -8,7 +8,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ obje
   const { objectPath } = await params;
   const cookieHeader = req.headers.get("cookie");
   const objectName = objectPath.join("/");
-  const url = `${API_BASE_URL}/files/${encodeURIComponent(objectName)}/download`;
+  const searchParams = req.nextUrl.searchParams;
+  const queryString = searchParams.toString();
+  const url = `${API_BASE_URL}/files/${encodeURIComponent(objectName)}/download${queryString ? `?${queryString}` : ""}`;
 
   const apiRes = await fetch(url, {
     method: "GET",

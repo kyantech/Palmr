@@ -232,6 +232,7 @@ export function usePublicShare() {
       await downloadShareFolderWithQueue(folderId, folderName, share.files || [], share.folders || [], {
         silent: true,
         showToasts: false,
+        sharePassword: password,
       });
     } catch (error) {
       console.error("Error downloading folder:", error);
@@ -253,6 +254,7 @@ export function usePublicShare() {
           downloadFileWithQueue(objectName, fileName, {
             silent: true,
             showToasts: false,
+            sharePassword: password,
           }),
           {
             loading: t("share.messages.downloadStarted"),
@@ -320,9 +322,15 @@ export function usePublicShare() {
       }
 
       toast.promise(
-        bulkDownloadShareWithQueue(allItems, share.files || [], share.folders || [], zipName, undefined, true).then(
-          () => {}
-        ),
+        bulkDownloadShareWithQueue(
+          allItems,
+          share.files || [],
+          share.folders || [],
+          zipName,
+          undefined,
+          true,
+          password
+        ).then(() => {}),
         {
           loading: t("shareManager.creatingZip"),
           success: t("shareManager.zipDownloadSuccess"),
@@ -387,9 +395,15 @@ export function usePublicShare() {
       const zipName = `${share.name || t("shareManager.defaultShareName")}-selected.zip`;
 
       toast.promise(
-        bulkDownloadShareWithQueue(allItems, share.files || [], share.folders || [], zipName, undefined, false).then(
-          () => {}
-        ),
+        bulkDownloadShareWithQueue(
+          allItems,
+          share.files || [],
+          share.folders || [],
+          zipName,
+          undefined,
+          false,
+          password
+        ).then(() => {}),
         {
           loading: t("shareManager.creatingZip"),
           success: t("shareManager.zipDownloadSuccess"),

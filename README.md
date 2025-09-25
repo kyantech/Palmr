@@ -6,6 +6,17 @@
 
 **Palmr.** is a **flexible** and **open-source** alternative to file transfer services like **WeTransfer**, **SendGB**, **Send Anywhere**, and **Files.fm**.
 
+<div align="center">
+  <div style="background: linear-gradient(135deg, #ff4757, #ff3838); padding: 20px; border-radius: 12px; margin: 20px 0; box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3); border: 2px solid #ff3838;">
+    <h3 style="color: white; margin: 0 0 10px 0; font-size: 18px; font-weight: bold;">
+      ⚠️ BETA VERSION
+    </h3>
+    <p style="color: white; margin: 0; font-size: 14px; opacity: 0.95;">
+      <strong>This project is currently in beta phase.</strong><br>
+      Not recommended for production environments.
+    </p>
+  </div>
+</div>
 
 🔗 **For detailed documentation visit:** [Palmr. - Documentation](https://palmr.kyantech.com.br)
 
