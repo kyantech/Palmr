@@ -95,6 +95,9 @@ const workSans = Work_Sans({
   display: "swap",
 });
 
+ const primaryLight = process.env.PUBLIC_PRIMARY_COLOR_LIGHT;
+ const primaryDark = process.env.PUBLIC_PRIMARY_COLOR_DARK;
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -114,6 +117,10 @@ export default async function RootLayout({
       </head>
       <body
         className={`${outfit.variable} ${inter.variable} ${roboto.variable} ${openSans.variable} ${poppins.variable} ${nunito.variable} ${lato.variable} ${montserrat.variable} ${sourceSans.variable} ${raleway.variable} ${workSans.variable} font-sans antialiased`}
+        style={{
+          ...(primaryLight ? ({ ["--primary-light" as any]: primaryLight }) : null),
+          ...(primaryDark ? ({ ["--primary-dark" as any]: primaryDark }) : null),
+        }}
       >
         <NextIntlClientProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
