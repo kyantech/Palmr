@@ -68,6 +68,9 @@ Choose your storage method based on your needs:
           # - PALMR_UID=1000 # UID for the container processes (default is 1000)
           # - PALMR_GID=1000 # GID for the container processes (default is 1000)
           # - SECURE_SITE=false # Set to true if you are using a reverse proxy
+          # UI Theming (if you don`t use, you can remove)
+          # - PUBLIC_PRIMARY_COLOR_LIGHT=oklch(0.5927 0.1767 142.49)(OPTIONAL - default is (oklch(0.5927 0.1767 142.49))
+          # - PUBLIC_PRIMARY_COLOR_DARK=oklch(0.5927 0.1767 142.49)(OPTIONAL - default is (oklch(0.5927 0.1767 142.49))
           # - DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US)
           # - PRESIGNED_URL_EXPIRATION=3600 # Duration in seconds for presigned URL expiration (optional, defaults to 3600 seconds / 1 hour)
           # - DOWNLOAD_MAX_CONCURRENT=5 # Maximum simultaneous downloads (auto-scales if not set)
@@ -122,6 +125,9 @@ Choose your storage method based on your needs:
           # - PALMR_UID=1000 # UID for the container processes (default is 1000)
           # - PALMR_GID=1000 # GID for the container processes (default is 1000)
           # - SECURE_SITE=false # Set to true if you are using a reverse proxy
+          # UI Theming (if you don`t use, you can remove)
+          # - PUBLIC_PRIMARY_COLOR_LIGHT=oklch(0.5927 0.1767 142.49)(OPTIONAL - default is (oklch(0.5927 0.1767 142.49))
+          # - PUBLIC_PRIMARY_COLOR_DARK=oklch(0.5927 0.1767 142.49)(OPTIONAL - default is (oklch(0.5927 0.1767 142.49))
           # - DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US)
           # - PRESIGNED_URL_EXPIRATION=3600 # Duration in seconds for presigned URL expiration (optional, defaults to 3600 seconds / 1 hour)
           # - DOWNLOAD_MAX_CONCURRENT=5 # Maximum simultaneous downloads (auto-scales if not set)
@@ -177,6 +183,8 @@ Customize Palmr's behavior with these environment variables:
 | `DOWNLOAD_QUEUE_SIZE`           | auto-scale | Maximum queue size for pending downloads                                                                               |
 | `DOWNLOAD_MIN_FILE_SIZE_GB`     | `3.0`      | Minimum file size in GB to activate memory management                                                                  |
 | `DOWNLOAD_AUTO_SCALE`           | `true`     | Enable auto-scaling based on system memory                                                                             |
+| `PUBLIC_PRIMARY_COLOR_LIGHT`    | -          | Allows to set the Primary Color for the light theme                                                                    |
+| `PUBLIC_PRIMARY_COLOR_DARK`     | -          | Allows to set the Primary Color for the dark theme                                                                     |
 
 <Callout type="info">
   **Performance First**: Palmr runs without encryption by default for optimal speed and lower resource usage—perfect for
@@ -237,6 +245,9 @@ Prefer Docker commands over Compose? Here are the equivalent commands:
       # -e PALMR_UID=1000 # UID for the container processes (default is 1000)
       # -e PALMR_GID=1000 # GID for the container processes (default is 1000)
       # -e SECURE_SITE=false # Set to true if you are using a reverse proxy
+      # UI Theming (if you don`t use, you can remove)
+      # - PUBLIC_PRIMARY_COLOR_LIGHT=oklch(0.5927 0.1767 142.49)(OPTIONAL - default is (oklch(0.5927 0.1767 142.49))
+      # - PUBLIC_PRIMARY_COLOR_DARK=oklch(0.5927 0.1767 142.49)(OPTIONAL - default is (oklch(0.5927 0.1767 142.49))
       # -e DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US)
       -p 5487:5487 \
       -p 3333:3333 \
@@ -264,6 +275,9 @@ Prefer Docker commands over Compose? Here are the equivalent commands:
       # -e PALMR_UID=1000 # UID for the container processes (default is 1000)
       # -e PALMR_GID=1000 # GID for the container processes (default is 1000)
       # -e SECURE_SITE=false # Set to true if you are using a reverse proxy
+      # UI Theming (if you don`t use, you can remove)
+      # - PUBLIC_PRIMARY_COLOR_LIGHT=oklch(0.5927 0.1767 142.49)(OPTIONAL - default is (oklch(0.5927 0.1767 142.49))
+      # - PUBLIC_PRIMARY_COLOR_DARK=oklch(0.5927 0.1767 142.49)(OPTIONAL - default is (oklch(0.5927 0.1767 142.49))
       # -e DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US)
       -p 5487:5487 \
       -p 3333:3333 \
