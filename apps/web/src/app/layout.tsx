@@ -95,6 +95,9 @@ const workSans = Work_Sans({
   display: "swap",
 });
 
+ const primaryLight = process.env.PUBLIC_PRIMARY_COLOR_LIGHT;
+ const primaryDark = process.env.PUBLIC_PRIMARY_COLOR_DARK;
+
 export default async function RootLayout({
   children,
 }: Readonly<{
