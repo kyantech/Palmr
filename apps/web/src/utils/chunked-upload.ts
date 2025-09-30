@@ -260,7 +260,7 @@ export class ChunkedUploader {
   static calculateOptimalChunkSize(fileSize: number): number {
     const configuredChunkSize = this.getConfiguredChunkSize();
     const chunkSize = configuredChunkSize || this.defaultChunkSizeInBytes;
-    
+
     if (fileSize <= chunkSize) {
       throw new Error(
         `calculateOptimalChunkSize should not be called for files <= ${chunkSize}. File size: ${(fileSize / (1024 * 1024)).toFixed(2)}MB`
