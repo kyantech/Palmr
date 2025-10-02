@@ -18,6 +18,8 @@ export interface ChunkedUploadResult {
 }
 
 export class ChunkedUploader {
+  private static defaultChunkSizeInBytes = 100 * 1024 * 1024; // 100MB
+
   /**
    * Upload a file in chunks with streaming
    */
@@ -246,7 +248,7 @@ export class ChunkedUploader {
       return false;
     }
 
-    const threshold = 100 * 1024 * 1024; // 100MB
+    const threshold = this.getConfiguredChunkSize() || this.defaultChunkSizeInBytes;
     const shouldUse = fileSize > threshold;
 
     return shouldUse;
@@ -256,10 +258,17 @@ export class ChunkedUploader {
    * Calculate optimal chunk size based on file size
    */
   static calculateOptimalChunkSize(fileSize: number): number {
-    if (fileSize <= 100 * 1024 * 1024) {
+    const configuredChunkSize = this.getConfiguredChunkSize();
+    const chunkSize = configuredChunkSize || this.defaultChunkSizeInBytes;
+
+    if (fileSize <= chunkSize) {
       throw new Error(
-        `calculateOptimalChunkSize should not be called for files <= 100MB. File size: ${(fileSize / (1024 * 1024)).toFixed(2)}MB`
+        `calculateOptimalChunkSize should not be called for files <= ${chunkSize}. File size: ${(fileSize / (1024 * 1024)).toFixed(2)}MB`
       );
+    }
+
+    if (configuredChunkSize) {
+      return configuredChunkSize;
     }
 
     // For files > 1GB, use 150MB chunks
@@ -274,5 +283,25 @@ export class ChunkedUploader {
 
     // For files > 100MB, use 75MB chunks (minimum for chunked upload)
     return 75 * 1024 * 1024;
+  }
+
+  private static getConfiguredChunkSize(): number | null {
+    const configuredChunkSizeMb = process.env.NEXT_PUBLIC_UPLOAD_CHUNK_SIZE_MB;
+
+    if (!configuredChunkSizeMb) {
+      return null;
+    }
+
+    const parsedValue = Number(configuredChunkSizeMb);
+
+    if (Number.isNaN(parsedValue) || parsedValue <= 0) {
+      console.warn(
+        `Invalid NEXT_PUBLIC_UPLOAD_CHUNK_SIZE_MB value: ${configuredChunkSizeMb}. Falling back to optimal chunk size.`
+      );
+
+      return null;
+    }
+
+    return Math.floor(parsedValue * 1024 * 1024);
   }
 }
