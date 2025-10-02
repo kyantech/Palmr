@@ -240,7 +240,7 @@ export class FilesystemStorageProvider implements StorageProvider {
 
     try {
       await pipeline(inputStream, encryptStream, writeStream);
-      await fs.rename(tempPath, filePath);
+      await this.moveFile(tempPath, filePath);
     } catch (error) {
       await this.cleanupTempFile(tempPath);
       throw error;
@@ -705,6 +705,20 @@ export class FilesystemStorageProvider implements StorageProvider {
       }
     } catch (error) {
       console.error("Error during temp directory cleanup:", error);
+    }
+  }
+
+  private async moveFile(src: string, dest: string): Promise<void> {
+    try {
+      await fs.rename(src, dest);
+    } catch (err: any) {
+      if (err.code === "EXDEV") {
+        // cross-device: fallback to copy + delete
+        await fs.copyFile(src, dest);
+        await fs.unlink(src);
+      } else {
+        throw err;
+      }
     }
   }
 }
