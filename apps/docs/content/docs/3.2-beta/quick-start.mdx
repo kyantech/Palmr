@@ -79,6 +79,7 @@ Choose your storage method based on your needs:
           # - DOWNLOAD_MIN_FILE_SIZE_GB=3.0 # Minimum file size in GB to activate memory management (default: 3.0)
           # - DOWNLOAD_AUTO_SCALE=true # Enable auto-scaling based on system memory (default: true)
           # - NODE_OPTIONS=--expose-gc # Enable garbage collection for large downloads (recommended for production)
+          # - NEXT_PUBLIC_UPLOAD_CHUNK_SIZE_MB=100 # Chunk size in MB for large file uploads (OPTIONAL - auto-calculates if not set)
         volumes:
           - palmr_data:/app/server
 
@@ -185,6 +186,33 @@ Customize Palmr's behavior with these environment variables:
 | `DOWNLOAD_AUTO_SCALE`           | `true`     | Enable auto-scaling based on system memory                                                                             |
 | `PUBLIC_PRIMARY_COLOR_LIGHT`    | -          | Allows to set the Primary Color for the light theme                                                                    |
 | `PUBLIC_PRIMARY_COLOR_DARK`     | -          | Allows to set the Primary Color for the dark theme                                                                     |
+| Variable                           | Default        | Description                                                                                                                           |
+| ---------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `ENABLE_S3`                        | `false`        | Enable S3-compatible storage backends                                                                                                 |
+| `S3_ENDPOINT`                      | -              | S3 server endpoint URL (required when using S3)                                                                                       |
+| `S3_PORT`                          | -              | S3 server port (optional when using S3)                                                                                               |
+| `S3_USE_SSL`                       | -              | Enable SSL for S3 connections (optional when using S3)                                                                                |
+| `S3_ACCESS_KEY`                    | -              | S3 access key for authentication (required when using S3)                                                                             |
+| `S3_SECRET_KEY`                    | -              | S3 secret key for authentication (required when using S3)                                                                             |
+| `S3_REGION`                        | -              | S3 region configuration (optional when using S3)                                                                                      |
+| `S3_BUCKET_NAME`                   | -              | S3 bucket name for file storage (required when using S3)                                                                              |
+| `S3_FORCE_PATH_STYLE`              | `false`        | Force path-style S3 URLs (optional when using S3)                                                                                     |
+| `S3_REJECT_UNAUTHORIZED`           | `true`         | Enable strict SSL certificate validation for S3 (set to `false` for self-signed certificates)                                         |
+| `ENCRYPTION_KEY`                   | -              | **Required when encryption is enabled**: 32+ character key for file encryption                                                        |
+| `DISABLE_FILESYSTEM_ENCRYPTION`    | `true`         | Disable file encryption for better performance (set to `false` to enable encryption)                                                  |
+| `PRESIGNED_URL_EXPIRATION`         | `3600`         | Duration in seconds for presigned URL expiration (applies to both filesystem and S3 storage)                                          |
+| `CUSTOM_PATH`                      | -              | Custom base path for disk space detection in manual installations with symlinks                                                       |
+| `SECURE_SITE`                      | `false`        | Enable secure cookies for HTTPS/reverse proxy deployments                                                                             |
+| `DEFAULT_LANGUAGE`                 | `en-US`        | Default application language ([see available languages](/docs/3.2-beta/available-languages))                                          |
+| `PALMR_UID`                        | `1000`         | User ID for container processes (helps with file permissions)                                                                         |
+| `PALMR_GID`                        | `1000`         | Group ID for container processes (helps with file permissions)                                                                        |
+| `NODE_OPTIONS`                     | -              | Node.js options (recommended: `--expose-gc` for garbage collection in production)                                                     |
+| `DOWNLOAD_MAX_CONCURRENT`          | auto-scale     | Maximum number of simultaneous downloads (see [Download Memory Management](/docs/3.2-beta/download-memory-management))                |
+| `DOWNLOAD_MEMORY_THRESHOLD_MB`     | auto-scale     | Memory threshold in MB before throttling                                                                                              |
+| `DOWNLOAD_QUEUE_SIZE`              | auto-scale     | Maximum queue size for pending downloads                                                                                              |
+| `DOWNLOAD_MIN_FILE_SIZE_GB`        | `3.0`          | Minimum file size in GB to activate memory management                                                                                 |
+| `NEXT_PUBLIC_UPLOAD_CHUNK_SIZE_MB` | auto-calculate | Chunk size in MB for large file uploads (see [Chunked Upload Configuration](/docs/3.2-beta/quick-start#chunked-upload-configuration)) |
+| `DOWNLOAD_AUTO_SCALE`              | `true`         | Enable auto-scaling based on system memory                                                                                            |
 
 <Callout type="info">
   **Performance First**: Palmr runs without encryption by default for optimal speed and lower resource usage—perfect for
@@ -327,6 +355,28 @@ environment:
 ```
 
 **Note:** S3 storage handles encryption through your S3 provider's encryption features.
+
+### Chunked Upload Configuration
+
+Palmr supports configurable chunked uploading for large files. You can customize the chunk size by setting the following environment variable:
+
+```yaml
+environment:
+  - NEXT_PUBLIC_UPLOAD_CHUNK_SIZE_MB=100 # Chunk size in MB
+```
+
+**How it works:**
+
+- If `NEXT_PUBLIC_UPLOAD_CHUNK_SIZE_MB` is set, Palmr will use this value (in megabytes) as the chunk size for all file uploads that exceed this threshold.
+- If not set or left empty, Palmr automatically calculates optimal chunk sizes based on file size:
+  - Files ≤ 100MB: uploaded without chunking
+  - Files > 100MB and ≤ 1GB: 75MB chunks
+  - Files > 1GB: 150MB chunks
+
+**When to configure:**
+
+- **Default (not set):** Recommended for most use cases. Palmr will intelligently determine the best chunk size.
+- **Custom value:** Set this if you have specific network conditions or want to optimize for your infrastructure (e.g., slower connections may benefit from smaller chunks like 50MB, while fast networks can handle larger chunks like 200MB, or the upload size per payload may be limited by a proxy like Cloudflare)
 
 ---
 

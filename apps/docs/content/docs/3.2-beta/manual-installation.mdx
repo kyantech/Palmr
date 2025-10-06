@@ -165,6 +165,27 @@ cp .env.example .env
 
 This creates a `.env` file with the necessary configurations for the frontend.
 
+##### Upload Configuration
+
+Palmr. supports configurable chunked uploading for large files. You can customize the chunk size by setting the following environment variable in your `.env` file:
+
+```bash
+NEXT_PUBLIC_UPLOAD_CHUNK_SIZE_MB=100
+```
+
+**How it works:**
+
+- If `NEXT_PUBLIC_UPLOAD_CHUNK_SIZE_MB` is set, Palmr. will use this value (in megabytes) as the chunk size for all file uploads that exceed this threshold.
+- If not set or left empty, Palmr. automatically calculates optimal chunk sizes based on file size:
+  - Files ≤ 100MB: uploaded without chunking
+  - Files > 100MB and ≤ 1GB: 75MB chunks
+  - Files > 1GB: 150MB chunks
+
+**When to configure:**
+
+- **Default (not set):** Recommended for most use cases. Palmr. will intelligently determine the best chunk size.
+- **Custom value:** Set this if you have specific network conditions or want to optimize for your infrastructure (e.g., slower connections may benefit from smaller chunks like 50MB, while fast networks can handle larger chunks like 200MB, or the upload size per payload may be limited by a proxy like Cloudflare)
+
 #### Install dependencies
 
 Install all the frontend dependencies:
