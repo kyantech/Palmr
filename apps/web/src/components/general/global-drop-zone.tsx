@@ -243,17 +243,14 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalD
 
   const handlePaste = useCallback(
     (event: ClipboardEvent) => {
-      // Check if the target is an input or textarea element
       const target = event.target as HTMLElement;
       const isInput = target.tagName === "INPUT" || target.tagName === "TEXTAREA";
       const isPasswordInput = target.tagName === "INPUT" && (target as HTMLInputElement).type === "password";
 
-      // Allow paste in non-password inputs and textareas
       if (isInput && !isPasswordInput) {
         return;
       }
 
-      // For password inputs or non-input elements, check for images to upload
       const items = event.clipboardData?.items;
       if (!items) return;
 
@@ -261,7 +258,6 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalD
 
       if (imageItems.length === 0) return;
 
-      // Only prevent default if we have images to upload
       event.preventDefault();
       event.stopPropagation();
 
