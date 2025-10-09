@@ -36,17 +36,19 @@ export class LogoService {
         .toBuffer();
 
       return `data:image/webp;base64,${webpBuffer.toString("base64")}`;
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error processing logo:", error);
 
-      if (error.message?.includes("PDF") || error.message?.includes("SVG")) {
-        throw new Error("Unsupported file format for logo. Please use JPG, PNG, or GIF images.");
-      }
+      if (error instanceof Error) {
+        if (error.message?.includes("PDF") || error.message?.includes("SVG")) {
+          throw new Error("Unsupported file format for logo. Please use JPG, PNG, or GIF images.");
+        }
 
-      if (error.message?.includes("Input buffer") || error.message?.includes("unsupported")) {
-        throw new Error(
-          "Unable to process this image file. Please try a different image or convert it to a standard format (JPG/PNG)."
-        );
+        if (error.message?.includes("Input buffer") || error.message?.includes("unsupported")) {
+          throw new Error(
+            "Unable to process this image file. Please try a different image or convert it to a standard format (JPG/PNG)."
+          );
+        }
       }
 
       throw new Error("Failed to process logo image. Please ensure the file is a valid image.");
