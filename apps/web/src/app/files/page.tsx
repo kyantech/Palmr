@@ -114,7 +114,10 @@ export default function FilesPage() {
 
   return (
     <ProtectedRoute>
-      <GlobalDropZone onSuccess={loadFiles}>
+      <GlobalDropZone
+        onSuccess={loadFiles}
+        currentFolderId={currentPath.length > 0 ? currentPath[currentPath.length - 1].id : null}
+      >
         <FileManagerLayout
           breadcrumbLabel={t("files.breadcrumb")}
           icon={<IconFolderOpen size={20} />}
