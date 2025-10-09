@@ -104,6 +104,9 @@ export function UploadFileModal({
   const [isS3Enabled, setIsS3Enabled] = useState<boolean | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Track filenames being uploaded to avoid duplicates in the same batch
+  const usedFilenamesRef = useRef<Set<string>>(new Set());
+
   useEffect(() => {
     const fetchSystemInfo = async () => {
       try {
@@ -262,7 +265,15 @@ export function UploadFileModal({
       const fileName = file.name;
 
       // Generate unique filename if duplicate exists
-      const uniqueFileName = generateUniqueFileName(fileName, existingFiles, currentFolderId);
+      // Also check against currently uploading files to avoid duplicates in the same batch
+      const combinedFiles = [
+        ...existingFiles,
+        ...Array.from(usedFilenamesRef.current).map((name) => ({ name, folderId: currentFolderId })),
+      ];
+      const uniqueFileName = generateUniqueFileName(fileName, combinedFiles, currentFolderId);
+
+      // Track this filename as being used
+      usedFilenamesRef.current.add(uniqueFileName);
 
       const extension = uniqueFileName.split(".").pop() || "";
       const safeObjectName = generateSafeFileName(uniqueFileName);
@@ -440,6 +451,7 @@ export function UploadFileModal({
     setFileUploads([]);
     setShowConfirmation(false);
     setHasShownSuccessToast(false);
+    usedFilenamesRef.current.clear();
     onClose();
   };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { IconCloudUpload, IconLoader, IconX } from "@tabler/icons-react";
 import axios from "axios";
 import { useTranslations } from "next-intl";
@@ -53,6 +53,9 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId, existingF
   const [hasShownSuccessToast, setHasShownSuccessToast] = useState(false);
   const [isS3Enabled, setIsS3Enabled] = useState<boolean | null>(null);
 
+  // Track filenames being uploaded to avoid duplicates in the same batch
+  const usedFilenamesRef = useRef<Set<string>>(new Set());
+
   const generateFileId = useCallback(() => {
     return Date.now().toString() + Math.random().toString(36).substr(2, 9);
   }, []);
@@ -102,7 +105,15 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId, existingF
         const fileName = file.name;
 
         // Generate unique filename if duplicate exists
-        const uniqueFileName = generateUniqueFileName(fileName, existingFiles, currentFolderId);
+        // Also check against currently uploading files to avoid duplicates in the same batch
+        const combinedFiles = [
+          ...existingFiles,
+          ...Array.from(usedFilenamesRef.current).map((name) => ({ name, folderId: currentFolderId })),
+        ];
+        const uniqueFileName = generateUniqueFileName(fileName, combinedFiles, currentFolderId);
+
+        // Track this filename as being used
+        usedFilenamesRef.current.add(uniqueFileName);
 
         const extension = uniqueFileName.split(".").pop() || "";
         const safeObjectName = generateSafeFileName(uniqueFileName);
@@ -387,6 +398,7 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId, existingF
         setTimeout(() => {
           setFileUploads([]);
           setHasShownSuccessToast(false);
+          usedFilenamesRef.current.clear();
         }, 3000);
       }
     }
