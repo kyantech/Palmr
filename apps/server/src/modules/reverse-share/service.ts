@@ -773,4 +773,30 @@ export class ReverseShareService {
       updatedAt: file.updatedAt.toISOString(),
     };
   }
+
+  async getReverseShareMetadataByAlias(alias: string) {
+    const reverseShare = await this.reverseShareRepository.findByAlias(alias);
+    if (!reverseShare) {
+      throw new Error("Reverse share not found");
+    }
+
+    // Check if reverse share is expired
+    const isExpired = reverseShare.expiration && new Date(reverseShare.expiration) < new Date();
+    
+    // Check if inactive
+    const isInactive = !reverseShare.isActive;
+
+    const totalFiles = reverseShare.files?.length || 0;
+    const hasPassword = !!reverseShare.password;
+
+    return {
+      name: reverseShare.name,
+      description: reverseShare.description,
+      totalFiles,
+      hasPassword,
+      isExpired,
+      isInactive,
+      maxFiles: reverseShare.maxFiles,
+    };
+  }
 }

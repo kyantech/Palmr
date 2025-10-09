@@ -347,4 +347,32 @@ export async function shareRoutes(app: FastifyInstance) {
     },
     shareController.notifyRecipients.bind(shareController)
   );
+
+  app.get(
+    "/shares/alias/:alias/metadata",
+    {
+      schema: {
+        tags: ["Share"],
+        operationId: "getShareMetadataByAlias",
+        summary: "Get share metadata by alias for Open Graph",
+        description: "Get lightweight metadata for a share by alias, used for social media previews",
+        params: z.object({
+          alias: z.string().describe("The share alias"),
+        }),
+        response: {
+          200: z.object({
+            name: z.string().nullable(),
+            description: z.string().nullable(),
+            totalFiles: z.number(),
+            totalFolders: z.number(),
+            hasPassword: z.boolean(),
+            isExpired: z.boolean(),
+            isMaxViewsReached: z.boolean(),
+          }),
+          404: z.object({ error: z.string() }),
+        },
+      },
+    },
+    shareController.getShareMetadataByAlias.bind(shareController)
+  );
 }
