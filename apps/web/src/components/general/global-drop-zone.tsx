@@ -12,14 +12,20 @@ import { checkFile, getFilePresignedUrl, registerFile } from "@/http/endpoints";
 import { getSystemInfo } from "@/http/endpoints/app";
 import { ChunkedUploader } from "@/utils/chunked-upload";
 import { getFileIcon } from "@/utils/file-icons";
-import { generateSafeFileName } from "@/utils/file-utils";
+import { generateSafeFileName, generateUniqueFileName } from "@/utils/file-utils";
 import { formatFileSize } from "@/utils/format-file-size";
 import getErrorData from "@/utils/getErrorData";
+
+interface FileItem {
+  name: string;
+  folderId?: string | null;
+}
 
 interface GlobalDropZoneProps {
   onSuccess?: () => void;
   children: React.ReactNode;
   currentFolderId?: string;
+  existingFiles?: FileItem[];
 }
 
 enum UploadStatus {
@@ -40,7 +46,7 @@ interface FileUpload {
   objectName?: string;
 }
 
-export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalDropZoneProps) {
+export function GlobalDropZone({ onSuccess, children, currentFolderId, existingFiles = [] }: GlobalDropZoneProps) {
   const t = useTranslations();
   const [isDragOver, setIsDragOver] = useState(false);
   const [fileUploads, setFileUploads] = useState<FileUpload[]>([]);
@@ -94,12 +100,16 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalD
 
       try {
         const fileName = file.name;
-        const extension = fileName.split(".").pop() || "";
-        const safeObjectName = generateSafeFileName(fileName);
+
+        // Generate unique filename if duplicate exists
+        const uniqueFileName = generateUniqueFileName(fileName, existingFiles, currentFolderId);
+
+        const extension = uniqueFileName.split(".").pop() || "";
+        const safeObjectName = generateSafeFileName(uniqueFileName);
 
         try {
           await checkFile({
-            name: fileName,
+            name: uniqueFileName,
             objectName: safeObjectName,
             size: file.size,
             extension: extension,
@@ -163,7 +173,7 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalD
           const finalObjectName = result.finalObjectName || objectName;
 
           await registerFile({
-            name: fileName,
+            name: uniqueFileName,
             objectName: finalObjectName,
             size: file.size,
             extension: extension,
@@ -187,7 +197,7 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalD
           });
 
           await registerFile({
-            name: fileName,
+            name: uniqueFileName,
             objectName: objectName,
             size: file.size,
             extension: extension,
@@ -220,7 +230,7 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalD
         );
       }
     },
-    [t, isS3Enabled, currentFolderId, calculateUploadTimeout]
+    [t, isS3Enabled, currentFolderId, calculateUploadTimeout, existingFiles]
   );
 
   const handleDrop = useCallback(

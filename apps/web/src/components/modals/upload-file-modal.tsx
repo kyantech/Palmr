@@ -13,15 +13,21 @@ import { checkFile, getFilePresignedUrl, registerFile } from "@/http/endpoints";
 import { getSystemInfo } from "@/http/endpoints/app";
 import { ChunkedUploader } from "@/utils/chunked-upload";
 import { getFileIcon } from "@/utils/file-icons";
-import { generateSafeFileName } from "@/utils/file-utils";
+import { generateSafeFileName, generateUniqueFileName } from "@/utils/file-utils";
 import { formatFileSize } from "@/utils/format-file-size";
 import getErrorData from "@/utils/getErrorData";
+
+interface FileItem {
+  name: string;
+  folderId?: string | null;
+}
 
 interface UploadFileModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
   currentFolderId?: string;
+  existingFiles?: FileItem[];
 }
 
 enum UploadStatus {
@@ -83,7 +89,13 @@ function ConfirmationModal({ isOpen, onConfirm, onCancel, uploadsInProgress }: C
   );
 }
 
-export function UploadFileModal({ isOpen, onClose, onSuccess, currentFolderId }: UploadFileModalProps) {
+export function UploadFileModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  currentFolderId,
+  existingFiles = [],
+}: UploadFileModalProps) {
   const t = useTranslations();
   const [fileUploads, setFileUploads] = useState<FileUpload[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -248,12 +260,16 @@ export function UploadFileModal({ isOpen, onClose, onSuccess, currentFolderId }:
 
     try {
       const fileName = file.name;
-      const extension = fileName.split(".").pop() || "";
-      const safeObjectName = generateSafeFileName(fileName);
+
+      // Generate unique filename if duplicate exists
+      const uniqueFileName = generateUniqueFileName(fileName, existingFiles, currentFolderId);
+
+      const extension = uniqueFileName.split(".").pop() || "";
+      const safeObjectName = generateSafeFileName(uniqueFileName);
 
       try {
         await checkFile({
-          name: fileName,
+          name: uniqueFileName,
           objectName: safeObjectName,
           size: file.size,
           extension: extension,
@@ -317,7 +333,7 @@ export function UploadFileModal({ isOpen, onClose, onSuccess, currentFolderId }:
         const finalObjectName = result.finalObjectName || objectName;
 
         await registerFile({
-          name: fileName,
+          name: uniqueFileName,
           objectName: finalObjectName,
           size: file.size,
           extension: extension,
@@ -340,7 +356,7 @@ export function UploadFileModal({ isOpen, onClose, onSuccess, currentFolderId }:
         });
 
         await registerFile({
-          name: fileName,
+          name: uniqueFileName,
           objectName: objectName,
           size: file.size,
           extension: extension,

@@ -20,6 +20,7 @@ export function useDashboard() {
   } | null>(null);
   const [diskSpaceError, setDiskSpaceError] = useState<string | null>(null);
   const [recentFiles, setRecentFiles] = useState<any[]>([]);
+  const [allFiles, setAllFiles] = useState<any[]>([]);
   const [recentShares, setRecentShares] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -58,6 +59,7 @@ export function useDashboard() {
         const [filesRes, sharesRes] = await Promise.all([listFiles(), listUserShares()]);
 
         const allFiles = filesRes.data.files || [];
+        setAllFiles(allFiles);
         const sortedFiles = [...allFiles].sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
@@ -99,6 +101,7 @@ export function useDashboard() {
     diskSpace,
     diskSpaceError,
     recentFiles,
+    allFiles,
     recentShares,
     modals: {
       isUploadModalOpen,

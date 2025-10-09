@@ -18,7 +18,13 @@ import { UploadFileModal } from "@/components/modals/upload-file-modal";
 import { listFiles, listFolders } from "@/http/endpoints";
 import { DashboardModalsProps } from "../types";
 
-export function DashboardModals({ modals, fileManager, shareManager, onSuccess }: DashboardModalsProps) {
+export function DashboardModals({
+  modals,
+  fileManager,
+  shareManager,
+  onSuccess,
+  existingFiles,
+}: DashboardModalsProps & { existingFiles?: { name: string; folderId?: string | null }[] }) {
   const t = useTranslations();
   const [shareDetailsRefresh, setShareDetailsRefresh] = useState(0);
 
@@ -34,7 +40,12 @@ export function DashboardModals({ modals, fileManager, shareManager, onSuccess }
 
   return (
     <>
-      <UploadFileModal isOpen={modals.isUploadModalOpen} onClose={modals.onCloseUploadModal} onSuccess={onSuccess} />
+      <UploadFileModal
+        isOpen={modals.isUploadModalOpen}
+        onClose={modals.onCloseUploadModal}
+        onSuccess={onSuccess}
+        existingFiles={existingFiles}
+      />
 
       <FilePreviewModal
         file={fileManager.previewFile || { name: "", objectName: "" }}

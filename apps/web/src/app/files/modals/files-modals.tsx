@@ -15,7 +15,11 @@ export function FilesModals({
   modals,
   onSuccess,
   currentFolderId,
-}: FilesModalsProps & { currentFolderId?: string | null }) {
+  existingFiles,
+}: FilesModalsProps & {
+  currentFolderId?: string | null;
+  existingFiles?: { name: string; folderId?: string | null }[];
+}) {
   const t = useTranslations();
 
   return (
@@ -25,6 +29,7 @@ export function FilesModals({
         onClose={modals.onCloseUploadModal}
         onSuccess={onSuccess}
         currentFolderId={currentFolderId || undefined}
+        existingFiles={existingFiles}
       />
 
       {/* Folder Modals */}

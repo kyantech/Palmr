@@ -70,6 +70,8 @@ export default function FilesPage() {
     handleSearch,
     loadFiles,
     modals,
+    allFiles,
+    currentFolderId,
   } = useFileBrowser();
 
   const handleMoveFile = (file: any) => {
@@ -114,7 +116,7 @@ export default function FilesPage() {
 
   return (
     <ProtectedRoute>
-      <GlobalDropZone onSuccess={loadFiles}>
+      <GlobalDropZone onSuccess={loadFiles} currentFolderId={currentFolderId || undefined} existingFiles={allFiles}>
         <FileManagerLayout
           breadcrumbLabel={t("files.breadcrumb")}
           icon={<IconFolderOpen size={20} />}
@@ -240,6 +242,7 @@ export default function FilesPage() {
             modals={modals}
             onSuccess={handleUploadSuccess}
             currentFolderId={currentPath.length > 0 ? currentPath[currentPath.length - 1].id : null}
+            existingFiles={allFiles}
           />
 
           <MoveItemsModal

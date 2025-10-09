@@ -22,6 +22,7 @@ export default function DashboardPage() {
     diskSpace,
     diskSpaceError,
     recentFiles,
+    allFiles,
     recentShares,
     modals,
     fileManager,
@@ -40,7 +41,7 @@ export default function DashboardPage() {
 
   return (
     <ProtectedRoute>
-      <GlobalDropZone onSuccess={loadDashboardData}>
+      <GlobalDropZone onSuccess={loadDashboardData} existingFiles={allFiles}>
         <FileManagerLayout
           breadcrumbLabel={t("dashboard.breadcrumb")}
           icon={<IconLayoutDashboardFilled className="text-xl" />}
@@ -74,6 +75,7 @@ export default function DashboardPage() {
             modals={modals}
             shareManager={shareManager}
             onSuccess={loadDashboardData}
+            existingFiles={allFiles}
           />
         </FileManagerLayout>
       </GlobalDropZone>
