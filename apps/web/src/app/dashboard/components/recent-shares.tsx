@@ -16,13 +16,13 @@ export function RecentShares({ shares, shareManager, onOpenCreateModal, onCopyLi
     <Card>
       <CardContent>
         <div className="flex flex-col gap-6">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
             <h2 className="text-xl font-semibold flex items-center gap-2">
               <IconShare className="text-xl text-gray-500" />
               {t("recentShares.title")}
             </h2>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <Button
                 className="font-semibold text-sm cursor-pointer"
                 variant="outline"
