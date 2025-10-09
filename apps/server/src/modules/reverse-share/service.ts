@@ -782,7 +782,7 @@ export class ReverseShareService {
 
     // Check if reverse share is expired
     const isExpired = reverseShare.expiration && new Date(reverseShare.expiration) < new Date();
-    
+
     // Check if inactive
     const isInactive = !reverseShare.isActive;
 
