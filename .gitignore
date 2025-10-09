@@ -33,4 +33,4 @@ apps/server/dist/*
 .steering
 data/
 
-node_modules/
+node_modules/screenshots/
