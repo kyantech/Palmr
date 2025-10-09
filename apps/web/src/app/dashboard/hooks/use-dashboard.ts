@@ -81,7 +81,7 @@ export function useDashboard() {
     }
   }, [t]);
 
-  const fileManager = useEnhancedFileManager(loadDashboardData);
+  const fileManager = useEnhancedFileManager(loadDashboardData, undefined, allFiles, null);
   const shareManager = useShareManager(loadDashboardData);
 
   const handleCopyLink = (share: Share) => {

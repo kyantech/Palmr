@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { deleteFile, getDownloadUrl, updateFile } from "@/http/endpoints";
 import { deleteFolder, registerFolder, updateFolder } from "@/http/endpoints/folders";
+import { generateUniqueFileName } from "@/utils/file-utils";
 import { useDownloadQueue } from "./use-download-queue";
 import { usePushNotifications } from "./use-push-notifications";
 
@@ -149,7 +150,18 @@ export interface EnhancedFileManagerHook {
   isDownloadPending: (objectName: string) => boolean;
 }
 
-export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSelection?: () => void) {
+interface FileItem {
+  id: string;
+  name: string;
+  folderId?: string | null;
+}
+
+export function useEnhancedFileManager(
+  onRefresh: () => Promise<void>,
+  clearSelection?: () => void,
+  existingFiles?: FileItem[],
+  currentFolderId?: string | null
+) {
   const t = useTranslations();
   const downloadQueue = useDownloadQueue(true, 3000);
   const notifications = usePushNotifications();
@@ -310,8 +322,16 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
 
   const handleRename = async (fileId: string, newName: string, description?: string) => {
     try {
+      // Generate unique filename if duplicate exists and we have the file list
+      let finalName = newName;
+      if (existingFiles && existingFiles.length > 0) {
+        // Filter out the current file being renamed to avoid false positive
+        const otherFiles = existingFiles.filter((f) => f.id !== fileId);
+        finalName = generateUniqueFileName(newName, otherFiles, currentFolderId);
+      }
+
       await updateFile(fileId, {
-        name: newName,
+        name: finalName,
         description: description || null,
       });
       await onRefresh();

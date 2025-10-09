@@ -239,7 +239,7 @@ export function useFileBrowser() {
     }
   }, [urlFolderSlug, buildBreadcrumbPath, t, getFolderIdFromPathSlug]);
 
-  const fileManager = useEnhancedFileManager(loadFiles, clearSelectionCallback);
+  const fileManager = useEnhancedFileManager(loadFiles, clearSelectionCallback, allFiles, currentFolderId);
 
   const getImmediateChildFoldersWithMatches = useCallback(() => {
     if (!searchQuery) return [];
