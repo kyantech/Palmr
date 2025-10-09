@@ -110,11 +110,20 @@ export class FilesystemController {
     const totalChunks = request.headers["x-total-chunks"] as string;
     const chunkSize = request.headers["x-chunk-size"] as string;
     const totalSize = request.headers["x-total-size"] as string;
-    const fileName = request.headers["x-file-name"] as string;
+    const encodedFileName = request.headers["x-file-name"] as string;
     const isLastChunk = request.headers["x-is-last-chunk"] as string;
 
-    if (!fileId || !chunkIndex || !totalChunks || !chunkSize || !totalSize || !fileName) {
+    if (!fileId || !chunkIndex || !totalChunks || !chunkSize || !totalSize || !encodedFileName) {
       return null;
+    }
+
+    // Decode the base64-encoded filename to handle UTF-8 characters
+    let fileName: string;
+    try {
+      fileName = decodeURIComponent(escape(Buffer.from(encodedFileName, "base64").toString("binary")));
+    } catch (error) {
+      // Fallback to the encoded value if decoding fails (for backward compatibility)
+      fileName = encodedFileName;
     }
 
     const metadata = {
