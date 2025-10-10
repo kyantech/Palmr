@@ -150,7 +150,9 @@
     "rename": "Rename",
     "move": "Move",
     "share": "Share",
-    "search": "Search"
+    "search": "Search",
+    "copy": "Copy",
+    "copied": "Copied"
   },
   "createShare": {
     "title": "Create Share",
@@ -1871,6 +1873,18 @@
       "admin": "Admin",
       "userr": "User"
     }
+  },
+  "embedCode": {
+    "title": "Embed Image",
+    "description": "Use these codes to embed this image in forums, websites, or other platforms",
+    "tabs": {
+      "directLink": "Direct Link",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "Direct URL to the image file",
+    "htmlDescription": "Use this code to embed the image in HTML pages",
+    "bbcodeDescription": "Use this code to embed the image in forums that support BBCode"
   },
   "validation": {
     "firstNameRequired": "First name is required",

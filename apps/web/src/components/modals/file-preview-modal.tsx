@@ -3,10 +3,12 @@
 import { IconDownload } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
+import { EmbedCodeDisplay } from "@/components/files/embed-code-display";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useFilePreview } from "@/hooks/use-file-preview";
 import { getFileIcon } from "@/utils/file-icons";
+import { getFileType } from "@/utils/file-types";
 import { FilePreviewRenderer } from "./previews";
 
 interface FilePreviewModalProps {
@@ -32,6 +34,8 @@ export function FilePreviewModal({
 }: FilePreviewModalProps) {
   const t = useTranslations();
   const previewState = useFilePreview({ file, isOpen, isReverseShare, sharePassword });
+  const fileType = getFileType(file.name);
+  const isImage = fileType === "image";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -59,6 +63,11 @@ export function FilePreviewModal({
             description={file.description}
             onDownload={previewState.handleDownload}
           />
+          {isImage && previewState.previewUrl && !previewState.isLoading && (
+            <div className="mt-4">
+              <EmbedCodeDisplay imageUrl={previewState.previewUrl} fileName={file.name} />
+            </div>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
