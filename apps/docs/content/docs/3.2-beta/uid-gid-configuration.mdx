@@ -11,6 +11,67 @@ Palmr. supports runtime UID/GID configuration to resolve permission conflicts wh
 
 **⚠️ Important**: Palmr uses **UID 1000, GID 1000** by default, which matches the standard Linux convention. However, some systems may use different UID/GID values, which can cause permission issues with bind mounts.
 
+## Running as Non-Root User
+
+Starting with version 3.2-beta, Palmr supports running the Docker container as a non-root user using Docker's built-in `user` directive. This provides an additional security layer by ensuring the container processes don't run with root privileges.
+
+### Using Docker User Directive
+
+You can specify a non-root user when running Palmr using either Docker Compose or Docker CLI:
+
+**Docker Compose:**
+
+```yaml
+services:
+  palmr:
+    image: kyantech/palmr:latest
+    container_name: palmr
+    user: "1000:1000"  # Run as UID 1000, GID 1000
+    ports:
+      - "5487:5487"
+    volumes:
+      - ./data:/app/server
+    restart: unless-stopped
+```
+
+**Docker CLI:**
+
+```bash
+docker run -d \
+  --name palmr \
+  --user 1000:1000 \
+  -p 5487:5487 \
+  -v ./data:/app/server \
+  kyantech/palmr:latest
+```
+
+### Important Notes for Non-Root Execution
+
+When running as a non-root user:
+
+1. **File Permissions**: Ensure bind mount directories are owned by the user specified in the `user` directive:
+   ```bash
+   # For user 1000:1000
+   mkdir -p ./data
+   sudo chown -R 1000:1000 ./data
+   ```
+
+2. **PALMR_UID/PALMR_GID Ignored**: The `PALMR_UID` and `PALMR_GID` environment variables have no effect when using the `user` directive, as the container already runs as a non-root user.
+
+3. **Security Benefits**: Running as non-root reduces the attack surface if the container is compromised.
+
+### Choosing Between Methods
+
+| Method | Use Case | Security | Flexibility |
+|--------|----------|----------|-------------|
+| **Docker `user` directive** | Maximum security, fixed UID/GID | ✅ Higher | ❌ Less flexible |
+| **PALMR_UID/PALMR_GID** | Easy permission management, dynamic UID/GID | ⚠️ Runs as root initially | ✅ More flexible |
+| **Default (no config)** | Quick setup, standard environments | ⚠️ Runs as root initially | ✅ Works out of box |
+
+**Recommendation**: For production deployments where security is paramount, use Docker's `user` directive. For development or when you need dynamic UID/GID configuration, use `PALMR_UID`/`PALMR_GID`.
+
+---
+
 ## The Permission Problem
 
 ### Why This Happens

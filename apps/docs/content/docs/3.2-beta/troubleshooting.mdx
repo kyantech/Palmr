@@ -48,6 +48,26 @@ services:
     # ... rest of config
 ```
 
+### Solution 2: Docker User Directive (More Secure)
+
+For enhanced security, run the container as a non-root user:
+
+```yaml
+services:
+  palmr:
+    user: "1000:1000"  # Your UID:GID
+    # ... rest of config
+```
+
+**Important**: When using the `user` directive, ensure your bind mount directories have the correct ownership:
+
+```bash
+mkdir -p ./data
+sudo chown -R 1000:1000 ./data
+```
+
+See the [UID/GID Configuration](/docs/3.2-beta/uid-gid-configuration#running-as-non-root-user) guide for more details.
+
 Restart the container:
 
 ```bash
