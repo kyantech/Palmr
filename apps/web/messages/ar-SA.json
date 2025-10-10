@@ -151,8 +151,8 @@
     "rename": "إعادة تسمية",
     "search": "بحث",
     "share": "مشاركة",
-    "copied": "[TO_TRANSLATE] Copied",
-    "copy": "[TO_TRANSLATE] Copy"
+    "copied": "تم النسخ",
+    "copy": "نسخ"
   },
   "createShare": {
     "title": "إنشاء مشاركة",
@@ -1927,16 +1927,16 @@
     "required": "هذا الحقل مطلوب"
   },
   "embedCode": {
-    "title": "[TO_TRANSLATE] Embed Image",
-    "description": "[TO_TRANSLATE] Use these codes to embed this image in forums, websites, or other platforms",
+    "title": "تضمين الصورة",
+    "description": "استخدم هذه الأكواد لتضمين هذه الصورة في المنتديات أو المواقع الإلكترونية أو المنصات الأخرى",
     "tabs": {
-      "directLink": "[TO_TRANSLATE] Direct Link",
-      "html": "[TO_TRANSLATE] HTML",
-      "bbcode": "[TO_TRANSLATE] BBCode"
+      "directLink": "رابط مباشر",
+      "html": "HTML",
+      "bbcode": "BBCode"
     },
-    "directLinkDescription": "[TO_TRANSLATE] Direct URL to the image file",
-    "htmlDescription": "[TO_TRANSLATE] Use this code to embed the image in HTML pages",
-    "bbcodeDescription": "[TO_TRANSLATE] Use this code to embed the image in forums that support BBCode",
-    "urlNote": "[TO_TRANSLATE] Note: This URL may expire after some time. Regenerate if needed."
+    "directLinkDescription": "عنوان URL مباشر لملف الصورة",
+    "htmlDescription": "استخدم هذا الكود لتضمين الصورة في صفحات HTML",
+    "bbcodeDescription": "استخدم هذا الكود لتضمين الصورة في المنتديات التي تدعم BBCode",
+    "urlNote": "ملاحظة: قد تنتهي صلاحية عنوان URL هذا بعد فترة من الوقت. أعد إنشاءه إذا لزم الأمر."
   }
 }

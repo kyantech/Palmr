@@ -151,8 +151,8 @@
     "rename": "이름 변경",
     "search": "검색",
     "share": "공유",
-    "copied": "[TO_TRANSLATE] Copied",
-    "copy": "[TO_TRANSLATE] Copy"
+    "copied": "복사됨",
+    "copy": "복사"
   },
   "createShare": {
     "title": "공유 생성",
@@ -1925,16 +1925,16 @@
     "required": "이 필드는 필수입니다"
   },
   "embedCode": {
-    "title": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Embed Image",
-    "description": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use these codes to embed this image in forums, websites, or other platforms",
+    "title": "이미지 삽입",
+    "description": "이 코드를 사용하여 포럼, 웹사이트 또는 기타 플랫폼에 이 이미지를 삽입하세요",
     "tabs": {
-      "directLink": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Direct Link",
-      "html": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] HTML",
-      "bbcode": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] BBCode"
+      "directLink": "직접 링크",
+      "html": "HTML",
+      "bbcode": "BBCode"
     },
-    "directLinkDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Direct URL to the image file",
-    "htmlDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use this code to embed the image in HTML pages",
-    "bbcodeDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use this code to embed the image in forums that support BBCode",
-    "urlNote": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Note: This URL may expire after some time. Regenerate if needed."
+    "directLinkDescription": "이미지 파일에 대한 직접 URL",
+    "htmlDescription": "이 코드를 사용하여 HTML 페이지에 이미지를 삽입하세요",
+    "bbcodeDescription": "BBCode를 지원하는 포럼에 이미지를 삽입하려면 이 코드를 사용하세요",
+    "urlNote": "참고: 이 URL은 시간이 지나면 만료될 수 있습니다. 필요한 경우 다시 생성하세요."
   }
 }

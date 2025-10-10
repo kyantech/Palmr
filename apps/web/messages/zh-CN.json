@@ -151,8 +151,8 @@
     "rename": "重命名",
     "search": "搜索",
     "share": "分享",
-    "copied": "[TO_TRANSLATE] Copied",
-    "copy": "[TO_TRANSLATE] Copy"
+    "copied": "已复制",
+    "copy": "复制"
   },
   "createShare": {
     "title": "创建分享",
@@ -1925,16 +1925,16 @@
     "required": "此字段为必填项"
   },
   "embedCode": {
-    "title": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Embed Image",
-    "description": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use these codes to embed this image in forums, websites, or other platforms",
+    "title": "嵌入图片",
+    "description": "使用这些代码将此图片嵌入到论坛、网站或其他平台中",
     "tabs": {
-      "directLink": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Direct Link",
-      "html": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] HTML",
-      "bbcode": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] BBCode"
+      "directLink": "直接链接",
+      "html": "HTML",
+      "bbcode": "BBCode"
     },
-    "directLinkDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Direct URL to the image file",
-    "htmlDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use this code to embed the image in HTML pages",
-    "bbcodeDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use this code to embed the image in forums that support BBCode",
-    "urlNote": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Note: This URL may expire after some time. Regenerate if needed."
+    "directLinkDescription": "图片文件的直接URL",
+    "htmlDescription": "使用此代码将图片嵌入HTML页面",
+    "bbcodeDescription": "使用此代码将图片嵌入支持BBCode的论坛",
+    "urlNote": "注意：此URL可能会在一段时间后过期。如有需要请重新生成。"
   }
 }

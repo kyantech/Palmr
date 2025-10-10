@@ -151,8 +151,8 @@
     "rename": "名前を変更",
     "search": "検索",
     "share": "共有",
-    "copied": "[TO_TRANSLATE] Copied",
-    "copy": "[TO_TRANSLATE] Copy"
+    "copied": "コピーしました",
+    "copy": "コピー"
   },
   "createShare": {
     "title": "共有を作成",
@@ -1925,16 +1925,16 @@
     "required": "このフィールドは必須です"
   },
   "embedCode": {
-    "title": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Embed Image",
-    "description": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use these codes to embed this image in forums, websites, or other platforms",
+    "title": "画像を埋め込む",
+    "description": "これらのコードを使用して、この画像をフォーラム、ウェブサイト、またはその他のプラットフォームに埋め込みます",
     "tabs": {
-      "directLink": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Direct Link",
-      "html": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] HTML",
-      "bbcode": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] BBCode"
+      "directLink": "直接リンク",
+      "html": "HTML",
+      "bbcode": "BBCode"
     },
-    "directLinkDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Direct URL to the image file",
-    "htmlDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use this code to embed the image in HTML pages",
-    "bbcodeDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use this code to embed the image in forums that support BBCode",
-    "urlNote": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Note: This URL may expire after some time. Regenerate if needed."
+    "directLinkDescription": "画像ファイルへの直接URL",
+    "htmlDescription": "このコードを使用してHTMLページに画像を埋め込みます",
+    "bbcodeDescription": "BBCodeをサポートするフォーラムに画像を埋め込むには、このコードを使用します",
+    "urlNote": "注：このURLはしばらくすると期限切れになる場合があります。必要に応じて再生成してください。"
   }
 }

@@ -151,8 +151,8 @@
     "rename": "Renommer",
     "search": "Rechercher",
     "share": "Partager",
-    "copied": "[TO_TRANSLATE] Copied",
-    "copy": "[TO_TRANSLATE] Copy"
+    "copied": "Copié",
+    "copy": "Copier"
   },
   "createShare": {
     "title": "Créer un Partage",
@@ -1925,16 +1925,16 @@
     "required": "Este campo é obrigatório"
   },
   "embedCode": {
-    "title": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Embed Image",
-    "description": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use these codes to embed this image in forums, websites, or other platforms",
+    "title": "Intégrer l'image",
+    "description": "Utilisez ces codes pour intégrer cette image dans des forums, sites web ou autres plateformes",
     "tabs": {
-      "directLink": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Direct Link",
-      "html": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] HTML",
-      "bbcode": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] BBCode"
+      "directLink": "Lien direct",
+      "html": "HTML",
+      "bbcode": "BBCode"
     },
-    "directLinkDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Direct URL to the image file",
-    "htmlDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use this code to embed the image in HTML pages",
-    "bbcodeDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use this code to embed the image in forums that support BBCode",
-    "urlNote": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Note: This URL may expire after some time. Regenerate if needed."
+    "directLinkDescription": "URL directe vers le fichier image",
+    "htmlDescription": "Utilisez ce code pour intégrer l'image dans des pages HTML",
+    "bbcodeDescription": "Utilisez ce code pour intégrer l'image dans des forums prenant en charge BBCode",
+    "urlNote": "Remarque : Cette URL peut expirer après un certain temps. Régénérez-la si nécessaire."
   }
 }

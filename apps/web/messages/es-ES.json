@@ -151,8 +151,8 @@
     "rename": "Renombrar",
     "search": "Buscar",
     "share": "Compartir",
-    "copied": "[TO_TRANSLATE] Copied",
-    "copy": "[TO_TRANSLATE] Copy"
+    "copied": "Copiado",
+    "copy": "Copiar"
   },
   "createShare": {
     "title": "Crear Compartir",
@@ -1925,16 +1925,16 @@
     "required": "Este campo es obligatorio"
   },
   "embedCode": {
-    "title": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Embed Image",
-    "description": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use these codes to embed this image in forums, websites, or other platforms",
+    "title": "Insertar imagen",
+    "description": "Utiliza estos códigos para insertar esta imagen en foros, sitios web u otras plataformas",
     "tabs": {
-      "directLink": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Direct Link",
-      "html": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] HTML",
-      "bbcode": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] BBCode"
+      "directLink": "Enlace directo",
+      "html": "HTML",
+      "bbcode": "BBCode"
     },
-    "directLinkDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Direct URL to the image file",
-    "htmlDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use this code to embed the image in HTML pages",
-    "bbcodeDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use this code to embed the image in forums that support BBCode",
-    "urlNote": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Note: This URL may expire after some time. Regenerate if needed."
+    "directLinkDescription": "URL directa al archivo de imagen",
+    "htmlDescription": "Utiliza este código para insertar la imagen en páginas HTML",
+    "bbcodeDescription": "Utiliza este código para insertar la imagen en foros que admiten BBCode",
+    "urlNote": "Nota: Esta URL puede caducar después de un tiempo. Regenera si es necesario."
   }
 }
