@@ -18,6 +18,12 @@ const defaultConfigs = [
     group: "general",
   },
   {
+    key: "hideVersion",
+    value: "false",
+    type: "boolean",
+    group: "general",
+  },
+  {
     key: "appDescription",
     value: "Secure and simple file sharing - Your personal cloud",
     type: "string",
