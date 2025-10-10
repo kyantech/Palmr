@@ -1056,7 +1056,8 @@
     "upload": {
       "metadata": {
         "title": "फ़ाइलें भेजें - पाल्मर",
-        "description": "साझा किए गए लिंक के माध्यम से फ़ाइलें भेजें"
+        "description": "साझा किए गए लिंक के माध्यम से फ़ाइलें भेजें",
+        "descriptionWithLimit": "फ़ाइलें अपलोड करें (अधिकतम {limit} फ़ाइलें)"
       },
       "layout": {
         "defaultTitle": "फ़ाइलें भेजें",
@@ -1359,7 +1360,11 @@
       "description": "यह साझाकरण हटा दिया गया हो सकता है या समाप्त हो चुका है।"
     },
     "pageTitle": "साझाकरण",
-    "downloadAll": "सभी डाउनलोड करें"
+    "downloadAll": "सभी डाउनलोड करें",
+    "metadata": {
+      "defaultDescription": "फाइलों को सुरक्षित रूप से साझा करें",
+      "filesShared": "{count, plural, =1 {1 फ़ाइल साझा की गई} other {# फ़ाइलें साझा की गईं}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "साझाकरण हटाएं",

@@ -1056,7 +1056,8 @@
     "upload": {
       "metadata": {
         "title": "上传文件 - Palmr",
-        "description": "通过共享链接上传文件"
+        "description": "通过共享链接上传文件",
+        "descriptionWithLimit": "上传文件（最多 {limit} 个文件）"
       },
       "layout": {
         "defaultTitle": "上传文件",
@@ -1359,7 +1360,11 @@
       "description": "该共享可能已被删除或已过期。"
     },
     "pageTitle": "共享",
-    "downloadAll": "下载所有"
+    "downloadAll": "下载所有",
+    "metadata": {
+      "defaultDescription": "安全共享文件",
+      "filesShared": "{count, plural, =1 {已共享 1 个文件} other {已共享 # 个文件}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "删除共享",
@@ -1684,7 +1689,11 @@
       "copyToClipboard": "复制到剪贴板",
       "savedMessage": "我已保存备用码",
       "available": "可用备用码：{count}个",
-      "instructions": ["• 将这些代码保存在安全的位置", "• 每个备用码只能使用一次", "• 您可以随时生成新的备用码"]
+      "instructions": [
+        "• 将这些代码保存在安全的位置",
+        "• 每个备用码只能使用一次",
+        "• 您可以随时生成新的备用码"
+      ]
     },
     "verification": {
       "title": "双重认证",

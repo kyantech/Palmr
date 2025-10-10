@@ -1056,7 +1056,8 @@
     "upload": {
       "metadata": {
         "title": "Envoyer des Fichiers - Palmr",
-        "description": "Envoyez des fichiers via le lien partagé"
+        "description": "Envoyez des fichiers via le lien partagé",
+        "descriptionWithLimit": "Télécharger des fichiers (max {limit} fichiers)"
       },
       "layout": {
         "defaultTitle": "Envoyer des Fichiers",
@@ -1359,7 +1360,11 @@
       "description": "Ce partage a peut-être été supprimé ou a expiré."
     },
     "pageTitle": "Partage",
-    "downloadAll": "Tout Télécharger"
+    "downloadAll": "Tout Télécharger",
+    "metadata": {
+      "defaultDescription": "Partager des fichiers en toute sécurité",
+      "filesShared": "{count, plural, =1 {1 fichier partagé} other {# fichiers partagés}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "Supprimer le Partage",

@@ -1056,7 +1056,8 @@
     "upload": {
       "metadata": {
         "title": "Invia File - Palmr",
-        "description": "Invia file attraverso il link condiviso"
+        "description": "Invia file attraverso il link condiviso",
+        "descriptionWithLimit": "Carica file (max {limit} file)"
       },
       "layout": {
         "defaultTitle": "Invia File",
@@ -1359,7 +1360,11 @@
       "description": "Questa condivisione potrebbe essere stata eliminata o è scaduta."
     },
     "pageTitle": "Condivisione",
-    "downloadAll": "Scarica Tutto"
+    "downloadAll": "Scarica Tutto",
+    "metadata": {
+      "defaultDescription": "Condividi file in modo sicuro",
+      "filesShared": "{count, plural, =1 {1 file condiviso} other {# file condivisi}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "Elimina Condivisione",

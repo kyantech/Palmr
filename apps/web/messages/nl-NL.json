@@ -1056,7 +1056,8 @@
     "upload": {
       "metadata": {
         "title": "Bestanden Verzenden - Palmr",
-        "description": "Verzend bestanden via de gedeelde link"
+        "description": "Verzend bestanden via de gedeelde link",
+        "descriptionWithLimit": "Upload bestanden (max {limit} bestanden)"
       },
       "layout": {
         "defaultTitle": "Bestanden Verzenden",
@@ -1359,7 +1360,11 @@
       "description": "Dit delen is mogelijk verwijderd of verlopen."
     },
     "pageTitle": "Delen",
-    "downloadAll": "Alles Downloaden"
+    "downloadAll": "Alles Downloaden",
+    "metadata": {
+      "defaultDescription": "Bestanden veilig delen",
+      "filesShared": "{count, plural, =1 {1 bestand gedeeld} other {# bestanden gedeeld}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "Delen Verwijderen",
