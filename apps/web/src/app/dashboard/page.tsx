@@ -7,6 +7,7 @@ import { ProtectedRoute } from "@/components/auth/protected-route";
 import { GlobalDropZone } from "@/components/general/global-drop-zone";
 import { FileManagerLayout } from "@/components/layout/file-manager-layout";
 import { LoadingScreen } from "@/components/layout/loading-screen";
+import { useAppInfo } from "@/contexts/app-info-context";
 import { QuickAccessCards } from "./components/quick-access-cards";
 import { RecentFiles } from "./components/recent-files";
 import { RecentShares } from "./components/recent-shares";
@@ -16,6 +17,7 @@ import { DashboardModals } from "./modals/dashboard-modals";
 
 export default function DashboardPage() {
   const t = useTranslations();
+  const { appDescription, showAppDescription } = useAppInfo();
 
   const {
     isLoading,
@@ -43,6 +45,7 @@ export default function DashboardPage() {
       <GlobalDropZone onSuccess={loadDashboardData}>
         <FileManagerLayout
           breadcrumbLabel={t("dashboard.breadcrumb")}
+          description={showAppDescription ? appDescription : undefined}
           icon={<IconLayoutDashboardFilled className="text-xl" />}
           showBreadcrumb={false}
           title={t("dashboard.pageTitle")}

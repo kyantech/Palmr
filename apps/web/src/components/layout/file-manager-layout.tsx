@@ -18,6 +18,7 @@ import { Separator } from "@/components/ui/separator";
 interface FileManagerLayoutProps {
   children: ReactNode;
   title: string;
+  description?: string;
   icon: ReactNode;
   breadcrumbLabel?: string;
   showBreadcrumb?: boolean;
@@ -34,6 +35,7 @@ interface FileManagerLayoutProps {
 export function FileManagerLayout({
   children,
   title,
+  description,
   icon,
   breadcrumbLabel,
   showBreadcrumb = true,
@@ -52,6 +54,7 @@ export function FileManagerLayout({
               {icon}
               <h1 className="text-2xl font-bold">{title}</h1>
             </div>
+            {description && <p className="text-muted-foreground text-sm -mt-2">{description}</p>}
             <Separator />
             {showBreadcrumb && breadcrumbLabel && (
               <Breadcrumb>

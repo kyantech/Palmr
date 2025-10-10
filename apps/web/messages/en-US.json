@@ -1207,6 +1207,10 @@
         "title": "Application Description",
         "description": "Brief description of the application"
       },
+      "showAppDescription": {
+        "title": "Show Application Description",
+        "description": "Display application description below title on dashboard"
+      },
       "showHomePage": {
         "title": "Show Home Page",
         "description": "Show Home Page after installation"

@@ -30,6 +30,7 @@ export interface GetAppInfo200 {
   appDescription: string;
   appLogo: string;
   firstUserAccess: boolean;
+  showAppDescription: boolean;
 }
 
 export interface GetSystemInfo200 {

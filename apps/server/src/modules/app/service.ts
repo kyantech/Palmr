@@ -6,11 +6,12 @@ export class AppService {
   private configService = new ConfigService();
 
   async getAppInfo() {
-    const [appName, appDescription, appLogo, firstUserAccess] = await Promise.all([
+    const [appName, appDescription, appLogo, firstUserAccess, showAppDescription] = await Promise.all([
       this.configService.getValue("appName"),
       this.configService.getValue("appDescription"),
       this.configService.getValue("appLogo"),
       this.configService.getValue("firstUserAccess"),
+      this.configService.getValue("showAppDescription"),
     ]);
 
     return {
@@ -18,6 +19,7 @@ export class AppService {
       appDescription,
       appLogo,
       firstUserAccess: firstUserAccess === "true",
+      showAppDescription: showAppDescription === "true",
     };
   }
 

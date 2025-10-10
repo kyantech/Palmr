@@ -24,6 +24,12 @@ const defaultConfigs = [
     group: "general",
   },
   {
+    key: "showAppDescription",
+    value: "false",
+    type: "boolean",
+    group: "general",
+  },
+  {
     key: "appLogo",
     value: "https://i.ibb.co/gMpk75bZ/Group.png",
     type: "string",
