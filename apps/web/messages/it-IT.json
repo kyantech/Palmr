@@ -1300,8 +1300,8 @@
         "description": "Abilita o disabilita l'autenticazione basata su password"
       },
       "hideVersion": {
-        "title": "[TO_TRANSLATE] Hide Version",
-        "description": "[TO_TRANSLATE] Hide the Palmr version from the footer on all pages"
+        "title": "Nascondi Versione",
+        "description": "Nascondi la versione di Palmr nel piè di pagina di tutte le pagine"
       }
     },
     "buttons": {

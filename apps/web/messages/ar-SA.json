@@ -1302,8 +1302,8 @@
         "description": "تمكين أو تعطيل المصادقة بالكلمة السرية"
       },
       "hideVersion": {
-        "title": "[TO_TRANSLATE] Hide Version",
-        "description": "[TO_TRANSLATE] Hide the Palmr version from the footer on all pages"
+        "title": "إخفاء الإصدار",
+        "description": "إخفاء إصدار Palmr في تذييل جميع الصفحات"
       }
     },
     "buttons": {

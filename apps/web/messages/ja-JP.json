@@ -1300,8 +1300,8 @@
         "description": "パスワード認証を有効または無効にする"
       },
       "hideVersion": {
-        "title": "[TO_TRANSLATE] Hide Version",
-        "description": "[TO_TRANSLATE] Hide the Palmr version from the footer on all pages"
+        "title": "バージョンを非表示",
+        "description": "すべてのページのフッターにあるPalmrバージョンを非表示にする"
       }
     },
     "buttons": {

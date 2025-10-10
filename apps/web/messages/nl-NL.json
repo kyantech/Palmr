@@ -1300,8 +1300,8 @@
         "description": "Wachtwoord-gebaseerde authenticatie inschakelen of uitschakelen"
       },
       "hideVersion": {
-        "title": "[TO_TRANSLATE] Hide Version",
-        "description": "[TO_TRANSLATE] Hide the Palmr version from the footer on all pages"
+        "title": "Versie Verbergen",
+        "description": "Verberg de Palmr-versie in de voettekst van alle pagina's"
       }
     },
     "buttons": {

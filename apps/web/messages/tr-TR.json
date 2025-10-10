@@ -1300,8 +1300,8 @@
         "description": "Şifre tabanlı doğrulamayı etkinleştirme veya devre dışı bırakma"
       },
       "hideVersion": {
-        "title": "[TO_TRANSLATE] Hide Version",
-        "description": "[TO_TRANSLATE] Hide the Palmr version from the footer on all pages"
+        "title": "Sürümü Gizle",
+        "description": "Tüm sayfaların alt bilgisinde Palmr sürümünü gizle"
       }
     },
     "buttons": {

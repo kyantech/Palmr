@@ -1300,8 +1300,8 @@
         "description": "Passwort-basierte Authentifizierung aktivieren oder deaktivieren"
       },
       "hideVersion": {
-        "title": "[TO_TRANSLATE] Hide Version",
-        "description": "[TO_TRANSLATE] Hide the Palmr version from the footer on all pages"
+        "title": "Version Ausblenden",
+        "description": "Die Palmr-Version in der Fußzeile aller Seiten ausblenden"
       }
     },
     "buttons": {

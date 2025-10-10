@@ -1300,8 +1300,8 @@
         "description": "启用或禁用基于密码的认证"
       },
       "hideVersion": {
-        "title": "[TO_TRANSLATE] Hide Version",
-        "description": "[TO_TRANSLATE] Hide the Palmr version from the footer on all pages"
+        "title": "隐藏版本",
+        "description": "在所有页面的页脚中隐藏Palmr版本"
       }
     },
     "buttons": {

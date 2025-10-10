@@ -1300,8 +1300,8 @@
         "description": "पासवर्ड आधारित प्रमाणीकरण सक्षम या अक्षम करें"
       },
       "hideVersion": {
-        "title": "[TO_TRANSLATE] Hide Version",
-        "description": "[TO_TRANSLATE] Hide the Palmr version from the footer on all pages"
+        "title": "संस्करण छुपाएं",
+        "description": "सभी पृष्ठों के फुटर में Palmr संस्करण छुपाएं"
       }
     },
     "buttons": {
