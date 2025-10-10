@@ -1298,6 +1298,10 @@
       "passwordAuthEnabled": {
         "title": "密码认证",
         "description": "启用或禁用基于密码的认证"
+      },
+      "hideVersion": {
+        "title": "[TO_TRANSLATE] Hide Version",
+        "description": "[TO_TRANSLATE] Hide the Palmr version from the footer on all pages"
       }
     },
     "buttons": {
@@ -1684,7 +1688,11 @@
       "copyToClipboard": "复制到剪贴板",
       "savedMessage": "我已保存备用码",
       "available": "可用备用码：{count}个",
-      "instructions": ["• 将这些代码保存在安全的位置", "• 每个备用码只能使用一次", "• 您可以随时生成新的备用码"]
+      "instructions": [
+        "• 将这些代码保存在安全的位置",
+        "• 每个备用码只能使用一次",
+        "• 您可以随时生成新的备用码"
+      ]
     },
     "verification": {
       "title": "双重认证",

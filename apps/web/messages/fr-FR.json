@@ -1301,6 +1301,10 @@
       "passwordAuthEnabled": {
         "title": "Authentification par Mot de Passe",
         "description": "Activer ou désactiver l'authentification basée sur mot de passe"
+      },
+      "hideVersion": {
+        "title": "[TO_TRANSLATE] Hide Version",
+        "description": "[TO_TRANSLATE] Hide the Palmr version from the footer on all pages"
       }
     },
     "buttons": {

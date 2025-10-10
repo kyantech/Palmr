@@ -1298,6 +1298,10 @@
       "passwordAuthEnabled": {
         "title": "Autenticación por Contraseña",
         "description": "Habilitar o deshabilitar la autenticación basada en contraseña"
+      },
+      "hideVersion": {
+        "title": "[TO_TRANSLATE] Hide Version",
+        "description": "[TO_TRANSLATE] Hide the Palmr version from the footer on all pages"
       }
     },
     "buttons": {

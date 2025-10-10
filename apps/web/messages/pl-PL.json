@@ -1298,6 +1298,10 @@
       "passwordAuthEnabled": {
         "title": "Uwierzytelnianie hasłem",
         "description": "Włącz lub wyłącz uwierzytelnianie oparte na haśle"
+      },
+      "hideVersion": {
+        "title": "[TO_TRANSLATE] Hide Version",
+        "description": "[TO_TRANSLATE] Hide the Palmr version from the footer on all pages"
       }
     },
     "buttons": {
