@@ -150,7 +150,9 @@
     "move": "Verplaatsen",
     "rename": "Hernoemen",
     "search": "Zoeken",
-    "share": "Delen"
+    "share": "Delen",
+    "copied": "[TO_TRANSLATE] Copied",
+    "copy": "[TO_TRANSLATE] Copy"
   },
   "createShare": {
     "title": "Delen Maken",
@@ -1921,5 +1923,18 @@
     "passwordMinLength": "Wachtwoord moet minimaal 6 tekens bevatten",
     "nameRequired": "Naam is verplicht",
     "required": "Dit veld is verplicht"
+  },
+  "embedCode": {
+    "title": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Embed Image",
+    "description": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use these codes to embed this image in forums, websites, or other platforms",
+    "tabs": {
+      "directLink": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Direct Link",
+      "html": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] HTML",
+      "bbcode": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] BBCode"
+    },
+    "directLinkDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Direct URL to the image file",
+    "htmlDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use this code to embed the image in HTML pages",
+    "bbcodeDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use this code to embed the image in forums that support BBCode",
+    "urlNote": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Note: This URL may expire after some time. Regenerate if needed."
   }
 }

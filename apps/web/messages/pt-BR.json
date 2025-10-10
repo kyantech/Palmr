@@ -150,7 +150,9 @@
     "move": "Mover",
     "rename": "Renomear",
     "search": "Pesquisar",
-    "share": "Compartilhar"
+    "share": "Compartilhar",
+    "copied": "[TO_TRANSLATE] Copied",
+    "copy": "[TO_TRANSLATE] Copy"
   },
   "createShare": {
     "title": "Criar compartilhamento",
@@ -1922,5 +1924,18 @@
     "lastNameRequired": "O sobrenome é necessário",
     "usernameLength": "O nome de usuário deve ter pelo menos 3 caracteres",
     "usernameSpaces": "O nome de usuário não pode conter espaços"
+  },
+  "embedCode": {
+    "title": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Embed Image",
+    "description": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use these codes to embed this image in forums, websites, or other platforms",
+    "tabs": {
+      "directLink": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Direct Link",
+      "html": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] HTML",
+      "bbcode": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] BBCode"
+    },
+    "directLinkDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Direct URL to the image file",
+    "htmlDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use this code to embed the image in HTML pages",
+    "bbcodeDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use this code to embed the image in forums that support BBCode",
+    "urlNote": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Note: This URL may expire after some time. Regenerate if needed."
   }
 }

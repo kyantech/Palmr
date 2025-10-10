@@ -150,7 +150,9 @@
     "move": "نقل",
     "rename": "إعادة تسمية",
     "search": "بحث",
-    "share": "مشاركة"
+    "share": "مشاركة",
+    "copied": "[TO_TRANSLATE] Copied",
+    "copy": "[TO_TRANSLATE] Copy"
   },
   "createShare": {
     "title": "إنشاء مشاركة",
@@ -1923,5 +1925,18 @@
     "passwordRequired": "كلمة المرور مطلوبة",
     "nameRequired": "الاسم مطلوب",
     "required": "هذا الحقل مطلوب"
+  },
+  "embedCode": {
+    "title": "[TO_TRANSLATE] Embed Image",
+    "description": "[TO_TRANSLATE] Use these codes to embed this image in forums, websites, or other platforms",
+    "tabs": {
+      "directLink": "[TO_TRANSLATE] Direct Link",
+      "html": "[TO_TRANSLATE] HTML",
+      "bbcode": "[TO_TRANSLATE] BBCode"
+    },
+    "directLinkDescription": "[TO_TRANSLATE] Direct URL to the image file",
+    "htmlDescription": "[TO_TRANSLATE] Use this code to embed the image in HTML pages",
+    "bbcodeDescription": "[TO_TRANSLATE] Use this code to embed the image in forums that support BBCode",
+    "urlNote": "[TO_TRANSLATE] Note: This URL may expire after some time. Regenerate if needed."
   }
 }

@@ -76,6 +76,7 @@ export function EmbedCodeDisplay({ imageUrl, fileName }: EmbedCodeDisplayProps) 
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">{t("embedCode.directLinkDescription")}</p>
+              <p className="text-xs text-amber-600 dark:text-amber-500">{t("embedCode.urlNote")}</p>
             </TabsContent>
 
             <TabsContent value="html" className="space-y-2">

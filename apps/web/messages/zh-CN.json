@@ -150,7 +150,9 @@
     "move": "移动",
     "rename": "重命名",
     "search": "搜索",
-    "share": "分享"
+    "share": "分享",
+    "copied": "[TO_TRANSLATE] Copied",
+    "copy": "[TO_TRANSLATE] Copy"
   },
   "createShare": {
     "title": "创建分享",
@@ -1684,7 +1686,11 @@
       "copyToClipboard": "复制到剪贴板",
       "savedMessage": "我已保存备用码",
       "available": "可用备用码：{count}个",
-      "instructions": ["• 将这些代码保存在安全的位置", "• 每个备用码只能使用一次", "• 您可以随时生成新的备用码"]
+      "instructions": [
+        "• 将这些代码保存在安全的位置",
+        "• 每个备用码只能使用一次",
+        "• 您可以随时生成新的备用码"
+      ]
     },
     "verification": {
       "title": "双重认证",
@@ -1917,5 +1923,18 @@
     "passwordRequired": "密码为必填项",
     "nameRequired": "名称为必填项",
     "required": "此字段为必填项"
+  },
+  "embedCode": {
+    "title": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Embed Image",
+    "description": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use these codes to embed this image in forums, websites, or other platforms",
+    "tabs": {
+      "directLink": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Direct Link",
+      "html": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] HTML",
+      "bbcode": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] BBCode"
+    },
+    "directLinkDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Direct URL to the image file",
+    "htmlDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use this code to embed the image in HTML pages",
+    "bbcodeDescription": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Use this code to embed the image in forums that support BBCode",
+    "urlNote": "[TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] [TO_TRANSLATE] Note: This URL may expire after some time. Regenerate if needed."
   }
 }
