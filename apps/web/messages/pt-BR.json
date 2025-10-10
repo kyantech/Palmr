@@ -1307,6 +1307,10 @@
       "passwordAuthEnabled": {
         "title": "Autenticação por Senha",
         "description": "Ative ou desative a autenticação baseada em senha"
+      },
+      "showAppDescription": {
+        "title": "[TO_TRANSLATE] Show Application Description",
+        "description": "[TO_TRANSLATE] Display application description below title on dashboard"
       }
     },
     "buttons": {

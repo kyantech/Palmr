@@ -1298,6 +1298,10 @@
       "passwordAuthEnabled": {
         "title": "Wachtwoord Authenticatie",
         "description": "Wachtwoord-gebaseerde authenticatie inschakelen of uitschakelen"
+      },
+      "showAppDescription": {
+        "title": "[TO_TRANSLATE] Show Application Description",
+        "description": "[TO_TRANSLATE] Display application description below title on dashboard"
       }
     },
     "buttons": {

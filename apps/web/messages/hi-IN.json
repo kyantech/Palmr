@@ -1298,6 +1298,10 @@
       "passwordAuthEnabled": {
         "title": "पासवर्ड प्रमाणीकरण",
         "description": "पासवर्ड आधारित प्रमाणीकरण सक्षम या अक्षम करें"
+      },
+      "showAppDescription": {
+        "title": "[TO_TRANSLATE] Show Application Description",
+        "description": "[TO_TRANSLATE] Display application description below title on dashboard"
       }
     },
     "buttons": {

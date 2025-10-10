@@ -1300,6 +1300,10 @@
       "passwordAuthEnabled": {
         "title": "المصادقة بالكلمة السرية",
         "description": "تمكين أو تعطيل المصادقة بالكلمة السرية"
+      },
+      "showAppDescription": {
+        "title": "[TO_TRANSLATE] Show Application Description",
+        "description": "[TO_TRANSLATE] Display application description below title on dashboard"
       }
     },
     "buttons": {

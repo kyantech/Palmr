@@ -1298,6 +1298,10 @@
       "passwordAuthEnabled": {
         "title": "Autenticación por Contraseña",
         "description": "Habilitar o deshabilitar la autenticación basada en contraseña"
+      },
+      "showAppDescription": {
+        "title": "[TO_TRANSLATE] Show Application Description",
+        "description": "[TO_TRANSLATE] Display application description below title on dashboard"
       }
     },
     "buttons": {

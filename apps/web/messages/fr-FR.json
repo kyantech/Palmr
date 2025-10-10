@@ -1301,6 +1301,10 @@
       "passwordAuthEnabled": {
         "title": "Authentification par Mot de Passe",
         "description": "Activer ou désactiver l'authentification basée sur mot de passe"
+      },
+      "showAppDescription": {
+        "title": "[TO_TRANSLATE] Show Application Description",
+        "description": "[TO_TRANSLATE] Display application description below title on dashboard"
       }
     },
     "buttons": {

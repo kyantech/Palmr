@@ -1298,6 +1298,10 @@
       "passwordAuthEnabled": {
         "title": "Парольная аутентификация",
         "description": "Включить или отключить парольную аутентификацию"
+      },
+      "showAppDescription": {
+        "title": "[TO_TRANSLATE] Show Application Description",
+        "description": "[TO_TRANSLATE] Display application description below title on dashboard"
       }
     },
     "buttons": {
