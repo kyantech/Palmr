@@ -144,15 +144,43 @@ export DATABASE_URL="file:/app/server/prisma/palmr.db"
 export NEXT_PUBLIC_DEFAULT_LANGUAGE=\${DEFAULT_LANGUAGE:-en-US}
 
 # Ensure /app/server directory exists for bind mounts
-mkdir -p /app/server/uploads /app/server/temp-uploads /app/server/prisma
+mkdir -p /app/server/uploads /app/server/temp-uploads /app/server/prisma 2>/dev/null || true
 
 echo "Data directories ready for first run..."
 
-# Start supervisor
-exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+# Determine which user to run as
+if [ "\$(id -u)" = "0" ]; then
+    # Running as root - check if we should use custom UID/GID or default palmr user
+    if [ -n "\${PALMR_UID}" ] || [ -n "\${PALMR_GID}" ]; then
+        # Use PALMR_UID/PALMR_GID for backward compatibility
+        TARGET_UID=\${PALMR_UID:-1000}
+        TARGET_GID=\${PALMR_GID:-1000}
+        echo "🔧 Switching to UID:GID \$TARGET_UID:\$TARGET_GID"
+        
+        # Update ownership if needed
+        chown -R \$TARGET_UID:\$TARGET_GID /app/palmr-app 2>/dev/null || true
+        chown -R \$TARGET_UID:\$TARGET_GID /home/palmr 2>/dev/null || true
+        chown -R \$TARGET_UID:\$TARGET_GID /app/server 2>/dev/null || true
+        
+        # Start supervisor as the target user
+        exec su-exec \$TARGET_UID:\$TARGET_GID /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+    else
+        # Default: run as palmr user
+        echo "🔧 Switching to palmr user (UID: 1001, GID: 1001)"
+        chown -R palmr:nodejs /app/server 2>/dev/null || true
+        exec su-exec palmr:nodejs /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+    fi
+else
+    # Running as non-root user (e.g., via Docker user directive)
+    echo "ℹ️ Running as non-root user (UID: \$(id -u), GID: \$(id -g))"
+    exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+fi
 EOF
 
 RUN chmod +x /app/start.sh
+
+# Set ownership of critical directories
+RUN chown -R palmr:nodejs /app /home/palmr
 
 # Create volume mount points for bind mounts
 VOLUME ["/app/server"]

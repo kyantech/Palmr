@@ -6,18 +6,23 @@ echo "🌴 Starting Palmr Server..."
 TARGET_UID=${PALMR_UID:-1000}
 TARGET_GID=${PALMR_GID:-1000}
 
-if [ -n "$PALMR_UID" ] || [ -n "$PALMR_GID" ]; then
-    echo "🔧 Runtime UID/GID: $TARGET_UID:$TARGET_GID"
-    
-    echo "🔐 Updating file ownership..."
-    chown -R $TARGET_UID:$TARGET_GID /app/palmr-app 2>/dev/null || echo "⚠️ Some ownership changes may have failed"
-    chown -R $TARGET_UID:$TARGET_GID /home/palmr 2>/dev/null || echo "⚠️ Some home directory ownership changes may have failed"
-    
-    if [ -d "/app/server" ]; then
-        chown -R $TARGET_UID:$TARGET_GID /app/server 2>/dev/null || echo "⚠️ Some data directory ownership changes may have failed"
+# Only attempt ownership changes if running as root
+if [ "$(id -u)" = "0" ]; then
+    if [ -n "$PALMR_UID" ] || [ -n "$PALMR_GID" ]; then
+        echo "🔧 Runtime UID/GID: $TARGET_UID:$TARGET_GID"
+        
+        echo "🔐 Updating file ownership..."
+        chown -R $TARGET_UID:$TARGET_GID /app/palmr-app 2>/dev/null || echo "⚠️ Some ownership changes may have failed"
+        chown -R $TARGET_UID:$TARGET_GID /home/palmr 2>/dev/null || echo "⚠️ Some home directory ownership changes may have failed"
+        
+        if [ -d "/app/server" ]; then
+            chown -R $TARGET_UID:$TARGET_GID /app/server 2>/dev/null || echo "⚠️ Some data directory ownership changes may have failed"
+        fi
+        
+        echo "✅ UID/GID configuration completed"
     fi
-    
-    echo "✅ UID/GID configuration completed"
+else
+    echo "ℹ️ Running as non-root user (UID: $(id -u), GID: $(id -g))"
 fi
 
 cd /app/palmr-app
