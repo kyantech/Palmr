@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
 async function getReverseShareMetadata(alias: string) {
@@ -37,6 +38,13 @@ async function getAppInfo() {
   }
 }
 
+function getBaseUrl(): string {
+  const headersList = headers();
+  const protocol = headersList.get("x-forwarded-proto") || "http";
+  const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost:3000";
+  return `${protocol}://${host}`;
+}
+
 export async function generateMetadata({ params }: { params: { alias: string } }): Promise<Metadata> {
   const t = await getTranslations();
   const metadata = await getReverseShareMetadata(params.alias);
@@ -49,7 +57,7 @@ export async function generateMetadata({ params }: { params: { alias: string } }
       ? t("reverseShares.upload.metadata.descriptionWithLimit", { limit: metadata.maxFiles })
       : t("reverseShares.upload.metadata.description"));
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const baseUrl = getBaseUrl();
   const shareUrl = `${baseUrl}/r/${params.alias}`;
 
   return {

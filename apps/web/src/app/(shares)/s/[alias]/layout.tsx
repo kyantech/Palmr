@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
 interface LayoutProps {
@@ -42,6 +43,13 @@ async function getAppInfo() {
   }
 }
 
+function getBaseUrl(): string {
+  const headersList = headers();
+  const protocol = headersList.get("x-forwarded-proto") || "http";
+  const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost:3000";
+  return `${protocol}://${host}`;
+}
+
 export async function generateMetadata({ params }: { params: { alias: string } }): Promise<Metadata> {
   const t = await getTranslations();
   const metadata = await getShareMetadata(params.alias);
@@ -54,7 +62,7 @@ export async function generateMetadata({ params }: { params: { alias: string } }
       ? t("share.metadata.filesShared", { count: metadata.totalFiles + (metadata.totalFolders || 0) })
       : appInfo.appDescription || t("share.metadata.defaultDescription"));
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const baseUrl = getBaseUrl();
   const shareUrl = `${baseUrl}/s/${params.alias}`;
 
   return {
