@@ -38,8 +38,8 @@ async function getAppInfo() {
   }
 }
 
-function getBaseUrl(): string {
-  const headersList = headers();
+async function getBaseUrl(): Promise<string> {
+  const headersList = await headers();
   const protocol = headersList.get("x-forwarded-proto") || "http";
   const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost:3000";
   return `${protocol}://${host}`;
@@ -57,7 +57,7 @@ export async function generateMetadata({ params }: { params: { alias: string } }
       ? t("reverseShares.upload.metadata.descriptionWithLimit", { limit: metadata.maxFiles })
       : t("reverseShares.upload.metadata.description"));
 
-  const baseUrl = getBaseUrl();
+  const baseUrl = await getBaseUrl();
   const shareUrl = `${baseUrl}/r/${params.alias}`;
 
   return {

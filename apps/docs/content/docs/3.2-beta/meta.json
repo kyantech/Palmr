@@ -16,6 +16,7 @@
     "reverse-proxy-configuration",
     "download-memory-management",
     "password-reset-without-smtp",
+    "cleanup-orphan-files",
     "oidc-authentication",
     "troubleshooting",
     "---Developers---",
