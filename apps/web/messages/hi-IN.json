@@ -1298,6 +1298,10 @@
       "passwordAuthEnabled": {
         "title": "पासवर्ड प्रमाणीकरण",
         "description": "पासवर्ड आधारित प्रमाणीकरण सक्षम या अक्षम करें"
+      },
+      "hideVersion": {
+        "title": "संस्करण छुपाएं",
+        "description": "सभी पृष्ठों के फुटर में Palmr संस्करण छुपाएं"
       }
     },
     "buttons": {

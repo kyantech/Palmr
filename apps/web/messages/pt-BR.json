@@ -1307,6 +1307,10 @@
       "passwordAuthEnabled": {
         "title": "Autenticação por Senha",
         "description": "Ative ou desative a autenticação baseada em senha"
+      },
+      "hideVersion": {
+        "title": "Ocultar Versão",
+        "description": "Ocultar a versão do Palmr no rodapé de todas as páginas"
       }
     },
     "buttons": {

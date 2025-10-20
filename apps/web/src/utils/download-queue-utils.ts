@@ -451,7 +451,13 @@ export async function bulkDownloadWithQueue(
     const folders = items.filter((item) => item.type === "folder");
 
     // eslint-disable-next-line prefer-const
-    let allFilesToDownload: Array<{ objectName: string; name: string; zipPath: string }> = [];
+    let allFilesToDownload: Array<{
+      objectName: string;
+      name: string;
+      zipPath: string;
+      isReverseShare?: boolean;
+      fileId?: string;
+    }> = [];
     // eslint-disable-next-line prefer-const
     let allEmptyFolders: string[] = [];
 
@@ -484,6 +490,8 @@ export async function bulkDownloadWithQueue(
             objectName: file.objectName || file.name,
             name: file.name,
             zipPath: wrapperPath + file.name,
+            isReverseShare: file.isReverseShare,
+            fileId: file.id,
           });
         }
       }
@@ -494,6 +502,8 @@ export async function bulkDownloadWithQueue(
           objectName: file.objectName || file.name,
           name: file.name,
           zipPath: wrapperPath + file.name,
+          isReverseShare: file.isReverseShare,
+          fileId: file.id,
         });
       }
     }
@@ -505,7 +515,12 @@ export async function bulkDownloadWithQueue(
     for (let i = 0; i < allFilesToDownload.length; i++) {
       const file = allFilesToDownload[i];
       try {
-        const blob = await downloadFileAsBlobWithQueue(file.objectName, file.name);
+        const blob = await downloadFileAsBlobWithQueue(
+          file.objectName,
+          file.name,
+          file.isReverseShare || false,
+          file.fileId
+        );
         zip.file(file.zipPath, blob);
         onProgress?.(i + 1, allFilesToDownload.length);
       } catch (error) {
