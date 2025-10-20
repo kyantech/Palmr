@@ -1056,7 +1056,8 @@
     "upload": {
       "metadata": {
         "title": "Отправка файлов - Palmr",
-        "description": "Отправка файлов через общую ссылку"
+        "description": "Отправка файлов через общую ссылку",
+        "descriptionWithLimit": "Загрузить файлы (макс. {limit} файлов)"
       },
       "layout": {
         "defaultTitle": "Отправка файлов",
@@ -1363,7 +1364,11 @@
       "description": "Этот общий доступ может быть удален или истек."
     },
     "pageTitle": "Общий доступ",
-    "downloadAll": "Скачать все"
+    "downloadAll": "Скачать все",
+    "metadata": {
+      "defaultDescription": "Безопасный обмен файлами",
+      "filesShared": "{count, plural, =1 {1 файл отправлен} other {# файлов отправлено}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "Удалить Общий Доступ",

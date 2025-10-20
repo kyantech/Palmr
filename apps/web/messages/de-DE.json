@@ -1056,7 +1056,8 @@
     "upload": {
       "metadata": {
         "title": "Dateien senden - Palmr",
-        "description": "Senden Sie Dateien über den geteilten Link"
+        "description": "Senden Sie Dateien über den geteilten Link",
+        "descriptionWithLimit": "Dateien hochladen (max. {limit} Dateien)"
       },
       "layout": {
         "defaultTitle": "Dateien senden",
@@ -1363,7 +1364,11 @@
       "description": "Diese Freigabe wurde möglicherweise gelöscht oder ist abgelaufen."
     },
     "pageTitle": "Freigabe",
-    "downloadAll": "Alle herunterladen"
+    "downloadAll": "Alle herunterladen",
+    "metadata": {
+      "defaultDescription": "Dateien sicher teilen",
+      "filesShared": "{count, plural, =1 {1 Datei geteilt} other {# Dateien geteilt}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "Freigabe Löschen",
