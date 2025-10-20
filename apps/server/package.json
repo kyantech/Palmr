@@ -1,6 +1,6 @@
 {
   "name": "palmr-api",
-  "version": "3.2.3-beta",
+  "version": "3.2.4-beta",
   "description": "API for Palmr",
   "private": true,
   "author": "Daniel Luiz Alves <daniel@kyantech.com.br>",
@@ -12,7 +12,7 @@
     "nodejs",
     "typescript"
   ],
-  "license": "BSD-2-Clause",
+  "license": "Apache-2.0",
   "packageManager": "pnpm@10.6.0",
   "main": "index.js",
   "scripts": {
@@ -25,7 +25,9 @@
     "format:check": "prettier . --check",
     "type-check": "npx tsc --noEmit",
     "validate": "pnpm lint && pnpm type-check",
-    "db:seed": "ts-node prisma/seed.js"
+    "db:seed": "ts-node prisma/seed.js",
+    "cleanup:orphan-files": "tsx src/scripts/cleanup-orphan-files.ts",
+    "cleanup:orphan-files:confirm": "tsx src/scripts/cleanup-orphan-files.ts --confirm"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

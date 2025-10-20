@@ -1056,7 +1056,8 @@
     "upload": {
       "metadata": {
         "title": "Wyślij pliki - Palmr",
-        "description": "Wysyłaj pliki za pośrednictwem udostępnionego linku"
+        "description": "Wysyłaj pliki za pośrednictwem udostępnionego linku",
+        "descriptionWithLimit": "Prześlij pliki (maks. {limit} plików)"
       },
       "layout": {
         "defaultTitle": "Wyślij pliki",
@@ -1298,6 +1299,10 @@
       "passwordAuthEnabled": {
         "title": "Uwierzytelnianie hasłem",
         "description": "Włącz lub wyłącz uwierzytelnianie oparte na haśle"
+      },
+      "hideVersion": {
+        "title": "Ukryj Wersję",
+        "description": "Ukryj wersję Palmr w stopce wszystkich stron"
       }
     },
     "buttons": {
@@ -1359,7 +1364,11 @@
       "description": "To udostępnienie mogło zostać usunięte lub wygasło."
     },
     "pageTitle": "Udostępnij",
-    "downloadAll": "Pobierz wszystkie"
+    "downloadAll": "Pobierz wszystkie",
+    "metadata": {
+      "defaultDescription": "Bezpiecznie udostępniaj pliki",
+      "filesShared": "{count, plural, =1 {1 plik udostępniony} other {# plików udostępnionych}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "Usuń udostępnienie",

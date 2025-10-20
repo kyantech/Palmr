@@ -1056,7 +1056,8 @@
     "upload": {
       "metadata": {
         "title": "Envoyer des Fichiers - Palmr",
-        "description": "Envoyez des fichiers via le lien partagé"
+        "description": "Envoyez des fichiers via le lien partagé",
+        "descriptionWithLimit": "Télécharger des fichiers (max {limit} fichiers)"
       },
       "layout": {
         "defaultTitle": "Envoyer des Fichiers",
@@ -1301,6 +1302,10 @@
       "passwordAuthEnabled": {
         "title": "Authentification par Mot de Passe",
         "description": "Activer ou désactiver l'authentification basée sur mot de passe"
+      },
+      "hideVersion": {
+        "title": "Masquer la Version",
+        "description": "Masquer la version de Palmr dans le pied de page de toutes les pages"
       }
     },
     "buttons": {
@@ -1359,7 +1364,11 @@
       "description": "Ce partage a peut-être été supprimé ou a expiré."
     },
     "pageTitle": "Partage",
-    "downloadAll": "Tout Télécharger"
+    "downloadAll": "Tout Télécharger",
+    "metadata": {
+      "defaultDescription": "Partager des fichiers en toute sécurité",
+      "filesShared": "{count, plural, =1 {1 fichier partagé} other {# fichiers partagés}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "Supprimer le Partage",

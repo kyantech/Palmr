@@ -91,13 +91,13 @@ export function ShareDetails({
         <CardContent>
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center gap-2">
                   <IconShare className="w-6 h-6 text-muted-foreground" />
                   <h1 className="text-2xl font-semibold">{share.name || t("share.details.untitled")}</h1>
                 </div>
                 {shareHasItems && hasMultipleFiles && (
-                  <Button onClick={onBulkDownload} className="flex items-center gap-2">
+                  <Button onClick={onBulkDownload} className="flex items-center gap-2 w-full sm:w-auto">
                     <IconDownload className="w-4 h-4" />
                     {t("share.downloadAll")}
                   </Button>

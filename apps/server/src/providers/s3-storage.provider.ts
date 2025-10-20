@@ -1,4 +1,4 @@
-import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { bucketName, s3Client } from "../config/storage.config";
@@ -12,6 +12,20 @@ export class S3StorageProvider implements StorageProvider {
         "S3 client is not configured. Make sure ENABLE_S3=true and all S3 environment variables are set."
       );
     }
+  }
+
+  /**
+   * Check if a character is valid in an HTTP token (RFC 2616)
+   * Tokens can contain: alphanumeric and !#$%&'*+-.^_`|~
+   * Must exclude separators: ()<>@,;:\"/[]?={} and space/tab
+   */
+  private isTokenChar(char: string): boolean {
+    const code = char.charCodeAt(0);
+    // Basic ASCII range check
+    if (code < 33 || code > 126) return false;
+    // Exclude separator characters per RFC 2616
+    const separators = '()<>@,;:\\"/[]?={} \t';
+    return !separators.includes(char);
   }
 
   /**
@@ -41,12 +55,10 @@ export class S3StorageProvider implements StorageProvider {
       return 'attachment; filename="download"';
     }
 
+    // Create ASCII-safe version with only valid token characters
     const asciiSafe = sanitized
       .split("")
-      .filter((char) => {
-        const code = char.charCodeAt(0);
-        return code >= 32 && code <= 126;
-      })
+      .filter((char) => this.isTokenChar(char))
       .join("");
 
     if (asciiSafe && asciiSafe.trim()) {
@@ -109,5 +121,26 @@ export class S3StorageProvider implements StorageProvider {
     });
 
     await s3Client.send(command);
+  }
+
+  async fileExists(objectName: string): Promise<boolean> {
+    if (!s3Client) {
+      throw new Error("S3 client is not available");
+    }
+
+    try {
+      const command = new HeadObjectCommand({
+        Bucket: bucketName,
+        Key: objectName,
+      });
+
+      await s3Client.send(command);
+      return true;
+    } catch (error: any) {
+      if (error.name === "NotFound" || error.$metadata?.httpStatusCode === 404) {
+        return false;
+      }
+      throw error;
+    }
   }
 }

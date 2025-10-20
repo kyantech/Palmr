@@ -1056,7 +1056,8 @@
     "upload": {
       "metadata": {
         "title": "رفع الملفات - Palmr",
-        "description": "رفع الملفات عبر الرابط المشترك"
+        "description": "رفع الملفات عبر الرابط المشترك",
+        "descriptionWithLimit": "تحميل الملفات (الحد الأقصى {limit} ملفات)"
       },
       "layout": {
         "defaultTitle": "رفع الملفات",
@@ -1300,6 +1301,10 @@
       "passwordAuthEnabled": {
         "title": "المصادقة بالكلمة السرية",
         "description": "تمكين أو تعطيل المصادقة بالكلمة السرية"
+      },
+      "hideVersion": {
+        "title": "إخفاء الإصدار",
+        "description": "إخفاء إصدار Palmr في تذييل جميع الصفحات"
       }
     },
     "buttons": {
@@ -1361,7 +1366,11 @@
       "description": "قد يكون تم حذف هذه المشاركة أو انتهت صلاحيتها."
     },
     "pageTitle": "المشاركة",
-    "downloadAll": "تحميل الكل"
+    "downloadAll": "تحميل الكل",
+    "metadata": {
+      "defaultDescription": "مشاركة الملفات بشكل آمن",
+      "filesShared": "{count, plural, =1 {ملف واحد تمت مشاركته} other {# ملفات تمت مشاركتها}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "حذف المشاركة",

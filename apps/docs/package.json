@@ -1,6 +1,6 @@
 {
   "name": "palmr-docs",
-  "version": "3.2.3-beta",
+  "version": "3.2.4-beta",
   "description": "Docs for Palmr",
   "private": true,
   "author": "Daniel Luiz Alves <daniel@kyantech.com.br>",
@@ -13,7 +13,7 @@
     "react",
     "typescript"
   ],
-  "license": "BSD-2-Clause",
+  "license": "Apache-2.0",
   "packageManager": "pnpm@10.6.0",
   "scripts": {
     "build": "next build",

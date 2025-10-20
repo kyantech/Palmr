@@ -2,6 +2,7 @@ export interface StorageProvider {
   getPresignedPutUrl(objectName: string, expires: number): Promise<string>;
   getPresignedGetUrl(objectName: string, expires: number, fileName?: string): Promise<string>;
   deleteObject(objectName: string): Promise<void>;
+  fileExists(objectName: string): Promise<boolean>;
 }
 
 export interface StorageConfig {

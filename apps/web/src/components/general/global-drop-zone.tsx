@@ -243,8 +243,13 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalD
 
   const handlePaste = useCallback(
     (event: ClipboardEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
+      const target = event.target as HTMLElement;
+      const isInput = target.tagName === "INPUT" || target.tagName === "TEXTAREA";
+      const isPasswordInput = target.tagName === "INPUT" && (target as HTMLInputElement).type === "password";
+
+      if (isInput && !isPasswordInput) {
+        return;
+      }
 
       const items = event.clipboardData?.items;
       if (!items) return;
@@ -252,6 +257,9 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalD
       const imageItems = Array.from(items).filter((item) => item.type.startsWith("image/"));
 
       if (imageItems.length === 0) return;
+
+      event.preventDefault();
+      event.stopPropagation();
 
       const newUploads: FileUpload[] = [];
 

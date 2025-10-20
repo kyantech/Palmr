@@ -12,6 +12,20 @@ export class FilesystemController {
   private chunkManager = ChunkManager.getInstance();
   private memoryManager = DownloadMemoryManager.getInstance();
 
+  /**
+   * Check if a character is valid in an HTTP token (RFC 2616)
+   * Tokens can contain: alphanumeric and !#$%&'*+-.^_`|~
+   * Must exclude separators: ()<>@,;:\"/[]?={} and space/tab
+   */
+  private isTokenChar(char: string): boolean {
+    const code = char.charCodeAt(0);
+    // Basic ASCII range check
+    if (code < 33 || code > 126) return false;
+    // Exclude separator characters per RFC 2616
+    const separators = '()<>@,;:\\"/[]?={} \t';
+    return !separators.includes(char);
+  }
+
   private encodeFilenameForHeader(filename: string): string {
     if (!filename || filename.trim() === "") {
       return 'attachment; filename="download"';
@@ -36,12 +50,10 @@ export class FilesystemController {
       return 'attachment; filename="download"';
     }
 
+    // Create ASCII-safe version with only valid token characters
     const asciiSafe = sanitized
       .split("")
-      .filter((char) => {
-        const code = char.charCodeAt(0);
-        return code >= 32 && code <= 126;
-      })
+      .filter((char) => this.isTokenChar(char))
       .join("");
 
     if (asciiSafe && asciiSafe.trim()) {
@@ -110,11 +122,20 @@ export class FilesystemController {
     const totalChunks = request.headers["x-total-chunks"] as string;
     const chunkSize = request.headers["x-chunk-size"] as string;
     const totalSize = request.headers["x-total-size"] as string;
-    const fileName = request.headers["x-file-name"] as string;
+    const encodedFileName = request.headers["x-file-name"] as string;
     const isLastChunk = request.headers["x-is-last-chunk"] as string;
 
-    if (!fileId || !chunkIndex || !totalChunks || !chunkSize || !totalSize || !fileName) {
+    if (!fileId || !chunkIndex || !totalChunks || !chunkSize || !totalSize || !encodedFileName) {
       return null;
+    }
+
+    // Decode the base64-encoded filename to handle UTF-8 characters
+    let fileName: string;
+    try {
+      fileName = decodeURIComponent(escape(Buffer.from(encodedFileName, "base64").toString("binary")));
+    } catch (error) {
+      // Fallback to the encoded value if decoding fails (for backward compatibility)
+      fileName = encodedFileName;
     }
 
     const metadata = {
@@ -182,6 +203,17 @@ export class FilesystemController {
       }
 
       const filePath = provider.getFilePath(tokenData.objectName);
+
+      const fileExists = await provider.fileExists(tokenData.objectName);
+      if (!fileExists) {
+        console.error(`[DOWNLOAD] File not found: ${tokenData.objectName}`);
+        return reply.status(404).send({
+          error: "File not found",
+          message:
+            "The requested file does not exist on the server. It may have been deleted or the upload was incomplete.",
+        });
+      }
+
       const stats = await fs.promises.stat(filePath);
       const fileSize = stats.size;
       const fileName = tokenData.fileName || "download";

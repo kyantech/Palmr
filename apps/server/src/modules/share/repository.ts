@@ -17,6 +17,9 @@ export interface IShareRepository {
   findShareBySecurityId(
     securityId: string
   ): Promise<(Share & { security: ShareSecurity; files: any[]; folders: any[] }) | null>;
+  findShareByAlias(
+    alias: string
+  ): Promise<(Share & { security: ShareSecurity; files: any[]; folders: any[]; recipients: any[] }) | null>;
   updateShare(id: string, data: Partial<Share>): Promise<Share>;
   updateShareSecurity(id: string, data: Partial<ShareSecurity>): Promise<ShareSecurity>;
   deleteShare(id: string): Promise<Share>;
@@ -128,6 +131,41 @@ export class PrismaShareRepository implements IShareRepository {
         },
       },
     });
+  }
+
+  async findShareByAlias(alias: string) {
+    const shareAlias = await prisma.shareAlias.findUnique({
+      where: { alias },
+      include: {
+        share: {
+          include: {
+            security: true,
+            files: true,
+            folders: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                objectName: true,
+                parentId: true,
+                userId: true,
+                createdAt: true,
+                updatedAt: true,
+                _count: {
+                  select: {
+                    files: true,
+                    children: true,
+                  },
+                },
+              },
+            },
+            recipients: true,
+          },
+        },
+      },
+    });
+
+    return shareAlias?.share || null;
   }
 
   async updateShare(id: string, data: Partial<Share>): Promise<Share> {

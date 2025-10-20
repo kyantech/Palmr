@@ -15,13 +15,13 @@ export function RecentFiles({ files, fileManager, onOpenUploadModal }: RecentFil
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <CardTitle className="text-xl font-semibold flex items-center gap-2">
             <IconCloudUpload className="text-xl text-gray-500" />
             {t("recentFiles.title")}
           </CardTitle>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <Button
               className="font-semibold text-sm cursor-pointer"
               variant="outline"

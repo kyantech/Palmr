@@ -1056,7 +1056,8 @@
     "upload": {
       "metadata": {
         "title": "ファイルを送信 - Palmr",
-        "description": "共有リンクを通じてファイルを送信"
+        "description": "共有リンクを通じてファイルを送信",
+        "descriptionWithLimit": "ファイルをアップロード（最大{limit}ファイル）"
       },
       "layout": {
         "defaultTitle": "ファイルを送信",
@@ -1298,6 +1299,10 @@
       "passwordAuthEnabled": {
         "title": "パスワード認証",
         "description": "パスワード認証を有効または無効にする"
+      },
+      "hideVersion": {
+        "title": "バージョンを非表示",
+        "description": "すべてのページのフッターにあるPalmrバージョンを非表示にする"
       }
     },
     "buttons": {
@@ -1359,7 +1364,11 @@
       "description": "この共有は削除されたか、期限が切れている可能性があります。"
     },
     "pageTitle": "共有",
-    "downloadAll": "すべてダウンロード"
+    "downloadAll": "すべてダウンロード",
+    "metadata": {
+      "defaultDescription": "ファイルを安全に共有",
+      "filesShared": "{count, plural, =1 {1 ファイルが共有されました} other {# ファイルが共有されました}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "共有を削除",

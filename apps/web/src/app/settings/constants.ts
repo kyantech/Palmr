@@ -35,6 +35,7 @@ export const createFieldDescriptions = (t: ReturnType<typeof createTranslator>) 
   appName: t("settings.fields.appName.description"),
   appDescription: t("settings.fields.appDescription.description"),
   showHomePage: t("settings.fields.showHomePage.description"),
+  hideVersion: t("settings.fields.hideVersion.description"),
   firstUserAccess: t("settings.fields.firstUserAccess.description"),
   serverUrl: t("settings.fields.serverUrl.description"),
 
@@ -70,6 +71,7 @@ export const createFieldTitles = (t: ReturnType<typeof createTranslator>) => ({
   appName: t("settings.fields.appName.title"),
   appDescription: t("settings.fields.appDescription.title"),
   showHomePage: t("settings.fields.showHomePage.title"),
+  hideVersion: t("settings.fields.hideVersion.title"),
   firstUserAccess: t("settings.fields.firstUserAccess.title"),
   serverUrl: t("settings.fields.serverUrl.title"),
 

@@ -1056,7 +1056,8 @@
     "upload": {
       "metadata": {
         "title": "Dosya Gönder - Palmr",
-        "description": "Paylaşılan bağlantı üzerinden dosya gönderin"
+        "description": "Paylaşılan bağlantı üzerinden dosya gönderin",
+        "descriptionWithLimit": "Dosya yükle (maks. {limit} dosya)"
       },
       "layout": {
         "defaultTitle": "Dosya Gönder",
@@ -1298,6 +1299,10 @@
       "passwordAuthEnabled": {
         "title": "Şifre Doğrulama",
         "description": "Şifre tabanlı doğrulamayı etkinleştirme veya devre dışı bırakma"
+      },
+      "hideVersion": {
+        "title": "Sürümü Gizle",
+        "description": "Tüm sayfaların alt bilgisinde Palmr sürümünü gizle"
       }
     },
     "buttons": {
@@ -1359,7 +1364,11 @@
       "description": "Bu paylaşım silinmiş veya süresi dolmuş olabilir."
     },
     "pageTitle": "Paylaşım",
-    "downloadAll": "Tümünü İndir"
+    "downloadAll": "Tümünü İndir",
+    "metadata": {
+      "defaultDescription": "Dosyaları güvenli bir şekilde paylaşın",
+      "filesShared": "{count, plural, =1 {1 dosya paylaşıldı} other {# dosya paylaşıldı}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "Paylaşımı Sil",

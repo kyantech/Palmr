@@ -592,4 +592,32 @@ export async function reverseShareRoutes(app: FastifyInstance) {
     },
     reverseShareController.copyFileToUserFiles.bind(reverseShareController)
   );
+
+  app.get(
+    "/reverse-shares/alias/:alias/metadata",
+    {
+      schema: {
+        tags: ["Reverse Share"],
+        operationId: "getReverseShareMetadataByAlias",
+        summary: "Get reverse share metadata by alias for Open Graph",
+        description: "Get lightweight metadata for a reverse share by alias, used for social media previews",
+        params: z.object({
+          alias: z.string().describe("Alias of the reverse share"),
+        }),
+        response: {
+          200: z.object({
+            name: z.string().nullable(),
+            description: z.string().nullable(),
+            totalFiles: z.number(),
+            hasPassword: z.boolean(),
+            isExpired: z.boolean(),
+            isInactive: z.boolean(),
+            maxFiles: z.number().nullable(),
+          }),
+          404: z.object({ error: z.string() }),
+        },
+      },
+    },
+    reverseShareController.getReverseShareMetadataByAlias.bind(reverseShareController)
+  );
 }
