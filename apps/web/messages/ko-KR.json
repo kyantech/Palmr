@@ -1298,6 +1298,10 @@
       "passwordAuthEnabled": {
         "title": "비밀번호 인증",
         "description": "비밀번호 기반 인증 활성화 또는 비활성화"
+      },
+      "hideVersion": {
+        "title": "버전 숨기기",
+        "description": "모든 페이지의 바닥글에서 Palmr 버전 숨기기"
       }
     },
     "buttons": {

@@ -1298,6 +1298,10 @@
       "passwordAuthEnabled": {
         "title": "Passwort-Authentifizierung",
         "description": "Passwort-basierte Authentifizierung aktivieren oder deaktivieren"
+      },
+      "hideVersion": {
+        "title": "Version Ausblenden",
+        "description": "Die Palmr-Version in der Fußzeile aller Seiten ausblenden"
       }
     },
     "buttons": {

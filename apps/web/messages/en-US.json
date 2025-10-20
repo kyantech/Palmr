@@ -1211,6 +1211,10 @@
         "title": "Show Home Page",
         "description": "Show Home Page after installation"
       },
+      "hideVersion": {
+        "title": "Hide Version",
+        "description": "Hide the Palmr version from the footer on all pages"
+      },
       "smtpEnabled": {
         "title": "SMTP Enabled",
         "description": "Enable or disable SMTP email functionality"

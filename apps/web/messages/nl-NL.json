@@ -1298,6 +1298,10 @@
       "passwordAuthEnabled": {
         "title": "Wachtwoord Authenticatie",
         "description": "Wachtwoord-gebaseerde authenticatie inschakelen of uitschakelen"
+      },
+      "hideVersion": {
+        "title": "Versie Verbergen",
+        "description": "Verberg de Palmr-versie in de voettekst van alle pagina's"
       }
     },
     "buttons": {
