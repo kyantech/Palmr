@@ -2,7 +2,7 @@ import { prisma } from "../shared/prisma";
 
 /**
  * Generates a unique filename by checking for duplicates in the database
- * and appending a numeric suffix if necessary (e.g., file(1).txt, file(2).txt)
+ * and appending a numeric suffix if necessary (e.g., file (1).txt, file (2).txt)
  *
  * @param baseName - The original filename without extension
  * @param extension - The file extension
@@ -35,7 +35,7 @@ export async function generateUniqueFileName(
 
   // Find the next available suffix number
   let suffix = 1;
-  let uniqueName = `${baseName}(${suffix}).${extension}`;
+  let uniqueName = `${baseName} (${suffix}).${extension}`;
 
   while (true) {
     const duplicateFile = await prisma.file.findFirst({
@@ -51,13 +51,13 @@ export async function generateUniqueFileName(
     }
 
     suffix++;
-    uniqueName = `${baseName}(${suffix}).${extension}`;
+    uniqueName = `${baseName} (${suffix}).${extension}`;
   }
 }
 
 /**
  * Generates a unique filename for rename operations by checking for duplicates
- * and appending a numeric suffix if necessary (e.g., file(1).txt, file(2).txt)
+ * and appending a numeric suffix if necessary (e.g., file (1).txt, file (2).txt)
  *
  * @param baseName - The original filename without extension
  * @param extension - The file extension
@@ -93,7 +93,7 @@ export async function generateUniqueFileNameForRename(
 
   // Find the next available suffix number
   let suffix = 1;
-  let uniqueName = `${baseName}(${suffix}).${extension}`;
+  let uniqueName = `${baseName} (${suffix}).${extension}`;
 
   while (true) {
     const duplicateFile = await prisma.file.findFirst({
@@ -110,13 +110,13 @@ export async function generateUniqueFileNameForRename(
     }
 
     suffix++;
-    uniqueName = `${baseName}(${suffix}).${extension}`;
+    uniqueName = `${baseName} (${suffix}).${extension}`;
   }
 }
 
 /**
  * Generates a unique folder name by checking for duplicates in the database
- * and appending a numeric suffix if necessary (e.g., folder(1), folder(2))
+ * and appending a numeric suffix if necessary (e.g., folder (1), folder (2))
  *
  * @param name - The original folder name
  * @param userId - The user ID who owns the folder
@@ -156,7 +156,7 @@ export async function generateUniqueFolderName(
 
   // Find the next available suffix number
   let suffix = 1;
-  let uniqueName = `${name}(${suffix})`;
+  let uniqueName = `${name} (${suffix})`;
 
   while (true) {
     const whereClauseForSuffix: any = {
@@ -178,7 +178,7 @@ export async function generateUniqueFolderName(
     }
 
     suffix++;
-    uniqueName = `${name}(${suffix})`;
+    uniqueName = `${name} (${suffix})`;
   }
 }
 
