@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IconCheck, IconCopy } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
@@ -17,10 +17,20 @@ interface EmbedCodeDisplayProps {
 export function EmbedCodeDisplay({ imageUrl, fileName }: EmbedCodeDisplayProps) {
   const t = useTranslations();
   const [copiedType, setCopiedType] = useState<string | null>(null);
+  const [fullUrl, setFullUrl] = useState<string>("");
 
-  const directLink = imageUrl;
-  const htmlCode = `<img src="${imageUrl}" alt="${fileName}" />`;
-  const bbCode = `[img]${imageUrl}[/img]`;
+  useEffect(() => {
+    // Get the full URL with the current browser origin
+    if (typeof window !== "undefined") {
+      const origin = window.location.origin;
+      const url = imageUrl.startsWith("http") ? imageUrl : `${origin}${imageUrl}`;
+      setFullUrl(url);
+    }
+  }, [imageUrl]);
+
+  const directLink = fullUrl || imageUrl;
+  const htmlCode = `<img src="${directLink}" alt="${fileName}" />`;
+  const bbCode = `[img]${directLink}[/img]`;
 
   const copyToClipboard = async (text: string, type: string) => {
     try {
