@@ -1298,6 +1298,10 @@
       "passwordAuthEnabled": {
         "title": "パスワード認証",
         "description": "パスワード認証を有効または無効にする"
+      },
+      "hideVersion": {
+        "title": "バージョンを非表示",
+        "description": "すべてのページのフッターにあるPalmrバージョンを非表示にする"
       }
     },
     "buttons": {

@@ -1298,6 +1298,10 @@
       "passwordAuthEnabled": {
         "title": "Şifre Doğrulama",
         "description": "Şifre tabanlı doğrulamayı etkinleştirme veya devre dışı bırakma"
+      },
+      "hideVersion": {
+        "title": "Sürümü Gizle",
+        "description": "Tüm sayfaların alt bilgisinde Palmr sürümünü gizle"
       }
     },
     "buttons": {

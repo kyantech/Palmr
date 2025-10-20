@@ -1300,6 +1300,10 @@
       "passwordAuthEnabled": {
         "title": "المصادقة بالكلمة السرية",
         "description": "تمكين أو تعطيل المصادقة بالكلمة السرية"
+      },
+      "hideVersion": {
+        "title": "إخفاء الإصدار",
+        "description": "إخفاء إصدار Palmr في تذييل جميع الصفحات"
       }
     },
     "buttons": {
