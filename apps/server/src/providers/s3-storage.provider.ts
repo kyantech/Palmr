@@ -15,6 +15,20 @@ export class S3StorageProvider implements StorageProvider {
   }
 
   /**
+   * Check if a character is valid in an HTTP token (RFC 2616)
+   * Tokens can contain: alphanumeric and !#$%&'*+-.^_`|~
+   * Must exclude separators: ()<>@,;:\"/[]?={} and space/tab
+   */
+  private isTokenChar(char: string): boolean {
+    const code = char.charCodeAt(0);
+    // Basic ASCII range check
+    if (code < 33 || code > 126) return false;
+    // Exclude separator characters per RFC 2616
+    const separators = '()<>@,;:\\"/[]?={} \t';
+    return !separators.includes(char);
+  }
+
+  /**
    * Safely encode filename for Content-Disposition header
    */
   private encodeFilenameForHeader(filename: string): string {
@@ -41,12 +55,10 @@ export class S3StorageProvider implements StorageProvider {
       return 'attachment; filename="download"';
     }
 
+    // Create ASCII-safe version with only valid token characters
     const asciiSafe = sanitized
       .split("")
-      .filter((char) => {
-        const code = char.charCodeAt(0);
-        return code >= 32 && code <= 126;
-      })
+      .filter((char) => this.isTokenChar(char))
       .join("");
 
     if (asciiSafe && asciiSafe.trim()) {
