@@ -3,7 +3,11 @@ import { FastifyReply, FastifyRequest } from "fastify";
 
 import { env } from "../../env";
 import { prisma } from "../../shared/prisma";
-import { generateUniqueFileName, parseFileName } from "../../utils/file-name-generator";
+import {
+  generateUniqueFileName,
+  generateUniqueFileNameForRename,
+  parseFileName,
+} from "../../utils/file-name-generator";
 import { ConfigService } from "../config/service";
 import {
   CheckFileInput,
@@ -373,6 +377,13 @@ export class FileController {
 
       if (fileRecord.userId !== userId) {
         return reply.status(403).send({ error: "Access denied." });
+      }
+
+      // If renaming the file, check for duplicates and auto-rename if necessary
+      if (updateData.name && updateData.name !== fileRecord.name) {
+        const { baseName, extension } = parseFileName(updateData.name);
+        const uniqueName = await generateUniqueFileNameForRename(baseName, extension, userId, fileRecord.folderId, id);
+        updateData.name = uniqueName;
       }
 
       const updatedFile = await prisma.file.update({
