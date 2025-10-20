@@ -157,6 +157,10 @@ export class ChunkedUploader {
     url: string;
     signal?: AbortSignal;
   }): Promise<any> {
+    // Encode filename as base64 to handle UTF-8 characters in HTTP headers
+    // This prevents errors when setting headers with non-ASCII characters
+    const encodedFileName = btoa(unescape(encodeURIComponent(fileName)));
+
     const headers = {
       "Content-Type": "application/octet-stream",
       "X-File-Id": fileId,
@@ -164,7 +168,7 @@ export class ChunkedUploader {
       "X-Total-Chunks": totalChunks.toString(),
       "X-Chunk-Size": chunkSize.toString(),
       "X-Total-Size": totalSize.toString(),
-      "X-File-Name": fileName,
+      "X-File-Name": encodedFileName,
       "X-Is-Last-Chunk": isLastChunk.toString(),
     };
 
