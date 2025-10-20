@@ -440,4 +440,31 @@ export class ShareService {
       notifiedRecipients,
     };
   }
+
+  async getShareMetadataByAlias(alias: string) {
+    const share = await this.shareRepository.findShareByAlias(alias);
+    if (!share) {
+      throw new Error("Share not found");
+    }
+
+    // Check if share is expired
+    const isExpired = share.expiration && new Date(share.expiration) < new Date();
+
+    // Check if max views reached
+    const isMaxViewsReached = share.security.maxViews !== null && share.views >= share.security.maxViews;
+
+    const totalFiles = share.files?.length || 0;
+    const totalFolders = share.folders?.length || 0;
+    const hasPassword = !!share.security.password;
+
+    return {
+      name: share.name,
+      description: share.description,
+      totalFiles,
+      totalFolders,
+      hasPassword,
+      isExpired,
+      isMaxViewsReached,
+    };
+  }
 }
