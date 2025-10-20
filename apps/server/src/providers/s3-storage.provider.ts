@@ -1,4 +1,4 @@
-import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { bucketName, s3Client } from "../config/storage.config";
@@ -121,5 +121,26 @@ export class S3StorageProvider implements StorageProvider {
     });
 
     await s3Client.send(command);
+  }
+
+  async fileExists(objectName: string): Promise<boolean> {
+    if (!s3Client) {
+      throw new Error("S3 client is not available");
+    }
+
+    try {
+      const command = new HeadObjectCommand({
+        Bucket: bucketName,
+        Key: objectName,
+      });
+
+      await s3Client.send(command);
+      return true;
+    } catch (error: any) {
+      if (error.name === "NotFound" || error.$metadata?.httpStatusCode === 404) {
+        return false;
+      }
+      throw error;
+    }
   }
 }

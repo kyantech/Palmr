@@ -3,6 +3,11 @@ import { FastifyReply, FastifyRequest } from "fastify";
 
 import { env } from "../../env";
 import { prisma } from "../../shared/prisma";
+import {
+  generateUniqueFileName,
+  generateUniqueFileNameForRename,
+  parseFileName,
+} from "../../utils/file-name-generator";
 import { ConfigService } from "../config/service";
 import {
   CheckFileInput,
@@ -93,9 +98,13 @@ export class FileController {
         }
       }
 
+      // Parse the filename and generate a unique name if there's a duplicate
+      const { baseName, extension } = parseFileName(input.name);
+      const uniqueName = await generateUniqueFileName(baseName, extension, userId, input.folderId);
+
       const fileRecord = await prisma.file.create({
         data: {
-          name: input.name,
+          name: uniqueName,
           description: input.description,
           extension: input.extension,
           size: BigInt(input.size),
@@ -169,9 +178,20 @@ export class FileController {
         });
       }
 
-      return reply.status(201).send({
+      // Check for duplicate filename and provide the suggested unique name
+      const { baseName, extension } = parseFileName(input.name);
+      const uniqueName = await generateUniqueFileName(baseName, extension, userId, input.folderId);
+
+      // Include suggestedName in response if the name was changed
+      const response: any = {
         message: "File checks succeeded.",
-      });
+      };
+
+      if (uniqueName !== input.name) {
+        response.suggestedName = uniqueName;
+      }
+
+      return reply.status(201).send(response);
     } catch (error: any) {
       console.error("Error in checkFile:", error);
       return reply.status(400).send({ error: error.message });
@@ -357,6 +377,13 @@ export class FileController {
 
       if (fileRecord.userId !== userId) {
         return reply.status(403).send({ error: "Access denied." });
+      }
+
+      // If renaming the file, check for duplicates and auto-rename if necessary
+      if (updateData.name && updateData.name !== fileRecord.name) {
+        const { baseName, extension } = parseFileName(updateData.name);
+        const uniqueName = await generateUniqueFileNameForRename(baseName, extension, userId, fileRecord.folderId, id);
+        updateData.name = uniqueName;
       }
 
       const updatedFile = await prisma.file.update({

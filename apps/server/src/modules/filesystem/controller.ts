@@ -203,6 +203,17 @@ export class FilesystemController {
       }
 
       const filePath = provider.getFilePath(tokenData.objectName);
+
+      const fileExists = await provider.fileExists(tokenData.objectName);
+      if (!fileExists) {
+        console.error(`[DOWNLOAD] File not found: ${tokenData.objectName}`);
+        return reply.status(404).send({
+          error: "File not found",
+          message:
+            "The requested file does not exist on the server. It may have been deleted or the upload was incomplete.",
+        });
+      }
+
       const stats = await fs.promises.stat(filePath);
       const fileSize = stats.size;
       const fileName = tokenData.fileName || "download";
