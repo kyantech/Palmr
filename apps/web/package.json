@@ -1,6 +1,6 @@
 {
   "name": "palmr-web",
-  "version": "3.2.3-beta",
+  "version": "3.2.4-beta",
   "description": "Frontend for Palmr",
   "private": true,
   "author": "Daniel Luiz Alves <daniel@kyantech.com.br>",

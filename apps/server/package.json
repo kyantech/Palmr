@@ -1,6 +1,6 @@
 {
   "name": "palmr-api",
-  "version": "3.2.3-beta",
+  "version": "3.2.4-beta",
   "description": "API for Palmr",
   "private": true,
   "author": "Daniel Luiz Alves <daniel@kyantech.com.br>",
