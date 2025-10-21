@@ -900,16 +900,7 @@ export function ReceivedFilesModal({
       </Dialog>
 
       {previewFile && (
-        <ReverseShareFilePreviewModal
-          isOpen={!!previewFile}
-          onClose={() => setPreviewFile(null)}
-          file={{
-            id: previewFile.id,
-            name: previewFile.name,
-            objectName: previewFile.objectName,
-            extension: previewFile.extension,
-          }}
-        />
+        <ReverseShareFilePreviewModal isOpen={!!previewFile} onClose={() => setPreviewFile(null)} file={previewFile} />
       )}
     </>
   );

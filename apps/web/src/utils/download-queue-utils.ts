@@ -21,8 +21,7 @@ async function waitForDownloadReady(objectName: string, fileName: string): Promi
 
   while (attempts < maxAttempts) {
     try {
-      const encodedObjectName = encodeURIComponent(objectName);
-      const response = await getDownloadUrl(encodedObjectName);
+      const response = await getDownloadUrl(objectName);
 
       if (response.status !== 202) {
         return response.data.url;
@@ -98,13 +97,12 @@ export async function downloadFileWithQueue(
       options.onStart?.(downloadId);
     }
 
-    const encodedObjectName = encodeURIComponent(objectName);
-
+    // getDownloadUrl already handles encoding
     const params: Record<string, string> = {};
     if (sharePassword) params.password = sharePassword;
 
     const response = await getDownloadUrl(
-      encodedObjectName,
+      objectName,
       Object.keys(params).length > 0
         ? {
             params: { ...params },
@@ -208,13 +206,12 @@ export async function downloadFileAsBlobWithQueue(
         downloadUrl = response.data.url;
       }
     } else {
-      const encodedObjectName = encodeURIComponent(objectName);
-
+      // getDownloadUrl already handles encoding
       const params: Record<string, string> = {};
       if (sharePassword) params.password = sharePassword;
 
       const response = await getDownloadUrl(
-        encodedObjectName,
+        objectName,
         Object.keys(params).length > 0
           ? {
               params: { ...params },

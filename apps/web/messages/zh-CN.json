@@ -302,6 +302,7 @@
   },
   "filePreview": {
     "title": "文件预览",
+    "description": "预览和下载文件",
     "loading": "加载中...",
     "notAvailable": "此文件类型不支持预览。",
     "downloadToView": "使用下载按钮下载文件。",

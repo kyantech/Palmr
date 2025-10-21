@@ -4,7 +4,14 @@ import { IconDownload } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useFilePreview } from "@/hooks/use-file-preview";
 import { getFileIcon } from "@/utils/file-icons";
 import { FilePreviewRenderer } from "./previews";
@@ -44,6 +51,7 @@ export function FilePreviewModal({
             })()}
             <span className="truncate">{file.name}</span>
           </DialogTitle>
+          <DialogDescription className="sr-only">{t("filePreview.description")}</DialogDescription>
         </DialogHeader>
         <div className="flex-1 overflow-auto">
           <FilePreviewRenderer
