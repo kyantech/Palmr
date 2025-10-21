@@ -617,6 +617,11 @@ export class AuthProvidersService {
       return await this.linkProviderToExistingUser(existingUser, provider.id, String(externalId), userInfo);
     }
 
+    // Check if auto-registration is disabled
+    if (provider.autoRegister === false) {
+      throw new Error(`User registration via ${provider.displayName || provider.name} is disabled`);
+    }
+
     return await this.createNewUserWithProvider(userInfo, provider.id, String(externalId));
   }
 
