@@ -1660,7 +1660,10 @@
     "toggle": "Thema wisselen",
     "light": "Licht",
     "dark": "Donker",
-    "system": "Systeem"
+    "system": "Systeem",
+    "lightDescription": "Altijd lichte modus",
+    "darkDescription": "Altijd donkere modus",
+    "systemDescription": "Systeemvoorkeur volgen"
   },
   "twoFactor": {
     "title": "Twee-Factor Authenticatie",

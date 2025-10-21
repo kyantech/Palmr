@@ -1660,7 +1660,10 @@
     "toggle": "थीम टॉगल करें",
     "light": "लाइट",
     "dark": "डार्क",
-    "system": "सिस्टम"
+    "system": "सिस्टम",
+    "lightDescription": "हमेशा लाइट मोड",
+    "darkDescription": "हमेशा डार्क मोड",
+    "systemDescription": "सिस्टम प्राथमिकता का पालन करें"
   },
   "twoFactor": {
     "title": "दो-कारक प्रमाणीकरण",
