@@ -150,7 +150,9 @@
     "move": "Mover",
     "rename": "Renomear",
     "search": "Pesquisar",
-    "share": "Compartilhar"
+    "share": "Compartilhar",
+    "copied": "Copiado",
+    "copy": "Copiar"
   },
   "createShare": {
     "title": "Criar compartilhamento",
@@ -1932,5 +1934,17 @@
     "lastNameRequired": "O sobrenome é necessário",
     "usernameLength": "O nome de usuário deve ter pelo menos 3 caracteres",
     "usernameSpaces": "O nome de usuário não pode conter espaços"
+  },
+  "embedCode": {
+    "title": "Incorporar imagem",
+    "description": "Use estes códigos para incorporar esta imagem em fóruns, sites ou outras plataformas",
+    "tabs": {
+      "directLink": "Link direto",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "URL direto para o arquivo de imagem",
+    "htmlDescription": "Use este código para incorporar a imagem em páginas HTML",
+    "bbcodeDescription": "Use este código para incorporar a imagem em fóruns que suportam BBCode"
   }
 }

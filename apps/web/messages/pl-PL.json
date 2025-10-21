@@ -150,7 +150,9 @@
     "move": "Przenieś",
     "rename": "Zmień nazwę",
     "search": "Szukaj",
-    "share": "Udostępnij"
+    "share": "Udostępnij",
+    "copied": "Skopiowano",
+    "copy": "Kopiuj"
   },
   "createShare": {
     "title": "Utwórz Udostępnienie",
@@ -1931,5 +1933,17 @@
     "passwordMinLength": "Hasło musi mieć co najmniej 6 znaków",
     "nameRequired": "Nazwa jest wymagana",
     "required": "To pole jest wymagane"
+  },
+  "embedCode": {
+    "title": "Osadź obraz",
+    "description": "Użyj tych kodów, aby osadzić ten obraz na forach, stronach internetowych lub innych platformach",
+    "tabs": {
+      "directLink": "Link bezpośredni",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "Bezpośredni adres URL pliku obrazu",
+    "htmlDescription": "Użyj tego kodu, aby osadzić obraz na stronach HTML",
+    "bbcodeDescription": "Użyj tego kodu, aby osadzić obraz na forach obsługujących BBCode"
   }
 }
