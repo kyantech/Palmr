@@ -124,7 +124,7 @@ export class AuthProvidersController {
     reply.setCookie("token", token, {
       httpOnly: true,
       secure: isSecure,
-      sameSite: "lax",
+      sameSite: isSecure ? "none" : "lax",
       maxAge: COOKIE_MAX_AGE,
       path: "/",
     });
