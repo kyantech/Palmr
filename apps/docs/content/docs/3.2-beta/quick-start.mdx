@@ -67,7 +67,7 @@ Choose your storage method based on your needs:
           # - ENCRYPTION_KEY=your-secure-key-min-32-chars # Required only if encryption is enabled
           # - PALMR_UID=1000 # UID for the container processes (default is 1000)
           # - PALMR_GID=1000 # GID for the container processes (default is 1000)
-          # - SECURE_SITE=false # Set to true if you are using a reverse proxy
+          # - SECURE_SITE=false # Set to true for HTTPS/reverse proxy (enables cross-origin cookies for Safari)
           # - DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US)
           # - PRESIGNED_URL_EXPIRATION=3600 # Duration in seconds for presigned URL expiration (optional, defaults to 3600 seconds / 1 hour)
           # - DOWNLOAD_MAX_CONCURRENT=5 # Maximum simultaneous downloads (auto-scales if not set)
@@ -122,7 +122,7 @@ Choose your storage method based on your needs:
           # - ENCRYPTION_KEY=your-secure-key-min-32-chars # Required only if encryption is enabled
           # - PALMR_UID=1000 # UID for the container processes (default is 1000)
           # - PALMR_GID=1000 # GID for the container processes (default is 1000)
-          # - SECURE_SITE=false # Set to true if you are using a reverse proxy
+          # - SECURE_SITE=false # Set to true for HTTPS/reverse proxy (enables cross-origin cookies for Safari)
           # - DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US)
           # - PRESIGNED_URL_EXPIRATION=3600 # Duration in seconds for presigned URL expiration (optional, defaults to 3600 seconds / 1 hour)
           # - DOWNLOAD_MAX_CONCURRENT=5 # Maximum simultaneous downloads (auto-scales if not set)
@@ -168,7 +168,7 @@ Customize Palmr's behavior with these environment variables:
 | `DISABLE_FILESYSTEM_ENCRYPTION`    | `true`         | Disable file encryption for better performance (set to `false` to enable encryption)                                                  |
 | `PRESIGNED_URL_EXPIRATION`         | `3600`         | Duration in seconds for presigned URL expiration (applies to both filesystem and S3 storage)                                          |
 | `CUSTOM_PATH`                      | -              | Custom base path for disk space detection in manual installations with symlinks                                                       |
-| `SECURE_SITE`                      | `false`        | Enable secure cookies for HTTPS/reverse proxy deployments                                                                             |
+| `SECURE_SITE`                      | `false`        | Enable secure cookies for HTTPS/reverse proxy deployments. Required for Safari cross-site tracking compatibility when frontend and backend are on different domains |
 | `DEFAULT_LANGUAGE`                 | `en-US`        | Default application language ([see available languages](/docs/3.2-beta/available-languages))                                          |
 | `PALMR_UID`                        | `1000`         | User ID for container processes (helps with file permissions)                                                                         |
 | `PALMR_GID`                        | `1000`         | Group ID for container processes (helps with file permissions)                                                                        |
@@ -238,7 +238,7 @@ Prefer Docker commands over Compose? Here are the equivalent commands:
       # -e ENCRYPTION_KEY=your-secure-key-min-32-chars # Required only if encryption is enabled
       # -e PALMR_UID=1000 # UID for the container processes (default is 1000)
       # -e PALMR_GID=1000 # GID for the container processes (default is 1000)
-      # -e SECURE_SITE=false # Set to true if you are using a reverse proxy
+      # -e SECURE_SITE=false # Set to true for HTTPS/reverse proxy (enables cross-origin cookies for Safari)
       # -e DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US)
       -p 5487:5487 \
       -p 3333:3333 \
@@ -265,7 +265,7 @@ Prefer Docker commands over Compose? Here are the equivalent commands:
       # -e ENCRYPTION_KEY=your-secure-key-min-32-chars # Required only if encryption is enabled
       # -e PALMR_UID=1000 # UID for the container processes (default is 1000)
       # -e PALMR_GID=1000 # GID for the container processes (default is 1000)
-      # -e SECURE_SITE=false # Set to true if you are using a reverse proxy
+      # -e SECURE_SITE=false # Set to true for HTTPS/reverse proxy (enables cross-origin cookies for Safari)
       # -e DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US)
       -p 5487:5487 \
       -p 3333:3333 \
