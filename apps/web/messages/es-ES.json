@@ -1944,7 +1944,6 @@
     },
     "directLinkDescription": "URL directa al archivo de imagen",
     "htmlDescription": "Utiliza este código para insertar la imagen en páginas HTML",
-    "bbcodeDescription": "Utiliza este código para insertar la imagen en foros que admiten BBCode",
-    "urlNote": "Nota: Esta URL puede caducar después de un tiempo. Regenera si es necesario."
+    "bbcodeDescription": "Utiliza este código para insertar la imagen en foros que admiten BBCode"
   }
 }

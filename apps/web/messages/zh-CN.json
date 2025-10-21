@@ -1944,7 +1944,6 @@
     },
     "directLinkDescription": "图片文件的直接URL",
     "htmlDescription": "使用此代码将图片嵌入HTML页面",
-    "bbcodeDescription": "使用此代码将图片嵌入支持BBCode的论坛",
-    "urlNote": "注意：此URL可能会在一段时间后过期。如有需要请重新生成。"
+    "bbcodeDescription": "使用此代码将图片嵌入支持BBCode的论坛"
   }
 }

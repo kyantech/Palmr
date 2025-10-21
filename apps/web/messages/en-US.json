@@ -1894,8 +1894,7 @@
     },
     "directLinkDescription": "Direct URL to the image file",
     "htmlDescription": "Use this code to embed the image in HTML pages",
-    "bbcodeDescription": "Use this code to embed the image in forums that support BBCode",
-    "urlNote": "Note: This URL may expire after some time. Regenerate if needed."
+    "bbcodeDescription": "Use this code to embed the image in forums that support BBCode"
   },
   "validation": {
     "firstNameRequired": "First name is required",

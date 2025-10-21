@@ -1944,7 +1944,6 @@
     },
     "directLinkDescription": "Resim dosyasının doğrudan URL'si",
     "htmlDescription": "Resmi HTML sayfalarına yerleştirmek için bu kodu kullanın",
-    "bbcodeDescription": "BBCode destekleyen forumlara resmi yerleştirmek için bu kodu kullanın",
-    "urlNote": "Not: Bu URL bir süre sonra sona erebilir. Gerekirse yeniden oluşturun."
+    "bbcodeDescription": "BBCode destekleyen forumlara resmi yerleştirmek için bu kodu kullanın"
   }
 }

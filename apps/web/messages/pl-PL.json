@@ -1944,7 +1944,6 @@
     },
     "directLinkDescription": "Bezpośredni adres URL pliku obrazu",
     "htmlDescription": "Użyj tego kodu, aby osadzić obraz na stronach HTML",
-    "bbcodeDescription": "Użyj tego kodu, aby osadzić obraz na forach obsługujących BBCode",
-    "urlNote": "Uwaga: Ten adres URL może wygasnąć po pewnym czasie. W razie potrzeby wygeneruj go ponownie."
+    "bbcodeDescription": "Użyj tego kodu, aby osadzić obraz na forach obsługujących BBCode"
   }
 }

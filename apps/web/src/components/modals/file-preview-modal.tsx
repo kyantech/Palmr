@@ -72,7 +72,7 @@ export function FilePreviewModal({
             onDownload={previewState.handleDownload}
           />
           {isImage && previewState.previewUrl && !previewState.isLoading && (
-            <div className="mt-4">
+            <div className="mt-4 mb-2">
               <EmbedCodeDisplay imageUrl={previewState.previewUrl} fileName={file.name} />
             </div>
           )}

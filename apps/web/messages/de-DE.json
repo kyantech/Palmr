@@ -1944,7 +1944,6 @@
     },
     "directLinkDescription": "Direkte URL zur Bilddatei",
     "htmlDescription": "Verwenden Sie diesen Code, um das Bild in HTML-Seiten einzubetten",
-    "bbcodeDescription": "Verwenden Sie diesen Code, um das Bild in Foren einzubetten, die BBCode unterstützen",
-    "urlNote": "Hinweis: Diese URL kann nach einiger Zeit ablaufen. Generieren Sie sie bei Bedarf neu."
+    "bbcodeDescription": "Verwenden Sie diesen Code, um das Bild in Foren einzubetten, die BBCode unterstützen"
   }
 }

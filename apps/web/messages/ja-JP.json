@@ -1944,7 +1944,6 @@
     },
     "directLinkDescription": "画像ファイルへの直接URL",
     "htmlDescription": "このコードを使用してHTMLページに画像を埋め込みます",
-    "bbcodeDescription": "BBCodeをサポートするフォーラムに画像を埋め込むには、このコードを使用します",
-    "urlNote": "注：このURLはしばらくすると期限切れになる場合があります。必要に応じて再生成してください。"
+    "bbcodeDescription": "BBCodeをサポートするフォーラムに画像を埋め込むには、このコードを使用します"
   }
 }

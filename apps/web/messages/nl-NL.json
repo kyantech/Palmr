@@ -1944,7 +1944,6 @@
     },
     "directLinkDescription": "Directe URL naar het afbeeldingsbestand",
     "htmlDescription": "Gebruik deze code om de afbeelding in te sluiten in HTML-pagina's",
-    "bbcodeDescription": "Gebruik deze code om de afbeelding in te sluiten in forums die BBCode ondersteunen",
-    "urlNote": "Let op: Deze URL kan na enige tijd verlopen. Genereer indien nodig opnieuw."
+    "bbcodeDescription": "Gebruik deze code om de afbeelding in te sluiten in forums die BBCode ondersteunen"
   }
 }

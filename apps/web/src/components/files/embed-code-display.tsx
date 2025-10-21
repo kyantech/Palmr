@@ -44,7 +44,7 @@ export function EmbedCodeDisplay({ imageUrl, fileName }: EmbedCodeDisplayProps) 
 
   return (
     <Card>
-      <CardContent className="pt-6">
+      <CardContent>
         <div className="space-y-4">
           <div>
             <Label className="text-sm font-semibold">{t("embedCode.title")}</Label>
@@ -53,9 +53,15 @@ export function EmbedCodeDisplay({ imageUrl, fileName }: EmbedCodeDisplayProps) 
 
           <Tabs defaultValue="direct" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="direct">{t("embedCode.tabs.directLink")}</TabsTrigger>
-              <TabsTrigger value="html">{t("embedCode.tabs.html")}</TabsTrigger>
-              <TabsTrigger value="bbcode">{t("embedCode.tabs.bbcode")}</TabsTrigger>
+              <TabsTrigger value="direct" className="cursor-pointer">
+                {t("embedCode.tabs.directLink")}
+              </TabsTrigger>
+              <TabsTrigger value="html" className="cursor-pointer">
+                {t("embedCode.tabs.html")}
+              </TabsTrigger>
+              <TabsTrigger value="bbcode" className="cursor-pointer">
+                {t("embedCode.tabs.bbcode")}
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="direct" className="space-y-2">
@@ -67,10 +73,10 @@ export function EmbedCodeDisplay({ imageUrl, fileName }: EmbedCodeDisplayProps) 
                   className="flex-1 px-3 py-2 text-sm border rounded-md bg-muted/50 font-mono"
                 />
                 <Button
-                  size="sm"
+                  size="default"
                   variant="outline"
                   onClick={() => copyToClipboard(directLink, "direct")}
-                  className="shrink-0"
+                  className="shrink-0 h-full"
                 >
                   {copiedType === "direct" ? (
                     <>
@@ -86,7 +92,6 @@ export function EmbedCodeDisplay({ imageUrl, fileName }: EmbedCodeDisplayProps) 
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">{t("embedCode.directLinkDescription")}</p>
-              <p className="text-xs text-amber-600 dark:text-amber-500">{t("embedCode.urlNote")}</p>
             </TabsContent>
 
             <TabsContent value="html" className="space-y-2">
@@ -97,12 +102,7 @@ export function EmbedCodeDisplay({ imageUrl, fileName }: EmbedCodeDisplayProps) 
                   value={htmlCode}
                   className="flex-1 px-3 py-2 text-sm border rounded-md bg-muted/50 font-mono"
                 />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => copyToClipboard(htmlCode, "html")}
-                  className="shrink-0"
-                >
+                <Button variant="outline" onClick={() => copyToClipboard(htmlCode, "html")} className="shrink-0 h-full">
                   {copiedType === "html" ? (
                     <>
                       <IconCheck className="h-4 w-4 mr-1" />
@@ -127,12 +127,7 @@ export function EmbedCodeDisplay({ imageUrl, fileName }: EmbedCodeDisplayProps) 
                   value={bbCode}
                   className="flex-1 px-3 py-2 text-sm border rounded-md bg-muted/50 font-mono"
                 />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => copyToClipboard(bbCode, "bbcode")}
-                  className="shrink-0"
-                >
+                <Button variant="outline" onClick={() => copyToClipboard(bbCode, "bbcode")} className="shrink-0 h-full">
                   {copiedType === "bbcode" ? (
                     <>
                       <IconCheck className="h-4 w-4 mr-1" />
