@@ -139,6 +139,19 @@ export interface CreateShareBody {
   recipients?: string[];
 }
 
+export interface CreateShareWithFilesBody {
+  name?: string;
+  description?: string;
+  expiration?: string;
+  existingFiles?: string[];
+  existingFolders?: string[];
+  password?: string;
+  maxViews?: number | null;
+  recipients?: string[];
+  folderId?: string | null;
+  newFiles?: File[];
+}
+
 export interface UpdateShareBody {
   id: string;
   name?: string;
@@ -186,6 +199,7 @@ export interface GetShareByAliasParams {
 }
 
 export type CreateShareResult = AxiosResponse<CreateShare201>;
+export type CreateShareWithFilesResult = AxiosResponse<CreateShare201>;
 export type UpdateShareResult = AxiosResponse<UpdateShare200>;
 export type ListUserSharesResult = AxiosResponse<ListUserShares200>;
 export type GetShareResult = AxiosResponse<GetShare200>;

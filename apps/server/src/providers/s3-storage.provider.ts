@@ -143,4 +143,18 @@ export class S3StorageProvider implements StorageProvider {
       throw error;
     }
   }
+
+  async uploadFile(objectName: string, buffer: Buffer): Promise<void> {
+    if (!s3Client) {
+      throw new Error("S3 client is not available");
+    }
+
+    const command = new PutObjectCommand({
+      Bucket: bucketName,
+      Key: objectName,
+      Body: buffer,
+    });
+
+    await s3Client.send(command);
+  }
 }
