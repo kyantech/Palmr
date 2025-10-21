@@ -194,6 +194,45 @@ docker exec palmr stat /app/server/uploads/your-file.txt
 
 See our [OIDC Configuration Guide](/docs/3.0-beta/oidc-authentication) for detailed setup.
 
+### Safari: Images Don't Render and Downloads Are Corrupted
+
+**Symptoms:**
+- Images show as broken/loading icon in Safari
+- Downloaded files are corrupted
+- Works fine on localhost but fails on production domain
+- Only affects Safari with "Cross-Site Tracking Prevention" enabled
+
+**Cause:**
+Safari blocks cookies when the frontend and backend are on different domains/subdomains due to Cross-Site Tracking prevention.
+
+**Solution:**
+
+1. **Enable secure cookies in your server `.env`:**
+
+   ```bash
+   SECURE_SITE=true
+   ```
+
+2. **Ensure HTTPS is enabled:**
+   
+   The `sameSite: none` cookie attribute requires HTTPS. Make sure your reverse proxy (nginx, Traefik, etc.) is configured with SSL/TLS.
+
+3. **Restart the server:**
+
+   ```bash
+   docker-compose down && docker-compose up -d
+   ```
+
+**Verification:**
+
+- Check browser dev tools → Application → Cookies
+- Look for the `token` cookie with:
+  - ✅ `Secure` flag enabled
+  - ✅ `SameSite=None`
+  - ✅ `HttpOnly` flag enabled
+
+> **💡 Note**: This requires HTTPS. If using HTTP in development, keep `SECURE_SITE=false`.
+
 ---
 
 ## 🌐 Network Issues

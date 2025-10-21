@@ -12,7 +12,7 @@ services:
       # - PALMR_GID=1000 # GID for the container processes (OPTIONAL - default is 1000) | See our UID/GID Documentation for more information
       # - DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US) | See the docs to see all supported languages
       # - PRESIGNED_URL_EXPIRATION=3600 # Duration in seconds for presigned URL expiration (OPTIONAL - default is 3600 seconds / 1 hour)
-      # - SECURE_SITE=true # Set to true if you are using a reverse proxy (OPTIONAL - default is false)
+      # - SECURE_SITE=true # Set to true for HTTPS/reverse proxy deployments. Enables cross-origin cookies for Safari compatibility (OPTIONAL - default is false)
 
       # Download Memory Management Configuration (OPTIONAL - See documentation for details)
       # - DOWNLOAD_MAX_CONCURRENT=5 # Maximum number of simultaneous downloads (OPTIONAL - auto-scales based on system memory if not set)

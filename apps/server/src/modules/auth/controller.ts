@@ -44,7 +44,7 @@ export class AuthController {
         httpOnly: true,
         path: "/",
         secure: env.SECURE_SITE === "true" ? true : false,
-        sameSite: env.SECURE_SITE === "true" ? "lax" : "strict",
+        sameSite: env.SECURE_SITE === "true" ? "none" : "lax",
       });
 
       return reply.send({ user });
@@ -74,7 +74,7 @@ export class AuthController {
         httpOnly: true,
         path: "/",
         secure: env.SECURE_SITE === "true" ? true : false,
-        sameSite: env.SECURE_SITE === "true" ? "lax" : "strict",
+        sameSite: env.SECURE_SITE === "true" ? "none" : "lax",
       });
 
       return reply.send({ user });
