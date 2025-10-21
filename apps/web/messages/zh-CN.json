@@ -304,6 +304,7 @@
   },
   "filePreview": {
     "title": "文件预览",
+    "description": "预览和下载文件",
     "loading": "加载中...",
     "notAvailable": "此文件类型不支持预览。",
     "downloadToView": "使用下载按钮下载文件。",
@@ -1058,7 +1059,8 @@
     "upload": {
       "metadata": {
         "title": "上传文件 - Palmr",
-        "description": "通过共享链接上传文件"
+        "description": "通过共享链接上传文件",
+        "descriptionWithLimit": "上传文件（最多 {limit} 个文件）"
       },
       "layout": {
         "defaultTitle": "上传文件",
@@ -1300,6 +1302,10 @@
       "passwordAuthEnabled": {
         "title": "密码认证",
         "description": "启用或禁用基于密码的认证"
+      },
+      "hideVersion": {
+        "title": "隐藏版本",
+        "description": "在所有页面的页脚中隐藏Palmr版本"
       }
     },
     "buttons": {
@@ -1361,7 +1367,11 @@
       "description": "该共享可能已被删除或已过期。"
     },
     "pageTitle": "共享",
-    "downloadAll": "下载所有"
+    "downloadAll": "下载所有",
+    "metadata": {
+      "defaultDescription": "安全共享文件",
+      "filesShared": "{count, plural, =1 {已共享 1 个文件} other {已共享 # 个文件}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "删除共享",

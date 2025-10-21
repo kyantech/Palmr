@@ -295,4 +295,17 @@ export class ShareController {
       return reply.status(400).send({ error: error.message });
     }
   }
+
+  async getShareMetadataByAlias(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { alias } = request.params as { alias: string };
+      const metadata = await this.shareService.getShareMetadataByAlias(alias);
+      return reply.send(metadata);
+    } catch (error: any) {
+      if (error.message === "Share not found") {
+        return reply.status(404).send({ error: error.message });
+      }
+      return reply.status(400).send({ error: error.message });
+    }
+  }
 }

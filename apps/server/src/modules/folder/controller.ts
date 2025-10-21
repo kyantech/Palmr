@@ -35,21 +35,13 @@ export class FolderController {
         }
       }
 
-      const existingFolder = await prisma.folder.findFirst({
-        where: {
-          name: input.name,
-          parentId: input.parentId || null,
-          userId,
-        },
-      });
-
-      if (existingFolder) {
-        return reply.status(400).send({ error: "A folder with this name already exists in this location" });
-      }
+      // Check for duplicates and auto-rename if necessary
+      const { generateUniqueFolderName } = await import("../../utils/file-name-generator.js");
+      const uniqueName = await generateUniqueFolderName(input.name, userId, input.parentId);
 
       const folderRecord = await prisma.folder.create({
         data: {
-          name: input.name,
+          name: uniqueName,
           description: input.description,
           objectName: input.objectName,
           parentId: input.parentId,
@@ -231,19 +223,11 @@ export class FolderController {
         return reply.status(403).send({ error: "Access denied." });
       }
 
+      // If renaming the folder, check for duplicates and auto-rename if necessary
       if (updateData.name && updateData.name !== folderRecord.name) {
-        const duplicateFolder = await prisma.folder.findFirst({
-          where: {
-            name: updateData.name,
-            parentId: folderRecord.parentId,
-            userId,
-            id: { not: id },
-          },
-        });
-
-        if (duplicateFolder) {
-          return reply.status(400).send({ error: "A folder with this name already exists in this location" });
-        }
+        const { generateUniqueFolderName } = await import("../../utils/file-name-generator.js");
+        const uniqueName = await generateUniqueFolderName(updateData.name, userId, folderRecord.parentId, id);
+        updateData.name = uniqueName;
       }
 
       const updatedFolder = await prisma.folder.update({

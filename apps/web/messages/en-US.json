@@ -304,6 +304,7 @@
   },
   "filePreview": {
     "title": "Preview File",
+    "description": "Preview and download file",
     "loading": "Loading...",
     "notAvailable": "Preview not available for this file type",
     "downloadToView": "Use the download button to view this file",
@@ -1059,7 +1060,8 @@
     "upload": {
       "metadata": {
         "title": "Send Files - Palmr",
-        "description": "Send files through the shared link"
+        "description": "Send files through the shared link",
+        "descriptionWithLimit": "Upload files (max {limit} files)"
       },
       "layout": {
         "defaultTitle": "Send Files",
@@ -1213,6 +1215,10 @@
         "title": "Show Home Page",
         "description": "Show Home Page after installation"
       },
+      "hideVersion": {
+        "title": "Hide Version",
+        "description": "Hide the Palmr version from the footer on all pages"
+      },
       "smtpEnabled": {
         "title": "SMTP Enabled",
         "description": "Enable or disable SMTP email functionality"
@@ -1359,7 +1365,11 @@
       "title": "Share Not Found",
       "description": "This share may have been deleted or expired."
     },
-    "pageTitle": "Share"
+    "pageTitle": "Share",
+    "metadata": {
+      "defaultDescription": "Share files securely",
+      "filesShared": "{count, plural, =1 {1 file shared} other {# files shared}}"
+    }
   },
   "shareActions": {
     "fileTitle": "Share File",

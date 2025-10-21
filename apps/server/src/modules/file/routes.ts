@@ -106,17 +106,15 @@ export async function fileRoutes(app: FastifyInstance) {
   );
 
   app.get(
-    "/files/:objectName/download",
+    "/files/download-url",
     {
       schema: {
         tags: ["File"],
         operationId: "getDownloadUrl",
         summary: "Get Download URL",
         description: "Generates a pre-signed URL for downloading a file",
-        params: z.object({
-          objectName: z.string().min(1, "The objectName is required"),
-        }),
         querystring: z.object({
+          objectName: z.string().min(1, "The objectName is required"),
           password: z.string().optional().describe("Share password if required"),
         }),
         response: {
@@ -131,6 +129,23 @@ export async function fileRoutes(app: FastifyInstance) {
       },
     },
     fileController.getDownloadUrl.bind(fileController)
+  );
+
+  app.get(
+    "/files/download",
+    {
+      schema: {
+        tags: ["File"],
+        operationId: "downloadFile",
+        summary: "Download File",
+        description: "Downloads a file directly (returns file content)",
+        querystring: z.object({
+          objectName: z.string().min(1, "The objectName is required"),
+          password: z.string().optional().describe("Share password if required"),
+        }),
+      },
+    },
+    fileController.downloadFile.bind(fileController)
   );
 
   app.get(

@@ -192,13 +192,9 @@ export class FilesystemStorageProvider implements StorageProvider {
     return `/api/filesystem/upload/${token}`;
   }
 
-  async getPresignedGetUrl(objectName: string, expires: number, fileName?: string): Promise<string> {
-    const token = crypto.randomBytes(32).toString("hex");
-    const expiresAt = Date.now() + expires * 1000;
-
-    this.downloadTokens.set(token, { objectName, expiresAt, fileName });
-
-    return `/api/filesystem/download/${token}`;
+  async getPresignedGetUrl(objectName: string): Promise<string> {
+    const encodedObjectName = encodeURIComponent(objectName);
+    return `/api/files/download?objectName=${encodedObjectName}`;
   }
 
   async deleteObject(objectName: string): Promise<void> {
@@ -636,13 +632,8 @@ export class FilesystemStorageProvider implements StorageProvider {
     return { objectName: data.objectName, fileName: data.fileName };
   }
 
-  consumeUploadToken(token: string): void {
-    this.uploadTokens.delete(token);
-  }
-
-  consumeDownloadToken(token: string): void {
-    this.downloadTokens.delete(token);
-  }
+  // Tokens are automatically cleaned up by cleanExpiredTokens() every 5 minutes
+  // No need to manually consume tokens - allows reuse for previews, range requests, etc.
 
   private async cleanupTempFile(tempPath: string): Promise<void> {
     try {

@@ -1,8 +1,15 @@
+import * as fs from "fs";
 import bcrypt from "bcryptjs";
 import { FastifyReply, FastifyRequest } from "fastify";
 
 import { env } from "../../env";
 import { prisma } from "../../shared/prisma";
+import {
+  generateUniqueFileName,
+  generateUniqueFileNameForRename,
+  parseFileName,
+} from "../../utils/file-name-generator";
+import { getContentType } from "../../utils/mime-types";
 import { ConfigService } from "../config/service";
 import {
   CheckFileInput,
@@ -93,9 +100,13 @@ export class FileController {
         }
       }
 
+      // Parse the filename and generate a unique name if there's a duplicate
+      const { baseName, extension } = parseFileName(input.name);
+      const uniqueName = await generateUniqueFileName(baseName, extension, userId, input.folderId);
+
       const fileRecord = await prisma.file.create({
         data: {
-          name: input.name,
+          name: uniqueName,
           description: input.description,
           extension: input.extension,
           size: BigInt(input.size),
@@ -169,9 +180,20 @@ export class FileController {
         });
       }
 
-      return reply.status(201).send({
+      // Check for duplicate filename and provide the suggested unique name
+      const { baseName, extension } = parseFileName(input.name);
+      const uniqueName = await generateUniqueFileName(baseName, extension, userId, input.folderId);
+
+      // Include suggestedName in response if the name was changed
+      const response: any = {
         message: "File checks succeeded.",
-      });
+      };
+
+      if (uniqueName !== input.name) {
+        response.suggestedName = uniqueName;
+      }
+
+      return reply.status(201).send(response);
     } catch (error: any) {
       console.error("Error in checkFile:", error);
       return reply.status(400).send({ error: error.message });
@@ -180,11 +202,10 @@ export class FileController {
 
   async getDownloadUrl(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const { objectName: encodedObjectName } = request.params as {
+      const { objectName, password } = request.query as {
         objectName: string;
+        password?: string;
       };
-      const objectName = decodeURIComponent(encodedObjectName);
-      const { password } = request.query as { password?: string };
 
       if (!objectName) {
         return reply.status(400).send({ error: "The 'objectName' parameter is required." });
@@ -198,7 +219,8 @@ export class FileController {
 
       let hasAccess = false;
 
-      console.log("Requested file with password " + password);
+      // Don't log raw passwords. Log only whether a password was provided (for debugging access flow).
+      console.log(`Requested file access for object="${objectName}" passwordProvided=${password ? true : false}`);
 
       const shares = await prisma.share.findMany({
         where: {
@@ -246,6 +268,118 @@ export class FileController {
       return reply.send({ url, expiresIn: expires });
     } catch (error) {
       console.error("Error in getDownloadUrl:", error);
+      return reply.status(500).send({ error: "Internal server error." });
+    }
+  }
+
+  async downloadFile(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { objectName, password } = request.query as {
+        objectName: string;
+        password?: string;
+      };
+
+      if (!objectName) {
+        return reply.status(400).send({ error: "The 'objectName' parameter is required." });
+      }
+
+      const fileRecord = await prisma.file.findFirst({ where: { objectName } });
+
+      if (!fileRecord) {
+        if (objectName.startsWith("reverse-shares/")) {
+          const reverseShareFile = await prisma.reverseShareFile.findFirst({
+            where: { objectName },
+            include: {
+              reverseShare: true,
+            },
+          });
+
+          if (!reverseShareFile) {
+            return reply.status(404).send({ error: "File not found." });
+          }
+
+          try {
+            await request.jwtVerify();
+            const userId = (request as any).user?.userId;
+
+            if (!userId || reverseShareFile.reverseShare.creatorId !== userId) {
+              return reply.status(401).send({ error: "Unauthorized access to file." });
+            }
+          } catch (err) {
+            return reply.status(401).send({ error: "Unauthorized access to file." });
+          }
+
+          const storageProvider = (this.fileService as any).storageProvider;
+          const filePath = storageProvider.getFilePath(objectName);
+
+          const contentType = getContentType(reverseShareFile.name);
+          const fileName = reverseShareFile.name;
+
+          reply.header("Content-Type", contentType);
+          reply.header("Content-Disposition", `inline; filename="${encodeURIComponent(fileName)}"`);
+
+          const stream = fs.createReadStream(filePath);
+          return reply.send(stream);
+        }
+
+        return reply.status(404).send({ error: "File not found." });
+      }
+
+      let hasAccess = false;
+
+      const shares = await prisma.share.findMany({
+        where: {
+          files: {
+            some: {
+              id: fileRecord.id,
+            },
+          },
+        },
+        include: {
+          security: true,
+        },
+      });
+
+      for (const share of shares) {
+        if (!share.security.password) {
+          hasAccess = true;
+          break;
+        } else if (password) {
+          const isPasswordValid = await bcrypt.compare(password, share.security.password);
+          if (isPasswordValid) {
+            hasAccess = true;
+            break;
+          }
+        }
+      }
+
+      if (!hasAccess) {
+        try {
+          await request.jwtVerify();
+          const userId = (request as any).user?.userId;
+          if (userId && fileRecord.userId === userId) {
+            hasAccess = true;
+          }
+        } catch (err) {}
+      }
+
+      if (!hasAccess) {
+        return reply.status(401).send({ error: "Unauthorized access to file." });
+      }
+
+      const storageProvider = (this.fileService as any).storageProvider;
+      const filePath = storageProvider.getFilePath(objectName);
+
+      const contentType = getContentType(fileRecord.name);
+      const fileName = fileRecord.name;
+
+      reply.header("Content-Type", contentType);
+      reply.header("Content-Disposition", `inline; filename="${encodeURIComponent(fileName)}"`);
+
+      const stream = fs.createReadStream(filePath);
+      return reply.send(stream);
+    } catch (error) {
+      console.error("Error in downloadFile:", error);
       return reply.status(500).send({ error: "Internal server error." });
     }
   }
@@ -357,6 +491,13 @@ export class FileController {
 
       if (fileRecord.userId !== userId) {
         return reply.status(403).send({ error: "Access denied." });
+      }
+
+      // If renaming the file, check for duplicates and auto-rename if necessary
+      if (updateData.name && updateData.name !== fileRecord.name) {
+        const { baseName, extension } = parseFileName(updateData.name);
+        const uniqueName = await generateUniqueFileNameForRename(baseName, extension, userId, fileRecord.folderId, id);
+        updateData.name = uniqueName;
       }
 
       const updatedFile = await prisma.file.update({

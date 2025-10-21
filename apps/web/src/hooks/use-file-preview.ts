@@ -181,12 +181,11 @@ export function useFilePreview({ file, isOpen, isReverseShare = false, sharePass
         const response = await downloadReverseShareFile(file.id!);
         url = response.data.url;
       } else {
-        const encodedObjectName = encodeURIComponent(file.objectName);
         const params: Record<string, string> = {};
         if (sharePassword) params.password = sharePassword;
 
         const response = await getDownloadUrl(
-          encodedObjectName,
+          file.objectName,
           Object.keys(params).length > 0
             ? {
                 params: { ...params },

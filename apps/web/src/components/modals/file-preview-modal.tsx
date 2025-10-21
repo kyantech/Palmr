@@ -5,7 +5,14 @@ import { useTranslations } from "next-intl";
 
 import { EmbedCodeDisplay } from "@/components/files/embed-code-display";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useFilePreview } from "@/hooks/use-file-preview";
 import { getFileIcon } from "@/utils/file-icons";
 import { getFileType } from "@/utils/file-types";
@@ -48,6 +55,7 @@ export function FilePreviewModal({
             })()}
             <span className="truncate">{file.name}</span>
           </DialogTitle>
+          <DialogDescription className="sr-only">{t("filePreview.description")}</DialogDescription>
         </DialogHeader>
         <div className="flex-1 overflow-auto">
           <FilePreviewRenderer

@@ -304,6 +304,7 @@
   },
   "filePreview": {
     "title": "Anteprima File",
+    "description": "Anteprima e download del file",
     "loading": "Caricamento...",
     "notAvailable": "Anteprima non disponibile per questo tipo di file.",
     "downloadToView": "Utilizzare il pulsante di download per scaricare il file.",
@@ -1058,7 +1059,8 @@
     "upload": {
       "metadata": {
         "title": "Invia File - Palmr",
-        "description": "Invia file attraverso il link condiviso"
+        "description": "Invia file attraverso il link condiviso",
+        "descriptionWithLimit": "Carica file (max {limit} file)"
       },
       "layout": {
         "defaultTitle": "Invia File",
@@ -1300,6 +1302,10 @@
       "passwordAuthEnabled": {
         "title": "Autenticazione Password",
         "description": "Abilita o disabilita l'autenticazione basata su password"
+      },
+      "hideVersion": {
+        "title": "Nascondi Versione",
+        "description": "Nascondi la versione di Palmr nel piè di pagina di tutte le pagine"
       }
     },
     "buttons": {
@@ -1361,7 +1367,11 @@
       "description": "Questa condivisione potrebbe essere stata eliminata o è scaduta."
     },
     "pageTitle": "Condivisione",
-    "downloadAll": "Scarica Tutto"
+    "downloadAll": "Scarica Tutto",
+    "metadata": {
+      "defaultDescription": "Condividi file in modo sicuro",
+      "filesShared": "{count, plural, =1 {1 file condiviso} other {# file condivisi}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "Elimina Condivisione",

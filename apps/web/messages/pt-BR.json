@@ -304,6 +304,7 @@
   },
   "filePreview": {
     "title": "Visualizar Arquivo",
+    "description": "Visualizar e baixar arquivo",
     "loading": "Carregando...",
     "notAvailable": "Preview não disponível para este tipo de arquivo.",
     "downloadToView": "Use o botão de download para baixar o arquivo.",
@@ -1059,7 +1060,8 @@
     "upload": {
       "metadata": {
         "title": "Enviar Arquivos - Palmr",
-        "description": "Envie arquivos através do link compartilhado"
+        "description": "Envie arquivos através do link compartilhado",
+        "descriptionWithLimit": "Enviar arquivos (máx. {limit} arquivos)"
       },
       "layout": {
         "defaultTitle": "Enviar Arquivos",
@@ -1309,6 +1311,10 @@
       "passwordAuthEnabled": {
         "title": "Autenticação por Senha",
         "description": "Ative ou desative a autenticação baseada em senha"
+      },
+      "hideVersion": {
+        "title": "Ocultar Versão",
+        "description": "Ocultar a versão do Palmr no rodapé de todas as páginas"
       }
     },
     "buttons": {
@@ -1362,7 +1368,11 @@
       "description": "Este compartilhamento pode ter sido excluído ou expirado."
     },
     "pageTitle": "Compartilhamento",
-    "downloadAll": "Baixar todos"
+    "downloadAll": "Baixar todos",
+    "metadata": {
+      "defaultDescription": "Compartilhar arquivos com segurança",
+      "filesShared": "{count, plural, =1 {1 arquivo compartilhado} other {# arquivos compartilhados}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "Excluir Compartilhamento",

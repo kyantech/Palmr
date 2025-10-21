@@ -304,6 +304,7 @@
   },
   "filePreview": {
     "title": "파일 미리보기",
+    "description": "파일 미리보기 및 다운로드",
     "loading": "로딩 중...",
     "notAvailable": "이 파일 유형에 대한 미리보기를 사용할 수 없습니다.",
     "downloadToView": "다운로드 버튼을 사용하여 파일을 다운로드하세요.",
@@ -1058,7 +1059,8 @@
     "upload": {
       "metadata": {
         "title": "파일 보내기 - Palmr",
-        "description": "공유된 링크를 통해 파일 보내기"
+        "description": "공유된 링크를 통해 파일 보내기",
+        "descriptionWithLimit": "파일 업로드 (최대 {limit}개 파일)"
       },
       "layout": {
         "defaultTitle": "파일 보내기",
@@ -1300,6 +1302,10 @@
       "passwordAuthEnabled": {
         "title": "비밀번호 인증",
         "description": "비밀번호 기반 인증 활성화 또는 비활성화"
+      },
+      "hideVersion": {
+        "title": "버전 숨기기",
+        "description": "모든 페이지의 바닥글에서 Palmr 버전 숨기기"
       }
     },
     "buttons": {
@@ -1361,7 +1367,11 @@
       "description": "이 공유는 삭제되었거나 만료되었을 수 있습니다."
     },
     "pageTitle": "공유",
-    "downloadAll": "모두 다운로드"
+    "downloadAll": "모두 다운로드",
+    "metadata": {
+      "defaultDescription": "파일을 안전하게 공유",
+      "filesShared": "{count, plural, =1 {1개 파일 공유됨} other {#개 파일 공유됨}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "공유 삭제",
