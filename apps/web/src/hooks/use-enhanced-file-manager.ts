@@ -187,8 +187,7 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
 
       let url = downloadUrl;
       if (!url) {
-        const encodedObjectName = encodeURIComponent(objectName);
-        const response = await getDownloadUrl(encodedObjectName);
+        const response = await getDownloadUrl(objectName);
         url = response.data.url;
       }
 

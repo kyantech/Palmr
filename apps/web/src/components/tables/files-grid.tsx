@@ -163,8 +163,7 @@ export function FilesGrid({
 
         try {
           loadingUrls.current.add(file.objectName);
-          const encodedObjectName = encodeURIComponent(file.objectName);
-          const response = await getDownloadUrl(encodedObjectName);
+          const response = await getDownloadUrl(file.objectName);
 
           if (!componentMounted.current) break;
 
