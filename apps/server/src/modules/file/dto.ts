@@ -10,6 +10,7 @@ export const RegisterFileSchema = z.object({
   }),
   objectName: z.string().min(1, "O objectName é obrigatório"),
   folderId: z.string().optional(),
+  expiration: z.string().datetime().optional(),
 });
 
 export const CheckFileSchema = z.object({
@@ -22,6 +23,7 @@ export const CheckFileSchema = z.object({
   }),
   objectName: z.string().min(1, "O objectName é obrigatório"),
   folderId: z.string().optional(),
+  expiration: z.string().datetime().optional(),
 });
 
 export type RegisterFileInput = z.infer<typeof RegisterFileSchema>;
@@ -30,6 +32,7 @@ export type CheckFileInput = z.infer<typeof CheckFileSchema>;
 export const UpdateFileSchema = z.object({
   name: z.string().optional().describe("The file name"),
   description: z.string().optional().nullable().describe("The file description"),
+  expiration: z.string().datetime().optional().nullable().describe("The file expiration date"),
 });
 
 export const MoveFileSchema = z.object({

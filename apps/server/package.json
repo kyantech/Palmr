@@ -27,7 +27,9 @@
     "validate": "pnpm lint && pnpm type-check",
     "db:seed": "ts-node prisma/seed.js",
     "cleanup:orphan-files": "tsx src/scripts/cleanup-orphan-files.ts",
-    "cleanup:orphan-files:confirm": "tsx src/scripts/cleanup-orphan-files.ts --confirm"
+    "cleanup:orphan-files:confirm": "tsx src/scripts/cleanup-orphan-files.ts --confirm",
+    "cleanup:expired-files": "tsx src/scripts/cleanup-expired-files.ts",
+    "cleanup:expired-files:confirm": "tsx src/scripts/cleanup-expired-files.ts --confirm"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
