@@ -6,12 +6,12 @@ import { FilesystemController } from "./controller";
 export async function filesystemRoutes(app: FastifyInstance) {
   const filesystemController = new FilesystemController();
 
-  app.addContentTypeParser("*", async (request: FastifyRequest, payload: any) => {
-    return payload;
+  app.addContentTypeParser("*", (request: FastifyRequest, payload: any, done: any) => {
+    done(null, null);
   });
 
-  app.addContentTypeParser("application/json", async (request: FastifyRequest, payload: any) => {
-    return payload;
+  app.addContentTypeParser("application/json", (request: FastifyRequest, payload: any, done: any) => {
+    done(null, null);
   });
 
   app.put(
