@@ -1,10 +1,18 @@
+import * as fs from "fs/promises";
+import * as path from "path";
+import { MultipartFile } from "@fastify/multipart";
 import bcrypt from "bcryptjs";
 
+import { FilesystemStorageProvider } from "../../providers/filesystem-storage.provider";
+import { S3StorageProvider } from "../../providers/s3-storage.provider";
 import { prisma } from "../../shared/prisma";
+import { generateUniqueFileName, parseFileName } from "../../utils/file-name-generator";
+import { ConfigService } from "../config/service";
 import { EmailService } from "../email/service";
+import { FileService } from "../file/service";
 import { FolderService } from "../folder/service";
 import { UserService } from "../user/service";
-import { CreateShareInput, ShareResponseSchema, UpdateShareInput } from "./dto";
+import { CreateShareInput, CreateShareWithFilesInput, ShareResponseSchema, UpdateShareInput } from "./dto";
 import { IShareRepository, PrismaShareRepository } from "./repository";
 
 export class ShareService {
@@ -105,6 +113,141 @@ export class ShareService {
       ...shareData,
       files,
       folders,
+      securityId: security.id,
+      creatorId: userId,
+    });
+
+    const shareWithRelations = await this.shareRepository.findShareById(share.id);
+    return ShareResponseSchema.parse(await this.formatShareResponse(shareWithRelations));
+  }
+
+  async createShareWithFiles(data: CreateShareWithFilesInput, uploadedFiles: MultipartFile[], userId: string) {
+    const configService = new ConfigService();
+    const fileService = new FileService();
+
+    const { password, maxViews, existingFiles, existingFolders, folderId, ...shareData } = data;
+
+    // Validate existing files
+    if (existingFiles && existingFiles.length > 0) {
+      const files = await prisma.file.findMany({
+        where: {
+          id: { in: existingFiles },
+          userId: userId,
+        },
+      });
+      const notFoundFiles = existingFiles.filter((id) => !files.some((file) => file.id === id));
+      if (notFoundFiles.length > 0) {
+        throw new Error(`Files not found or access denied: ${notFoundFiles.join(", ")}`);
+      }
+    }
+
+    // Validate existing folders
+    if (existingFolders && existingFolders.length > 0) {
+      const folders = await prisma.folder.findMany({
+        where: {
+          id: { in: existingFolders },
+          userId: userId,
+        },
+      });
+      const notFoundFolders = existingFolders.filter((id) => !folders.some((folder) => folder.id === id));
+      if (notFoundFolders.length > 0) {
+        throw new Error(`Folders not found or access denied: ${notFoundFolders.join(", ")}`);
+      }
+    }
+
+    // Validate folder if specified
+    if (folderId) {
+      const folder = await prisma.folder.findFirst({
+        where: { id: folderId, userId },
+      });
+      if (!folder) {
+        throw new Error("Folder not found or access denied.");
+      }
+    }
+
+    const maxFileSize = BigInt(await configService.getValue("maxFileSize"));
+    const maxTotalStorage = BigInt(await configService.getValue("maxTotalStoragePerUser"));
+
+    // Check user storage
+    const userFiles = await prisma.file.findMany({
+      where: { userId },
+      select: { size: true },
+    });
+    const currentStorage = userFiles.reduce((acc, file) => acc + file.size, BigInt(0));
+
+    // Upload new files and create file records
+    const newFileIds: string[] = [];
+
+    for (const uploadedFile of uploadedFiles) {
+      const buffer = await uploadedFile.toBuffer();
+      const fileSize = BigInt(buffer.length);
+
+      // Validate file size
+      if (fileSize > maxFileSize) {
+        const maxSizeMB = Number(maxFileSize) / (1024 * 1024);
+        throw new Error(`File ${uploadedFile.filename} exceeds the maximum allowed size of ${maxSizeMB}MB`);
+      }
+
+      // Check storage space
+      if (currentStorage + fileSize > maxTotalStorage) {
+        const availableSpace = Number(maxTotalStorage - currentStorage) / (1024 * 1024);
+        throw new Error(`Insufficient storage space. You have ${availableSpace.toFixed(2)}MB available`);
+      }
+
+      // Parse filename
+      const { baseName, extension } = parseFileName(uploadedFile.filename);
+      const uniqueName = await generateUniqueFileName(baseName, extension, userId, folderId || null);
+
+      // Generate object name
+      const objectName = `${userId}/${Date.now()}-${baseName}.${extension}`;
+
+      // Upload file to storage
+      if (fileService.isFilesystemMode()) {
+        // For filesystem mode, we need to use the filesystem provider
+        const provider = FilesystemStorageProvider.getInstance();
+        await provider.uploadFile(objectName, buffer);
+      } else {
+        // For S3 mode
+        const provider = new S3StorageProvider();
+        await provider.uploadFile(objectName, buffer);
+      }
+
+      // Create file record in database
+      const fileRecord = await prisma.file.create({
+        data: {
+          name: uniqueName,
+          extension: extension,
+          size: fileSize,
+          objectName: objectName,
+          userId,
+          folderId: folderId || null,
+        },
+      });
+
+      newFileIds.push(fileRecord.id);
+    }
+
+    // Combine existing and new file IDs
+    const allFileIds = [...(existingFiles || []), ...newFileIds];
+
+    // Validate at least one file or folder
+    if (allFileIds.length === 0 && (!existingFolders || existingFolders.length === 0)) {
+      throw new Error("At least one file or folder must be selected or uploaded to create a share");
+    }
+
+    // Create share security
+    const security = await prisma.shareSecurity.create({
+      data: {
+        password: password ? await bcrypt.hash(password, 10) : null,
+        maxViews: maxViews,
+      },
+    });
+
+    // Create share
+    const share = await this.shareRepository.createShare({
+      ...shareData,
+      files: allFileIds,
+      folders: existingFolders,
       securityId: security.id,
       creatorId: userId,
     });

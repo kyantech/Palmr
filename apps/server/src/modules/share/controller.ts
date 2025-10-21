@@ -1,7 +1,9 @@
+import { MultipartFile } from "@fastify/multipart";
 import { FastifyReply, FastifyRequest } from "fastify";
 
 import {
   CreateShareSchema,
+  CreateShareWithFilesSchema,
   UpdateShareItemsSchema,
   UpdateSharePasswordSchema,
   UpdateShareRecipientsSchema,
@@ -25,6 +27,67 @@ export class ShareController {
       return reply.status(201).send({ share });
     } catch (error: any) {
       console.error("Create Share Error:", error);
+      if (error.errors) {
+        return reply.status(400).send({ error: error.errors });
+      }
+      return reply.status(400).send({ error: error.message || "Unknown error occurred" });
+    }
+  }
+
+  async createShareWithFiles(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      await request.jwtVerify();
+      const userId = (request as any).user?.userId;
+      if (!userId) {
+        return reply.status(401).send({ error: "Unauthorized: a valid token is required to access this resource." });
+      }
+
+      const parts = request.parts();
+      const uploadedFiles: MultipartFile[] = [];
+      let formData: any = {};
+
+      for await (const part of parts) {
+        if (part.type === "file") {
+          uploadedFiles.push(part as MultipartFile);
+        } else {
+          // Handle form fields
+          const fieldName = part.fieldname;
+          const value = (part as any).value;
+
+          // Parse JSON fields
+          if (fieldName === "existingFiles" || fieldName === "existingFolders" || fieldName === "recipients") {
+            try {
+              formData[fieldName] = JSON.parse(value);
+            } catch (e) {
+              formData[fieldName] = value;
+            }
+          } else if (fieldName === "maxViews") {
+            formData[fieldName] = value ? parseInt(value) : null;
+          } else {
+            formData[fieldName] = value;
+          }
+        }
+      }
+
+      // Validate at least one file or folder is provided
+      const hasExistingFiles = formData.existingFiles && formData.existingFiles.length > 0;
+      const hasExistingFolders = formData.existingFolders && formData.existingFolders.length > 0;
+      const hasNewFiles = uploadedFiles.length > 0;
+
+      if (!hasExistingFiles && !hasExistingFolders && !hasNewFiles) {
+        return reply.status(400).send({
+          error: "At least one file or folder must be selected or uploaded to create a share",
+        });
+      }
+
+      // Validate the form data against the schema (excluding file validation)
+      const input = CreateShareWithFilesSchema.parse(formData);
+
+      // Create the share with uploaded files
+      const share = await this.shareService.createShareWithFiles(input, uploadedFiles, userId);
+      return reply.status(201).send({ share });
+    } catch (error: any) {
+      console.error("Create Share With Files Error:", error);
       if (error.errors) {
         return reply.status(400).send({ error: error.errors });
       }

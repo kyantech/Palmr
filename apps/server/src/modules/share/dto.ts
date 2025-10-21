@@ -136,6 +136,24 @@ export const CreateShareAliasSchema = z.object({
     .describe("The custom alias for the share"),
 });
 
+export const CreateShareWithFilesSchema = z.object({
+  name: z.string().optional().describe("The share name"),
+  description: z.string().optional().describe("The share description"),
+  expiration: z
+    .string()
+    .datetime({
+      message: "Data de expiração deve estar no formato ISO 8601 (ex: 2025-02-06T13:20:49Z)",
+    })
+    .optional(),
+  existingFiles: z.array(z.string()).optional().describe("Existing file IDs to include"),
+  existingFolders: z.array(z.string()).optional().describe("Existing folder IDs to include"),
+  password: z.string().optional().describe("The share password"),
+  maxViews: z.number().optional().nullable().describe("The maximum number of views"),
+  recipients: z.array(z.string().email()).optional().describe("The recipient emails"),
+  folderId: z.string().optional().nullable().describe("Folder ID to upload new files to"),
+});
+
 export type CreateShareInput = z.infer<typeof CreateShareSchema>;
+export type CreateShareWithFilesInput = z.infer<typeof CreateShareWithFilesSchema>;
 export type UpdateShareInput = z.infer<typeof UpdateShareSchema>;
 export type ShareResponse = z.infer<typeof ShareResponseSchema>;

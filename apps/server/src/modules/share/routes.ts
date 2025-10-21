@@ -46,6 +46,29 @@ export async function shareRoutes(app: FastifyInstance) {
     shareController.createShare.bind(shareController)
   );
 
+  app.post(
+    "/shares/create-with-files",
+    {
+      preValidation,
+      schema: {
+        tags: ["Share"],
+        operationId: "createShareWithFiles",
+        summary: "Create a new share with file uploads",
+        description:
+          "Create a new share and upload new files directly in a single action. Supports multipart/form-data.",
+        consumes: ["multipart/form-data"],
+        response: {
+          201: z.object({
+            share: ShareResponseSchema,
+          }),
+          400: z.object({ error: z.string().describe("Error message") }),
+          401: z.object({ error: z.string().describe("Error message") }),
+        },
+      },
+    },
+    shareController.createShareWithFiles.bind(shareController)
+  );
+
   app.get(
     "/shares/me",
     {
