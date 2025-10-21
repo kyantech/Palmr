@@ -12,21 +12,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 interface EmbedCodeDisplayProps {
   imageUrl: string;
   fileName: string;
+  fileId: string;
 }
 
-export function EmbedCodeDisplay({ imageUrl, fileName }: EmbedCodeDisplayProps) {
+export function EmbedCodeDisplay({ imageUrl, fileName, fileId }: EmbedCodeDisplayProps) {
   const t = useTranslations();
   const [copiedType, setCopiedType] = useState<string | null>(null);
   const [fullUrl, setFullUrl] = useState<string>("");
 
   useEffect(() => {
-    // Get the full URL with the current browser origin
     if (typeof window !== "undefined") {
       const origin = window.location.origin;
-      const url = imageUrl.startsWith("http") ? imageUrl : `${origin}${imageUrl}`;
-      setFullUrl(url);
+      const embedUrl = `${origin}/e/${fileId}`;
+      setFullUrl(embedUrl);
     }
-  }, [imageUrl]);
+  }, [fileId]);
 
   const directLink = fullUrl || imageUrl;
   const htmlCode = `<img src="${directLink}" alt="${fileName}" />`;

@@ -132,6 +132,29 @@ export async function fileRoutes(app: FastifyInstance) {
   );
 
   app.get(
+    "/embed/:id",
+    {
+      schema: {
+        tags: ["File"],
+        operationId: "embedFile",
+        summary: "Embed File (Public Access)",
+        description:
+          "Returns a media file (image/video/audio) for public embedding without authentication. Only works for media files.",
+        params: z.object({
+          id: z.string().min(1, "File ID is required").describe("The file ID"),
+        }),
+        response: {
+          400: z.object({ error: z.string().describe("Error message") }),
+          403: z.object({ error: z.string().describe("Error message - not a media file") }),
+          404: z.object({ error: z.string().describe("Error message") }),
+          500: z.object({ error: z.string().describe("Error message") }),
+        },
+      },
+    },
+    fileController.embedFile.bind(fileController)
+  );
+
+  app.get(
     "/files/download",
     {
       schema: {

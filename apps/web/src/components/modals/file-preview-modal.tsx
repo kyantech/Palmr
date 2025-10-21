@@ -4,6 +4,7 @@ import { IconDownload } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 import { EmbedCodeDisplay } from "@/components/files/embed-code-display";
+import { MediaEmbedLink } from "@/components/files/media-embed-link";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -43,6 +44,8 @@ export function FilePreviewModal({
   const previewState = useFilePreview({ file, isOpen, isReverseShare, sharePassword });
   const fileType = getFileType(file.name);
   const isImage = fileType === "image";
+  const isVideo = fileType === "video";
+  const isAudio = fileType === "audio";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -71,9 +74,14 @@ export function FilePreviewModal({
             description={file.description}
             onDownload={previewState.handleDownload}
           />
-          {isImage && previewState.previewUrl && !previewState.isLoading && (
+          {isImage && previewState.previewUrl && !previewState.isLoading && file.id && (
             <div className="mt-4 mb-2">
-              <EmbedCodeDisplay imageUrl={previewState.previewUrl} fileName={file.name} />
+              <EmbedCodeDisplay imageUrl={previewState.previewUrl} fileName={file.name} fileId={file.id} />
+            </div>
+          )}
+          {(isVideo || isAudio) && !previewState.isLoading && file.id && (
+            <div className="mt-4 mb-2">
+              <MediaEmbedLink fileId={file.id} />
             </div>
           )}
         </div>
