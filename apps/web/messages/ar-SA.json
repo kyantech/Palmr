@@ -150,7 +150,9 @@
     "move": "نقل",
     "rename": "إعادة تسمية",
     "search": "بحث",
-    "share": "مشاركة"
+    "share": "مشاركة",
+    "copied": "تم النسخ",
+    "copy": "نسخ"
   },
   "createShare": {
     "title": "إنشاء مشاركة",
@@ -1933,5 +1935,17 @@
     "passwordRequired": "كلمة المرور مطلوبة",
     "nameRequired": "الاسم مطلوب",
     "required": "هذا الحقل مطلوب"
+  },
+  "embedCode": {
+    "title": "تضمين الصورة",
+    "description": "استخدم هذه الأكواد لتضمين هذه الصورة في المنتديات أو المواقع الإلكترونية أو المنصات الأخرى",
+    "tabs": {
+      "directLink": "رابط مباشر",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "عنوان URL مباشر لملف الصورة",
+    "htmlDescription": "استخدم هذا الكود لتضمين الصورة في صفحات HTML",
+    "bbcodeDescription": "استخدم هذا الكود لتضمين الصورة في المنتديات التي تدعم BBCode"
   }
 }

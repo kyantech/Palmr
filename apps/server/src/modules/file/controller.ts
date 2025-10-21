@@ -585,6 +585,51 @@ export class FileController {
     }
   }
 
+  async embedFile(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { id } = request.params as { id: string };
+
+      if (!id) {
+        return reply.status(400).send({ error: "File ID is required." });
+      }
+
+      const fileRecord = await prisma.file.findUnique({ where: { id } });
+
+      if (!fileRecord) {
+        return reply.status(404).send({ error: "File not found." });
+      }
+
+      const extension = fileRecord.extension.toLowerCase();
+      const imageExts = ["jpg", "jpeg", "png", "gif", "webp", "svg", "bmp", "ico", "avif"];
+      const videoExts = ["mp4", "webm", "ogg", "mov", "avi", "mkv", "flv", "wmv"];
+      const audioExts = ["mp3", "wav", "ogg", "m4a", "flac", "aac", "wma"];
+
+      const isMedia = imageExts.includes(extension) || videoExts.includes(extension) || audioExts.includes(extension);
+
+      if (!isMedia) {
+        return reply.status(403).send({
+          error: "Embed is only allowed for images, videos, and audio files.",
+        });
+      }
+
+      const storageProvider = (this.fileService as any).storageProvider;
+      const filePath = storageProvider.getFilePath(fileRecord.objectName);
+
+      const contentType = getContentType(fileRecord.name);
+      const fileName = fileRecord.name;
+
+      reply.header("Content-Type", contentType);
+      reply.header("Content-Disposition", `inline; filename="${encodeURIComponent(fileName)}"`);
+      reply.header("Cache-Control", "public, max-age=31536000"); // Cache por 1 ano
+
+      const stream = fs.createReadStream(filePath);
+      return reply.send(stream);
+    } catch (error) {
+      console.error("Error in embedFile:", error);
+      return reply.status(500).send({ error: "Internal server error." });
+    }
+  }
+
   private async getAllUserFilesRecursively(userId: string): Promise<any[]> {
     const rootFiles = await prisma.file.findMany({
       where: { userId, folderId: null },

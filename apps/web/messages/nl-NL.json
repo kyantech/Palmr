@@ -150,7 +150,9 @@
     "move": "Verplaatsen",
     "rename": "Hernoemen",
     "search": "Zoeken",
-    "share": "Delen"
+    "share": "Delen",
+    "copied": "Gekopieerd",
+    "copy": "Kopiëren"
   },
   "createShare": {
     "title": "Delen Maken",
@@ -1931,5 +1933,17 @@
     "passwordMinLength": "Wachtwoord moet minimaal 6 tekens bevatten",
     "nameRequired": "Naam is verplicht",
     "required": "Dit veld is verplicht"
+  },
+  "embedCode": {
+    "title": "Afbeelding insluiten",
+    "description": "Gebruik deze codes om deze afbeelding in te sluiten in forums, websites of andere platforms",
+    "tabs": {
+      "directLink": "Directe link",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "Directe URL naar het afbeeldingsbestand",
+    "htmlDescription": "Gebruik deze code om de afbeelding in te sluiten in HTML-pagina's",
+    "bbcodeDescription": "Gebruik deze code om de afbeelding in te sluiten in forums die BBCode ondersteunen"
   }
 }
