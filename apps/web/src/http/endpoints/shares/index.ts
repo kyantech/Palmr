@@ -10,6 +10,8 @@ import type {
   CreateShareAliasResult,
   CreateShareBody,
   CreateShareResult,
+  CreateShareWithFilesBody,
+  CreateShareWithFilesResult,
   DeleteShareResult,
   GetShareByAliasParams,
   GetShareByAliasResult,
@@ -37,6 +39,63 @@ export const createShare = <TData = CreateShareResult>(
   options?: AxiosRequestConfig
 ): Promise<TData> => {
   return apiInstance.post(`/api/shares/create`, createShareBody, options);
+};
+
+/**
+ * Create a new share with file uploads
+ * @summary Create a new share and upload files in a single action
+ */
+export const createShareWithFiles = <TData = CreateShareWithFilesResult>(
+  createShareWithFilesBody: CreateShareWithFilesBody,
+  options?: AxiosRequestConfig
+): Promise<TData> => {
+  const formData = new FormData();
+
+  // Add text fields
+  if (createShareWithFilesBody.name) {
+    formData.append("name", createShareWithFilesBody.name);
+  }
+  if (createShareWithFilesBody.description) {
+    formData.append("description", createShareWithFilesBody.description);
+  }
+  if (createShareWithFilesBody.expiration) {
+    formData.append("expiration", createShareWithFilesBody.expiration);
+  }
+  if (createShareWithFilesBody.password) {
+    formData.append("password", createShareWithFilesBody.password);
+  }
+  if (createShareWithFilesBody.maxViews !== undefined && createShareWithFilesBody.maxViews !== null) {
+    formData.append("maxViews", createShareWithFilesBody.maxViews.toString());
+  }
+  if (createShareWithFilesBody.folderId !== undefined) {
+    formData.append("folderId", createShareWithFilesBody.folderId || "");
+  }
+
+  // Add array fields as JSON strings
+  if (createShareWithFilesBody.existingFiles && createShareWithFilesBody.existingFiles.length > 0) {
+    formData.append("existingFiles", JSON.stringify(createShareWithFilesBody.existingFiles));
+  }
+  if (createShareWithFilesBody.existingFolders && createShareWithFilesBody.existingFolders.length > 0) {
+    formData.append("existingFolders", JSON.stringify(createShareWithFilesBody.existingFolders));
+  }
+  if (createShareWithFilesBody.recipients && createShareWithFilesBody.recipients.length > 0) {
+    formData.append("recipients", JSON.stringify(createShareWithFilesBody.recipients));
+  }
+
+  // Add files
+  if (createShareWithFilesBody.newFiles && createShareWithFilesBody.newFiles.length > 0) {
+    createShareWithFilesBody.newFiles.forEach((file) => {
+      formData.append("files", file);
+    });
+  }
+
+  return apiInstance.post(`/api/shares/create-with-files`, formData, {
+    ...options,
+    headers: {
+      ...options?.headers,
+      "Content-Type": "multipart/form-data",
+    },
+  });
 };
 
 /**

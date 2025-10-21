@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { IconCalendar, IconEye, IconLock, IconShare } from "@tabler/icons-react";
+import { IconCalendar, IconEye, IconLock, IconShare, IconUpload, IconX } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
+import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 
 import { FileTree, TreeFile, TreeFolder } from "@/components/tables/files-tree";
@@ -13,7 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { createShare } from "@/http/endpoints";
+import { createShare, createShareWithFiles } from "@/http/endpoints";
+import { formatFileSize } from "@/utils/format-file-size";
 
 interface CreateShareModalProps {
   isOpen: boolean;
@@ -39,6 +41,7 @@ export function CreateShareModal({ isOpen, onClose, onSuccess, getAllFilesAndFol
   const [files, setFiles] = useState<TreeFile[]>([]);
   const [folders, setFolders] = useState<TreeFolder[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [newFiles, setNewFiles] = useState<File[]>([]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(false);
@@ -85,9 +88,23 @@ export function CreateShareModal({ isOpen, onClose, onSuccess, getAllFilesAndFol
         maxViews: "",
       });
       setSelectedItems([]);
+      setNewFiles([]);
       setCurrentTab("details");
     }
   }, [isOpen, loadData]);
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    setNewFiles((prev) => [...prev, ...acceptedFiles]);
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    multiple: true,
+  });
+
+  const removeNewFile = (index: number) => {
+    setNewFiles((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async () => {
     if (!formData.name.trim()) {
@@ -95,8 +112,11 @@ export function CreateShareModal({ isOpen, onClose, onSuccess, getAllFilesAndFol
       return;
     }
 
-    if (selectedItems.length === 0) {
-      toast.error("Please select at least one file or folder");
+    const hasExistingItems = selectedItems.length > 0;
+    const hasNewFiles = newFiles.length > 0;
+
+    if (!hasExistingItems && !hasNewFiles) {
+      toast.error("Please select at least one file/folder or upload new files");
       return;
     }
 
@@ -106,23 +126,40 @@ export function CreateShareModal({ isOpen, onClose, onSuccess, getAllFilesAndFol
       const selectedFiles = selectedItems.filter((id) => files.some((file) => file.id === id));
       const selectedFolders = selectedItems.filter((id) => folders.some((folder) => folder.id === id));
 
-      await createShare({
-        name: formData.name,
-        description: formData.description || undefined,
-        password: formData.isPasswordProtected ? formData.password : undefined,
-        expiration: formData.expiresAt
-          ? (() => {
-              const dateValue = formData.expiresAt;
-              if (dateValue.length === 10) {
-                return new Date(dateValue + "T23:59:59").toISOString();
-              }
-              return new Date(dateValue).toISOString();
-            })()
-          : undefined,
-        maxViews: formData.maxViews ? parseInt(formData.maxViews) : undefined,
-        files: selectedFiles,
-        folders: selectedFolders,
-      });
+      const expiration = formData.expiresAt
+        ? (() => {
+            const dateValue = formData.expiresAt;
+            if (dateValue.length === 10) {
+              return new Date(dateValue + "T23:59:59").toISOString();
+            }
+            return new Date(dateValue).toISOString();
+          })()
+        : undefined;
+
+      // Use the new endpoint if there are new files to upload
+      if (hasNewFiles) {
+        await createShareWithFiles({
+          name: formData.name,
+          description: formData.description || undefined,
+          password: formData.isPasswordProtected ? formData.password : undefined,
+          expiration: expiration,
+          maxViews: formData.maxViews ? parseInt(formData.maxViews) : undefined,
+          existingFiles: selectedFiles.length > 0 ? selectedFiles : undefined,
+          existingFolders: selectedFolders.length > 0 ? selectedFolders : undefined,
+          newFiles: newFiles,
+        });
+      } else {
+        // Use the traditional endpoint if only selecting existing files
+        await createShare({
+          name: formData.name,
+          description: formData.description || undefined,
+          password: formData.isPasswordProtected ? formData.password : undefined,
+          expiration: expiration,
+          maxViews: formData.maxViews ? parseInt(formData.maxViews) : undefined,
+          files: selectedFiles,
+          folders: selectedFolders,
+        });
+      }
 
       toast.success(t("createShare.success"));
       onSuccess();
@@ -146,8 +183,10 @@ export function CreateShareModal({ isOpen, onClose, onSuccess, getAllFilesAndFol
   };
 
   const selectedCount = selectedItems.length;
+  const newFilesCount = newFiles.length;
+  const totalCount = selectedCount + newFilesCount;
   const canProceedToFiles = formData.name.trim().length > 0;
-  const canSubmit = formData.name.trim().length > 0 && selectedCount > 0;
+  const canSubmit = formData.name.trim().length > 0 && totalCount > 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -161,13 +200,21 @@ export function CreateShareModal({ isOpen, onClose, onSuccess, getAllFilesAndFol
 
         <div className="flex flex-col gap-6 flex-1 min-h-0 w-full overflow-hidden">
           <Tabs value={currentTab} onValueChange={setCurrentTab} className="flex-1">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="details">{t("createShare.tabs.shareDetails")}</TabsTrigger>
               <TabsTrigger value="files" disabled={!canProceedToFiles}>
                 {t("createShare.tabs.selectFiles")}
                 {selectedCount > 0 && (
                   <span className="ml-1 text-xs bg-primary text-primary-foreground rounded-full px-2 py-0.5">
                     {selectedCount}
+                  </span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="upload" disabled={!canProceedToFiles}>
+                {t("createShare.tabs.uploadFiles") || "Upload Files"}
+                {newFilesCount > 0 && (
+                  <span className="ml-1 text-xs bg-primary text-primary-foreground rounded-full px-2 py-0.5">
+                    {newFilesCount}
                   </span>
                 )}
               </TabsTrigger>
@@ -318,6 +365,87 @@ export function CreateShareModal({ isOpen, onClose, onSuccess, getAllFilesAndFol
 
               <div className="flex justify-between">
                 <Button variant="outline" onClick={() => setCurrentTab("details")}>
+                  {t("common.back")}
+                </Button>
+                <div className="space-x-2">
+                  <Button variant="outline" onClick={() => setCurrentTab("upload")}>
+                    {t("createShare.nextUploadFiles") || "Upload New Files"}
+                  </Button>
+                  <Button onClick={handleSubmit} disabled={!canSubmit || isLoading}>
+                    {isLoading ? t("common.creating") : t("createShare.create")}
+                  </Button>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="upload" className="space-y-4 mt-4 flex-1 min-h-0">
+              <div className="space-y-4">
+                <div
+                  {...getRootProps()}
+                  className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+                    isDragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-primary/50"
+                  }`}
+                >
+                  <input {...getInputProps()} />
+                  <IconUpload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  {isDragActive ? (
+                    <p className="text-sm text-muted-foreground">Drop files here...</p>
+                  ) : (
+                    <div>
+                      <p className="text-sm font-medium mb-1">
+                        {t("createShare.upload.dragDrop") || "Drag & drop files here"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {t("createShare.upload.orClick") || "or click to browse"}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {newFiles.length > 0 && (
+                  <div className="space-y-2">
+                    <Label>{t("createShare.upload.selectedFiles") || "Selected Files"}</Label>
+                    <div className="max-h-[200px] overflow-y-auto space-y-2">
+                      {newFiles.map((file, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-2 bg-muted/50 rounded-md text-sm"
+                        >
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <IconUpload className="h-4 w-4 flex-shrink-0" />
+                            <span className="truncate">{file.name}</span>
+                            <span className="text-xs text-muted-foreground flex-shrink-0">
+                              {formatFileSize(file.size)}
+                            </span>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeNewFile(index)}
+                            className="ml-2 h-6 w-6 p-0"
+                          >
+                            <IconX className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="text-sm text-muted-foreground">
+                  {totalCount > 0 ? (
+                    <span>
+                      {totalCount} {totalCount === 1 ? "item" : "items"} selected ({selectedCount} existing,{" "}
+                      {newFilesCount} new)
+                    </span>
+                  ) : (
+                    <span>No items selected</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-between pt-4">
+                <Button variant="outline" onClick={() => setCurrentTab("files")}>
                   {t("common.back")}
                 </Button>
                 <div className="space-x-2">
