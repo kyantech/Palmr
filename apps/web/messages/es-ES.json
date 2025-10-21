@@ -302,6 +302,7 @@
   },
   "filePreview": {
     "title": "Vista Previa del Archivo",
+    "description": "Vista previa y descarga de archivo",
     "loading": "Cargando...",
     "notAvailable": "Vista previa no disponible para este tipo de archivo.",
     "downloadToView": "Use el botón de descarga para descargar el archivo.",

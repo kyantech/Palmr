@@ -302,6 +302,7 @@
   },
   "filePreview": {
     "title": "Podgląd pliku",
+    "description": "Podgląd i pobieranie pliku",
     "loading": "Ładowanie...",
     "notAvailable": "Podgląd niedostępny dla tego typu pliku",
     "downloadToView": "Użyj przycisku pobierania, aby wyświetlić ten plik",

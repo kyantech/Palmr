@@ -302,6 +302,7 @@
   },
   "filePreview": {
     "title": "파일 미리보기",
+    "description": "파일 미리보기 및 다운로드",
     "loading": "로딩 중...",
     "notAvailable": "이 파일 유형에 대한 미리보기를 사용할 수 없습니다.",
     "downloadToView": "다운로드 버튼을 사용하여 파일을 다운로드하세요.",

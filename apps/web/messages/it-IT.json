@@ -302,6 +302,7 @@
   },
   "filePreview": {
     "title": "Anteprima File",
+    "description": "Anteprima e download del file",
     "loading": "Caricamento...",
     "notAvailable": "Anteprima non disponibile per questo tipo di file.",
     "downloadToView": "Utilizzare il pulsante di download per scaricare il file.",

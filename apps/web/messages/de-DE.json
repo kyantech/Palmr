@@ -302,6 +302,7 @@
   },
   "filePreview": {
     "title": "Datei-Vorschau",
+    "description": "Vorschau und Download der Datei",
     "loading": "Laden...",
     "notAvailable": "Vorschau für diesen Dateityp nicht verfügbar.",
     "downloadToView": "Verwenden Sie die Download-Schaltfläche, um die Datei herunterzuladen.",

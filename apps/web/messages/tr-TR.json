@@ -302,6 +302,7 @@
   },
   "filePreview": {
     "title": "Dosya Önizleme",
+    "description": "Dosyayı önizleyin ve indirin",
     "loading": "Yükleniyor...",
     "notAvailable": "Bu dosya türü için önizleme mevcut değil.",
     "downloadToView": "Dosyayı indirmek için indirme düğmesini kullanın.",

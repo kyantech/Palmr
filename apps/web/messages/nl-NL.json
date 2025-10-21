@@ -302,6 +302,7 @@
   },
   "filePreview": {
     "title": "Bestandsvoorbeeld",
+    "description": "Bestand bekijken en downloaden",
     "loading": "Laden...",
     "notAvailable": "Voorbeeld niet beschikbaar voor dit bestandstype.",
     "downloadToView": "Gebruik de downloadknop om het bestand te downloaden.",

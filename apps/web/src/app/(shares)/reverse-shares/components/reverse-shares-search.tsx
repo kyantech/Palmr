@@ -30,7 +30,7 @@ export function ReverseSharesSearch({
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <h2 className="text-xl font-semibold">{t("reverseShares.search.title")}</h2>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-          <Button variant="outline" size="icon" onClick={onRefresh} disabled={isRefreshing} className="sm:w-auto">
+          <Button variant="outline" size="icon" onClick={onRefresh} disabled={isRefreshing}>
             <IconRefresh className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
           </Button>
           <Button onClick={onCreateReverseShare} className="w-full sm:w-auto">
