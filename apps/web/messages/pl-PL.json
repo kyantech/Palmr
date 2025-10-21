@@ -1660,7 +1660,10 @@
     "toggle": "Przełącz motyw",
     "light": "Jasny",
     "dark": "Ciemny",
-    "system": "Systemowy"
+    "system": "Systemowy",
+    "lightDescription": "Zawsze jasny tryb",
+    "darkDescription": "Zawsze ciemny tryb",
+    "systemDescription": "Zgodnie z ustawieniami systemu"
   },
   "twoFactor": {
     "title": "Uwierzytelnianie dwuskładnikowe",

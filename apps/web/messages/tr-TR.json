@@ -1660,7 +1660,10 @@
     "toggle": "Temayı değiştir",
     "light": "Açık",
     "dark": "Koyu",
-    "system": "Sistem"
+    "system": "Sistem",
+    "lightDescription": "Her zaman açık mod",
+    "darkDescription": "Her zaman koyu mod",
+    "systemDescription": "Sistem tercihini takip et"
   },
   "twoFactor": {
     "title": "İki Faktörlü Kimlik Doğrulama",

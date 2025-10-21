@@ -11,9 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 
 const THEME_OPTIONS = [
-  { name: "System", value: "system", icon: IconDeviceLaptop, description: "Follow system preference" },
-  { name: "Light", value: "light", icon: IconSun, description: "Always light mode" },
-  { name: "Dark", value: "dark", icon: IconMoon, description: "Always dark mode" },
+  { nameKey: "theme.system", value: "system", icon: IconDeviceLaptop, descriptionKey: "theme.systemDescription" },
+  { nameKey: "theme.light", value: "light", icon: IconSun, descriptionKey: "theme.lightDescription" },
+  { nameKey: "theme.dark", value: "dark", icon: IconMoon, descriptionKey: "theme.darkDescription" },
 ];
 
 export function ThemePickerForm() {
@@ -70,8 +70,8 @@ export function ThemePickerForm() {
                     <div className="flex flex-col items-center gap-3">
                       <div className="flex flex-col items-center gap-2">
                         <IconComponent className="w-6 h-6 text-muted-foreground" />
-                        <span className="font-medium text-base">{themeOption.name}</span>
-                        <span className="text-xs text-muted-foreground">{themeOption.description}</span>
+                        <span className="font-medium text-base">{t(themeOption.nameKey)}</span>
+                        <span className="text-xs text-muted-foreground">{t(themeOption.descriptionKey)}</span>
                       </div>
                     </div>
                   </button>

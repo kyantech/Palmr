@@ -1660,7 +1660,10 @@
     "toggle": "Design umschalten",
     "light": "Hell",
     "dark": "Dunkel",
-    "system": "System"
+    "system": "System",
+    "lightDescription": "Immer heller Modus",
+    "darkDescription": "Immer dunkler Modus",
+    "systemDescription": "Systempräferenz folgen"
   },
   "twoFactor": {
     "title": "Zwei-Faktor-Authentifizierung",

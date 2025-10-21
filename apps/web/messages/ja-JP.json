@@ -1660,7 +1660,10 @@
     "toggle": "テーマを切り替える",
     "light": "ライト",
     "dark": "ダーク",
-    "system": "システム"
+    "system": "システム",
+    "lightDescription": "常にライトモード",
+    "darkDescription": "常にダークモード",
+    "systemDescription": "システム設定に従う"
   },
   "twoFactor": {
     "title": "二要素認証",

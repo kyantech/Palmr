@@ -1660,7 +1660,10 @@
     "toggle": "테마 전환",
     "light": "라이트",
     "dark": "다크",
-    "system": "시스템"
+    "system": "시스템",
+    "lightDescription": "항상 라이트 모드",
+    "darkDescription": "항상 다크 모드",
+    "systemDescription": "시스템 설정 따르기"
   },
   "twoFactor": {
     "title": "2단계 인증",

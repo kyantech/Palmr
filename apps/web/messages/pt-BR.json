@@ -1661,7 +1661,10 @@
     "toggle": "Alternar tema",
     "light": "Claro",
     "dark": "Escuro",
-    "system": "Sistema"
+    "system": "Sistema",
+    "lightDescription": "Sempre modo claro",
+    "darkDescription": "Sempre modo escuro",
+    "systemDescription": "Seguir preferência do sistema"
   },
   "twoFactor": {
     "title": "Autenticação de dois fatores",

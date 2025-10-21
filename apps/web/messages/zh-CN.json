@@ -1660,7 +1660,10 @@
     "toggle": "切换主题",
     "light": "明亮",
     "dark": "暗黑",
-    "system": "系统"
+    "system": "系统",
+    "lightDescription": "始终使用明亮模式",
+    "darkDescription": "始终使用暗黑模式",
+    "systemDescription": "跟随系统设置"
   },
   "twoFactor": {
     "title": "双重认证",

@@ -1625,7 +1625,10 @@
     "toggle": "Toggle theme",
     "light": "Light",
     "dark": "Dark",
-    "system": "System"
+    "system": "System",
+    "lightDescription": "Always light mode",
+    "darkDescription": "Always dark mode",
+    "systemDescription": "Follow system preference"
   },
   "twoFactor": {
     "title": "Two-Factor Authentication",

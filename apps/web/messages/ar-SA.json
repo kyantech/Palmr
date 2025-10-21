@@ -1662,7 +1662,10 @@
     "toggle": "تبديل السمة",
     "light": "فاتح",
     "dark": "داكن",
-    "system": "النظام"
+    "system": "النظام",
+    "lightDescription": "الوضع الفاتح دائماً",
+    "darkDescription": "الوضع الداكن دائماً",
+    "systemDescription": "اتباع تفضيلات النظام"
   },
   "twoFactor": {
     "title": "المصادقة الثنائية",
