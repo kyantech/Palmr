@@ -150,7 +150,9 @@
     "move": "移動",
     "rename": "名前を変更",
     "search": "検索",
-    "share": "共有"
+    "share": "共有",
+    "copied": "コピーしました",
+    "copy": "コピー"
   },
   "createShare": {
     "title": "共有を作成",
@@ -302,6 +304,7 @@
   },
   "filePreview": {
     "title": "ファイルプレビュー",
+    "description": "ファイルをプレビューしてダウンロード",
     "loading": "読み込み中...",
     "notAvailable": "このファイルタイプのプレビューは利用できません。",
     "downloadToView": "ダウンロードボタンを使用してファイルをダウンロードしてください。",
@@ -1930,5 +1933,17 @@
     "passwordRequired": "パスワードは必須です",
     "nameRequired": "名前は必須です",
     "required": "このフィールドは必須です"
+  },
+  "embedCode": {
+    "title": "画像を埋め込む",
+    "description": "これらのコードを使用して、この画像をフォーラム、ウェブサイト、またはその他のプラットフォームに埋め込みます",
+    "tabs": {
+      "directLink": "直接リンク",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "画像ファイルへの直接URL",
+    "htmlDescription": "このコードを使用してHTMLページに画像を埋め込みます",
+    "bbcodeDescription": "BBCodeをサポートするフォーラムに画像を埋め込むには、このコードを使用します"
   }
 }

@@ -150,7 +150,9 @@
     "move": "Sposta",
     "rename": "Rinomina",
     "search": "Cerca",
-    "share": "Condividi"
+    "share": "Condividi",
+    "copied": "Copiato",
+    "copy": "Copia"
   },
   "createShare": {
     "title": "Crea Condivisione",
@@ -302,6 +304,7 @@
   },
   "filePreview": {
     "title": "Anteprima File",
+    "description": "Anteprima e download del file",
     "loading": "Caricamento...",
     "notAvailable": "Anteprima non disponibile per questo tipo di file.",
     "downloadToView": "Utilizzare il pulsante di download per scaricare il file.",
@@ -1930,5 +1933,17 @@
     "passwordMinLength": "La password deve contenere almeno 6 caratteri",
     "nameRequired": "Il nome è obbligatorio",
     "required": "Questo campo è obbligatorio"
+  },
+  "embedCode": {
+    "title": "Incorpora immagine",
+    "description": "Usa questi codici per incorporare questa immagine in forum, siti web o altre piattaforme",
+    "tabs": {
+      "directLink": "Link diretto",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "URL diretto al file immagine",
+    "htmlDescription": "Usa questo codice per incorporare l'immagine nelle pagine HTML",
+    "bbcodeDescription": "Usa questo codice per incorporare l'immagine nei forum che supportano BBCode"
   }
 }

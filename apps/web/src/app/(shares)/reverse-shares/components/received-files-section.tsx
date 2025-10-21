@@ -7,22 +7,10 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { deleteReverseShareFile } from "@/http/endpoints/reverse-shares";
+import type { ReverseShareFile } from "@/http/endpoints/reverse-shares/types";
 import { downloadReverseShareWithQueue } from "@/utils/download-queue-utils";
 import { getFileIcon } from "@/utils/file-icons";
 import { ReverseShareFilePreviewModal } from "./reverse-share-file-preview-modal";
-
-interface ReverseShareFile {
-  id: string;
-  name: string;
-  description: string | null;
-  extension: string;
-  size: string;
-  objectName: string;
-  uploaderEmail: string | null;
-  uploaderName: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
 
 interface ReceivedFilesSectionProps {
   files: ReverseShareFile[];
@@ -159,16 +147,7 @@ export function ReceivedFilesSection({ files, onFileDeleted }: ReceivedFilesSect
       </div>
 
       {previewFile && (
-        <ReverseShareFilePreviewModal
-          isOpen={!!previewFile}
-          onClose={() => setPreviewFile(null)}
-          file={{
-            id: previewFile.id,
-            name: previewFile.name,
-            objectName: previewFile.objectName,
-            extension: previewFile.extension,
-          }}
-        />
+        <ReverseShareFilePreviewModal isOpen={!!previewFile} onClose={() => setPreviewFile(null)} file={previewFile} />
       )}
     </>
   );

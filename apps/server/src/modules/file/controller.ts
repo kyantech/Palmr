@@ -1,3 +1,4 @@
+import * as fs from "fs";
 import bcrypt from "bcryptjs";
 import { FastifyReply, FastifyRequest } from "fastify";
 
@@ -8,6 +9,7 @@ import {
   generateUniqueFileNameForRename,
   parseFileName,
 } from "../../utils/file-name-generator";
+import { getContentType } from "../../utils/mime-types";
 import { ConfigService } from "../config/service";
 import {
   CheckFileInput,
@@ -200,11 +202,10 @@ export class FileController {
 
   async getDownloadUrl(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const { objectName: encodedObjectName } = request.params as {
+      const { objectName, password } = request.query as {
         objectName: string;
+        password?: string;
       };
-      const objectName = decodeURIComponent(encodedObjectName);
-      const { password } = request.query as { password?: string };
 
       if (!objectName) {
         return reply.status(400).send({ error: "The 'objectName' parameter is required." });
@@ -218,7 +219,8 @@ export class FileController {
 
       let hasAccess = false;
 
-      console.log("Requested file with password " + password);
+      // Don't log raw passwords. Log only whether a password was provided (for debugging access flow).
+      console.log(`Requested file access for object="${objectName}" passwordProvided=${password ? true : false}`);
 
       const shares = await prisma.share.findMany({
         where: {
@@ -266,6 +268,118 @@ export class FileController {
       return reply.send({ url, expiresIn: expires });
     } catch (error) {
       console.error("Error in getDownloadUrl:", error);
+      return reply.status(500).send({ error: "Internal server error." });
+    }
+  }
+
+  async downloadFile(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { objectName, password } = request.query as {
+        objectName: string;
+        password?: string;
+      };
+
+      if (!objectName) {
+        return reply.status(400).send({ error: "The 'objectName' parameter is required." });
+      }
+
+      const fileRecord = await prisma.file.findFirst({ where: { objectName } });
+
+      if (!fileRecord) {
+        if (objectName.startsWith("reverse-shares/")) {
+          const reverseShareFile = await prisma.reverseShareFile.findFirst({
+            where: { objectName },
+            include: {
+              reverseShare: true,
+            },
+          });
+
+          if (!reverseShareFile) {
+            return reply.status(404).send({ error: "File not found." });
+          }
+
+          try {
+            await request.jwtVerify();
+            const userId = (request as any).user?.userId;
+
+            if (!userId || reverseShareFile.reverseShare.creatorId !== userId) {
+              return reply.status(401).send({ error: "Unauthorized access to file." });
+            }
+          } catch (err) {
+            return reply.status(401).send({ error: "Unauthorized access to file." });
+          }
+
+          const storageProvider = (this.fileService as any).storageProvider;
+          const filePath = storageProvider.getFilePath(objectName);
+
+          const contentType = getContentType(reverseShareFile.name);
+          const fileName = reverseShareFile.name;
+
+          reply.header("Content-Type", contentType);
+          reply.header("Content-Disposition", `inline; filename="${encodeURIComponent(fileName)}"`);
+
+          const stream = fs.createReadStream(filePath);
+          return reply.send(stream);
+        }
+
+        return reply.status(404).send({ error: "File not found." });
+      }
+
+      let hasAccess = false;
+
+      const shares = await prisma.share.findMany({
+        where: {
+          files: {
+            some: {
+              id: fileRecord.id,
+            },
+          },
+        },
+        include: {
+          security: true,
+        },
+      });
+
+      for (const share of shares) {
+        if (!share.security.password) {
+          hasAccess = true;
+          break;
+        } else if (password) {
+          const isPasswordValid = await bcrypt.compare(password, share.security.password);
+          if (isPasswordValid) {
+            hasAccess = true;
+            break;
+          }
+        }
+      }
+
+      if (!hasAccess) {
+        try {
+          await request.jwtVerify();
+          const userId = (request as any).user?.userId;
+          if (userId && fileRecord.userId === userId) {
+            hasAccess = true;
+          }
+        } catch (err) {}
+      }
+
+      if (!hasAccess) {
+        return reply.status(401).send({ error: "Unauthorized access to file." });
+      }
+
+      const storageProvider = (this.fileService as any).storageProvider;
+      const filePath = storageProvider.getFilePath(objectName);
+
+      const contentType = getContentType(fileRecord.name);
+      const fileName = fileRecord.name;
+
+      reply.header("Content-Type", contentType);
+      reply.header("Content-Disposition", `inline; filename="${encodeURIComponent(fileName)}"`);
+
+      const stream = fs.createReadStream(filePath);
+      return reply.send(stream);
+    } catch (error) {
+      console.error("Error in downloadFile:", error);
       return reply.status(500).send({ error: "Internal server error." });
     }
   }
@@ -468,6 +582,51 @@ export class FileController {
     } catch (error: any) {
       console.error("Error moving file:", error);
       return reply.status(400).send({ error: error.message });
+    }
+  }
+
+  async embedFile(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { id } = request.params as { id: string };
+
+      if (!id) {
+        return reply.status(400).send({ error: "File ID is required." });
+      }
+
+      const fileRecord = await prisma.file.findUnique({ where: { id } });
+
+      if (!fileRecord) {
+        return reply.status(404).send({ error: "File not found." });
+      }
+
+      const extension = fileRecord.extension.toLowerCase();
+      const imageExts = ["jpg", "jpeg", "png", "gif", "webp", "svg", "bmp", "ico", "avif"];
+      const videoExts = ["mp4", "webm", "ogg", "mov", "avi", "mkv", "flv", "wmv"];
+      const audioExts = ["mp3", "wav", "ogg", "m4a", "flac", "aac", "wma"];
+
+      const isMedia = imageExts.includes(extension) || videoExts.includes(extension) || audioExts.includes(extension);
+
+      if (!isMedia) {
+        return reply.status(403).send({
+          error: "Embed is only allowed for images, videos, and audio files.",
+        });
+      }
+
+      const storageProvider = (this.fileService as any).storageProvider;
+      const filePath = storageProvider.getFilePath(fileRecord.objectName);
+
+      const contentType = getContentType(fileRecord.name);
+      const fileName = fileRecord.name;
+
+      reply.header("Content-Type", contentType);
+      reply.header("Content-Disposition", `inline; filename="${encodeURIComponent(fileName)}"`);
+      reply.header("Cache-Control", "public, max-age=31536000"); // Cache por 1 ano
+
+      const stream = fs.createReadStream(filePath);
+      return reply.send(stream);
+    } catch (error) {
+      console.error("Error in embedFile:", error);
+      return reply.status(500).send({ error: "Internal server error." });
     }
   }
 

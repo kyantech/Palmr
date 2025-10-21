@@ -150,7 +150,9 @@
     "move": "Verschieben",
     "rename": "Umbenennen",
     "search": "Suchen",
-    "share": "Teilen"
+    "share": "Teilen",
+    "copied": "Kopiert",
+    "copy": "Kopieren"
   },
   "createShare": {
     "title": "Freigabe Erstellen",
@@ -302,6 +304,7 @@
   },
   "filePreview": {
     "title": "Datei-Vorschau",
+    "description": "Vorschau und Download der Datei",
     "loading": "Laden...",
     "notAvailable": "Vorschau für diesen Dateityp nicht verfügbar.",
     "downloadToView": "Verwenden Sie die Download-Schaltfläche, um die Datei herunterzuladen.",
@@ -1930,5 +1933,17 @@
     "passwordRequired": "Passwort ist erforderlich",
     "nameRequired": "Name ist erforderlich",
     "required": "Dieses Feld ist erforderlich"
+  },
+  "embedCode": {
+    "title": "Bild einbetten",
+    "description": "Verwenden Sie diese Codes, um dieses Bild in Foren, Websites oder anderen Plattformen einzubetten",
+    "tabs": {
+      "directLink": "Direkter Link",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "Direkte URL zur Bilddatei",
+    "htmlDescription": "Verwenden Sie diesen Code, um das Bild in HTML-Seiten einzubetten",
+    "bbcodeDescription": "Verwenden Sie diesen Code, um das Bild in Foren einzubetten, die BBCode unterstützen"
   }
 }

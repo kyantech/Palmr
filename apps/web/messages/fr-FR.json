@@ -150,7 +150,9 @@
     "move": "Déplacer",
     "rename": "Renommer",
     "search": "Rechercher",
-    "share": "Partager"
+    "share": "Partager",
+    "copied": "Copié",
+    "copy": "Copier"
   },
   "createShare": {
     "title": "Créer un Partage",
@@ -302,6 +304,7 @@
   },
   "filePreview": {
     "title": "Aperçu du Fichier",
+    "description": "Aperçu et téléchargement du fichier",
     "loading": "Chargement...",
     "notAvailable": "Aperçu non disponible pour ce type de fichier.",
     "downloadToView": "Utilisez le bouton de téléchargement pour télécharger le fichier.",
@@ -1930,5 +1933,17 @@
     "passwordRequired": "Le mot de passe est requis",
     "nameRequired": "Nome é obrigatório",
     "required": "Este campo é obrigatório"
+  },
+  "embedCode": {
+    "title": "Intégrer l'image",
+    "description": "Utilisez ces codes pour intégrer cette image dans des forums, sites web ou autres plateformes",
+    "tabs": {
+      "directLink": "Lien direct",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "URL directe vers le fichier image",
+    "htmlDescription": "Utilisez ce code pour intégrer l'image dans des pages HTML",
+    "bbcodeDescription": "Utilisez ce code pour intégrer l'image dans des forums prenant en charge BBCode"
   }
 }

@@ -150,7 +150,9 @@
     "move": "Taşı",
     "rename": "Yeniden Adlandır",
     "search": "Ara",
-    "share": "Paylaş"
+    "share": "Paylaş",
+    "copied": "Kopyalandı",
+    "copy": "Kopyala"
   },
   "createShare": {
     "title": "Paylaşım Oluştur",
@@ -302,6 +304,7 @@
   },
   "filePreview": {
     "title": "Dosya Önizleme",
+    "description": "Dosyayı önizleyin ve indirin",
     "loading": "Yükleniyor...",
     "notAvailable": "Bu dosya türü için önizleme mevcut değil.",
     "downloadToView": "Dosyayı indirmek için indirme düğmesini kullanın.",
@@ -1930,5 +1933,17 @@
     "passwordRequired": "Şifre gerekli",
     "nameRequired": "İsim gereklidir",
     "required": "Bu alan zorunludur"
+  },
+  "embedCode": {
+    "title": "Resmi Yerleştir",
+    "description": "Bu görüntüyü forumlara, web sitelerine veya diğer platformlara yerleştirmek için bu kodları kullanın",
+    "tabs": {
+      "directLink": "Doğrudan Bağlantı",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "Resim dosyasının doğrudan URL'si",
+    "htmlDescription": "Resmi HTML sayfalarına yerleştirmek için bu kodu kullanın",
+    "bbcodeDescription": "BBCode destekleyen forumlara resmi yerleştirmek için bu kodu kullanın"
   }
 }

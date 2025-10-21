@@ -84,7 +84,6 @@ export class FilesystemController {
           const result = await this.handleChunkedUpload(request, chunkMetadata, tokenData.objectName);
 
           if (result.isComplete) {
-            provider.consumeUploadToken(token);
             reply.status(200).send({
               message: "File uploaded successfully",
               objectName: result.finalPath,
@@ -104,7 +103,6 @@ export class FilesystemController {
         }
       } else {
         await this.uploadFileStream(request, provider, tokenData.objectName);
-        provider.consumeUploadToken(token);
         reply.status(200).send({ message: "File uploaded successfully" });
       }
     } catch (error) {
@@ -271,8 +269,6 @@ export class FilesystemController {
           reply.header("Content-Length", fileSize);
           await this.downloadFileStream(reply, provider, tokenData.objectName, downloadId);
         }
-
-        provider.consumeDownloadToken(token);
       } finally {
         this.memoryManager.endDownload(downloadId);
       }

@@ -80,7 +80,8 @@ export const getDownloadUrl = <TData = GetDownloadUrlResult>(
   objectName: string,
   options?: AxiosRequestConfig
 ): Promise<TData> => {
-  return apiInstance.get(`/api/files/download/${objectName}`, options);
+  const encodedObjectName = encodeURIComponent(objectName);
+  return apiInstance.get(`/api/files/download-url?objectName=${encodedObjectName}`, options);
 };
 
 /**

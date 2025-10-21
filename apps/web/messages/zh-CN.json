@@ -150,7 +150,9 @@
     "move": "移动",
     "rename": "重命名",
     "search": "搜索",
-    "share": "分享"
+    "share": "分享",
+    "copied": "已复制",
+    "copy": "复制"
   },
   "createShare": {
     "title": "创建分享",
@@ -302,6 +304,7 @@
   },
   "filePreview": {
     "title": "文件预览",
+    "description": "预览和下载文件",
     "loading": "加载中...",
     "notAvailable": "此文件类型不支持预览。",
     "downloadToView": "使用下载按钮下载文件。",
@@ -1930,5 +1933,17 @@
     "passwordRequired": "密码为必填项",
     "nameRequired": "名称为必填项",
     "required": "此字段为必填项"
+  },
+  "embedCode": {
+    "title": "嵌入图片",
+    "description": "使用这些代码将此图片嵌入到论坛、网站或其他平台中",
+    "tabs": {
+      "directLink": "直接链接",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "图片文件的直接URL",
+    "htmlDescription": "使用此代码将图片嵌入HTML页面",
+    "bbcodeDescription": "使用此代码将图片嵌入支持BBCode的论坛"
   }
 }

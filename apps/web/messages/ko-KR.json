@@ -150,7 +150,9 @@
     "move": "이동",
     "rename": "이름 변경",
     "search": "검색",
-    "share": "공유"
+    "share": "공유",
+    "copied": "복사됨",
+    "copy": "복사"
   },
   "createShare": {
     "title": "공유 생성",
@@ -302,6 +304,7 @@
   },
   "filePreview": {
     "title": "파일 미리보기",
+    "description": "파일 미리보기 및 다운로드",
     "loading": "로딩 중...",
     "notAvailable": "이 파일 유형에 대한 미리보기를 사용할 수 없습니다.",
     "downloadToView": "다운로드 버튼을 사용하여 파일을 다운로드하세요.",
@@ -1930,5 +1933,17 @@
     "passwordRequired": "비밀번호는 필수입니다",
     "nameRequired": "이름은 필수입니다",
     "required": "이 필드는 필수입니다"
+  },
+  "embedCode": {
+    "title": "이미지 삽입",
+    "description": "이 코드를 사용하여 포럼, 웹사이트 또는 기타 플랫폼에 이 이미지를 삽입하세요",
+    "tabs": {
+      "directLink": "직접 링크",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "이미지 파일에 대한 직접 URL",
+    "htmlDescription": "이 코드를 사용하여 HTML 페이지에 이미지를 삽입하세요",
+    "bbcodeDescription": "BBCode를 지원하는 포럼에 이미지를 삽입하려면 이 코드를 사용하세요"
   }
 }

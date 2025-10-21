@@ -106,17 +106,15 @@ export async function fileRoutes(app: FastifyInstance) {
   );
 
   app.get(
-    "/files/:objectName/download",
+    "/files/download-url",
     {
       schema: {
         tags: ["File"],
         operationId: "getDownloadUrl",
         summary: "Get Download URL",
         description: "Generates a pre-signed URL for downloading a file",
-        params: z.object({
-          objectName: z.string().min(1, "The objectName is required"),
-        }),
         querystring: z.object({
+          objectName: z.string().min(1, "The objectName is required"),
           password: z.string().optional().describe("Share password if required"),
         }),
         response: {
@@ -131,6 +129,46 @@ export async function fileRoutes(app: FastifyInstance) {
       },
     },
     fileController.getDownloadUrl.bind(fileController)
+  );
+
+  app.get(
+    "/embed/:id",
+    {
+      schema: {
+        tags: ["File"],
+        operationId: "embedFile",
+        summary: "Embed File (Public Access)",
+        description:
+          "Returns a media file (image/video/audio) for public embedding without authentication. Only works for media files.",
+        params: z.object({
+          id: z.string().min(1, "File ID is required").describe("The file ID"),
+        }),
+        response: {
+          400: z.object({ error: z.string().describe("Error message") }),
+          403: z.object({ error: z.string().describe("Error message - not a media file") }),
+          404: z.object({ error: z.string().describe("Error message") }),
+          500: z.object({ error: z.string().describe("Error message") }),
+        },
+      },
+    },
+    fileController.embedFile.bind(fileController)
+  );
+
+  app.get(
+    "/files/download",
+    {
+      schema: {
+        tags: ["File"],
+        operationId: "downloadFile",
+        summary: "Download File",
+        description: "Downloads a file directly (returns file content)",
+        querystring: z.object({
+          objectName: z.string().min(1, "The objectName is required"),
+          password: z.string().optional().describe("Share password if required"),
+        }),
+      },
+    },
+    fileController.downloadFile.bind(fileController)
   );
 
   app.get(
