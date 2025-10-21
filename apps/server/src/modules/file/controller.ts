@@ -113,6 +113,7 @@ export class FileController {
           objectName: input.objectName,
           userId,
           folderId: input.folderId,
+          expiration: input.expiration ? new Date(input.expiration) : null,
         },
       });
 
@@ -125,6 +126,7 @@ export class FileController {
         objectName: fileRecord.objectName,
         userId: fileRecord.userId,
         folderId: fileRecord.folderId,
+        expiration: fileRecord.expiration?.toISOString() || null,
         createdAt: fileRecord.createdAt,
         updatedAt: fileRecord.updatedAt,
       };
@@ -429,6 +431,11 @@ export class FileController {
         userId: file.userId,
         folderId: file.folderId,
         relativePath: file.relativePath || null,
+        expiration: file.expiration
+          ? file.expiration instanceof Date
+            ? file.expiration.toISOString()
+            : file.expiration
+          : null,
         createdAt: file.createdAt,
         updatedAt: file.updatedAt,
       }));
@@ -502,7 +509,14 @@ export class FileController {
 
       const updatedFile = await prisma.file.update({
         where: { id },
-        data: updateData,
+        data: {
+          ...updateData,
+          expiration: updateData.expiration
+            ? new Date(updateData.expiration)
+            : updateData.expiration === null
+              ? null
+              : undefined,
+        },
       });
 
       const fileResponse = {
@@ -514,6 +528,7 @@ export class FileController {
         objectName: updatedFile.objectName,
         userId: updatedFile.userId,
         folderId: updatedFile.folderId,
+        expiration: updatedFile.expiration?.toISOString() || null,
         createdAt: updatedFile.createdAt,
         updatedAt: updatedFile.updatedAt,
       };
@@ -571,6 +586,7 @@ export class FileController {
         objectName: updatedFile.objectName,
         userId: updatedFile.userId,
         folderId: updatedFile.folderId,
+        expiration: updatedFile.expiration?.toISOString() || null,
         createdAt: updatedFile.createdAt,
         updatedAt: updatedFile.updatedAt,
       };

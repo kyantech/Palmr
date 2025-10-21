@@ -40,12 +40,13 @@ model User {
 }
 
 model File {
-  id          String  @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String
   description String?
   extension   String
   size        BigInt
   objectName  String
+  expiration  DateTime?
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
