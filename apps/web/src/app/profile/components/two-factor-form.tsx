@@ -121,7 +121,7 @@ export function TwoFactorForm() {
           <CardDescription>{status.enabled ? t("twoFactor.enabled") : t("twoFactor.description")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <p className="font-medium">
                 {t("twoFactor.status.label")}{" "}
@@ -133,19 +133,29 @@ export function TwoFactorForm() {
                 </p>
               )}
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               {status.enabled ? (
                 <>
-                  <Button variant="outline" onClick={generateNewBackupCodes} disabled={isLoading}>
+                  <Button
+                    variant="outline"
+                    onClick={generateNewBackupCodes}
+                    disabled={isLoading}
+                    className="w-full sm:w-auto"
+                  >
                     <IconKey className="h-4 w-4" />
                     {t("twoFactor.backupCodes.generateNew")}
                   </Button>
-                  <Button variant="destructive" onClick={() => setIsDisableModalOpen(true)} disabled={isLoading}>
+                  <Button
+                    variant="destructive"
+                    onClick={() => setIsDisableModalOpen(true)}
+                    disabled={isLoading}
+                    className="w-full sm:w-auto"
+                  >
                     {t("twoFactor.buttons.disable2FA")}
                   </Button>
                 </>
               ) : (
-                <Button onClick={startSetup} disabled={isLoading}>
+                <Button onClick={startSetup} disabled={isLoading} className="w-full sm:w-auto">
                   <IconShield className="h-4 w-4" />
                   {t("twoFactor.buttons.enable2FA")}
                 </Button>
