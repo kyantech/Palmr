@@ -80,7 +80,21 @@ export class S3StorageProvider implements StorageProvider {
       Key: objectName,
     });
 
-    return await getSignedUrl(s3Client, command, { expiresIn: expires });
+    // Disable automatic checksum calculation for large file uploads
+    // This prevents the SDK from adding x-amz-checksum-* headers that may cause
+    // 400 Bad Request errors with S3-compatible providers like Wasabi for files > 10GB
+    // The unhoistableHeaders option prevents specific headers from being included in the presigned URL
+    return await getSignedUrl(s3Client, command, {
+      expiresIn: expires,
+      unhoistableHeaders: new Set([
+        "x-amz-checksum-crc32",
+        "x-amz-checksum-crc32c",
+        "x-amz-checksum-sha1",
+        "x-amz-checksum-sha256",
+        "x-amz-checksum-crc64nvme",
+        "x-amz-sdk-checksum-algorithm",
+      ]),
+    });
   }
 
   async getPresignedGetUrl(objectName: string, expires: number, fileName?: string): Promise<string> {
