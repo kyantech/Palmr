@@ -3,6 +3,7 @@ export interface StorageProvider {
   getPresignedGetUrl(objectName: string, expires: number, fileName?: string): Promise<string>;
   deleteObject(objectName: string): Promise<void>;
   fileExists(objectName: string): Promise<boolean>;
+  getObjectStream(objectName: string): Promise<NodeJS.ReadableStream>;
 }
 
 export interface StorageConfig {

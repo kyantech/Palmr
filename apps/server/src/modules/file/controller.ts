@@ -1,4 +1,3 @@
-import * as fs from "fs";
 import bcrypt from "bcryptjs";
 import { FastifyReply, FastifyRequest } from "fastify";
 
@@ -29,31 +28,32 @@ export class FileController {
   private fileService = new FileService();
   private configService = new ConfigService();
 
-  async getPresignedUrl(request: FastifyRequest, reply: FastifyReply) {
-    try {
-      const { filename, extension } = request.query as {
-        filename?: string;
-        extension?: string;
-      };
-      if (!filename || !extension) {
-        return reply.status(400).send({
-          error: "The 'filename' and 'extension' parameters are required.",
-        });
-      }
+  async getPresignedUrl(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    const { filename, extension } = request.query as { filename: string; extension: string };
 
+    if (!filename || !extension) {
+      return reply.status(400).send({ error: "filename and extension are required" });
+    }
+
+    try {
+      // JWT already verified by preValidation in routes.ts
       const userId = (request as any).user?.userId;
       if (!userId) {
-        return reply.status(401).send({ error: "Unauthorized: a valid token is required to access this resource." });
+        return reply.status(401).send({ error: "Unauthorized" });
       }
 
-      const objectName = `${userId}/${Date.now()}-${filename}.${extension}`;
+      // Generate unique object name
+      const objectName = `${userId}/${Date.now()}-${Math.random().toString(36).substring(7)}-${filename}.${extension}`;
       const expires = parseInt(env.PRESIGNED_URL_EXPIRATION);
 
+      console.log(`[PRESIGNED] Generating upload URL using STORAGE_URL: ${env.STORAGE_URL || "from S3 config"}`);
+
       const url = await this.fileService.getPresignedPutUrl(objectName, expires);
-      return reply.send({ url, objectName });
+
+      return reply.status(200).send({ url, objectName });
     } catch (error) {
       console.error("Error in getPresignedUrl:", error);
-      return reply.status(500).send({ error: "Internal server error." });
+      return reply.status(500).send({ error: "Internal server error" });
     }
   }
 
@@ -264,6 +264,8 @@ export class FileController {
 
       const fileName = fileRecord.name;
       const expires = parseInt(env.PRESIGNED_URL_EXPIRATION);
+
+      // Always use presigned URLs (works for both internal and external storage)
       const url = await this.fileService.getPresignedGetUrl(objectName, expires, fileName);
       return reply.send({ url, expiresIn: expires });
     } catch (error) {
@@ -309,16 +311,14 @@ export class FileController {
             return reply.status(401).send({ error: "Unauthorized access to file." });
           }
 
-          const storageProvider = (this.fileService as any).storageProvider;
-          const filePath = storageProvider.getFilePath(objectName);
-
+          // Stream from S3/storage system
+          const stream = await this.fileService.getObjectStream(objectName);
           const contentType = getContentType(reverseShareFile.name);
           const fileName = reverseShareFile.name;
 
           reply.header("Content-Type", contentType);
           reply.header("Content-Disposition", `inline; filename="${encodeURIComponent(fileName)}"`);
 
-          const stream = fs.createReadStream(filePath);
           return reply.send(stream);
         }
 
@@ -367,16 +367,14 @@ export class FileController {
         return reply.status(401).send({ error: "Unauthorized access to file." });
       }
 
-      const storageProvider = (this.fileService as any).storageProvider;
-      const filePath = storageProvider.getFilePath(objectName);
-
+      // Stream from S3/MinIO
+      const stream = await this.fileService.getObjectStream(objectName);
       const contentType = getContentType(fileRecord.name);
       const fileName = fileRecord.name;
 
       reply.header("Content-Type", contentType);
       reply.header("Content-Disposition", `inline; filename="${encodeURIComponent(fileName)}"`);
 
-      const stream = fs.createReadStream(filePath);
       return reply.send(stream);
     } catch (error) {
       console.error("Error in downloadFile:", error);
@@ -612,9 +610,8 @@ export class FileController {
         });
       }
 
-      const storageProvider = (this.fileService as any).storageProvider;
-      const filePath = storageProvider.getFilePath(fileRecord.objectName);
-
+      // Stream from S3/MinIO
+      const stream = await this.fileService.getObjectStream(fileRecord.objectName);
       const contentType = getContentType(fileRecord.name);
       const fileName = fileRecord.name;
 
@@ -622,7 +619,6 @@ export class FileController {
       reply.header("Content-Disposition", `inline; filename="${encodeURIComponent(fileName)}"`);
       reply.header("Cache-Control", "public, max-age=31536000"); // Cache por 1 ano
 
-      const stream = fs.createReadStream(filePath);
       return reply.send(stream);
     } catch (error) {
       console.error("Error in embedFile:", error);

@@ -1,4 +1,3 @@
-import { isS3Enabled } from "../../config/storage.config";
 import { prisma } from "../../shared/prisma";
 import { ConfigService } from "../config/service";
 
@@ -23,8 +22,8 @@ export class AppService {
 
   async getSystemInfo() {
     return {
-      storageProvider: isS3Enabled ? "s3" : "filesystem",
-      s3Enabled: isS3Enabled,
+      storageProvider: "s3",
+      s3Enabled: true,
     };
   }
 

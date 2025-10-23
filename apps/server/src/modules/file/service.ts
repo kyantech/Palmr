@@ -1,5 +1,3 @@
-import { isS3Enabled } from "../../config/storage.config";
-import { FilesystemStorageProvider } from "../../providers/filesystem-storage.provider";
 import { S3StorageProvider } from "../../providers/s3-storage.provider";
 import { StorageProvider } from "../../types/storage";
 
@@ -7,29 +5,16 @@ export class FileService {
   private storageProvider: StorageProvider;
 
   constructor() {
-    if (isS3Enabled) {
-      this.storageProvider = new S3StorageProvider();
-    } else {
-      this.storageProvider = FilesystemStorageProvider.getInstance();
-    }
+    // Always use S3 (Garage internal or external S3)
+    this.storageProvider = new S3StorageProvider();
   }
 
-  async getPresignedPutUrl(objectName: string, expires: number): Promise<string> {
-    try {
-      return await this.storageProvider.getPresignedPutUrl(objectName, expires);
-    } catch (err) {
-      console.error("Erro no presignedPutObject:", err);
-      throw err;
-    }
+  async getPresignedPutUrl(objectName: string, expires: number = 3600): Promise<string> {
+    return await this.storageProvider.getPresignedPutUrl(objectName, expires);
   }
 
-  async getPresignedGetUrl(objectName: string, expires: number, fileName?: string): Promise<string> {
-    try {
-      return await this.storageProvider.getPresignedGetUrl(objectName, expires, fileName);
-    } catch (err) {
-      console.error("Erro no presignedGetObject:", err);
-      throw err;
-    }
+  async getPresignedGetUrl(objectName: string, expires: number = 3600, fileName?: string): Promise<string> {
+    return await this.storageProvider.getPresignedGetUrl(objectName, expires, fileName);
   }
 
   async deleteObject(objectName: string): Promise<void> {
@@ -41,7 +26,12 @@ export class FileService {
     }
   }
 
-  isFilesystemMode(): boolean {
-    return !isS3Enabled;
+  async getObjectStream(objectName: string): Promise<NodeJS.ReadableStream> {
+    try {
+      return await this.storageProvider.getObjectStream(objectName);
+    } catch (err) {
+      console.error("Error getting object stream:", err);
+      throw err;
+    }
   }
 }

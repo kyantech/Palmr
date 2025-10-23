@@ -1,5 +1,3 @@
-import { isS3Enabled } from "../../config/storage.config";
-import { FilesystemStorageProvider } from "../../providers/filesystem-storage.provider";
 import { S3StorageProvider } from "../../providers/s3-storage.provider";
 import { prisma } from "../../shared/prisma";
 import { StorageProvider } from "../../types/storage";
@@ -8,11 +6,8 @@ export class FolderService {
   private storageProvider: StorageProvider;
 
   constructor() {
-    if (isS3Enabled) {
-      this.storageProvider = new S3StorageProvider();
-    } else {
-      this.storageProvider = FilesystemStorageProvider.getInstance();
-    }
+    // Always use S3 (Garage internal or external S3)
+    this.storageProvider = new S3StorageProvider();
   }
 
   async getPresignedPutUrl(objectName: string, expires: number): Promise<string> {
@@ -40,10 +35,6 @@ export class FolderService {
       console.error("Erro no removeObject:", err);
       throw err;
     }
-  }
-
-  isFilesystemMode(): boolean {
-    return !isS3Enabled;
   }
 
   async getAllFilesInFolder(folderId: string, userId: string, basePath: string = ""): Promise<any[]> {
