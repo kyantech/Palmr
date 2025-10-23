@@ -5,13 +5,8 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
-import { getShareByAlias } from "@/http/endpoints/index";
+import { getDownloadUrl, getShareByAlias } from "@/http/endpoints/index";
 import type { Share } from "@/http/endpoints/shares/types";
-import {
-  bulkDownloadShareWithQueue,
-  downloadFileWithQueue,
-  downloadShareFolderWithQueue,
-} from "@/utils/download-queue-utils";
 
 const createSlug = (name: string): string => {
   return name
@@ -223,17 +218,14 @@ export function usePublicShare() {
     await loadShare(password);
   };
 
-  const handleFolderDownload = async (folderId: string, folderName: string) => {
+  const handleFolderDownload = async () => {
     try {
       if (!share) {
         throw new Error("Share data not available");
       }
 
-      await downloadShareFolderWithQueue(folderId, folderName, share.files || [], share.folders || [], {
-        silent: true,
-        showToasts: false,
-        sharePassword: password,
-      });
+      // Folder download not yet implemented
+      toast.info("Folder download: use bulk download modal");
     } catch (error) {
       console.error("Error downloading folder:", error);
       throw error;
@@ -243,25 +235,28 @@ export function usePublicShare() {
   const handleDownload = async (objectName: string, fileName: string) => {
     try {
       if (objectName.startsWith("folder:")) {
-        const folderId = objectName.replace("folder:", "");
-        await toast.promise(handleFolderDownload(folderId, fileName), {
+        await toast.promise(handleFolderDownload(), {
           loading: t("shareManager.creatingZip"),
           success: t("shareManager.zipDownloadSuccess"),
           error: t("share.errors.downloadFailed"),
         });
       } else {
-        await toast.promise(
-          downloadFileWithQueue(objectName, fileName, {
-            silent: true,
-            showToasts: false,
-            sharePassword: password,
-          }),
-          {
-            loading: t("share.messages.downloadStarted"),
-            success: t("shareManager.downloadSuccess"),
-            error: t("share.errors.downloadFailed"),
-          }
+        const loadingToast = toast.loading(t("share.messages.downloadStarted"));
+
+        const response = await getDownloadUrl(
+          objectName,
+          password ? { headers: { "x-share-password": password } } : undefined
         );
+
+        const link = document.createElement("a");
+        link.href = response.data.url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        toast.dismiss(loadingToast);
+        toast.success(t("shareManager.downloadSuccess"));
       }
     } catch {}
   };
@@ -281,8 +276,6 @@ export function usePublicShare() {
     }
 
     try {
-      const zipName = `${share.name || t("shareManager.defaultShareName")}.zip`;
-
       // Prepare all items for the share-specific bulk download
       const allItems: Array<{
         objectName?: string;
@@ -321,22 +314,43 @@ export function usePublicShare() {
         return;
       }
 
-      toast.promise(
-        bulkDownloadShareWithQueue(
-          allItems,
-          share.files || [],
-          share.folders || [],
-          zipName,
-          undefined,
-          true,
-          password
-        ).then(() => {}),
-        {
-          loading: t("shareManager.creatingZip"),
-          success: t("shareManager.zipDownloadSuccess"),
-          error: t("shareManager.zipDownloadError"),
+      const loadingToast = toast.loading(t("shareManager.preparingDownload"));
+
+      try {
+        // Get presigned URLs for all files
+        const downloadItems = await Promise.all(
+          allItems
+            .filter((item) => item.type === "file" && item.objectName)
+            .map(async (item) => {
+              const response = await getDownloadUrl(
+                item.objectName!,
+                password ? { headers: { "x-share-password": password } } : undefined
+              );
+              return {
+                url: response.data.url,
+                name: item.name,
+              };
+            })
+        );
+
+        if (downloadItems.length === 0) {
+          toast.dismiss(loadingToast);
+          toast.error(t("shareManager.noFilesToDownload"));
+          return;
         }
-      );
+
+        // Create ZIP with all files
+        const { downloadFilesAsZip } = await import("@/utils/zip-download");
+        const zipName = `${share.name || t("shareManager.defaultShareName")}.zip`;
+        await downloadFilesAsZip(downloadItems, zipName);
+
+        toast.dismiss(loadingToast);
+        toast.success(t("shareManager.zipDownloadSuccess"));
+      } catch (error) {
+        toast.dismiss(loadingToast);
+        toast.error(t("shareManager.zipDownloadError"));
+        throw error;
+      }
     } catch (error) {
       console.error("Error creating ZIP:", error);
     }
@@ -392,24 +406,46 @@ export function usePublicShare() {
           })),
       ];
 
-      const zipName = `${share.name || t("shareManager.defaultShareName")}-selected.zip`;
+      const loadingToast = toast.loading(t("shareManager.preparingDownload"));
 
-      toast.promise(
-        bulkDownloadShareWithQueue(
-          allItems,
-          share.files || [],
-          share.folders || [],
-          zipName,
-          undefined,
-          false,
-          password
-        ).then(() => {}),
-        {
-          loading: t("shareManager.creatingZip"),
-          success: t("shareManager.zipDownloadSuccess"),
-          error: t("shareManager.zipDownloadError"),
+      try {
+        // Get presigned URLs for all files
+        const fileItems = allItems.filter(
+          (item): item is { objectName: string; name: string; type: "file" } =>
+            item.type === "file" && "objectName" in item && !!item.objectName
+        );
+
+        const downloadItems = await Promise.all(
+          fileItems.map(async (item) => {
+            const response = await getDownloadUrl(
+              item.objectName,
+              password ? { headers: { "x-share-password": password } } : undefined
+            );
+            return {
+              url: response.data.url,
+              name: item.name,
+            };
+          })
+        );
+
+        if (downloadItems.length === 0) {
+          toast.dismiss(loadingToast);
+          toast.error(t("shareManager.noFilesToDownload"));
+          return;
         }
-      );
+
+        // Create ZIP with all files
+        const { downloadFilesAsZip } = await import("@/utils/zip-download");
+        const finalZipName = `${share.name || t("shareManager.defaultShareName")}-selected.zip`;
+        await downloadFilesAsZip(downloadItems, finalZipName);
+
+        toast.dismiss(loadingToast);
+        toast.success(t("shareManager.zipDownloadSuccess"));
+      } catch (error) {
+        toast.dismiss(loadingToast);
+        toast.error(t("shareManager.zipDownloadError"));
+        throw error;
+      }
     } catch (error) {
       console.error("Error creating ZIP:", error);
       toast.error(t("shareManager.zipDownloadError"));

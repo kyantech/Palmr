@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { IconAlertTriangle, IconCheck, IconCloudUpload, IconLoader, IconTrash, IconX } from "@tabler/icons-react";
-import axios from "axios";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
@@ -10,12 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { checkFile, getFilePresignedUrl, registerFile } from "@/http/endpoints";
-import { getSystemInfo } from "@/http/endpoints/app";
-import { ChunkedUploader } from "@/utils/chunked-upload";
 import { getFileIcon } from "@/utils/file-icons";
 import { generateSafeFileName } from "@/utils/file-utils";
 import { formatFileSize } from "@/utils/format-file-size";
 import getErrorData from "@/utils/getErrorData";
+import { S3Uploader } from "@/utils/s3-upload";
 
 interface UploadFileModalProps {
   isOpen: boolean;
@@ -89,22 +87,7 @@ export function UploadFileModal({ isOpen, onClose, onSuccess, currentFolderId }:
   const [isDragOver, setIsDragOver] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [hasShownSuccessToast, setHasShownSuccessToast] = useState(false);
-  const [isS3Enabled, setIsS3Enabled] = useState<boolean | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const fetchSystemInfo = async () => {
-      try {
-        const response = await getSystemInfo();
-        setIsS3Enabled(response.data.s3Enabled);
-      } catch (error) {
-        console.warn("Failed to fetch system info, defaulting to filesystem mode:", error);
-        setIsS3Enabled(false);
-      }
-    };
-
-    fetchSystemInfo();
-  }, []);
 
   useEffect(() => {
     return () => {
@@ -231,18 +214,6 @@ export function UploadFileModal({ isOpen, onClose, onSuccess, currentFolderId }:
     );
   };
 
-  const calculateUploadTimeout = (fileSize: number): number => {
-    const baseTimeout = 300000;
-    const fileSizeMB = fileSize / (1024 * 1024);
-    if (fileSizeMB > 500) {
-      const extraMB = fileSizeMB - 500;
-      const extraMinutes = Math.ceil(extraMB / 100);
-      return baseTimeout + extraMinutes * 60000;
-    }
-
-    return baseTimeout;
-  };
-
   const uploadFile = async (fileUpload: FileUpload) => {
     const { file, id } = fileUpload;
 
@@ -294,59 +265,27 @@ export function UploadFileModal({ isOpen, onClose, onSuccess, currentFolderId }:
       const abortController = new AbortController();
       setFileUploads((prev) => prev.map((u) => (u.id === id ? { ...u, abortController } : u)));
 
-      const shouldUseChunked = ChunkedUploader.shouldUseChunkedUpload(file.size, isS3Enabled ?? undefined);
+      // Always use S3 direct upload (no chunking needed)
+      const result = await S3Uploader.uploadFile({
+        file,
+        presignedUrl: url,
+        signal: abortController.signal,
+        onProgress: (progress: number) => {
+          setFileUploads((prev) => prev.map((u) => (u.id === id ? { ...u, progress } : u)));
+        },
+      });
 
-      if (shouldUseChunked) {
-        const chunkSize = ChunkedUploader.calculateOptimalChunkSize(file.size);
-
-        const result = await ChunkedUploader.uploadFile({
-          file,
-          url,
-          chunkSize,
-          signal: abortController.signal,
-          isS3Enabled: isS3Enabled ?? undefined,
-          onProgress: (progress) => {
-            setFileUploads((prev) => prev.map((u) => (u.id === id ? { ...u, progress } : u)));
-          },
-        });
-
-        if (!result.success) {
-          throw new Error(result.error || "Chunked upload failed");
-        }
-
-        const finalObjectName = result.finalObjectName || objectName;
-
-        await registerFile({
-          name: fileName,
-          objectName: finalObjectName,
-          size: file.size,
-          extension: extension,
-          folderId: currentFolderId,
-        });
-      } else {
-        const uploadTimeout = calculateUploadTimeout(file.size);
-        await axios.put(url, file, {
-          headers: {
-            "Content-Type": file.type,
-          },
-          signal: abortController.signal,
-          timeout: uploadTimeout,
-          maxContentLength: Infinity,
-          maxBodyLength: Infinity,
-          onUploadProgress: (progressEvent) => {
-            const progress = (progressEvent.loaded / (progressEvent.total || file.size)) * 100;
-            setFileUploads((prev) => prev.map((u) => (u.id === id ? { ...u, progress: Math.round(progress) } : u)));
-          },
-        });
-
-        await registerFile({
-          name: fileName,
-          objectName: objectName,
-          size: file.size,
-          extension: extension,
-          folderId: currentFolderId,
-        });
+      if (!result.success) {
+        throw new Error(result.error || "Upload failed");
       }
+
+      await registerFile({
+        name: fileName,
+        objectName: objectName,
+        size: file.size,
+        extension: extension,
+        folderId: currentFolderId,
+      });
 
       setFileUploads((prev) =>
         prev.map((u) =>

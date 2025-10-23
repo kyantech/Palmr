@@ -6,9 +6,8 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { deleteReverseShareFile } from "@/http/endpoints/reverse-shares";
+import { deleteReverseShareFile, downloadReverseShareFile } from "@/http/endpoints/reverse-shares";
 import type { ReverseShareFile } from "@/http/endpoints/reverse-shares/types";
-import { downloadReverseShareWithQueue } from "@/utils/download-queue-utils";
 import { getFileIcon } from "@/utils/file-icons";
 import { ReverseShareFilePreviewModal } from "./reverse-share-file-preview-modal";
 
@@ -56,13 +55,21 @@ export function ReceivedFilesSection({ files, onFileDeleted }: ReceivedFilesSect
 
   const handleDownload = async (file: ReverseShareFile) => {
     try {
-      await downloadReverseShareWithQueue(file.id, file.name, {
-        onComplete: () => toast.success(t("reverseShares.modals.details.downloadSuccess")),
-        onFail: () => toast.error(t("reverseShares.modals.details.downloadError")),
-      });
+      const loadingToast = toast.loading(t("reverseShares.modals.details.downloading") || "Downloading...");
+      const response = await downloadReverseShareFile(file.id);
+
+      const link = document.createElement("a");
+      link.href = response.data.url;
+      link.download = file.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.dismiss(loadingToast);
+      toast.success(t("reverseShares.modals.details.downloadSuccess"));
     } catch (error) {
       console.error("Download error:", error);
-      // Error already handled in downloadReverseShareWithQueue
+      toast.error(t("reverseShares.modals.details.downloadError"));
     }
   };
 

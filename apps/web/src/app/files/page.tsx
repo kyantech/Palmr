@@ -122,8 +122,6 @@ export default function FilesPage() {
           breadcrumbLabel={t("files.breadcrumb")}
           icon={<IconFolderOpen size={20} />}
           title={t("files.pageTitle")}
-          pendingDownloads={fileManager.pendingDownloads}
-          onCancelDownload={fileManager.cancelPendingDownload}
         >
           <Card>
             <CardContent>

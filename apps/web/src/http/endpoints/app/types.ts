@@ -33,7 +33,7 @@ export interface GetAppInfo200 {
 }
 
 export interface GetSystemInfo200 {
-  storageProvider: "s3" | "filesystem";
+  storageProvider: "s3";
   s3Enabled: boolean;
 }
 

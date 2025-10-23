@@ -4,7 +4,6 @@ import { toast } from "sonner";
 
 import { getDownloadUrl } from "@/http/endpoints";
 import { downloadReverseShareFile } from "@/http/endpoints/reverse-shares";
-import { downloadFileWithQueue, downloadReverseShareWithQueue } from "@/utils/download-queue-utils";
 import { getFileExtension, getFileType, type FileType } from "@/utils/file-types";
 
 interface FilePreviewState {
@@ -241,18 +240,32 @@ export function useFilePreview({ file, isOpen, isReverseShare = false, sharePass
     if (!fileKey) return;
 
     try {
+      const loadingToast = toast.loading(t("filePreview.downloading") || "Downloading...");
+
+      let url: string;
       if (isReverseShare) {
-        await downloadReverseShareWithQueue(file.id!, file.name, {
-          onFail: () => toast.error(t("filePreview.downloadError")),
-        });
+        const response = await downloadReverseShareFile(file.id!);
+        url = response.data.url;
       } else {
-        await downloadFileWithQueue(file.objectName, file.name, {
-          sharePassword,
-          onFail: () => toast.error(t("filePreview.downloadError")),
-        });
+        const response = await getDownloadUrl(
+          file.objectName,
+          sharePassword ? { headers: { "x-share-password": sharePassword } } : undefined
+        );
+        url = response.data.url;
       }
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = file.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.dismiss(loadingToast);
+      toast.success(t("filePreview.downloadSuccess") || "Download started");
     } catch (error) {
       console.error("Download error:", error);
+      toast.error(t("filePreview.downloadError"));
     }
   }, [isReverseShare, file.id, file.objectName, file.name, sharePassword, t]);
 

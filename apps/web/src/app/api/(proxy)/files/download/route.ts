@@ -1,66 +1,71 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { detectMimeTypeWithFallback } from "@/utils/mime-types";
-
 const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3333";
 
 export async function GET(req: NextRequest) {
-  const cookieHeader = req.headers.get("cookie");
-  const searchParams = req.nextUrl.searchParams;
-  const objectName = searchParams.get("objectName");
+  try {
+    const { searchParams } = new URL(req.url);
+    const queryString = searchParams.toString();
+    const url = `${API_BASE_URL}/files/download${queryString ? `?${queryString}` : ""}`;
 
-  if (!objectName) {
-    return new NextResponse(JSON.stringify({ error: "objectName parameter is required" }), {
-      status: 400,
+    const apiRes = await fetch(url, {
+      method: "GET",
       headers: {
-        "Content-Type": "application/json",
+        cookie: req.headers.get("cookie") || "",
+        ...Object.fromEntries(
+          Array.from(req.headers.entries()).filter(
+            ([key]) =>
+              key.startsWith("authorization") ||
+              key.startsWith("x-forwarded") ||
+              key === "user-agent" ||
+              key === "accept"
+          )
+        ),
       },
+      redirect: "manual",
     });
-  }
 
-  const queryString = searchParams.toString();
-  const url = `${API_BASE_URL}/files/download?${queryString}`;
+    if (!apiRes.ok) {
+      const errorText = await apiRes.text();
+      return new NextResponse(errorText, {
+        status: apiRes.status,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    }
 
-  const apiRes = await fetch(url, {
-    method: "GET",
-    headers: {
-      cookie: cookieHeader || "",
-    },
-    redirect: "manual",
-  });
+    // Stream the file content
+    const contentType = apiRes.headers.get("content-type") || "application/octet-stream";
+    const contentDisposition = apiRes.headers.get("content-disposition");
+    const contentLength = apiRes.headers.get("content-length");
+    const cacheControl = apiRes.headers.get("cache-control");
 
-  if (!apiRes.ok) {
-    const resBody = await apiRes.text();
-    return new NextResponse(resBody, {
+    const res = new NextResponse(apiRes.body, {
       status: apiRes.status,
       headers: {
+        "Content-Type": contentType,
+      },
+    });
+
+    if (contentDisposition) {
+      res.headers.set("Content-Disposition", contentDisposition);
+    }
+    if (contentLength) {
+      res.headers.set("Content-Length", contentLength);
+    }
+    if (cacheControl) {
+      res.headers.set("Cache-Control", cacheControl);
+    }
+
+    return res;
+  } catch (error) {
+    console.error("Error proxying download request:", error);
+    return new NextResponse(JSON.stringify({ error: "Failed to download file" }), {
+      status: 500,
+      headers: {
         "Content-Type": "application/json",
       },
     });
   }
-
-  const serverContentType = apiRes.headers.get("Content-Type");
-  const contentDisposition = apiRes.headers.get("Content-Disposition");
-  const contentLength = apiRes.headers.get("Content-Length");
-  const acceptRanges = apiRes.headers.get("Accept-Ranges");
-  const contentRange = apiRes.headers.get("Content-Range");
-  const contentType = detectMimeTypeWithFallback(serverContentType, contentDisposition, objectName);
-
-  const res = new NextResponse(apiRes.body, {
-    status: apiRes.status,
-    headers: {
-      "Content-Type": contentType,
-      ...(contentLength && { "Content-Length": contentLength }),
-      ...(acceptRanges && { "Accept-Ranges": acceptRanges }),
-      ...(contentRange && { "Content-Range": contentRange }),
-      ...(contentDisposition && { "Content-Disposition": contentDisposition }),
-    },
-  });
-
-  const setCookie = apiRes.headers.getSetCookie?.() || [];
-  if (setCookie.length > 0) {
-    res.headers.set("Set-Cookie", setCookie.join(","));
-  }
-
-  return res;
 }

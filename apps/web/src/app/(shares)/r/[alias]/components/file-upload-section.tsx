@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { IconCheck, IconFile, IconMail, IconUpload, IconUser, IconX } from "@tabler/icons-react";
-import axios from "axios";
 import { useTranslations } from "next-intl";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
@@ -14,9 +13,8 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { getPresignedUrlForUploadByAlias, registerFileUploadByAlias } from "@/http/endpoints";
-import { getSystemInfo } from "@/http/endpoints/app";
-import { ChunkedUploader } from "@/utils/chunked-upload";
 import { formatFileSize } from "@/utils/format-file-size";
+import { S3Uploader } from "@/utils/s3-upload";
 import { FILE_STATUS, UPLOAD_CONFIG, UPLOAD_PROGRESS } from "../constants";
 import { FileUploadSectionProps, FileWithProgress } from "../types";
 
@@ -26,23 +24,8 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
   const [uploaderEmail, setUploaderEmail] = useState("");
   const [description, setDescription] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-  const [isS3Enabled, setIsS3Enabled] = useState<boolean | null>(null);
 
   const t = useTranslations();
-
-  useEffect(() => {
-    const fetchSystemInfo = async () => {
-      try {
-        const response = await getSystemInfo();
-        setIsS3Enabled(response.data.s3Enabled);
-      } catch (error) {
-        console.warn("Failed to fetch system info, defaulting to filesystem mode:", error);
-        setIsS3Enabled(false);
-      }
-    };
-
-    fetchSystemInfo();
-  }, []);
 
   const validateFileSize = useCallback(
     (file: File): string | null => {
@@ -150,55 +133,20 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
     return fileName.split(".").pop() || "";
   };
 
-  const calculateUploadTimeout = (fileSize: number): number => {
-    const baseTimeout = 300000;
-    const fileSizeMB = fileSize / (1024 * 1024);
-    if (fileSizeMB > 500) {
-      const extraMB = fileSizeMB - 500;
-      const extraMinutes = Math.ceil(extraMB / 100);
-      return baseTimeout + extraMinutes * 60000;
-    }
-
-    return baseTimeout;
-  };
-
   const uploadFileToStorage = async (
     file: File,
     presignedUrl: string,
     onProgress?: (progress: number) => void
   ): Promise<void> => {
-    const shouldUseChunked = ChunkedUploader.shouldUseChunkedUpload(file.size, isS3Enabled ?? undefined);
+    // Always use S3 direct upload
+    const result = await S3Uploader.uploadFile({
+      file,
+      presignedUrl,
+      onProgress,
+    });
 
-    if (shouldUseChunked) {
-      const chunkSize = ChunkedUploader.calculateOptimalChunkSize(file.size);
-
-      const result = await ChunkedUploader.uploadFile({
-        file,
-        url: presignedUrl,
-        chunkSize,
-        isS3Enabled: isS3Enabled ?? undefined,
-        onProgress,
-      });
-
-      if (!result.success) {
-        throw new Error(result.error || "Chunked upload failed");
-      }
-    } else {
-      const uploadTimeout = calculateUploadTimeout(file.size);
-      await axios.put(presignedUrl, file, {
-        headers: {
-          "Content-Type": file.type,
-        },
-        timeout: uploadTimeout,
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity,
-        onUploadProgress: (progressEvent) => {
-          if (onProgress && progressEvent.total) {
-            const progress = (progressEvent.loaded / progressEvent.total) * 100;
-            onProgress(Math.round(progress));
-          }
-        },
-      });
+    if (!result.success) {
+      throw new Error(result.error || "Upload failed");
     }
   };
 
