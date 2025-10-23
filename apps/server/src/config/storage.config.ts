@@ -131,8 +131,6 @@ export function createPublicS3Client(): S3Client | null {
       : `http://${storageConfig.endpoint}${storageConfig.port ? `:${storageConfig.port}` : ""}`;
   }
 
-  console.log(`[STORAGE] Creating public S3 client with endpoint: ${publicEndpoint}`);
-
   return new S3Client({
     endpoint: publicEndpoint,
     region: storageConfig.region,

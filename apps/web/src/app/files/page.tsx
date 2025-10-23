@@ -69,6 +69,7 @@ export default function FilesPage() {
     navigateToRoot,
     handleSearch,
     loadFiles,
+    handleImmediateUpdate,
     modals,
   } = useFileBrowser();
 
@@ -181,6 +182,8 @@ export default function FilesPage() {
                   }
                   onMoveFolder={handleMoveFolder}
                   onMoveFile={handleMoveFile}
+                  onRefresh={loadFiles}
+                  onImmediateUpdate={handleImmediateUpdate}
                   onShareFolder={fileManager.setFolderToShare}
                   onDownloadFolder={fileManager.handleSingleFolderDownload}
                   onPreview={fileManager.setPreviewFile}

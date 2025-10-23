@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   IconArrowsMove,
   IconChevronDown,
@@ -20,6 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useDragDrop } from "@/hooks/use-drag-drop";
 import { getDownloadUrl } from "@/http/endpoints";
 import { getFileIcon } from "@/utils/file-icons";
 import { formatFileSize } from "@/utils/format-file-size";
@@ -77,6 +78,8 @@ interface FilesGridProps {
   onDownloadFolder?: (folderId: string, folderName: string) => Promise<void>;
   onMoveFolder?: (folder: Folder) => void;
   onMoveFile?: (file: File) => void;
+  onRefresh?: () => Promise<void>;
+  onImmediateUpdate?: (itemId: string, itemType: "file" | "folder", newParentId: string | null) => void;
   showBulkActions?: boolean;
   isShareMode?: boolean;
 }
@@ -101,6 +104,8 @@ export function FilesGrid({
   onDownloadFolder,
   onMoveFolder,
   onMoveFile,
+  onRefresh,
+  onImmediateUpdate,
   showBulkActions = true,
   isShareMode = false,
 }: FilesGridProps) {
@@ -108,6 +113,26 @@ export function FilesGrid({
 
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [selectedFolders, setSelectedFolders] = useState<Set<string>>(new Set());
+
+  // Drag and drop functionality
+  const {
+    draggedItem,
+    draggedItems,
+    dragOverTarget,
+    isDragging,
+    handleDragStart,
+    handleDragEnd,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+  } = useDragDrop({
+    onRefresh,
+    onImmediateUpdate,
+    selectedFiles,
+    selectedFolders,
+    files,
+    folders,
+  });
 
   const [filePreviewUrls, setFilePreviewUrls] = useState<Record<string, string>>({});
 
@@ -225,6 +250,11 @@ export function FilesGrid({
   const selectedItems = selectedFiles.size + selectedFolders.size;
   const isAllSelected = totalItems > 0 && selectedItems === totalItems;
 
+  // Memoize dragged item IDs for performance
+  const draggedItemIds = useMemo(() => {
+    return new Set(draggedItems.map((item) => item.id));
+  }, [draggedItems]);
+
   const handleBulkAction = (action: "delete" | "share" | "download" | "move") => {
     const selectedFileObjects = getSelectedFiles();
     const selectedFolderObjects = getSelectedFolders();
@@ -339,14 +369,45 @@ export function FilesGrid({
         {/* Render folders first */}
         {folders.map((folder) => {
           const isSelected = selectedFolders.has(folder.id);
+          const isDragOver = dragOverTarget?.id === folder.id;
+          const isDraggedOver = draggedItem?.id === folder.id;
+
+          // Check if this folder is part of the dragged items (optimized with memoized Set)
+          const isBeingDragged = draggedItemIds.has(folder.id);
+          const isAnySelectedItemDragged = isDragging && isSelected && draggedItems.length > 1;
 
           return (
             <div
               key={`folder-${folder.id}`}
-              className={`relative group border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer ${
+              className={`relative group border rounded-lg p-3 hover:bg-muted/50 transition-all duration-200 cursor-pointer ${
                 isSelected ? "ring-2 ring-primary bg-muted/50" : ""
+              } ${isDragOver && !isBeingDragged ? "ring-2 ring-primary bg-primary/10 scale-105" : ""} ${
+                isDraggedOver ? "opacity-50" : ""
+              } ${
+                isBeingDragged || isAnySelectedItemDragged
+                  ? "opacity-40 scale-95 transform rotate-2 border-2 border-primary/50 shadow-lg"
+                  : ""
               }`}
+              style={{
+                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                willChange: isDragging ? "transform, opacity" : "auto",
+              }}
               onClick={() => onNavigateToFolder?.(folder.id)}
+              draggable
+              onDragStart={(e) => {
+                e.stopPropagation();
+                handleDragStart(e, { id: folder.id, type: "folder", name: folder.name });
+              }}
+              onDragEnd={handleDragEnd}
+              onDragOver={(e) => {
+                e.stopPropagation();
+                handleDragOver(e, { id: folder.id, type: "folder", name: folder.name });
+              }}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => {
+                e.stopPropagation();
+                handleDrop(e, { id: folder.id, type: "folder", name: folder.name });
+              }}
             >
               <div className="absolute top-2 left-2 z-10 checkbox-wrapper">
                 <Checkbox
@@ -460,7 +521,6 @@ export function FilesGrid({
                 <div className="w-16 h-16 flex items-center justify-center bg-muted/30 rounded-lg overflow-hidden">
                   <IconFolder className="h-10 w-10 text-primary" />
                 </div>
-
                 <div className="w-full space-y-1">
                   <p className="text-sm font-medium truncate text-left" title={folder.name}>
                     {folder.name}
@@ -486,13 +546,26 @@ export function FilesGrid({
           const isSelected = selectedFiles.has(file.id);
           const isImage = isImageFile(file.name);
           const previewUrl = filePreviewUrls[file.id];
+          const isDraggedOver = draggedItem?.id === file.id;
+
+          // Check if this file is part of the dragged items (optimized with memoized Set)
+          const isBeingDragged = draggedItemIds.has(file.id);
+          const isAnySelectedItemDragged = isDragging && isSelected && draggedItems.length > 1;
 
           return (
             <div
               key={file.id}
-              className={`relative group border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer ${
+              className={`relative group border rounded-lg p-3 hover:bg-muted/50 transition-all duration-200 cursor-pointer ${
                 isSelected ? "ring-2 ring-primary bg-muted/50" : ""
+              } ${isDraggedOver ? "opacity-50 scale-95" : ""} ${
+                isBeingDragged || isAnySelectedItemDragged
+                  ? "opacity-40 scale-95 transform rotate-2 border-2 border-primary/50 shadow-lg"
+                  : ""
               }`}
+              style={{
+                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                willChange: isDragging ? "transform, opacity" : "auto",
+              }}
               onClick={(e) => {
                 if (
                   (e.target as HTMLElement).closest(".checkbox-wrapper") ||
@@ -505,6 +578,12 @@ export function FilesGrid({
                   onPreview(file);
                 }
               }}
+              draggable
+              onDragStart={(e) => {
+                e.stopPropagation();
+                handleDragStart(e, { id: file.id, type: "file", name: file.name });
+              }}
+              onDragEnd={handleDragEnd}
             >
               <div className="absolute top-2 left-2 z-10 checkbox-wrapper">
                 <Checkbox
