@@ -48,6 +48,8 @@ interface FilesViewManagerProps {
   emptyStateComponent?: React.ComponentType;
   isShareMode?: boolean;
   onDeleteFolder?: (folder: Folder) => void;
+  onImmediateUpdate?: (itemId: string, itemType: "file" | "folder", newParentId: string | null) => void;
+  onRefresh?: () => Promise<void>;
   onRenameFolder?: (folder: Folder) => void;
   onMoveFolder?: (folder: Folder) => void;
   onMoveFile?: (file: File) => void;
@@ -86,6 +88,8 @@ export function FilesViewManager({
   onDeleteFolder,
   onRenameFolder,
   onMoveFolder,
+  onImmediateUpdate,
+  onRefresh,
   onMoveFile,
   onShareFolder,
   onDownloadFolder,
@@ -131,6 +135,8 @@ export function FilesViewManager({
     onShareFolder: isShareMode ? undefined : onShareFolder,
     onDownloadFolder,
     onPreview,
+    onImmediateUpdate,
+    onRefresh,
     onRename: isShareMode ? undefined : onRename,
     onDownload,
     onShare: isShareMode ? undefined : onShare,

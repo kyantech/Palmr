@@ -69,6 +69,7 @@ export function useFileBrowser() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [clearSelectionCallback, setClearSelectionCallbackState] = useState<(() => void) | undefined>();
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [forceUpdate, setForceUpdate] = useState(0);
   const isNavigatingRef = useRef(false);
 
   const urlFolderSlug = searchParams.get("folder") || null;
@@ -198,6 +199,7 @@ export function useFileBrowser() {
 
   const loadFiles = useCallback(async () => {
     try {
+      console.log("loadFiles called - starting to load files...");
       setIsLoading(true);
 
       const [filesResponse, foldersResponse] = await Promise.all([listFiles(), listFolders()]);
@@ -232,6 +234,12 @@ export function useFileBrowser() {
       } else {
         setCurrentPath([]);
       }
+
+      console.log("Files and folders updated:", {
+        filesCount: sortedFiles.length,
+        foldersCount: sortedFolders.length,
+        currentFolderId: resolvedFolderId,
+      });
     } catch {
       toast.error(t("files.loadError"));
     } finally {
@@ -240,6 +248,36 @@ export function useFileBrowser() {
   }, [urlFolderSlug, buildBreadcrumbPath, t, getFolderIdFromPathSlug]);
 
   const fileManager = useEnhancedFileManager(loadFiles, clearSelectionCallback);
+
+  const handleImmediateUpdate = useCallback(
+    (itemId: string, itemType: "file" | "folder", newParentId: string | null) => {
+      // Use requestAnimationFrame for smoother updates
+      requestAnimationFrame(() => {
+        if (itemType === "file") {
+          setFiles((prevFiles) => {
+            return prevFiles.filter((file) => file.id !== itemId);
+          });
+
+          // Update allFiles to keep state consistent
+          setAllFiles((prevAllFiles) => {
+            return prevAllFiles.map((file) => (file.id === itemId ? { ...file, folderId: newParentId } : file));
+          });
+        } else if (itemType === "folder") {
+          setFolders((prevFolders) => {
+            return prevFolders.filter((folder) => folder.id !== itemId);
+          });
+
+          // Update allFolders to keep state consistent
+          setAllFolders((prevAllFolders) => {
+            return prevAllFolders.map((folder) =>
+              folder.id === itemId ? { ...folder, parentId: newParentId } : folder
+            );
+          });
+        }
+      });
+    },
+    []
+  );
 
   const getImmediateChildFoldersWithMatches = useCallback(() => {
     if (!searchQuery) return [];
@@ -333,6 +371,8 @@ export function useFileBrowser() {
 
     handleSearch: setSearchQuery,
     loadFiles,
+    handleImmediateUpdate,
+    forceUpdate,
 
     allFiles,
     allFolders,

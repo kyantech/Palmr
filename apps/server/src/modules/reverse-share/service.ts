@@ -635,11 +635,12 @@ export class ReverseShareService {
         const uploadOptions: any = {
           method: "PUT",
           body: response.body,
+          duplex: "half",
           headers: {
             "Content-Type": "application/octet-stream",
             "Content-Length": file.size.toString(),
           },
-          signal: AbortSignal.timeout(600000), // 10 minutes timeout
+          signal: AbortSignal.timeout(9600000), // 160 minutes timeout
         };
 
         const uploadResponse = await fetch(uploadUrl, uploadOptions);
@@ -802,7 +803,7 @@ export class ReverseShareService {
     }
 
     // Check if reverse share is expired
-    const isExpired = reverseShare.expiration && new Date(reverseShare.expiration) < new Date();
+    const isExpired = reverseShare.expiration ? new Date(reverseShare.expiration) < new Date() : false;
 
     // Check if inactive
     const isInactive = !reverseShare.isActive;

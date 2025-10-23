@@ -219,9 +219,6 @@ export class FileController {
 
       let hasAccess = false;
 
-      // Don't log raw passwords. Log only whether a password was provided (for debugging access flow).
-      console.log(`Requested file access for object="${objectName}" passwordProvided=${password ? true : false}`);
-
       const shares = await prisma.share.findMany({
         where: {
           files: {

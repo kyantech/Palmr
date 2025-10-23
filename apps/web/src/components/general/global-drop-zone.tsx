@@ -62,12 +62,24 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalD
   );
 
   const handleDragOver = useCallback((event: DragEvent) => {
+    // Check if this is a move operation (dragging existing items)
+    const isMoveOperation = event.dataTransfer?.types.includes("application/x-move-item");
+    if (isMoveOperation) {
+      return; // Don't interfere with move operations
+    }
+
     event.preventDefault();
     event.stopPropagation();
     setIsDragOver(true);
   }, []);
 
   const handleDragLeave = useCallback((event: DragEvent) => {
+    // Check if this is a move operation (dragging existing items)
+    const isMoveOperation = event.dataTransfer?.types.includes("application/x-move-item");
+    if (isMoveOperation) {
+      return; // Don't interfere with move operations
+    }
+
     event.preventDefault();
     event.stopPropagation();
     setIsDragOver(false);
@@ -177,6 +189,12 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalD
 
   const handleDrop = useCallback(
     (event: DragEvent) => {
+      // Check if this is a move operation (dragging existing items)
+      const isMoveOperation = event.dataTransfer?.types.includes("application/x-move-item");
+      if (isMoveOperation) {
+        return; // Don't interfere with move operations
+      }
+
       event.preventDefault();
       event.stopPropagation();
       setIsDragOver(false);
