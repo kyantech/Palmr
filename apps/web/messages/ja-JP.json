@@ -1945,5 +1945,9 @@
     "directLinkDescription": "画像ファイルへの直接URL",
     "htmlDescription": "このコードを使用してHTMLページに画像を埋め込みます",
     "bbcodeDescription": "BBCodeをサポートするフォーラムに画像を埋め込むには、このコードを使用します"
+  },
+  "contextMenu": {
+    "newFolder": "新規フォルダ",
+    "uploadFile": "ファイルをアップロード"
   }
 }

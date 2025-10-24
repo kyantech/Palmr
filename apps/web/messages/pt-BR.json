@@ -8,6 +8,10 @@
       "auth_failed": "Falha na autenticação. Tente novamente."
     }
   },
+  "contextMenu": {
+    "newFolder": "Nova pasta",
+    "uploadFile": "Enviar arquivo"
+  },
   "authProviders": {
     "title": "Provedores de autenticação",
     "description": "Configure provedores de autenticação externos para SSO",

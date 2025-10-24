@@ -1945,5 +1945,9 @@
     "directLinkDescription": "Resim dosyasının doğrudan URL'si",
     "htmlDescription": "Resmi HTML sayfalarına yerleştirmek için bu kodu kullanın",
     "bbcodeDescription": "BBCode destekleyen forumlara resmi yerleştirmek için bu kodu kullanın"
+  },
+  "contextMenu": {
+    "newFolder": "Yeni klasör",
+    "uploadFile": "Dosya yükle"
   }
 }

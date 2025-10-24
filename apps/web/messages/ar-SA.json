@@ -1947,5 +1947,9 @@
     "directLinkDescription": "عنوان URL مباشر لملف الصورة",
     "htmlDescription": "استخدم هذا الكود لتضمين الصورة في صفحات HTML",
     "bbcodeDescription": "استخدم هذا الكود لتضمين الصورة في المنتديات التي تدعم BBCode"
+  },
+  "contextMenu": {
+    "newFolder": "مجلد جديد",
+    "uploadFile": "رفع ملف"
   }
 }

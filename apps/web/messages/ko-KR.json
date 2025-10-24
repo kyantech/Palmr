@@ -1945,5 +1945,9 @@
     "directLinkDescription": "이미지 파일에 대한 직접 URL",
     "htmlDescription": "이 코드를 사용하여 HTML 페이지에 이미지를 삽입하세요",
     "bbcodeDescription": "BBCode를 지원하는 포럼에 이미지를 삽입하려면 이 코드를 사용하세요"
+  },
+  "contextMenu": {
+    "newFolder": "새 폴더",
+    "uploadFile": "파일 업로드"
   }
 }
