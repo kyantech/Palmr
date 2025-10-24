@@ -50,6 +50,8 @@
     "@radix-ui/react-tabs": "^1.1.12",
     "@tabler/icons-react": "^3.34.0",
     "@types/react-dropzone": "^5.1.0",
+    "@uppy/aws-s3": "^4.3.2",
+    "@uppy/core": "^4.5.2",
     "axios": "^1.10.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
