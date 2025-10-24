@@ -115,16 +115,11 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
       shouldUseMultipart: (file: any) => {
         const fileSize = file.size || 0;
         const useMultipart = fileSize >= UPLOAD_CONFIG.MULTIPART_THRESHOLD;
-        console.log(
-          `[Upload] File ${file.name} (${(fileSize / 1024 / 1024).toFixed(2)}MB) - Using ${useMultipart ? "MULTIPART" : "SIMPLE PUT"}`
-        );
         return useMultipart;
       },
 
       // For simple uploads (<100MB)
       async getUploadParameters(file: UppyFile<any, any>): Promise<AwsS3UploadParameters> {
-        console.log(`[Upload] Getting upload parameters for simple upload: ${file.name}`);
-
         try {
           // 1. Validate file if validation callback is provided
           if (onValidateRef.current) {
@@ -157,8 +152,6 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
           // Store the FINAL object name in file metadata
           uppy.setFileMeta(file.id, { objectName: finalObjectName });
 
-          console.log(`[Upload] Simple upload URL obtained for: ${finalObjectName}`);
-
           return {
             method: "PUT" as const,
             url: result.url,
@@ -175,10 +168,6 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
       // For multipart uploads (≥100MB)
       async createMultipartUpload(file: UppyFile<any, any>) {
         const fileSize = file.size || 0;
-        console.log(
-          `[Upload:Multipart] Creating multipart upload for: ${file.name} (${(fileSize / 1024 / 1024).toFixed(2)}MB)`
-        );
-
         try {
           // 1. Validate file
           if (onValidateRef.current) {
@@ -210,8 +199,6 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
             uploadId,
           });
 
-          console.log(`[Upload:Multipart] Created - uploadId: ${uploadId}, objectName: ${actualObjectName}`);
-
           return {
             uploadId,
             key: actualObjectName,
@@ -222,7 +209,7 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
         }
       },
 
-      // List parts (for resuming multipart uploads)
+      //TODO: List parts (for resuming multipart uploads)
       async listParts(file: UppyFile<any, any>, { uploadId, key }: any) {
         console.log(`[Upload:Multipart] Listing parts for: ${file.name}`);
         // Para simplificar, não vamos implementar resumo de upload por enquanto
@@ -233,7 +220,6 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
       // Sign individual parts for multipart upload
       async signPart(file: UppyFile<any, any>, partData: any) {
         const { uploadId, key, partNumber, signal } = partData;
-        console.log(`[Upload:Multipart] Signing part ${partNumber} for: ${file.name}`);
 
         try {
           const response = await getMultipartPartUrl({
@@ -241,8 +227,6 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
             objectName: key,
             partNumber: partNumber.toString(),
           });
-
-          console.log(`[Upload:Multipart] Got signed URL for part ${partNumber}`);
 
           // Return the signed URL object directly - Uppy expects { url, headers }
           return {
@@ -257,7 +241,6 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
 
       // Complete multipart upload
       async completeMultipartUpload(file: UppyFile<any, any>, data: any) {
-        console.log(`[Upload:Multipart] Completing multipart upload for: ${file.name}`);
         const { uploadId, key, parts } = data;
         const meta = file.meta as { objectName: string };
 
@@ -268,8 +251,6 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
             parts,
           });
 
-          console.log(`[Upload:Multipart] Completed successfully: ${meta.objectName}`);
-
           return {};
         } catch (error) {
           console.error("[Upload:Multipart] Failed to complete multipart upload:", error);
@@ -278,7 +259,6 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
       },
 
       async abortMultipartUpload(file: UppyFile<any, any>, data: any) {
-        console.log(`[Upload:Multipart] Aborting multipart upload for: ${file.name}`);
         const { uploadId, key } = data;
         const meta = file.meta as { objectName: string };
 
@@ -287,8 +267,6 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
             uploadId,
             objectName: meta.objectName || key,
           });
-
-          console.log(`[Upload:Multipart] Aborted: ${meta.objectName}`);
         } catch (error) {
           console.error("[Upload:Multipart] Failed to abort multipart upload:", error);
           // Don't throw - abort is cleanup, shouldn't fail the operation
@@ -337,15 +315,10 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
     // Upload success
     const handleSuccess = async (file: any, response: any) => {
       const objectName = file.meta.objectName;
-      console.log("[Upload] Upload complete:", file.name, objectName);
-      console.log("[Upload] Response:", response);
-      console.log("[Upload] Response status:", response?.status);
-      console.log("[Upload] Response body:", response?.body);
 
       try {
         // Call registration callback
         if (onAfterUploadRef.current) {
-          console.log("[Upload] Registering file:", file.name);
           await onAfterUploadRef.current(file.id, file.data, objectName);
         }
 
@@ -370,7 +343,6 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
 
     // All uploads complete
     const handleComplete = (result: any) => {
-      console.log("[Upload] All uploads complete");
       setIsUploading(false);
     };
 
@@ -396,8 +368,6 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
     const uppy = uppyRef.current;
     if (!uppy) return;
 
-    console.log(`[Upload] Adding ${files.length} files to upload queue`);
-
     files.forEach((file) => {
       try {
         uppy.addFile({
@@ -422,7 +392,6 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
     const uppy = uppyRef.current;
     if (!uppy) return;
 
-    console.log("[Upload] Starting upload");
     setIsUploading(true);
     uppy.upload();
   }, []);
@@ -433,8 +402,6 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
   const cancelUpload = useCallback((fileId: string) => {
     const uppy = uppyRef.current;
     if (!uppy) return;
-
-    console.log("[Upload] Cancelling upload:", fileId);
 
     uppy.removeFile(fileId);
     setFileUploads((prev) => prev.map((f) => (f.id === fileId ? { ...f, status: "cancelled" } : f)));
@@ -450,8 +417,6 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
 
       const file = fileUploads.find((f) => f.id === fileId);
       if (!file) return;
-
-      console.log("[Upload] Retrying upload:", fileId);
 
       // Reset status to pending
       setFileUploads((prev) => prev.map((f) => (f.id === fileId ? { ...f, status: "pending", error: undefined } : f)));
@@ -469,8 +434,6 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
     (fileId: string) => {
       const uppy = uppyRef.current;
       if (!uppy) return;
-
-      console.log("[Upload] Removing file:", fileId);
 
       // Revoke preview URL if exists
       const file = fileUploads.find((f) => f.id === fileId);
@@ -490,8 +453,6 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
   const clearAll = useCallback(() => {
     const uppy = uppyRef.current;
     if (!uppy) return;
-
-    console.log("[Upload] Clearing all files");
 
     // Revoke all preview URLs from current state
     setFileUploads((prev) => {

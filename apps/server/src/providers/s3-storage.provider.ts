@@ -179,7 +179,6 @@ export class S3StorageProvider implements StorageProvider {
    * Returns uploadId for subsequent part uploads
    */
   async createMultipartUpload(objectName: string): Promise<string> {
-    console.log(`[S3] Creating multipart upload for: ${objectName}`);
     const client = createPublicS3Client();
     if (!client) {
       throw new Error("S3 client could not be created");
@@ -196,7 +195,6 @@ export class S3StorageProvider implements StorageProvider {
       throw new Error("Failed to create multipart upload - no UploadId returned");
     }
 
-    console.log(`[S3] Multipart upload created - uploadId: ${response.UploadId}`);
     return response.UploadId;
   }
 
@@ -209,7 +207,6 @@ export class S3StorageProvider implements StorageProvider {
     partNumber: number,
     expires: number
   ): Promise<string> {
-    console.log(`[S3] Getting presigned URL for part ${partNumber} of ${objectName}`);
     const client = createPublicS3Client();
     if (!client) {
       throw new Error("S3 client could not be created");
@@ -223,7 +220,6 @@ export class S3StorageProvider implements StorageProvider {
     });
 
     const url = await getSignedUrl(client, command, { expiresIn: expires });
-    console.log(`[S3] Presigned URL generated for part ${partNumber}`);
     return url;
   }
 
@@ -235,7 +231,6 @@ export class S3StorageProvider implements StorageProvider {
     uploadId: string,
     parts: Array<{ PartNumber: number; ETag: string }>
   ): Promise<void> {
-    console.log(`[S3] Completing multipart upload for ${objectName} with ${parts.length} parts`);
     const client = this.ensureClient();
 
     const command = new CompleteMultipartUploadCommand({
@@ -251,14 +246,12 @@ export class S3StorageProvider implements StorageProvider {
     });
 
     await client.send(command);
-    console.log(`[S3] Multipart upload completed successfully for ${objectName}`);
   }
 
   /**
    * Abort a multipart upload
    */
   async abortMultipartUpload(objectName: string, uploadId: string): Promise<void> {
-    console.log(`[S3] Aborting multipart upload for ${objectName} - uploadId: ${uploadId}`);
     const client = this.ensureClient();
 
     const command = new AbortMultipartUploadCommand({
@@ -268,6 +261,5 @@ export class S3StorageProvider implements StorageProvider {
     });
 
     await client.send(command);
-    console.log(`[S3] Multipart upload aborted for ${objectName}`);
   }
 }

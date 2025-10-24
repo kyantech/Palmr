@@ -96,8 +96,6 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalD
 
     // All uploads are done (no pending/uploading)
     if (pendingCount === 0 && successCount > 0) {
-      console.log("[GlobalDropZone] All uploads complete, showing toast");
-
       toast.success(
         errorCount > 0
           ? t("uploadFile.partialSuccess", { success: successCount, error: errorCount })

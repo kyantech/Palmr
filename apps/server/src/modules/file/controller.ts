@@ -46,8 +46,6 @@ export class FileController {
       const objectName = `${userId}/${Date.now()}-${Math.random().toString(36).substring(7)}-${filename}.${extension}`;
       const expires = parseInt(env.PRESIGNED_URL_EXPIRATION);
 
-      console.log(`[PRESIGNED] Generating upload URL using STORAGE_URL: ${env.STORAGE_URL || "from S3 config"}`);
-
       const url = await this.fileService.getPresignedPutUrl(objectName, expires);
 
       return reply.status(200).send({ url, objectName });
@@ -665,11 +663,7 @@ export class FileController {
       // Generate unique object name (same pattern as simple upload)
       const objectName = `${userId}/${Date.now()}-${Math.random().toString(36).substring(7)}-${filename}.${extension}`;
 
-      console.log(`[Multipart] Creating multipart upload for: ${objectName}`);
-
       const uploadId = await this.fileService.createMultipartUpload(objectName);
-
-      console.log(`[Multipart] Created uploadId: ${uploadId}`);
 
       return reply.status(200).send({
         uploadId,
@@ -706,8 +700,6 @@ export class FileController {
 
       const expires = parseInt(env.PRESIGNED_URL_EXPIRATION);
 
-      console.log(`[Multipart] Getting presigned URL for part ${partNum} of ${objectName}`);
-
       const url = await this.fileService.getPresignedPartUrl(objectName, uploadId, partNum, expires);
 
       return reply.status(200).send({ url });
@@ -734,11 +726,7 @@ export class FileController {
         return reply.status(400).send({ error: "uploadId, objectName, and parts are required" });
       }
 
-      console.log(`[Multipart] Completing multipart upload for ${objectName} with ${parts.length} parts`);
-
       await this.fileService.completeMultipartUpload(objectName, uploadId, parts);
-
-      console.log(`[Multipart] Completed successfully: ${objectName}`);
 
       return reply.status(200).send({
         message: "Multipart upload completed successfully",
@@ -766,11 +754,7 @@ export class FileController {
         return reply.status(400).send({ error: "uploadId and objectName are required" });
       }
 
-      console.log(`[Multipart] Aborting multipart upload for ${objectName}`);
-
       await this.fileService.abortMultipartUpload(objectName, uploadId);
-
-      console.log(`[Multipart] Aborted successfully: ${objectName}`);
 
       return reply.status(200).send({
         message: "Multipart upload aborted successfully",
