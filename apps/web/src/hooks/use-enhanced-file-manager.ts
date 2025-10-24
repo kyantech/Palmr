@@ -135,7 +135,11 @@ export interface EnhancedFileManagerHook {
   setClearSelectionCallback?: (callback: () => void) => void;
 }
 
-export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSelection?: () => void) {
+export function useEnhancedFileManager(
+  onRefresh: () => Promise<void>,
+  clearSelection?: () => void,
+  handleImmediateUpdate?: (itemId: string, itemType: "file" | "folder", newParentId: string | null) => void
+) {
   const t = useTranslations();
 
   const [previewFile, setPreviewFile] = useState<PreviewFile | null>(null);
@@ -188,7 +192,6 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
         name: newName,
         description: description || null,
       });
-      await onRefresh();
       toast.success(t("files.updateSuccess"));
       setFileToRename(null);
     } catch (error) {
@@ -199,8 +202,12 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
 
   const handleDelete = async (fileId: string) => {
     try {
+      // Optimistic update - remove from UI immediately
+      if (handleImmediateUpdate) {
+        handleImmediateUpdate(fileId, "file", "__DELETE__" as any);
+      }
+
       await deleteFile(fileId);
-      await onRefresh();
       toast.success(t("files.deleteSuccess"));
       setFileToDelete(null);
     } catch (error) {
@@ -299,6 +306,16 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
     if (!filesToDelete && !foldersToDelete) return;
 
     try {
+      // Optimistic update - remove all items from UI immediately
+      if (handleImmediateUpdate) {
+        filesToDelete?.forEach((file) => {
+          handleImmediateUpdate(file.id, "file", "__DELETE__" as any);
+        });
+        foldersToDelete?.forEach((folder) => {
+          handleImmediateUpdate(folder.id, "folder", "__DELETE__" as any);
+        });
+      }
+
       const deletePromises = [];
 
       if (filesToDelete) {
@@ -315,7 +332,6 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
       toast.success(t("files.bulkDeleteSuccess", { count: totalCount }));
       setFilesToDelete(null);
       setFoldersToDelete(null);
-      onRefresh();
     } catch (error) {
       console.error("Failed to delete items:", error);
       toast.error(t("files.bulkDeleteError"));
@@ -333,7 +349,6 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
 
       await registerFolder(folderData);
       toast.success(t("folderActions.folderCreated"));
-      await onRefresh();
       setCreateFolderModalOpen(false);
     } catch (error) {
       console.error("Error creating folder:", error);
@@ -346,7 +361,6 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
     try {
       await updateFolder(folderId, { name: newName, description });
       toast.success(t("folderActions.folderRenamed"));
-      await onRefresh();
       setFolderToRename(null);
     } catch (error) {
       console.error("Error renaming folder:", error);
@@ -356,9 +370,13 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
 
   const handleFolderDelete = async (folderId: string) => {
     try {
+      // Optimistic update - remove from UI immediately
+      if (handleImmediateUpdate) {
+        handleImmediateUpdate(folderId, "folder", "__DELETE__" as any);
+      }
+
       await deleteFolder(folderId);
       toast.success(t("folderActions.folderDeleted"));
-      await onRefresh();
       setFolderToDelete(null);
       if (clearSelectionCallback) {
         clearSelectionCallback();

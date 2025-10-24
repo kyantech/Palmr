@@ -1945,5 +1945,9 @@
     "directLinkDescription": "छवि फ़ाइल का सीधा URL",
     "htmlDescription": "HTML पेजों में छवि एम्बेड करने के लिए इस कोड का उपयोग करें",
     "bbcodeDescription": "BBCode का समर्थन करने वाले मंचों में छवि एम्बेड करने के लिए इस कोड का उपयोग करें"
+  },
+  "contextMenu": {
+    "newFolder": "नया फ़ोल्डर",
+    "uploadFile": "फ़ाइल अपलोड करें"
   }
 }

@@ -1945,5 +1945,9 @@
     "directLinkDescription": "Bezpośredni adres URL pliku obrazu",
     "htmlDescription": "Użyj tego kodu, aby osadzić obraz na stronach HTML",
     "bbcodeDescription": "Użyj tego kodu, aby osadzić obraz na forach obsługujących BBCode"
+  },
+  "contextMenu": {
+    "newFolder": "Nowy folder",
+    "uploadFile": "Prześlij plik"
   }
 }

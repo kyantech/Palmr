@@ -1945,5 +1945,9 @@
     "directLinkDescription": "URL directe vers le fichier image",
     "htmlDescription": "Utilisez ce code pour intégrer l'image dans des pages HTML",
     "bbcodeDescription": "Utilisez ce code pour intégrer l'image dans des forums prenant en charge BBCode"
+  },
+  "contextMenu": {
+    "newFolder": "Nouveau dossier",
+    "uploadFile": "Télécharger un fichier"
   }
 }

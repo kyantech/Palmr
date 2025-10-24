@@ -8,6 +8,10 @@
       "auth_failed": "Authentication failed. Please try again."
     }
   },
+  "contextMenu": {
+    "newFolder": "New folder",
+    "uploadFile": "Upload file"
+  },
   "authProviders": {
     "title": "Authentication Providers",
     "description": "Configure external authentication providers for SSO",

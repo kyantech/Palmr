@@ -8,6 +8,10 @@
       "auth_failed": "Error de autenticación. Por favor, inténtelo de nuevo."
     }
   },
+  "contextMenu": {
+    "newFolder": "Nueva carpeta",
+    "uploadFile": "Subir archivo"
+  },
   "authProviders": {
     "title": "Proveedores de Autenticación",
     "description": "Configurar proveedores de autenticación externos para SSO",

@@ -1945,5 +1945,9 @@
     "directLinkDescription": "Directe URL naar het afbeeldingsbestand",
     "htmlDescription": "Gebruik deze code om de afbeelding in te sluiten in HTML-pagina's",
     "bbcodeDescription": "Gebruik deze code om de afbeelding in te sluiten in forums die BBCode ondersteunen"
+  },
+  "contextMenu": {
+    "newFolder": "Nieuwe map",
+    "uploadFile": "Bestand uploaden"
   }
 }

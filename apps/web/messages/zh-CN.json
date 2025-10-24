@@ -1945,5 +1945,9 @@
     "directLinkDescription": "图片文件的直接URL",
     "htmlDescription": "使用此代码将图片嵌入HTML页面",
     "bbcodeDescription": "使用此代码将图片嵌入支持BBCode的论坛"
+  },
+  "contextMenu": {
+    "newFolder": "新建文件夹",
+    "uploadFile": "上传文件"
   }
 }

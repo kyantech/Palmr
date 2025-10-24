@@ -65,7 +65,7 @@ export function useDragDrop({
     const itemsToShow = items.slice(0, 3);
     const remaining = items.length - itemsToShow.length;
 
-    itemsToShow.forEach((item, index) => {
+    itemsToShow.forEach((item) => {
       const itemDiv = document.createElement("div");
       itemDiv.style.display = "flex";
       itemDiv.style.alignItems = "center";
@@ -229,13 +229,6 @@ export function useDragDrop({
           );
         } else {
           toast.success(`${validItems.length} items moved to "${target.name}"`);
-        }
-
-        // Refresh data after successful move with slight delay for smooth transition
-        if (onRefresh) {
-          setTimeout(async () => {
-            await onRefresh();
-          }, 150);
         }
       } catch (error) {
         console.error("Error moving items:", error);
