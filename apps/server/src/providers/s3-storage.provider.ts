@@ -1,4 +1,13 @@
-import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  AbortMultipartUploadCommand,
+  CompleteMultipartUploadCommand,
+  CreateMultipartUploadCommand,
+  DeleteObjectCommand,
+  GetObjectCommand,
+  HeadObjectCommand,
+  PutObjectCommand,
+  UploadPartCommand,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { bucketName, createPublicS3Client, s3Client } from "../config/storage.config";
@@ -163,5 +172,102 @@ export class S3StorageProvider implements StorageProvider {
 
     // AWS SDK v3 returns a readable stream
     return response.Body as NodeJS.ReadableStream;
+  }
+
+  /**
+   * Initialize a multipart upload
+   * Returns uploadId for subsequent part uploads
+   */
+  async createMultipartUpload(objectName: string): Promise<string> {
+    console.log(`[S3] Creating multipart upload for: ${objectName}`);
+    const client = createPublicS3Client();
+    if (!client) {
+      throw new Error("S3 client could not be created");
+    }
+
+    const command = new CreateMultipartUploadCommand({
+      Bucket: bucketName,
+      Key: objectName,
+    });
+
+    const response = await client.send(command);
+
+    if (!response.UploadId) {
+      throw new Error("Failed to create multipart upload - no UploadId returned");
+    }
+
+    console.log(`[S3] Multipart upload created - uploadId: ${response.UploadId}`);
+    return response.UploadId;
+  }
+
+  /**
+   * Get presigned URL for uploading a specific part
+   */
+  async getPresignedPartUrl(
+    objectName: string,
+    uploadId: string,
+    partNumber: number,
+    expires: number
+  ): Promise<string> {
+    console.log(`[S3] Getting presigned URL for part ${partNumber} of ${objectName}`);
+    const client = createPublicS3Client();
+    if (!client) {
+      throw new Error("S3 client could not be created");
+    }
+
+    const command = new UploadPartCommand({
+      Bucket: bucketName,
+      Key: objectName,
+      UploadId: uploadId,
+      PartNumber: partNumber,
+    });
+
+    const url = await getSignedUrl(client, command, { expiresIn: expires });
+    console.log(`[S3] Presigned URL generated for part ${partNumber}`);
+    return url;
+  }
+
+  /**
+   * Complete a multipart upload
+   */
+  async completeMultipartUpload(
+    objectName: string,
+    uploadId: string,
+    parts: Array<{ PartNumber: number; ETag: string }>
+  ): Promise<void> {
+    console.log(`[S3] Completing multipart upload for ${objectName} with ${parts.length} parts`);
+    const client = this.ensureClient();
+
+    const command = new CompleteMultipartUploadCommand({
+      Bucket: bucketName,
+      Key: objectName,
+      UploadId: uploadId,
+      MultipartUpload: {
+        Parts: parts.map((part) => ({
+          PartNumber: part.PartNumber,
+          ETag: part.ETag,
+        })),
+      },
+    });
+
+    await client.send(command);
+    console.log(`[S3] Multipart upload completed successfully for ${objectName}`);
+  }
+
+  /**
+   * Abort a multipart upload
+   */
+  async abortMultipartUpload(objectName: string, uploadId: string): Promise<void> {
+    console.log(`[S3] Aborting multipart upload for ${objectName} - uploadId: ${uploadId}`);
+    const client = this.ensureClient();
+
+    const command = new AbortMultipartUploadCommand({
+      Bucket: bucketName,
+      Key: objectName,
+      UploadId: uploadId,
+    });
+
+    await client.send(command);
+    console.log(`[S3] Multipart upload aborted for ${objectName}`);
   }
 }

@@ -59,6 +59,51 @@ export interface MoveFileBody {
   folderId: string | null;
 }
 
+// Multipart upload types
+export interface CreateMultipartUploadBody {
+  filename: string;
+  extension: string;
+}
+
+export interface CreateMultipartUploadResponse {
+  uploadId: string;
+  objectName: string;
+}
+
+export interface GetMultipartPartUrlParams {
+  uploadId: string;
+  objectName: string;
+  partNumber: string;
+}
+
+export interface GetMultipartPartUrlResponse {
+  url: string;
+}
+
+export interface MultipartPart {
+  PartNumber: number;
+  ETag: string;
+}
+
+export interface CompleteMultipartUploadBody {
+  uploadId: string;
+  objectName: string;
+  parts: MultipartPart[];
+}
+
+export interface CompleteMultipartUploadResponse {
+  message: string;
+}
+
+export interface AbortMultipartUploadBody {
+  uploadId: string;
+  objectName: string;
+}
+
+export interface AbortMultipartUploadResponse {
+  message: string;
+}
+
 export interface GetPresignedUrlParams {
   filename: string;
   extension: string;
@@ -71,6 +116,10 @@ export type DeleteFile200 = MessageOnlyResponse;
 export type CheckFile201 = MessageOnlyResponse;
 export type GetPresignedUrl200 = PresignedUrlResponse;
 export type GetDownloadUrl200 = DownloadUrlResponse;
+export type CreateMultipartUpload201 = CreateMultipartUploadResponse;
+export type GetMultipartPartUrl200 = GetMultipartPartUrlResponse;
+export type CompleteMultipartUpload200 = CompleteMultipartUploadResponse;
+export type AbortMultipartUpload200 = AbortMultipartUploadResponse;
 
 export type GetPresignedUrlResult = AxiosResponse<GetPresignedUrl200>;
 export type RegisterFileResult = AxiosResponse<RegisterFile201>;
@@ -80,3 +129,7 @@ export type GetDownloadUrlResult = AxiosResponse<GetDownloadUrl200>;
 export type DeleteFileResult = AxiosResponse<DeleteFile200>;
 export type UpdateFileResult = AxiosResponse<UpdateFile200>;
 export type MoveFileResult = AxiosResponse<MoveFile200>;
+export type CreateMultipartUploadResult = AxiosResponse<CreateMultipartUpload201>;
+export type GetMultipartPartUrlResult = AxiosResponse<GetMultipartPartUrl200>;
+export type CompleteMultipartUploadResult = AxiosResponse<CompleteMultipartUpload200>;
+export type AbortMultipartUploadResult = AxiosResponse<AbortMultipartUpload200>;

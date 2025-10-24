@@ -110,7 +110,7 @@ export default function FilesPage() {
 
   const handleUploadSuccess = async () => {
     await loadFiles();
-    toast.success("Files uploaded successfully");
+    // Toast is already shown by the upload modal
   };
 
   return (
