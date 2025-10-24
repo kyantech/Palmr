@@ -204,7 +204,6 @@ export function useFileBrowser() {
 
   const loadFiles = useCallback(async () => {
     try {
-      console.log("loadFiles called - starting to load files...");
       setIsLoading(true);
 
       const [filesResponse, foldersResponse] = await Promise.all([listFiles(), listFolders()]);
@@ -239,12 +238,6 @@ export function useFileBrowser() {
       } else {
         setCurrentPath([]);
       }
-
-      console.log("Files and folders updated:", {
-        filesCount: sortedFiles.length,
-        foldersCount: sortedFolders.length,
-        currentFolderId: resolvedFolderId,
-      });
     } catch {
       toast.error(t("files.loadError"));
     } finally {

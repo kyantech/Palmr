@@ -1,11 +1,9 @@
 import * as fs from "fs/promises";
 import crypto from "node:crypto";
-import path from "path";
 import fastifyMultipart from "@fastify/multipart";
 
 import { buildApp } from "./app";
 import { directoriesConfig } from "./config/directories.config";
-import { env } from "./env";
 import { appRoutes } from "./modules/app/routes";
 import { authProvidersRoutes } from "./modules/auth-providers/routes";
 import { authRoutes } from "./modules/auth/routes";
@@ -18,7 +16,6 @@ import { shareRoutes } from "./modules/share/routes";
 import { storageRoutes } from "./modules/storage/routes";
 import { twoFactorRoutes } from "./modules/two-factor/routes";
 import { userRoutes } from "./modules/user/routes";
-import { IS_RUNNING_IN_CONTAINER } from "./utils/container-detection";
 
 if (typeof globalThis.crypto === "undefined") {
   globalThis.crypto = crypto.webcrypto as any;
@@ -88,7 +85,7 @@ async function startServer() {
   if (isInternalStorage) {
     console.log("📦 Using internal storage (auto-configured)");
   } else if (isExternalS3) {
-    console.log("📦 Using external S3 storage (AWS/S3-compatible/etc)");
+    console.log("📦 Using external S3 storage (AWS/S3-compatible)");
   } else {
     console.log("⚠️  WARNING: Storage not configured! Storage may not work.");
   }
@@ -98,10 +95,7 @@ async function startServer() {
     host: "0.0.0.0",
   });
 
-  const storageMode = isInternalStorage ? "Internal Storage" : isExternalS3 ? "External S3" : "Not Configured";
-
-  console.log(`🌴 Palmr server running on port 3333 🌴`);
-  console.log(`📦 Storage: ${storageMode}`);
+  console.log(`🌴 Palmr server running on port 3333`);
 
   // Cleanup on shutdown
   process.on("SIGINT", () => process.exit(0));

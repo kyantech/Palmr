@@ -37,7 +37,6 @@ export class FileService {
 
   // Multipart upload methods
   async createMultipartUpload(objectName: string): Promise<string> {
-    console.log(`[FileService] Creating multipart upload for: ${objectName}`);
     return await this.storageProvider.createMultipartUpload(objectName);
   }
 
@@ -47,7 +46,6 @@ export class FileService {
     partNumber: number,
     expires: number = 3600
   ): Promise<string> {
-    console.log(`[FileService] Getting presigned URL for part ${partNumber} of ${objectName}`);
     return await this.storageProvider.getPresignedPartUrl(objectName, uploadId, partNumber, expires);
   }
 
@@ -56,12 +54,10 @@ export class FileService {
     uploadId: string,
     parts: Array<{ PartNumber: number; ETag: string }>
   ): Promise<void> {
-    console.log(`[FileService] Completing multipart upload for ${objectName}`);
     await this.storageProvider.completeMultipartUpload(objectName, uploadId, parts);
   }
 
   async abortMultipartUpload(objectName: string, uploadId: string): Promise<void> {
-    console.log(`[FileService] Aborting multipart upload for ${objectName}`);
     await this.storageProvider.abortMultipartUpload(objectName, uploadId);
   }
 }

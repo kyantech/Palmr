@@ -466,11 +466,7 @@ export class ReverseShareController {
         return reply.status(401).send({ error: "Unauthorized" });
       }
 
-      console.log(`Copy to my files: User ${userId} copying file ${fileId}`);
-
       const file = await this.reverseShareService.copyReverseShareFileToUserFiles(fileId, userId);
-
-      console.log(`Copy to my files: Successfully copied file ${fileId}`);
 
       return reply.send({ file, message: "File copied to your files successfully" });
     } catch (error: any) {

@@ -34,8 +34,6 @@ export function BackgroundPickerForm() {
   const applyBackground = useCallback((backgroundValues: { light: string; dark: string }) => {
     document.documentElement.style.setProperty("--custom-background-light", backgroundValues.light);
     document.documentElement.style.setProperty("--custom-background-dark", backgroundValues.dark);
-
-    console.log("Applied background:", backgroundValues);
   }, []);
 
   useEffect(() => {
