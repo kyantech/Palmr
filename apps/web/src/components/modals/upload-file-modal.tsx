@@ -225,15 +225,6 @@ export function UploadFileModal({ isOpen, onClose, onSuccess, currentFolderId }:
     }
   };
 
-  // Prevent closing while uploading
-  const handleClose = () => {
-    if (isUploading) {
-      setShowConfirmation(true);
-    } else {
-      handleConfirmClose();
-    }
-  };
-
   const handleConfirmClose = () => {
     // Cancel all uploads
     fileUploads.forEach((upload) => {
@@ -248,6 +239,15 @@ export function UploadFileModal({ isOpen, onClose, onSuccess, currentFolderId }:
 
     setShowConfirmation(false);
     onClose();
+  };
+
+  // Prevent closing while uploading
+  const handleClose = () => {
+    if (isUploading) {
+      setShowConfirmation(true);
+    } else {
+      handleConfirmClose();
+    }
   };
 
   const handleContinueUploads = () => {

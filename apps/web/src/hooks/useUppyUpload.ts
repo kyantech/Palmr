@@ -77,9 +77,6 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
   const [fileUploads, setFileUploads] = useState<FileUploadState[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Debug: unique ID for this hook instance
-  const instanceId = useRef(`uppy-${Math.random().toString(36).substr(2, 9)}`);
-
   // Store callbacks in refs to avoid recreating Uppy instance
   const onValidateRef = useRef(options.onValidate);
   const onBeforeUploadRef = useRef(options.onBeforeUpload);
@@ -167,7 +164,6 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
 
       // For multipart uploads (≥100MB)
       async createMultipartUpload(file: UppyFile<any, any>) {
-        const fileSize = file.size || 0;
         try {
           // 1. Validate file
           if (onValidateRef.current) {
@@ -212,6 +208,7 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
       //TODO: List parts (for resuming multipart uploads)
       async listParts(file: UppyFile<any, any>, { uploadId, key }: any) {
         console.log(`[Upload:Multipart] Listing parts for: ${file.name}`);
+        console.log(`Upload ID: ${uploadId}, Key: ${key}`);
         // Para simplificar, não vamos implementar resumo de upload por enquanto
         // Retornamos array vazio indicando que não há partes já enviadas
         return [];
@@ -219,7 +216,7 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
 
       // Sign individual parts for multipart upload
       async signPart(file: UppyFile<any, any>, partData: any) {
-        const { uploadId, key, partNumber, signal } = partData;
+        const { uploadId, key, partNumber } = partData;
 
         try {
           const response = await getMultipartPartUrl({
@@ -313,7 +310,7 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
     };
 
     // Upload success
-    const handleSuccess = async (file: any, response: any) => {
+    const handleSuccess = async (file: any) => {
       const objectName = file.meta.objectName;
 
       try {
@@ -342,7 +339,7 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
     };
 
     // All uploads complete
-    const handleComplete = (result: any) => {
+    const handleComplete = () => {
       setIsUploading(false);
     };
 
