@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { IconCheck, IconFile, IconMail, IconUpload, IconUser, IconX } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 import { useDropzone } from "react-dropzone";
@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useUppyUpload } from "@/hooks/useUppyUpload";
 import { getPresignedUrlForUploadByAlias, registerFileUploadByAlias } from "@/http/endpoints";
 import { formatFileSize } from "@/utils/format-file-size";
-import { FILE_STATUS, UPLOAD_CONFIG } from "../constants";
+import { UPLOAD_CONFIG } from "../constants";
 import { FileUploadSectionProps } from "../types";
 
 export function FileUploadSection({ reverseShare, password, alias, onUploadSuccess }: FileUploadSectionProps) {
@@ -117,11 +117,6 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
     disabled: isUploading,
   });
 
-  const handleUpload = async () => {
-    if (!validateUploadRequirements()) return;
-    startUpload();
-  };
-
   const validateUploadRequirements = (): boolean => {
     if (fileUploads.length === 0) {
       toast.error(t("reverseShares.upload.errors.selectAtLeastOneFile"));
@@ -142,6 +137,11 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
     }
 
     return true;
+  };
+
+  const handleUpload = async () => {
+    if (!validateUploadRequirements()) return;
+    startUpload();
   };
 
   const getCanUpload = (): boolean => {
@@ -233,7 +233,7 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
     return null;
   };
 
-  const renderFileItem = (upload: any, index: number) => (
+  const renderFileItem = (upload: any) => (
     <div key={upload.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
       <IconFile className="h-5 w-5 text-gray-500 flex-shrink-0" />
       <div className="flex-1 min-w-0">
