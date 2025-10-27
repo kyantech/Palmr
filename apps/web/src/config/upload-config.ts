@@ -8,7 +8,7 @@ export const UPLOAD_CONFIG = {
    * Files >= this size will use multipart upload
    * Files < this size will use simple PUT upload
    */
-  MULTIPART_THRESHOLD: 100 * 1024 * 1024,
+  MULTIPART_THRESHOLD: 50 * 1024 * 1024,
 
   /**
    * No file size limit (managed by backend/user quota)
