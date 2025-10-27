@@ -2,8 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
-import { getDownloadUrl } from "@/http/endpoints";
-import { downloadReverseShareFile } from "@/http/endpoints/reverse-shares";
+import { getCachedDownloadUrl, getCachedReverseShareDownloadUrl } from "@/lib/download-url-cache";
 import { getFileExtension, getFileType, type FileType } from "@/utils/file-types";
 
 interface FilePreviewState {
@@ -177,21 +176,10 @@ export function useFilePreview({ file, isOpen, isReverseShare = false, sharePass
       let url: string;
 
       if (isReverseShare) {
-        const response = await downloadReverseShareFile(file.id!);
-        url = response.data.url;
+        url = await getCachedReverseShareDownloadUrl(file.id!);
       } else {
-        const params: Record<string, string> = {};
-        if (sharePassword) params.password = sharePassword;
-
-        const response = await getDownloadUrl(
-          file.objectName,
-          Object.keys(params).length > 0
-            ? {
-                params: { ...params },
-              }
-            : undefined
-        );
-        url = response.data.url;
+        const options = sharePassword ? { headers: { "x-share-password": sharePassword } } : undefined;
+        url = await getCachedDownloadUrl(file.objectName, options);
       }
 
       setState((prev) => ({ ...prev, downloadUrl: url }));
@@ -241,17 +229,12 @@ export function useFilePreview({ file, isOpen, isReverseShare = false, sharePass
 
     try {
       const loadingToast = toast.loading(t("filePreview.downloading") || "Downloading...");
-
       let url: string;
       if (isReverseShare) {
-        const response = await downloadReverseShareFile(file.id!);
-        url = response.data.url;
+        url = await getCachedReverseShareDownloadUrl(file.id!);
       } else {
-        const response = await getDownloadUrl(
-          file.objectName,
-          sharePassword ? { headers: { "x-share-password": sharePassword } } : undefined
-        );
-        url = response.data.url;
+        const options = sharePassword ? { headers: { "x-share-password": sharePassword } } : undefined;
+        url = await getCachedDownloadUrl(file.objectName, options);
       }
 
       const link = document.createElement("a");

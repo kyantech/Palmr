@@ -2,8 +2,9 @@ import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
-import { deleteFile, getDownloadUrl, updateFile } from "@/http/endpoints";
+import { deleteFile, updateFile } from "@/http/endpoints";
 import { deleteFolder, registerFolder, updateFolder } from "@/http/endpoints/folders";
+import { getCachedDownloadUrl } from "@/lib/download-url-cache";
 
 interface FileToRename {
   id: string;
@@ -60,6 +61,7 @@ interface BulkFile {
   description?: string;
   size: number;
   objectName: string;
+  folderId?: string;
   createdAt: string;
   updatedAt: string;
   relativePath?: string;
@@ -138,7 +140,9 @@ export interface EnhancedFileManagerHook {
 export function useEnhancedFileManager(
   onRefresh: () => Promise<void>,
   clearSelection?: () => void,
-  handleImmediateUpdate?: (itemId: string, itemType: "file" | "folder", newParentId: string | null) => void
+  handleImmediateUpdate?: (itemId: string, itemType: "file" | "folder", newParentId: string | null) => void,
+  allFiles?: BulkFile[],
+  allFolders?: BulkFolder[]
 ) {
   const t = useTranslations();
 
@@ -168,11 +172,9 @@ export function useEnhancedFileManager(
   const handleDownload = async (objectName: string, fileName: string) => {
     try {
       const loadingToast = toast.loading(t("share.messages.downloadStarted"));
-
-      const response = await getDownloadUrl(objectName);
-
+      const url = await getCachedDownloadUrl(objectName);
       const link = document.createElement("a");
-      link.href = response.data.url;
+      link.href = url;
       link.download = fileName;
       document.body.appendChild(link);
       link.click();
@@ -181,7 +183,7 @@ export function useEnhancedFileManager(
       toast.dismiss(loadingToast);
       toast.success(t("shareManager.downloadSuccess"));
     } catch (error) {
-      console.error("Download error:", error);
+      console.error(`[FileManager] ❌ Download failed for ${fileName}:`, error);
       toast.error(t("share.errors.downloadFailed"));
     }
   };
@@ -244,20 +246,6 @@ export function useEnhancedFileManager(
     }
   };
 
-  const handleSingleFolderDownload = async () => {
-    try {
-      const loadingToast = toast.loading(t("shareManager.creatingZip"));
-
-      // For folder downloads, direct implementation will be needed
-      // For now, show a message to use bulk download
-      toast.dismiss(loadingToast);
-      toast.info("Use bulk download modal for folders");
-    } catch (error) {
-      console.error("Error downloading folder:", error);
-      toast.error(t("share.errors.downloadFailed"));
-    }
-  };
-
   const handleBulkDownloadWithZip = async (files: BulkFile[], zipName: string) => {
     try {
       const folders = foldersToDownload || [];
@@ -267,25 +255,82 @@ export function useEnhancedFileManager(
         return;
       }
 
-      const loadingToast = toast.loading(t("shareManager.preparingDownload"));
+      const loadingToast = toast.loading(t("shareManager.creatingZip"));
 
-      // Get presigned URLs for all files
-      const downloadItems = await Promise.all(
-        files.map(async (file) => {
-          const response = await getDownloadUrl(file.objectName);
-          return {
-            url: response.data.url,
-            name: file.name,
-          };
-        })
-      );
+      try {
+        // Collect all files including those in folders recursively
+        const allFilesToDownload: Array<{ url: string; name: string }> = [];
 
-      // Create ZIP with all files
-      const { downloadFilesAsZip } = await import("@/utils/zip-download");
-      await downloadFilesAsZip(downloadItems, zipName.endsWith(".zip") ? zipName : `${zipName}.zip`);
+        // Helper function to get all files in a folder recursively with paths
+        const getFolderFilesWithPath = (
+          targetFolderId: string,
+          currentPath: string = ""
+        ): Array<{ file: BulkFile; path: string }> => {
+          if (!allFiles || !allFolders) return [];
 
-      toast.dismiss(loadingToast);
-      toast.success(t("shareManager.downloadSuccess"));
+          const filesWithPath: Array<{ file: BulkFile; path: string }> = [];
+
+          // Get direct files in this folder
+          const directFiles = allFiles.filter((f) => f.folderId === targetFolderId);
+          directFiles.forEach((file) => {
+            filesWithPath.push({ file, path: currentPath });
+          });
+
+          // Get subfolders and process them recursively
+          const subfolders = allFolders.filter((f) => f.parentId === targetFolderId);
+          for (const subfolder of subfolders) {
+            const subfolderPath = currentPath ? `${currentPath}/${subfolder.name}` : subfolder.name;
+            filesWithPath.push(...getFolderFilesWithPath(subfolder.id, subfolderPath));
+          }
+
+          return filesWithPath;
+        };
+
+        // Get presigned URLs for direct files (not in folders)
+        const directFileItems = await Promise.all(
+          files.map(async (file) => {
+            const url = await getCachedDownloadUrl(file.objectName);
+            return {
+              url,
+              name: file.name,
+            };
+          })
+        );
+        allFilesToDownload.push(...directFileItems);
+
+        // Get presigned URLs for files in selected folders
+        for (const folder of folders) {
+          const folderFilesWithPath = getFolderFilesWithPath(folder.id, folder.name);
+
+          const folderFileItems = await Promise.all(
+            folderFilesWithPath.map(async ({ file, path }) => {
+              const url = await getCachedDownloadUrl(file.objectName);
+              return {
+                url,
+                name: path ? `${path}/${file.name}` : file.name,
+              };
+            })
+          );
+          allFilesToDownload.push(...folderFileItems);
+        }
+
+        if (allFilesToDownload.length === 0) {
+          toast.dismiss(loadingToast);
+          toast.error(t("shareManager.noFilesToDownload"));
+          return;
+        }
+
+        // Create ZIP with all files
+        const { downloadFilesAsZip } = await import("@/utils/zip-download");
+        await downloadFilesAsZip(allFilesToDownload, zipName.endsWith(".zip") ? zipName : `${zipName}.zip`);
+
+        toast.dismiss(loadingToast);
+        toast.success(t("shareManager.zipDownloadSuccess"));
+      } catch (error) {
+        toast.dismiss(loadingToast);
+        toast.error(t("shareManager.zipDownloadError"));
+        throw error;
+      }
 
       setBulkDownloadModalOpen(false);
       setFilesToDownload(null);
@@ -295,7 +340,6 @@ export function useEnhancedFileManager(
       }
     } catch (error) {
       console.error("Error in bulk download:", error);
-      toast.error(t("shareManager.zipDownloadError"));
       setBulkDownloadModalOpen(false);
       setFilesToDownload(null);
       setFoldersToDownload(null);
@@ -435,6 +479,5 @@ export function useEnhancedFileManager(
 
     clearSelection,
     setClearSelectionCallback,
-    handleSingleFolderDownload,
   };
 }

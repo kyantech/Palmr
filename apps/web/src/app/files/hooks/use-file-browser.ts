@@ -284,7 +284,13 @@ export function useFileBrowser() {
     []
   );
 
-  const fileManager = useEnhancedFileManager(loadFiles, clearSelectionCallback, handleImmediateUpdate);
+  const fileManager = useEnhancedFileManager(
+    loadFiles,
+    clearSelectionCallback,
+    handleImmediateUpdate,
+    allFiles,
+    allFolders
+  );
 
   const getImmediateChildFoldersWithMatches = useCallback(() => {
     if (!searchQuery) return [];

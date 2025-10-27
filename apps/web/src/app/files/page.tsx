@@ -20,6 +20,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { moveFile } from "@/http/endpoints/files";
 import { listFolders, moveFolder } from "@/http/endpoints/folders";
+import { getCachedDownloadUrl } from "@/lib/download-url-cache";
 import { FilesViewManager } from "./components/files-view-manager";
 import { Header } from "./components/header";
 import { useFileBrowser } from "./hooks/use-file-browser";
@@ -71,6 +72,8 @@ export default function FilesPage() {
     loadFiles,
     handleImmediateUpdate,
     modals,
+    allFiles,
+    allFolders,
   } = useFileBrowser();
 
   const handleMoveFile = (file: any) => {
@@ -111,6 +114,70 @@ export default function FilesPage() {
   const handleUploadSuccess = async () => {
     await loadFiles();
     // Toast is already shown by the upload modal
+  };
+
+  const handleFolderDownload = async (folderId: string, folderName: string) => {
+    try {
+      // Get all files in this folder and subfolders recursively with their paths
+      const getFolderFilesWithPath = (
+        targetFolderId: string,
+        currentPath: string = ""
+      ): Array<{ file: File; path: string }> => {
+        const filesWithPath: Array<{ file: File; path: string }> = [];
+
+        // Get direct files in this folder
+        const directFiles = allFiles.filter((f) => f.folderId === targetFolderId);
+        directFiles.forEach((file) => {
+          filesWithPath.push({ file, path: currentPath });
+        });
+
+        // Get subfolders and process them recursively
+        const subfolders = allFolders.filter((f) => f.parentId === targetFolderId);
+        for (const subfolder of subfolders) {
+          const subfolderPath = currentPath ? `${currentPath}/${subfolder.name}` : subfolder.name;
+          filesWithPath.push(...getFolderFilesWithPath(subfolder.id, subfolderPath));
+        }
+
+        return filesWithPath;
+      };
+
+      const folderFilesWithPath = getFolderFilesWithPath(folderId);
+
+      if (folderFilesWithPath.length === 0) {
+        toast.error(t("shareManager.noFilesToDownload"));
+        return;
+      }
+
+      const loadingToast = toast.loading(t("shareManager.creatingZip"));
+
+      try {
+        // Get presigned URLs for all files with their relative paths
+        const downloadItems = await Promise.all(
+          folderFilesWithPath.map(async ({ file, path }) => {
+            const url = await getCachedDownloadUrl(file.objectName);
+            return {
+              url,
+              name: path ? `${path}/${file.name}` : file.name,
+            };
+          })
+        );
+
+        // Create ZIP with all files
+        const { downloadFilesAsZip } = await import("@/utils/zip-download");
+        const zipName = `${folderName}.zip`;
+        await downloadFilesAsZip(downloadItems, zipName);
+
+        toast.dismiss(loadingToast);
+        toast.success(t("shareManager.zipDownloadSuccess"));
+      } catch (error) {
+        toast.dismiss(loadingToast);
+        toast.error(t("shareManager.zipDownloadError"));
+        throw error;
+      }
+    } catch (error) {
+      console.error("Error downloading folder:", error);
+      toast.error(t("share.errors.downloadFailed"));
+    }
   };
 
   return (
@@ -303,7 +370,7 @@ export default function FilesPage() {
                   onRefresh={loadFiles}
                   onImmediateUpdate={handleImmediateUpdate}
                   onShareFolder={fileManager.setFolderToShare}
-                  onDownloadFolder={fileManager.handleSingleFolderDownload}
+                  onDownloadFolder={handleFolderDownload}
                   onPreview={fileManager.setPreviewFile}
                   onRename={fileManager.setFileToRename}
                   onShare={fileManager.setFileToShare}

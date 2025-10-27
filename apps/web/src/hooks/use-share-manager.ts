@@ -4,16 +4,10 @@ import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
-import {
-  addRecipients,
-  createShareAlias,
-  deleteShare,
-  getDownloadUrl,
-  notifyRecipients,
-  updateShare,
-} from "@/http/endpoints";
+import { addRecipients, createShareAlias, deleteShare, notifyRecipients, updateShare } from "@/http/endpoints";
 import { updateFolder } from "@/http/endpoints/folders";
 import type { Share } from "@/http/endpoints/shares/types";
+import { getCachedDownloadUrl } from "@/lib/download-url-cache";
 
 export interface ShareManagerHook {
   shareToDelete: Share | null;
@@ -244,9 +238,9 @@ export function useShareManager(onSuccess: () => void) {
             allItems
               .filter((item) => item.type === "file" && item.objectName)
               .map(async (item) => {
-                const response = await getDownloadUrl(item.objectName!);
+                const url = await getCachedDownloadUrl(item.objectName!);
                 return {
-                  url: response.data.url,
+                  url,
                   name: item.name,
                 };
               })
@@ -302,10 +296,10 @@ export function useShareManager(onSuccess: () => void) {
       const file = share.files[0];
       try {
         const loadingToast = toast.loading(t("shareManager.downloading"));
-        const response = await getDownloadUrl(file.objectName);
+        const url = await getCachedDownloadUrl(file.objectName);
 
         const link = document.createElement("a");
-        link.href = response.data.url;
+        link.href = url;
         link.download = file.name;
         document.body.appendChild(link);
         link.click();
