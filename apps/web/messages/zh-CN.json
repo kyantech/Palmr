@@ -1,12 +1,14 @@
 {
   "auth": {
     "errors": {
-      "account_inactive": "Conta inativa. Entre em contato com o administrador.",
-      "registration_disabled": "Registro via SSO está desabilitado.",
-      "token_expired": "Token expirado. Tente novamente.",
-      "config_error": "Erro de configuração. Contate o suporte.",
-      "auth_failed": "Falha na autenticação. Tente novamente."
-    }
+      "account_inactive": "账户未激活。请联系管理员。",
+      "registration_disabled": "通过SSO注册已被禁用。",
+      "token_expired": "令牌已过期。请重试。",
+      "config_error": "配置错误。请联系支持人员。",
+      "auth_failed": "认证失败。请重试。"
+    },
+    "authenticationFailed": "身份验证失败",
+    "successfullyAuthenticated": "身份验证成功！"
   },
   "authProviders": {
     "title": "身份验证提供商",
@@ -174,7 +176,14 @@
     "tabs": {
       "shareDetails": "分享详情",
       "selectFiles": "选择文件"
-    }
+    },
+    "errors": {
+      "nameRequired": "分享名称为必填项",
+      "selectItems": "请至少选择一个文件或文件夹"
+    },
+    "itemsSelected": "已选择 {count} 项",
+    "passwordPlaceholder": "输入密码",
+    "selectItemsPrompt": "选择要分享的文件和文件夹"
   },
   "customization": {
     "breadcrumb": "自定义",
@@ -340,7 +349,8 @@
     "addToShare": "添加到共享",
     "removeFromShare": "从共享中移除",
     "saveChanges": "保存更改",
-    "editFolder": "编辑文件夹"
+    "editFolder": "编辑文件夹",
+    "itemsSelected": "已选择 {count} 项"
   },
   "files": {
     "title": "所有文件",
@@ -376,7 +386,12 @@
       "description": "上传您的第一个文件或创建文件夹以开始使用"
     },
     "files": "文件",
-    "folders": "文件夹"
+    "folders": "文件夹",
+    "errors": {
+      "moveItemsFailed": "移动项目失败，请重试。",
+      "cannotMoveHere": "无法将项目移动到此位置"
+    },
+    "openFolder": "打开文件夹"
   },
   "filesTable": {
     "ariaLabel": "文件表格",
@@ -539,7 +554,10 @@
     "movingTo": "移动到：",
     "title": "移动 {count, plural, =1 {项目} other {项目}}",
     "description": "将 {count, plural, =1 {项目} other {项目}} 移动到新位置",
-    "success": "成功移动了 {count} 个项目"
+    "success": "成功移动了 {count} 个项目",
+    "errors": {
+      "moveFailed": "移动项目失败"
+    }
   },
   "navbar": {
     "logoAlt": "应用Logo",
@@ -1405,7 +1423,9 @@
     "linkDescriptionFile": "生成自定义链接以分享文件",
     "linkDescriptionFolder": "生成自定义链接以分享文件夹",
     "linkReady": "您的分享链接已准备好：",
-    "linkTitle": "生成链接"
+    "linkTitle": "生成链接",
+    "itemsSelected": "已选择 {count} 项",
+    "manageFilesDescription": "选择要包含在此分享中的文件和文件夹"
   },
   "shareDetails": {
     "title": "共享详情",
@@ -1520,7 +1540,10 @@
     "noFilesToDownload": "无需下载文件",
     "singleShareZipName": "{sharename} _files.zip",
     "zipDownloadError": "无法创建zip文件",
-    "zipDownloadSuccess": "zip文件成功下载了"
+    "zipDownloadSuccess": "zip文件成功下载了",
+    "errors": {
+      "multipleDownloadNotSupported": "暂不支持多个分享下载 - 请分别下载各个分享"
+    }
   },
   "shareMultipleFiles": {
     "title": "分享多个文件",

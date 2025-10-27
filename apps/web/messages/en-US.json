@@ -1,5 +1,7 @@
 {
   "auth": {
+    "successfullyAuthenticated": "Successfully authenticated!",
+    "authenticationFailed": "Authentication failed",
     "errors": {
       "account_inactive": "Account inactive. Please contact the administrator.",
       "registration_disabled": "SSO registration is disabled.",
@@ -170,9 +172,16 @@
     "maxViewsPlaceholder": "Leave empty for unlimited",
     "passwordProtection": "Password Protected",
     "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter password",
     "create": "Create Share",
     "success": "Share created successfully",
     "error": "Failed to create share",
+    "errors": {
+      "nameRequired": "Share name is required",
+      "selectItems": "Please select at least one file or folder"
+    },
+    "itemsSelected": "{count} items selected",
+    "selectItemsPrompt": "Select files and folders to share",
     "tabs": {
       "shareDetails": "Share Details",
       "selectFiles": "Select Files"
@@ -339,6 +348,7 @@
     "uploadNewFiles": "Upload new files to add them",
     "fileCount": "{count, plural, =1 {file} other {files}}",
     "filesSelected": "{count, plural, =0 {No files selected} =1 {1 file selected} other {# files selected}}",
+    "itemsSelected": "{count} items selected",
     "editFile": "Edit file",
     "editFolder": "Edit folder",
     "previewFile": "Preview file",
@@ -366,6 +376,11 @@
     "bulkDeleteTitle": "Delete Selected Items",
     "bulkDeleteConfirmation": "Are you sure you want to delete {count, plural, =1 {1 item} other {# items}}? This action cannot be undone.",
     "totalFiles": "{count, plural, =0 {No files} =1 {1 file} other {# files}}",
+    "openFolder": "Open folder",
+    "errors": {
+      "moveItemsFailed": "Failed to move items. Please try again.",
+      "cannotMoveHere": "Cannot move items to this location"
+    },
     "empty": {
       "title": "No files or folders yet",
       "description": "Upload your first file or create a folder to get started"
@@ -543,7 +558,10 @@
     "movingTo": "Moving to:",
     "title": "Move {count, plural, =1 {Item} other {Items}}",
     "description": "Move {count, plural, =1 {item} other {items}} to a new location",
-    "success": "Successfully moved {count} {count, plural, =1 {item} other {items}}"
+    "success": "Successfully moved {count} {count, plural, =1 {item} other {items}}",
+    "errors": {
+      "moveFailed": "Failed to move items"
+    }
   },
   "navbar": {
     "logoAlt": "App Logo",
@@ -1393,7 +1411,9 @@
     "newPasswordLabel": "New Password (leave empty to keep current)",
     "newPasswordPlaceholder": "Enter new password",
     "manageFilesTitle": "Manage Files",
+    "manageFilesDescription": "Select files and folders to include in this share",
     "manageRecipientsTitle": "Manage Recipients",
+    "itemsSelected": "{count} items selected",
     "editSuccess": "Share updated successfully",
     "editError": "Failed to update share",
     "bulkDeleteConfirmation": "Are you sure you want to delete {count, plural, =1 {1 share} other {# shares}}? This action cannot be undone.",
@@ -1487,6 +1507,9 @@
     "creatingZip": "Creating ZIP file...",
     "zipDownloadSuccess": "ZIP file downloaded successfully",
     "zipDownloadError": "Failed to create ZIP file",
+    "errors": {
+      "multipleDownloadNotSupported": "Multiple share download not yet supported - please download shares individually"
+    },
     "singleShareZipName": "{shareName}_files.zip",
     "multipleSharesZipName": "{count}_shares_files.zip",
     "defaultShareName": "Share"

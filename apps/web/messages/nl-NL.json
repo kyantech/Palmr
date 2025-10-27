@@ -6,7 +6,9 @@
       "token_expired": "Token verlopen. Probeer het opnieuw.",
       "config_error": "Configuratiefout. Neem contact op met support.",
       "auth_failed": "Authenticatie mislukt. Probeer het opnieuw."
-    }
+    },
+    "authenticationFailed": "Authenticatie mislukt",
+    "successfullyAuthenticated": "Succesvol geauthenticeerd!"
   },
   "authProviders": {
     "title": "Authenticatie Providers",
@@ -174,7 +176,14 @@
     "tabs": {
       "shareDetails": "Deel details",
       "selectFiles": "Bestanden selecteren"
-    }
+    },
+    "errors": {
+      "nameRequired": "Deelnaam is verplicht",
+      "selectItems": "Selecteer ten minste één bestand of map"
+    },
+    "itemsSelected": "{count} items geselecteerd",
+    "passwordPlaceholder": "Voer wachtwoord in",
+    "selectItemsPrompt": "Selecteer bestanden en mappen om te delen"
   },
   "customization": {
     "breadcrumb": "Aanpassing",
@@ -340,7 +349,8 @@
     "addToShare": "Toevoegen aan share",
     "removeFromShare": "Verwijderen uit share",
     "saveChanges": "Wijzigingen Opslaan",
-    "editFolder": "Map bewerken"
+    "editFolder": "Map bewerken",
+    "itemsSelected": "{count} items geselecteerd"
   },
   "files": {
     "title": "Alle Bestanden",
@@ -376,7 +386,12 @@
       "description": "Upload uw eerste bestand of maak een map om te beginnen"
     },
     "files": "bestanden",
-    "folders": "mappen"
+    "folders": "mappen",
+    "errors": {
+      "moveItemsFailed": "Verplaatsen van items mislukt. Probeer het opnieuw.",
+      "cannotMoveHere": "Kan items niet naar deze locatie verplaatsen"
+    },
+    "openFolder": "Map openen"
   },
   "filesTable": {
     "ariaLabel": "Bestanden tabel",
@@ -539,7 +554,10 @@
     "movingTo": "Verplaatsen naar:",
     "title": "{count, plural, =1 {Item} other {Items}} verplaatsen",
     "description": "{count, plural, =1 {Item} other {Items}} naar een nieuwe locatie verplaatsen",
-    "success": "{count} {count, plural, =1 {item} other {items}} succesvol verplaatst"
+    "success": "{count} {count, plural, =1 {item} other {items}} succesvol verplaatst",
+    "errors": {
+      "moveFailed": "Verplaatsen van items mislukt"
+    }
   },
   "navbar": {
     "logoAlt": "Applicatie Logo",
@@ -1405,7 +1423,9 @@
     "linkDescriptionFile": "Genereer een aangepaste link om het bestand te delen",
     "linkDescriptionFolder": "Genereer een aangepaste link om de map te delen",
     "linkReady": "Uw deel-link is klaar:",
-    "linkTitle": "Link genereren"
+    "linkTitle": "Link genereren",
+    "itemsSelected": "{count} items geselecteerd",
+    "manageFilesDescription": "Selecteer bestanden en mappen om in dit deel op te nemen"
   },
   "shareDetails": {
     "title": "Delen Details",
@@ -1520,7 +1540,10 @@
     "noFilesToDownload": "Geen bestanden beschikbaar om te downloaden",
     "singleShareZipName": "{Sharename} _files.zip",
     "zipDownloadError": "Kan zip -bestand niet maken",
-    "zipDownloadSuccess": "Zipbestand met succes gedownload"
+    "zipDownloadSuccess": "Zipbestand met succes gedownload",
+    "errors": {
+      "multipleDownloadNotSupported": "Download van meerdere delen wordt nog niet ondersteund - download delen afzonderlijk"
+    }
   },
   "shareMultipleFiles": {
     "title": "Meerdere Bestanden Delen",

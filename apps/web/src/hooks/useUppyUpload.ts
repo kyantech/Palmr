@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import AwsS3, { type AwsS3UploadParameters } from "@uppy/aws-s3";
 import Uppy, { type UppyFile } from "@uppy/core";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { UPLOAD_CONFIG } from "@/config/upload-config";
@@ -73,6 +74,7 @@ export interface FileUploadState {
  * Provides a simple interface for components to handle file uploads
  */
 export function useUppyUpload(options: UseUppyUploadOptions) {
+  const t = useTranslations();
   const uppyRef = useRef<Uppy | null>(null);
   const [fileUploads, setFileUploads] = useState<FileUploadState[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -334,7 +336,9 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
     const handleError = (file: any, error: any) => {
       console.error("[Upload] Upload failed:", file.name, error);
       setFileUploads((prev) =>
-        prev.map((f) => (f.id === file.id ? { ...f, status: "error", error: error.message || "Upload failed" } : f))
+        prev.map((f) =>
+          f.id === file.id ? { ...f, status: "error", error: error.message || t("uploadFile.errors.uploadFailed") } : f
+        )
       );
     };
 

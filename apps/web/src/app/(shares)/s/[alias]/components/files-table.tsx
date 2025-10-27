@@ -152,10 +152,10 @@ export function ShareFilesTable({
                               variant="ghost"
                               className="h-8 w-8 hover:bg-muted"
                               onClick={() => handleFolderClick(item.id)}
-                              title="Open folder"
+                              title={t("files.openFolder")}
                             >
                               <IconFolder className="h-4 w-4" />
-                              <span className="sr-only">Open folder</span>
+                              <span className="sr-only">{t("files.openFolder")}</span>
                             </Button>
                           )}
                           <Button

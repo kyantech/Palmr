@@ -6,7 +6,9 @@
       "token_expired": "トークンの有効期限が切れました。もう一度お試しください。",
       "config_error": "設定エラー。サポートにお問い合わせください。",
       "auth_failed": "認証に失敗しました。もう一度お試しください。"
-    }
+    },
+    "authenticationFailed": "認証に失敗しました",
+    "successfullyAuthenticated": "認証に成功しました！"
   },
   "authProviders": {
     "title": "認証プロバイダー",
@@ -174,7 +176,14 @@
     "tabs": {
       "shareDetails": "共有の詳細",
       "selectFiles": "ファイルを選択"
-    }
+    },
+    "errors": {
+      "nameRequired": "共有名は必須です",
+      "selectItems": "少なくとも1つのファイルまたはフォルダを選択してください"
+    },
+    "itemsSelected": "{count, plural, =0 {アイテムが選択されていません} =1 {1つのアイテムが選択されています} other {#つのアイテムが選択されています}}",
+    "passwordPlaceholder": "パスワードを入力してください",
+    "selectItemsPrompt": "共有するファイルとフォルダを選択してください"
   },
   "customization": {
     "breadcrumb": "カスタマイズ",
@@ -340,7 +349,8 @@
     "addToShare": "共有に追加",
     "removeFromShare": "共有から削除",
     "saveChanges": "変更を保存",
-    "editFolder": "フォルダを編集"
+    "editFolder": "フォルダを編集",
+    "itemsSelected": "{count, plural, =0 {アイテムが選択されていません} =1 {1つのアイテムが選択されています} other {#つのアイテムが選択されています}}"
   },
   "files": {
     "title": "すべてのファイル",
@@ -376,7 +386,12 @@
       "description": "最初のファイルをアップロードするか、フォルダを作成して始めましょう"
     },
     "files": "ファイル",
-    "folders": "フォルダ"
+    "folders": "フォルダ",
+    "errors": {
+      "moveItemsFailed": "アイテムの移動に失敗しました。もう一度お試しください。",
+      "cannotMoveHere": "この場所にアイテムを移動できません"
+    },
+    "openFolder": "フォルダを開く"
   },
   "filesTable": {
     "ariaLabel": "ファイルテーブル",
@@ -539,7 +554,10 @@
     "movingTo": "移動先：",
     "title": "アイテムを移動",
     "description": "アイテムを新しい場所に移動",
-    "success": "{count}個のアイテムが正常に移動されました"
+    "success": "{count}個のアイテムが正常に移動されました",
+    "errors": {
+      "moveFailed": "アイテムの移動に失敗しました"
+    }
   },
   "navbar": {
     "logoAlt": "アプリケーションロゴ",
@@ -1405,7 +1423,9 @@
     "linkDescriptionFile": "ファイルを共有するためのカスタムリンクを生成",
     "linkDescriptionFolder": "フォルダを共有するためのカスタムリンクを生成",
     "linkReady": "共有リンクの準備ができました：",
-    "linkTitle": "リンクを生成"
+    "linkTitle": "リンクを生成",
+    "itemsSelected": "{count, plural, =0 {アイテムが選択されていません} =1 {1つのアイテムが選択されています} other {#つのアイテムが選択されています}}",
+    "manageFilesDescription": "この共有に含めるファイルとフォルダを選択してください"
   },
   "shareDetails": {
     "title": "共有詳細",
@@ -1520,7 +1540,10 @@
     "noFilesToDownload": "ダウンロードできるファイルはありません",
     "singleShareZipName": "{sharename} _files.zip",
     "zipDownloadError": "zipファイルの作成に失敗しました",
-    "zipDownloadSuccess": "zipファイルは正常にダウンロードされました"
+    "zipDownloadSuccess": "zipファイルは正常にダウンロードされました",
+    "errors": {
+      "multipleDownloadNotSupported": "複数の共有のダウンロードはまだサポートされていません - 共有を個別にダウンロードしてください"
+    }
   },
   "shareMultipleFiles": {
     "title": "複数ファイルを共有",

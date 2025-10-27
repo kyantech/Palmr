@@ -107,7 +107,7 @@ export default function FilesPage() {
       setItemsToMove(null);
     } catch (error) {
       console.error("Error moving items:", error);
-      toast.error("Failed to move items. Please try again.");
+      toast.error(t("files.errors.moveItemsFailed"));
     }
   };
 
@@ -258,7 +258,7 @@ export default function FilesPage() {
                                 }
                               } catch (error) {
                                 console.error("Error moving items:", error);
-                                toast.error("Failed to move items");
+                                toast.error(t("files.errors.moveItemsFailed"));
                                 await loadFiles();
                               }
                             }}
@@ -306,7 +306,7 @@ export default function FilesPage() {
                                       });
 
                                       if (validItems.length === 0) {
-                                        toast.error("Cannot move items to this location");
+                                        toast.error(t("files.errors.cannotMoveHere"));
                                         return;
                                       }
 
@@ -336,7 +336,7 @@ export default function FilesPage() {
                                       }
                                     } catch (error) {
                                       console.error("Error moving items:", error);
-                                      toast.error("Failed to move items");
+                                      toast.error(t("files.errors.moveItemsFailed"));
                                       await loadFiles();
                                     }
                                   }}

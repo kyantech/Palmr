@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { moveFile } from "@/http/endpoints/files";
@@ -30,9 +31,10 @@ export function useDragDrop({
   onImmediateUpdate,
   selectedFiles,
   selectedFolders,
-  files,
-  folders,
+  files = [],
+  folders = [],
 }: UseDragDropProps) {
+  const t = useTranslations();
   const [draggedItem, setDraggedItem] = useState<DragItem | null>(null);
   const [draggedItems, setDraggedItems] = useState<DragItem[]>([]);
   const [dragOverTarget, setDragOverTarget] = useState<DropTarget | null>(null);
@@ -199,7 +201,7 @@ export function useDragDrop({
         });
 
         if (validItems.length === 0) {
-          toast.error("Cannot move items to this location");
+          toast.error(t("files.errors.cannotMoveHere"));
           return;
         }
 
@@ -232,7 +234,7 @@ export function useDragDrop({
         }
       } catch (error) {
         console.error("Error moving items:", error);
-        toast.error("Failed to move items");
+        toast.error(t("files.errors.moveItemsFailed"));
         // Refresh to restore state on error
         if (onRefresh) {
           await onRefresh();
@@ -241,7 +243,7 @@ export function useDragDrop({
         handleDragEnd();
       }
     },
-    [onRefresh, handleDragEnd, onImmediateUpdate]
+    [moveFile, moveFolder, onImmediateUpdate, t, onRefresh, handleDragEnd]
   );
 
   return {

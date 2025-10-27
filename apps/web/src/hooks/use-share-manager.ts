@@ -268,7 +268,7 @@ export function useShareManager(onSuccess: () => void) {
           throw error;
         }
       } else {
-        toast.error("Multiple share download not yet supported - please download shares individually");
+        toast.error(t("shareManager.errors.multipleDownloadNotSupported"));
       }
     } catch (error) {
       console.error("Error creating ZIP:", error);

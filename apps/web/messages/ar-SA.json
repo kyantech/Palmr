@@ -6,7 +6,9 @@
       "token_expired": "انتهت صلاحية الرمز المميز. حاول مرة أخرى.",
       "config_error": "خطأ في التكوين. اتصل بالدعم الفني.",
       "auth_failed": "فشل في المصادقة. حاول مرة أخرى."
-    }
+    },
+    "authenticationFailed": "فشلت المصادقة",
+    "successfullyAuthenticated": "تم المصادقة بنجاح!"
   },
   "authProviders": {
     "title": "مزودي المصادقة",
@@ -174,7 +176,14 @@
     "tabs": {
       "shareDetails": "تفاصيل المشاركة",
       "selectFiles": "اختيار الملفات"
-    }
+    },
+    "errors": {
+      "nameRequired": "اسم المشاركة مطلوب",
+      "selectItems": "يرجى اختيار ملف أو مجلد واحد على الأقل"
+    },
+    "itemsSelected": "{count} عنصر محدد",
+    "passwordPlaceholder": "أدخل كلمة المرور",
+    "selectItemsPrompt": "اختر الملفات والمجلدات للمشاركة"
   },
   "customization": {
     "breadcrumb": "التخصيص",
@@ -340,7 +349,8 @@
     "addToShare": "إضافة إلى المشاركة",
     "removeFromShare": "إزالة من المشاركة",
     "saveChanges": "حفظ التغييرات",
-    "editFolder": "تحرير المجلد"
+    "editFolder": "تحرير المجلد",
+    "itemsSelected": "{count} عنصر محدد"
   },
   "files": {
     "title": "جميع الملفات",
@@ -376,7 +386,12 @@
       "description": "ارفع ملفك الأول أو أنشئ مجلدًا للبدء"
     },
     "files": "ملفات",
-    "folders": "مجلدات"
+    "folders": "مجلدات",
+    "errors": {
+      "moveItemsFailed": "فشل نقل العناصر. يرجى المحاولة مرة أخرى.",
+      "cannotMoveHere": "لا يمكن نقل العناصر إلى هذا الموقع"
+    },
+    "openFolder": "فتح المجلد"
   },
   "filesTable": {
     "ariaLabel": "جدول الملفات",
@@ -539,7 +554,10 @@
     "movingTo": "النقل إلى:",
     "title": "نقل {count, plural, =1 {عنصر} other {عناصر}}",
     "description": "نقل {count, plural, =1 {عنصر} other {عناصر}} إلى موقع جديد",
-    "success": "تم نقل {count} {count, plural, =1 {عنصر} other {عناصر}} بنجاح"
+    "success": "تم نقل {count} {count, plural, =1 {عنصر} other {عناصر}} بنجاح",
+    "errors": {
+      "moveFailed": "فشل نقل العناصر"
+    }
   },
   "navbar": {
     "logoAlt": "شعار التطبيق",
@@ -1407,7 +1425,9 @@
     "linkDescriptionFile": "إنشاء رابط مخصص لمشاركة الملف",
     "linkDescriptionFolder": "إنشاء رابط مخصص لمشاركة المجلد",
     "linkReady": "رابط المشاركة جاهز:",
-    "linkTitle": "إنشاء رابط"
+    "linkTitle": "إنشاء رابط",
+    "itemsSelected": "{count} عنصر محدد",
+    "manageFilesDescription": "اختر الملفات والمجلدات لتضمينها في هذه المشاركة"
   },
   "shareDetails": {
     "title": "تفاصيل المشاركة",
@@ -1522,7 +1542,10 @@
     "noFilesToDownload": "لا توجد ملفات متاحة للتنزيل",
     "singleShareZipName": "{ShareName} _files.zip",
     "zipDownloadError": "فشل في إنشاء ملف مضغوط",
-    "zipDownloadSuccess": "تم تنزيل ملف zip بنجاح"
+    "zipDownloadSuccess": "تم تنزيل ملف zip بنجاح",
+    "errors": {
+      "multipleDownloadNotSupported": "تنزيل مشاركات متعددة غير مدعوم حالياً - يرجى تنزيل المشاركات بشكل فردي"
+    }
   },
   "shareMultipleFiles": {
     "title": "مشاركة ملفات متعددة",
