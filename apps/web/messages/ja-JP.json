@@ -1958,16 +1958,16 @@
     "required": "このフィールドは必須です"
   },
   "embedCode": {
-    "title": "画像を埋め込む",
-    "description": "これらのコードを使用して、この画像をフォーラム、ウェブサイト、またはその他のプラットフォームに埋め込みます",
+    "title": "メディアを埋め込む",
+    "description": "これらのコードを使用して、このメディアをフォーラム、ウェブサイト、またはその他のプラットフォームに埋め込みます",
     "tabs": {
       "directLink": "直接リンク",
       "html": "HTML",
       "bbcode": "BBCode"
     },
-    "directLinkDescription": "画像ファイルへの直接URL",
-    "htmlDescription": "このコードを使用してHTMLページに画像を埋め込みます",
-    "bbcodeDescription": "BBCodeをサポートするフォーラムに画像を埋め込むには、このコードを使用します"
+    "directLinkDescription": "メディアファイルへの直接URL",
+    "htmlDescription": "このコードを使用してHTMLページにメディアを埋め込みます",
+    "bbcodeDescription": "BBCodeをサポートするフォーラムにメディアを埋め込むには、このコードを使用します"
   },
   "contextMenu": {
     "newFolder": "新規フォルダ",

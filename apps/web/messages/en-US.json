@@ -1912,16 +1912,16 @@
     }
   },
   "embedCode": {
-    "title": "Embed Image",
-    "description": "Use these codes to embed this image in forums, websites, or other platforms",
+    "title": "Embed Media",
+    "description": "Use these codes to embed this media in forums, websites, or other platforms",
     "tabs": {
       "directLink": "Direct Link",
       "html": "HTML",
       "bbcode": "BBCode"
     },
-    "directLinkDescription": "Direct URL to the image file",
-    "htmlDescription": "Use this code to embed the image in HTML pages",
-    "bbcodeDescription": "Use this code to embed the image in forums that support BBCode"
+    "directLinkDescription": "Direct URL to the media file",
+    "htmlDescription": "Use this code to embed the media in HTML pages",
+    "bbcodeDescription": "Use this code to embed the media in forums that support BBCode"
   },
   "validation": {
     "firstNameRequired": "First name is required",

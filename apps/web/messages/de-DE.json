@@ -1958,16 +1958,16 @@
     "required": "Dieses Feld ist erforderlich"
   },
   "embedCode": {
-    "title": "Bild einbetten",
-    "description": "Verwenden Sie diese Codes, um dieses Bild in Foren, Websites oder anderen Plattformen einzubetten",
+    "title": "Medien einbetten",
+    "description": "Verwenden Sie diese Codes, um diese Medien in Foren, Websites oder anderen Plattformen einzubetten",
     "tabs": {
       "directLink": "Direkter Link",
       "html": "HTML",
       "bbcode": "BBCode"
     },
-    "directLinkDescription": "Direkte URL zur Bilddatei",
-    "htmlDescription": "Verwenden Sie diesen Code, um das Bild in HTML-Seiten einzubetten",
-    "bbcodeDescription": "Verwenden Sie diesen Code, um das Bild in Foren einzubetten, die BBCode unterstützen"
+    "directLinkDescription": "Direkte URL zur Mediendatei",
+    "htmlDescription": "Verwenden Sie diesen Code, um die Medien in HTML-Seiten einzubetten",
+    "bbcodeDescription": "Verwenden Sie diesen Code, um die Medien in Foren einzubetten, die BBCode unterstützen"
   },
   "contextMenu": {
     "newFolder": "Neuer Ordner",

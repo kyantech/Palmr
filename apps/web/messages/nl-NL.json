@@ -1958,16 +1958,16 @@
     "required": "Dit veld is verplicht"
   },
   "embedCode": {
-    "title": "Afbeelding insluiten",
-    "description": "Gebruik deze codes om deze afbeelding in te sluiten in forums, websites of andere platforms",
+    "title": "Media insluiten",
+    "description": "Gebruik deze codes om deze media in te sluiten in forums, websites of andere platforms",
     "tabs": {
       "directLink": "Directe link",
       "html": "HTML",
       "bbcode": "BBCode"
     },
-    "directLinkDescription": "Directe URL naar het afbeeldingsbestand",
-    "htmlDescription": "Gebruik deze code om de afbeelding in te sluiten in HTML-pagina's",
-    "bbcodeDescription": "Gebruik deze code om de afbeelding in te sluiten in forums die BBCode ondersteunen"
+    "directLinkDescription": "Directe URL naar het mediabestand",
+    "htmlDescription": "Gebruik deze code om de media in te sluiten in HTML-pagina's",
+    "bbcodeDescription": "Gebruik deze code om de media in te sluiten in forums die BBCode ondersteunen"
   },
   "contextMenu": {
     "newFolder": "Nieuwe map",

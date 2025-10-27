@@ -1958,16 +1958,16 @@
     "required": "此字段为必填项"
   },
   "embedCode": {
-    "title": "嵌入图片",
-    "description": "使用这些代码将此图片嵌入到论坛、网站或其他平台中",
+    "title": "嵌入媒体",
+    "description": "使用这些代码将此媒体嵌入到论坛、网站或其他平台中",
     "tabs": {
       "directLink": "直接链接",
       "html": "HTML",
       "bbcode": "BBCode"
     },
-    "directLinkDescription": "图片文件的直接URL",
-    "htmlDescription": "使用此代码将图片嵌入HTML页面",
-    "bbcodeDescription": "使用此代码将图片嵌入支持BBCode的论坛"
+    "directLinkDescription": "媒体文件的直接URL",
+    "htmlDescription": "使用此代码将媒体嵌入HTML页面",
+    "bbcodeDescription": "使用此代码将媒体嵌入支持BBCode的论坛"
   },
   "contextMenu": {
     "newFolder": "新建文件夹",

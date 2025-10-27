@@ -1960,16 +1960,16 @@
     "required": "هذا الحقل مطلوب"
   },
   "embedCode": {
-    "title": "تضمين الصورة",
-    "description": "استخدم هذه الأكواد لتضمين هذه الصورة في المنتديات أو المواقع الإلكترونية أو المنصات الأخرى",
+    "title": "تضمين الوسائط",
+    "description": "استخدم هذه الأكواد لتضمين هذه الوسائط في المنتديات أو المواقع الإلكترونية أو المنصات الأخرى",
     "tabs": {
       "directLink": "رابط مباشر",
       "html": "HTML",
       "bbcode": "BBCode"
     },
-    "directLinkDescription": "عنوان URL مباشر لملف الصورة",
-    "htmlDescription": "استخدم هذا الكود لتضمين الصورة في صفحات HTML",
-    "bbcodeDescription": "استخدم هذا الكود لتضمين الصورة في المنتديات التي تدعم BBCode"
+    "directLinkDescription": "عنوان URL مباشر لملف الوسائط",
+    "htmlDescription": "استخدم هذا الكود لتضمين الوسائط في صفحات HTML",
+    "bbcodeDescription": "استخدم هذا الكود لتضمين الوسائط في المنتديات التي تدعم BBCode"
   },
   "contextMenu": {
     "newFolder": "مجلد جديد",
