@@ -24,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useDragDrop } from "@/hooks/use-drag-drop";
-import { getDownloadUrl } from "@/http/endpoints";
+import { getCachedDownloadUrl } from "@/lib/download-url-cache";
 import { getFileIcon } from "@/utils/file-icons";
 import { formatFileSize } from "@/utils/format-file-size";
 
@@ -194,12 +194,12 @@ export function FilesGrid({
 
         try {
           loadingUrls.current.add(file.objectName);
-          const response = await getDownloadUrl(file.objectName);
+          const url = await getCachedDownloadUrl(file.objectName);
 
           if (!componentMounted.current) break;
 
-          urlCache[file.objectName] = { url: response.data.url, timestamp: now };
-          setFilePreviewUrls((prev) => ({ ...prev, [file.id]: response.data.url }));
+          urlCache[file.objectName] = { url, timestamp: now };
+          setFilePreviewUrls((prev) => ({ ...prev, [file.id]: url }));
         } catch (error) {
           console.error(`Failed to load preview for ${file.name}:`, error);
         } finally {

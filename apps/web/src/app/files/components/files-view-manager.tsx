@@ -42,7 +42,7 @@ interface FilesViewManagerProps {
   folders?: Folder[];
   searchQuery: string;
   onSearch: (query: string) => void;
-  onNavigateToFolder?: (folderId?: string) => void;
+  onNavigateToFolder?: (folderId: string) => void;
   onDownload: (objectName: string, fileName: string) => void;
   breadcrumbs?: React.ReactNode;
   isLoading?: boolean;
