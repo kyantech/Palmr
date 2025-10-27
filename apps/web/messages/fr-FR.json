@@ -1958,16 +1958,16 @@
     "required": "Este campo é obrigatório"
   },
   "embedCode": {
-    "title": "Intégrer l'image",
-    "description": "Utilisez ces codes pour intégrer cette image dans des forums, sites web ou autres plateformes",
+    "title": "Intégrer le média",
+    "description": "Utilisez ces codes pour intégrer ce média dans des forums, sites web ou autres plateformes",
     "tabs": {
       "directLink": "Lien direct",
       "html": "HTML",
       "bbcode": "BBCode"
     },
-    "directLinkDescription": "URL directe vers le fichier image",
-    "htmlDescription": "Utilisez ce code pour intégrer l'image dans des pages HTML",
-    "bbcodeDescription": "Utilisez ce code pour intégrer l'image dans des forums prenant en charge BBCode"
+    "directLinkDescription": "URL directe vers le fichier média",
+    "htmlDescription": "Utilisez ce code pour intégrer le média dans des pages HTML",
+    "bbcodeDescription": "Utilisez ce code pour intégrer le média dans des forums prenant en charge BBCode"
   },
   "contextMenu": {
     "newFolder": "Nouveau dossier",

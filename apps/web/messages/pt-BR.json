@@ -1963,15 +1963,15 @@
     "usernameSpaces": "O nome de usuário não pode conter espaços"
   },
   "embedCode": {
-    "title": "Incorporar imagem",
-    "description": "Use estes códigos para incorporar esta imagem em fóruns, sites ou outras plataformas",
+    "title": "Incorporar mídia",
+    "description": "Use estes códigos para incorporar esta mídia em fóruns, sites ou outras plataformas",
     "tabs": {
       "directLink": "Link direto",
       "html": "HTML",
       "bbcode": "BBCode"
     },
-    "directLinkDescription": "URL direto para o arquivo de imagem",
-    "htmlDescription": "Use este código para incorporar a imagem em páginas HTML",
-    "bbcodeDescription": "Use este código para incorporar a imagem em fóruns que suportam BBCode"
+    "directLinkDescription": "URL direto para o arquivo de mídia",
+    "htmlDescription": "Use este código para incorporar a mídia em páginas HTML",
+    "bbcodeDescription": "Use este código para incorporar a mídia em fóruns que suportam BBCode"
   }
 }

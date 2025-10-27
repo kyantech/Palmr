@@ -1,5 +1,7 @@
 import { useTranslations } from "next-intl";
 
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+
 interface VideoPreviewProps {
   src: string;
 }
@@ -8,13 +10,11 @@ export function VideoPreview({ src }: VideoPreviewProps) {
   const t = useTranslations();
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4 py-6">
-      <div className="w-full max-w-4xl">
-        <video controls className="w-full rounded-lg" preload="metadata" style={{ maxHeight: "70vh" }}>
-          <source src={src} />
-          {t("filePreview.videoNotSupported")}
-        </video>
-      </div>
-    </div>
+    <AspectRatio ratio={16 / 9} className="bg-muted">
+      <video controls className="w-full h-full rounded-lg object-contain" preload="metadata">
+        <source src={src} />
+        {t("filePreview.videoNotSupported")}
+      </video>
+    </AspectRatio>
   );
 }
