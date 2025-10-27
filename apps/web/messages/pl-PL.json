@@ -6,7 +6,9 @@
       "token_expired": "Token wygasł. Spróbuj ponownie.",
       "config_error": "Błąd konfiguracji. Skontaktuj się z pomocą techniczną.",
       "auth_failed": "Uwierzytelnienie nie powiodło się. Spróbuj ponownie."
-    }
+    },
+    "authenticationFailed": "Uwierzytelnienie nie powiodło się",
+    "successfullyAuthenticated": "Pomyślnie uwierzytelniono!"
   },
   "authProviders": {
     "title": "Dostawcy uwierzytelniania",
@@ -174,7 +176,14 @@
     "tabs": {
       "shareDetails": "Szczegóły udostępniania",
       "selectFiles": "Wybierz pliki"
-    }
+    },
+    "errors": {
+      "nameRequired": "Nazwa udostępnienia jest wymagana",
+      "selectItems": "Wybierz co najmniej jeden plik lub folder"
+    },
+    "itemsSelected": "Wybrano {count} elementów",
+    "passwordPlaceholder": "Wprowadź hasło",
+    "selectItemsPrompt": "Wybierz pliki i foldery do udostępnienia"
   },
   "customization": {
     "breadcrumb": "Personalizacja",
@@ -340,7 +349,8 @@
     "addToShare": "Dodaj do udostępnienia",
     "removeFromShare": "Usuń z udostępnienia",
     "saveChanges": "Zapisz zmiany",
-    "editFolder": "Edytuj folder"
+    "editFolder": "Edytuj folder",
+    "itemsSelected": "Wybrano {count} elementów"
   },
   "files": {
     "title": "Wszystkie pliki",
@@ -376,7 +386,12 @@
       "description": "Prześlij swój pierwszy plik lub utwórz folder, aby rozpocząć"
     },
     "files": "pliki",
-    "folders": "foldery"
+    "folders": "foldery",
+    "errors": {
+      "moveItemsFailed": "Nie udało się przenieść elementów. Spróbuj ponownie.",
+      "cannotMoveHere": "Nie można przenieść elementów do tej lokalizacji"
+    },
+    "openFolder": "Otwórz folder"
   },
   "filesTable": {
     "ariaLabel": "Tabela plików",
@@ -539,7 +554,10 @@
     "movingTo": "Przenoszenie do:",
     "title": "Przenieś {count, plural, =1 {element} other {elementy}}",
     "description": "Przenieś {count, plural, =1 {element} other {elementy}} do nowej lokalizacji",
-    "success": "Pomyślnie przeniesiono {count} {count, plural, =1 {element} other {elementów}}"
+    "success": "Pomyślnie przeniesiono {count} {count, plural, =1 {element} other {elementów}}",
+    "errors": {
+      "moveFailed": "Nie udało się przenieść elementów"
+    }
   },
   "navbar": {
     "logoAlt": "Logo aplikacji",
@@ -1405,7 +1423,9 @@
     "linkDescriptionFile": "Wygeneruj niestandardowy link do udostępnienia pliku",
     "linkDescriptionFolder": "Wygeneruj niestandardowy link do udostępnienia folderu",
     "linkReady": "Twój link udostępniania jest gotowy:",
-    "linkTitle": "Generuj link"
+    "linkTitle": "Generuj link",
+    "itemsSelected": "Wybrano {count} elementów",
+    "manageFilesDescription": "Wybierz pliki i foldery do uwzględnienia w tym udostępnieniu"
   },
   "shareDetails": {
     "title": "Szczegóły udostępnienia",
@@ -1520,7 +1540,10 @@
     "noFilesToDownload": "Brak plików do pobrania",
     "singleShareZipName": "{ShaRename} _files.zip",
     "zipDownloadError": "Nie udało się utworzyć pliku zip",
-    "zipDownloadSuccess": "Plik zip pobrany pomyślnie"
+    "zipDownloadSuccess": "Plik zip pobrany pomyślnie",
+    "errors": {
+      "multipleDownloadNotSupported": "Pobieranie wielu udostępnień nie jest jeszcze obsługiwane - pobierz udostępnienia pojedynczo"
+    }
   },
   "shareMultipleFiles": {
     "title": "Udostępnij wiele plików",

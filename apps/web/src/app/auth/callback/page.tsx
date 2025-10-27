@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { useAuth } from "@/contexts/auth-context";
@@ -11,6 +12,7 @@ export default function AuthCallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setUser, setIsAuthenticated, setIsAdmin } = useAuth();
+  const t = useTranslations();
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -59,14 +61,14 @@ export default function AuthCallbackPage() {
             setUser(userData);
             setIsAdmin(isAdmin);
             setIsAuthenticated(true);
-            toast.success("Successfully authenticated!");
+            toast.success(t("auth.successfullyAuthenticated"));
             router.push("/dashboard");
           } else {
             throw new Error("No user data received");
           }
         } catch (error) {
           console.error("Error fetching user data:", error);
-          toast.error("Authentication failed");
+          toast.error(t("auth.authenticationFailed"));
           router.push("/login");
         }
       };

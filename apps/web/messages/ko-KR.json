@@ -6,7 +6,9 @@
       "token_expired": "토큰이 만료되었습니다. 다시 시도하세요.",
       "config_error": "구성 오류. 지원팀에 문의하세요.",
       "auth_failed": "인증에 실패했습니다. 다시 시도하세요."
-    }
+    },
+    "authenticationFailed": "인증에 실패했습니다",
+    "successfullyAuthenticated": "인증에 성공했습니다!"
   },
   "authProviders": {
     "title": "인증 제공자",
@@ -174,7 +176,14 @@
     "tabs": {
       "shareDetails": "공유 세부사항",
       "selectFiles": "파일 선택"
-    }
+    },
+    "errors": {
+      "nameRequired": "공유 이름은 필수입니다",
+      "selectItems": "최소 하나의 파일 또는 폴더를 선택해주세요"
+    },
+    "itemsSelected": "{count, plural, =0 {선택된 항목 없음} =1 {1개 항목 선택됨} other {#개 항목 선택됨}}",
+    "passwordPlaceholder": "비밀번호를 입력하세요",
+    "selectItemsPrompt": "공유할 파일과 폴더를 선택하세요"
   },
   "customization": {
     "breadcrumb": "커스터마이징",
@@ -340,7 +349,8 @@
     "addToShare": "공유에 추가",
     "removeFromShare": "공유에서 제거",
     "saveChanges": "변경사항 저장",
-    "editFolder": "폴더 편집"
+    "editFolder": "폴더 편집",
+    "itemsSelected": "{count, plural, =0 {선택된 항목 없음} =1 {1개 항목 선택됨} other {#개 항목 선택됨}}"
   },
   "files": {
     "title": "모든 파일",
@@ -376,7 +386,12 @@
       "description": "첫 번째 파일을 업로드하거나 폴더를 만들어 시작하세요"
     },
     "files": "파일",
-    "folders": "폴더"
+    "folders": "폴더",
+    "errors": {
+      "moveItemsFailed": "항목 이동에 실패했습니다. 다시 시도해주세요.",
+      "cannotMoveHere": "이 위치로 항목을 이동할 수 없습니다"
+    },
+    "openFolder": "폴더 열기"
   },
   "filesTable": {
     "ariaLabel": "파일 테이블",
@@ -539,7 +554,10 @@
     "movingTo": "이동 위치:",
     "title": "항목 이동",
     "description": "항목을 새 위치로 이동",
-    "success": "{count}개 항목이 성공적으로 이동되었습니다"
+    "success": "{count}개 항목이 성공적으로 이동되었습니다",
+    "errors": {
+      "moveFailed": "항목 이동에 실패했습니다"
+    }
   },
   "navbar": {
     "logoAlt": "애플리케이션 로고",
@@ -1405,7 +1423,9 @@
     "linkDescriptionFile": "파일을 공유할 사용자 정의 링크 생성",
     "linkDescriptionFolder": "폴더를 공유할 사용자 정의 링크 생성",
     "linkReady": "공유 링크가 준비되었습니다:",
-    "linkTitle": "링크 생성"
+    "linkTitle": "링크 생성",
+    "itemsSelected": "{count}개 항목 선택됨",
+    "manageFilesDescription": "이 공유에 포함할 파일 및 폴더 선택"
   },
   "shareDetails": {
     "title": "공유 세부 정보",
@@ -1520,7 +1540,10 @@
     "noFilesToDownload": "다운로드 할 수있는 파일이 없습니다",
     "singleShareZipName": "{sharename} _files.zip",
     "zipDownloadError": "zip 파일을 만들지 못했습니다",
-    "zipDownloadSuccess": "zip 파일이 성공적으로 다운로드되었습니다"
+    "zipDownloadSuccess": "zip 파일이 성공적으로 다운로드되었습니다",
+    "errors": {
+      "multipleDownloadNotSupported": "여러 공유 다운로드는 아직 지원되지 않습니다 - 공유를 개별적으로 다운로드해주세요"
+    }
   },
   "shareMultipleFiles": {
     "title": "여러 파일 공유",

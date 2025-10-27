@@ -6,7 +6,9 @@
       "token_expired": "Jeton expiré. Veuillez réessayer.",
       "config_error": "Erreur de configuration. Veuillez contacter le support.",
       "auth_failed": "Échec de l'authentification. Veuillez réessayer."
-    }
+    },
+    "authenticationFailed": "Échec de l'authentification",
+    "successfullyAuthenticated": "Authentification réussie !"
   },
   "authProviders": {
     "title": "Fournisseurs d'authentification",
@@ -174,7 +176,14 @@
     "tabs": {
       "shareDetails": "Détails du partage",
       "selectFiles": "Sélectionner les fichiers"
-    }
+    },
+    "errors": {
+      "nameRequired": "Le nom du partage est requis",
+      "selectItems": "Veuillez sélectionner au moins un fichier ou dossier"
+    },
+    "itemsSelected": "{count, plural, =0 {Aucun élément sélectionné} =1 {1 élément sélectionné} other {# éléments sélectionnés}}",
+    "passwordPlaceholder": "Entrez le mot de passe",
+    "selectItemsPrompt": "Sélectionnez les fichiers et dossiers à partager"
   },
   "customization": {
     "breadcrumb": "Personnalisation",
@@ -340,7 +349,8 @@
     "addToShare": "Ajouter au partage",
     "removeFromShare": "Retirer du partage",
     "saveChanges": "Sauvegarder les Modifications",
-    "editFolder": "Modifier le dossier"
+    "editFolder": "Modifier le dossier",
+    "itemsSelected": "{count, plural, =0 {Aucun élément sélectionné} =1 {1 élément sélectionné} other {# éléments sélectionnés}}"
   },
   "files": {
     "title": "Tous les Fichiers",
@@ -376,7 +386,12 @@
       "description": "Téléchargez votre premier fichier ou créez un dossier pour commencer"
     },
     "files": "fichiers",
-    "folders": "dossiers"
+    "folders": "dossiers",
+    "errors": {
+      "moveItemsFailed": "Échec du déplacement des éléments. Veuillez réessayer.",
+      "cannotMoveHere": "Impossible de déplacer les éléments vers cet emplacement"
+    },
+    "openFolder": "Ouvrir le dossier"
   },
   "filesTable": {
     "ariaLabel": "Tableau des fichiers",
@@ -539,7 +554,10 @@
     "movingTo": "Déplacement vers :",
     "title": "Déplacer {count, plural, =1 {élément} other {éléments}}",
     "description": "Déplacer {count, plural, =1 {élément} other {éléments}} vers un nouvel emplacement",
-    "success": "{count} {count, plural, =1 {élément déplacé} other {éléments déplacés}} avec succès"
+    "success": "{count} {count, plural, =1 {élément déplacé} other {éléments déplacés}} avec succès",
+    "errors": {
+      "moveFailed": "Échec du déplacement des éléments"
+    }
   },
   "navbar": {
     "logoAlt": "Logo de l'Application",
@@ -1405,7 +1423,9 @@
     "linkDescriptionFile": "Générez un lien personnalisé pour partager le fichier",
     "linkDescriptionFolder": "Générez un lien personnalisé pour partager le dossier",
     "linkReady": "Votre lien de partage est prêt :",
-    "linkTitle": "Générer un lien"
+    "linkTitle": "Générer un lien",
+    "itemsSelected": "{count, plural, =0 {Aucun élément sélectionné} =1 {1 élément sélectionné} other {# éléments sélectionnés}}",
+    "manageFilesDescription": "Sélectionnez les fichiers et dossiers à inclure dans ce partage"
   },
   "shareDetails": {
     "title": "Détails du Partage",
@@ -1520,7 +1540,10 @@
     "noFilesToDownload": "Aucun fichier disponible en téléchargement",
     "singleShareZipName": "{sharename} _files.zip",
     "zipDownloadError": "Échec de la création du fichier zip",
-    "zipDownloadSuccess": "Fichier zip téléchargé avec succès"
+    "zipDownloadSuccess": "Fichier zip téléchargé avec succès",
+    "errors": {
+      "multipleDownloadNotSupported": "Le téléchargement de plusieurs partages n'est pas encore pris en charge - veuillez télécharger les partages individuellement"
+    }
   },
   "shareMultipleFiles": {
     "title": "Partager Plusieurs Fichiers",

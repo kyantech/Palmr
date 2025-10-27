@@ -6,7 +6,9 @@
       "token_expired": "Token süresi doldu. Lütfen tekrar deneyin.",
       "config_error": "Yapılandırma hatası. Lütfen destek ile iletişime geçin.",
       "auth_failed": "Kimlik doğrulama başarısız. Lütfen tekrar deneyin."
-    }
+    },
+    "authenticationFailed": "Kimlik doğrulama başarısız",
+    "successfullyAuthenticated": "Başarıyla kimlik doğrulandı!"
   },
   "authProviders": {
     "title": "Kimlik Doğrulama Sağlayıcıları",
@@ -174,7 +176,14 @@
     "tabs": {
       "shareDetails": "Paylaşım Detayları",
       "selectFiles": "Dosyaları Seç"
-    }
+    },
+    "errors": {
+      "nameRequired": "Paylaşım adı gerekli",
+      "selectItems": "Lütfen en az bir dosya veya klasör seçin"
+    },
+    "itemsSelected": "{count} öğe seçildi",
+    "passwordPlaceholder": "Şifre girin",
+    "selectItemsPrompt": "Paylaşmak için dosya ve klasörleri seçin"
   },
   "customization": {
     "breadcrumb": "Özelleştirme",
@@ -340,7 +349,8 @@
     "addToShare": "Paylaşıma ekle",
     "removeFromShare": "Paylaşımdan kaldır",
     "saveChanges": "Değişiklikleri Kaydet",
-    "editFolder": "Klasörü düzenle"
+    "editFolder": "Klasörü düzenle",
+    "itemsSelected": "{count} öğe seçildi"
   },
   "files": {
     "title": "Tüm Dosyalar",
@@ -376,7 +386,12 @@
       "description": "Başlamak için ilk dosyanızı yükleyin veya bir klasör oluşturun"
     },
     "files": "dosyalar",
-    "folders": "klasörler"
+    "folders": "klasörler",
+    "errors": {
+      "moveItemsFailed": "Öğeler taşınamadı. Lütfen tekrar deneyin.",
+      "cannotMoveHere": "Öğeler bu konuma taşınamaz"
+    },
+    "openFolder": "Klasörü aç"
   },
   "filesTable": {
     "ariaLabel": "Dosya Tablosu",
@@ -539,7 +554,10 @@
     "movingTo": "Taşınıyor:",
     "title": "{count, plural, =1 {Öğe} other {Öğeler}} Taşı",
     "description": "{count, plural, =1 {Öğeyi} other {Öğeleri}} yeni konuma taşı",
-    "success": "{count} {count, plural, =1 {öğe} other {öğe}} başarıyla taşındı"
+    "success": "{count} {count, plural, =1 {öğe} other {öğe}} başarıyla taşındı",
+    "errors": {
+      "moveFailed": "Öğeler taşınamadı"
+    }
   },
   "navbar": {
     "logoAlt": "Uygulama Logosu",
@@ -1405,7 +1423,9 @@
     "linkDescriptionFile": "Dosyayı paylaşmak için özel bağlantı oluşturun",
     "linkDescriptionFolder": "Klasörü paylaşmak için özel bağlantı oluşturun",
     "linkReady": "Paylaşım bağlantınız hazır:",
-    "linkTitle": "Bağlantı Oluştur"
+    "linkTitle": "Bağlantı Oluştur",
+    "itemsSelected": "{count} öğe seçildi",
+    "manageFilesDescription": "Bu paylaşıma dahil edilecek dosya ve klasörleri seçin"
   },
   "shareDetails": {
     "title": "Paylaşım Detayları",
@@ -1520,7 +1540,10 @@
     "noFilesToDownload": "İndirilebilecek dosya yok",
     "singleShareZipName": "{Sharename} _files.zip",
     "zipDownloadError": "Zip dosyası oluşturulamadı",
-    "zipDownloadSuccess": "Zip dosyası başarıyla indirildi"
+    "zipDownloadSuccess": "Zip dosyası başarıyla indirildi",
+    "errors": {
+      "multipleDownloadNotSupported": "Çoklu paylaşım indirme henüz desteklenmiyor - lütfen paylaşımları ayrı ayrı indirin"
+    }
   },
   "shareMultipleFiles": {
     "title": "Çoklu Dosya Paylaş",

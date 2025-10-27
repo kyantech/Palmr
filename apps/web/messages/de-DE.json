@@ -6,7 +6,9 @@
       "token_expired": "Token abgelaufen. Versuchen Sie es erneut.",
       "config_error": "Konfigurationsfehler. Kontaktieren Sie den Support.",
       "auth_failed": "Authentifizierung fehlgeschlagen. Versuchen Sie es erneut."
-    }
+    },
+    "authenticationFailed": "Authentifizierung fehlgeschlagen",
+    "successfullyAuthenticated": "Erfolgreich authentifiziert!"
   },
   "authProviders": {
     "title": "Authentifizierungsanbieter",
@@ -174,7 +176,14 @@
     "tabs": {
       "shareDetails": "Freigabe-Details",
       "selectFiles": "Dateien auswählen"
-    }
+    },
+    "errors": {
+      "nameRequired": "Freigabename ist erforderlich",
+      "selectItems": "Bitte wählen Sie mindestens eine Datei oder einen Ordner aus"
+    },
+    "itemsSelected": "{count} Elemente ausgewählt",
+    "passwordPlaceholder": "Passwort eingeben",
+    "selectItemsPrompt": "Wählen Sie Dateien und Ordner zum Teilen aus"
   },
   "customization": {
     "breadcrumb": "Anpassung",
@@ -340,7 +349,8 @@
     "addToShare": "Zur Freigabe hinzufügen",
     "removeFromShare": "Aus Freigabe entfernen",
     "saveChanges": "Änderungen Speichern",
-    "editFolder": "Ordner bearbeiten"
+    "editFolder": "Ordner bearbeiten",
+    "itemsSelected": "{count} Elemente ausgewählt"
   },
   "files": {
     "title": "Alle Dateien",
@@ -376,7 +386,12 @@
       "description": "Laden Sie Ihre erste Datei hoch oder erstellen Sie einen Ordner, um zu beginnen"
     },
     "files": "Dateien",
-    "folders": "Ordner"
+    "folders": "Ordner",
+    "errors": {
+      "moveItemsFailed": "Verschieben der Elemente fehlgeschlagen. Bitte erneut versuchen.",
+      "cannotMoveHere": "Elemente können nicht an diesen Speicherort verschoben werden"
+    },
+    "openFolder": "Ordner öffnen"
   },
   "filesTable": {
     "ariaLabel": "Dateien-Tabelle",
@@ -539,7 +554,10 @@
     "movingTo": "Verschieben nach:",
     "title": "{count, plural, =1 {Element} other {Elemente}} verschieben",
     "description": "{count, plural, =1 {Element} other {Elemente}} an einen neuen Ort verschieben",
-    "success": "Erfolgreich {count} {count, plural, =1 {Element} other {Elemente}} verschoben"
+    "success": "Erfolgreich {count} {count, plural, =1 {Element} other {Elemente}} verschoben",
+    "errors": {
+      "moveFailed": "Verschieben der Elemente fehlgeschlagen"
+    }
   },
   "navbar": {
     "logoAlt": "Anwendungslogo",
@@ -1405,7 +1423,9 @@
     "linkDescriptionFile": "Erstellen Sie einen benutzerdefinierten Link zum Teilen der Datei",
     "linkDescriptionFolder": "Erstellen Sie einen benutzerdefinierten Link zum Teilen des Ordners",
     "linkReady": "Ihr Freigabe-Link ist bereit:",
-    "linkTitle": "Link generieren"
+    "linkTitle": "Link generieren",
+    "itemsSelected": "{count} Elemente ausgewählt",
+    "manageFilesDescription": "Wählen Sie Dateien und Ordner aus, die in diese Freigabe aufgenommen werden sollen"
   },
   "shareDetails": {
     "title": "Freigabe-Details",
@@ -1520,7 +1540,10 @@
     "noFilesToDownload": "Keine Dateien zum Download zur Verfügung stehen",
     "singleShareZipName": "{ShareName} _files.zip",
     "zipDownloadError": "Die ZIP -Datei erstellt nicht",
-    "zipDownloadSuccess": "ZIP -Datei erfolgreich heruntergeladen"
+    "zipDownloadSuccess": "ZIP -Datei erfolgreich heruntergeladen",
+    "errors": {
+      "multipleDownloadNotSupported": "Download mehrerer Freigaben wird noch nicht unterstützt - bitte laden Sie Freigaben einzeln herunter"
+    }
   },
   "shareMultipleFiles": {
     "title": "Mehrere Dateien Teilen",

@@ -91,12 +91,12 @@ export function CreateShareModal({ isOpen, onClose, onSuccess, getAllFilesAndFol
 
   const handleSubmit = async () => {
     if (!formData.name.trim()) {
-      toast.error("Share name is required");
+      toast.error(t("createShare.errors.nameRequired"));
       return;
     }
 
     if (selectedItems.length === 0) {
-      toast.error("Please select at least one file or folder");
+      toast.error(t("createShare.errors.selectItems"));
       return;
     }
 
@@ -216,7 +216,7 @@ export function CreateShareModal({ isOpen, onClose, onSuccess, getAllFilesAndFol
                     type="password"
                     value={formData.password}
                     onChange={(e) => updateFormData("password", e.target.value)}
-                    placeholder="Enter password"
+                    placeholder={t("createShare.passwordPlaceholder")}
                   />
                 </div>
               )}
@@ -271,9 +271,9 @@ export function CreateShareModal({ isOpen, onClose, onSuccess, getAllFilesAndFol
 
               <div className="text-sm text-muted-foreground">
                 {selectedCount > 0 ? (
-                  <span>{selectedCount} items selected</span>
+                  <span>{t("createShare.itemsSelected", { count: selectedCount })}</span>
                 ) : (
-                  <span>Select files and folders to share</span>
+                  <span>{t("createShare.selectItemsPrompt")}</span>
                 )}
               </div>
 

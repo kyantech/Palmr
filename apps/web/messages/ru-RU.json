@@ -6,7 +6,9 @@
       "token_expired": "Token expirado. Tente novamente.",
       "config_error": "Erro de configuração. Contate o suporte.",
       "auth_failed": "Falha na autenticação. Tente novamente."
-    }
+    },
+    "authenticationFailed": "Ошибка аутентификации",
+    "successfullyAuthenticated": "Успешно аутентифицирован!"
   },
   "authProviders": {
     "title": "Провайдеры аутентификации",
@@ -174,7 +176,14 @@
     "tabs": {
       "shareDetails": "Детали общего доступа",
       "selectFiles": "Выбрать файлы"
-    }
+    },
+    "errors": {
+      "nameRequired": "Требуется имя общего ресурса",
+      "selectItems": "Выберите хотя бы один файл или папку"
+    },
+    "itemsSelected": "Выбрано элементов: {count}",
+    "passwordPlaceholder": "Введите пароль",
+    "selectItemsPrompt": "Выберите файлы и папки для общего доступа"
   },
   "customization": {
     "breadcrumb": "Настройка",
@@ -340,7 +349,8 @@
     "addToShare": "Добавить в общий доступ",
     "removeFromShare": "Удалить из общего доступа",
     "saveChanges": "Сохранить Изменения",
-    "editFolder": "Редактировать папку"
+    "editFolder": "Редактировать папку",
+    "itemsSelected": "Выбрано элементов: {count}"
   },
   "files": {
     "title": "Все файлы",
@@ -376,7 +386,12 @@
       "description": "Загрузите свой первый файл или создайте папку для начала работы"
     },
     "files": "файлы",
-    "folders": "папки"
+    "folders": "папки",
+    "errors": {
+      "moveItemsFailed": "Не удалось переместить элементы. Попробуйте еще раз.",
+      "cannotMoveHere": "Невозможно переместить элементы в это место"
+    },
+    "openFolder": "Открыть папку"
   },
   "filesTable": {
     "ariaLabel": "Таблица файлов",
@@ -539,7 +554,10 @@
     "movingTo": "Перемещение в:",
     "title": "Переместить {count, plural, =1 {элемент} other {элементы}}",
     "description": "Переместить {count, plural, =1 {элемент} other {элементы}} в новое место",
-    "success": "Успешно перемещено {count} {count, plural, =1 {элемент} other {элементов}}"
+    "success": "Успешно перемещено {count} {count, plural, =1 {элемент} other {элементов}}",
+    "errors": {
+      "moveFailed": "Не удалось переместить элементы"
+    }
   },
   "navbar": {
     "logoAlt": "Логотип приложения",
@@ -1405,7 +1423,9 @@
     "linkDescriptionFile": "Создайте пользовательскую ссылку для обмена файлом",
     "linkDescriptionFolder": "Создайте пользовательскую ссылку для обмена папкой",
     "linkReady": "Ваша ссылка для обмена готова:",
-    "linkTitle": "Создать ссылку"
+    "linkTitle": "Создать ссылку",
+    "itemsSelected": "Выбрано элементов: {count}",
+    "manageFilesDescription": "Выберите файлы и папки для включения в этот общий доступ"
   },
   "shareDetails": {
     "title": "Детали Общего Доступа",
@@ -1520,7 +1540,10 @@
     "noFilesToDownload": "Нет файлов для скачивания",
     "singleShareZipName": "{shareme} _files.zip",
     "zipDownloadError": "Не удалось создать zip -файл",
-    "zipDownloadSuccess": "Zip -файл успешно загружен"
+    "zipDownloadSuccess": "Zip -файл успешно загружен",
+    "errors": {
+      "multipleDownloadNotSupported": "Множественная загрузка общих ресурсов пока не поддерживается - загружайте общие ресурсы по отдельности"
+    }
   },
   "shareMultipleFiles": {
     "title": "Поделиться Несколькими Файлами",

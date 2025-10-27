@@ -6,7 +6,9 @@
       "token_expired": "टोकन समाप्त हो गया है। कृपया पुनः प्रयास करें।",
       "config_error": "कॉन्फ़िगरेशन त्रुटि। कृपया सहायता से संपर्क करें।",
       "auth_failed": "प्रमाणीकरण विफल। कृपया पुनः प्रयास करें।"
-    }
+    },
+    "authenticationFailed": "प्रमाणीकरण विफल",
+    "successfullyAuthenticated": "सफलतापूर्वक प्रमाणित!"
   },
   "authProviders": {
     "title": "प्रमाणीकरण प्रदाता",
@@ -174,7 +176,14 @@
     "tabs": {
       "shareDetails": "साझाकरण विवरण",
       "selectFiles": "फ़ाइलें चुनें"
-    }
+    },
+    "errors": {
+      "nameRequired": "शेयर का नाम आवश्यक है",
+      "selectItems": "कृपया कम से कम एक फ़ाइल या फ़ोल्डर चुनें"
+    },
+    "itemsSelected": "{count, plural, =0 {कोई आइटम चयनित नहीं} =1 {1 आइटम चयनित} other {# आइटम चयनित}}",
+    "passwordPlaceholder": "पासवर्ड दर्ज करें",
+    "selectItemsPrompt": "साझा करने के लिए फ़ाइलें और फ़ोल्डर चुनें"
   },
   "customization": {
     "breadcrumb": "अनुकूलन",
@@ -340,7 +349,8 @@
     "addToShare": "साझाकरण में जोड़ें",
     "removeFromShare": "साझाकरण से हटाएं",
     "saveChanges": "परिवर्तन सहेजें",
-    "editFolder": "फ़ोल्डर संपादित करें"
+    "editFolder": "फ़ोल्डर संपादित करें",
+    "itemsSelected": "{count, plural, =0 {कोई आइटम चयनित नहीं} =1 {1 आइटम चयनित} other {# आइटम चयनित}}"
   },
   "files": {
     "title": "सभी फाइलें",
@@ -376,7 +386,12 @@
       "description": "आरंभ करने के लिए अपनी पहली फ़ाइल अपलोड करें या फ़ोल्डर बनाएं"
     },
     "files": "फ़ाइलें",
-    "folders": "फ़ोल्डर"
+    "folders": "फ़ोल्डर",
+    "errors": {
+      "moveItemsFailed": "आइटम स्थानांतरित करने में विफल। कृपया पुनः प्रयास करें।",
+      "cannotMoveHere": "इस स्थान पर आइटम स्थानांतरित नहीं कर सकते"
+    },
+    "openFolder": "फ़ोल्डर खोलें"
   },
   "filesTable": {
     "ariaLabel": "फाइल तालिका",
@@ -539,7 +554,10 @@
     "movingTo": "यहाँ स्थानांतरित कर रहे हैं:",
     "title": "आइटम स्थानांतरित करें",
     "description": "आइटम को नए स्थान पर स्थानांतरित करें",
-    "success": "{count} आइटम सफलतापूर्वक स्थानांतरित किए गए"
+    "success": "{count} आइटम सफलतापूर्वक स्थानांतरित किए गए",
+    "errors": {
+      "moveFailed": "आइटम स्थानांतरित करने में विफल"
+    }
   },
   "navbar": {
     "logoAlt": "एप्लिकेशन लोगो",
@@ -1405,7 +1423,9 @@
     "linkDescriptionFile": "फ़ाइल साझा करने के लिए कस्टम लिंक जेनरेट करें",
     "linkDescriptionFolder": "फ़ोल्डर साझा करने के लिए कस्टम लिंक जेनरेट करें",
     "linkReady": "आपका साझाकरण लिंक तैयार है:",
-    "linkTitle": "लिंक जेनरेट करें"
+    "linkTitle": "लिंक जेनरेट करें",
+    "itemsSelected": "{count, plural, =0 {कोई आइटम चयनित नहीं} =1 {1 आइटम चयनित} other {# आइटम चयनित}}",
+    "manageFilesDescription": "इस साझाकरण में शामिल करने के लिए फ़ाइलें और फ़ोल्डर चुनें"
   },
   "shareDetails": {
     "title": "साझाकरण विवरण",
@@ -1520,7 +1540,10 @@
     "noFilesToDownload": "डाउनलोड करने के लिए कोई फाइलें उपलब्ध नहीं हैं",
     "singleShareZipName": "{Sharename} _files.zip",
     "zipDownloadError": "ज़िप फ़ाइल बनाने में विफल",
-    "zipDownloadSuccess": "ज़िप फ़ाइल सफलतापूर्वक डाउनलोड की गई"
+    "zipDownloadSuccess": "ज़िप फ़ाइल सफलतापूर्वक डाउनलोड की गई",
+    "errors": {
+      "multipleDownloadNotSupported": "कई साझाकरण डाउनलोड अभी तक समर्थित नहीं है - कृपया साझाकरण को अलग-अलग डाउनलोड करें"
+    }
   },
   "shareMultipleFiles": {
     "title": "कई फाइलें साझा करें",

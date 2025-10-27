@@ -6,7 +6,9 @@
       "token_expired": "Token scaduto. Riprova.",
       "config_error": "Errore di configurazione. Contatta il supporto.",
       "auth_failed": "Autenticazione fallita. Riprova."
-    }
+    },
+    "authenticationFailed": "Autenticazione fallita",
+    "successfullyAuthenticated": "Autenticazione completata con successo!"
   },
   "authProviders": {
     "title": "Provider di Autenticazione",
@@ -174,7 +176,14 @@
     "tabs": {
       "shareDetails": "Dettagli condivisione",
       "selectFiles": "Seleziona file"
-    }
+    },
+    "errors": {
+      "nameRequired": "Il nome della condivisione è obbligatorio",
+      "selectItems": "Seleziona almeno un file o una cartella"
+    },
+    "itemsSelected": "{count, plural, =0 {Nessun elemento selezionato} =1 {1 elemento selezionato} other {# elementi selezionati}}",
+    "passwordPlaceholder": "Inserisci password",
+    "selectItemsPrompt": "Seleziona file e cartelle da condividere"
   },
   "customization": {
     "breadcrumb": "Personalizzazione",
@@ -340,7 +349,8 @@
     "addToShare": "Aggiungi alla condivisione",
     "removeFromShare": "Rimuovi dalla condivisione",
     "saveChanges": "Salva Modifiche",
-    "editFolder": "Modifica cartella"
+    "editFolder": "Modifica cartella",
+    "itemsSelected": "{count, plural, =0 {Nessun elemento selezionato} =1 {1 elemento selezionato} other {# elementi selezionati}}"
   },
   "files": {
     "title": "Tutti i File",
@@ -376,7 +386,12 @@
       "description": "Carica il tuo primo file o crea una cartella per iniziare"
     },
     "files": "file",
-    "folders": "cartelle"
+    "folders": "cartelle",
+    "errors": {
+      "moveItemsFailed": "Impossibile spostare gli elementi. Riprova.",
+      "cannotMoveHere": "Impossibile spostare gli elementi in questa posizione"
+    },
+    "openFolder": "Apri cartella"
   },
   "filesTable": {
     "ariaLabel": "Tabella dei file",
@@ -539,7 +554,10 @@
     "movingTo": "Spostamento in:",
     "title": "Sposta {count, plural, =1 {elemento} other {elementi}}",
     "description": "Sposta {count, plural, =1 {elemento} other {elementi}} in una nuova posizione",
-    "success": "Spostati con successo {count} {count, plural, =1 {elemento} other {elementi}}"
+    "success": "Spostati con successo {count} {count, plural, =1 {elemento} other {elementi}}",
+    "errors": {
+      "moveFailed": "Impossibile spostare gli elementi"
+    }
   },
   "navbar": {
     "logoAlt": "Logo dell'App",
@@ -1405,7 +1423,9 @@
     "linkDescriptionFile": "Genera un collegamento personalizzato per condividere il file",
     "linkDescriptionFolder": "Genera un collegamento personalizzato per condividere la cartella",
     "linkReady": "Il tuo collegamento di condivisione è pronto:",
-    "linkTitle": "Genera collegamento"
+    "linkTitle": "Genera collegamento",
+    "itemsSelected": "{count, plural, =0 {Nessun elemento selezionato} =1 {1 elemento selezionato} other {# elementi selezionati}}",
+    "manageFilesDescription": "Seleziona file e cartelle da includere in questa condivisione"
   },
   "shareDetails": {
     "title": "Dettagli Condivisione",
@@ -1520,7 +1540,10 @@
     "noFilesToDownload": "Nessun file disponibile per il download",
     "singleShareZipName": "{Sharename} _files.zip",
     "zipDownloadError": "Impossibile creare un file zip",
-    "zipDownloadSuccess": "File zip scaricato correttamente"
+    "zipDownloadSuccess": "File zip scaricato correttamente",
+    "errors": {
+      "multipleDownloadNotSupported": "Il download di più condivisioni non è ancora supportato - scarica le condivisioni singolarmente"
+    }
   },
   "shareMultipleFiles": {
     "title": "Condividi File Multipli",
