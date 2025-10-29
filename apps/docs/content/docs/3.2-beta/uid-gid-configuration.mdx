@@ -9,7 +9,13 @@ Configure user and group permissions for seamless bind mount compatibility acros
 
 Palmr. supports runtime UID/GID configuration to resolve permission conflicts when using bind mounts. This eliminates the need for manual permission management on your host system.
 
-**⚠️ Important**: Palmr uses **UID 1000, GID 1000** by default, which matches the standard Linux convention. However, some systems may use different UID/GID values, which can cause permission issues with bind mounts.
+**✅ Good News**: Palmr uses **UID 1000, GID 1000** by default, which matches the standard Linux convention for the first user. For most systems, you won't need to configure these values.
+
+**⚠️ When to Configure**: Only set PALMR_UID/PALMR_GID if:
+- You're using bind mounts AND your host system uses different UID/GID values (e.g., NAS systems)
+- You're experiencing permission errors with bind mounts
+
+**Note**: Setting these values triggers ownership updates on startup, which can take 1-2 minutes. If left at defaults, startup is fast (~5 seconds).
 
 ## The Permission Problem
 
@@ -35,9 +41,19 @@ drwxr-xr-x 2 user user 4096 Jan 15 10:00 uploads/
 
 ## Quick Fix
 
-### Option 1: Set Palmr to Use Standard UID/GID (Recommended)
+### For Most Users: No Configuration Needed
 
-Add these environment variables to your `docker-compose.yaml`:
+If your host system uses the standard Linux UID:GID of 1000:1000 (which is the case for most desktop Linux systems), you don't need to set PALMR_UID or PALMR_GID at all. Just use the default docker-compose.yaml as-is.
+
+To check if you need configuration:
+```bash
+id
+# If output shows uid=1000 and gid=1000, you don't need to configure anything
+```
+
+### Option 1: Set Palmr to Match Your Host UID/GID (For Non-Standard Systems)
+
+If your system uses different values (common on NAS devices), add these environment variables to your `docker-compose.yaml`:
 
 ```yaml
 services:
@@ -55,14 +71,14 @@ services:
     restart: unless-stopped
 ```
 
-### Option 2: Change Host Directory Permissions
+### Option 2: Change Host Directory Permissions (Alternative)
 
-If you prefer to keep Palmr's defaults:
+If you prefer not to set environment variables and your host uses different UID/GID:
 
 ```bash
-# Create directories with correct ownership
+# Create directories with Palmr's default ownership (1000:1000)
 mkdir -p uploads temp-uploads
-chown -R 1001:1001 uploads temp-uploads
+sudo chown -R 1000:1000 uploads temp-uploads
 ```
 
 ## Environment Variables
@@ -71,8 +87,8 @@ Configure permissions using these optional environment variables:
 
 | Variable    | Description                      | Default | Example |
 | ----------- | -------------------------------- | ------- | ------- |
-| `PALMR_UID` | User ID for container processes  | `1001`  | `1000`  |
-| `PALMR_GID` | Group ID for container processes | `1001`  | `1000`  |
+| `PALMR_UID` | User ID for container processes  | `1000`  | `1000`  |
+| `PALMR_GID` | Group ID for container processes | `1000`  | `1000`  |
 
 ---
 
@@ -230,17 +246,19 @@ sudo chown -R $(id -u):$(id -g) uploads temp-uploads
 
 UID/GID configuration is **required** when:
 
-- ✅ Using bind mounts (most common case)
-- ✅ Encountering "permission denied" errors
-- ✅ Deploying on NAS systems (Synology, QNAP, etc.)
-- ✅ Host system uses different default UID/GID values
-- ✅ Running multiple containers that need to share files
+- ✅ Using bind mounts AND your host system uses non-standard UID/GID (not 1000:1000)
+- ✅ Encountering "permission denied" errors with bind mounts
+- ✅ Deploying on NAS systems (Synology, QNAP, etc.) with non-standard user IDs
+- ✅ Running multiple containers that need to share files with specific ownership
 
-UID/GID configuration is **optional** when:
+UID/GID configuration is **NOT needed** when:
 
-- ❌ Using Docker named volumes (Docker manages permissions)
-- ❌ Not using bind mounts
-- ❌ No permission errors occurring
+- ❌ Using Docker named volumes (Docker manages permissions automatically)
+- ❌ Your host system uses the standard UID:GID 1000:1000 (most Linux desktop systems)
+- ❌ Not using bind mounts at all
+- ❌ No permission errors are occurring
+
+**Performance Note**: Configuring custom UID/GID values triggers a recursive ownership update on container startup, which can take 1-2 minutes depending on data volume. If you use the defaults (1000:1000), startup is much faster (~5 seconds).
 
 ---
 

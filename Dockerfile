@@ -73,9 +73,9 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV API_BASE_URL=http://127.0.0.1:3333
 
-# Define build arguments for user/group configuration (defaults to current values)
-ARG PALMR_UID=1001
-ARG PALMR_GID=1001
+# Define build arguments for user/group configuration (defaults to standard Linux values)
+ARG PALMR_UID=1000
+ARG PALMR_GID=1000
 
 # Create application user with configurable UID/GID
 RUN addgroup --system --gid ${PALMR_GID} nodejs
