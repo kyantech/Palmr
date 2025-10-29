@@ -1,0 +1,1941 @@
+{
+  "auth": {
+    "successfullyAuthenticated": "Berhasil diautentikasi!",
+    "authenticationFailed": "Autentikasi gagal",
+    "errors": {
+      "account_inactive": "Akun tidak aktif. Silakan hubungi administrator.",
+      "registration_disabled": "Pendaftaran SSO dinonaktifkan.",
+      "token_expired": "Token kedaluwarsa. Silakan coba lagi.",
+      "config_error": "Kesalahan konfigurasi. Silakan hubungi dukungan.",
+      "auth_failed": "Autentikasi gagal. Silakan coba lagi."
+    }
+  },
+  "contextMenu": {
+    "newFolder": "Folder baru",
+    "uploadFile": "Unggah file"
+  },
+  "authProviders": {
+    "title": "Penyedia Otentikasi",
+    "description": "Konfigurasikan penyedia otentikasi eksternal untuk SSO",
+    "enabledCount": "{count} diaktifkan",
+    "loadingProviders": "Memuat penyedia...",
+    "providersConfigured": "{count} penyedia dikonfigurasi",
+    "enabledOfTotal": "{enabled} diaktifkan dari {total} penyedia",
+    "hideDisabledProviders": "Sembunyikan penyedia yang nonaktif",
+    "addProvider": "Tambah Penyedia",
+    "addProviderTitle": "Tambah Penyedia",
+    "editProvider": "Edit Penyedia",
+    "deleteProvider": "Hapus Penyedia",
+    "enabled": "Diaktifkan",
+    "disabled": "Nonaktif",
+    "officialProvider": "Penyedia Resmi",
+    "dragToReorder": "Seret untuk mengurutkan ulang",
+    "dragDisabledMessage": "Seret dan lepas dinonaktifkan saat memfilter penyedia. Tampilkan semua penyedia untuk mengurutkan ulang.",
+    "dragEnabledMessage": "Seret penyedia untuk mengurutkan ulang. Urutan ini akan ditampilkan di halaman login.",
+    "noProvidersEnabled": "Tidak ada penyedia otentikasi yang diaktifkan",
+    "noProvidersConfigured": "Tidak ada penyedia otentikasi yang dikonfigurasi",
+    "form": {
+      "providerName": "Nama Penyedia",
+      "providerNamePlaceholder": "misal: mycompany",
+      "displayName": "Nama Tampilan",
+      "displayNamePlaceholder": "misal: My Company SSO",
+      "type": "Tipe",
+      "typeOidc": "OIDC (OpenID Connect)",
+      "typeOauth2": "OAuth 2.0",
+      "icon": "Ikon",
+      "iconPlaceholder": "Pilih ikon",
+      "clientId": "Client ID",
+      "clientIdPlaceholder": "Client ID OAuth Anda",
+      "clientSecret": "Client Secret",
+      "clientSecretPlaceholder": "Client Secret OAuth Anda",
+      "oauthScopes": "Ruang Lingkup OAuth",
+      "scopesPlaceholder": "Masukkan scopes (misal: openid, profile, email)",
+      "scopesHelpOidc": "Scopes disarankan otomatis berdasarkan URL Penyedia. OIDC umum: openid, profile, email, groups",
+      "scopesHelpOauth2": "Scopes disarankan otomatis berdasarkan URL Penyedia. Scopes OAuth2 umum bergantung pada penyedia",
+      "providerUrl": "URL Penyedia",
+      "providerUrlPlaceholder": "https://auth.example.com",
+      "providerUrlAutoPlaceholder": "https://your-provider.com (endpoint akan dideteksi otomatis)",
+      "providerUrlManualPlaceholder": "https://your-provider.com",
+      "autoDiscoveryHelp": "Sistem akan secara otomatis mendeteksi endpoint otorisasi, token, dan userinfo",
+      "manualConfigurationHelp": "Base URL penyedia Anda (endpoint relatif terhadap ini)",
+      "authorizationEndpoint": "Endpoint Otorisasi",
+      "authorizationEndpointPlaceholder": "https://auth.example.com/auth",
+      "tokenEndpoint": "Endpoint Token",
+      "tokenEndpointPlaceholder": "https://auth.example.com/token",
+      "userInfoEndpoint": "Endpoint Info Pengguna",
+      "userInfoEndpointPlaceholder": "https://auth.example.com/userinfo",
+      "configurationMethod": "Metode Konfigurasi",
+      "autoDiscovery": "Deteksi Otomatis",
+      "autoDiscoveryDescription": "Otomatis mendeteksi endpoint dari URL Penyedia",
+      "manualEndpoints": "Endpoint Manual (Disarankan)",
+      "manualEndpointsDescription": "Konfigurasikan endpoint otorisasi, token, dan info pengguna manual",
+      "callbackUrl": "Callback URL",
+      "callbackUrlDescription": "Gunakan URL ini dalam konfigurasi OAuth penyedia Anda",
+      "copyCallbackUrl": "Salin Callback URL",
+      "callbackUrlCopied": "Callback URL berhasil disalin ke papan klip!",
+      "adminEmailDomains": "Domain Email Admin",
+      "adminEmailDomainsPlaceholder": "Masukkan domain (misal: admin.company.com)",
+      "adminEmailDomainsHelp": "Pengguna dengan email dari domain ini akan memiliki hak admin",
+      "autoRegister": "Daftarkan pengguna baru secara otomatis",
+      "officialProviderUrlPlaceholder": "Ganti placeholder dengan URL {displayName} Anda",
+      "officialProviderHelp": "Ini adalah penyedia resmi. Endpoint telah dikonfigurasi. Anda hanya bisa edit URL ini.",
+      "officialProviderIconHelp": "Anda bisa mengganti ikon untuk penyedia resmi ini."
+    },
+    "buttons": {
+      "cancel": "Batal",
+      "save": "Simpan",
+      "saving": "Menyimpan...",
+      "adding": "Menambah...",
+      "updating": "Memperbarui...",
+      "saveProvider": "Simpan Penyedia",
+      "delete": "Hapus",
+      "deleting": "Menghapus...",
+      "edit": "Edit",
+      "enable": "Aktifkan",
+      "disable": "Nonaktifkan"
+    },
+    "messages": {
+      "providerAdded": "Penyedia berhasil ditambahkan",
+      "providerUpdated": "Penyedia berhasil diperbarui",
+      "providerDeleted": "Penyedia berhasil dihapus",
+      "providerOrderUpdated": "Urutan penyedia berhasil diperbarui",
+      "fillRequiredFields": "Silakan lengkapi semua kolom wajib (nama, nama tampilan, client ID, client secret)",
+      "provideUrlOrEndpoints": "Berikan URL Penyedia untuk deteksi otomatis ATAU semua ketiga endpoint kustom",
+      "chooseDiscoveryOrManual": "Pilih deteksi otomatis (URL Penyedia) ATAU endpoint manual, bukan keduanya",
+      "loadFailed": "Gagal memuat penyedia",
+      "addFailed": "Gagal menambah penyedia",
+      "updateFailed": "Gagal memperbarui penyedia",
+      "deleteFailed": "Gagal menghapus penyedia",
+      "orderUpdateFailed": "Gagal memperbarui urutan penyedia"
+    },
+    "info": {
+      "title": "Informasi",
+      "officialProvidersRecommended": "Untuk fungsionalitas lebih baik, disarankan menggunakan penyedia resmi. Jika Anda mengalami masalah dengan penyedia kustom, pertimbangkan untuk membuka isu di",
+      "github": "GitHub",
+      "officialProvider": "Penyedia Resmi",
+      "officialProviderDescription": "Penyedia ini dioptimalkan oleh Palmr. Hanya kredensial dan konfigurasi yang dapat diubah.",
+      "manualConfigTitle": "Konfigurasi Manual",
+      "manualConfigDescription": "Anda memasukkan semua endpoint secara manual. Pastikan semua sudah benar untuk penyedia Anda."
+    },
+    "deleteModal": {
+      "title": "Hapus Penyedia Otentikasi",
+      "confirmMessage": "Apakah Anda yakin ingin menghapus penyedia \"{displayName}\"? Tindakan ini tidak dapat dibatalkan.",
+      "providerId": "ID Penyedia: {name}",
+      "cancel": "Batal",
+      "delete": "Hapus Penyedia",
+      "deleting": "Menghapus..."
+    }
+  },
+  "bulkDownload": {
+    "title": "Unduh Massal",
+    "zipNameLabel": "Nama file ZIP",
+    "zipNamePlaceholder": "Masukkan nama file",
+    "description": "{count, plural, =1 {1 file akan dikompres} other {# file akan dikompres}}",
+    "download": "Unduh ZIP"
+  },
+  "common": {
+    "loading": "Memuat, mohon tunggu...",
+    "loadingSimple": "Memuat...",
+    "cancel": "Batal",
+    "save": "Simpan",
+    "saving": "Menyimpan...",
+    "update": "Perbarui",
+    "updating": "Memperbarui...",
+    "delete": "Hapus",
+    "deleting": "Menghapus...",
+    "close": "Tutup",
+    "download": "Unduh",
+    "unexpectedError": "Terjadi kesalahan tak terduga. Silakan coba lagi.",
+    "yes": "Ya",
+    "no": "Tidak",
+    "dashboard": "Dasbor",
+    "back": "Kembali",
+    "click": "Klik untuk",
+    "creating": "Membuat...",
+    "create": "Buat",
+    "rename": "Ubah Nama",
+    "move": "Pindahkan",
+    "share": "Bagikan",
+    "search": "Cari",
+    "copy": "Salin",
+    "copied": "Disalin"
+  },
+  "createShare": {
+    "title": "Buat Berbagi",
+    "nameLabel": "Nama Berbagi",
+    "namePlaceholder": "Masukkan nama untuk berbagi Anda",
+    "descriptionLabel": "Deskripsi",
+    "descriptionPlaceholder": "Masukkan deskripsi (opsional)",
+    "expirationLabel": "Tanggal Kedaluwarsa",
+    "expirationPlaceholder": "MM/DD/YYYY HH:MM",
+    "maxViewsLabel": "Tampilan Maksimum",
+    "maxViewsPlaceholder": "Biarkan kosong untuk tak terbatas",
+    "passwordProtection": "Dilindungi Kata Sandi",
+    "passwordLabel": "Kata Sandi",
+    "passwordPlaceholder": "Masukkan kata sandi",
+    "create": "Buat Berbagi",
+    "success": "Berbagi berhasil dibuat",
+    "error": "Gagal membuat berbagi",
+    "errors": {
+      "nameRequired": "Nama berbagi wajib diisi",
+      "selectItems": "Silakan pilih minimal satu file atau folder"
+    },
+    "itemsSelected": "{count} item dipilih",
+    "selectItemsPrompt": "Pilih file dan folder untuk dibagikan",
+    "tabs": {
+      "shareDetails": "Detail Berbagi",
+      "selectFiles": "Pilih File"
+    },
+    "nextSelectFiles": "Berikutnya: Pilih File",
+    "searchLabel": "Cari"
+  },
+  "customization": {
+    "breadcrumb": "Kustomisasi",
+    "colors": {
+      "title": "Warna Tema",
+      "description": "Pilih tema warna utama yang Anda sukai",
+      "presets": "Warna Tersedia",
+      "presetsDescription": "Pilih dari tema warna yang tersedia",
+      "reset": "Atur Ulang ke Default"
+    },
+    "fonts": {
+      "title": "Tipografi",
+      "description": "Pilih keluarga font yang Anda sukai",
+      "available": "Font Tersedia",
+      "availableDescription": "Pilih dari keluarga font yang tersedia",
+      "reset": "Atur Ulang ke Default"
+    },
+    "radius": {
+      "title": "Radius Sudut",
+      "description": "Sesuaikan tingkat kebulatan elemen antarmuka",
+      "available": "Opsi Sudut Bulat",
+      "availableDescription": "Pilih seberapa bulat sudut tampilan",
+      "reset": "Atur Ulang ke Default"
+    },
+    "background": {
+      "title": "Warna Latar Belakang",
+      "description": "Sesuaikan warna latar untuk mode terang dan gelap",
+      "lightMode": "Mode Terang",
+      "darkMode": "Mode Gelap",
+      "availableDescription": "Pilih warna latar belakang untuk tema terang dan gelap",
+      "reset": "Atur Ulang ke Default"
+    },
+    "theme": {
+      "title": "Mode Tema",
+      "description": "Pilih antara tema terang, gelap, atau sistem",
+      "selectTheme": "Preferensi Tema",
+      "availableDescription": "Pilih mode tema favorit Anda",
+      "reset": "Atur Ulang ke Sistem"
+    },
+    "pageTitle": "Kustomisasi"
+  },
+  "dashboard": {
+    "loadError": "Gagal memuat data dasbor",
+    "linkCopied": "Tautan disalin ke clipboard",
+    "pageTitle": "Dasbor",
+    "breadcrumb": "Dasbor",
+    "recentFiles": {
+      "title": "File Terbaru",
+      "description": "File yang baru saja Anda unggah"
+    }
+  },
+  "deleteConfirmation": {
+    "filesToDelete": "File yang akan dihapus",
+    "foldersToDelete": "Folder yang akan dihapus",
+    "itemsToDelete": "Item yang akan dihapus",
+    "sharesToDelete": "Berbagi yang akan dihapus"
+  },
+  "downloadQueue": {
+    "downloadQueued": "Unduhan dalam antrean: {fileName}",
+    "queuedDescription": "Unduhan Anda akan mulai secara otomatis saat slot tersedia",
+    "queuePosition": "Unduhan dalam antrean pada posisi {position}: {fileName}",
+    "estimatedWait": "Perkiraan waktu tunggu: {time}",
+    "queueFull": "Antrean unduhan penuh",
+    "queueFullDescription": "Silakan coba lagi dalam beberapa menit saat antrean tersedia",
+    "cancelSuccess": "Unduhan berhasil dibatalkan",
+    "cancelError": "Gagal membatalkan unduhan: {error}",
+    "status": {
+      "pending": "Menyiapkan...",
+      "queued": "Dalam antrean",
+      "downloading": "Mengunduh",
+      "completed": "Selesai",
+      "failed": "Gagal"
+    },
+    "waitTime": {
+      "seconds": "{seconds}d",
+      "minutes": "{minutes}m",
+      "hoursMinutes": "{hours}j {minutes}m"
+    },
+    "indicator": {
+      "title": "Unduhan",
+      "downloads": "Antrean Unduhan",
+      "active": "Aktif",
+      "queued": "Dalam antrean",
+      "position": "Posisi {position}",
+      "estimatedWait": "Tunggu: {time}",
+      "unknownFile": "File tidak diketahui",
+      "noDownloads": "Tidak ada unduhan yang sedang berlangsung",
+      "refresh": "Muat Ulang Antrean"
+    }
+  },
+  "emptyState": {
+    "noFiles": "Belum ada file yang diunggah",
+    "uploadFile": "Unggah File"
+  },
+  "errors": {
+    "invalidCredentials": "Email atau kata sandi salah",
+    "userNotFound": "Pengguna tidak ditemukan",
+    "accountLocked": "Akun terkunci. Silakan coba lagi nanti",
+    "unexpectedError": "Terjadi kesalahan tak terduga. Silakan coba lagi",
+    "Invalid verification code": "Kode verifikasi tidak valid",
+    "Two-factor authentication is already enabled": "Otentikasi dua faktor sudah diaktifkan",
+    "Two-factor authentication is not enabled": "Otentikasi dua faktor belum diaktifkan",
+    "Invalid password": "Kata sandi tidak valid",
+    "Password verification required": "Verifikasi kata sandi diperlukan",
+    "Invalid two-factor authentication code": "Kode otentikasi dua faktor tidak valid",
+    "Two-factor authentication required": "Otentikasi dua faktor diperlukan",
+    "noUserData": "Tidak ada data pengguna"
+  },
+  "fileActions": {
+    "editFile": "Edit Berkas",
+    "nameLabel": "Nama",
+    "namePlaceholder": "Masukkan nama baru",
+    "extension": "Ekstensi",
+    "descriptionLabel": "Deskripsi",
+    "descriptionPlaceholder": "Masukkan deskripsi file",
+    "addDescriptionPlaceholder": "Tambah deskripsi...",
+    "deleteFile": "Hapus File",
+    "deleteConfirmation": "Apakah Anda yakin ingin menghapus file ini?",
+    "deleteWarning": "Tindakan ini tidak dapat dibatalkan."
+  },
+  "fileManager": {
+    "downloadError": "Gagal mengunduh file",
+    "updateSuccess": "File berhasil diperbarui",
+    "updateError": "Gagal memperbarui file",
+    "deleteSuccess": "File berhasil dihapus",
+    "deleteError": "Gagal menghapus file"
+  },
+  "filePreview": {
+    "title": "Pratinjau File",
+    "description": "Pratinjau dan unduh file",
+    "loading": "Memuat...",
+    "notAvailable": "Pratinjau tidak tersedia untuk tipe file ini",
+    "downloadToView": "Gunakan tombol unduh untuk melihat file ini",
+    "loadError": "Kesalahan memuat pratinjau file",
+    "downloadError": "Kesalahan saat mengunduh file",
+    "audioNotSupported": "Browser Anda tidak mendukung pemutaran audio",
+    "videoNotSupported": "Browser Anda tidak mendukung pemutaran video",
+    "pdfPreviewNotAvailable": "Pratinjau PDF tidak tersedia. Coba tampilan alternatif atau unduh",
+    "tryAlternativeView": "Coba Tampilan Alternatif",
+    "loadingAlternative": "Memuat tampilan alternatif...",
+    "loadingAudio": "Memuat audio..."
+  },
+  "fileSelector": {
+    "availableFiles": "File Tersedia ({count})",
+    "shareFiles": "File yang Dibagikan ({count})",
+    "shareFilesDescription": "File yang saat ini ada di bagikan ini",
+    "availableFilesDescription": "Pilih file untuk ditambahkan ke bagikan ini",
+    "searchPlaceholder": "Cari file...",
+    "searchSelectedFiles": "Cari file yang dipilih...",
+    "noMatchingFiles": "Tidak ditemukan file yang cocok",
+    "noAvailableFiles": "Tidak ada file tersedia",
+    "noFilesInShare": "Tidak ada file dalam bagikan ini",
+    "noFilesFound": "Tidak ada file ditemukan",
+    "noFilesFoundWith": "Tidak ada file ditemukan yang cocok dengan \"{query}\"",
+    "addFilesFromList": "Tambahkan file dari daftar di bawah ini",
+    "tryDifferentSearch": "Coba kata kunci pencarian lain",
+    "allFilesInShare": "Semua file sudah ada di bagikan ini",
+    "uploadNewFiles": "Unggah file baru untuk menambahkannya",
+    "fileCount": "{count, plural, =1 {file} other {file}}",
+    "filesSelected": "{count, plural, =0 {Tidak ada file yang dipilih} =1 {1 file dipilih} other {# file dipilih}}",
+    "itemsSelected": "{count} item dipilih",
+    "editFile": "Edit file",
+    "editFolder": "Edit folder",
+    "previewFile": "Pratinjau file",
+    "addToShare": "Tambahkan ke bagikan",
+    "removeFromShare": "Hapus dari bagikan",
+    "saveChanges": "Simpan Perubahan"
+  },
+  "files": {
+    "title": "Semua File",
+    "uploadFile": "Unggah File",
+    "loadError": "Gagal memuat file",
+    "pageTitle": "File Saya",
+    "breadcrumb": "File Saya",
+    "downloadStart": "Unduhan dimulai",
+    "downloadError": "Gagal mengunduh file",
+    "updateSuccess": "File berhasil diperbarui",
+    "updateError": "Gagal memperbarui file",
+    "deleteSuccess": "File berhasil dihapus",
+    "deleteError": "Gagal menghapus file",
+    "bulkDownloadSuccess": "Unduhan file berhasil dimulai",
+    "bulkDownloadError": "Kesalahan membuat file ZIP",
+    "bulkDownloadFileError": "Kesalahan mengunduh file {fileName}",
+    "bulkDeleteSuccess": "{count, plural, =1 {1 item berhasil dihapus} other {# item berhasil dihapus}}",
+    "bulkDeleteError": "Kesalahan menghapus item yang dipilih",
+    "bulkDeleteTitle": "Hapus Item Terpilih",
+    "bulkDeleteConfirmation": "Apakah Anda yakin ingin menghapus {count, plural, =1 {1 item} other {# item}}? Tindakan ini tidak dapat dibatalkan.",
+    "totalFiles": "{count, plural, =0 {Tidak ada file} =1 {1 file} other {# file}}",
+    "openFolder": "Buka folder",
+    "errors": {
+      "moveItemsFailed": "Gagal memindahkan item. Silakan coba lagi.",
+      "cannotMoveHere": "Tidak dapat memindahkan item ke lokasi ini"
+    },
+    "empty": {
+      "title": "Belum ada file atau folder",
+      "description": "Unggah file pertama Anda atau buat folder untuk memulai"
+    },
+    "files": "file",
+    "folders": "folder",
+    "actions": {
+      "open": "Buka",
+      "rename": "Ganti Nama",
+      "delete": "Hapus"
+    },
+    "viewMode": {
+      "table": "Tabel",
+      "grid": "Grid"
+    }
+  },
+  "filesTable": {
+    "ariaLabel": "Tabel file",
+    "selectAll": "Pilih semua",
+    "selectFile": "Pilih file {fileName}",
+    "columns": {
+      "name": "NAMA",
+      "description": "DESKRIPSI",
+      "size": "UKURAN",
+      "createdAt": "DIBUAT PADA",
+      "updatedAt": "DIUBAH PADA",
+      "actions": "TINDAKAN"
+    },
+    "actions": {
+      "menu": "Menu aksi file",
+      "preview": "Pratinjau",
+      "edit": "Edit",
+      "share": "Bagikan",
+      "download": "Unduh",
+      "delete": "Hapus"
+    },
+    "bulkActions": {
+      "selected": "{count, plural, =1 {1 file dipilih} other {# file dipilih}}",
+      "actions": "Tindakan",
+      "download": "Unduh Terpilih",
+      "share": "Bagikan Terpilih",
+      "delete": "Hapus Terpilih"
+    }
+  },
+  "folderActions": {
+    "editFolder": "Edit Folder",
+    "folderName": "Nama Folder",
+    "folderNamePlaceholder": "Masukkan nama folder",
+    "folderDescription": "Deskripsi",
+    "folderDescriptionPlaceholder": "Masukkan deskripsi folder (opsional)",
+    "createFolder": "Buat Folder",
+    "renameFolder": "Ganti Nama Folder",
+    "moveFolder": "Pindahkan Folder",
+    "shareFolder": "Bagikan Folder",
+    "deleteFolder": "Hapus Folder",
+    "moveTo": "Pindahkan ke",
+    "selectDestination": "Pilih folder tujuan",
+    "rootFolder": "Root",
+    "folderCreated": "Folder berhasil dibuat",
+    "folderRenamed": "Folder berhasil diubah nama",
+    "folderMoved": "Folder berhasil dipindahkan",
+    "folderDeleted": "Folder berhasil dihapus",
+    "folderShared": "Folder berhasil dibagikan",
+    "createFolderError": "Kesalahan membuat folder",
+    "renameFolderError": "Kesalahan mengubah nama folder",
+    "moveFolderError": "Kesalahan memindahkan folder",
+    "deleteFolderError": "Kesalahan menghapus folder",
+    "shareFolderError": "Kesalahan membagikan folder",
+    "deleteConfirmation": "Apakah Anda yakin ingin menghapus folder ini?",
+    "deleteWarning": "Tindakan ini tidak dapat dibatalkan."
+  },
+  "footer": {
+    "poweredBy": "Ditenagai oleh",
+    "kyanHomepage": "Beranda Kyantech"
+  },
+  "forgotPassword": {
+    "emailLabel": "Alamat Email",
+    "emailPlaceholder": "Masukkan email Anda",
+    "sending": "Mengirim...",
+    "submit": "Kirim Instruksi Reset",
+    "backToLogin": "Kembali ke Masuk",
+    "title": "Lupa Kata Sandi",
+    "description": "Masukkan alamat email Anda dan kami akan mengirimkan instruksi untuk mengatur ulang kata sandi Anda",
+    "resetInstructions": "Instruksi reset telah dikirim ke email Anda",
+    "pageTitle": "Lupa Kata Sandi",
+    "passwordAuthDisabled": "Otentikasi kata sandi dinonaktifkan. Silakan hubungi administrator Anda atau gunakan penyedia otentikasi eksternal."
+  },
+  "generateShareLink": {
+    "generateTitle": "Buat Tautan Berbagi",
+    "updateTitle": "Perbarui Tautan Berbagi",
+    "generateDescription": "Buat tautan khusus untuk berbagi ini. Anda dapat menyesuaikan URL agar lebih mudah diingat.",
+    "updateDescription": "Perbarui tautan khusus untuk berbagi ini. Anda dapat menyesuaikan URL agar lebih mudah diingat.",
+    "aliasPlaceholder": "ID kustom untuk tautan",
+    "linkReady": "Tautan berbagi Anda sudah siap. Anda dapat menyalinnya sekarang.",
+    "readyDescription": "Tautan berbagi Anda sudah siap. Anda dapat memindai kode QR secara langsung, mengunduhnya untuk digunakan nanti, atau menyalin tautan di bawah.",
+    "generateButton": "Buat Tautan",
+    "updateButton": "Perbarui Tautan",
+    "copyButton": "Salin Tautan",
+    "success": "Tautan berhasil dibuat",
+    "error": "Gagal membuat tautan",
+    "copied": "Tautan disalin ke clipboard",
+    "tabs": {
+      "link": "Tautan",
+      "qrcode": "Kode QR"
+    }
+  },
+  "home": {
+    "description": "Alternatif open-source untuk WeTransfer. Bagikan file secara aman, tanpa pelacakan atau batasan.",
+    "documentation": "Dokumentasi",
+    "starOnGithub": "Berikan Bintang di GitHub",
+    "privacyMessage": "Dibangun dengan mengutamakan privasi. File Anda hanya dapat diakses oleh mereka yang memiliki tautan berbagi sebelum unggah. Selamanya gratis dan open source.",
+    "header": {
+      "fileSharing": "Berbagi file",
+      "tagline": "dibuat sederhana dan gratis"
+    },
+    "pageTitle": "Beranda"
+  },
+  "iconPicker": {
+    "title": "Pilih Ikon",
+    "placeholder": "Pilih ikon",
+    "searchPlaceholder": "Cari ikon...",
+    "loadingMore": "Memuat lebih banyak ikon...",
+    "allIconsLoaded": "Semua {count} ikon dimuat",
+    "noIconsFound": "Tidak ada ikon yang ditemukan untuk \"{search}\"",
+    "tabs": {
+      "all": "Semua Ikon",
+      "popular": "Populer",
+      "auth": "Penyedia Autentikasi"
+    },
+    "stats": "{iconCount} ikon dari {libraryCount} perpustakaan",
+    "categoryBadge": "{category} ({count} ikon)"
+  },
+  "imageEdit": {
+    "title": "Edit Gambar",
+    "rotate": "Putar",
+    "zoom": "Perbesar",
+    "cropInstructions": "Seret untuk memposisikan ulang, ubah ukuran sudut untuk menyesuaikan area potong"
+  },
+  "login": {
+    "welcome": "Selamat datang di",
+    "signInToContinue": "Masuk untuk melanjutkan",
+    "emailOrUsernameLabel": "Email atau Nama Pengguna",
+    "emailOrUsernamePlaceholder": "Masukkan email atau nama pengguna Anda",
+    "emailLabel": "Alamat Email",
+    "emailPlaceholder": "Masukkan email Anda",
+    "passwordLabel": "Kata Sandi",
+    "passwordPlaceholder": "Masukkan kata sandi Anda",
+    "signIn": "Masuk",
+    "signingIn": "Masuk...",
+    "forgotPassword": "Lupa kata sandi?",
+    "pageTitle": "Masuk",
+    "or": "atau",
+    "continueWithSSO": "Lanjutkan dengan SSO",
+    "processing": "Memproses autentikasi..."
+  },
+  "logo": {
+    "labels": {
+      "appLogo": "Logo Aplikasi"
+    },
+    "buttons": {
+      "upload": "Unggah Logo",
+      "remove": "Hapus Logo"
+    },
+    "messages": {
+      "uploadSuccess": "Logo berhasil diunggah",
+      "removeSuccess": "Logo berhasil dihapus"
+    },
+    "errors": {
+      "uploadFailed": "Gagal mengunggah logo",
+      "removeFailed": "Gagal menghapus logo"
+    }
+  },
+  "moveItems": {
+    "itemsToMove": "Item yang akan dipindahkan:",
+    "movingTo": "Memindahkan ke:",
+    "title": "Pindahkan {count, plural, =1 {Item} other {Item}}",
+    "description": "Pindahkan {count, plural, =1 {item} other {item}} ke lokasi baru",
+    "success": "Berhasil memindahkan {count} {count, plural, =1 {item} other {item}}",
+    "errors": {
+      "moveFailed": "Gagal memindahkan item"
+    }
+  },
+  "navbar": {
+    "logoAlt": "Logo Aplikasi",
+    "profileMenu": "Menu Profil",
+    "profile": "Profil",
+    "customization": "Kustomisasi",
+    "settings": "Pengaturan",
+    "usersManagement": "Manajemen Pengguna",
+    "logout": "Keluar"
+  },
+  "navigation": {
+    "dashboard": "Dasbor"
+  },
+  "notifications": {
+    "permissionGranted": "Notifikasi unduhan diaktifkan",
+    "permissionDenied": "Notifikasi unduhan dinonaktifkan",
+    "downloadComplete": {
+      "title": "Unduhan Selesai",
+      "body": "{fileName} telah selesai diunduh"
+    },
+    "downloadFailed": {
+      "title": "Unduhan Gagal",
+      "body": "Gagal mengunduh {fileName}: {error}",
+      "unknownError": "Kesalahan tidak dikenal"
+    },
+    "queueProcessing": {
+      "title": "Unduhan Dimulai",
+      "body": "{fileName} sekarang sedang mengunduh{position}",
+      "position": " (sebelumnya # posisi {position} dalam antrean)"
+    }
+  },
+  "profile": {
+    "password": {
+      "title": "Ubah Kata Sandi",
+      "newPassword": "Kata Sandi Baru",
+      "confirmPassword": "Konfirmasi Kata Sandi Baru",
+      "updateButton": "Perbarui Kata Sandi"
+    },
+    "form": {
+      "title": "Informasi Profil",
+      "firstName": "Nama Depan",
+      "lastName": "Nama Belakang",
+      "username": "Nama Pengguna",
+      "email": "Email",
+      "updateButton": "Perbarui Profil"
+    },
+    "header": {
+      "title": "Profil",
+      "subtitle": "Kelola informasi pribadi dan kata sandi Anda"
+    },
+    "picture": {
+      "title": "Foto Profil",
+      "description": "Klik ikon kamera untuk mengubah foto profil Anda",
+      "uploadPhoto": "Unggah Foto",
+      "removePhoto": "Hapus Foto"
+    },
+    "errors": {
+      "loadFailed": "Gagal memuat data pengguna",
+      "updateFailed": "Gagal memperbarui profil",
+      "passwordFailed": "Gagal memperbarui kata sandi",
+      "imageFailed": "Gagal memperbarui gambar profil",
+      "imageRemoveFailed": "Gagal menghapus gambar profil"
+    },
+    "messages": {
+      "noChanges": "Tidak ada perubahan untuk disimpan",
+      "updateSuccess": "Profil berhasil diperbarui",
+      "fillPasswords": "Mohon isi kedua kolom kata sandi",
+      "passwordSuccess": "Kata sandi berhasil diperbarui",
+      "imageSuccess": "Gambar profil berhasil diperbarui",
+      "imageRemoved": "Gambar profil berhasil dihapus"
+    },
+    "pageTitle": "Profil"
+  },
+  "qrCodeModal": {
+    "title": "Bagikan Kode QR",
+    "description": "Pindai kode QR ini untuk mengakses tautan.",
+    "download": "Unduh Kode QR"
+  },
+  "quickAccess": {
+    "files": {
+      "title": "File Saya",
+      "description": "Akses dan kelola file yang telah Anda unggah"
+    },
+    "shares": {
+      "title": "Berbagi Saya",
+      "description": "Lihat dan kelola file yang telah Anda bagikan"
+    },
+    "reverseShares": {
+      "title": "Terima File",
+      "description": "Buat tautan untuk orang lain mengirim file kepada Anda"
+    }
+  },
+  "recentFiles": {
+    "title": "Unggahan Terbaru",
+    "viewAll": "Lihat Semua",
+    "upload": "Unggah",
+    "uploadFile": "Unggah File",
+    "noFiles": "Belum ada file yang diunggah"
+  },
+  "recentShares": {
+    "title": "Berbagi Terbaru",
+    "viewAll": "Lihat Semua",
+    "createShare": "Buat Berbagi",
+    "noShares": "Belum ada berbagi yang dibuat",
+    "createFirst": "Buat berbagi pertama Anda"
+  },
+  "recipientSelector": {
+    "emailPlaceholder": "Masukkan email penerima",
+    "add": "Tambah",
+    "recipients": "Penerima ({count})",
+    "notifyAll": "Beritahu Semua",
+    "noRecipients": "Belum ada penerima yang ditambahkan",
+    "addSuccess": "Penerima berhasil ditambahkan",
+    "addError": "Gagal menambahkan penerima",
+    "removeSuccess": "Penerima berhasil dihapus",
+    "removeError": "Gagal menghapus penerima",
+    "sendingNotifications": "Mengirim notifikasi...",
+    "notifySuccess": "Penerima berhasil diberitahu",
+    "notifyError": "Gagal memberitahu penerima",
+    "selectAll": "Pilih semua",
+    "selectedCount": "{count} dipilih",
+    "selectRecipient": "Pilih {email}",
+    "notifySelected": "Beritahu yang Dipilih",
+    "removeSelected": "Hapus yang Dipilih",
+    "notifySingle": "Beritahu penerima ini",
+    "removeSingle": "Hapus penerima ini",
+    "bulkRemoveSuccess": "{count} penerima berhasil dihapus",
+    "bulkRemoveError": "Gagal menghapus penerima yang dipilih",
+    "bulkNotifySuccess": "Notifikasi dikirim ke {count} penerima",
+    "bulkNotifyError": "Gagal memberitahu penerima yang dipilih",
+    "singleNotifySuccess": "Notifikasi dikirim ke {email}",
+    "singleNotifyError": "Gagal memberitahu penerima",
+    "modalDescription": "Tambahkan dan kelola penerima untuk berbagi ini. Anda dapat memberitahu semua atau penerima tertentu saat SMTP dikonfigurasi.",
+    "addRecipient": "Tambah Penerima",
+    "invalidEmail": "Mohon masukkan alamat email yang valid",
+    "duplicateEmail": "Penerima ini sudah ditambahkan",
+    "noRecipientsDescription": "Tambahkan penerima untuk membagikan konten ini melalui email"
+  },
+  "register": {
+    "validation": {
+      "firstNameRequired": "Nama depan wajib diisi",
+      "lastNameRequired": "Nama belakang wajib diisi",
+      "usernameMinLength": "Nama pengguna harus minimal 3 karakter",
+      "invalidEmail": "Email tidak valid",
+      "passwordMinLength": "Kata sandi harus minimal 8 karakter",
+      "success": "Pengguna administrator berhasil dibuat!",
+      "error": "Kesalahan membuat pengguna administrator"
+    },
+    "labels": {
+      "firstName": "Nama Depan",
+      "lastName": "Nama Belakang",
+      "username": "Nama Pengguna",
+      "email": "Email",
+      "password": "Kata Sandi"
+    },
+    "buttons": {
+      "creating": "Membuat...",
+      "createAdmin": "Buat Akun Admin"
+    }
+  },
+  "resetPassword": {
+    "pageTitle": "Atur Ulang Kata Sandi",
+    "header": {
+      "title": "Atur Ulang Kata Sandi",
+      "description": "Masukkan kata sandi baru Anda di bawah"
+    },
+    "form": {
+      "newPassword": "Kata Sandi Baru",
+      "newPasswordPlaceholder": "Masukkan kata sandi baru Anda",
+      "confirmPassword": "Konfirmasi Kata Sandi Baru",
+      "confirmPasswordPlaceholder": "Konfirmasi kata sandi baru Anda",
+      "resetting": "Mengatur Ulang Kata Sandi...",
+      "submit": "Atur Ulang Kata Sandi",
+      "backToLogin": "Kembali ke Masuk"
+    },
+    "messages": {
+      "success": "Kata sandi berhasil diatur ulang"
+    },
+    "errors": {
+      "serverError": "Gagal mengatur ulang kata sandi. Silakan coba lagi.",
+      "invalidToken": "Token reset tidak valid atau hilang"
+    }
+  },
+  "reverseShares": {
+    "pageTitle": "Terima File",
+    "search": {
+      "title": "Kelola Tautan Terima",
+      "createButton": "Buat Tautan",
+      "placeholder": "Cari tautan terima...",
+      "results": "Ditemukan {filtered} dari {total} tautan terima"
+    },
+    "labels": {
+      "files": "file",
+      "size": "ukuran",
+      "status": "status",
+      "access": "akses",
+      "description": "Deskripsi",
+      "pageLayout": "Tata Letak Halaman",
+      "security": "Keamanan & Status",
+      "limits": "Batas",
+      "maxFiles": "File Maksimum",
+      "maxFileSize": "Ukuran Maksimum",
+      "allowedTypes": "Jenis yang Diizinkan",
+      "filesReceived": "File Diterima",
+      "fileLimit": "Batas File",
+      "noLimit": "Tidak ada batas",
+      "noLinkCreated": "Tidak ada tautan dibuat",
+      "publicAccess": "Akses Publik",
+      "protectedByPassword": "Dilindungi Kata Sandi",
+      "configureProtection": "Klik untuk mengkonfigurasi perlindungan",
+      "enterPassword": "Masukkan kata sandi",
+      "thisLinkProtected": "Tautan ini akan dilindungi kata sandi",
+      "thisLinkPublic": "Tautan ini akan tersedia untuk publik",
+      "configureExpiration": "Konfigurasi Kedaluwarsa",
+      "configureLimits": "Konfigurasi Batas File",
+      "protectWithPassword": "Lindungi dengan Kata Sandi",
+      "layoutOptions": {
+        "default": "Default",
+        "wetransfer": "WeTransfer"
+      },
+      "noFilesLimit": "Tidak ada batas file",
+      "noSizeLimit": "Tidak ada batas ukuran",
+      "allFileTypes": "Semua jenis file",
+      "fileTypesHelp": "Masukkan ekstensi tanpa titik, dipisahkan dengan spasi, koma, tanda hubung atau pipa",
+      "fieldRequirements": "Persyaratan Bidang",
+      "nameFieldRequired": "Bidang Nama",
+      "emailFieldRequired": "Bidang Email",
+      "fieldOptions": {
+        "hidden": "Sembunyi",
+        "optional": "Opsional",
+        "required": "Wajib"
+      }
+    },
+    "card": {
+      "untitled": "Tautan Tanpa Judul",
+      "noDescription": "Tidak ada deskripsi",
+      "addDescriptionPlaceholder": "Tambah deskripsi...",
+      "files": "file",
+      "progress": "Progres",
+      "created": "Dibuat",
+      "expired": "Kedaluwarsa",
+      "expires": "Kedaluwarsa",
+      "viewDetails": "Lihat detail",
+      "viewQrCode": "Lihat Kode QR",
+      "copyLink": "Salin Tautan",
+      "openInNewTab": "Buka di Tab Baru",
+      "editLink": "Edit Tautan",
+      "createLink": "Buat Tautan",
+      "delete": "Hapus",
+      "copyLinkTitle": "Salin tautan",
+      "createLinkCTA": "Buat Tautan Terima"
+    },
+    "status": {
+      "active": "Aktif",
+      "inactive": "Tidak Aktif",
+      "expired": "Kedaluwarsa",
+      "protected": "Terlindungi",
+      "public": "Publik"
+    },
+    "actions": {
+      "copyLink": "Salin Tautan",
+      "editAlias": "Edit Alias",
+      "createAlias": "Buat Alias",
+      "viewDetails": "Lihat Detail",
+      "edit": "Edit",
+      "delete": "Hapus",
+      "viewFiles": "File Diterima",
+      "viewQrCode": "Lihat Kode QR"
+    },
+    "empty": {
+      "title": "Belum ada tautan terima dibuat",
+      "description": "Buat tautan khusus untuk orang lain mengirim file langsung kepada Anda secara aman dan terorganisir.",
+      "createButton": "Buat Tautan Pertama"
+    },
+    "modals": {
+      "create": {
+        "title": "Buat Tautan Terima",
+        "description": "Konfigurasi tautan khusus untuk menerima file dari orang lain"
+      },
+      "edit": {
+        "title": "Edit Tautan Terima",
+        "description": "Perbarui pengaturan untuk tautan terima ini",
+        "updating": "Memperbarui...",
+        "saveChanges": "Simpan Perubahan"
+      },
+      "details": {
+        "title": "Detail Tautan",
+        "description": "Lihat dan edit informasi tautan terima Anda",
+        "pageLayout": "Tata Letak Halaman",
+        "linkSection": "Tautan Terima",
+        "noLinkCreated": "Tidak ada tautan dibuat",
+        "limits": "Batas",
+        "maxFiles": "File Maksimum",
+        "maxFileSize": "Ukuran Maksimum",
+        "allowedTypes": "Jenis yang Diizinkan",
+        "noLimit": "Tidak ada batas",
+        "security": "Keamanan",
+        "status": "Status",
+        "password": "Kata Sandi",
+        "files": "File Diterima",
+        "noFiles": "Belum ada file diterima",
+        "copyLink": "Salin Tautan",
+        "openLink": "Buka Tautan",
+        "editAlias": "Edit Alias",
+        "createAlias": "Buat Alias",
+        "editPassword": "Edit Perlindungan Kata Sandi",
+        "basicInfo": "Informasi Dasar",
+        "securityAndStatus": "Keamanan & Status",
+        "protection": "Perlindungan",
+        "protectedByPassword": "Dilindungi Kata Sandi",
+        "publicAccess": "Akses Publik",
+        "active": "Aktif",
+        "inactive": "Tidak Aktif",
+        "deactivate": "Nonaktifkan",
+        "activate": "Aktifkan",
+        "expiration": "Kedaluwarsa",
+        "dates": "Tanggal",
+        "createdAt": "Dibuat pada",
+        "updatedAt": "Diperbarui pada",
+        "allTypes": "Semua jenis",
+        "placeholderTypes": ".pdf,.jpg,.png (dipisahkan koma)",
+        "downloadSuccess": "Unduhan dimulai",
+        "downloadError": "Kesalahan mengunduh file",
+        "editSuccess": "File berhasil diperbarui",
+        "editError": "Kesalahan memperbarui file",
+        "previewNotAvailable": "Pratinjau tidak tersedia",
+        "notAvailable": "Tidak tersedia",
+        "invalidDate": "Tanggal tidak valid"
+      },
+      "alias": {
+        "editTitle": "Edit Alias",
+        "createTitle": "Buat Alias",
+        "editDescription": "Perbarui alias untuk tautan terima ini",
+        "createDescription": "Buat alias khusus untuk tautan terima ini",
+        "aliasLabel": "Alias Tautan",
+        "aliasPlaceholder": "tautan-kustom-saya",
+        "preview": "Pratinjau:",
+        "currentLink": "Tautan Saat Ini:",
+        "copyCurrentLink": "Salin tautan saat ini",
+        "randomTooltip": "Buat alias acak",
+        "cancel": "Batal",
+        "creating": "Membuat...",
+        "updating": "Memperbarui...",
+        "create": "Buat Alias",
+        "update": "Perbarui Alias",
+        "validation": {
+          "required": "Alias wajib diisi",
+          "minLength": "Alias harus minimal 3 karakter",
+          "maxLength": "Alias harus maksimal 50 karakter",
+          "pattern": "Alias hanya boleh berisi huruf, angka, tanda hubung dan garis bawah"
+        },
+        "help": "3-50 karakter. Spasi akan otomatis diubah menjadi tanda hubung."
+      },
+      "password": {
+        "title": "Edit Perlindungan Kata Sandi",
+        "description": "Konfigurasi perlindungan kata sandi untuk tautan ini",
+        "hasPassword": "Dilindungi Kata Sandi",
+        "password": "Kata Sandi",
+        "cancel": "Batal",
+        "save": "Simpan",
+        "saving": "Menyimpan..."
+      },
+      "receivedFiles": {
+        "title": "File Diterima",
+        "description": "Lihat dan kelola file yang dikirim ke tautan ini",
+        "noFiles": "Belum ada file diterima",
+        "noFilesDescription": "File yang dikirim melalui tautan ini akan muncul di sini",
+        "fileCount": "{count, plural, =0 {Tidak ada file} =1 {1 file} other {# file}}",
+        "invalidDate": "Tanggal tidak valid",
+        "totalSize": "Total ukuran: {size}",
+        "columns": {
+          "file": "File",
+          "size": "Ukuran",
+          "sender": "Dikirim oleh",
+          "date": "Tanggal",
+          "actions": "Tindakan"
+        },
+        "actions": {
+          "preview": "Pratinjau",
+          "download": "Unduh",
+          "copyToMyFiles": "Salin ke file saya",
+          "copying": "Menyalin..."
+        },
+        "uploadedBy": "Diunggah oleh {name}",
+        "anonymous": "Anonim",
+        "downloadSuccess": "Unduhan dimulai",
+        "downloadError": "Kesalahan mengunduh file",
+        "editSuccess": "File berhasil diperbarui",
+        "editError": "Kesalahan memperbarui file",
+        "previewNotAvailable": "Pratinjau tidak tersedia",
+        "copySuccess": "File berhasil disalin ke file Anda",
+        "copyError": "Kesalahan menyalin file ke file Anda",
+        "deleteSuccess": "File berhasil dihapus",
+        "deleteError": "Kesalahan menghapus file",
+        "bulkCopySuccess": "{count, plural, =1 {1 file berhasil disalin ke file Anda} other {# file berhasil disalin ke file Anda}}",
+        "bulkDeleteSuccess": "{count, plural, =1 {1 file berhasil dihapus} other {# file berhasil dihapus}}",
+        "bulkCopyProgress": "Menyalin {count, plural, =1 {1 file} other {# file}} ke file Anda...",
+        "bulkDeleteProgress": "Menghapus {count, plural, =1 {1 file} other {# file}}...",
+        "bulkDeleteConfirmTitle": "Hapus File Terpilih",
+        "bulkDeleteConfirmMessage": "Apakah Anda yakin ingin menghapus {count, plural, =1 {file ini} other {# file ini}}? Tindakan ini tidak dapat dibatalkan.",
+        "bulkDeleteConfirmButton": "Hapus {count, plural, =1 {File} other {File}}",
+        "bulkActions": {
+          "selected": "{count, plural, =1 {1 file dipilih} other {# file dipilih}}",
+          "actions": "Tindakan",
+          "download": "Unduh Terpilih",
+          "copyToMyFiles": "Salin Terpilih ke File Saya",
+          "delete": "Hapus Terpilih"
+        },
+        "selectAll": "Pilih semua",
+        "selectFile": "Pilih file {fileName}",
+        "copyErrors": {
+          "timeout": "Operasi penyalinan habis waktu. Silakan coba lagi dengan file yang lebih kecil atau periksa koneksi Anda.",
+          "failed": "Operasi penyalinan gagal. Silakan coba lagi.",
+          "aborted": "Operasi penyalinan dibatalkan karena habis waktu."
+        }
+      }
+    },
+    "form": {
+      "name": {
+        "label": "Nama Tautan",
+        "placeholder": "misal: Dokumen Proyek, Foto Keluarga..."
+      },
+      "description": {
+        "label": "Deskripsi",
+        "placeholder": "Jelaskan jenis file yang Anda harapkan untuk diterima...",
+        "description": "Opsional. Membantu orang memahami apa yang harus dikirim."
+      },
+      "status": {
+        "label": "Status Tautan",
+        "description": "Aktifkan atau nonaktifkan tautan terima ini"
+      },
+      "expiration": {
+        "label": "Tanggal Kedaluwarsa",
+        "description": "Opsional. Tautan akan dinonaktifkan setelah tanggal ini.",
+        "configure": "Konfigurasi Kedaluwarsa"
+      },
+      "fileLimits": {
+        "configure": "Konfigurasi Batas File"
+      },
+      "maxFiles": {
+        "label": "File Maksimum",
+        "placeholder": "misal: 10",
+        "description": "Opsional. Batasi jumlah total file yang dapat dikirim.",
+        "noLimit": "Tidak ada batas file"
+      },
+      "maxFileSize": {
+        "label": "Ukuran File Maksimum",
+        "placeholder": "misal: 100",
+        "description": "Opsional. Batasi ukuran individual setiap file.",
+        "noLimit": "Tidak ada batas ukuran"
+      },
+      "allowedFileTypes": {
+        "label": "Jenis File yang Diizinkan",
+        "placeholder": "misal: pdf, jpg, png, docx",
+        "description": "Masukkan ekstensi tanpa titik, dipisahkan dengan spasi, koma, tanda hubung atau pipa",
+        "allTypes": "Semua jenis file"
+      },
+      "pageLayout": {
+        "label": "Tata Letak Halaman",
+        "placeholder": "Pilih tata letak",
+        "description": "Bagaimana halaman unggah akan muncul untuk pengguna.",
+        "options": {
+          "default": "Tata Letak Default",
+          "wetransfer": "Gaya WeTransfer"
+        }
+      },
+      "password": {
+        "label": "Kata Sandi Perlindungan",
+        "placeholder": "Opsional. Tambahkan kata sandi untuk melindungi tautan",
+        "description": "Opsional. Pengguna akan memerlukan kata sandi ini untuk mengakses tautan.",
+        "configurePassword": "Konfigurasi Kata Sandi",
+        "protectWithPassword": "Lindungi dengan Kata Sandi",
+        "passwordHelp": "Kata sandi harus minimal 4 karakter",
+        "passwordPlaceholder": "Masukkan kata sandi untuk melindungi tautan"
+      },
+      "nameFieldRequired": {
+        "label": "Persyaratan Bidang Nama",
+        "description": "Konfigurasi apakah bidang nama pengunggah harus ditampilkan dan apakah wajib"
+      },
+      "emailFieldRequired": {
+        "label": "Persyaratan Bidang Email",
+        "description": "Konfigurasi apakah bidang email pengunggah harus ditampilkan dan apakah wajib"
+      },
+      "fieldRequirements": {
+        "title": "Persyaratan Bidang",
+        "description": "Konfigurasi bidang mana yang ditampilkan dalam formulir unggah"
+      },
+      "submit": "Buat Tautan Terima"
+    },
+    "messages": {
+      "created": "Tautan terima berhasil dibuat!",
+      "createSuccess": "Tautan terima berhasil dibuat!",
+      "updateSuccess": "Tautan terima berhasil diperbarui!",
+      "linkCopied": "Tautan disalin ke clipboard!",
+      "deleteSuccess": "Tautan terima berhasil dihapus!",
+      "aliasCreated": "Alias berhasil dibuat!",
+      "activateSuccess": "Tautan terima berhasil diaktifkan!",
+      "deactivateSuccess": "Tautan terima berhasil dinonaktifkan!",
+      "passwordProtectionEnabled": "Perlindungan kata sandi berhasil diaktifkan!",
+      "passwordProtectionDisabled": "Perlindungan kata sandi berhasil dihapus!"
+    },
+    "defaultLinkName": "File Diterima",
+    "errors": {
+      "loadFailed": "Gagal memuat tautan terima",
+      "createFailed": "Gagal membuat tautan terima. Silakan coba lagi.",
+      "updateFailed": "Gagal memperbarui tautan terima. Silakan coba lagi.",
+      "deleteFailed": "Gagal menghapus tautan terima. Silakan coba lagi.",
+      "aliasCreateFailed": "Gagal membuat alias. Silakan coba lagi.",
+      "passwordUpdateFailed": "Gagal memperbarui perlindungan kata sandi"
+    },
+    "delete": {
+      "title": "Hapus tautan terima",
+      "description": "Tindakan ini tidak dapat dibatalkan. Tautan akan dihapus secara permanen dan tidak akan lagi dapat menerima file.",
+      "confirmButton": "Hapus Tautan",
+      "cancelButton": "Batal",
+      "deleting": "Menghapus..."
+    },
+    "upload": {
+      "metadata": {
+        "title": "Kirim File - Palmr",
+        "description": "Kirim file melalui tautan yang dibagikan",
+        "descriptionWithLimit": "Unggah file (maks {limit} file)"
+      },
+      "layout": {
+        "defaultTitle": "Kirim File",
+        "importantInfo": "Informasi penting:",
+        "maxFiles": "Maksimum {count} file",
+        "maxFileSize": "Ukuran file maksimum: {size}MB",
+        "allowedTypes": "Jenis yang diizinkan: {types}",
+        "loading": "Memuat..."
+      },
+      "password": {
+        "title": "Tautan Terlindungi",
+        "description": "Tautan ini dilindungi kata sandi. Masukkan kata sandi untuk melanjutkan.",
+        "label": "Kata Sandi",
+        "placeholder": "Masukkan kata sandi",
+        "cancel": "Batal",
+        "submit": "Lanjutkan",
+        "verifying": "Memverifikasi..."
+      },
+      "errors": {
+        "loadFailed": "Gagal memuat informasi. Silakan coba lagi.",
+        "passwordIncorrect": "Kata sandi salah. Silakan coba lagi.",
+        "linkNotFound": "Tautan tidak ditemukan atau kedaluwarsa.",
+        "linkInactive": "Tautan ini tidak aktif.",
+        "linkExpired": "Tautan ini telah kedaluwarsa.",
+        "uploadFailed": "Kesalahan mengunggah file",
+        "retry": "Coba Lagi",
+        "fileTooLarge": "File terlalu besar. Ukuran maksimum: {maxSize}",
+        "fileTypeNotAllowed": "Jenis file tidak diizinkan. Jenis yang diterima: {allowedTypes}",
+        "maxFilesExceeded": "Maksimum {maxFiles} file diizinkan",
+        "selectAtLeastOneFile": "Pilih setidaknya satu file",
+        "provideNameOrEmail": "Mohon berikan nama atau email Anda",
+        "provideNameRequired": "Nama wajib diisi",
+        "provideEmailRequired": "Email wajib diisi"
+      },
+      "fileDropzone": {
+        "dragActive": "Jatuhkan file di sini",
+        "dragInactive": "Seret file di sini atau klik untuk memilih",
+        "acceptedTypes": "Jenis yang diterima: {types}",
+        "maxFileSize": "Ukuran maksimum: {size}",
+        "maxFiles": "Maksimum {count} file",
+        "remainingFiles": "{remaining} dari {max} file tersisa"
+      },
+      "fileList": {
+        "title": "File yang dipilih:",
+        "statusUploaded": "Diunggah",
+        "statusError": "Kesalahan",
+        "retry": "Coba Lagi"
+      },
+      "form": {
+        "nameLabel": "Nama",
+        "nameLabelOptional": "Nama (opsional)",
+        "namePlaceholder": "Nama Anda",
+        "emailLabel": "Email",
+        "emailLabelOptional": "Email (opsional)",
+        "emailPlaceholder": "email@anda.com",
+        "descriptionLabel": "Deskripsi (opsional)",
+        "descriptionPlaceholder": "Tambahkan deskripsi ke file...",
+        "uploadButton": "Kirim {count} file",
+        "uploading": "Mengirim..."
+      },
+      "success": {
+        "title": "File berhasil dikirim! 🎉",
+        "description": "Anda dapat menutup halaman ini.",
+        "countMessage": "{count} file berhasil dikirim!"
+      },
+      "maxFilesReached": {
+        "title": "Batas file tercapai",
+        "description": "Tautan ini telah menerima jumlah maksimum {maxFiles} file yang diizinkan.",
+        "contactOwner": "Jika ada kesalahan atau Anda perlu mengirim lebih banyak file, hubungi pemilik tautan."
+      },
+      "linkInactive": {
+        "title": "Tautan tidak aktif",
+        "description": "Tautan terima ini sementara tidak aktif.",
+        "contactOwner": "Hubungi pemilik tautan untuk informasi lebih lanjut."
+      },
+      "linkNotFound": {
+        "title": "Tautan tidak ditemukan",
+        "description": "Tautan ini mungkin telah dihapus atau tidak pernah ada."
+      },
+      "linkExpired": {
+        "title": "Tautan kedaluwarsa",
+        "description": "Tautan terima ini telah kedaluwarsa dan tidak lagi menerima file.",
+        "contactOwner": "Hubungi pemilik tautan jika Anda perlu mengirim file."
+      }
+    },
+    "components": {
+      "fileRow": {
+        "addDescription": "Tambah deskripsi...",
+        "anonymous": "Anonim"
+      },
+      "fileActions": {
+        "edit": "Edit",
+        "preview": "Pratinjau",
+        "download": "Unduh",
+        "delete": "Hapus",
+        "copyToMyFiles": "Salin ke file saya",
+        "copying": "Menyalin..."
+      },
+      "editField": {
+        "saveChanges": "Simpan perubahan",
+        "cancelEdit": "Batal edit"
+      }
+    }
+  },
+  "searchBar": {
+    "placeholder": "Cari file dan folder...",
+    "placeholderFiles": "Cari file...",
+    "placeholderFolders": "Cari folder...",
+    "results": "Menampilkan {filtered} dari {total} item",
+    "noResults": "Tidak ada hasil ditemukan untuk \"{query}\""
+  },
+  "settings": {
+    "groups": {
+      "defaultDescription": "Opsi konfigurasi",
+      "general": {
+        "title": "Umum",
+        "description": "Pengaturan aplikasi dasar"
+      },
+      "email": {
+        "title": "Email",
+        "description": "Konfigurasi server email"
+      },
+      "security": {
+        "title": "Keamanan",
+        "description": "Pengaturan keamanan dan autentikasi"
+      },
+      "storage": {
+        "title": "Penyimpanan",
+        "description": "Konfigurasi penyimpanan file"
+      },
+      "oidc": {
+        "title": "OpenID Connect (SSO)",
+        "description": "Konfigurasi autentikasi SSO melalui OpenID Connect"
+      }
+    },
+    "fields": {
+      "noDescription": "Tidak ada deskripsi tersedia",
+      "appLogo": {
+        "title": "Logo Aplikasi",
+        "description": "Gambar logo aplikasi"
+      },
+      "appName": {
+        "title": "Nama Aplikasi",
+        "description": "Nama aplikasi yang ditampilkan kepada pengguna"
+      },
+      "appDescription": {
+        "title": "Deskripsi Aplikasi",
+        "description": "Deskripsi singkat tentang aplikasi"
+      },
+      "showHomePage": {
+        "title": "Tampilkan Halaman Beranda",
+        "description": "Tampilkan Halaman Beranda setelah instalasi"
+      },
+      "hideVersion": {
+        "title": "Sembunyikan Versi",
+        "description": "Sembunyikan versi Palmr dari footer di semua halaman"
+      },
+      "smtpEnabled": {
+        "title": "SMTP Diaktifkan",
+        "description": "Aktifkan atau nonaktifkan fungsionalitas email SMTP"
+      },
+      "smtpHost": {
+        "title": "Server SMTP",
+        "description": "Alamat server SMTP"
+      },
+      "smtpPort": {
+        "title": "Port SMTP",
+        "description": "Port server SMTP"
+      },
+      "smtpUser": {
+        "title": "Username SMTP",
+        "description": "Username untuk autentikasi SMTP"
+      },
+      "smtpPass": {
+        "title": "Password SMTP",
+        "description": "Password untuk autentikasi SMTP"
+      },
+      "smtpFromName": {
+        "title": "Nama Pengirim",
+        "description": "Nama tampilan untuk email yang dikirim"
+      },
+      "smtpFromEmail": {
+        "title": "Email Pengirim",
+        "description": "Alamat email pengirim"
+      },
+      "smtpSecure": {
+        "title": "Keamanan Koneksi",
+        "description": "Metode keamanan koneksi SMTP - Auto (disarankan), SSL, STARTTLS, atau None (tidak aman)",
+        "options": {
+          "auto": "Auto (Disarankan)",
+          "ssl": "SSL (Port 465)",
+          "tls": "STARTTLS (Port 587)",
+          "none": "None (Tidak Aman)"
+        }
+      },
+      "smtpNoAuth": {
+        "title": "Tanpa Autentikasi",
+        "description": "Aktifkan ini untuk server internal yang tidak memerlukan username/password (menyembunyikan bidang auth)"
+      },
+      "smtpTrustSelfSigned": {
+        "title": "Percayai Sertifikat Self-Signed",
+        "description": "Aktifkan ini untuk mempercayai sertifikat SSL/TLS self-signed (berguna untuk lingkungan pengembangan)"
+      },
+      "testSmtp": {
+        "title": "Uji Koneksi SMTP",
+        "description": "Uji apakah konfigurasi SMTP valid"
+      },
+      "maxLoginAttempts": {
+        "title": "Percobaan Login Maksimum",
+        "description": "Jumlah maksimum percobaan login sebelum pemblokiran"
+      },
+      "loginBlockDuration": {
+        "title": "Durasi Pemblokiran",
+        "description": "Durasi (dalam detik) untuk memblokir setelah melebihi percobaan"
+      },
+      "passwordMinLength": {
+        "title": "Panjang Kata Sandi Minimum",
+        "description": "Jumlah minimum karakter untuk kata sandi"
+      },
+      "passwordResetTokenExpiration": {
+        "title": "Kedaluwarsa Token Reset",
+        "description": "Waktu validitas (dalam detik) untuk token reset kata sandi"
+      },
+      "maxFileSize": {
+        "title": "Ukuran File Maksimum",
+        "description": "Ukuran file maksimum yang diizinkan untuk unggah"
+      },
+      "maxTotalStoragePerUser": {
+        "title": "Penyimpanan Maksimum Per Pengguna",
+        "description": "Batas penyimpanan total per pengguna"
+      },
+      "firstUserAccess": {
+        "title": "Akses Pengguna Pertama",
+        "description": "Pengaturan untuk akses pertama pengguna baru"
+      },
+      "serverUrl": {
+        "title": "URL Server",
+        "description": "URL dasar server Palmr (misal: https://palmr.example.com)"
+      },
+      "passwordAuthEnabled": {
+        "title": "Autentikasi Kata Sandi",
+        "description": "Aktifkan atau nonaktifkan autentikasi berbasis kata sandi"
+      }
+    },
+    "buttons": {
+      "save": "Simpan {group}",
+      "testSmtp": "Uji Koneksi",
+      "testing": "Menguji..."
+    },
+    "errors": {
+      "loadFailed": "Gagal memuat pengaturan",
+      "updateFailed": "Gagal memperbarui pengaturan",
+      "passwordAuthRequiresProvider": "Tidak dapat menonaktifkan autentikasi kata sandi tanpa memiliki setidaknya satu penyedia autentikasi aktif"
+    },
+    "messages": {
+      "noChanges": "Tidak ada perubahan untuk disimpan",
+      "updateSuccess": "Pengaturan {group} berhasil diperbarui",
+      "smtpTestSuccess": "Koneksi SMTP berhasil! Konfigurasi email Anda berfungsi dengan benar.",
+      "smtpTestFailed": "Koneksi SMTP gagal: {error}",
+      "smtpTestGenericError": "Gagal menguji koneksi SMTP. Silakan periksa pengaturan Anda dan coba lagi.",
+      "smtpNotEnabled": "SMTP tidak diaktifkan. Silakan aktifkan SMTP terlebih dahulu.",
+      "smtpMissingHostPort": "Silakan isi Host dan Port SMTP sebelum menguji.",
+      "smtpMissingAuth": "Silakan isi Username dan Password SMTP, atau aktifkan opsi 'Tanpa Autentikasi'."
+    },
+    "title": "Pengaturan",
+    "breadcrumb": "Pengaturan",
+    "pageTitle": "Pengaturan",
+    "tooltips": {
+      "testSmtp": "Menguji koneksi SMTP dengan nilai yang saat ini dimasukkan dalam formulir. Untuk membuat perubahan permanen, ingat untuk menyimpan pengaturan Anda setelah menguji.",
+      "defaultPlaceholder": "Masukkan dan tekan Enter"
+    },
+    "redirectUri": {
+      "placeholder": "https://mysite.com",
+      "previewLabel": "URL lengkap yang akan disimpan:"
+    }
+  },
+  "share": {
+    "errors": {
+      "invalidPassword": "Kata sandi tidak valid. Silakan coba lagi.",
+      "loadFailed": "Gagal memuat berbagi",
+      "downloadFailed": "Gagal mengunduh file"
+    },
+    "messages": {
+      "downloadStarted": "Unduhan dimulai"
+    },
+    "password": {
+      "title": "Berbagi Dilindungi Kata Sandi",
+      "protected": "Berbagi ini dilindungi kata sandi",
+      "incorrect": "Kata sandi salah. Silakan coba lagi.",
+      "label": "Kata Sandi",
+      "placeholder": "Masukkan kata sandi berbagi",
+      "submit": "Kirim"
+    },
+    "details": {
+      "untitled": "Berbagi Tanpa Judul",
+      "created": "Dibuat: {date}",
+      "expires": "Kedaluwarsa: {date}"
+    },
+    "downloadAll": "Unduh Semua",
+    "notFound": {
+      "title": "Berbagi Tidak Ditemukan",
+      "description": "Berbagi ini mungkin telah dihapus atau kedaluwarsa."
+    },
+    "pageTitle": "Berbagi",
+    "metadata": {
+      "defaultDescription": "Bagikan file secara aman",
+      "filesShared": "{count, plural, =1 {1 file dibagikan} other {# file dibagikan}}"
+    }
+  },
+  "shareActions": {
+    "fileTitle": "Bagikan File",
+    "folderTitle": "Bagikan Folder",
+    "linkTitle": "Buat Tautan",
+    "linkDescriptionFile": "Buat tautan khusus untuk membagikan file",
+    "linkDescriptionFolder": "Buat tautan khusus untuk membagikan folder",
+    "aliasLabel": "Alias Tautan",
+    "aliasPlaceholder": "Masukkan alias khusus",
+    "linkReady": "Tautan berbagi Anda siap:",
+    "generateLink": "Buat Tautan",
+    "copyLink": "Salin Tautan",
+    "deleteTitle": "Hapus Berbagi",
+    "deleteConfirmation": "Apakah Anda yakin ingin menghapus berbagi ini? Tindakan ini tidak dapat dibatalkan.",
+    "addDescriptionPlaceholder": "Tambah deskripsi...",
+    "editTitle": "Edit Berbagi",
+    "newPasswordLabel": "Kata Sandi Baru (biarkan kosong untuk mempertahankan yang sekarang)",
+    "newPasswordPlaceholder": "Masukkan kata sandi baru",
+    "manageFilesTitle": "Kelola File",
+    "manageFilesDescription": "Pilih file dan folder untuk disertakan dalam berbagi ini",
+    "manageRecipientsTitle": "Kelola Penerima",
+    "itemsSelected": "{count} item dipilih",
+    "editSuccess": "Berbagi berhasil diperbarui",
+    "editError": "Gagal memperbarui berbagi",
+    "bulkDeleteConfirmation": "Apakah Anda yakin ingin menghapus {count, plural, =1 {1 berbagi} other {# berbagi}}? Tindakan ini tidak dapat dibatalkan.",
+    "bulkDeleteTitle": "Hapus Berbagi Terpilih"
+  },
+  "shareDetails": {
+    "title": "Detail Berbagi",
+    "subtitle": "Lihat dan kelola detail untuk berbagi ini",
+    "basicInfo": "Informasi Dasar",
+    "name": "Nama",
+    "description": "Deskripsi",
+    "shareLink": "Tautan Berbagi",
+    "dates": "Tanggal",
+    "security": "Keamanan",
+    "files": "File",
+    "recipients": "Penerima",
+    "views": "Tampilan",
+    "created": "Dibuat",
+    "expires": "Kedaluwarsa",
+    "never": "Tidak pernah",
+    "untitled": "Berbagi Tanpa Judul",
+    "noDescription": "Tidak ada deskripsi",
+    "notAvailable": "T/A",
+    "invalidDate": "Tanggal tidak valid",
+    "passwordProtected": "Dilindungi Kata Sandi",
+    "publicAccess": "Akses Publik",
+    "maxViews": "Tampilan Maks:",
+    "noLink": "Tidak ada tautan dibuat",
+    "generateLink": "Buat Tautan",
+    "editLink": "Edit Tautan",
+    "copyLink": "Salin Tautan",
+    "openLink": "Buka Tautan",
+    "editSecurity": "Edit Keamanan",
+    "editExpiration": "Edit Kedaluwarsa",
+    "qrCode": "Kode QR",
+    "downloadQrCode": "Unduh Kode QR",
+    "clickToEnlargeQrCode": "Klik untuk memperbesar Kode QR",
+    "loadError": "Gagal memuat detail berbagi"
+  },
+  "shareExpiration": {
+    "title": "Pengaturan Kedaluwarsa Berbagi",
+    "subtitle": "Konfigurasi kapan berbagi ini akan kedaluwarsa",
+    "currentStatus": "Status Saat Ini",
+    "expires": "Kedaluwarsa:",
+    "neverExpires": "Tidak pernah kedaluwarsa",
+    "enableExpiration": "Aktifkan Kedaluwarsa",
+    "expirationDate": "Tanggal Kedaluwarsa",
+    "validation": {
+      "dateRequired": "Mohon pilih tanggal kedaluwarsa",
+      "dateMustBeFuture": "Tanggal kedaluwarsa harus di masa depan"
+    },
+    "success": {
+      "expirationSet": "Tanggal kedaluwarsa berhasil diatur",
+      "expirationUpdated": "Tanggal kedaluwarsa berhasil diperbarui",
+      "expirationRemoved": "Kedaluwarsa berhasil dihapus - berbagi sekarang permanen"
+    },
+    "error": {
+      "updateFailed": "Gagal memperbarui pengaturan kedaluwarsa"
+    },
+    "info": {
+      "title": "Tentang kedaluwarsa:",
+      "willBeInaccessible": "Berbagi akan menjadi tidak dapat diakses setelah tanggal ini",
+      "canBeChanged": "Anda dapat mengubah atau menghapus tanggal kedaluwarsa kapan saja",
+      "noExpiration": "Berbagi ini tidak akan pernah kedaluwarsa dan akan tetap dapat diakses tanpa batas."
+    }
+  },
+  "shareManager": {
+    "deleteSuccess": "Berbagi berhasil dihapus",
+    "deleteError": "Gagal menghapus berbagi",
+    "updateSuccess": "Berbagi berhasil diperbarui",
+    "updateError": "Gagal memperbarui berbagi",
+    "securityUpdateSuccess": "Pengaturan keamanan berhasil diperbarui",
+    "securityUpdateError": "Gagal memperbarui pengaturan keamanan",
+    "expirationUpdateSuccess": "Pengaturan kedaluwarsa berhasil diperbarui",
+    "expirationUpdateError": "Gagal memperbarui pengaturan kedaluwarsa",
+    "filesUpdateSuccess": "File berhasil diperbarui",
+    "filesUpdateError": "Gagal memperbarui file",
+    "recipientsUpdateSuccess": "Penerima berhasil diperbarui",
+    "recipientsUpdateError": "Gagal memperbarui penerima",
+    "linkGenerateSuccess": "Tautan berbagi berhasil dibuat",
+    "linkGenerateError": "Gagal membuat tautan berbagi",
+    "notifyLoading": "Mengirim notifikasi...",
+    "notifySuccess": "Penerima berhasil diberitahu",
+    "notifyError": "Gagal memberitahu penerima",
+    "bulkDeleteError": "Gagal menghapus berbagi",
+    "bulkDeleteLoading": "Menghapus {count, plural, =1 {1 berbagi} other {# berbagi}}...",
+    "bulkDeleteSuccess": "{count, plural, =1 {1 berbagi berhasil dihapus} other {# berbagi berhasil dihapus}}",
+    "downloadSuccess": "Unduhan berhasil dimulai",
+    "downloadError": "Gagal mengunduh file berbagi",
+    "noFilesToDownload": "Tidak ada file yang tersedia untuk diunduh",
+    "creatingZip": "Membuat file ZIP...",
+    "zipDownloadSuccess": "File ZIP berhasil diunduh",
+    "zipDownloadError": "Gagal membuat file ZIP",
+    "errors": {
+      "multipleDownloadNotSupported": "Unduhan berbagi ganda belum didukung - silakan unduh berbagi satu per satu"
+    },
+    "singleShareZipName": "{shareName}_files.zip",
+    "multipleSharesZipName": "{count}_shares_files.zip",
+    "defaultShareName": "Berbagi"
+  },
+  "shareMultipleFiles": {
+    "title": "Bagikan Beberapa File",
+    "shareNameLabel": "Nama Berbagi",
+    "shareNamePlaceholder": "Masukkan nama berbagi",
+    "descriptionLabel": "Deskripsi",
+    "descriptionPlaceholder": "Masukkan deskripsi (opsional)",
+    "filesToShare": "File untuk Dibagikan",
+    "files": "file",
+    "totalSize": "Total ukuran",
+    "creating": "Membuat berbagi...",
+    "create": "Buat Berbagi",
+    "itemsToShare": "Item untuk dibagikan ({count} {count, plural, =1 {item} other {item}})"
+  },
+  "shareSecurity": {
+    "title": "Pengaturan Keamanan Berbagi",
+    "subtitle": "Konfigurasi perlindungan kata sandi dan opsi keamanan untuk berbagi ini",
+    "currentStatus": "Status Saat Ini",
+    "passwordProtection": "Perlindungan Kata Sandi",
+    "password": "Kata Sandi",
+    "newPassword": "Kata Sandi Baru",
+    "passwordPlaceholder": "Masukkan kata sandi yang aman",
+    "existingPasswordMessage": "Berbagi ini sudah memiliki kata sandi. Jika Anda ingin memperbaruinya, masukkan kata sandi baru di kolom di bawah ini dan simpan.",
+    "passwordRequirements": {
+      "title": "Persyaratan kata sandi:",
+      "minLength": "Minimal 2 karakter"
+    },
+    "info": {
+      "title": "Cara kerjanya:",
+      "withPassword": "Pengguna perlu memasukkan kata sandi untuk mengakses berbagi ini.",
+      "withoutPassword": "Siapa pun dengan tautan dapat mengakses berbagi ini tanpa kata sandi."
+    },
+    "validation": {
+      "passwordRequired": "Kata sandi wajib diisi",
+      "passwordTooShort": "Kata sandi harus minimal 2 karakter"
+    },
+    "success": {
+      "passwordSet": "Perlindungan kata sandi berhasil diaktifkan",
+      "passwordUpdated": "Kata sandi berhasil diperbarui",
+      "passwordRemoved": "Perlindungan kata sandi berhasil dihapus"
+    },
+    "error": {
+      "updateFailed": "Gagal memperbarui pengaturan keamanan"
+    }
+  },
+  "shares": {
+    "errors": {
+      "loadFailed": "Gagal memuat berbagi",
+      "notifyFailed": "Gagal memberitahu penerima",
+      "smtpConfigFailed": "Gagal memuat konfigurasi SMTP"
+    },
+    "messages": {
+      "linkCopied": "Tautan disalin ke clipboard",
+      "recipientsNotified": "Penerima berhasil diberitahu"
+    },
+    "empty": {
+      "message": "Belum ada berbagi yang dibuat",
+      "createButton": "Buat Berbagi"
+    },
+    "header": {
+      "title": "Berbagi Saya",
+      "myShares": "Berbagi Saya"
+    },
+    "search": {
+      "title": "Semua Berbagi",
+      "createButton": "Buat Berbagi",
+      "placeholder": "Cari berbagi...",
+      "results": "Ditemukan {filtered} dari {total} berbagi"
+    },
+    "pageTitle": "Berbagi"
+  },
+  "sharesTable": {
+    "ariaLabel": "Tabel berbagi",
+    "never": "Tidak pernah",
+    "columns": {
+      "name": "NAMA",
+      "description": "DESKRIPSI",
+      "createdAt": "DIBUAT PADA",
+      "expiresAt": "KEDALUWARSA PADA",
+      "status": "STATUS",
+      "security": "KEAMANAN",
+      "files": "FILE",
+      "recipients": "PENERIMA",
+      "actions": "TINDAKAN"
+    },
+    "status": {
+      "neverExpires": "Tidak pernah kedaluwarsa",
+      "active": "Aktif",
+      "expired": "Kedaluwarsa"
+    },
+    "security": {
+      "protected": "Terlindungi",
+      "public": "Publik"
+    },
+    "filesCount": "file",
+    "folderCount": "folder",
+    "recipientsCount": "penerima",
+    "actions": {
+      "menu": "Menu aksi berbagi",
+      "edit": "Edit",
+      "manageFiles": "Kelola File",
+      "manageRecipients": "Kelola Penerima",
+      "viewDetails": "Lihat Detail",
+      "generateLink": "Buat Tautan",
+      "editLink": "Edit Tautan",
+      "copyLink": "Salin Tautan",
+      "viewQrCode": "Lihat Kode QR",
+      "notifyRecipients": "Beritahu Penerima",
+      "downloadShareFiles": "Unduh Semua File",
+      "delete": "Hapus"
+    },
+    "bulkActions": {
+      "actions": "Tindakan",
+      "download": "Unduh Terpilih",
+      "delete": "Hapus",
+      "selected": "{count, plural, =1 {1 berbagi dipilih} other {# berbagi dipilih}}"
+    },
+    "selectAll": "Pilih semua",
+    "selectShare": "Pilih berbagi {shareName}"
+  },
+  "storageUsage": {
+    "title": "Penggunaan Penyimpanan",
+    "ariaLabel": "Bar progres penggunaan penyimpanan",
+    "used": "digunakan",
+    "available": "tersedia",
+    "total": "Total",
+    "loading": "Memuat...",
+    "retry": "Coba Lagi",
+    "errors": {
+      "title": "Informasi penyimpanan tidak tersedia",
+      "detectionFailed": "Tidak dapat mendeteksi ruang disk. Ini mungkin disebabkan oleh masalah konfigurasi sistem atau izin yang tidak cukup.",
+      "serverError": "Terjadi kesalahan server saat mengambil informasi penyimpanan. Silakan coba lagi nanti.",
+      "unknown": "Terjadi kesalahan tak terduga saat memuat informasi penyimpanan."
+    }
+  },
+  "theme": {
+    "toggle": "Alih tema",
+    "light": "Terang",
+    "dark": "Gelap",
+    "system": "Sistem"
+  },
+  "twoFactor": {
+    "title": "Otentikasi Dua Faktor",
+    "description": "Tambahkan lapisan keamanan ekstra ke akun Anda",
+    "enabled": "Akun Anda dilindungi dengan otentikasi dua faktor",
+    "disabled": "Otentikasi dua faktor tidak diaktifkan",
+    "status": {
+      "label": "Status:",
+      "enabled": "Diaktifkan",
+      "disabled": "Dinonaktifkan"
+    },
+    "buttons": {
+      "enable2FA": "Aktifkan 2FA",
+      "disable2FA": "Nonaktifkan 2FA"
+    },
+    "setup": {
+      "title": "Aktifkan Otentikasi Dua Faktor",
+      "description": "Pindai kode QR dengan aplikasi autentikator Anda, lalu masukkan kode verifikasi.",
+      "qrCode": "Kode QR",
+      "manualEntryKey": "Kunci Masuk Manual",
+      "verificationCode": "Kode Verifikasi",
+      "verificationCodePlaceholder": "Masukkan kode 6 digit",
+      "verificationCodeDescription": "Masukkan kode 6 digit dari aplikasi autentikator Anda",
+      "verifyAndEnable": "Verifikasi & Aktifkan",
+      "cancel": "Batal"
+    },
+    "disable": {
+      "title": "Nonaktifkan Otentikasi Dua Faktor",
+      "description": "Masukkan kata sandi Anda untuk mengkonfirmasi menonaktifkan otentikasi dua faktor.",
+      "password": "Kata Sandi",
+      "passwordPlaceholder": "Masukkan kata sandi Anda",
+      "confirm": "Konfirmasi Nonaktifkan",
+      "cancel": "Batal"
+    },
+    "backupCodes": {
+      "title": "Kode Cadangan",
+      "description": "Simpan kode cadangan ini di tempat yang aman. Anda dapat menggunakannya untuk mengakses akun Anda jika kehilangan perangkat autentikator.",
+      "warning": "Penting:",
+      "warningText": "Setiap kode cadangan hanya dapat digunakan sekali. Jaga keamanannya dan jangan bagikan kepada siapa pun.",
+      "generateNew": "Buat Kode Cadangan Baru",
+      "download": "Unduh Kode Cadangan",
+      "copyToClipboard": "Salin ke Clipboard",
+      "savedMessage": "Saya Sudah Menyimpan Kode Cadangan",
+      "available": "{count} kode cadangan tersedia",
+      "instructions": [
+        "• Simpan kode-kode ini di lokasi yang aman",
+        "• Setiap kode cadangan hanya dapat digunakan sekali",
+        "• Anda dapat membuat kode baru kapan saja"
+      ]
+    },
+    "verification": {
+      "title": "Otentikasi Dua Faktor",
+      "description": "Masukkan kode 6 digit dari aplikasi autentikator Anda",
+      "backupDescription": "Masukkan salah satu kode cadangan Anda untuk melanjutkan",
+      "verificationCode": "Kode Verifikasi",
+      "backupCode": "Kode Cadangan",
+      "verificationCodePlaceholder": "000000",
+      "backupCodePlaceholder": "XXXX-XXXX",
+      "verify": "Verifikasi",
+      "verifying": "Memverifikasi...",
+      "useBackupCode": "Gunakan kode cadangan",
+      "useAuthenticatorCode": "Gunakan kode autentikator",
+      "rememberDevice": "Ingat perangkat ini selama 30 hari",
+      "rememberDeviceDescription": "Anda tidak perlu memasukkan kode 2FA di perangkat ini selama 30 hari"
+    },
+    "trustedDevices": {
+      "title": "Perangkat Terpercaya - 2FA",
+      "description": "Perangkat yang tidak memerlukan verifikasi 2FA",
+      "noDevices": "Tidak ada perangkat terpercaya",
+      "deviceName": "Perangkat",
+      "addedOn": "Ditambahkan pada",
+      "expiresOn": "Kedaluwarsa pada",
+      "remove": "Hapus",
+      "removeAll": "Hapus Semua",
+      "confirmRemove": "Apakah Anda yakin ingin menghapus perangkat terpercaya ini?",
+      "confirmRemoveAll": "Apakah Anda yakin ingin menghapus semua perangkat terpercaya?",
+      "deviceRemoved": "Perangkat terpercaya berhasil dihapus",
+      "allDevicesRemoved": "Semua perangkat terpercaya berhasil dihapus",
+      "loadFailed": "Gagal memuat perangkat terpercaya",
+      "removeFailed": "Gagal menghapus perangkat terpercaya",
+      "removeAllFailed": "Gagal menghapus semua perangkat terpercaya",
+      "loading": "Memuat perangkat terpercaya...",
+      "noDevicesDescription": "Perangkat akan muncul di sini ketika Anda memilih untuk mempercayainya selama verifikasi 2FA",
+      "tableHeaders": {
+        "device": "Perangkat",
+        "added": "Ditambahkan",
+        "expires": "Kedaluwarsa",
+        "lastUsed": "Terakhir Digunakan",
+        "ipAddress": "Alamat IP",
+        "actions": "Tindakan"
+      },
+      "status": {
+        "never": "Tidak pernah",
+        "expired": "Kedaluwarsa"
+      },
+      "modals": {
+        "removeDevice": {
+          "title": "Hapus Perangkat Terpercaya",
+          "added": "Ditambahkan:",
+          "ip": "IP:"
+        },
+        "removeAllDevices": {
+          "title": "Hapus Semua Perangkat Terpercaya",
+          "description": "Ini akan menghapus {count} perangkat terpercaya. Anda perlu memverifikasi 2FA di semua perangkat lagi."
+        },
+        "buttons": {
+          "cancel": "Batal",
+          "removing": "Menghapus...",
+          "removeDevice": "Hapus Perangkat",
+          "removeAllDevices": "Hapus Semua Perangkat"
+        }
+      }
+    },
+    "messages": {
+      "enabledSuccess": "Otentikasi dua faktor berhasil diaktifkan!",
+      "disabledSuccess": "Otentikasi dua faktor berhasil dinonaktifkan",
+      "backupCodesGenerated": "Kode cadangan baru berhasil dibuat",
+      "backupCodesCopied": "Kode cadangan disalin ke clipboard",
+      "setupFailed": "Gagal membuat pengaturan 2FA",
+      "verificationFailed": "Kode verifikasi tidak valid",
+      "disableFailed": "Gagal menonaktifkan 2FA. Silakan periksa kata sandi Anda.",
+      "backupCodesFailed": "Gagal membuat kode cadangan",
+      "backupCodesCopyFailed": "Gagal menyalin kode cadangan",
+      "statusLoadFailed": "Gagal memuat status 2FA",
+      "enterVerificationCode": "Mohon masukkan kode verifikasi",
+      "enterPassword": "Mohon masukkan kata sandi Anda",
+      "deviceTrusted": "Perangkat ini telah ditandai sebagai terpercaya selama 30 hari"
+    },
+    "errors": {
+      "invalidVerificationCode": "Kode verifikasi tidak valid",
+      "invalidTwoFactorCode": "Kode otentikasi dua faktor tidak valid",
+      "twoFactorRequired": "Otentikasi dua faktor diperlukan",
+      "twoFactorAlreadyEnabled": "Otentikasi dua faktor sudah diaktifkan",
+      "twoFactorNotEnabled": "Otentikasi dua faktor belum diaktifkan",
+      "passwordVerificationRequired": "Verifikasi kata sandi diperlukan",
+      "invalidPassword": "Kata sandi tidak valid",
+      "userNotFound": "Pengguna tidak ditemukan"
+    },
+    "deviceNames": {
+      "unknownDevice": "Perangkat Tidak Dikenal",
+      "browsers": {
+        "chrome": "Chrome",
+        "firefox": "Firefox",
+        "safari": "Safari",
+        "edge": "Edge"
+      },
+      "platforms": {
+        "windows": " di Windows",
+        "macos": " di macOS",
+        "linux": " di Linux",
+        "iphone": " di iPhone",
+        "android": " di Android"
+      }
+    }
+  },
+  "uploadFile": {
+    "title": "Unggah File",
+    "multipleTitle": "Unggah File",
+    "selectFile": "Klik untuk memilih file",
+    "selectMultipleFiles": "Klik untuk memilih satu atau beberapa file",
+    "dragAndDrop": "atau seret dan lepas file di sini",
+    "filesQueued": "{count, plural, one {# file dalam antrean untuk unggah} other {# file dalam antrean untuk unggah}}",
+    "preview": "Pratinjau",
+    "uploadProgress": "Progres unggah",
+    "upload": "Unggah",
+    "startUploads": "Mulai Unggah",
+    "retry": "Coba Lagi",
+    "finish": "Selesai",
+    "success": "File berhasil diunggah",
+    "allSuccess": "{count, plural, =1 {File berhasil diunggah} other {# file berhasil diunggah}}",
+    "partialSuccess": "{success} file berhasil diunggah, {error} gagal",
+    "error": "Gagal mengunggah file",
+    "fileSizeExceeded": "Ukuran file melebihi batas {maxsizemb}MB.",
+    "insufficientStorage": "Ruang penyimpanan tidak mencukupi. Anda memiliki {availablespace}MB yang tersedia.",
+    "unauthorized": "Tidak berwenang: token yang valid diperlukan untuk mengakses sumber daya ini.",
+    "globalDrop": {
+      "title": "Lepaskan file untuk mengunggah",
+      "description": "Lepaskan untuk mengunggah file Anda"
+    },
+    "confirmCancel": {
+      "title": "Batalkan Unggah",
+      "messageSingle": "Ada satu unggah yang sedang berlangsung.",
+      "messageMultiple": "Ada {count} unggah yang sedang berlangsung.",
+      "warning": "Jika Anda menutup sekarang, unggah akan dibatalkan dan semua progres akan hilang.",
+      "continue": "Lanjutkan Unggah",
+      "cancel": "Batalkan Unggah"
+    },
+    "pasteSuccess": "{count, plural, =1 {Gambar berhasil ditempel dan diunggah} other {# gambar berhasil ditempel dan diunggah}}"
+  },
+  "users": {
+    "modes": {
+      "create": "buat",
+      "edit": "edit"
+    },
+    "errors": {
+      "loadFailed": "Gagal memuat pengguna",
+      "submitFailed": "Gagal {mode} pengguna",
+      "deleteFailed": "Gagal menghapus pengguna",
+      "statusUpdateFailed": "Gagal memperbarui status pengguna"
+    },
+    "messages": {
+      "createSuccess": "Pengguna berhasil dibuat",
+      "updateSuccess": "Pengguna berhasil diperbarui",
+      "deleteSuccess": "Pengguna berhasil dihapus",
+      "activateSuccess": "Pengguna berhasil diaktifkan",
+      "deactivateSuccess": "Pengguna berhasil dinonaktifkan"
+    },
+    "actions": {
+      "edit": "Edit",
+      "activate": "Aktifkan",
+      "deactivate": "Nonaktifkan",
+      "delete": "Hapus"
+    },
+    "delete": {
+      "title": "Konfirmasi Hapus Pengguna",
+      "confirmation": "Apakah Anda yakin ingin menghapus pengguna {firstName} {lastName}? Tindakan ini tidak dapat dibatalkan.",
+      "confirm": "Hapus Pengguna"
+    },
+    "form": {
+      "titleCreate": "Tambah Pengguna Baru",
+      "titleEdit": "Edit Pengguna",
+      "firstName": "Nama Depan",
+      "lastName": "Nama Belakang",
+      "username": "Nama Pengguna",
+      "email": "Email",
+      "password": "Kata Sandi",
+      "newPassword": "Kata Sandi Baru (opsional)",
+      "passwordPlaceholder": "Biarkan kosong untuk mempertahankan kata sandi saat ini",
+      "role": "Peran",
+      "roleUser": "Pengguna",
+      "roleAdmin": "Admin",
+      "create": "Buat",
+      "save": "Simpan"
+    },
+    "status": {
+      "title": "Konfirmasi Perubahan Status",
+      "confirmation": "Apakah Anda yakin ingin {action} pengguna {firstName} {lastName}?",
+      "activate": "Aktifkan",
+      "deactivate": "Nonaktifkan",
+      "user": "Pengguna"
+    },
+    "header": {
+      "title": "Manajemen Pengguna",
+      "addUser": "Tambah Pengguna",
+      "management": "Manajemen Pengguna"
+    },
+    "table": {
+      "user": "PENGGUNA",
+      "email": "EMAIL",
+      "status": "STATUS",
+      "role": "PERAN",
+      "actions": "TINDAKAN",
+      "active": "Aktif",
+      "inactive": "Tidak Aktif",
+      "admin": "Admin",
+      "userr": "Pengguna"
+    }
+  },
+  "embedCode": {
+    "title": "Sematkan Media",
+    "description": "Gunakan kode-kode ini untuk menyematkan media ini di forum, situs web, atau platform lainnya",
+    "tabs": {
+      "directLink": "Tautan Langsung",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "URL langsung ke file media",
+    "htmlDescription": "Gunakan kode ini untuk menyematkan media di halaman HTML",
+    "bbcodeDescription": "Gunakan kode ini untuk menyematkan media di forum yang mendukung BBCode"
+  },
+  "validation": {
+    "firstNameRequired": "Nama depan wajib diisi",
+    "lastNameRequired": "Nama belakang wajib diisi",
+    "usernameLength": "Nama pengguna harus minimal 3 karakter",
+    "usernameSpaces": "Nama pengguna tidak boleh mengandung spasi",
+    "invalidEmail": "Mohon masukkan alamat email yang valid",
+    "passwordLength": "Kata sandi harus minimal 8 karakter",
+    "passwordsMatch": "Kata sandi harus sama",
+    "emailRequired": "Email wajib diisi",
+    "emailOrUsernameRequired": "Email atau nama pengguna wajib diisi",
+    "passwordRequired": "Kata sandi wajib diisi",
+    "passwordMinLength": "Kata sandi harus minimal 6 karakter",
+    "nameRequired": "Nama wajib diisi",
+    "required": "Bidang ini wajib diisi"
+  }
+}

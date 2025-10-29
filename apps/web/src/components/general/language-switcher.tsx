@@ -30,12 +30,20 @@ const languages = {
   "zh-CN": "中文 (Chinese)",
   "ja-JP": "日本語 (Japanese)",
   "ko-KR": "한국어 (Korean)",
+  "th-TH": "ไทย (Thai)",
+  "vi-VN": "Tiếng Việt (Vietnamese)",
+  "uk-UA": "Українська (Ukrainian)",
+  "fa-IR": "فارسی (Persian)",
+  "sv-SE": "Svenska (Swedish)",
+  "id-ID": "Bahasa Indonesia (Indonesian)",
+  "el-GR": "Ελληνικά (Greek)",
+  "he-IL": "עברית (Hebrew)",
 };
 
 const COOKIE_LANG_KEY = "NEXT_LOCALE";
 const COOKIE_MAX_AGE = 365 * 24 * 60 * 60;
 
-const RTL_LANGUAGES = ["ar-SA"];
+const RTL_LANGUAGES = ["ar-SA", "fa-IR", "he-IL"];
 
 export function LanguageSwitcher() {
   const locale = useLocale();
