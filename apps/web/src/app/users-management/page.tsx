@@ -1,9 +1,12 @@
 "use client";
 
+import { useState } from "react";
+
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { LoadingScreen } from "@/components/layout/loading-screen";
 import { Navbar } from "@/components/layout/navbar";
 import { DefaultFooter } from "@/components/ui/default-footer";
+import { GenerateInviteLinkModal } from "./components/generate-invite-link-modal";
 import { UserManagementModals } from "./components/user-management-modals";
 import { UsersHeader } from "./components/users-header";
 import { UsersTable } from "./components/users-table";
@@ -26,6 +29,8 @@ export default function AdminAreaPage() {
     formMethods,
   } = useUserManagement();
 
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+
   if (isLoading) {
     return <LoadingScreen />;
   }
@@ -36,7 +41,7 @@ export default function AdminAreaPage() {
         <Navbar />
         <div className="flex-1 max-w-7xl mx-auto w-full py-8 px-6">
           <div className="flex flex-col gap-8">
-            <UsersHeader onCreateUser={handleCreateUser} />
+            <UsersHeader onCreateUser={handleCreateUser} onGenerateInvite={() => setIsInviteModalOpen(true)} />
 
             <UsersTable
               currentUser={currentUser}
@@ -65,6 +70,8 @@ export default function AdminAreaPage() {
           onSubmit={onSubmit}
           onToggleStatus={handleToggleUserStatus}
         />
+
+        <GenerateInviteLinkModal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} />
       </div>
     </ProtectedRoute>
   );

@@ -722,6 +722,49 @@
       "createAdmin": "Create Admin Account"
     }
   },
+  "registerWithInvite": {
+    "title": "Create Your Account",
+    "description": "Fill in the information below to create your account",
+    "labels": {
+      "firstName": "First Name",
+      "firstNamePlaceholder": "Enter your first name",
+      "lastName": "Last Name",
+      "lastNamePlaceholder": "Enter your last name",
+      "username": "Username",
+      "usernamePlaceholder": "Choose a username",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "password": "Password",
+      "passwordPlaceholder": "Choose a password",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm your password"
+    },
+    "buttons": {
+      "creating": "Creating account...",
+      "createAccount": "Create Account"
+    },
+    "validation": {
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "usernameMinLength": "Username must be at least 3 characters",
+      "invalidEmail": "Invalid email",
+      "passwordMinLength": "Password must be at least 8 characters",
+      "passwordsMatch": "Passwords must match"
+    },
+    "messages": {
+      "success": "Account created successfully! Redirecting to login...",
+      "redirecting": "Redirecting to login..."
+    },
+    "errors": {
+      "invalidToken": "Error with invite link",
+      "tokenUsed": "This invite link has already been used",
+      "tokenExpired": "This invite link has expired",
+      "usernameExists": "Username already exists",
+      "emailExists": "Email already exists",
+      "createFailed": "Failed to create account. Please try again."
+    },
+    "pageTitle": "Create Account"
+  },
   "resetPassword": {
     "pageTitle": "Reset Password",
     "header": {
@@ -1909,6 +1952,23 @@
       "inactive": "Inactive",
       "admin": "Admin",
       "userr": "User"
+    },
+    "invite": {
+      "button": "Generate Invite Link",
+      "title": "Generate User Invite Link",
+      "description": "Generate a one-time use link that allows someone to create their own account. The link expires in 15 minutes.",
+      "generating": "Generating...",
+      "generate": "Generate Link",
+      "generated": "Invite link generated successfully!",
+      "linkReady": "Invite link ready",
+      "linkReadyDescription": "Share this link with the person you want to invite. They'll be able to create their own account as a regular user.",
+      "copyLink": "Copy Link",
+      "linkCopied": "Invite link copied to clipboard!",
+      "expiresIn": "Expires in 15 minutes",
+      "close": "Close",
+      "errors": {
+        "generateFailed": "Failed to generate invite link"
+      }
     }
   },
   "embedCode": {
