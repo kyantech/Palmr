@@ -10,6 +10,7 @@ import { authRoutes } from "./modules/auth/routes";
 import { fileRoutes } from "./modules/file/routes";
 import { folderRoutes } from "./modules/folder/routes";
 import { healthRoutes } from "./modules/health/routes";
+import { inviteRoutes } from "./modules/invite/routes";
 import { reverseShareRoutes } from "./modules/reverse-share/routes";
 import { s3StorageRoutes } from "./modules/s3-storage/routes";
 import { shareRoutes } from "./modules/share/routes";
@@ -45,12 +46,7 @@ async function startServer() {
   const app = await buildApp();
 
   await ensureDirectories();
-
-  // Import storage config once at the beginning
   const { isInternalStorage, isExternalS3 } = await import("./config/storage.config.js");
-
-  // Run automatic migration from legacy storage to S3-compatible storage
-  // Transparently migrates any existing files
   const { runAutoMigration } = await import("./scripts/migrate-filesystem-to-s3.js");
   await runAutoMigration();
 
@@ -65,11 +61,10 @@ async function startServer() {
     },
   });
 
-  // No static files needed - S3 serves files directly via presigned URLs
-
   app.register(authRoutes);
   app.register(authProvidersRoutes, { prefix: "/auth" });
   app.register(twoFactorRoutes, { prefix: "/auth" });
+  app.register(inviteRoutes);
   app.register(userRoutes);
   app.register(folderRoutes);
   app.register(fileRoutes);
@@ -78,8 +73,6 @@ async function startServer() {
   app.register(storageRoutes);
   app.register(appRoutes);
   app.register(healthRoutes);
-
-  // Always use S3-compatible storage routes
   app.register(s3StorageRoutes);
 
   if (isInternalStorage) {

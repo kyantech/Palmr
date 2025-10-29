@@ -1909,6 +1909,66 @@
       "inactive": "Inativo",
       "admin": "Administrador",
       "userr": "Usuário"
+    },
+    "invite": {
+      "button": "Gerar Link de Convite",
+      "title": "Gerar Link de Convite de Usuário",
+      "description": "Gere um link de uso único que permite que alguém crie sua própria conta. O link expira em 15 minutos.",
+      "generating": "Gerando...",
+      "generate": "Gerar Link",
+      "generated": "Link gerado com sucesso!",
+      "linkReady": "Link de convite pronto",
+      "linkReadyDescription": "Compartilhe este link com a pessoa que você deseja convidar. Ela poderá criar sua própria conta como usuário regular.",
+      "copyLink": "Copiar Link",
+      "linkCopied": "Link de convite copiado para a área de transferência!",
+      "expiresIn": "Expira em 15 minutos",
+      "close": "Fechar",
+      "errors": {
+        "generateFailed": "Falha ao gerar link de convite"
+      }
+    }
+  },
+  "registerWithInvite": {
+    "pageTitle": "Criar Conta",
+    "title": "Crie Sua Conta",
+    "description": "Preencha as informações abaixo para criar sua conta",
+    "labels": {
+      "firstName": "Nome",
+      "firstNamePlaceholder": "Digite seu nome",
+      "lastName": "Sobrenome",
+      "lastNamePlaceholder": "Digite seu sobrenome",
+      "username": "Nome de Usuário",
+      "usernamePlaceholder": "Escolha um nome de usuário",
+      "email": "E-mail",
+      "emailPlaceholder": "Digite seu e-mail",
+      "password": "Senha",
+      "passwordPlaceholder": "Escolha uma senha",
+      "confirmPassword": "Confirmar Senha",
+      "confirmPasswordPlaceholder": "Confirme sua senha"
+    },
+    "buttons": {
+      "creating": "Criando conta...",
+      "createAccount": "Criar Conta"
+    },
+    "validation": {
+      "firstNameRequired": "Nome é obrigatório",
+      "lastNameRequired": "Sobrenome é obrigatório",
+      "usernameMinLength": "Nome de usuário deve ter pelo menos 3 caracteres",
+      "invalidEmail": "E-mail inválido",
+      "passwordMinLength": "Senha deve ter pelo menos 8 caracteres",
+      "passwordsMatch": "As senhas devem coincidir"
+    },
+    "messages": {
+      "success": "Conta criada com sucesso! Redirecionando para o login...",
+      "redirecting": "Redirecionando para o login..."
+    },
+    "errors": {
+      "invalidToken": "Link de convite inválido ou expirado",
+      "tokenUsed": "Este link de convite já foi usado",
+      "tokenExpired": "Este link de convite expirou",
+      "usernameExists": "Nome de usuário já existe",
+      "emailExists": "E-mail já existe",
+      "createFailed": "Falha ao criar conta. Por favor, tente novamente."
     }
   },
   "validation": {
