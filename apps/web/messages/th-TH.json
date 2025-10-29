@@ -1,0 +1,1941 @@
+{
+  "auth": {
+    "successfullyAuthenticated": "ยืนยันตัวตนสำเร็จ!",
+    "authenticationFailed": "การยืนยันตัวตนล้มเหลว",
+    "errors": {
+      "account_inactive": "บัญชีถูกปิดใช้งาน กรุณาติดต่อผู้ดูแลระบบ",
+      "registration_disabled": "ปิดการลงทะเบียน SSO",
+      "token_expired": "โทเค็นหมดอายุ กรุณาลองใหม่อีกครั้ง",
+      "config_error": "เกิดข้อผิดพลาดในการตั้งค่า กรุณาติดต่อฝ่ายสนับสนุน",
+      "auth_failed": "การยืนยันตัวตนล้มเหลว กรุณาลองใหม่อีกครั้ง"
+    }
+  },
+  "contextMenu": {
+    "newFolder": "โฟลเดอร์ใหม่",
+    "uploadFile": "อัปโหลดไฟล์"
+  },
+  "authProviders": {
+    "title": "ผู้ให้บริการยืนยันตัวตน",
+    "description": "กำหนดค่าผู้ให้บริการยืนยันตัวตนภายนอกสำหรับ SSO",
+    "enabledCount": "{count} เปิดใช้งาน",
+    "loadingProviders": "กำลังโหลดผู้ให้บริการ...",
+    "providersConfigured": "{count} ผู้ให้บริการที่กำหนดค่า",
+    "enabledOfTotal": "{enabled} เปิดใช้งาน จาก {total} ผู้ให้บริการ",
+    "hideDisabledProviders": "ซ่อนผู้ให้บริการที่ปิดใช้งาน",
+    "addProvider": "เพิ่มผู้ให้บริการ",
+    "addProviderTitle": "เพิ่มผู้ให้บริการ",
+    "editProvider": "แก้ไขผู้ให้บริการ",
+    "deleteProvider": "ลบผู้ให้บริการ",
+    "enabled": "เปิดใช้งาน",
+    "disabled": "ปิดใช้งาน",
+    "officialProvider": "ผู้ให้บริการอย่างเป็นทางการ",
+    "dragToReorder": "ลากเพื่อเรียงลำดับใหม่",
+    "dragDisabledMessage": "การลากและวางถูกปิดใช้งานเมื่อกำหนดตัวกรองผู้ให้บริการ แสดงผู้ให้บริการทั้งหมดเพื่อเรียงลำดับใหม่",
+    "dragEnabledMessage": "ลากผู้ให้บริการเพื่อเรียงลำดับใหม่ ลำดับนี้จะแสดงในหน้าเข้าสู่ระบบ",
+    "noProvidersEnabled": "ไม่มีผู้ให้บริการยืนยันตัวตนที่เปิดใช้งาน",
+    "noProvidersConfigured": "ไม่มีผู้ให้บริการยืนยันตัวตนที่กำหนดค่า",
+    "form": {
+      "providerName": "ชื่อผู้ให้บริการ",
+      "providerNamePlaceholder": "เช่น บริษัทของฉัน",
+      "displayName": "ชื่อที่แสดง",
+      "displayNamePlaceholder": "เช่น SSO ของบริษัทของฉัน",
+      "type": "ประเภท",
+      "typeOidc": "OIDC (OpenID Connect)",
+      "typeOauth2": "OAuth 2.0",
+      "icon": "ไอคอน",
+      "iconPlaceholder": "เลือกไอคอน",
+      "clientId": "ID ไคลเอนต์",
+      "clientIdPlaceholder": "ID ไคลเอนต์ OAuth ของคุณ",
+      "clientSecret": "ลับของไคลเอนต์",
+      "clientSecretPlaceholder": "ลับของไคลเอนต์ OAuth ของคุณ",
+      "oauthScopes": "OAuth Scopes",
+      "scopesPlaceholder": "ป้อน scopes (เช่น openid, profile, email)",
+      "scopesHelpOidc": "Scopes จะแนะนำโดยอัตโนมัติตามURL ผู้ให้บริการ OIDC scopes ทั่วไป: openid, profile, email, groups",
+      "scopesHelpOauth2": "Scopes จะแนะนำโดยอัตโนมัติตามURL ผู้ให้บริการ OAuth2 scopes ทั่วไปขึ้นอยู่กับผู้ให้บริการ",
+      "providerUrl": "URL ผู้ให้บริการ",
+      "providerUrlPlaceholder": "https://auth.example.com",
+      "providerUrlAutoPlaceholder": "https://your-provider.com (endpoints จะถูกค้นพบโดยอัตโนมัติ)",
+      "providerUrlManualPlaceholder": "https://your-provider.com",
+      "autoDiscoveryHelp": "ระบบจะค้นพบ authorization, token และ userinfo endpoints โดยอัตโนมัติ",
+      "manualConfigurationHelp": "URL ฐานของผู้ให้บริการของคุณ (endpoints จะเป็นแบบสัมพัทธ์กับสิ่งนี้)",
+      "authorizationEndpoint": "Authorization Endpoint",
+      "authorizationEndpointPlaceholder": "https://auth.example.com/auth",
+      "tokenEndpoint": "Token Endpoint",
+      "tokenEndpointPlaceholder": "https://auth.example.com/token",
+      "userInfoEndpoint": "User Info Endpoint",
+      "userInfoEndpointPlaceholder": "https://auth.example.com/userinfo",
+      "configurationMethod": "วิธีการกำหนดค่า",
+      "autoDiscovery": "ค้นพบโดยอัตโนมัติ",
+      "autoDiscoveryDescription": "ค้นพบ endpoints โดยอัตโนมัติจาก URL ผู้ให้บริการ",
+      "manualEndpoints": "Manual Endpoints (แนะนำ)",
+      "manualEndpointsDescription": "กำหนด authorization, token และ user info endpoints ด้วยตนเอง",
+      "callbackUrl": "Callback URL",
+      "callbackUrlDescription": "ใช้ URL นี้ในการกำหนดค่าผู้ให้บริการ OAuth ของคุณ",
+      "copyCallbackUrl": "คัดลอก Callback URL",
+      "callbackUrlCopied": "Callback URL คัดลอกไปยังคลิปบอร์ดแล้ว!",
+      "adminEmailDomains": "โดเมนอีเมลผู้ดูแลระบบ",
+      "adminEmailDomainsPlaceholder": "ป้อนโดเมน (เช่น admin.company.com)",
+      "adminEmailDomainsHelp": "ผู้ใช้ที่มีอีเมลจากโดเมนเหล่านี้จะได้รับสิทธิ์ผู้ดูแลระบบ",
+      "autoRegister": "ลงทะเบียนผู้ใช้ใหม่โดยอัตโนมัติ",
+      "officialProviderUrlPlaceholder": "แทนที่เพลสโฮลเดอร์ด้วย {displayName} URL ของคุณ",
+      "officialProviderHelp": "นี่คือผู้ให้บริการอย่างเป็นทางการ Endpoints มีการตั้งค่าล่วงหน้า คุณสามารถแก้ไข URL นี้เท่านั้น",
+      "officialProviderIconHelp": "คุณสามารถปรับแต่งไอคอนสำหรับผู้ให้บริการอย่างเป็นทางการนี้"
+    },
+    "buttons": {
+      "cancel": "ยกเลิก",
+      "save": "บันทึก",
+      "saving": "กำลังบันทึก...",
+      "adding": "กำลังเพิ่ม...",
+      "updating": "กำลังอัปเดต...",
+      "saveProvider": "บันทึกผู้ให้บริการ",
+      "delete": "ลบ",
+      "deleting": "กำลังลบ...",
+      "edit": "แก้ไข",
+      "enable": "เปิดใช้งาน",
+      "disable": "ปิดใช้งาน"
+    },
+    "messages": {
+      "providerAdded": "เพิ่มผู้ให้บริการเรียบร้อยแล้ว",
+      "providerUpdated": "อัปเดตผู้ให้บริการเรียบร้อยแล้ว",
+      "providerDeleted": "ลบผู้ให้บริการเรียบร้อยแล้ว",
+      "providerOrderUpdated": "อัปเดตลำดับผู้ให้บริการเรียบร้อยแล้ว",
+      "fillRequiredFields": "กรุณากรอกฟิลด์ที่จำเป็นทั้งหมด (ชื่อ ชื่อที่แสดง ID ไคลเอนต์ ลับของไคลเอนต์)",
+      "provideUrlOrEndpoints": "ให้ URL ผู้ให้บริการสำหรับค้นพบโดยอัตโนมัติ หรือ endpoints ที่กำหนดเองทั้งสามรายการ",
+      "chooseDiscoveryOrManual": "เลือกค้นพบโดยอัตโนมัติ (URL ผู้ให้บริการ) หรือ endpoints ที่กำหนดเอง ไม่ใช่ทั้งสองอย่าง",
+      "loadFailed": "ไม่สามารถโหลดผู้ให้บริการ",
+      "addFailed": "ไม่สามารถเพิ่มผู้ให้บริการ",
+      "updateFailed": "ไม่สามารถอัปเดตผู้ให้บริการ",
+      "deleteFailed": "ไม่สามารถลบผู้ให้บริการ",
+      "orderUpdateFailed": "ไม่สามารถอัปเดตลำดับผู้ให้บริการ"
+    },
+    "info": {
+      "title": "ข้อมูล",
+      "officialProvidersRecommended": "เพื่อการทำงานที่ดีขึ้น ให้พิจารณาใช้ผู้ให้บริการอย่างเป็นทางการ หากคุณมีปัญหากับผู้ให้บริการที่กำหนดเอง ให้พิจารณาเปิด issue บน",
+      "github": "GitHub",
+      "officialProvider": "ผู้ให้บริการอย่างเป็นทางการ",
+      "officialProviderDescription": "ผู้ให้บริการนี้ได้รับการปรับปรุงโดย Palmr สามารถแก้ไขได้เฉพาะข้อมูลประจำตัวและการกำหนดค่า",
+      "manualConfigTitle": "การกำหนดค่าด้วยตนเอง",
+      "manualConfigDescription": "คุณกำลังให้ endpoints ทั้งหมดด้วยตนเอง ตรวจสอบให้แน่ใจว่าถูกต้องสำหรับผู้ให้บริการของคุณ"
+    },
+    "deleteModal": {
+      "title": "ลบผู้ให้บริการยืนยันตัวตน",
+      "confirmMessage": "คุณแน่ใจหรือไม่ว่าต้องการลบผู้ให้บริการ \"{displayName}\"? ไม่สามารถเลิกทำการกระทำนี้ได้",
+      "providerId": "ID ผู้ให้บริการ: {name}",
+      "cancel": "ยกเลิก",
+      "delete": "ลบผู้ให้บริการ",
+      "deleting": "กำลังลบ..."
+    }
+  },
+  "bulkDownload": {
+    "title": "ดาวน์โหลดแบบรวม",
+    "zipNameLabel": "ชื่อไฟล์ ZIP",
+    "zipNamePlaceholder": "ป้อนชื่อไฟล์",
+    "description": "{count, plural, =1 {1 ไฟล์จะถูกบีบอัด} other {# ไฟล์จะถูกบีบอัด}}",
+    "download": "ดาวน์โหลด ZIP"
+  },
+  "common": {
+    "loading": "กำลังโหลด โปรดรอ...",
+    "loadingSimple": "กำลังโหลด...",
+    "cancel": "ยกเลิก",
+    "save": "บันทึก",
+    "saving": "กำลังบันทึก...",
+    "update": "อัปเดต",
+    "updating": "กำลังอัปเดต...",
+    "delete": "ลบ",
+    "deleting": "กำลังลบ...",
+    "close": "ปิด",
+    "download": "ดาวน์โหลด",
+    "unexpectedError": "เกิดข้อผิดพลาดที่ไม่คาดคิด โปรดลองใหม่",
+    "yes": "ใช่",
+    "no": "ไม่",
+    "dashboard": "แดชบอร์ด",
+    "back": "กลับ",
+    "click": "คลิกเพื่อ",
+    "creating": "กำลังสร้าง...",
+    "create": "สร้าง",
+    "rename": "เปลี่ยนชื่อ",
+    "move": "ย้าย",
+    "share": "แชร์",
+    "search": "ค้นหา",
+    "copy": "คัดลอก",
+    "copied": "คัดลอกแล้ว"
+  },
+  "createShare": {
+    "title": "สร้างแชร์",
+    "nameLabel": "ชื่อแชร์",
+    "namePlaceholder": "ป้อนชื่อสำหรับแชร์ของคุณ",
+    "descriptionLabel": "คำอธิบาย",
+    "descriptionPlaceholder": "ป้อนคำอธิบาย (ไม่บังคับ)",
+    "expirationLabel": "วันที่หมดอายุ",
+    "expirationPlaceholder": "MM/DD/YYYY HH:MM",
+    "maxViewsLabel": "มุมมองสูงสุด",
+    "maxViewsPlaceholder": "ปล่อยว่างไว้เพื่ออนุญาตไม่จำกัด",
+    "passwordProtection": "ป้องกันด้วยรหัสผ่าน",
+    "passwordLabel": "รหัสผ่าน",
+    "passwordPlaceholder": "ป้อนรหัสผ่าน",
+    "create": "สร้างแชร์",
+    "success": "สร้างแชร์เรียบร้อยแล้ว",
+    "error": "ไม่สามารถสร้างแชร์",
+    "errors": {
+      "nameRequired": "ต้องระบุชื่อแชร์",
+      "selectItems": "โปรดเลือกไฟล์หรือโฟลเดอร์อย่างน้อยหนึ่งรายการ"
+    },
+    "itemsSelected": "{count} รายการที่เลือก",
+    "selectItemsPrompt": "เลือกไฟล์และโฟลเดอร์เพื่อแชร์",
+    "tabs": {
+      "shareDetails": "รายละเอียดแชร์",
+      "selectFiles": "เลือกไฟล์"
+    },
+    "nextSelectFiles": "ถัดไป: เลือกไฟล์",
+    "searchLabel": "ค้นหา"
+  },
+  "customization": {
+    "breadcrumb": "การปรับแต่ง",
+    "colors": {
+      "title": "สีธีม",
+      "description": "เลือกสีธีมหลักที่คุณชื่นชอบ",
+      "presets": "สีที่พร้อมใช้งาน",
+      "presetsDescription": "เลือกจากธีมสีที่พร้อมใช้งาน",
+      "reset": "รีเซ็ตเป็นค่าเริ่มต้น"
+    },
+    "fonts": {
+      "title": "ลักษณะการพิมพ์",
+      "description": "เลือกตระกูลฟอนต์ที่คุณชื่นชอบ",
+      "available": "ฟอนต์ที่พร้อมใช้งาน",
+      "availableDescription": "เลือกจากตระกูลฟอนต์ที่พร้อมใช้งาน",
+      "reset": "รีเซ็ตเป็นค่าเริ่มต้น"
+    },
+    "radius": {
+      "title": "ขอบเขตมุม",
+      "description": "ปรับแต่งความโค้งขององค์ประกอบอินเทอร์เฟซ",
+      "available": "ตัวเลือกความมน",
+      "availableDescription": "เลือกว่ามุมควรปรากฏอย่างไร",
+      "reset": "รีเซ็ตเป็นค่าเริ่มต้น"
+    },
+    "background": {
+      "title": "สีพื้นหลัง",
+      "description": "ปรับแต่งสีพื้นหลังสำหรับโหมดสว่างและมืด",
+      "lightMode": "โหมดสว่าง",
+      "darkMode": "โหมดมืด",
+      "availableDescription": "เลือกสีพื้นหลังสำหรับธีมทั้งสวางและมืด",
+      "reset": "รีเซ็ตเป็นค่าเริ่มต้น"
+    },
+    "theme": {
+      "title": "โหมดธีม",
+      "description": "เลือกระหว่างธีมสว่าง มืด หรือธีมระบบ",
+      "selectTheme": "ความชอบธีม",
+      "availableDescription": "เลือกโหมดธีมที่คุณชื่นชอบ",
+      "reset": "รีเซ็ตเป็นระบบ"
+    },
+    "pageTitle": "การปรับแต่ง"
+  },
+  "dashboard": {
+    "loadError": "ไม่สามารถโหลดข้อมูลแดชบอร์ด",
+    "linkCopied": "คัดลอกลิงค์ไปยังคลิปบอร์ดแล้ว",
+    "pageTitle": "แดชบอร์ด",
+    "breadcrumb": "แดชบอร์ด",
+    "recentFiles": {
+      "title": "ไฟล์ล่าสุด",
+      "description": "ไฟล์ที่อัปโหลดล่าสุดของคุณ"
+    }
+  },
+  "deleteConfirmation": {
+    "filesToDelete": "ไฟล์ที่จะลบ",
+    "foldersToDelete": "โฟลเดอร์ที่จะลบ",
+    "itemsToDelete": "รายการที่จะลบ",
+    "sharesToDelete": "แชร์ที่จะลบ"
+  },
+  "downloadQueue": {
+    "downloadQueued": "ดาวน์โหลดในคิว: {fileName}",
+    "queuedDescription": "ดาวน์โหลดของคุณจะเริ่มต้นโดยอัตโนมัติเมื่อมีช่องว่างพร้อม",
+    "queuePosition": "ดาวน์โหลดในคิวที่ตำแหน่ง {position}: {fileName}",
+    "estimatedWait": "เวลารอโดยประมาณ: {time}",
+    "queueFull": "คิวดาวน์โหลดเต็มแล้ว",
+    "queueFullDescription": "โปรดลองอีกครั้งในอีกไม่กี่นาทีเมื่อคิวว่างลง",
+    "cancelSuccess": "ยกเลิกดาวน์โหลดเรียบร้อยแล้ว",
+    "cancelError": "ไม่สามารถยกเลิกดาวน์โหลด: {error}",
+    "status": {
+      "pending": "กำลังเตรียม...",
+      "queued": "ในคิว",
+      "downloading": "กำลังดาวน์โหลด",
+      "completed": "เสร็จสิ้น",
+      "failed": "ล้มเหลว"
+    },
+    "waitTime": {
+      "seconds": "{seconds}วิ",
+      "minutes": "{minutes}น",
+      "hoursMinutes": "{hours}ช {minutes}น"
+    },
+    "indicator": {
+      "title": "ดาวน์โหลด",
+      "downloads": "คิวดาวน์โหลด",
+      "active": "ใช้งานอยู่",
+      "queued": "ในคิว",
+      "position": "ตำแหน่ง {position}",
+      "estimatedWait": "รอ: {time}",
+      "unknownFile": "ไฟล์ที่ไม่ทราบ",
+      "noDownloads": "ไม่มีดาวน์โหลดที่กำลังดำเนิน",
+      "refresh": "รีเฟรชคิว"
+    }
+  },
+  "emptyState": {
+    "noFiles": "ยังไม่มีไฟล์ที่อัปโหลด",
+    "uploadFile": "อัปโหลดไฟล์"
+  },
+  "errors": {
+    "invalidCredentials": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+    "userNotFound": "ไม่พบผู้ใช้",
+    "accountLocked": "บัญชีถูกล็อค โปรดลองใหม่ในภายหลัง",
+    "unexpectedError": "เกิดข้อผิดพลาดที่ไม่คาดคิด โปรดลองใหม่",
+    "Invalid verification code": "รหัสการยืนยันไม่ถูกต้อง",
+    "Two-factor authentication is already enabled": "เปิดใช้งานการยืนยันตัวตนสองปัจจัยแล้ว",
+    "Two-factor authentication is not enabled": "ไม่ได้เปิดใช้งานการยืนยันตัวตนสองปัจจัย",
+    "Invalid password": "รหัสผ่านไม่ถูกต้อง",
+    "Password verification required": "ต้องใช้การยืนยันรหัสผ่าน",
+    "Invalid two-factor authentication code": "รหัสการยืนยันตัวตนสองปัจจัยไม่ถูกต้อง",
+    "Two-factor authentication required": "ต้องใช้การยืนยันตัวตนสองปัจจัย",
+    "noUserData": "ไม่มีข้อมูลผู้ใช้"
+  },
+  "fileActions": {
+    "editFile": "แก้ไขไฟล์",
+    "nameLabel": "ชื่อ",
+    "namePlaceholder": "ป้อนชื่อใหม่",
+    "extension": "นามสกุล",
+    "descriptionLabel": "คำอธิบาย",
+    "descriptionPlaceholder": "ป้อนคำอธิบายไฟล์",
+    "addDescriptionPlaceholder": "เพิ่มคำอธิบาย...",
+    "deleteFile": "ลบไฟล์",
+    "deleteConfirmation": "คุณแน่ใจหรือไม่ว่าต้องการลบไฟล์นี้?",
+    "deleteWarning": "ไม่สามารถเลิกทำการกระทำนี้ได้"
+  },
+  "fileManager": {
+    "downloadError": "ไม่สามารถดาวน์โหลดไฟล์",
+    "updateSuccess": "อัปเดตไฟล์เรียบร้อยแล้ว",
+    "updateError": "ไม่สามารถอัปเดตไฟล์",
+    "deleteSuccess": "ลบไฟล์เรียบร้อยแล้ว",
+    "deleteError": "ไม่สามารถลบไฟล์"
+  },
+  "filePreview": {
+    "title": "ตัวอย่างไฟล์",
+    "description": "ตัวอย่างและดาวน์โหลดไฟล์",
+    "loading": "กำลังโหลด...",
+    "notAvailable": "ตัวอย่างไม่พร้อมใช้งานสำหรับประเภทไฟล์นี้",
+    "downloadToView": "ใช้ปุ่มดาวน์โหลดเพื่อดูไฟล์นี้",
+    "loadError": "เกิดข้อผิดพลาดในการโหลดตัวอย่างไฟล์",
+    "downloadError": "เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์",
+    "audioNotSupported": "เบราว์เซอร์ของคุณไม่รองรับการเล่นเสียง",
+    "videoNotSupported": "เบราว์เซอร์ของคุณไม่รองรับการเล่นวิดีโอ",
+    "pdfPreviewNotAvailable": "ตัวอย่าง PDF ไม่พร้อมใช้งาน ลองมุมมองอื่นหรือดาวน์โหลด",
+    "tryAlternativeView": "ลองมุมมองอื่น",
+    "loadingAlternative": "กำลังโหลดมุมมองอื่น...",
+    "loadingAudio": "กำลังโหลดเสียง..."
+  },
+  "fileSelector": {
+    "availableFiles": "ไฟล์ที่พร้อมใช้งาน ({count})",
+    "shareFiles": "ไฟล์ที่แชร์ ({count})",
+    "shareFilesDescription": "ไฟล์ที่อยู่ในแชร์นี้",
+    "availableFilesDescription": "เลือกไฟล์เพื่อเพิ่มไปยังแชร์นี้",
+    "searchPlaceholder": "ค้นหาไฟล์...",
+    "searchSelectedFiles": "ค้นหาไฟล์ที่เลือก...",
+    "noMatchingFiles": "ไม่พบไฟล์ที่ตรงกัน",
+    "noAvailableFiles": "ไม่มีไฟล์ที่พร้อมใช้งาน",
+    "noFilesInShare": "ไม่มีไฟล์ในแชร์นี้",
+    "noFilesFound": "ไม่พบไฟล์",
+    "noFilesFoundWith": "ไม่พบไฟล์ที่ตรงกับ \"{query}\"",
+    "addFilesFromList": "เพิ่มไฟล์จากรายการด้านล่าง",
+    "tryDifferentSearch": "ลองใช้คำค้นหาที่แตกต่างกัน",
+    "allFilesInShare": "ไฟล์ทั้งหมดอยู่ในแชร์นี้แล้ว",
+    "uploadNewFiles": "อัปโหลดไฟล์ใหม่เพื่อเพิ่มไฟล์",
+    "fileCount": "{count, plural, =1 {ไฟล์} other {ไฟล์}}",
+    "filesSelected": "{count, plural, =0 {ไม่ได้เลือกไฟล์} =1 {เลือก 1 ไฟล์} other {เลือก # ไฟล์}}",
+    "itemsSelected": "{count} รายการที่เลือก",
+    "editFile": "แก้ไขไฟล์",
+    "editFolder": "แก้ไขโฟลเดอร์",
+    "previewFile": "ตัวอย่างไฟล์",
+    "addToShare": "เพิ่มไปยังแชร์",
+    "removeFromShare": "นำออกจากแชร์",
+    "saveChanges": "บันทึกการเปลี่ยนแปลง"
+  },
+  "files": {
+    "title": "ไฟล์ทั้งหมด",
+    "uploadFile": "อัปโหลดไฟล์",
+    "loadError": "ไม่สามารถโหลดไฟล์",
+    "pageTitle": "ไฟล์ของฉัน",
+    "breadcrumb": "ไฟล์ของฉัน",
+    "downloadStart": "เริ่มดาวน์โหลด",
+    "downloadError": "ไม่สามารถดาวน์โหลดไฟล์",
+    "updateSuccess": "อัปเดตไฟล์เรียบร้อยแล้ว",
+    "updateError": "ไม่สามารถอัปเดตไฟล์",
+    "deleteSuccess": "ลบไฟล์เรียบร้อยแล้ว",
+    "deleteError": "ไม่สามารถลบไฟล์",
+    "bulkDownloadSuccess": "เริ่มดาวน์โหลดไฟล์เรียบร้อยแล้ว",
+    "bulkDownloadError": "เกิดข้อผิดพลาดในการสร้างไฟล์ ZIP",
+    "bulkDownloadFileError": "เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์ {fileName}",
+    "bulkDeleteSuccess": "{count, plural, =1 {ลบ 1 รายการเรียบร้อยแล้ว} other {ลบ # รายการเรียบร้อยแล้ว}}",
+    "bulkDeleteError": "เกิดข้อผิดพลาดในการลบรายการที่เลือก",
+    "bulkDeleteTitle": "ลบรายการที่เลือก",
+    "bulkDeleteConfirmation": "คุณแน่ใจหรือไม่ว่าต้องการลบ {count, plural, =1 {1 รายการ} other {# รายการ}}? ไม่สามารถเลิกทำการกระทำนี้ได้",
+    "totalFiles": "{count, plural, =0 {ไม่มีไฟล์} =1 {1 ไฟล์} other {# ไฟล์}}",
+    "openFolder": "เปิดโฟลเดอร์",
+    "errors": {
+      "moveItemsFailed": "ไม่สามารถย้ายรายการ โปรดลองใหม่",
+      "cannotMoveHere": "ไม่สามารถย้ายรายการไปยังตำแหน่งนี้"
+    },
+    "empty": {
+      "title": "ยังไม่มีไฟล์หรือโฟลเดอร์",
+      "description": "อัปโหลดไฟล์แรกของคุณหรือสร้างโฟลเดอร์เพื่อเริ่มต้น"
+    },
+    "files": "ไฟล์",
+    "folders": "โฟลเดอร์",
+    "actions": {
+      "open": "เปิด",
+      "rename": "เปลี่ยนชื่อ",
+      "delete": "ลบ"
+    },
+    "viewMode": {
+      "table": "ตาราง",
+      "grid": "กริด"
+    }
+  },
+  "filesTable": {
+    "ariaLabel": "ตารางไฟล์",
+    "selectAll": "เลือกทั้งหมด",
+    "selectFile": "เลือกไฟล์ {fileName}",
+    "columns": {
+      "name": "ชื่อ",
+      "description": "คำอธิบาย",
+      "size": "ขนาด",
+      "createdAt": "สร้างเมื่อ",
+      "updatedAt": "อัปเดตเมื่อ",
+      "actions": "การกระทำ"
+    },
+    "actions": {
+      "menu": "เมนูการกระทำไฟล์",
+      "preview": "ตัวอย่าง",
+      "edit": "แก้ไข",
+      "share": "แชร์",
+      "download": "ดาวน์โหลด",
+      "delete": "ลบ"
+    },
+    "bulkActions": {
+      "selected": "{count, plural, =1 {เลือก 1 ไฟล์} other {เลือก # ไฟล์}}",
+      "actions": "การกระทำ",
+      "download": "ดาวน์โหลดที่เลือก",
+      "share": "แชร์ที่เลือก",
+      "delete": "ลบที่เลือก"
+    }
+  },
+  "folderActions": {
+    "editFolder": "แก้ไขโฟลเดอร์",
+    "folderName": "ชื่อโฟลเดอร์",
+    "folderNamePlaceholder": "ป้อนชื่อโฟลเดอร์",
+    "folderDescription": "คำอธิบาย",
+    "folderDescriptionPlaceholder": "ป้อนคำอธิบายโฟลเดอร์ (ไม่บังคับ)",
+    "createFolder": "สร้างโฟลเดอร์",
+    "renameFolder": "เปลี่ยนชื่อโฟลเดอร์",
+    "moveFolder": "ย้ายโฟลเดอร์",
+    "shareFolder": "แชร์โฟลเดอร์",
+    "deleteFolder": "ลบโฟลเดอร์",
+    "moveTo": "ย้ายไปยัง",
+    "selectDestination": "เลือกโฟลเดอร์ปลายทาง",
+    "rootFolder": "รูท",
+    "folderCreated": "สร้างโฟลเดอร์เรียบร้อยแล้ว",
+    "folderRenamed": "เปลี่ยนชื่อโฟลเดอร์เรียบร้อยแล้ว",
+    "folderMoved": "ย้ายโฟลเดอร์เรียบร้อยแล้ว",
+    "folderDeleted": "ลบโฟลเดอร์เรียบร้อยแล้ว",
+    "folderShared": "แชร์โฟลเดอร์เรียบร้อยแล้ว",
+    "createFolderError": "เกิดข้อผิดพลาดในการสร้างโฟลเดอร์",
+    "renameFolderError": "เกิดข้อผิดพลาดในการเปลี่ยนชื่อโฟลเดอร์",
+    "moveFolderError": "เกิดข้อผิดพลาดในการย้ายโฟลเดอร์",
+    "deleteFolderError": "เกิดข้อผิดพลาดในการลบโฟลเดอร์",
+    "shareFolderError": "เกิดข้อผิดพลาดในการแชร์โฟลเดอร์",
+    "deleteConfirmation": "คุณแน่ใจหรือไม่ว่าต้องการลบโฟลเดอร์นี้?",
+    "deleteWarning": "ไม่สามารถเลิกทำการกระทำนี้ได้"
+  },
+  "footer": {
+    "poweredBy": "ขับเคลื่อนโดย",
+    "kyanHomepage": "หน้าแรก Kyantech"
+  },
+  "forgotPassword": {
+    "emailLabel": "ที่อยู่อีเมล",
+    "emailPlaceholder": "ป้อนอีเมลของคุณ",
+    "sending": "กำลังส่ง...",
+    "submit": "ส่งคำแนะนำการรีเซ็ต",
+    "backToLogin": "กลับไปที่หน้าเข้าสู่ระบบ",
+    "title": "ลืมรหัสผ่าน",
+    "description": "ป้อนที่อยู่อีเมลของคุณและเราจะส่งคำแนะนำในการรีเซ็ตรหัสผ่านให้คุณ",
+    "resetInstructions": "ส่งคำแนะนำการรีเซ็ตไปยังอีเมลของคุณแล้ว",
+    "pageTitle": "ลืมรหัสผ่าน",
+    "passwordAuthDisabled": "ปิดใช้งานการยืนยันตัวตนด้วยรหัสผ่าน โปรดติดต่อผู้ดูแลระบบหรือใช้ผู้ให้บริการยืนยันตัวตนภายนอก"
+  },
+  "generateShareLink": {
+    "generateTitle": "สร้างลิงค์แชร์",
+    "updateTitle": "อัปเดตลิงค์แชร์",
+    "generateDescription": "สร้างลิงค์ที่กำหนดเองสำหรับแชร์นี้ คุณสามารถปรับแต่ง URL เพื่อให้จดจำได้ง่ายขึ้น",
+    "updateDescription": "อัปเดตลิงค์ที่กำหนดเองสำหรับแชร์นี้ คุณสามารถปรับแต่ง URL เพื่อให้จดจำได้ง่ายขึ้น",
+    "aliasPlaceholder": "ID ที่กำหนดเองสำหรับลิงค์",
+    "linkReady": "ลิงค์แชร์ของคุณพร้อมแล้ว คุณสามารถคัดลอกได้เลย",
+    "readyDescription": "ลิงค์แชร์ของคุณพร้อมแล้ว คุณสามารถสแกนรหัส QR โดยตรง ดาวน์โหลดสำหรับใช้ภายหลัง หรือคัดลอกลิงค์ด้านล่าง",
+    "generateButton": "สร้างลิงค์",
+    "updateButton": "อัปเดตลิงค์",
+    "copyButton": "คัดลอกลิงค์",
+    "success": "สร้างลิงค์เรียบร้อยแล้ว",
+    "error": "ไม่สามารถสร้างลิงค์",
+    "copied": "คัดลอกลิงค์ไปยังคลิปบอร์ดแล้ว",
+    "tabs": {
+      "link": "ลิงค์",
+      "qrcode": "รหัส QR"
+    }
+  },
+  "home": {
+    "description": "ทางเลือกโอเพนซอร์สแทน WeTransfer แชร์ไฟล์อย่างปลอดภัยโดยไม่มีการติดตามหรือข้อจำกัด",
+    "documentation": "เอกสารประกอบ",
+    "starOnGithub": "ให้ดาว บน GitHub",
+    "privacyMessage": "สร้างขึ้นด้วยการคำนึงถึงความเป็นส่วนตัว ไฟล์ของคุณสามารถเข้าถึงได้เฉพาะผู้ที่มีลิงค์แชร์เท่านั้นก่อนการอัปโหลด ฟรีและโอเพนซอร์สตลอดไป",
+    "header": {
+      "fileSharing": "แชร์ไฟล์",
+      "tagline": "ทำให้ง่ายและฟรี"
+    },
+    "pageTitle": "หน้าแรก"
+  },
+  "iconPicker": {
+    "title": "เลือกไอคอน",
+    "placeholder": "เลือกไอคอน",
+    "searchPlaceholder": "ค้นหาไอคอน...",
+    "loadingMore": "กำลังโหลดไอคอนเพิ่มเติม...",
+    "allIconsLoaded": "โหลดไอคอนทั้งหมด {count} แล้ว",
+    "noIconsFound": "ไม่พบไอคอนสำหรับ \"{search}\"",
+    "tabs": {
+      "all": "ไอคอนทั้งหมด",
+      "popular": "ยอดนิยม",
+      "auth": "ผู้ให้บริการยืนยันตัวตน"
+    },
+    "stats": "{iconCount} ไอคอนจาก {libraryCount} ไลบรารี",
+    "categoryBadge": "{category} ({count} ไอคอน)"
+  },
+  "imageEdit": {
+    "title": "แก้ไขรูปภาพ",
+    "rotate": "หมุน",
+    "zoom": "ซูม",
+    "cropInstructions": "ลากเพื่อเปลี่ยนตำแหน่ง ปรับขนาดมุมเพื่อปรับพื้นที่ครอป"
+  },
+  "login": {
+    "welcome": "ยินดีต้อนรับสู่",
+    "signInToContinue": "เข้าสู่ระบบเพื่อดำเนิน",
+    "emailOrUsernameLabel": "อีเมลหรือชื่อผู้ใช้",
+    "emailOrUsernamePlaceholder": "ป้อนอีเมลหรือชื่อผู้ใช้ของคุณ",
+    "emailLabel": "ที่อยู่อีเมล",
+    "emailPlaceholder": "ป้อนอีเมลของคุณ",
+    "passwordLabel": "รหัสผ่าน",
+    "passwordPlaceholder": "ป้อนรหัสผ่านของคุณ",
+    "signIn": "เข้าสู่ระบบ",
+    "signingIn": "กำลังเข้าสู่ระบบ...",
+    "forgotPassword": "ลืมรหัสผ่าน?",
+    "pageTitle": "เข้าสู่ระบบ",
+    "or": "หรือ",
+    "continueWithSSO": "ดำเนินการต่อด้วย SSO",
+    "processing": "กำลังประมวลผลการยืนยันตัวตน..."
+  },
+  "logo": {
+    "labels": {
+      "appLogo": "โลโก้แอปพลิเคชัน"
+    },
+    "buttons": {
+      "upload": "อัปโหลดโลโก้",
+      "remove": "นำออกโลโก้"
+    },
+    "messages": {
+      "uploadSuccess": "อัปโหลดโลโก้เรียบร้อยแล้ว",
+      "removeSuccess": "นำออกโลโก้เรียบร้อยแล้ว"
+    },
+    "errors": {
+      "uploadFailed": "ไม่สามารถอัปโหลดโลโก้",
+      "removeFailed": "ไม่สามารถนำออกโลโก้"
+    }
+  },
+  "moveItems": {
+    "itemsToMove": "รายการเพื่อย้าย:",
+    "movingTo": "ย้ายไปยัง:",
+    "title": "ย้าย {count, plural, =1 {รายการ} other {รายการ}}",
+    "description": "ย้าย {count, plural, =1 {รายการ} other {# รายการ}} ไปยังตำแหน่งใหม่",
+    "success": "ย้าย {count} {count, plural, =1 {รายการ} other {รายการ}} เรียบร้อยแล้ว",
+    "errors": {
+      "moveFailed": "ไม่สามารถย้ายรายการ"
+    }
+  },
+  "navbar": {
+    "logoAlt": "โลโก้แอปพลิเคชัน",
+    "profileMenu": "เมนูโปรไฟล์",
+    "profile": "โปรไฟล์",
+    "customization": "การปรับแต่ง",
+    "settings": "การตั้งค่า",
+    "usersManagement": "การจัดการผู้ใช้",
+    "logout": "ออกจากระบบ"
+  },
+  "navigation": {
+    "dashboard": "แดชบอร์ด"
+  },
+  "notifications": {
+    "permissionGranted": "เปิดใช้งานการแจ้งเตือนการดาวน์โหลด",
+    "permissionDenied": "ปิดใช้งานการแจ้งเตือนการดาวน์โหลด",
+    "downloadComplete": {
+      "title": "ดาวน์โหลดเสร็จสิ้น",
+      "body": "{fileName} ดาวน์โหลดเสร็จสิ้น"
+    },
+    "downloadFailed": {
+      "title": "ดาวน์โหลดล้มเหลว",
+      "body": "ไม่สามารถดาวน์โหลด {fileName}: {error}",
+      "unknownError": "ข้อผิดพลาดที่ไม่ทราบ"
+    },
+    "queueProcessing": {
+      "title": "เริ่มดาวน์โหลด",
+      "body": "{fileName} กำลังดาวน์โหลด{position}",
+      "position": " (ก่อนหน้านี้ #{position} ในคิว)"
+    }
+  },
+  "profile": {
+    "password": {
+      "title": "เปลี่ยนรหัสผ่าน",
+      "newPassword": "รหัสผ่านใหม่",
+      "confirmPassword": "ยืนยันรหัสผ่านใหม่",
+      "updateButton": "อัปเดตรหัสผ่าน"
+    },
+    "form": {
+      "title": "ข้อมูลโปรไฟล์",
+      "firstName": "ชื่อจริง",
+      "lastName": "นามสกุล",
+      "username": "ชื่อผู้ใช้",
+      "email": "อีเมล",
+      "updateButton": "อัปเดตโปรไฟล์"
+    },
+    "header": {
+      "title": "โปรไฟล์",
+      "subtitle": "จัดการข้อมูลส่วนบุคคลและรหัสผ่าน"
+    },
+    "picture": {
+      "title": "รูปโปรไฟล์",
+      "description": "คลิกไอคอนกล้องเพื่อเปลี่ยนรูปโปรไฟล์ของคุณ",
+      "uploadPhoto": "อัปโหลดรูป",
+      "removePhoto": "นำออกรูป"
+    },
+    "errors": {
+      "loadFailed": "ไม่สามารถโหลดข้อมูลผู้ใช้",
+      "updateFailed": "ไม่สามารถอัปเดตโปรไฟล์",
+      "passwordFailed": "ไม่สามารถอัปเดตรหัสผ่าน",
+      "imageFailed": "ไม่สามารถอัปเดตรูปโปรไฟล์",
+      "imageRemoveFailed": "ไม่สามารถนำออกรูปโปรไฟล์"
+    },
+    "messages": {
+      "noChanges": "ไม่มีการเปลี่ยนแปลงเพื่อบันทึก",
+      "updateSuccess": "อัปเดตโปรไฟล์เรียบร้อยแล้ว",
+      "fillPasswords": "กรุณากรอกฟิลด์รหัสผ่านทั้งสองช่อง",
+      "passwordSuccess": "อัปเดตรหัสผ่านเรียบร้อยแล้ว",
+      "imageSuccess": "อัปเดตรูปโปรไฟล์เรียบร้อยแล้ว",
+      "imageRemoved": "นำออกรูปโปรไฟล์เรียบร้อยแล้ว"
+    },
+    "pageTitle": "โปรไฟล์"
+  },
+  "qrCodeModal": {
+    "title": "แชร์รหัส QR",
+    "description": "สแกนรหัส QR นี้เพื่อเข้าถึงลิงค์",
+    "download": "ดาวน์โหลดรหัส QR"
+  },
+  "quickAccess": {
+    "files": {
+      "title": "ไฟล์ของฉัน",
+      "description": "เข้าถึงและจัดการไฟล์ที่อัปโหลด"
+    },
+    "shares": {
+      "title": "แชร์ของฉัน",
+      "description": "ดูและจัดการไฟล์ที่แชร์"
+    },
+    "reverseShares": {
+      "title": "รับไฟล์",
+      "description": "สร้างลิงค์เพื่อให้ผู้อื่นส่งไฟล์ให้คุณ"
+    }
+  },
+  "recentFiles": {
+    "title": "การอัปโหลดล่าสุด",
+    "viewAll": "ดูทั้งหมด",
+    "upload": "อัปโหลด",
+    "uploadFile": "อัปโหลดไฟล์",
+    "noFiles": "ยังไม่มีไฟล์ที่อัปโหลด"
+  },
+  "recentShares": {
+    "title": "แชร์ล่าสุด",
+    "viewAll": "ดูทั้งหมด",
+    "createShare": "สร้างแชร์",
+    "noShares": "ยังไม่มีแชร์ที่สร้าง",
+    "createFirst": "สร้างแชร์แรกของคุณ"
+  },
+  "recipientSelector": {
+    "emailPlaceholder": "ป้อนอีเมลผู้รับ",
+    "add": "เพิ่ม",
+    "recipients": "ผู้รับ ({count})",
+    "notifyAll": "แจ้งเตือนทั้งหมด",
+    "noRecipients": "ยังไม่ได้เพิ่มผู้รับ",
+    "addSuccess": "เพิ่มผู้รับเรียบร้อยแล้ว",
+    "addError": "ไม่สามารถเพิ่มผู้รับ",
+    "removeSuccess": "นำออกผู้รับเรียบร้อยแล้ว",
+    "removeError": "ไม่สามารถนำออกผู้รับ",
+    "sendingNotifications": "กำลังส่งการแจ้งเตือน...",
+    "notifySuccess": "แจ้งเตือนผู้รับเรียบร้อยแล้ว",
+    "notifyError": "ไม่สามารถแจ้งเตือนผู้รับ",
+    "selectAll": "เลือกทั้งหมด",
+    "selectedCount": "{count} ที่เลือก",
+    "selectRecipient": "เลือก {email}",
+    "notifySelected": "แจ้งเตือนที่เลือก",
+    "removeSelected": "นำออกที่เลือก",
+    "notifySingle": "แจ้งเตือนผู้รับนี้",
+    "removeSingle": "นำออกผู้รับนี้",
+    "bulkRemoveSuccess": "นำออก {count} ผู้รับเรียบร้อยแล้ว",
+    "bulkRemoveError": "ไม่สามารถนำออกผู้รับที่เลือก",
+    "bulkNotifySuccess": "ส่งการแจ้งเตือนไปยัง {count} ผู้รับแล้ว",
+    "bulkNotifyError": "ไม่สามารถแจ้งเตือนผู้รับที่เลือก",
+    "singleNotifySuccess": "ส่งการแจ้งเตือนไปยัง {email}เรียบร้อยแล้ว",
+    "singleNotifyError": "ไม่สามารถแจ้งเตือนผู้รับ",
+    "modalDescription": "เพิ่มและจัดการผู้รับสำหรับแชร์นี้ คุณสามารถแจ้งเตือนทั้งหมดหรือผู้รับเฉพาะเมื่อมีการตั้งค่า SMTP",
+    "addRecipient": "เพิ่มผู้รับ",
+    "invalidEmail": "กรุณากรอกที่อยู่อีเมลที่ถูกต้อง",
+    "duplicateEmail": "ผู้รับนี้ได้รับการเพิ่มแล้ว",
+    "noRecipientsDescription": "เพิ่มผู้รับเพื่อแชร์เนื้อหาผ่านทางอีเมล"
+  },
+  "register": {
+    "validation": {
+      "firstNameRequired": "ต้องระบุชื่อจริง",
+      "lastNameRequired": "ต้องระบุนามสกุล",
+      "usernameMinLength": "ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร",
+      "invalidEmail": "อีเมลไม่ถูกต้อง",
+      "passwordMinLength": "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร",
+      "success": "สร้างผู้ใช้ผู้ดูแลระบบเรียบร้อยแล้ว!",
+      "error": "เกิดข้อผิดพลาดในการสร้างผู้ใช้ผู้ดูแลระบบ"
+    },
+    "labels": {
+      "firstName": "ชื่อจริง",
+      "lastName": "นามสกุล",
+      "username": "ชื่อผู้ใช้",
+      "email": "อีเมล",
+      "password": "รหัสผ่าน"
+    },
+    "buttons": {
+      "creating": "กำลังสร้าง...",
+      "createAdmin": "สร้างบัญชีผู้ดูแลระบบ"
+    }
+  },
+  "resetPassword": {
+    "pageTitle": "รีเซ็ตรหัสผ่าน",
+    "header": {
+      "title": "รีเซ็ตรหัสผ่าน",
+      "description": "ป้อนรหัสผ่านใหม่ของคุณด้านล่าง"
+    },
+    "form": {
+      "newPassword": "รหัสผ่านใหม่",
+      "newPasswordPlaceholder": "ป้อนรหัสผ่านใหม่ของคุณ",
+      "confirmPassword": "ยืนยันรหัสผ่านใหม่",
+      "confirmPasswordPlaceholder": "ยืนยันรหัสผ่านใหม่ของคุณ",
+      "resetting": "กำลังรีเซ็ตรหัสผ่าน...",
+      "submit": "รีเซ็ตรหัสผ่าน",
+      "backToLogin": "กลับไปที่หน้าเข้าสู่ระบบ"
+    },
+    "messages": {
+      "success": "รีเซ็ตรหัสผ่านเรียบร้อยแล้ว"
+    },
+    "errors": {
+      "serverError": "ไม่สามารถรีเซ็ตรหัสผ่าน โปรดลองใหม่",
+      "invalidToken": "โทเค็นรีเซ็ตไม่ถูกต้องหรือหายไป"
+    }
+  },
+  "reverseShares": {
+    "pageTitle": "รับไฟล์",
+    "search": {
+      "title": "จัดการลิงค์การรับ",
+      "createButton": "สร้างลิงค์",
+      "placeholder": "ค้นหาลิงค์การรับ...",
+      "results": "พบ {filtered} จาก {total} ลิงค์การรับ"
+    },
+    "labels": {
+      "files": "ไฟล์",
+      "size": "ขนาด",
+      "status": "สถานะ",
+      "access": "การเข้าถึง",
+      "description": "คำอธิบาย",
+      "pageLayout": "เค้าโครงหน้า",
+      "security": "ความปลอดภัยและสถานะ",
+      "limits": "ข้อจำกัด",
+      "maxFiles": "ไฟล์สูงสุด",
+      "maxFileSize": "ขนาดสูงสุด",
+      "allowedTypes": "ประเภทที่อนุญาต",
+      "filesReceived": "ไฟล์ที่ได้รับ",
+      "fileLimit": "ขีดจำกัดไฟล์",
+      "noLimit": "ไม่มีขีดจำกัด",
+      "noLinkCreated": "ยังไม่มีลิงค์ที่สร้าง",
+      "publicAccess": "การเข้าถึงแบบสาธารณะ",
+      "protectedByPassword": "ป้องกันด้วยรหัสผ่าน",
+      "configureProtection": "คลิกเพื่อตั้งค่าการป้องกัน",
+      "enterPassword": "ป้อนรหัสผ่าน",
+      "thisLinkProtected": "ลิงค์นี้จะปกป้องด้วยรหัสผ่าน",
+      "thisLinkPublic": "ลิงค์นี้จะเป็นสาธารณะ",
+      "configureExpiration": "ตั้งค่าการหมดอายุ",
+      "configureLimits": "ตั้งค่าขีดจำกัดไฟล์",
+      "protectWithPassword": "ปกป้องด้วยรหัสผ่าน",
+      "layoutOptions": {
+        "default": "ค่าเริ่มต้น",
+        "wetransfer": "WeTransfer"
+      },
+      "noFilesLimit": "ไม่มีขีดจำกัดไฟล์",
+      "noSizeLimit": "ไม่มีขีดจำกัดขนาด",
+      "allFileTypes": "ไฟล์ทุกประเภท",
+      "fileTypesHelp": "ป้อนนามสกุลโดยไม่มีจุด คั่นด้วยช่องว่าง ลูกน้ำ ขีดกลาง หรือท่อ",
+      "fieldRequirements": "ข้อกำหนดฟิลด์",
+      "nameFieldRequired": "ฟิลด์ชื่อ",
+      "emailFieldRequired": "ฟิลด์อีเมล",
+      "fieldOptions": {
+        "hidden": "ซ่อน",
+        "optional": "ไม่บังคับ",
+        "required": "ต้องระบุ"
+      }
+    },
+    "card": {
+      "untitled": "ลิงค์ที่ไม่มีชื่อ",
+      "noDescription": "ไม่มีคำอธิบาย",
+      "addDescriptionPlaceholder": "เพิ่มคำอธิบาย...",
+      "files": "ไฟล์",
+      "progress": "ความคืบหน้า",
+      "created": "สร้างแล้ว",
+      "expired": "หมดอายุ",
+      "expires": "หมดอายุ",
+      "viewDetails": "ดูรายละเอียด",
+      "viewQrCode": "ดูรหัส QR",
+      "copyLink": "คัดลอกลิงค์",
+      "openInNewTab": "เปิดในแท็บใหม่",
+      "editLink": "แก้ไขลิงค์",
+      "createLink": "สร้างลิงค์",
+      "delete": "ลบ",
+      "copyLinkTitle": "คัดลอกลิงค์",
+      "createLinkCTA": "สร้างลิงค์การรับ"
+    },
+    "status": {
+      "active": "ใช้งานอยู่",
+      "inactive": "ไม่ใช้งาน",
+      "expired": "หมดอายุ",
+      "protected": "ปกป้อง",
+      "public": "สาธารณะ"
+    },
+    "actions": {
+      "copyLink": "คัดลอกลิงค์",
+      "editAlias": "แก้ไขนามแฝง",
+      "createAlias": "สร้างนามแฝง",
+      "viewDetails": "ดูรายละเอียด",
+      "edit": "แก้ไข",
+      "delete": "ลบ",
+      "viewFiles": "ไฟล์ที่ได้รับ",
+      "viewQrCode": "ดูรหัส QR"
+    },
+    "empty": {
+      "title": "ยังไม่มีลิงค์การรับที่สร้าง",
+      "description": "สร้างลิงค์ที่กำหนดเองเพื่อให้ผู้อื่นส่งไฟล์โดยตรงให้คุณอย่างปลอดภัยและเป็นระเบียบ",
+      "createButton": "สร้างลิงค์แรก"
+    },
+    "modals": {
+      "create": {
+        "title": "สร้างลิงค์การรับ",
+        "description": "ตั้งค่าลิงค์ที่กำหนดเองเพื่อรับไฟล์จากผู้อื่น"
+      },
+      "edit": {
+        "title": "แก้ไขลิงค์การรับ",
+        "description": "อัปเดตการตั้งค่าสำหรับลิงค์การรับนี้",
+        "updating": "กำลังอัปเดต...",
+        "saveChanges": "บันทึกการเปลี่ยนแปลง"
+      },
+      "details": {
+        "title": "รายละเอียดลิงค์",
+        "description": "ดูและแก้ไขข้อมูลลิงค์การรับของคุณ",
+        "pageLayout": "เค้าโครงหน้า",
+        "linkSection": "ลิงค์การรับ",
+        "noLinkCreated": "ยังไม่มีลิงค์ที่สร้าง",
+        "limits": "ข้อจำกัด",
+        "maxFiles": "ไฟล์สูงสุด",
+        "maxFileSize": "ขนาดสูงสุด",
+        "allowedTypes": "ประเภทที่อนุญาต",
+        "noLimit": "ไม่มีขีดจำกัด",
+        "security": "ความปลอดภัย",
+        "status": "สถานะ",
+        "password": "รหัสผ่าน",
+        "files": "ไฟล์ที่ได้รับ",
+        "noFiles": "ยังไม่มีไฟล์ที่ได้รับ",
+        "copyLink": "คัดลอกลิงค์",
+        "openLink": "เปิดลิงค์",
+        "editAlias": "แก้ไขนามแฝง",
+        "createAlias": "สร้างนามแฝง",
+        "editPassword": "แก้ไขการป้องกันด้วยรหัสผ่าน",
+        "basicInfo": "ข้อมูลพื้นฐาน",
+        "securityAndStatus": "ความปลอดภัยและสถานะ",
+        "protection": "การป้องกัน",
+        "protectedByPassword": "ปกป้องด้วยรหัสผ่าน",
+        "publicAccess": "การเข้าถึงแบบสาธารณะ",
+        "active": "ใช้งานอยู่",
+        "inactive": "ไม่ใช้งาน",
+        "deactivate": "ปิดใช้งาน",
+        "activate": "เปิดใช้งาน",
+        "expiration": "การหมดอายุ",
+        "dates": "วันที่",
+        "createdAt": "สร้างเมื่อ",
+        "updatedAt": "อัปเดตเมื่อ",
+        "allTypes": "ทั้งหมด",
+        "placeholderTypes": ".pdf,.jpg,.png (คั่นด้วยลูกน้ำ)",
+        "downloadSuccess": "เริ่มดาวน์โหลดแล้ว",
+        "downloadError": "เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์",
+        "editSuccess": "อัปเดตไฟล์เรียบร้อยแล้ว",
+        "editError": "เกิดข้อผิดพลาดในการอัปเดตไฟล์",
+        "previewNotAvailable": "ไม่มีตัวอย่างพร้อมใช้งาน",
+        "notAvailable": "ไม่พร้อมใช้งาน",
+        "invalidDate": "วันที่ไม่ถูกต้อง"
+      },
+      "alias": {
+        "editTitle": "แก้ไขนามแฝง",
+        "createTitle": "สร้างนามแฝง",
+        "editDescription": "อัปเดตนามแฝงสำหรับลิงค์การรับนี้",
+        "createDescription": "สร้างนามแฝงที่กำหนดเองสำหรับลิงค์การรับนี้",
+        "aliasLabel": "นามแฝงลิงค์",
+        "aliasPlaceholder": "my-custom-link",
+        "preview": "ตัวอย่าง:",
+        "currentLink": "ลิงค์ปัจจุบัน:",
+        "copyCurrentLink": "คัดลอกลิงค์ปัจจุบัน",
+        "randomTooltip": "สร้างนามแฝงแบบสุ่ม",
+        "cancel": "ยกเลิก",
+        "creating": "กำลังสร้าง...",
+        "updating": "กำลังอัปเดต...",
+        "create": "สร้างนามแฝง",
+        "update": "อัปเดตนามแฝง",
+        "validation": {
+          "required": "ต้องระบุนามแฝง",
+          "minLength": "นามแฝงต้องมีอย่างน้อย 3 ตัวอักษร",
+          "maxLength": "นามแฝงต้องมีไม่เกิน 50 ตัวอักษร",
+          "pattern": "นามแฝงต้องมีเฉพาะตัวอักษร ตัวเลข ขีดและเครื่องหมายขีดใต้เท่านั้น"
+        },
+        "help": "3-50 ตัวอักษร ช่องว่างจะถูกแปลงเป็นขีดอัตโนมัติ"
+      },
+      "password": {
+        "title": "แก้ไขการป้องกันด้วยรหัสผ่าน",
+        "description": "ตั้งค่าการป้องกันด้วยรหัสผ่านสำหรับลิงค์นี้",
+        "hasPassword": "ปกป้องด้วยรหัสผ่าน",
+        "password": "รหัสผ่าน",
+        "cancel": "ยกเลิก",
+        "save": "บันทึก",
+        "saving": "กำลังบันทึก..."
+      },
+      "receivedFiles": {
+        "title": "ไฟล์ที่ได้รับ",
+        "description": "ดูและจัดการไฟล์ที่ส่งไปยังลิงค์นี้",
+        "noFiles": "ยังไม่มีไฟล์ที่ได้รับ",
+        "noFilesDescription": "ไฟล์ที่ส่งผ่านลิงค์นี้จะปรากฏที่นี่",
+        "fileCount": "{count, plural, =0 {ไม่มีไฟล์} =1 {1 ไฟล์} other {# ไฟล์}}",
+        "invalidDate": "วันที่ไม่ถูกต้อง",
+        "totalSize": "ขนาดรวม: {size}",
+        "columns": {
+          "file": "ไฟล์",
+          "size": "ขนาด",
+          "sender": "ส่งโดย",
+          "date": "วันที่",
+          "actions": "การกระทำ"
+        },
+        "actions": {
+          "preview": "ตัวอย่าง",
+          "download": "ดาวน์โหลด",
+          "copyToMyFiles": "คัดลอกไปยังไฟล์ของฉัน",
+          "copying": "กำลังคัดลอก..."
+        },
+        "uploadedBy": "อัปโหลดโดย {name}",
+        "anonymous": "ไม่ระบุตัวตน",
+        "downloadSuccess": "เริ่มดาวน์โหลดแล้ว",
+        "downloadError": "เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์",
+        "editSuccess": "อัปเดตไฟล์เรียบร้อยแล้ว",
+        "editError": "เกิดข้อผิดพลาดในการอัปเดตไฟล์",
+        "previewNotAvailable": "ไม่มีตัวอย่างพร้อมใช้งาน",
+        "copySuccess": "คัดลอกไฟล์ไปยังไฟล์ของคุณเรียบร้อยแล้ว",
+        "copyError": "เกิดข้อผิดพลาดในการคัดลอกไฟล์ไปยังไฟล์ของคุณ",
+        "deleteSuccess": "ลบไฟล์เรียบร้อยแล้ว",
+        "deleteError": "เกิดข้อผิดพลาดในการลบไฟล์",
+        "bulkCopySuccess": "{count, plural, =1 {คัดลอก 1 ไฟล์ไปยังไฟล์ของคุณเรียบร้อยแล้ว} other {คัดลอก # ไฟล์ไปยังไฟล์ของคุณเรียบร้อยแล้ว}}",
+        "bulkDeleteSuccess": "{count, plural, =1 {ลบ 1 ไฟล์เรียบร้อยแล้ว} other {ลบ # ไฟล์เรียบร้อยแล้ว}}",
+        "bulkCopyProgress": "กำลังคัดลอก {count, plural, =1 {1 ไฟล์} other {# ไฟล์}} ไปยังไฟล์ของคุณ...",
+        "bulkDeleteProgress": "กำลังลบ {count, plural, =1 {1 ไฟล์} other {# ไฟล์}}...",
+        "bulkDeleteConfirmTitle": "ลบไฟล์ที่เลือก",
+        "bulkDeleteConfirmMessage": "คุณแน่ใจหรือไม่ว่าต้องการลบ {count, plural, =1 {ไฟล์นี้} other {ไฟล์ # นี้}}? ไม่สามารถเลิกทำการกระทำนี้ได้",
+        "bulkDeleteConfirmButton": "ลบ {count, plural, =1 {ไฟล์} other {ไฟล์}}",
+        "bulkActions": {
+          "selected": "{count, plural, =1 {เลือก 1 ไฟล์} other {เลือก # ไฟล์}}",
+          "actions": "การกระทำ",
+          "download": "ดาวน์โหลดที่เลือก",
+          "copyToMyFiles": "คัดลอกที่เลือกไปยังไฟล์ของฉัน",
+          "delete": "ลบที่เลือก"
+        },
+        "selectAll": "เลือกทั้งหมด",
+        "selectFile": "เลือกไฟล์ {fileName}",
+        "copyErrors": {
+          "timeout": "หมดเวลาการคัดลอก โปรดลองใหม่ด้วยไฟล์ที่เล็กกว่าหรือตรวจสอบการเชื่อมต่อของคุณ",
+          "failed": "การคัดลอกล้มเหลว โปรดลองใหม่",
+          "aborted": "การคัดลอกถูกยกเลิกเนื่องจากหมดเวลา"
+        }
+      }
+    },
+    "form": {
+      "name": {
+        "label": "ชื่อลิงค์",
+        "placeholder": "เช่น เอกสารโครงการ ภาพครอบครัว..."
+      },
+      "description": {
+        "label": "คำอธิบาย",
+        "placeholder": "อธิบายว่าคุณคาดหวังให้ส่งไฟล์ประเภทใด...",
+        "description": "ไม่บังคับ ช่วยให้คนเข้าใจว่าจะส่งอะไร"
+      },
+      "status": {
+        "label": "สถานะลิงค์",
+        "description": "เปิดใช้งานหรือปิดใช้งานลิงค์การรับนี้"
+      },
+      "expiration": {
+        "label": "วันที่หมดอายุ",
+        "description": "ไม่บังคับ ลิงค์จะปิดใช้งานหลังจากวันที่นี้",
+        "configure": "ตั้งค่าการหมดอายุ"
+      },
+      "fileLimits": {
+        "configure": "ตั้งค่าขีดจำกัดไฟล์"
+      },
+      "maxFiles": {
+        "label": "ไฟล์สูงสุด",
+        "placeholder": "เช่น 10",
+        "description": "ไม่บังคับ จำกัดจำนวนไฟล์ทั้งหมดที่สามารถส่งได้",
+        "noLimit": "ไม่มีขีดจำกัดไฟล์"
+      },
+      "maxFileSize": {
+        "label": "ขนาดไฟล์สูงสุด",
+        "placeholder": "เช่น 100",
+        "description": "ไม่บังคับ จำกัดขนาดของแต่ละไฟล์",
+        "noLimit": "ไม่มีขีดจำกัดขนาด"
+      },
+      "allowedFileTypes": {
+        "label": "ประเภทไฟล์ที่อนุญาต",
+        "placeholder": "เช่น pdf, jpg, png, docx",
+        "description": "ป้อนนามสกุลโดยไม่มีจุด คั่นด้วยช่องว่าง ลูกน้ำ ขีดกลาง หรือท่อ",
+        "allTypes": "ไฟล์ทุกประเภท"
+      },
+      "pageLayout": {
+        "label": "เค้าโครงหน้า",
+        "placeholder": "เลือกเค้าโครง",
+        "description": "วิธีการปรากฏของหน้าการอัปโหลดต่อผู้ใช้",
+        "options": {
+          "default": "เค้าโครงค่าเริ่มต้น",
+          "wetransfer": "สไตล์ WeTransfer"
+        }
+      },
+      "password": {
+        "label": "รหัสผ่านการป้องกัน",
+        "placeholder": "ไม่บังคับ เพิ่มรหัสผ่านเพื่อปกป้องลิงค์",
+        "description": "ไม่บังคับ ผู้ใช้จะต้องมีรหัสผ่านนี้เพื่อเข้าถึงลิงค์",
+        "configurePassword": "ตั้งค่ารหัสผ่าน",
+        "protectWithPassword": "ปกป้องด้วยรหัสผ่าน",
+        "passwordHelp": "รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร",
+        "passwordPlaceholder": "ป้อนรหัสผ่านเพื่อปกป้องลิงค์"
+      },
+      "nameFieldRequired": {
+        "label": "ข้อกำหนดของฟิลด์ชื่อ",
+        "description": "ตั้งค่าว่าควรแสดงฟิลด์ชื่อผู้อัปโหลดหรือไม่และจำเป็นหรือไม่"
+      },
+      "emailFieldRequired": {
+        "label": "ข้อกำหนดของฟิลด์อีเมล",
+        "description": "ตั้งค่าว่าควรแสดงฟิลด์อีเมลผู้อัปโหลดหรือไม่และจำเป็นหรือไม่"
+      },
+      "fieldRequirements": {
+        "title": "ข้อกำหนดฟิลด์",
+        "description": "ตั้งค่าฟิลด์ใดที่จะแสดงในแบบฟอร์มการอัปโหลด"
+      },
+      "submit": "สร้างลิงค์การรับ"
+    },
+    "messages": {
+      "created": "สร้างลิงค์การรับเรียบร้อยแล้ว!",
+      "createSuccess": "สร้างลิงค์การรับเรียบร้อยแล้ว!",
+      "updateSuccess": "อัปเดตลิงค์การรับเรียบร้อยแล้ว!",
+      "linkCopied": "คัดลอกลิงค์ไปยังคลิปบอร์ดแล้ว!",
+      "deleteSuccess": "ลบลิงค์การรับเรียบร้อยแล้ว!",
+      "aliasCreated": "สร้างนามแฝงเรียบร้อยแล้ว!",
+      "activateSuccess": "เปิดใช้งานลิงค์การรับเรียบร้อยแล้ว!",
+      "deactivateSuccess": "ปิดใช้งานลิงค์การรับเรียบร้อยแล้ว!",
+      "passwordProtectionEnabled": "เปิดใช้งานการป้องกันด้วยรหัสผ่านเรียบร้อยแล้ว!",
+      "passwordProtectionDisabled": "นำออกการป้องกันด้วยรหัสผ่านเรียบร้อยแล้ว!"
+    },
+    "defaultLinkName": "ไฟล์ที่ได้รับ",
+    "errors": {
+      "loadFailed": "ไม่สามารถโหลดลิงค์การรับ",
+      "createFailed": "ไม่สามารถสร้างลิงค์การรับ โปรดลองใหม่",
+      "updateFailed": "ไม่สามารถอัปเดตลิงค์การรับ โปรดลองใหม่",
+      "deleteFailed": "ไม่สามารถลบลิงค์การรับ โปรดลองใหม่",
+      "aliasCreateFailed": "ไม่สามารถสร้างนามแฝง โปรดลองใหม่",
+      "passwordUpdateFailed": "ไม่สามารถอัปเดตการป้องกันด้วยรหัสผ่าน"
+    },
+    "delete": {
+      "title": "ลบลิงค์การรับ",
+      "description": "ไม่สามารถเลิกทำการกระทำนี้ได้ ลิงค์จะถูกลบอย่างถาวรและจะไม่สามารถรับไฟล์ได้อีกต่อไป",
+      "confirmButton": "ลบลิงค์",
+      "cancelButton": "ยกเลิก",
+      "deleting": "กำลังลบ..."
+    },
+    "upload": {
+      "metadata": {
+        "title": "ส่งไฟล์ - Palmr",
+        "description": "ส่งไฟล์ผ่านลิงค์ที่แชร์",
+        "descriptionWithLimit": "อัปโหลดไฟล์ (ไฟล์สูงสุด {limit} ไฟล์)"
+      },
+      "layout": {
+        "defaultTitle": "ส่งไฟล์",
+        "importantInfo": "ข้อมูลสำคัญ:",
+        "maxFiles": "ไฟล์สูงสุด {count} ไฟล์",
+        "maxFileSize": "ขนาดไฟล์สูงสุด: {size}MB",
+        "allowedTypes": "ประเภทที่อนุญาต: {types}",
+        "loading": "กำลังโหลด..."
+      },
+      "password": {
+        "title": "ลิงค์ป้องกัน",
+        "description": "ลิงค์นี้ปกป้องด้วยรหัสผ่าน ป้อนรหัสผ่านเพื่อดำเนิน",
+        "label": "รหัสผ่าน",
+        "placeholder": "ป้อนรหัสผ่าน",
+        "cancel": "ยกเลิก",
+        "submit": "ดำเนิน",
+        "verifying": "กำลังตรวจสอบ..."
+      },
+      "errors": {
+        "loadFailed": "ไม่สามารถโหลดข้อมูล โปรดลองใหม่",
+        "passwordIncorrect": "รหัสผ่านไม่ถูกต้อง โปรดลองใหม่",
+        "linkNotFound": "ไม่พบลิงค์หรือหมดอายุ",
+        "linkInactive": "ลิงค์นี้ไม่ใช้งาน",
+        "linkExpired": "ลิงค์นี้หมดอายุ",
+        "uploadFailed": "เกิดข้อผิดพลาดในการอัปโหลดไฟล์",
+        "retry": "ลองใหม่",
+        "fileTooLarge": "ไฟล์ขนาดใหญ่เกินไป ขนาดสูงสุด: {maxSize}",
+        "fileTypeNotAllowed": "ประเภทไฟล์ไม่ได้รับอนุญาต ประเภทที่ยอมรับ: {allowedTypes}",
+        "maxFilesExceeded": "อนุญาตได้ไม่เกิน {maxFiles} ไฟล์",
+        "selectAtLeastOneFile": "เลือกไฟล์อย่างน้อยหนึ่งไฟล์",
+        "provideNameOrEmail": "โปรดระบุชื่อหรืออีเมลของคุณ",
+        "provideNameRequired": "ต้องระบุชื่อ",
+        "provideEmailRequired": "ต้องระบุอีเมล"
+      },
+      "fileDropzone": {
+        "dragActive": "วางไฟล์ที่นี่",
+        "dragInactive": "ลากไฟล์ที่นี่หรือคลิกเพื่อเลือก",
+        "acceptedTypes": "ประเภทที่ยอมรับ: {types}",
+        "maxFileSize": "ขนาดสูงสุด: {size}",
+        "maxFiles": "ไฟล์สูงสุด {count} ไฟล์",
+        "remainingFiles": "{remaining} จาก {max} ไฟล์ที่เหลือ"
+      },
+      "fileList": {
+        "title": "ไฟล์ที่เลือก:",
+        "statusUploaded": "อัปโหลดแล้ว",
+        "statusError": "ข้อผิดพลาด",
+        "retry": "ลองใหม่"
+      },
+      "form": {
+        "nameLabel": "ชื่อ",
+        "nameLabelOptional": "ชื่อ (ไม่บังคับ)",
+        "namePlaceholder": "ชื่อของคุณ",
+        "emailLabel": "อีเมล",
+        "emailLabelOptional": "อีเมล (ไม่บังคับ)",
+        "emailPlaceholder": "your@email.com",
+        "descriptionLabel": "คำอธิบาย (ไม่บังคับ)",
+        "descriptionPlaceholder": "เพิ่มคำอธิบายสำหรับไฟล์...",
+        "uploadButton": "ส่ง {count} ไฟล์",
+        "uploading": "กำลังส่ง..."
+      },
+      "success": {
+        "title": "ส่งไฟล์เรียบร้อยแล้ว! 🎉",
+        "description": "คุณสามารถปิดหน้านี้ได้",
+        "countMessage": "{count} ไฟล์ส่งเรียบร้อยแล้ว!"
+      },
+      "maxFilesReached": {
+        "title": "ถึงขีดจำกัดไฟล์",
+        "description": "ลิงค์นี้ได้รับไฟล์ทั้งหมด {maxFiles} ไฟล์ที่อนุญาต",
+        "contactOwner": "หากมีข้อผิดพลาดหรือต้องการส่งไฟล์เพิ่มเติม โปรดติดต่อเจ้าของลิงค์"
+      },
+      "linkInactive": {
+        "title": "ลิงค์ไม่ใช้งาน",
+        "description": "ลิงค์การรับนี้ปิดใช้งานชั่วคราว",
+        "contactOwner": "โปรดติดต่อเจ้าของลิงค์เพื่อข้อมูลเพิ่มเติม"
+      },
+      "linkNotFound": {
+        "title": "ไม่พบลิงค์",
+        "description": "ลิงค์นี้อาจถูกลบหรือไม่เคยมีอยู่"
+      },
+      "linkExpired": {
+        "title": "ลิงค์หมดอายุ",
+        "description": "ลิงค์การรับนี้หมดอายุและไม่ยอมรับไฟล์อีกต่อไป",
+        "contactOwner": "โปรดติดต่อเจ้าของลิงค์หากคุณต้องการส่งไฟล์"
+      }
+    },
+    "components": {
+      "fileRow": {
+        "addDescription": "เพิ่มคำอธิบาย...",
+        "anonymous": "ไม่ระบุตัวตน"
+      },
+      "fileActions": {
+        "edit": "แก้ไข",
+        "preview": "ตัวอย่าง",
+        "download": "ดาวน์โหลด",
+        "delete": "ลบ",
+        "copyToMyFiles": "คัดลอกไปยังไฟล์ของฉัน",
+        "copying": "กำลังคัดลอก..."
+      },
+      "editField": {
+        "saveChanges": "บันทึกการเปลี่ยนแปลง",
+        "cancelEdit": "ยกเลิกการแก้ไข"
+      }
+    }
+  },
+  "searchBar": {
+    "placeholder": "ค้นหาไฟล์และโฟลเดอร์...",
+    "placeholderFiles": "ค้นหาไฟล์...",
+    "placeholderFolders": "ค้นหาโฟลเดอร์...",
+    "results": "แสดง {filtered} จาก {total} รายการ",
+    "noResults": "ไม่พบผลลัพธ์สำหรับ \"{query}\""
+  },
+  "settings": {
+    "groups": {
+      "defaultDescription": "ตัวเลือกการตั้งค่า",
+      "general": {
+        "title": "ทั่วไป",
+        "description": "การตั้งค่าแอปพลิเคชันขั้นพื้นฐาน"
+      },
+      "email": {
+        "title": "อีเมล",
+        "description": "การตั้งค่าเซิร์ฟเวอร์อีเมล"
+      },
+      "security": {
+        "title": "ความปลอดภัย",
+        "description": "การตั้งค่าความปลอดภัยและการยืนยันตัวตน"
+      },
+      "storage": {
+        "title": "จัดเก็บข้อมูล",
+        "description": "การตั้งค่าการจัดเก็บไฟล์"
+      },
+      "oidc": {
+        "title": "OpenID Connect (SSO)",
+        "description": "ตั้งค่า SSO ผ่าน OpenID Connect"
+      }
+    },
+    "fields": {
+      "noDescription": "ไม่มีคำอธิบายพร้อมใช้งาน",
+      "appLogo": {
+        "title": "โลโก้แอปพลิเคชัน",
+        "description": "รูปภาพโลโก้แอปพลิเคชัน"
+      },
+      "appName": {
+        "title": "ชื่อแอปพลิเคชัน",
+        "description": "ชื่อแอปพลิเคชันที่แสดงให้ผู้ใช้"
+      },
+      "appDescription": {
+        "title": "คำอธิบายแอปพลิเคชัน",
+        "description": "คำอธิบายสั้นของแอปพลิเคชัน"
+      },
+      "showHomePage": {
+        "title": "แสดงหน้าแรก",
+        "description": "แสดงหน้าแรกหลังการติดตั้ง"
+      },
+      "hideVersion": {
+        "title": "ซ่อนเวอร์ชัน",
+        "description": "ซ่อนเวอร์ชัน Palmr จากท้ายเพจ"
+      },
+      "smtpEnabled": {
+        "title": "เปิดใช้งาน SMTP",
+        "description": "เปิดหรือปิดใช้งานการทำงาน SMTP"
+      },
+      "smtpHost": {
+        "title": "เซิร์ฟเวอร์ SMTP",
+        "description": "ที่อยู่เซิร์ฟเวอร์ SMTP"
+      },
+      "smtpPort": {
+        "title": "พอร์ต SMTP",
+        "description": "พอร์ตเซิร์ฟเวอร์ SMTP"
+      },
+      "smtpUser": {
+        "title": "ชื่อผู้ใช้ SMTP",
+        "description": "ชื่อผู้ใช้สำหรับการยืนยันตัวตน SMTP"
+      },
+      "smtpPass": {
+        "title": "รหัสผ่าน SMTP",
+        "description": "รหัสผ่านสำหรับการยืนยันตัวตน SMTP"
+      },
+      "smtpFromName": {
+        "title": "ชื่อผู้ส่ง",
+        "description": "ชื่อที่แสดงสำหรับอีเมลที่ส่ง"
+      },
+      "smtpFromEmail": {
+        "title": "อีเมลผู้ส่ง",
+        "description": "ที่อยู่อีเมลผู้ส่ง"
+      },
+      "smtpSecure": {
+        "title": "ความปลอดภัยการเชื่อมต่อ",
+        "description": "วิธีการความปลอดภัยการเชื่อมต่อ SMTP - Auto (แนะนำ) SSL STARTTLS หรือ None (ไม่ปลอดภัย)",
+        "options": {
+          "auto": "Auto (แนะนำ)",
+          "ssl": "SSL (พอร์ต 465)",
+          "tls": "STARTTLS (พอร์ต 587)",
+          "none": "ไม่มี (ไม่ปลอดภัย)"
+        }
+      },
+      "smtpNoAuth": {
+        "title": "ไม่มีการยืนยันตัวตน",
+        "description": "เปิดใช้งานสำหรับเซิร์ฟเวอร์ภายในที่ไม่ต้องชื่อผู้ใช้/รหัสผ่าน (ซ่อนฟิลด์การยืนยันตัวตน)"
+      },
+      "smtpTrustSelfSigned": {
+        "title": "เชื่อถือใบรับรอง Self-Signed",
+        "description": "เปิดใช้งานเพื่อเชื่อถือใบรับรอง SSL/TLS แบบ self-signed (มีประโยชน์สำหรับสภาวะการพัฒนา)"
+      },
+      "testSmtp": {
+        "title": "ทดสอบการเชื่อมต่อ SMTP",
+        "description": "ทดสอบว่าการตั้งค่า SMTP ถูกต้องหรือไม่"
+      },
+      "maxLoginAttempts": {
+        "title": "การพยายามเข้าสู่ระบบสูงสุด",
+        "description": "จำนวนการพยายามเข้าสู่ระบบสูงสุดก่อนที่จะถูกบล็อก"
+      },
+      "loginBlockDuration": {
+        "title": "ระยะเวลาบล็อก",
+        "description": "ระยะเวลา (เป็นวินาที) เพื่อบล็อกหลังจากเกินการพยายาม"
+      },
+      "passwordMinLength": {
+        "title": "ความยาวรหัสผ่านขั้นต่ำ",
+        "description": "จำนวนตัวอักษรขั้นต่ำสำหรับรหัสผ่าน"
+      },
+      "passwordResetTokenExpiration": {
+        "title": "การหมดอายุของโทเค็นรีเซ็ต",
+        "description": "เวลาที่ใช้ได้ (เป็นวินาที) สำหรับโทเค็นรีเซ็ตรหัสผ่าน"
+      },
+      "maxFileSize": {
+        "title": "ขนาดไฟล์สูงสุด",
+        "description": "ขนาดไฟล์สูงสุดที่อนุญาตสำหรับการอัปโหลด"
+      },
+      "maxTotalStoragePerUser": {
+        "title": "จัดเก็บสูงสุดต่อผู้ใช้",
+        "description": "ขีดจำกัดการจัดเก็บทั้งหมดต่อผู้ใช้"
+      },
+      "firstUserAccess": {
+        "title": "การเข้าถึงผู้ใช้คนแรก",
+        "description": "การตั้งค่าสำหรับการเข้าถึงครั้งแรกของผู้ใช้ใหม่"
+      },
+      "serverUrl": {
+        "title": "URL เซิร์ฟเวอร์",
+        "description": "URL ฐานของเซิร์ฟเวอร์ Palmr (เช่น https://palmr.example.com)"
+      },
+      "passwordAuthEnabled": {
+        "title": "การยืนยันตัวตนด้วยรหัสผ่าน",
+        "description": "เปิดหรือปิดใช้งานการยืนยันตัวตนโดยใช้รหัสผ่าน"
+      }
+    },
+    "buttons": {
+      "save": "บันทึก {group}",
+      "testSmtp": "ทดสอบการเชื่อมต่อ",
+      "testing": "กำลังทดสอบ..."
+    },
+    "errors": {
+      "loadFailed": "ไม่สามารถโหลดการตั้งค่า",
+      "updateFailed": "ไม่สามารถอัปเดตการตั้งค่า",
+      "passwordAuthRequiresProvider": "ไม่สามารถปิดใช้งานการยืนยันตัวตนด้วยรหัสผ่านโดยไม่มีผู้ให้บริการยืนยันตัวตนที่ใช้งานอยู่"
+    },
+    "messages": {
+      "noChanges": "ไม่มีการเปลี่ยนแปลง",
+      "updateSuccess": "อัปเดตการตั้งค่า {group} เรียบร้อยแล้ว",
+      "smtpTestSuccess": "การเชื่อมต่อ SMTP สำเร็จ! การตั้งค่าอีเมลของคุณใช้งานได้ถูกต้อง",
+      "smtpTestFailed": "การเชื่อมต่อ SMTP ล้มเหลว: {error}",
+      "smtpTestGenericError": "ไม่สามารถทดสอบการเชื่อมต่อ SMTP โปรดตรวจสอบการตั้งค่าของคุณแล้วลองใหม่",
+      "smtpNotEnabled": "ปิดใช้งาน SMTP แล้ว โปรดเปิดใช้งาน SMTP ก่อน",
+      "smtpMissingHostPort": "โปรดกรอกพอร์ต SMTP Host และ SMTP ก่อนทดสอบ",
+      "smtpMissingAuth": "โปรดกรอกชื่อผู้ใช้ SMTP และรหัสผ่าน หรือเปิดใช้งานตัวเลือก 'ไม่มีการยืนยันตัวตน'"
+    },
+    "title": "การตั้งค่า",
+    "breadcrumb": "การตั้งค่า",
+    "pageTitle": "การตั้งค่า",
+    "tooltips": {
+      "testSmtp": "ทดสอบการเชื่อมต่อ SMTP ด้วยค่าที่ป้อนในแบบฟอร์ม หากต้องการให้การเปลี่ยนแปลงถาวร อย่าลืมบันทึกการตั้งค่าหลังจากการทดสอบ",
+      "defaultPlaceholder": "ป้อนและกด Enter"
+    },
+    "redirectUri": {
+      "placeholder": "https://mysite.com",
+      "previewLabel": "URL ที่สมบูรณ์ที่จะบันทึก:"
+    }
+  },
+  "share": {
+    "errors": {
+      "invalidPassword": "รหัสผ่านไม่ถูกต้อง โปรดลองอีกครั้ง",
+      "loadFailed": "ไม่สามารถโหลดแชร์",
+      "downloadFailed": "ไม่สามารถดาวน์โหลดไฟล์"
+    },
+    "messages": {
+      "downloadStarted": "เริ่มดาวน์โหลดแล้ว"
+    },
+    "password": {
+      "title": "แชร์ที่ป้องกันด้วยรหัสผ่าน",
+      "protected": "แชร์นี้ป้องกันด้วยรหัสผ่าน",
+      "incorrect": "รหัสผ่านไม่ถูกต้อง โปรดลองอีกครั้ง",
+      "label": "รหัสผ่าน",
+      "placeholder": "ป้อนรหัสผ่านของแชร์",
+      "submit": "ส่ง"
+    },
+    "details": {
+      "untitled": "แชร์ที่ไม่มีชื่อ",
+      "created": "สร้างเมื่อ: {date}",
+      "expires": "หมดอายุ: {date}"
+    },
+    "downloadAll": "ดาวน์โหลดทั้งหมด",
+    "notFound": {
+      "title": "ไม่พบแชร์",
+      "description": "แชร์นี้อาจถูกลบหรือหมดอายุแล้ว"
+    },
+    "pageTitle": "แชร์",
+    "metadata": {
+      "defaultDescription": "แชร์ไฟล์อย่างปลอดภัย",
+      "filesShared": "{count, plural, =1 {แชร์ 1 ไฟล์} other {แชร์ # ไฟล์}}"
+    }
+  },
+  "shareActions": {
+    "fileTitle": "แชร์ไฟล์",
+    "folderTitle": "แชร์โฟลเดอร์",
+    "linkTitle": "สร้างลิงก์",
+    "linkDescriptionFile": "สร้างลิงก์ที่เป็นเอกลักษณ์เพื่อแชร์ไฟล์",
+    "linkDescriptionFolder": "สร้างลิงก์ที่เป็นเอกลักษณ์เพื่อแชร์โฟลเดอร์",
+    "aliasLabel": "นามแฝงลิงก์",
+    "aliasPlaceholder": "ป้อนนามแฝงที่เป็นเอกลักษณ์",
+    "linkReady": "ลิงก์แชร์ของคุณพร้อมแล้ว:",
+    "generateLink": "สร้างลิงก์",
+    "copyLink": "คัดลอกลิงก์",
+    "deleteTitle": "ลบแชร์",
+    "deleteConfirmation": "คุณแน่ใจว่าต้องการลบแชร์นี้หรือไม่? ไม่สามารถเลิกทำการกระทำนี้ได้",
+    "addDescriptionPlaceholder": "เพิ่มคำอธิบาย...",
+    "editTitle": "แก้ไขแชร์",
+    "newPasswordLabel": "รหัสผ่านใหม่ (ปล่อยว่างไว้เพื่อเก็บรหัสผ่านปัจจุบัน)",
+    "newPasswordPlaceholder": "ป้อนรหัสผ่านใหม่",
+    "manageFilesTitle": "จัดการไฟล์",
+    "manageFilesDescription": "เลือกไฟล์และโฟลเดอร์ที่จะรวมในแชร์นี้",
+    "manageRecipientsTitle": "จัดการผู้รับ",
+    "itemsSelected": "เลือก {count} รายการแล้ว",
+    "editSuccess": "อัปเดตแชร์เรียบร้อยแล้ว",
+    "editError": "ไม่สามารถอัปเดตแชร์",
+    "bulkDeleteConfirmation": "คุณแน่ใจว่าต้องการลบ {count, plural, =1 {1 แชร์} other {# แชร์}} หรือไม่? ไม่สามารถเลิกทำการกระทำนี้ได้",
+    "bulkDeleteTitle": "ลบแชร์ที่เลือก"
+  },
+  "shareDetails": {
+    "title": "รายละเอียดแชร์",
+    "subtitle": "ดูและจัดการรายละเอียดแชร์นี้",
+    "basicInfo": "ข้อมูลพื้นฐาน",
+    "name": "ชื่อ",
+    "description": "คำอธิบาย",
+    "shareLink": "ลิงก์แชร์",
+    "dates": "วันที่",
+    "security": "ความปลอดภัย",
+    "files": "ไฟล์",
+    "recipients": "ผู้รับ",
+    "views": "มุมมอง",
+    "created": "สร้างเมื่อ",
+    "expires": "หมดอายุ",
+    "never": "ไม่เคย",
+    "untitled": "แชร์ที่ไม่มีชื่อ",
+    "noDescription": "ไม่มีคำอธิบาย",
+    "notAvailable": "ไม่พร้อมใช้งาน",
+    "invalidDate": "วันที่ไม่ถูกต้อง",
+    "passwordProtected": "ป้องกันด้วยรหัสผ่าน",
+    "publicAccess": "การเข้าถึงสาธารณะ",
+    "maxViews": "มุมมองสูงสุด:",
+    "noLink": "ไม่มีลิงก์ที่สร้าง",
+    "generateLink": "สร้างลิงก์",
+    "editLink": "แก้ไขลิงก์",
+    "copyLink": "คัดลอกลิงก์",
+    "openLink": "เปิดลิงก์",
+    "editSecurity": "แก้ไขความปลอดภัย",
+    "editExpiration": "แก้ไขการหมดอายุ",
+    "qrCode": "รหัส QR",
+    "downloadQrCode": "ดาวน์โหลดรหัส QR",
+    "clickToEnlargeQrCode": "คลิกเพื่อขยายรหัส QR",
+    "loadError": "ไม่สามารถโหลดรายละเอียดแชร์"
+  },
+  "shareExpiration": {
+    "title": "การตั้งค่าการหมดอายุของแชร์",
+    "subtitle": "กำหนดเวลาที่แชร์นี้จะหมดอายุ",
+    "currentStatus": "สถานะปัจจุบัน",
+    "expires": "หมดอายุ:",
+    "neverExpires": "ไม่เคยหมดอายุ",
+    "enableExpiration": "เปิดใช้งานการหมดอายุ",
+    "expirationDate": "วันที่หมดอายุ",
+    "validation": {
+      "dateRequired": "โปรดเลือกวันที่หมดอายุ",
+      "dateMustBeFuture": "วันที่หมดอายุต้องเป็นวันข้างหน้า"
+    },
+    "success": {
+      "expirationSet": "ตั้งวันที่หมดอายุเรียบร้อยแล้ว",
+      "expirationUpdated": "อัปเดตวันที่หมดอายุเรียบร้อยแล้ว",
+      "expirationRemoved": "ลบการหมดอายุเรียบร้อยแล้ว - แชร์นี้เป็นแบบถาวรแล้ว"
+    },
+    "error": {
+      "updateFailed": "ไม่สามารถอัปเดตการตั้งค่าการหมดอายุ"
+    },
+    "info": {
+      "title": "เกี่ยวกับการหมดอายุ:",
+      "willBeInaccessible": "แชร์จะไม่สามารถเข้าถึงได้หลังจากวันที่นี้",
+      "canBeChanged": "คุณสามารถเปลี่ยนแปลงหรือลบวันที่หมดอายุได้ตลอดเวลา",
+      "noExpiration": "แชร์นี้จะไม่เคยหมดอายุและจะยังคงสามารถเข้าถึงได้อย่างไม่มีกำหนด"
+    }
+  },
+  "shareManager": {
+    "deleteSuccess": "ลบแชร์เรียบร้อยแล้ว",
+    "deleteError": "ไม่สามารถลบแชร์",
+    "updateSuccess": "อัปเดตแชร์เรียบร้อยแล้ว",
+    "updateError": "ไม่สามารถอัปเดตแชร์",
+    "securityUpdateSuccess": "อัปเดตการตั้งค่าความปลอดภัยเรียบร้อยแล้ว",
+    "securityUpdateError": "ไม่สามารถอัปเดตการตั้งค่าความปลอดภัย",
+    "expirationUpdateSuccess": "อัปเดตการตั้งค่าการหมดอายุเรียบร้อยแล้ว",
+    "expirationUpdateError": "ไม่สามารถอัปเดตการตั้งค่าการหมดอายุ",
+    "filesUpdateSuccess": "อัปเดตไฟล์เรียบร้อยแล้ว",
+    "filesUpdateError": "ไม่สามารถอัปเดตไฟล์",
+    "recipientsUpdateSuccess": "อัปเดตผู้รับเรียบร้อยแล้ว",
+    "recipientsUpdateError": "ไม่สามารถอัปเดตผู้รับ",
+    "linkGenerateSuccess": "สร้างลิงก์แชร์เรียบร้อยแล้ว",
+    "linkGenerateError": "ไม่สามารถสร้างลิงก์แชร์",
+    "notifyLoading": "กำลังส่งการแจ้งเตือน...",
+    "notifySuccess": "แจ้งให้ผู้รับทราบเรียบร้อยแล้ว",
+    "notifyError": "ไม่สามารถแจ้งให้ผู้รับทราบ",
+    "bulkDeleteError": "ไม่สามารถลบแชร์",
+    "bulkDeleteLoading": "กำลังลบ {count, plural, =1 {1 แชร์} other {# แชร์}}...",
+    "bulkDeleteSuccess": "{count, plural, =1 {ลบ 1 แชร์เรียบร้อยแล้ว} other {ลบ # แชร์เรียบร้อยแล้ว}}",
+    "downloadSuccess": "เริ่มการดาวน์โหลดเรียบร้อยแล้ว",
+    "downloadError": "ไม่สามารถดาวน์โหลดไฟล์แชร์",
+    "noFilesToDownload": "ไม่มีไฟล์ที่พร้อมใช้งานสำหรับการดาวน์โหลด",
+    "creatingZip": "กำลังสร้างไฟล์ ZIP...",
+    "zipDownloadSuccess": "ดาวน์โหลดไฟล์ ZIP เรียบร้อยแล้ว",
+    "zipDownloadError": "ไม่สามารถสร้างไฟล์ ZIP",
+    "errors": {
+      "multipleDownloadNotSupported": "ยังไม่รองรับการดาวน์โหลดแชร์หลายรายการ - โปรดดาวน์โหลดแชร์เป็นรายบุคคล"
+    },
+    "singleShareZipName": "{shareName}_ไฟล์.zip",
+    "multipleSharesZipName": "{count}_แชร์_ไฟล์.zip",
+    "defaultShareName": "แชร์"
+  },
+  "shareMultipleFiles": {
+    "title": "แชร์ไฟล์หลายรายการ",
+    "shareNameLabel": "ชื่อแชร์",
+    "shareNamePlaceholder": "ป้อนชื่อแชร์",
+    "descriptionLabel": "คำอธิบาย",
+    "descriptionPlaceholder": "ป้อนคำอธิบาย (เสริม)",
+    "filesToShare": "ไฟล์ที่จะแชร์",
+    "files": "ไฟล์",
+    "totalSize": "ขนาดทั้งหมด",
+    "creating": "กำลังสร้างแชร์...",
+    "create": "สร้างแชร์",
+    "itemsToShare": "รายการที่จะแชร์ ({count} {count, plural, =1 {รายการ} other {รายการ}})"
+  },
+  "shareSecurity": {
+    "title": "การตั้งค่าความปลอดภัยแชร์",
+    "subtitle": "กำหนดค่าการป้องกันด้วยรหัสผ่านและตัวเลือกความปลอดภัยสำหรับแชร์นี้",
+    "currentStatus": "สถานะปัจจุบัน",
+    "passwordProtection": "การป้องกันด้วยรหัสผ่าน",
+    "password": "รหัสผ่าน",
+    "newPassword": "รหัสผ่านใหม่",
+    "passwordPlaceholder": "ป้อนรหัสผ่านที่ปลอดภัย",
+    "existingPasswordMessage": "แชร์นี้มีรหัสผ่านอยู่แล้ว หากต้องการอัปเดต ให้ป้อนรหัสผ่านใหม่ในช่องด้านล่างและบันทึก",
+    "passwordRequirements": {
+      "title": "ข้อกำหนดรหัสผ่าน:",
+      "minLength": "อย่างน้อย 2 ตัวอักษร"
+    },
+    "info": {
+      "title": "วิธีการทำงาน:",
+      "withPassword": "ผู้ใช้จะต้องป้อนรหัสผ่านเพื่อเข้าถึงแชร์นี้",
+      "withoutPassword": "ทุกคนที่มีลิงก์สามารถเข้าถึงแชร์นี้ได้โดยไม่ต้องใช้รหัสผ่าน"
+    },
+    "validation": {
+      "passwordRequired": "จำเป็นต้องมีรหัสผ่าน",
+      "passwordTooShort": "รหัสผ่านต้องมีความยาวอย่างน้อย 2 ตัวอักษร"
+    },
+    "success": {
+      "passwordSet": "เปิดใช้งานการป้องกันด้วยรหัสผ่านเรียบร้อยแล้ว",
+      "passwordUpdated": "อัปเดตรหัสผ่านเรียบร้อยแล้ว",
+      "passwordRemoved": "ลบการป้องกันด้วยรหัสผ่านเรียบร้อยแล้ว"
+    },
+    "error": {
+      "updateFailed": "ไม่สามารถอัปเดตการตั้งค่าความปลอดภัย"
+    }
+  },
+  "shares": {
+    "errors": {
+      "loadFailed": "ไม่สามารถโหลดแชร์",
+      "notifyFailed": "ไม่สามารถแจ้งให้ผู้รับทราบ",
+      "smtpConfigFailed": "ไม่สามารถโหลดการตั้งค่า SMTP"
+    },
+    "messages": {
+      "linkCopied": "คัดลอกลิงก์ลงในคลิปบอร์ดแล้ว",
+      "recipientsNotified": "แจ้งให้ผู้รับทราบเรียบร้อยแล้ว"
+    },
+    "empty": {
+      "message": "ยังไม่ได้สร้างแชร์ใด ๆ",
+      "createButton": "สร้างแชร์"
+    },
+    "header": {
+      "title": "แชร์ของฉัน",
+      "myShares": "แชร์ของฉัน"
+    },
+    "search": {
+      "title": "แชร์ทั้งหมด",
+      "createButton": "สร้างแชร์",
+      "placeholder": "ค้นหาแชร์...",
+      "results": "พบ {filtered} จาก {total} แชร์"
+    },
+    "pageTitle": "แชร์"
+  },
+  "sharesTable": {
+    "ariaLabel": "ตารางแชร์",
+    "never": "ไม่เคย",
+    "columns": {
+      "name": "ชื่อ",
+      "description": "คำอธิบาย",
+      "createdAt": "สร้างเมื่อ",
+      "expiresAt": "หมดอายุ",
+      "status": "สถานะ",
+      "security": "ความปลอดภัย",
+      "files": "ไฟล์",
+      "recipients": "ผู้รับ",
+      "actions": "การกระทำ"
+    },
+    "status": {
+      "neverExpires": "ไม่เคยหมดอายุ",
+      "active": "ใช้งานอยู่",
+      "expired": "หมดอายุแล้ว"
+    },
+    "security": {
+      "protected": "ป้องกัน",
+      "public": "สาธารณะ"
+    },
+    "filesCount": "ไฟล์",
+    "folderCount": "โฟลเดอร์",
+    "recipientsCount": "ผู้รับ",
+    "actions": {
+      "menu": "เมนูการกระทำแชร์",
+      "edit": "แก้ไข",
+      "manageFiles": "จัดการไฟล์",
+      "manageRecipients": "จัดการผู้รับ",
+      "viewDetails": "ดูรายละเอียด",
+      "generateLink": "สร้างลิงก์",
+      "editLink": "แก้ไขลิงก์",
+      "copyLink": "คัดลอกลิงก์",
+      "viewQrCode": "ดูรหัส QR",
+      "notifyRecipients": "แจ้งให้ผู้รับทราบ",
+      "downloadShareFiles": "ดาวน์โหลดไฟล์ทั้งหมด",
+      "delete": "ลบ"
+    },
+    "bulkActions": {
+      "actions": "การกระทำ",
+      "download": "ดาวน์โหลดที่เลือก",
+      "delete": "ลบ",
+      "selected": "{count, plural, =1 {เลือก 1 แชร์} other {เลือก # แชร์}}"
+    },
+    "selectAll": "เลือกทั้งหมด",
+    "selectShare": "เลือกแชร์ {shareName}"
+  },
+  "storageUsage": {
+    "title": "การใช้ที่จัดเก็บ",
+    "ariaLabel": "แถบความคืบหน้าการใช้ที่จัดเก็บ",
+    "used": "ใช้แล้ว",
+    "available": "พร้อมใช้งาน",
+    "total": "ทั้งหมด",
+    "loading": "กำลังโหลด...",
+    "retry": "ลองใหม่",
+    "errors": {
+      "title": "ข้อมูลการจัดเก็บไม่พร้อมใช้งาน",
+      "detectionFailed": "ไม่สามารถตรวจหาพื้นที่ดิสก์ อาจเนื่องจากปัญหาการตั้งค่าระบบหรือสิทธิ์ไม่เพียงพอ",
+      "serverError": "เกิดข้อผิดพลาดของเซิร์ฟเวอร์ขณะดึงข้อมูลการจัดเก็บ โปรดลองใหม่ภายหลัง",
+      "unknown": "เกิดข้อผิดพลาดที่ไม่คาดคิดขณะโหลดข้อมูลการจัดเก็บ"
+    }
+  },
+  "theme": {
+    "toggle": "สลับธีม",
+    "light": "สว่าง",
+    "dark": "มืด",
+    "system": "ระบบ"
+  },
+  "twoFactor": {
+    "title": "การยืนยันตัวตนแบบสองปัจจัย",
+    "description": "เพิ่มชั้นความปลอดภัยพิเศษให้กับบัญชีของคุณ",
+    "enabled": "บัญชีของคุณป้องกันด้วยการยืนยันตัวตนแบบสองปัจจัย",
+    "disabled": "ไม่เปิดใช้งานการยืนยันตัวตนแบบสองปัจจัย",
+    "status": {
+      "label": "สถานะ:",
+      "enabled": "เปิดใช้งาน",
+      "disabled": "ปิดใช้งาน"
+    },
+    "buttons": {
+      "enable2FA": "เปิดใช้งาน 2FA",
+      "disable2FA": "ปิดใช้งาน 2FA"
+    },
+    "setup": {
+      "title": "เปิดใช้งานการยืนยันตัวตนแบบสองปัจจัย",
+      "description": "สแกนรหัส QR ด้วยแอปผู้ยืนยันตัวตนของคุณ จากนั้นป้อนรหัสการยืนยันตัวตน",
+      "qrCode": "รหัส QR",
+      "manualEntryKey": "คีย์สำหรับป้อนด้วยตนเอง",
+      "verificationCode": "รหัสการยืนยันตัวตน",
+      "verificationCodePlaceholder": "ป้อนรหัส 6 หลัก",
+      "verificationCodeDescription": "ป้อนรหัส 6 หลักจากแอปผู้ยืนยันตัวตนของคุณ",
+      "verifyAndEnable": "ยืนยันตัวตนและเปิดใช้งาน",
+      "cancel": "ยกเลิก"
+    },
+    "disable": {
+      "title": "ปิดใช้งานการยืนยันตัวตนแบบสองปัจจัย",
+      "description": "ป้อนรหัสผ่านของคุณเพื่อยืนยันการปิดใช้งานการยืนยันตัวตนแบบสองปัจจัย",
+      "password": "รหัสผ่าน",
+      "passwordPlaceholder": "ป้อนรหัสผ่านของคุณ",
+      "confirm": "ยืนยันการปิดใช้งาน",
+      "cancel": "ยกเลิก"
+    },
+    "backupCodes": {
+      "title": "รหัสสำรอง",
+      "description": "บันทึกรหัสสำรองเหล่านี้ไว้ในที่ปลอดภัย คุณสามารถใช้รหัสเหล่านี้เพื่อเข้าถึงบัญชีของคุณหากคุณทำหายอุปกรณ์ผู้ยืนยันตัวตนของคุณ",
+      "warning": "สำคัญ:",
+      "warningText": "สามารถใช้รหัสสำรองแต่ละรหัสได้เพียงครั้งเดียวเท่านั้น เก็บรักษาไว้อย่างปลอดภัยและอย่าแชร์กับใครเลย",
+      "generateNew": "สร้างรหัสสำรองใหม่",
+      "download": "ดาวน์โหลดรหัสสำรอง",
+      "copyToClipboard": "คัดลอกไปยังคลิปบอร์ด",
+      "savedMessage": "ฉันได้บันทึกรหัสสำรองของฉันแล้ว",
+      "available": "มีรหัสสำรอง {count} รหัสพร้อมใช้งาน",
+      "instructions": [
+        "• บันทึกรหัสเหล่านี้ไว้ในสถานที่ปลอดภัย",
+        "• สามารถใช้รหัสสำรองแต่ละรหัสได้เพียงครั้งเดียวเท่านั้น",
+        "• คุณสามารถสร้างรหัสใหม่ได้ตลอดเวลา"
+      ]
+    },
+    "verification": {
+      "title": "การยืนยันตัวตนแบบสองปัจจัย",
+      "description": "ป้อนรหัส 6 หลักจากแอปผู้ยืนยันตัวตนของคุณ",
+      "backupDescription": "ป้อนรหัสสำรองรหัสใดรหัสหนึ่งของคุณเพื่อดำเนินการต่อ",
+      "verificationCode": "รหัสการยืนยันตัวตน",
+      "backupCode": "รหัสสำรอง",
+      "verificationCodePlaceholder": "000000",
+      "backupCodePlaceholder": "XXXX-XXXX",
+      "verify": "ยืนยันตัวตน",
+      "verifying": "กำลังยืนยันตัวตน...",
+      "useBackupCode": "ใช้รหัสสำรองแทน",
+      "useAuthenticatorCode": "ใช้รหัสผู้ยืนยันตัวตนแทน",
+      "rememberDevice": "จำอุปกรณ์นี้เป็นเวลา 30 วัน",
+      "rememberDeviceDescription": "คุณจะไม่ต้องป้อนรหัส 2FA บนอุปกรณ์นี้เป็นเวลา 30 วัน"
+    },
+    "trustedDevices": {
+      "title": "อุปกรณ์ที่เชื่อถือ - 2FA",
+      "description": "อุปกรณ์ที่ไม่ต้องการการยืนยันตัวตน 2FA",
+      "noDevices": "ไม่มีอุปกรณ์ที่เชื่อถือ",
+      "deviceName": "อุปกรณ์",
+      "addedOn": "เพิ่มเมื่อ",
+      "expiresOn": "หมดอายุ",
+      "remove": "ลบ",
+      "removeAll": "ลบทั้งหมด",
+      "confirmRemove": "คุณแน่ใจว่าต้องการลบอุปกรณ์ที่เชื่อถือนี้หรือไม่?",
+      "confirmRemoveAll": "คุณแน่ใจว่าต้องการลบอุปกรณ์ที่เชื่อถือทั้งหมดหรือไม่?",
+      "deviceRemoved": "ลบอุปกรณ์ที่เชื่อถือเรียบร้อยแล้ว",
+      "allDevicesRemoved": "ลบอุปกรณ์ที่เชื่อถือทั้งหมดเรียบร้อยแล้ว",
+      "loadFailed": "ไม่สามารถโหลดอุปกรณ์ที่เชื่อถือ",
+      "removeFailed": "ไม่สามารถลบอุปกรณ์ที่เชื่อถือ",
+      "removeAllFailed": "ไม่สามารถลบอุปกรณ์ที่เชื่อถือทั้งหมด",
+      "loading": "กำลังโหลดอุปกรณ์ที่เชื่อถือ...",
+      "noDevicesDescription": "อุปกรณ์จะปรากฏที่นี่เมื่อคุณเลือกที่จะเชื่อถือระหว่างการยืนยันตัวตน 2FA",
+      "tableHeaders": {
+        "device": "อุปกรณ์",
+        "added": "เพิ่มเมื่อ",
+        "expires": "หมดอายุ",
+        "lastUsed": "ใช้ครั้งล่าสุด",
+        "ipAddress": "ที่อยู่ IP",
+        "actions": "การกระทำ"
+      },
+      "status": {
+        "never": "ไม่เคย",
+        "expired": "หมดอายุ"
+      },
+      "modals": {
+        "removeDevice": {
+          "title": "ลบอุปกรณ์ที่เชื่อถือ",
+          "added": "เพิ่มเมื่อ:",
+          "ip": "IP:"
+        },
+        "removeAllDevices": {
+          "title": "ลบอุปกรณ์ที่เชื่อถือทั้งหมด",
+          "description": "นี่จะลบอุปกรณ์ที่เชื่อถือ {count} รายการ{count, plural, =1 {} other {}}คุณจะต้องยืนยัน 2FA บนอุปกรณ์ทั้งหมดอีกครั้ง"
+        },
+        "buttons": {
+          "cancel": "ยกเลิก",
+          "removing": "กำลังลบ...",
+          "removeDevice": "ลบอุปกรณ์",
+          "removeAllDevices": "ลบอุปกรณ์ทั้งหมด"
+        }
+      }
+    },
+    "messages": {
+      "enabledSuccess": "เปิดใช้งานการยืนยันตัวตนแบบสองปัจจัยเรียบร้อยแล้ว!",
+      "disabledSuccess": "ปิดใช้งานการยืนยันตัวตนแบบสองปัจจัยเรียบร้อยแล้ว",
+      "backupCodesGenerated": "สร้างรหัสสำรองใหม่เรียบร้อยแล้ว",
+      "backupCodesCopied": "คัดลอกรหัสสำรองไปยังคลิปบอร์ดเรียบร้อยแล้ว",
+      "setupFailed": "ไม่สามารถสร้างการตั้งค่า 2FA",
+      "verificationFailed": "รหัสการยืนยันตัวตนไม่ถูกต้อง",
+      "disableFailed": "ไม่สามารถปิดใช้งาน 2FA โปรดตรวจสอบรหัสผ่านของคุณ",
+      "backupCodesFailed": "ไม่สามารถสร้างรหัสสำรอง",
+      "backupCodesCopyFailed": "ไม่สามารถคัดลอกรหัสสำรอง",
+      "statusLoadFailed": "ไม่สามารถโหลดสถานะ 2FA",
+      "enterVerificationCode": "โปรดป้อนรหัสการยืนยันตัวตน",
+      "enterPassword": "โปรดป้อนรหัสผ่านของคุณ",
+      "deviceTrusted": "อุปกรณ์นี้ถูกทำเครื่องหมายว่าเชื่อถือเป็นเวลา 30 วัน"
+    },
+    "errors": {
+      "invalidVerificationCode": "รหัสการยืนยันตัวตนไม่ถูกต้อง",
+      "invalidTwoFactorCode": "รหัสการยืนยันตัวตนแบบสองปัจจัยไม่ถูกต้อง",
+      "twoFactorRequired": "ต้องใช้การยืนยันตัวตนแบบสองปัจจัย",
+      "twoFactorAlreadyEnabled": "เปิดใช้งานการยืนยันตัวตนแบบสองปัจจัยแล้ว",
+      "twoFactorNotEnabled": "ไม่เปิดใช้งานการยืนยันตัวตนแบบสองปัจจัย",
+      "passwordVerificationRequired": "จำเป็นต้องยืนยันรหัสผ่าน",
+      "invalidPassword": "รหัสผ่านไม่ถูกต้อง",
+      "userNotFound": "ไม่พบผู้ใช้"
+    },
+    "deviceNames": {
+      "unknownDevice": "อุปกรณ์ที่ไม่รู้จัก",
+      "browsers": {
+        "chrome": "Chrome",
+        "firefox": "Firefox",
+        "safari": "Safari",
+        "edge": "Edge"
+      },
+      "platforms": {
+        "windows": " บน Windows",
+        "macos": " บน macOS",
+        "linux": " บน Linux",
+        "iphone": " บน iPhone",
+        "android": " บน Android"
+      }
+    }
+  },
+  "uploadFile": {
+    "title": "อัปโหลดไฟล์",
+    "multipleTitle": "อัปโหลดไฟล์",
+    "selectFile": "คลิกเพื่อเลือกไฟล์",
+    "selectMultipleFiles": "คลิกเพื่อเลือกไฟล์หนึ่งไฟล์ขึ้นไป",
+    "dragAndDrop": "หรือลากวางไฟล์ที่นี่",
+    "filesQueued": "{count, plural, one {อัปโหลด # ไฟล์ที่จัดคิว} other {อัปโหลด # ไฟล์ที่จัดคิว}}",
+    "preview": "ตัวอย่าง",
+    "uploadProgress": "ความคืบหน้าการอัปโหลด",
+    "upload": "อัปโหลด",
+    "startUploads": "เริ่มการอัปโหลด",
+    "retry": "ลองใหม่",
+    "finish": "เสร็จสิ้น",
+    "success": "อัปโหลดไฟล์เรียบร้อยแล้ว",
+    "allSuccess": "{count, plural, =1 {อัปโหลดไฟล์เรียบร้อยแล้ว} other {อัปโหลด # ไฟล์เรียบร้อยแล้ว}}",
+    "partialSuccess": "อัปโหลดไฟล์ {success} ไฟล์เรียบร้อยแล้ว {error} ล้มเหลว",
+    "error": "ไม่สามารถอัปโหลดไฟล์",
+    "fileSizeExceeded": "ขนาดไฟล์เกินขีดจำกัด {maxsizemb}MB",
+    "insufficientStorage": "พื้นที่จัดเก็บไม่เพียงพอ คุณมีพื้นที่ว่าง {availablespace}MB",
+    "unauthorized": "ไม่ได้รับอนุญาต: ต้องมีโทเค็นที่ถูกต้องเพื่อเข้าถึงทรัพยากรนี้",
+    "globalDrop": {
+      "title": "วางไฟล์เพื่ออัปโหลด",
+      "description": "ปล่อยเพื่ออัปโหลดไฟล์ของคุณ"
+    },
+    "confirmCancel": {
+      "title": "ยกเลิกการอัปโหลด",
+      "messageSingle": "กำลังอัปโหลดหนึ่งไฟล์",
+      "messageMultiple": "กำลังอัปโหลด {count} ไฟล์",
+      "warning": "หากคุณปิดตอนนี้ การอัปโหลดจะถูกยกเลิกและการลงชื่อใด ๆ จะหาย",
+      "continue": "ดำเนินการอัปโหลดต่อ",
+      "cancel": "ยกเลิกการอัปโหลด"
+    },
+    "pasteSuccess": "{count, plural, =1 {วางและอัปโหลดรูปภาพเรียบร้อยแล้ว} other {วางและอัปโหลด # รูปภาพเรียบร้อยแล้ว}}"
+  },
+  "users": {
+    "modes": {
+      "create": "สร้าง",
+      "edit": "แก้ไข"
+    },
+    "errors": {
+      "loadFailed": "ไม่สามารถโหลดผู้ใช้",
+      "submitFailed": "ไม่สามารถ{mode}ผู้ใช้",
+      "deleteFailed": "ไม่สามารถลบผู้ใช้",
+      "statusUpdateFailed": "ไม่สามารถอัปเดตสถานะผู้ใช้"
+    },
+    "messages": {
+      "createSuccess": "สร้างผู้ใช้เรียบร้อยแล้ว",
+      "updateSuccess": "อัปเดตผู้ใช้เรียบร้อยแล้ว",
+      "deleteSuccess": "ลบผู้ใช้เรียบร้อยแล้ว",
+      "activateSuccess": "เปิดใช้งานผู้ใช้เรียบร้อยแล้ว",
+      "deactivateSuccess": "ปิดใช้งานผู้ใช้เรียบร้อยแล้ว"
+    },
+    "actions": {
+      "edit": "แก้ไข",
+      "activate": "เปิดใช้งาน",
+      "deactivate": "ปิดใช้งาน",
+      "delete": "ลบ"
+    },
+    "delete": {
+      "title": "ยืนยันการลบผู้ใช้",
+      "confirmation": "คุณแน่ใจว่าต้องการลบผู้ใช้ {firstName} {lastName} หรือไม่? ไม่สามารถเลิกทำการกระทำนี้ได้",
+      "confirm": "ลบผู้ใช้"
+    },
+    "form": {
+      "titleCreate": "เพิ่มผู้ใช้ใหม่",
+      "titleEdit": "แก้ไขผู้ใช้",
+      "firstName": "ชื่อ",
+      "lastName": "นามสกุล",
+      "username": "ชื่อผู้ใช้",
+      "email": "อีเมล",
+      "password": "รหัสผ่าน",
+      "newPassword": "รหัสผ่านใหม่ (เสริม)",
+      "passwordPlaceholder": "ปล่อยว่างไว้เพื่อเก็บรหัสผ่านปัจจุบัน",
+      "role": "บทบาท",
+      "roleUser": "ผู้ใช้",
+      "roleAdmin": "ผู้ดูแลระบบ",
+      "create": "สร้าง",
+      "save": "บันทึก"
+    },
+    "status": {
+      "title": "ยืนยันการเปลี่ยนสถานะ",
+      "confirmation": "คุณแน่ใจว่าต้องการ {action} ผู้ใช้ {firstName} {lastName} หรือไม่?",
+      "activate": "เปิดใช้งาน",
+      "deactivate": "ปิดใช้งาน",
+      "user": "ผู้ใช้"
+    },
+    "header": {
+      "title": "การจัดการผู้ใช้",
+      "addUser": "เพิ่มผู้ใช้",
+      "management": "การจัดการผู้ใช้"
+    },
+    "table": {
+      "user": "ผู้ใช้",
+      "email": "อีเมล",
+      "status": "สถานะ",
+      "role": "บทบาท",
+      "actions": "การกระทำ",
+      "active": "ใช้งานอยู่",
+      "inactive": "ไม่ใช้งาน",
+      "admin": "ผู้ดูแลระบบ",
+      "userr": "ผู้ใช้"
+    }
+  },
+  "embedCode": {
+    "title": "ฝังสื่อ",
+    "description": "ใช้รหัสเหล่านี้เพื่อฝังสื่อนี้ในฟอรัม เว็บไซต์ หรือแพลตฟอร์มอื่น ๆ",
+    "tabs": {
+      "directLink": "ลิงก์โดยตรง",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "URL โดยตรงไปยังไฟล์สื่อ",
+    "htmlDescription": "ใช้รหัสนี้เพื่อฝังสื่อในหน้า HTML",
+    "bbcodeDescription": "ใช้รหัสนี้เพื่อฝังสื่อในฟอรัมที่รองรับ BBCode"
+  },
+  "validation": {
+    "firstNameRequired": "จำเป็นต้องมีชื่อ",
+    "lastNameRequired": "จำเป็นต้องมีนามสกุล",
+    "usernameLength": "ชื่อผู้ใช้ต้องมีความยาวอย่างน้อย 3 ตัวอักษร",
+    "usernameSpaces": "ชื่อผู้ใช้ไม่สามารถมีช่องว่าง",
+    "invalidEmail": "โปรดป้อนที่อยู่อีเมลที่ถูกต้อง",
+    "passwordLength": "รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร",
+    "passwordsMatch": "รหัสผ่านต้องตรงกัน",
+    "emailRequired": "จำเป็นต้องมีอีเมล",
+    "emailOrUsernameRequired": "จำเป็นต้องมีอีเมลหรือชื่อผู้ใช้",
+    "passwordRequired": "จำเป็นต้องมีรหัสผ่าน",
+    "passwordMinLength": "รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร",
+    "nameRequired": "จำเป็นต้องมีชื่อ",
+    "required": "จำเป็นต้องกรอกข้อมูลช่องนี้"
+  }
+}

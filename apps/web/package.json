@@ -27,7 +27,8 @@
     "translations:check": "python3 scripts/run_translations.py check",
     "translations:sync": "python3 scripts/run_translations.py sync",
     "translations:dry-run": "python3 scripts/run_translations.py all --dry-run",
-    "translations:help": "python3 scripts/run_translations.py help"
+    "translations:help": "python3 scripts/run_translations.py help",
+    "translations:prune": "python3 scripts/prune_translations.py"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",

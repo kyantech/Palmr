@@ -17,6 +17,14 @@ const supportedLocales = [
   "zh-CN",
   "ja-JP",
   "ko-KR",
+  "th-TH",
+  "vi-VN",
+  "uk-UA",
+  "fa-IR",
+  "sv-SE",
+  "id-ID",
+  "el-GR",
+  "he-IL",
 ];
 
 const envDefault = process.env.NEXT_PUBLIC_DEFAULT_LANGUAGE || "en-US";
