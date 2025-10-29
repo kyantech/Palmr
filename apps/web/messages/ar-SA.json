@@ -1905,6 +1905,23 @@
       "inactive": "غير مفعل",
       "admin": "مسؤول",
       "userr": "مستخدم"
+    },
+    "invite": {
+      "button": "إنشاء رابط دعوة",
+      "title": "إنشاء رابط دعوة للمستخدم",
+      "description": "إنشاء رابط يستخدم لمرة واحدة يسمح لشخص ما بإنشاء حسابه الخاص. ينتهي الرابط بعد 15 دقيقة.",
+      "generating": "جاري الإنشاء...",
+      "generate": "إنشاء الرابط",
+      "generated": "تم إنشاء رابط الدعوة بنجاح!",
+      "linkReady": "رابط الدعوة جاهز",
+      "linkReadyDescription": "شارك هذا الرابط مع الشخص الذي تريد دعوته. سيتمكن من إنشاء حسابه الخاص كمستخدم عادي.",
+      "copyLink": "نسخ الرابط",
+      "linkCopied": "تم نسخ رابط الدعوة إلى الحافظة!",
+      "expiresIn": "ينتهي بعد 15 دقيقة",
+      "close": "إغلاق",
+      "errors": {
+        "generateFailed": "فشل في إنشاء رابط الدعوة"
+      }
     }
   },
   "validation": {
@@ -1937,5 +1954,48 @@
   "contextMenu": {
     "newFolder": "مجلد جديد",
     "uploadFile": "رفع ملف"
+  },
+  "registerWithInvite": {
+    "title": "إنشاء حسابك",
+    "description": "املأ المعلومات أدناه لإنشاء حسابك",
+    "labels": {
+      "firstName": "الاسم الأول",
+      "firstNamePlaceholder": "أدخل اسمك الأول",
+      "lastName": "اسم العائلة",
+      "lastNamePlaceholder": "أدخل اسم عائلتك",
+      "username": "اسم المستخدم",
+      "usernamePlaceholder": "اختر اسم مستخدم",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "أدخل بريدك الإلكتروني",
+      "password": "كلمة المرور",
+      "passwordPlaceholder": "اختر كلمة مرور",
+      "confirmPassword": "تأكيد كلمة المرور",
+      "confirmPasswordPlaceholder": "أكد كلمة مرورك"
+    },
+    "buttons": {
+      "creating": "جاري إنشاء الحساب...",
+      "createAccount": "إنشاء حساب"
+    },
+    "validation": {
+      "firstNameRequired": "الاسم الأول مطلوب",
+      "lastNameRequired": "اسم العائلة مطلوب",
+      "usernameMinLength": "يجب أن يحتوي اسم المستخدم على 3 أحرف على الأقل",
+      "invalidEmail": "البريد الإلكتروني غير صالح",
+      "passwordMinLength": "يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل",
+      "passwordsMatch": "يجب أن تتطابق كلمتا المرور"
+    },
+    "messages": {
+      "success": "تم إنشاء الحساب بنجاح! جارٍ إعادة التوجيه إلى تسجيل الدخول...",
+      "redirecting": "جارٍ إعادة التوجيه إلى تسجيل الدخول..."
+    },
+    "errors": {
+      "invalidToken": "خطأ في رابط الدعوة",
+      "tokenUsed": "تم استخدام رابط الدعوة هذا بالفعل",
+      "tokenExpired": "انتهت صلاحية رابط الدعوة هذا",
+      "usernameExists": "اسم المستخدم موجود بالفعل",
+      "emailExists": "البريد الإلكتروني موجود بالفعل",
+      "createFailed": "فشل في إنشاء الحساب. يرجى المحاولة مرة أخرى."
+    },
+    "pageTitle": "إنشاء حساب"
   }
 }

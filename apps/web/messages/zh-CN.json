@@ -1905,6 +1905,23 @@
       "inactive": "停用",
       "admin": "管理员",
       "userr": "用户"
+    },
+    "invite": {
+      "button": "生成邀请链接",
+      "title": "生成用户邀请链接",
+      "description": "生成一个一次性使用的链接，允许某人创建自己的账户。该链接在15分钟后过期。",
+      "generating": "生成中...",
+      "generate": "生成链接",
+      "generated": "邀请链接生成成功！",
+      "linkReady": "邀请链接准备就绪",
+      "linkReadyDescription": "与您想要邀请的人分享此链接。他们将能够作为普通用户创建自己的账户。",
+      "copyLink": "复制链接",
+      "linkCopied": "邀请链接已复制到剪贴板！",
+      "expiresIn": "15分钟后过期",
+      "close": "关闭",
+      "errors": {
+        "generateFailed": "生成邀请链接失败"
+      }
     }
   },
   "validation": {
@@ -1937,5 +1954,48 @@
   "contextMenu": {
     "newFolder": "新建文件夹",
     "uploadFile": "上传文件"
+  },
+  "registerWithInvite": {
+    "title": "创建您的账户",
+    "description": "填写以下信息以创建您的账户",
+    "labels": {
+      "firstName": "名字",
+      "firstNamePlaceholder": "输入您的名字",
+      "lastName": "姓氏",
+      "lastNamePlaceholder": "输入您的姓氏",
+      "username": "用户名",
+      "usernamePlaceholder": "选择一个用户名",
+      "email": "电子邮件",
+      "emailPlaceholder": "输入您的电子邮件",
+      "password": "密码",
+      "passwordPlaceholder": "选择一个密码",
+      "confirmPassword": "确认密码",
+      "confirmPasswordPlaceholder": "确认您的密码"
+    },
+    "buttons": {
+      "creating": "正在创建账户...",
+      "createAccount": "创建账户"
+    },
+    "validation": {
+      "firstNameRequired": "名字为必填项",
+      "lastNameRequired": "姓氏为必填项",
+      "usernameMinLength": "用户名至少需要3个字符",
+      "invalidEmail": "无效的电子邮件",
+      "passwordMinLength": "密码至少需要8个字符",
+      "passwordsMatch": "密码必须匹配"
+    },
+    "messages": {
+      "success": "账户创建成功！正在重定向到登录...",
+      "redirecting": "正在重定向到登录..."
+    },
+    "errors": {
+      "invalidToken": "邀请链接错误",
+      "tokenUsed": "此邀请链接已被使用",
+      "tokenExpired": "此邀请链接已过期",
+      "usernameExists": "用户名已存在",
+      "emailExists": "电子邮件已存在",
+      "createFailed": "创建账户失败。请重试。"
+    },
+    "pageTitle": "创建账户"
   }
 }

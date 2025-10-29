@@ -1905,6 +1905,23 @@
       "inactive": "Nieaktywny",
       "admin": "Administrator",
       "userr": "Użytkownik"
+    },
+    "invite": {
+      "button": "Wygeneruj link zaproszenia",
+      "title": "Wygeneruj link zaproszenia użytkownika",
+      "description": "Wygeneruj link jednorazowego użytku, który pozwala komuś utworzyć własne konto. Link wygasa za 15 minut.",
+      "generating": "Generowanie...",
+      "generate": "Wygeneruj link",
+      "generated": "Link zaproszenia wygenerowany pomyślnie!",
+      "linkReady": "Link zaproszenia gotowy",
+      "linkReadyDescription": "Udostępnij ten link osobie, którą chcesz zaprosić. Będzie mogła utworzyć własne konto jako zwykły użytkownik.",
+      "copyLink": "Kopiuj link",
+      "linkCopied": "Link zaproszenia skopiowany do schowka!",
+      "expiresIn": "Wygasa za 15 minut",
+      "close": "Zamknij",
+      "errors": {
+        "generateFailed": "Nie udało się wygenerować linku zaproszenia"
+      }
     }
   },
   "validation": {
@@ -1937,5 +1954,48 @@
   "contextMenu": {
     "newFolder": "Nowy folder",
     "uploadFile": "Prześlij plik"
+  },
+  "registerWithInvite": {
+    "title": "Utwórz swoje konto",
+    "description": "Wypełnij poniższe informacje, aby utworzyć swoje konto",
+    "labels": {
+      "firstName": "Imię",
+      "firstNamePlaceholder": "Wprowadź swoje imię",
+      "lastName": "Nazwisko",
+      "lastNamePlaceholder": "Wprowadź swoje nazwisko",
+      "username": "Nazwa użytkownika",
+      "usernamePlaceholder": "Wybierz nazwę użytkownika",
+      "email": "E-mail",
+      "emailPlaceholder": "Wprowadź swój adres e-mail",
+      "password": "Hasło",
+      "passwordPlaceholder": "Wybierz hasło",
+      "confirmPassword": "Potwierdź hasło",
+      "confirmPasswordPlaceholder": "Potwierdź swoje hasło"
+    },
+    "buttons": {
+      "creating": "Tworzenie konta...",
+      "createAccount": "Utwórz konto"
+    },
+    "validation": {
+      "firstNameRequired": "Imię jest wymagane",
+      "lastNameRequired": "Nazwisko jest wymagane",
+      "usernameMinLength": "Nazwa użytkownika musi mieć co najmniej 3 znaki",
+      "invalidEmail": "Nieprawidłowy adres e-mail",
+      "passwordMinLength": "Hasło musi mieć co najmniej 8 znaków",
+      "passwordsMatch": "Hasła muszą być zgodne"
+    },
+    "messages": {
+      "success": "Konto utworzone pomyślnie! Przekierowywanie do logowania...",
+      "redirecting": "Przekierowywanie do logowania..."
+    },
+    "errors": {
+      "invalidToken": "Błąd z linkiem zaproszenia",
+      "tokenUsed": "Ten link zaproszenia został już użyty",
+      "tokenExpired": "Ten link zaproszenia wygasł",
+      "usernameExists": "Nazwa użytkownika już istnieje",
+      "emailExists": "Adres e-mail już istnieje",
+      "createFailed": "Nie udało się utworzyć konta. Spróbuj ponownie."
+    },
+    "pageTitle": "Utwórz konto"
   }
 }

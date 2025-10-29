@@ -1909,6 +1909,23 @@
       "inactive": "غیرفعال",
       "admin": "مدیر",
       "userr": "کاربر"
+    },
+    "invite": {
+      "button": "تولید لینک دعوت",
+      "title": "تولید لینک دعوت کاربر",
+      "description": "یک لینک یک‌بار مصرف تولید کنید که به کسی اجازه می‌دهد حساب خود را ایجاد کند. لینک پس از ۱۵ دقیقه منقضی می‌شود.",
+      "generating": "در حال تولید...",
+      "generate": "تولید لینک",
+      "generated": "لینک دعوت با موفقیت تولید شد!",
+      "linkReady": "لینک دعوت آماده است",
+      "linkReadyDescription": "این لینک را با شخصی که می‌خواهید دعوت کنید به اشتراک بگذارید. آنها می‌توانند حساب خود را به عنوان یک کاربر معمولی ایجاد کنند.",
+      "copyLink": "کپی لینک",
+      "linkCopied": "لینک دعوت در کلیپ‌بورد کپی شد!",
+      "expiresIn": "پس از ۱۵ دقیقه منقضی می‌شود",
+      "close": "بستن",
+      "errors": {
+        "generateFailed": "تولید لینک دعوت ناموفق بود"
+      }
     }
   },
   "embedCode": {
@@ -1937,5 +1954,48 @@
     "passwordMinLength": "گذرواژه باید حداقل ۶ کاراکتر باشد",
     "nameRequired": "نام الزامی است",
     "required": "این فیلد الزامی است"
+  },
+  "registerWithInvite": {
+    "title": "حساب خود را ایجاد کنید",
+    "description": "برای ایجاد حساب خود، اطلاعات زیر را پر کنید",
+    "labels": {
+      "firstName": "نام",
+      "firstNamePlaceholder": "نام خود را وارد کنید",
+      "lastName": "نام خانوادگی",
+      "lastNamePlaceholder": "نام خانوادگی خود را وارد کنید",
+      "username": "نام کاربری",
+      "usernamePlaceholder": "یک نام کاربری انتخاب کنید",
+      "email": "ایمیل",
+      "emailPlaceholder": "ایمیل خود را وارد کنید",
+      "password": "گذرواژه",
+      "passwordPlaceholder": "یک گذرواژه انتخاب کنید",
+      "confirmPassword": "تأیید گذرواژه",
+      "confirmPasswordPlaceholder": "گذرواژه خود را تأیید کنید"
+    },
+    "buttons": {
+      "creating": "در حال ایجاد حساب...",
+      "createAccount": "ایجاد حساب"
+    },
+    "validation": {
+      "firstNameRequired": "نام الزامی است",
+      "lastNameRequired": "نام خانوادگی الزامی است",
+      "usernameMinLength": "نام کاربری باید حداقل ۳ کاراکتر باشد",
+      "invalidEmail": "ایمیل نامعتبر است",
+      "passwordMinLength": "گذرواژه باید حداقل ۸ کاراکتر باشد",
+      "passwordsMatch": "گذرواژه‌ها باید مطابقت داشته باشند"
+    },
+    "messages": {
+      "success": "حساب با موفقیت ایجاد شد! در حال انتقال به صفحه ورود...",
+      "redirecting": "در حال انتقال به صفحه ورود..."
+    },
+    "errors": {
+      "invalidToken": "خطا در لینک دعوت",
+      "tokenUsed": "این لینک دعوت قبلاً استفاده شده است",
+      "tokenExpired": "این لینک دعوت منقضی شده است",
+      "usernameExists": "نام کاربری قبلاً وجود دارد",
+      "emailExists": "ایمیل قبلاً وجود دارد",
+      "createFailed": "ایجاد حساب ناموفق بود. لطفاً دوباره تلاش کنید."
+    },
+    "pageTitle": "ایجاد حساب"
   }
 }

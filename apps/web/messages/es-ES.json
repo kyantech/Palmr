@@ -1909,6 +1909,23 @@
       "inactive": "Inactivo",
       "admin": "Administrador",
       "userr": "Usuario"
+    },
+    "invite": {
+      "button": "Generar Enlace de Invitación",
+      "title": "Generar Enlace de Invitación de Usuario",
+      "description": "Genera un enlace de un solo uso que permite a alguien crear su propia cuenta. El enlace expira en 15 minutos.",
+      "generating": "Generando...",
+      "generate": "Generar Enlace",
+      "generated": "¡Enlace de invitación generado exitosamente!",
+      "linkReady": "Enlace de invitación listo",
+      "linkReadyDescription": "Comparte este enlace con la persona que deseas invitar. Podrán crear su propia cuenta como usuario regular.",
+      "copyLink": "Copiar Enlace",
+      "linkCopied": "¡Enlace de invitación copiado al portapapeles!",
+      "expiresIn": "Expira en 15 minutos",
+      "close": "Cerrar",
+      "errors": {
+        "generateFailed": "Error al generar el enlace de invitación"
+      }
     }
   },
   "validation": {
@@ -1937,5 +1954,48 @@
     "directLinkDescription": "URL directa al archivo multimedia",
     "htmlDescription": "Utiliza este código para insertar el contenido multimedia en páginas HTML",
     "bbcodeDescription": "Utiliza este código para insertar el contenido multimedia en foros que admiten BBCode"
+  },
+  "registerWithInvite": {
+    "title": "Crea Tu Cuenta",
+    "description": "Completa la información a continuación para crear tu cuenta",
+    "labels": {
+      "firstName": "Nombre",
+      "firstNamePlaceholder": "Ingresa tu nombre",
+      "lastName": "Apellido",
+      "lastNamePlaceholder": "Ingresa tu apellido",
+      "username": "Nombre de Usuario",
+      "usernamePlaceholder": "Elige un nombre de usuario",
+      "email": "Correo Electrónico",
+      "emailPlaceholder": "Ingresa tu correo electrónico",
+      "password": "Contraseña",
+      "passwordPlaceholder": "Elige una contraseña",
+      "confirmPassword": "Confirmar Contraseña",
+      "confirmPasswordPlaceholder": "Confirma tu contraseña"
+    },
+    "buttons": {
+      "creating": "Creando cuenta...",
+      "createAccount": "Crear Cuenta"
+    },
+    "validation": {
+      "firstNameRequired": "El nombre es obligatorio",
+      "lastNameRequired": "El apellido es obligatorio",
+      "usernameMinLength": "El nombre de usuario debe tener al menos 3 caracteres",
+      "invalidEmail": "Correo electrónico inválido",
+      "passwordMinLength": "La contraseña debe tener al menos 8 caracteres",
+      "passwordsMatch": "Las contraseñas deben coincidir"
+    },
+    "messages": {
+      "success": "¡Cuenta creada exitosamente! Redirigiendo al inicio de sesión...",
+      "redirecting": "Redirigiendo al inicio de sesión..."
+    },
+    "errors": {
+      "invalidToken": "Error con el enlace de invitación",
+      "tokenUsed": "Este enlace de invitación ya ha sido utilizado",
+      "tokenExpired": "Este enlace de invitación ha expirado",
+      "usernameExists": "El nombre de usuario ya existe",
+      "emailExists": "El correo electrónico ya existe",
+      "createFailed": "Error al crear la cuenta. Por favor, inténtalo de nuevo."
+    },
+    "pageTitle": "Crear Cuenta"
   }
 }

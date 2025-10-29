@@ -1909,6 +1909,23 @@
       "inactive": "Tidak Aktif",
       "admin": "Admin",
       "userr": "Pengguna"
+    },
+    "invite": {
+      "button": "Buat Tautan Undangan",
+      "title": "Buat Tautan Undangan Pengguna",
+      "description": "Buat tautan sekali pakai yang memungkinkan seseorang membuat akun mereka sendiri. Tautan kedaluwarsa dalam 15 menit.",
+      "generating": "Membuat...",
+      "generate": "Buat Tautan",
+      "generated": "Tautan undangan berhasil dibuat!",
+      "linkReady": "Tautan undangan siap",
+      "linkReadyDescription": "Bagikan tautan ini dengan orang yang ingin Anda undang. Mereka akan dapat membuat akun mereka sendiri sebagai pengguna biasa.",
+      "copyLink": "Salin Tautan",
+      "linkCopied": "Tautan undangan disalin ke clipboard!",
+      "expiresIn": "Kedaluwarsa dalam 15 menit",
+      "close": "Tutup",
+      "errors": {
+        "generateFailed": "Gagal membuat tautan undangan"
+      }
     }
   },
   "embedCode": {
@@ -1937,5 +1954,48 @@
     "passwordMinLength": "Kata sandi harus minimal 6 karakter",
     "nameRequired": "Nama wajib diisi",
     "required": "Bidang ini wajib diisi"
+  },
+  "registerWithInvite": {
+    "title": "Buat Akun Anda",
+    "description": "Isi informasi di bawah ini untuk membuat akun Anda",
+    "labels": {
+      "firstName": "Nama Depan",
+      "firstNamePlaceholder": "Masukkan nama depan Anda",
+      "lastName": "Nama Belakang",
+      "lastNamePlaceholder": "Masukkan nama belakang Anda",
+      "username": "Nama Pengguna",
+      "usernamePlaceholder": "Pilih nama pengguna",
+      "email": "Email",
+      "emailPlaceholder": "Masukkan email Anda",
+      "password": "Kata Sandi",
+      "passwordPlaceholder": "Pilih kata sandi",
+      "confirmPassword": "Konfirmasi Kata Sandi",
+      "confirmPasswordPlaceholder": "Konfirmasi kata sandi Anda"
+    },
+    "buttons": {
+      "creating": "Membuat akun...",
+      "createAccount": "Buat Akun"
+    },
+    "validation": {
+      "firstNameRequired": "Nama depan wajib diisi",
+      "lastNameRequired": "Nama belakang wajib diisi",
+      "usernameMinLength": "Nama pengguna harus minimal 3 karakter",
+      "invalidEmail": "Email tidak valid",
+      "passwordMinLength": "Kata sandi harus minimal 8 karakter",
+      "passwordsMatch": "Kata sandi harus sama"
+    },
+    "messages": {
+      "success": "Akun berhasil dibuat! Mengalihkan ke login...",
+      "redirecting": "Mengalihkan ke login..."
+    },
+    "errors": {
+      "invalidToken": "Kesalahan dengan tautan undangan",
+      "tokenUsed": "Tautan undangan ini sudah digunakan",
+      "tokenExpired": "Tautan undangan ini telah kedaluwarsa",
+      "usernameExists": "Nama pengguna sudah ada",
+      "emailExists": "Email sudah ada",
+      "createFailed": "Gagal membuat akun. Silakan coba lagi."
+    },
+    "pageTitle": "Buat Akun"
   }
 }

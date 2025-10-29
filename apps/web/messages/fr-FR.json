@@ -1905,6 +1905,23 @@
       "inactive": "Inactif",
       "admin": "Administrateur",
       "userr": "Utilisateur"
+    },
+    "invite": {
+      "button": "Générer un Lien d'Invitation",
+      "title": "Générer un Lien d'Invitation Utilisateur",
+      "description": "Générez un lien à usage unique qui permet à quelqu'un de créer son propre compte. Le lien expire dans 15 minutes.",
+      "generating": "Génération...",
+      "generate": "Générer le Lien",
+      "generated": "Lien d'invitation généré avec succès !",
+      "linkReady": "Lien d'invitation prêt",
+      "linkReadyDescription": "Partagez ce lien avec la personne que vous souhaitez inviter. Elle pourra créer son propre compte en tant qu'utilisateur régulier.",
+      "copyLink": "Copier le Lien",
+      "linkCopied": "Lien d'invitation copié dans le presse-papiers !",
+      "expiresIn": "Expire dans 15 minutes",
+      "close": "Fermer",
+      "errors": {
+        "generateFailed": "Échec de la génération du lien d'invitation"
+      }
     }
   },
   "validation": {
@@ -1937,5 +1954,48 @@
   "contextMenu": {
     "newFolder": "Nouveau dossier",
     "uploadFile": "Télécharger un fichier"
+  },
+  "registerWithInvite": {
+    "title": "Créer Votre Compte",
+    "description": "Remplissez les informations ci-dessous pour créer votre compte",
+    "labels": {
+      "firstName": "Prénom",
+      "firstNamePlaceholder": "Entrez votre prénom",
+      "lastName": "Nom",
+      "lastNamePlaceholder": "Entrez votre nom",
+      "username": "Nom d'Utilisateur",
+      "usernamePlaceholder": "Choisissez un nom d'utilisateur",
+      "email": "E-mail",
+      "emailPlaceholder": "Entrez votre e-mail",
+      "password": "Mot de Passe",
+      "passwordPlaceholder": "Choisissez un mot de passe",
+      "confirmPassword": "Confirmer le Mot de Passe",
+      "confirmPasswordPlaceholder": "Confirmez votre mot de passe"
+    },
+    "buttons": {
+      "creating": "Création du compte...",
+      "createAccount": "Créer un Compte"
+    },
+    "validation": {
+      "firstNameRequired": "Le prénom est requis",
+      "lastNameRequired": "Le nom est requis",
+      "usernameMinLength": "Le nom d'utilisateur doit contenir au moins 3 caractères",
+      "invalidEmail": "E-mail invalide",
+      "passwordMinLength": "Le mot de passe doit contenir au moins 8 caractères",
+      "passwordsMatch": "Les mots de passe doivent correspondre"
+    },
+    "messages": {
+      "success": "Compte créé avec succès ! Redirection vers la connexion...",
+      "redirecting": "Redirection vers la connexion..."
+    },
+    "errors": {
+      "invalidToken": "Erreur avec le lien d'invitation",
+      "tokenUsed": "Ce lien d'invitation a déjà été utilisé",
+      "tokenExpired": "Ce lien d'invitation a expiré",
+      "usernameExists": "Le nom d'utilisateur existe déjà",
+      "emailExists": "L'e-mail existe déjà",
+      "createFailed": "Échec de la création du compte. Veuillez réessayer."
+    },
+    "pageTitle": "Créer un Compte"
   }
 }
