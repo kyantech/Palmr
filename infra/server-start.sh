@@ -11,18 +11,16 @@ echo "🔧 Runtime UID/GID: $TARGET_UID:$TARGET_GID"
 # Check if we need to update ownership
 # Only run chown if explicitly configured via environment variables
 # This prevents unnecessary slowdowns on default configurations
-if [ -n "$PALMR_UID" ] || [ -n "$PALMR_GID" ]; then
-    if [ "$(id -u)" = "0" ]; then
-        echo "🔐 Updating file ownership to match runtime configuration..."
-        chown -R $TARGET_UID:$TARGET_GID /app/palmr-app 2>/dev/null || echo "⚠️ Some ownership changes may have failed"
-        chown -R $TARGET_UID:$TARGET_GID /home/palmr 2>/dev/null || echo "⚠️ Some home directory ownership changes may have failed"
-        
-        if [ -d "/app/server" ]; then
-            chown -R $TARGET_UID:$TARGET_GID /app/server 2>/dev/null || echo "⚠️ Some data directory ownership changes may have failed"
-        fi
-        
-        echo "✅ UID/GID configuration completed"
+if ([ -n "$PALMR_UID" ] || [ -n "$PALMR_GID" ]) && [ "$(id -u)" = "0" ]; then
+    echo "🔐 Updating file ownership to match runtime configuration..."
+    chown -R $TARGET_UID:$TARGET_GID /app/palmr-app 2>/dev/null || echo "⚠️ Some ownership changes may have failed"
+    chown -R $TARGET_UID:$TARGET_GID /home/palmr 2>/dev/null || echo "⚠️ Some home directory ownership changes may have failed"
+    
+    if [ -d "/app/server" ]; then
+        chown -R $TARGET_UID:$TARGET_GID /app/server 2>/dev/null || echo "⚠️ Some data directory ownership changes may have failed"
     fi
+    
+    echo "✅ UID/GID configuration completed"
 fi
 
 cd /app/palmr-app
