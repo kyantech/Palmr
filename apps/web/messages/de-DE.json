@@ -1905,6 +1905,23 @@
       "inactive": "Inaktiv",
       "admin": "Administrator",
       "userr": "Benutzer"
+    },
+    "invite": {
+      "button": "Einladungslink generieren",
+      "title": "Benutzer-Einladungslink generieren",
+      "description": "Generieren Sie einen einmaligen Link, der es jemandem ermöglicht, sein eigenes Konto zu erstellen. Der Link läuft in 15 Minuten ab.",
+      "generating": "Wird generiert...",
+      "generate": "Link generieren",
+      "generated": "Einladungslink erfolgreich generiert!",
+      "linkReady": "Einladungslink bereit",
+      "linkReadyDescription": "Teilen Sie diesen Link mit der Person, die Sie einladen möchten. Sie können ihr eigenes Konto als normaler Benutzer erstellen.",
+      "copyLink": "Link kopieren",
+      "linkCopied": "Einladungslink in die Zwischenablage kopiert!",
+      "expiresIn": "Läuft in 15 Minuten ab",
+      "close": "Schließen",
+      "errors": {
+        "generateFailed": "Fehler beim Generieren des Einladungslinks"
+      }
     }
   },
   "validation": {
@@ -1937,5 +1954,48 @@
   "contextMenu": {
     "newFolder": "Neuer Ordner",
     "uploadFile": "Datei hochladen"
+  },
+  "registerWithInvite": {
+    "title": "Erstellen Sie Ihr Konto",
+    "description": "Füllen Sie die unten stehenden Informationen aus, um Ihr Konto zu erstellen",
+    "labels": {
+      "firstName": "Vorname",
+      "firstNamePlaceholder": "Geben Sie Ihren Vornamen ein",
+      "lastName": "Nachname",
+      "lastNamePlaceholder": "Geben Sie Ihren Nachnamen ein",
+      "username": "Benutzername",
+      "usernamePlaceholder": "Wählen Sie einen Benutzernamen",
+      "email": "E-Mail",
+      "emailPlaceholder": "Geben Sie Ihre E-Mail ein",
+      "password": "Passwort",
+      "passwordPlaceholder": "Wählen Sie ein Passwort",
+      "confirmPassword": "Passwort bestätigen",
+      "confirmPasswordPlaceholder": "Bestätigen Sie Ihr Passwort"
+    },
+    "buttons": {
+      "creating": "Konto wird erstellt...",
+      "createAccount": "Konto erstellen"
+    },
+    "validation": {
+      "firstNameRequired": "Vorname ist erforderlich",
+      "lastNameRequired": "Nachname ist erforderlich",
+      "usernameMinLength": "Benutzername muss mindestens 3 Zeichen lang sein",
+      "invalidEmail": "Ungültige E-Mail",
+      "passwordMinLength": "Passwort muss mindestens 8 Zeichen lang sein",
+      "passwordsMatch": "Passwörter müssen übereinstimmen"
+    },
+    "messages": {
+      "success": "Konto erfolgreich erstellt! Weiterleitung zur Anmeldung...",
+      "redirecting": "Weiterleitung zur Anmeldung..."
+    },
+    "errors": {
+      "invalidToken": "Fehler mit Einladungslink",
+      "tokenUsed": "Dieser Einladungslink wurde bereits verwendet",
+      "tokenExpired": "Dieser Einladungslink ist abgelaufen",
+      "usernameExists": "Benutzername existiert bereits",
+      "emailExists": "E-Mail existiert bereits",
+      "createFailed": "Konto konnte nicht erstellt werden. Bitte versuchen Sie es erneut."
+    },
+    "pageTitle": "Konto erstellen"
   }
 }

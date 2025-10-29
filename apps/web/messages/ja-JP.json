@@ -1905,6 +1905,23 @@
       "inactive": "非アクティブ",
       "admin": "管理者",
       "userr": "ユーザー"
+    },
+    "invite": {
+      "button": "招待リンクを生成",
+      "title": "ユーザー招待リンクを生成",
+      "description": "誰かが自分のアカウントを作成できるワンタイム使用リンクを生成します。リンクは15分で期限切れになります。",
+      "generating": "生成中...",
+      "generate": "リンクを生成",
+      "generated": "招待リンクが正常に生成されました！",
+      "linkReady": "招待リンクの準備完了",
+      "linkReadyDescription": "招待したい人にこのリンクを共有してください。彼らは通常ユーザーとして自分のアカウントを作成できます。",
+      "copyLink": "リンクをコピー",
+      "linkCopied": "招待リンクがクリップボードにコピーされました！",
+      "expiresIn": "15分で期限切れ",
+      "close": "閉じる",
+      "errors": {
+        "generateFailed": "招待リンクの生成に失敗しました"
+      }
     }
   },
   "validation": {
@@ -1937,5 +1954,48 @@
   "contextMenu": {
     "newFolder": "新規フォルダ",
     "uploadFile": "ファイルをアップロード"
+  },
+  "registerWithInvite": {
+    "title": "アカウントを作成",
+    "description": "アカウントを作成するには、以下の情報を入力してください",
+    "labels": {
+      "firstName": "名",
+      "firstNamePlaceholder": "名を入力してください",
+      "lastName": "姓",
+      "lastNamePlaceholder": "姓を入力してください",
+      "username": "ユーザー名",
+      "usernamePlaceholder": "ユーザー名を選択してください",
+      "email": "メールアドレス",
+      "emailPlaceholder": "メールアドレスを入力してください",
+      "password": "パスワード",
+      "passwordPlaceholder": "パスワードを選択してください",
+      "confirmPassword": "パスワードの確認",
+      "confirmPasswordPlaceholder": "パスワードを確認してください"
+    },
+    "buttons": {
+      "creating": "アカウントを作成中...",
+      "createAccount": "アカウントを作成"
+    },
+    "validation": {
+      "firstNameRequired": "名は必須です",
+      "lastNameRequired": "姓は必須です",
+      "usernameMinLength": "ユーザー名は3文字以上である必要があります",
+      "invalidEmail": "無効なメールアドレスです",
+      "passwordMinLength": "パスワードは8文字以上である必要があります",
+      "passwordsMatch": "パスワードが一致する必要があります"
+    },
+    "messages": {
+      "success": "アカウントが正常に作成されました！ログインにリダイレクト中...",
+      "redirecting": "ログインにリダイレクト中..."
+    },
+    "errors": {
+      "invalidToken": "招待リンクにエラーがあります",
+      "tokenUsed": "この招待リンクは既に使用されています",
+      "tokenExpired": "この招待リンクは期限切れです",
+      "usernameExists": "ユーザー名は既に存在します",
+      "emailExists": "メールアドレスは既に存在します",
+      "createFailed": "アカウントの作成に失敗しました。もう一度お試しください。"
+    },
+    "pageTitle": "アカウントを作成"
   }
 }

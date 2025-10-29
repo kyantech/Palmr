@@ -1905,6 +1905,23 @@
       "inactive": "Devre Dışı",
       "admin": "Yönetici",
       "userr": "Kullanıcı"
+    },
+    "invite": {
+      "button": "Davet Bağlantısı Oluştur",
+      "title": "Kullanıcı Davet Bağlantısı Oluştur",
+      "description": "Birinin kendi hesabını oluşturmasına izin veren tek kullanımlık bir bağlantı oluşturun. Bağlantı 15 dakika içinde sona erer.",
+      "generating": "Oluşturuluyor...",
+      "generate": "Bağlantı Oluştur",
+      "generated": "Davet bağlantısı başarıyla oluşturuldu!",
+      "linkReady": "Davet bağlantısı hazır",
+      "linkReadyDescription": "Bu bağlantıyı davet etmek istediğiniz kişiyle paylaşın. Normal bir kullanıcı olarak kendi hesaplarını oluşturabilecekler.",
+      "copyLink": "Bağlantıyı Kopyala",
+      "linkCopied": "Davet bağlantısı panoya kopyalandı!",
+      "expiresIn": "15 dakika içinde sona erer",
+      "close": "Kapat",
+      "errors": {
+        "generateFailed": "Davet bağlantısı oluşturulamadı"
+      }
     }
   },
   "validation": {
@@ -1937,5 +1954,48 @@
   "contextMenu": {
     "newFolder": "Yeni klasör",
     "uploadFile": "Dosya yükle"
+  },
+  "registerWithInvite": {
+    "title": "Hesabınızı Oluşturun",
+    "description": "Hesabınızı oluşturmak için aşağıdaki bilgileri doldurun",
+    "labels": {
+      "firstName": "Ad",
+      "firstNamePlaceholder": "Adınızı girin",
+      "lastName": "Soyad",
+      "lastNamePlaceholder": "Soyadınızı girin",
+      "username": "Kullanıcı Adı",
+      "usernamePlaceholder": "Bir kullanıcı adı seçin",
+      "email": "E-posta",
+      "emailPlaceholder": "E-postanızı girin",
+      "password": "Şifre",
+      "passwordPlaceholder": "Bir şifre seçin",
+      "confirmPassword": "Şifreyi Onayla",
+      "confirmPasswordPlaceholder": "Şifrenizi onaylayın"
+    },
+    "buttons": {
+      "creating": "Hesap oluşturuluyor...",
+      "createAccount": "Hesap Oluştur"
+    },
+    "validation": {
+      "firstNameRequired": "Ad gerekli",
+      "lastNameRequired": "Soyad gerekli",
+      "usernameMinLength": "Kullanıcı adı en az 3 karakter olmalıdır",
+      "invalidEmail": "Geçersiz e-posta",
+      "passwordMinLength": "Şifre en az 8 karakter olmalıdır",
+      "passwordsMatch": "Şifreler eşleşmelidir"
+    },
+    "messages": {
+      "success": "Hesap başarıyla oluşturuldu! Girişe yönlendiriliyor...",
+      "redirecting": "Girişe yönlendiriliyor..."
+    },
+    "errors": {
+      "invalidToken": "Davet bağlantısında hata",
+      "tokenUsed": "Bu davet bağlantısı zaten kullanılmış",
+      "tokenExpired": "Bu davet bağlantısının süresi dolmuş",
+      "usernameExists": "Kullanıcı adı zaten mevcut",
+      "emailExists": "E-posta zaten mevcut",
+      "createFailed": "Hesap oluşturulamadı. Lütfen tekrar deneyin."
+    },
+    "pageTitle": "Hesap Oluştur"
   }
 }

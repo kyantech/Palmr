@@ -1905,6 +1905,23 @@
       "inactive": "Inactief",
       "admin": "Beheerder",
       "userr": "Gebruiker"
+    },
+    "invite": {
+      "button": "Genereer Uitnodigingslink",
+      "title": "Genereer Gebruikersuitnodigingslink",
+      "description": "Genereer een eenmalige link waarmee iemand zijn eigen account kan aanmaken. De link verloopt over 15 minuten.",
+      "generating": "Genereren...",
+      "generate": "Link Genereren",
+      "generated": "Uitnodigingslink succesvol gegenereerd!",
+      "linkReady": "Uitnodigingslink klaar",
+      "linkReadyDescription": "Deel deze link met de persoon die je wilt uitnodigen. Ze kunnen hun eigen account aanmaken als gewone gebruiker.",
+      "copyLink": "Link Kopiëren",
+      "linkCopied": "Uitnodigingslink gekopieerd naar klembord!",
+      "expiresIn": "Verloopt over 15 minuten",
+      "close": "Sluiten",
+      "errors": {
+        "generateFailed": "Genereren van uitnodigingslink mislukt"
+      }
     }
   },
   "validation": {
@@ -1937,5 +1954,48 @@
   "contextMenu": {
     "newFolder": "Nieuwe map",
     "uploadFile": "Bestand uploaden"
+  },
+  "registerWithInvite": {
+    "title": "Maak Uw Account Aan",
+    "description": "Vul de onderstaande informatie in om uw account aan te maken",
+    "labels": {
+      "firstName": "Voornaam",
+      "firstNamePlaceholder": "Voer uw voornaam in",
+      "lastName": "Achternaam",
+      "lastNamePlaceholder": "Voer uw achternaam in",
+      "username": "Gebruikersnaam",
+      "usernamePlaceholder": "Kies een gebruikersnaam",
+      "email": "E-mail",
+      "emailPlaceholder": "Voer uw e-mail in",
+      "password": "Wachtwoord",
+      "passwordPlaceholder": "Kies een wachtwoord",
+      "confirmPassword": "Bevestig Wachtwoord",
+      "confirmPasswordPlaceholder": "Bevestig uw wachtwoord"
+    },
+    "buttons": {
+      "creating": "Account aanmaken...",
+      "createAccount": "Account Aanmaken"
+    },
+    "validation": {
+      "firstNameRequired": "Voornaam is verplicht",
+      "lastNameRequired": "Achternaam is verplicht",
+      "usernameMinLength": "Gebruikersnaam moet minimaal 3 tekens bevatten",
+      "invalidEmail": "Ongeldig e-mailadres",
+      "passwordMinLength": "Wachtwoord moet minimaal 8 tekens bevatten",
+      "passwordsMatch": "Wachtwoorden moeten overeenkomen"
+    },
+    "messages": {
+      "success": "Account succesvol aangemaakt! Doorverwijzen naar inloggen...",
+      "redirecting": "Doorverwijzen naar inloggen..."
+    },
+    "errors": {
+      "invalidToken": "Fout met uitnodigingslink",
+      "tokenUsed": "Deze uitnodigingslink is al gebruikt",
+      "tokenExpired": "Deze uitnodigingslink is verlopen",
+      "usernameExists": "Gebruikersnaam bestaat al",
+      "emailExists": "E-mailadres bestaat al",
+      "createFailed": "Aanmaken van account mislukt. Probeer het opnieuw."
+    },
+    "pageTitle": "Account Aanmaken"
   }
 }

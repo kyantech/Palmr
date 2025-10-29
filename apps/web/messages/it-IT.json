@@ -1905,6 +1905,23 @@
       "inactive": "Inattivo",
       "admin": "Amministratore",
       "userr": "Utente"
+    },
+    "invite": {
+      "button": "Genera Link di Invito",
+      "title": "Genera Link di Invito Utente",
+      "description": "Genera un link di utilizzo una tantum che permette a qualcuno di creare il proprio account. Il link scade in 15 minuti.",
+      "generating": "Generazione in corso...",
+      "generate": "Genera Link",
+      "generated": "Link di invito generato con successo!",
+      "linkReady": "Link di invito pronto",
+      "linkReadyDescription": "Condividi questo link con la persona che vuoi invitare. Potranno creare il proprio account come utente regolare.",
+      "copyLink": "Copia Link",
+      "linkCopied": "Link di invito copiato negli appunti!",
+      "expiresIn": "Scade in 15 minuti",
+      "close": "Chiudi",
+      "errors": {
+        "generateFailed": "Impossibile generare il link di invito"
+      }
     }
   },
   "validation": {
@@ -1937,5 +1954,48 @@
   "contextMenu": {
     "newFolder": "Nuova cartella",
     "uploadFile": "Carica file"
+  },
+  "registerWithInvite": {
+    "title": "Crea il Tuo Account",
+    "description": "Compila le informazioni sottostanti per creare il tuo account",
+    "labels": {
+      "firstName": "Nome",
+      "firstNamePlaceholder": "Inserisci il tuo nome",
+      "lastName": "Cognome",
+      "lastNamePlaceholder": "Inserisci il tuo cognome",
+      "username": "Nome Utente",
+      "usernamePlaceholder": "Scegli un nome utente",
+      "email": "Email",
+      "emailPlaceholder": "Inserisci la tua email",
+      "password": "Password",
+      "passwordPlaceholder": "Scegli una password",
+      "confirmPassword": "Conferma Password",
+      "confirmPasswordPlaceholder": "Conferma la tua password"
+    },
+    "buttons": {
+      "creating": "Creazione account in corso...",
+      "createAccount": "Crea Account"
+    },
+    "validation": {
+      "firstNameRequired": "Il nome è obbligatorio",
+      "lastNameRequired": "Il cognome è obbligatorio",
+      "usernameMinLength": "Il nome utente deve essere di almeno 3 caratteri",
+      "invalidEmail": "Email non valida",
+      "passwordMinLength": "La password deve essere di almeno 8 caratteri",
+      "passwordsMatch": "Le password devono corrispondere"
+    },
+    "messages": {
+      "success": "Account creato con successo! Reindirizzamento al login...",
+      "redirecting": "Reindirizzamento al login..."
+    },
+    "errors": {
+      "invalidToken": "Errore con il link di invito",
+      "tokenUsed": "Questo link di invito è già stato utilizzato",
+      "tokenExpired": "Questo link di invito è scaduto",
+      "usernameExists": "Il nome utente esiste già",
+      "emailExists": "L'email esiste già",
+      "createFailed": "Impossibile creare l'account. Riprova."
+    },
+    "pageTitle": "Crea Account"
   }
 }

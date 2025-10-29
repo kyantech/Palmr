@@ -1905,6 +1905,23 @@
       "inactive": "비활성",
       "admin": "관리자",
       "userr": "사용자"
+    },
+    "invite": {
+      "button": "초대 링크 생성",
+      "title": "사용자 초대 링크 생성",
+      "description": "한 번 사용할 수 있는 링크를 생성하여 누군가가 자신의 계정을 만들 수 있도록 합니다. 링크는 15분 후에 만료됩니다.",
+      "generating": "생성 중...",
+      "generate": "링크 생성",
+      "generated": "초대 링크가 성공적으로 생성되었습니다!",
+      "linkReady": "초대 링크 준비됨",
+      "linkReadyDescription": "이 링크를 초대하려는 사람과 공유하세요. 그들은 일반 사용자로 자신의 계정을 만들 수 있습니다.",
+      "copyLink": "링크 복사",
+      "linkCopied": "초대 링크가 클립보드에 복사되었습니다!",
+      "expiresIn": "15분 후 만료",
+      "close": "닫기",
+      "errors": {
+        "generateFailed": "초대 링크 생성 실패"
+      }
     }
   },
   "validation": {
@@ -1937,5 +1954,48 @@
   "contextMenu": {
     "newFolder": "새 폴더",
     "uploadFile": "파일 업로드"
+  },
+  "registerWithInvite": {
+    "title": "계정 만들기",
+    "description": "아래 정보를 입력하여 계정을 만드세요",
+    "labels": {
+      "firstName": "이름",
+      "firstNamePlaceholder": "이름을 입력하세요",
+      "lastName": "성",
+      "lastNamePlaceholder": "성을 입력하세요",
+      "username": "사용자 이름",
+      "usernamePlaceholder": "사용자 이름을 선택하세요",
+      "email": "이메일",
+      "emailPlaceholder": "이메일을 입력하세요",
+      "password": "비밀번호",
+      "passwordPlaceholder": "비밀번호를 선택하세요",
+      "confirmPassword": "비밀번호 확인",
+      "confirmPasswordPlaceholder": "비밀번호를 확인하세요"
+    },
+    "buttons": {
+      "creating": "계정 생성 중...",
+      "createAccount": "계정 만들기"
+    },
+    "validation": {
+      "firstNameRequired": "이름은 필수입니다",
+      "lastNameRequired": "성은 필수입니다",
+      "usernameMinLength": "사용자 이름은 최소 3자 이상이어야 합니다",
+      "invalidEmail": "유효하지 않은 이메일입니다",
+      "passwordMinLength": "비밀번호는 최소 8자 이상이어야 합니다",
+      "passwordsMatch": "비밀번호가 일치해야 합니다"
+    },
+    "messages": {
+      "success": "계정이 성공적으로 생성되었습니다! 로그인 페이지로 이동합니다...",
+      "redirecting": "로그인 페이지로 이동합니다..."
+    },
+    "errors": {
+      "invalidToken": "초대 링크에 오류가 있습니다",
+      "tokenUsed": "이 초대 링크는 이미 사용되었습니다",
+      "tokenExpired": "이 초대 링크는 만료되었습니다",
+      "usernameExists": "사용자 이름이 이미 존재합니다",
+      "emailExists": "이메일이 이미 존재합니다",
+      "createFailed": "계정 생성에 실패했습니다. 다시 시도해주세요."
+    },
+    "pageTitle": "계정 만들기"
   }
 }

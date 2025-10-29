@@ -1909,6 +1909,23 @@
       "inactive": "Không hoạt động",
       "admin": "Quản trị viên",
       "userr": "Người dùng"
+    },
+    "invite": {
+      "button": "Tạo liên kết mời",
+      "title": "Tạo liên kết mời người dùng",
+      "description": "Tạo một liên kết sử dụng một lần cho phép ai đó tạo tài khoản của riêng họ. Liên kết hết hạn sau 15 phút.",
+      "generating": "Đang tạo...",
+      "generate": "Tạo liên kết",
+      "generated": "Đã tạo liên kết mời thành công!",
+      "linkReady": "Liên kết mời đã sẵn sàng",
+      "linkReadyDescription": "Chia sẻ liên kết này với người bạn muốn mời. Họ sẽ có thể tạo tài khoản của riêng mình với tư cách là người dùng thông thường.",
+      "copyLink": "Sao chép liên kết",
+      "linkCopied": "Đã sao chép liên kết mời vào khay nhớ tạm!",
+      "expiresIn": "Hết hạn sau 15 phút",
+      "close": "Đóng",
+      "errors": {
+        "generateFailed": "Không thể tạo liên kết mời"
+      }
     }
   },
   "embedCode": {
@@ -1937,5 +1954,48 @@
     "passwordMinLength": "Mật khẩu phải có ít nhất 6 ký tự",
     "nameRequired": "Tên là bắt buộc",
     "required": "Trường này là bắt buộc"
+  },
+  "registerWithInvite": {
+    "title": "Tạo Tài Khoản Của Bạn",
+    "description": "Điền thông tin bên dưới để tạo tài khoản của bạn",
+    "labels": {
+      "firstName": "Tên",
+      "firstNamePlaceholder": "Nhập tên của bạn",
+      "lastName": "Họ",
+      "lastNamePlaceholder": "Nhập họ của bạn",
+      "username": "Tên người dùng",
+      "usernamePlaceholder": "Chọn tên người dùng",
+      "email": "Email",
+      "emailPlaceholder": "Nhập email của bạn",
+      "password": "Mật khẩu",
+      "passwordPlaceholder": "Chọn mật khẩu",
+      "confirmPassword": "Xác nhận mật khẩu",
+      "confirmPasswordPlaceholder": "Xác nhận mật khẩu của bạn"
+    },
+    "buttons": {
+      "creating": "Đang tạo tài khoản...",
+      "createAccount": "Tạo Tài Khoản"
+    },
+    "validation": {
+      "firstNameRequired": "Tên là bắt buộc",
+      "lastNameRequired": "Họ là bắt buộc",
+      "usernameMinLength": "Tên người dùng phải có ít nhất 3 ký tự",
+      "invalidEmail": "Email không hợp lệ",
+      "passwordMinLength": "Mật khẩu phải có ít nhất 8 ký tự",
+      "passwordsMatch": "Mật khẩu phải khớp"
+    },
+    "messages": {
+      "success": "Đã tạo tài khoản thành công! Đang chuyển hướng đến đăng nhập...",
+      "redirecting": "Đang chuyển hướng đến đăng nhập..."
+    },
+    "errors": {
+      "invalidToken": "Lỗi với liên kết mời",
+      "tokenUsed": "Liên kết mời này đã được sử dụng",
+      "tokenExpired": "Liên kết mời này đã hết hạn",
+      "usernameExists": "Tên người dùng đã tồn tại",
+      "emailExists": "Email đã tồn tại",
+      "createFailed": "Không thể tạo tài khoản. Vui lòng thử lại."
+    },
+    "pageTitle": "Tạo Tài Khoản"
   }
 }

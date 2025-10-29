@@ -1909,6 +1909,23 @@
       "inactive": "לא פעיל",
       "admin": "מנהל",
       "userr": "משתמש"
+    },
+    "invite": {
+      "button": "צור קישור הזמנה",
+      "title": "צור קישור הזמנת משתמש",
+      "description": "צור קישור חד-פעמי המאפשר למישהו ליצור חשבון משלו. הקישור פג תוקף בעוד 15 דקות.",
+      "generating": "יוצר...",
+      "generate": "צור קישור",
+      "generated": "קישור ההזמנה נוצר בהצלחה!",
+      "linkReady": "קישור ההזמנה מוכן",
+      "linkReadyDescription": "שתף קישור זה עם האדם שאתה רוצה להזמין. הם יוכלו ליצור חשבון משלהם כמשתמש רגיל.",
+      "copyLink": "העתק קישור",
+      "linkCopied": "קישור ההזמנה הועתק ללוח!",
+      "expiresIn": "פג תוקף בעוד 15 דקות",
+      "close": "סגור",
+      "errors": {
+        "generateFailed": "נכשל ביצירת קישור הזמנה"
+      }
     }
   },
   "embedCode": {
@@ -1937,5 +1954,48 @@
     "passwordMinLength": "סיסמה חייבת להכיל לפחות 6 תווים",
     "nameRequired": "שם נדרש",
     "required": "שדה זה נדרש"
+  },
+  "registerWithInvite": {
+    "title": "צור את החשבון שלך",
+    "description": "מלא את הפרטים למטה כדי ליצור את החשבון שלך",
+    "labels": {
+      "firstName": "שם פרטי",
+      "firstNamePlaceholder": "הזן את השם הפרטי שלך",
+      "lastName": "שם משפחה",
+      "lastNamePlaceholder": "הזן את השם המשפחה שלך",
+      "username": "שם משתמש",
+      "usernamePlaceholder": "בחר שם משתמש",
+      "email": "דוא\"ל",
+      "emailPlaceholder": "הזן את הדוא\"ל שלך",
+      "password": "סיסמה",
+      "passwordPlaceholder": "בחר סיסמה",
+      "confirmPassword": "אשר סיסמה",
+      "confirmPasswordPlaceholder": "אשר את הסיסמה שלך"
+    },
+    "buttons": {
+      "creating": "יוצר חשבון...",
+      "createAccount": "צור חשבון"
+    },
+    "validation": {
+      "firstNameRequired": "שם פרטי נדרש",
+      "lastNameRequired": "שם משפחה נדרש",
+      "usernameMinLength": "שם משתמש חייב להכיל לפחות 3 תווים",
+      "invalidEmail": "דוא\"ל לא חוקי",
+      "passwordMinLength": "סיסמה חייבת להכיל לפחות 8 תווים",
+      "passwordsMatch": "סיסמאות חייבות להתאים"
+    },
+    "messages": {
+      "success": "החשבון נוצר בהצלחה! מעביר לכניסה...",
+      "redirecting": "מעביר לכניסה..."
+    },
+    "errors": {
+      "invalidToken": "שגיאה בקישור ההזמנה",
+      "tokenUsed": "קישור ההזמנה הזה כבר נוצל",
+      "tokenExpired": "קישור ההזמנה הזה פג תוקפו",
+      "usernameExists": "שם המשתמש כבר קיים",
+      "emailExists": "הדוא\"ל כבר קיים",
+      "createFailed": "נכשל ביצירת חשבון. אנא נסה שוב."
+    },
+    "pageTitle": "צור חשבון"
   }
 }

@@ -1909,6 +1909,23 @@
       "inactive": "Inaktiv",
       "admin": "Administration",
       "userr": "Användare"
+    },
+    "invite": {
+      "button": "Generera inbjudningslänk",
+      "title": "Generera användarinbjudningslänk",
+      "description": "Generera en engångslänk som låter någon skapa sitt eget konto. Länken upphör att gälla om 15 minuter.",
+      "generating": "Genererar...",
+      "generate": "Generera länk",
+      "generated": "Inbjudningslänken genererades framgångsrikt!",
+      "linkReady": "Inbjudningslänk klar",
+      "linkReadyDescription": "Dela denna länk med personen du vill bjuda in. De kommer att kunna skapa sitt eget konto som en vanlig användare.",
+      "copyLink": "Kopiera länk",
+      "linkCopied": "Inbjudningslänken kopierades till urklipp!",
+      "expiresIn": "Upphör om 15 minuter",
+      "close": "Stäng",
+      "errors": {
+        "generateFailed": "Det gick inte att generera inbjudningslänk"
+      }
     }
   },
   "embedCode": {
@@ -1937,5 +1954,48 @@
     "passwordMinLength": "Lösenordet måste bestå av minst 6 tecken",
     "nameRequired": "Namn krävs",
     "required": "Detta fält är obligatoriskt"
+  },
+  "registerWithInvite": {
+    "title": "Skapa ditt konto",
+    "description": "Fyll i informationen nedan för att skapa ditt konto",
+    "labels": {
+      "firstName": "Förnamn",
+      "firstNamePlaceholder": "Ange ditt förnamn",
+      "lastName": "Efternamn",
+      "lastNamePlaceholder": "Ange ditt efternamn",
+      "username": "Användarnamn",
+      "usernamePlaceholder": "Välj ett användarnamn",
+      "email": "E-post",
+      "emailPlaceholder": "Ange din e-post",
+      "password": "Lösenord",
+      "passwordPlaceholder": "Välj ett lösenord",
+      "confirmPassword": "Bekräfta lösenord",
+      "confirmPasswordPlaceholder": "Bekräfta ditt lösenord"
+    },
+    "buttons": {
+      "creating": "Skapar konto...",
+      "createAccount": "Skapa konto"
+    },
+    "validation": {
+      "firstNameRequired": "Förnamn krävs",
+      "lastNameRequired": "Efternamn krävs",
+      "usernameMinLength": "Användarnamnet måste vara minst 3 tecken",
+      "invalidEmail": "Ogiltig e-post",
+      "passwordMinLength": "Lösenordet måste vara minst 8 tecken",
+      "passwordsMatch": "Lösenorden måste matcha"
+    },
+    "messages": {
+      "success": "Kontot skapades framgångsrikt! Omdirigerar till inloggning...",
+      "redirecting": "Omdirigerar till inloggning..."
+    },
+    "errors": {
+      "invalidToken": "Fel med inbjudningslänk",
+      "tokenUsed": "Denna inbjudningslänk har redan använts",
+      "tokenExpired": "Denna inbjudningslänk har gått ut",
+      "usernameExists": "Användarnamnet finns redan",
+      "emailExists": "E-postadressen finns redan",
+      "createFailed": "Det gick inte att skapa konto. Försök igen."
+    },
+    "pageTitle": "Skapa konto"
   }
 }
