@@ -59,13 +59,13 @@ const images = [
   "https://res.cloudinary.com/technical-intelligence/image/upload/v1745546005/Palmr./profile_mizwvg.png",
 ];
 
-const docsLink = "/docs/3.1-beta";
+const docsLink = "/docs/3.2-beta";
 
 function Hero() {
   return (
     <section className="relative z-[2] flex flex-col border-x border-t  px-6 pt-12 pb-10 md:px-12 md:pt-16 max-md:text-center">
       <h1 className="mb-8 text-6xl font-bold">
-        Palmr. <span className="text-[13px] font-light text-muted-foreground/50 font-mono">v3.1-beta</span>
+        Palmr. <span className="text-[13px] font-light text-muted-foreground/50 font-mono">v3.2-beta</span>
       </h1>
       <h1 className="hidden text-4xl font-medium max-w-[600px] md:block mb-4">Modern & efficient file sharing</h1>
       <p className="mb-8 text-fd-muted-foreground md:max-w-[80%] md:text-xl">
@@ -294,7 +294,7 @@ function FullWidthFooter() {
       <div className="flex items-center gap-1 text-sm max-w-7xl">
         <span>Powered by</span>
         <Link
-          href="http://kyantech.com.br"
+          href="https://github.com/kyantech"
           rel="noopener noreferrer"
           target="_blank"
           className="flex items-center hover:text-green-700 text-green-500 transition-colors font-light"

@@ -144,7 +144,15 @@
     "update": "Aggiorna",
     "click": "Clicca per",
     "creating": "Creazione in corso...",
-    "loadingSimple": "Caricamento..."
+    "loadingSimple": "Caricamento...",
+    "create": "Crea",
+    "deleting": "Eliminazione...",
+    "move": "Sposta",
+    "rename": "Rinomina",
+    "search": "Cerca",
+    "share": "Condividi",
+    "copied": "Copiato",
+    "copy": "Copia"
   },
   "createShare": {
     "title": "Crea Condivisione",
@@ -160,7 +168,53 @@
     "create": "Crea Condivisione",
     "success": "Condivisione creata con successo",
     "error": "Errore nella creazione della condivisione",
-    "namePlaceholder": "Inserisci un nome per la tua condivisione"
+    "namePlaceholder": "Inserisci un nome per la tua condivisione",
+    "nextSelectFiles": "Avanti: Seleziona file",
+    "searchLabel": "Cerca",
+    "tabs": {
+      "shareDetails": "Dettagli condivisione",
+      "selectFiles": "Seleziona file"
+    }
+  },
+  "customization": {
+    "breadcrumb": "Personalizzazione",
+    "colors": {
+      "title": "Colori del Tema",
+      "description": "Scegli il tuo colore primario preferito per il tema",
+      "presets": "Colori Disponibili",
+      "presetsDescription": "Seleziona tra i temi colore disponibili",
+      "reset": "Ripristina Predefinito"
+    },
+    "fonts": {
+      "title": "Tipografia",
+      "description": "Scegli la tua famiglia di caratteri preferita",
+      "available": "Caratteri Disponibili",
+      "availableDescription": "Seleziona tra le famiglie di caratteri disponibili",
+      "reset": "Ripristina Predefinito"
+    },
+    "radius": {
+      "title": "Raggio dei Bordi",
+      "description": "Personalizza la rotondità degli elementi dell'interfaccia",
+      "available": "Opzioni di Rotondità",
+      "availableDescription": "Scegli come dovrebbero apparire gli angoli arrotondati",
+      "reset": "Ripristina Predefinito"
+    },
+    "background": {
+      "title": "Colori di Sfondo",
+      "description": "Personalizza i colori di sfondo per le modalità chiara e scura",
+      "lightMode": "Modalità Chiara",
+      "darkMode": "Modalità Scura",
+      "availableDescription": "Scegli i colori di sfondo per entrambi i temi chiari e scuri",
+      "reset": "Ripristina Predefinito"
+    },
+    "theme": {
+      "title": "Modalità Tema",
+      "description": "Scegli tra tema chiaro, scuro o di sistema",
+      "selectTheme": "Preferenza Tema",
+      "availableDescription": "Seleziona la tua modalità tema preferita",
+      "reset": "Ripristina Sistema"
+    },
+    "pageTitle": "Personalizzazione"
   },
   "dashboard": {
     "loadError": "Errore durante il caricamento dei dati del pannello di controllo",
@@ -174,7 +228,42 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "File da eliminare",
-    "sharesToDelete": "Condivisioni che saranno eliminate"
+    "sharesToDelete": "Condivisioni che saranno eliminate",
+    "foldersToDelete": "Cartelle da eliminare",
+    "itemsToDelete": "Elementi da eliminare"
+  },
+  "downloadQueue": {
+    "downloadQueued": "Download in coda: {fileName}",
+    "queuedDescription": "Il tuo download inizierà automaticamente quando si libera uno slot",
+    "queuePosition": "Download in coda alla posizione {position}: {fileName}",
+    "estimatedWait": "Tempo di attesa stimato: {time}",
+    "queueFull": "Coda di download piena",
+    "queueFullDescription": "Riprova tra qualche minuto quando la coda avrà spazio",
+    "cancelSuccess": "Download annullato con successo",
+    "cancelError": "Impossibile annullare il download: {error}",
+    "status": {
+      "pending": "Preparazione...",
+      "queued": "In coda",
+      "downloading": "Download in corso",
+      "completed": "Completato",
+      "failed": "Fallito"
+    },
+    "waitTime": {
+      "seconds": "{seconds}s",
+      "minutes": "{minutes}m",
+      "hoursMinutes": "{hours}h {minutes}m"
+    },
+    "indicator": {
+      "title": "Download",
+      "downloads": "Coda Download",
+      "active": "Attivi",
+      "queued": "In Coda",
+      "position": "Posizione {position}",
+      "estimatedWait": "Attesa: {time}",
+      "unknownFile": "File sconosciuto",
+      "noDownloads": "Nessun download in corso",
+      "refresh": "Aggiorna Coda"
+    }
   },
   "emptyState": {
     "noFiles": "Nessun file caricato ancora",
@@ -201,6 +290,7 @@
     "extension": "Estensione",
     "descriptionLabel": "Descrizione",
     "descriptionPlaceholder": "Inserisci descrizione del file",
+    "addDescriptionPlaceholder": "Aggiungi descrizione...",
     "deleteFile": "Elimina File",
     "deleteConfirmation": "Sei sicuro di voler eliminare ?",
     "deleteWarning": "Questa azione non può essere annullata."
@@ -214,6 +304,7 @@
   },
   "filePreview": {
     "title": "Anteprima File",
+    "description": "Anteprima e download del file",
     "loading": "Caricamento...",
     "notAvailable": "Anteprima non disponibile per questo tipo di file.",
     "downloadToView": "Utilizzare il pulsante di download per scaricare il file.",
@@ -248,7 +339,8 @@
     "previewFile": "Anteprima file",
     "addToShare": "Aggiungi alla condivisione",
     "removeFromShare": "Rimuovi dalla condivisione",
-    "saveChanges": "Salva Modifiche"
+    "saveChanges": "Salva Modifiche",
+    "editFolder": "Modifica cartella"
   },
   "files": {
     "title": "Tutti i File",
@@ -267,11 +359,24 @@
     "bulkDownloadFileError": "Errore nel download del file {fileName}",
     "bulkDeleteSuccess": "{count, plural, =1 {1 file eliminato con successo} other {# file eliminati con successo}}",
     "bulkDeleteError": "Errore nell'eliminazione dei file selezionati",
+    "bulkDeleteTitle": "Elimina File Selezionati",
+    "bulkDeleteConfirmation": "Sei sicuro di voler eliminare {count, plural, =1 {1 file} other {# file}}? Questa azione non può essere annullata.",
     "viewMode": {
       "table": "Tabella",
       "grid": "Griglia"
     },
-    "totalFiles": "{count, plural, =0 {Nessun file} =1 {1 file} other {# file}}"
+    "totalFiles": "{count, plural, =0 {Nessun file} =1 {1 file} other {# file}}",
+    "actions": {
+      "open": "Apri",
+      "rename": "Rinomina",
+      "delete": "Elimina"
+    },
+    "empty": {
+      "title": "Ancora nessun file o cartella",
+      "description": "Carica il tuo primo file o crea una cartella per iniziare"
+    },
+    "files": "file",
+    "folders": "cartelle"
   },
   "filesTable": {
     "ariaLabel": "Tabella dei file",
@@ -300,6 +405,33 @@
       "share": "Condividi Selezionati",
       "delete": "Elimina Selezionati"
     }
+  },
+  "folderActions": {
+    "editFolder": "Modifica cartella",
+    "folderName": "Nome cartella",
+    "folderNamePlaceholder": "Inserisci nome cartella",
+    "folderDescription": "Descrizione",
+    "folderDescriptionPlaceholder": "Inserisci descrizione cartella (opzionale)",
+    "createFolder": "Crea nuova cartella",
+    "renameFolder": "Rinomina cartella",
+    "moveFolder": "Sposta cartella",
+    "shareFolder": "Condividi cartella",
+    "deleteFolder": "Elimina cartella",
+    "moveTo": "Sposta in",
+    "selectDestination": "Seleziona cartella destinazione",
+    "rootFolder": "Radice",
+    "folderCreated": "Cartella creata con successo",
+    "folderRenamed": "Cartella rinominata con successo",
+    "folderMoved": "Cartella spostata con successo",
+    "folderDeleted": "Cartella eliminata con successo",
+    "folderShared": "Cartella condivisa con successo",
+    "createFolderError": "Errore nella creazione della cartella",
+    "renameFolderError": "Errore nella rinominazione della cartella",
+    "moveFolderError": "Errore nello spostamento della cartella",
+    "deleteFolderError": "Errore nell'eliminazione della cartella",
+    "shareFolderError": "Errore nella condivisione della cartella",
+    "deleteConfirmation": "Sei sicuro di voler eliminare questa cartella?",
+    "deleteWarning": "Questa azione non può essere annullata."
   },
   "footer": {
     "poweredBy": "Sviluppato da",
@@ -402,16 +534,42 @@
       "removeFailed": "Errore durante la rimozione del logo"
     }
   },
+  "moveItems": {
+    "itemsToMove": "Elementi da spostare:",
+    "movingTo": "Spostamento in:",
+    "title": "Sposta {count, plural, =1 {elemento} other {elementi}}",
+    "description": "Sposta {count, plural, =1 {elemento} other {elementi}} in una nuova posizione",
+    "success": "Spostati con successo {count} {count, plural, =1 {elemento} other {elementi}}"
+  },
   "navbar": {
     "logoAlt": "Logo dell'App",
     "profileMenu": "Menu Profilo",
     "profile": "Profilo",
     "settings": "Impostazioni",
     "usersManagement": "Gestione Utenti",
-    "logout": "Logout"
+    "logout": "Logout",
+    "customization": "Personalizzazione"
   },
   "navigation": {
     "dashboard": "Pannello di controllo"
+  },
+  "notifications": {
+    "permissionGranted": "Notifiche download abilitate",
+    "permissionDenied": "Notifiche download disabilitate",
+    "downloadComplete": {
+      "title": "Download Completato",
+      "body": "Il download di {fileName} è terminato"
+    },
+    "downloadFailed": {
+      "title": "Download Fallito",
+      "body": "Impossibile scaricare {fileName}: {error}",
+      "unknownError": "Errore sconosciuto"
+    },
+    "queueProcessing": {
+      "title": "Download in Avvio",
+      "body": "{fileName} sta ora scaricando{position}",
+      "position": " (era #{position} in coda)"
+    }
   },
   "profile": {
     "password": {
@@ -750,6 +908,7 @@
         "noFiles": "Nessun file ricevuto ancora",
         "noFilesDescription": "I file inviati attraverso questo link appariranno qui",
         "fileCount": "{count, plural, =0 {Nessun file} =1 {1 file} other {# file}}",
+        "invalidDate": "Data non valida",
         "totalSize": "Dimensione totale: {size}",
         "columns": {
           "file": "File",
@@ -900,7 +1059,8 @@
     "upload": {
       "metadata": {
         "title": "Invia File - Palmr",
-        "description": "Invia file attraverso il link condiviso"
+        "description": "Invia file attraverso il link condiviso",
+        "descriptionWithLimit": "Carica file (max {limit} file)"
       },
       "layout": {
         "defaultTitle": "Invia File",
@@ -1010,7 +1170,10 @@
   },
   "searchBar": {
     "placeholder": "Cerca file...",
-    "results": "Trovati {filtered} di {total} file"
+    "results": "Trovati {filtered} di {total} file",
+    "placeholderFolders": "Cerca cartelle...",
+    "noResults": "Nessun risultato trovato per \"{query}\"",
+    "placeholderFiles": "Cerca file..."
   },
   "settings": {
     "groups": {
@@ -1139,6 +1302,10 @@
       "passwordAuthEnabled": {
         "title": "Autenticazione Password",
         "description": "Abilita o disabilita l'autenticazione basata su password"
+      },
+      "hideVersion": {
+        "title": "Nascondi Versione",
+        "description": "Nascondi la versione di Palmr nel piè di pagina di tutte le pagine"
       }
     },
     "buttons": {
@@ -1200,11 +1367,16 @@
       "description": "Questa condivisione potrebbe essere stata eliminata o è scaduta."
     },
     "pageTitle": "Condivisione",
-    "downloadAll": "Scarica Tutto"
+    "downloadAll": "Scarica Tutto",
+    "metadata": {
+      "defaultDescription": "Condividi file in modo sicuro",
+      "filesShared": "{count, plural, =1 {1 file condiviso} other {# file condivisi}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "Elimina Condivisione",
     "deleteConfirmation": "Sei sicuro di voler eliminare questa condivisione? Questa azione non può essere annullata.",
+    "addDescriptionPlaceholder": "Aggiungi descrizione...",
     "editTitle": "Modifica Condivisione",
     "nameLabel": "Nome Condivisione",
     "descriptionLabel": "Descrizione",
@@ -1223,7 +1395,17 @@
     "editSuccess": "Condivisione aggiornata con successo",
     "editError": "Errore nell'aggiornamento della condivisione",
     "bulkDeleteConfirmation": "Sei sicuro di voler eliminare {count, plural, =1 {1 condivisione} other {# condivisioni}}? Questa azione non può essere annullata.",
-    "bulkDeleteTitle": "Elimina Condivisioni Selezionate"
+    "bulkDeleteTitle": "Elimina Condivisioni Selezionate",
+    "aliasLabel": "Alias collegamento",
+    "aliasPlaceholder": "Inserisci alias personalizzato",
+    "copyLink": "Copia collegamento",
+    "fileTitle": "Condividi file",
+    "folderTitle": "Condividi cartella",
+    "generateLink": "Genera collegamento",
+    "linkDescriptionFile": "Genera un collegamento personalizzato per condividere il file",
+    "linkDescriptionFolder": "Genera un collegamento personalizzato per condividere la cartella",
+    "linkReady": "Il tuo collegamento di condivisione è pronto:",
+    "linkTitle": "Genera collegamento"
   },
   "shareDetails": {
     "title": "Dettagli Condivisione",
@@ -1350,7 +1532,8 @@
     "files": "file",
     "totalSize": "Dimensione totale",
     "creating": "Creazione...",
-    "create": "Crea Condivisione"
+    "create": "Crea Condivisione",
+    "itemsToShare": "Elementi da condividere ({count} {count, plural, =1 {elemento} other {elementi}})"
   },
   "shareSecurity": {
     "subtitle": "Configura protezione password e opzioni di sicurezza per questa condivisione",
@@ -1455,7 +1638,8 @@
       "download": "Scarica selezionato"
     },
     "selectAll": "Seleziona tutto",
-    "selectShare": "Seleziona condivisione {shareName}"
+    "selectShare": "Seleziona condivisione {shareName}",
+    "folderCount": "cartelle"
   },
   "storageUsage": {
     "title": "Utilizzo Archiviazione",
@@ -1749,5 +1933,17 @@
     "passwordMinLength": "La password deve contenere almeno 6 caratteri",
     "nameRequired": "Il nome è obbligatorio",
     "required": "Questo campo è obbligatorio"
+  },
+  "embedCode": {
+    "title": "Incorpora immagine",
+    "description": "Usa questi codici per incorporare questa immagine in forum, siti web o altre piattaforme",
+    "tabs": {
+      "directLink": "Link diretto",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "URL diretto al file immagine",
+    "htmlDescription": "Usa questo codice per incorporare l'immagine nelle pagine HTML",
+    "bbcodeDescription": "Usa questo codice per incorporare l'immagine nei forum che supportano BBCode"
   }
 }

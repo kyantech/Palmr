@@ -144,7 +144,15 @@
     "update": "업데이트",
     "click": "클릭하여",
     "creating": "생성 중...",
-    "loadingSimple": "로딩 중..."
+    "loadingSimple": "로딩 중...",
+    "create": "생성",
+    "deleting": "삭제 중...",
+    "move": "이동",
+    "rename": "이름 변경",
+    "search": "검색",
+    "share": "공유",
+    "copied": "복사됨",
+    "copy": "복사"
   },
   "createShare": {
     "title": "공유 생성",
@@ -160,7 +168,53 @@
     "create": "공유 생성",
     "success": "공유가 성공적으로 생성되었습니다",
     "error": "공유 생성에 실패했습니다",
-    "namePlaceholder": "공유 이름을 입력하세요"
+    "namePlaceholder": "공유 이름을 입력하세요",
+    "nextSelectFiles": "다음: 파일 선택",
+    "searchLabel": "검색",
+    "tabs": {
+      "shareDetails": "공유 세부사항",
+      "selectFiles": "파일 선택"
+    }
+  },
+  "customization": {
+    "breadcrumb": "커스터마이징",
+    "colors": {
+      "title": "테마 색상",
+      "description": "선호하는 기본 색상 테마를 선택하세요",
+      "presets": "사용 가능한 색상",
+      "presetsDescription": "사용 가능한 색상 테마에서 선택하세요",
+      "reset": "기본값으로 재설정"
+    },
+    "fonts": {
+      "title": "타이포그래피",
+      "description": "선호하는 글꼴을 선택하세요",
+      "available": "사용 가능한 글꼴",
+      "availableDescription": "사용 가능한 글꼴 중에서 선택하세요",
+      "reset": "기본값으로 재설정"
+    },
+    "radius": {
+      "title": "테두리 반경",
+      "description": "인터페이스 요소의 둥근 정도를 조정하세요",
+      "available": "둥근 정도 옵션",
+      "availableDescription": "모서리의 둥근 정도를 선택하세요",
+      "reset": "기본값으로 재설정"
+    },
+    "background": {
+      "title": "배경 색상",
+      "description": "라이트 모드와 다크 모드의 배경 색상을 조정하세요",
+      "lightMode": "라이트 모드",
+      "darkMode": "다크 모드",
+      "availableDescription": "라이트와 다크 테마의 배경 색상을 선택하세요",
+      "reset": "기본값으로 재설정"
+    },
+    "theme": {
+      "title": "테마 모드",
+      "description": "라이트, 다크 또는 시스템 테마 중 선택하세요",
+      "selectTheme": "테마 설정",
+      "availableDescription": "선호하는 테마 모드를 선택하세요",
+      "reset": "시스템 설정으로 재설정"
+    },
+    "pageTitle": "커스터마이징"
   },
   "dashboard": {
     "loadError": "대시보드 데이터를 불러오는데 실패했습니다",
@@ -174,7 +228,42 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "삭제할 파일",
-    "sharesToDelete": "삭제될 공유"
+    "sharesToDelete": "삭제될 공유",
+    "foldersToDelete": "삭제할 폴더",
+    "itemsToDelete": "삭제할 항목"
+  },
+  "downloadQueue": {
+    "downloadQueued": "다운로드 대기 중: {fileName}",
+    "queuedDescription": "슬롯이 사용 가능해지면 자동으로 다운로드가 시작됩니다",
+    "queuePosition": "다운로드 대기 순서 {position}번: {fileName}",
+    "estimatedWait": "예상 대기 시간: {time}",
+    "queueFull": "다운로드 대기열이 가득 찼습니다",
+    "queueFullDescription": "대기열에 여유가 생길 때까지 잠시 후 다시 시도해 주세요",
+    "cancelSuccess": "다운로드가 성공적으로 취소되었습니다",
+    "cancelError": "다운로드 취소 실패: {error}",
+    "status": {
+      "pending": "준비 중...",
+      "queued": "대기 중",
+      "downloading": "다운로드 중",
+      "completed": "완료됨",
+      "failed": "실패"
+    },
+    "waitTime": {
+      "seconds": "{seconds}초",
+      "minutes": "{minutes}분",
+      "hoursMinutes": "{hours}시간 {minutes}분"
+    },
+    "indicator": {
+      "title": "다운로드",
+      "downloads": "다운로드 대기열",
+      "active": "진행 중",
+      "queued": "대기 중",
+      "position": "순서 {position}",
+      "estimatedWait": "대기: {time}",
+      "unknownFile": "알 수 없는 파일",
+      "noDownloads": "진행 중인 다운로드 없음",
+      "refresh": "대기열 새로고침"
+    }
   },
   "emptyState": {
     "noFiles": "아직 파일이 업로드되지 않았습니다",
@@ -203,7 +292,8 @@
     "descriptionPlaceholder": "파일 설명을 입력하세요",
     "deleteFile": "파일 삭제",
     "deleteConfirmation": "을(를) 삭제하시겠습니까?",
-    "deleteWarning": "이 작업은 취소할 수 없습니다."
+    "deleteWarning": "이 작업은 취소할 수 없습니다.",
+    "addDescriptionPlaceholder": "설명 추가..."
   },
   "fileManager": {
     "downloadError": "파일 다운로드에 실패했습니다",
@@ -214,6 +304,7 @@
   },
   "filePreview": {
     "title": "파일 미리보기",
+    "description": "파일 미리보기 및 다운로드",
     "loading": "로딩 중...",
     "notAvailable": "이 파일 유형에 대한 미리보기를 사용할 수 없습니다.",
     "downloadToView": "다운로드 버튼을 사용하여 파일을 다운로드하세요.",
@@ -248,7 +339,8 @@
     "previewFile": "파일 미리보기",
     "addToShare": "공유에 추가",
     "removeFromShare": "공유에서 제거",
-    "saveChanges": "변경사항 저장"
+    "saveChanges": "변경사항 저장",
+    "editFolder": "폴더 편집"
   },
   "files": {
     "title": "모든 파일",
@@ -271,7 +363,20 @@
       "table": "테이블",
       "grid": "그리드"
     },
-    "totalFiles": "{count, plural, =0 {파일 없음} =1 {1개 파일} other {#개 파일}}"
+    "totalFiles": "{count, plural, =0 {파일 없음} =1 {1개 파일} other {#개 파일}}",
+    "bulkDeleteConfirmation": "{count, plural, =1 {1개 파일} other {#개 파일}}을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+    "bulkDeleteTitle": "선택한 파일 삭제",
+    "actions": {
+      "open": "열기",
+      "rename": "이름 변경",
+      "delete": "삭제"
+    },
+    "empty": {
+      "title": "아직 파일이나 폴더가 없습니다",
+      "description": "첫 번째 파일을 업로드하거나 폴더를 만들어 시작하세요"
+    },
+    "files": "파일",
+    "folders": "폴더"
   },
   "filesTable": {
     "ariaLabel": "파일 테이블",
@@ -300,6 +405,33 @@
       "share": "선택된 항목 공유",
       "delete": "선택된 항목 삭제"
     }
+  },
+  "folderActions": {
+    "editFolder": "폴더 편집",
+    "folderName": "폴더 이름",
+    "folderNamePlaceholder": "폴더 이름 입력",
+    "folderDescription": "설명",
+    "folderDescriptionPlaceholder": "폴더 설명 입력 (선택사항)",
+    "createFolder": "새 폴더 만들기",
+    "renameFolder": "폴더 이름 변경",
+    "moveFolder": "폴더 이동",
+    "shareFolder": "폴더 공유",
+    "deleteFolder": "폴더 삭제",
+    "moveTo": "이동 위치",
+    "selectDestination": "대상 폴더 선택",
+    "rootFolder": "루트",
+    "folderCreated": "폴더가 성공적으로 생성되었습니다",
+    "folderRenamed": "폴더 이름이 성공적으로 변경되었습니다",
+    "folderMoved": "폴더가 성공적으로 이동되었습니다",
+    "folderDeleted": "폴더가 성공적으로 삭제되었습니다",
+    "folderShared": "폴더가 성공적으로 공유되었습니다",
+    "createFolderError": "폴더 생성 중 오류 발생",
+    "renameFolderError": "폴더 이름 변경 중 오류 발생",
+    "moveFolderError": "폴더 이동 중 오류 발생",
+    "deleteFolderError": "폴더 삭제 중 오류 발생",
+    "shareFolderError": "폴더 공유 중 오류 발생",
+    "deleteConfirmation": "이 폴더를 삭제하시겠습니까?",
+    "deleteWarning": "이 작업은 되돌릴 수 없습니다."
   },
   "footer": {
     "poweredBy": "제공:",
@@ -402,16 +534,42 @@
       "removeFailed": "로고 삭제에 실패했습니다"
     }
   },
+  "moveItems": {
+    "itemsToMove": "이동할 항목:",
+    "movingTo": "이동 위치:",
+    "title": "항목 이동",
+    "description": "항목을 새 위치로 이동",
+    "success": "{count}개 항목이 성공적으로 이동되었습니다"
+  },
   "navbar": {
     "logoAlt": "애플리케이션 로고",
     "profileMenu": "프로필 메뉴",
     "profile": "프로필",
     "settings": "설정",
     "usersManagement": "사용자 관리",
-    "logout": "로그아웃"
+    "logout": "로그아웃",
+    "customization": "사용자 정의"
   },
   "navigation": {
     "dashboard": "대시보드"
+  },
+  "notifications": {
+    "permissionGranted": "다운로드 알림이 활성화되었습니다",
+    "permissionDenied": "다운로드 알림이 비활성화되었습니다",
+    "downloadComplete": {
+      "title": "다운로드 완료",
+      "body": "{fileName} 다운로드가 완료되었습니다"
+    },
+    "downloadFailed": {
+      "title": "다운로드 실패",
+      "body": "{fileName} 다운로드 실패: {error}",
+      "unknownError": "알 수 없는 오류"
+    },
+    "queueProcessing": {
+      "title": "다운로드 시작",
+      "body": "{fileName} 다운로드가 시작되었습니다{position}",
+      "position": " (대기열 #{position}번이었음)"
+    }
   },
   "profile": {
     "password": {
@@ -795,7 +953,8 @@
           "timeout": "복사 작업 시간이 초과되었습니다. 더 작은 파일로 다시 시도하거나 연결을 확인하십시오.",
           "failed": "복사 작업이 실패했습니다. 다시 시도해 주세요.",
           "aborted": "시간 초과로 인해 복사 작업이 취소되었습니다."
-        }
+        },
+        "invalidDate": "잘못된 날짜"
       }
     },
     "form": {
@@ -900,7 +1059,8 @@
     "upload": {
       "metadata": {
         "title": "파일 보내기 - Palmr",
-        "description": "공유된 링크를 통해 파일 보내기"
+        "description": "공유된 링크를 통해 파일 보내기",
+        "descriptionWithLimit": "파일 업로드 (최대 {limit}개 파일)"
       },
       "layout": {
         "defaultTitle": "파일 보내기",
@@ -1010,7 +1170,10 @@
   },
   "searchBar": {
     "placeholder": "파일 검색...",
-    "results": "전체 {total}개 중 {filtered}개 파일을 찾았습니다"
+    "results": "전체 {total}개 중 {filtered}개 파일을 찾았습니다",
+    "placeholderFolders": "폴더 검색...",
+    "noResults": "\"{query}\"에 대한 검색 결과가 없습니다",
+    "placeholderFiles": "파일 검색..."
   },
   "settings": {
     "groups": {
@@ -1139,6 +1302,10 @@
       "passwordAuthEnabled": {
         "title": "비밀번호 인증",
         "description": "비밀번호 기반 인증 활성화 또는 비활성화"
+      },
+      "hideVersion": {
+        "title": "버전 숨기기",
+        "description": "모든 페이지의 바닥글에서 Palmr 버전 숨기기"
       }
     },
     "buttons": {
@@ -1200,7 +1367,11 @@
       "description": "이 공유는 삭제되었거나 만료되었을 수 있습니다."
     },
     "pageTitle": "공유",
-    "downloadAll": "모두 다운로드"
+    "downloadAll": "모두 다운로드",
+    "metadata": {
+      "defaultDescription": "파일을 안전하게 공유",
+      "filesShared": "{count, plural, =1 {1개 파일 공유됨} other {#개 파일 공유됨}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "공유 삭제",
@@ -1223,7 +1394,18 @@
     "editSuccess": "공유가 성공적으로 업데이트되었습니다",
     "editError": "공유 업데이트에 실패했습니다",
     "bulkDeleteConfirmation": "{count, plural, =1 {1개의 공유} other {#개의 공유}}를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
-    "bulkDeleteTitle": "선택한 공유 삭제"
+    "bulkDeleteTitle": "선택한 공유 삭제",
+    "addDescriptionPlaceholder": "설명 추가...",
+    "aliasLabel": "링크 별칭",
+    "aliasPlaceholder": "사용자 정의 별칭 입력",
+    "copyLink": "링크 복사",
+    "fileTitle": "파일 공유",
+    "folderTitle": "폴더 공유",
+    "generateLink": "링크 생성",
+    "linkDescriptionFile": "파일을 공유할 사용자 정의 링크 생성",
+    "linkDescriptionFolder": "폴더를 공유할 사용자 정의 링크 생성",
+    "linkReady": "공유 링크가 준비되었습니다:",
+    "linkTitle": "링크 생성"
   },
   "shareDetails": {
     "title": "공유 세부 정보",
@@ -1350,7 +1532,8 @@
     "files": "파일",
     "totalSize": "전체 크기",
     "creating": "생성 중...",
-    "create": "공유 생성"
+    "create": "공유 생성",
+    "itemsToShare": "공유할 항목 ({count}개 항목)"
   },
   "shareSecurity": {
     "subtitle": "이 공유의 비밀번호 보호 및 보안 옵션을 구성하세요",
@@ -1455,7 +1638,8 @@
       "download": "선택한 다운로드"
     },
     "selectAll": "모두 선택",
-    "selectShare": "공유 {shareName} 선택"
+    "selectShare": "공유 {shareName} 선택",
+    "folderCount": "폴더"
   },
   "storageUsage": {
     "title": "스토리지 사용량",
@@ -1749,5 +1933,17 @@
     "passwordRequired": "비밀번호는 필수입니다",
     "nameRequired": "이름은 필수입니다",
     "required": "이 필드는 필수입니다"
+  },
+  "embedCode": {
+    "title": "이미지 삽입",
+    "description": "이 코드를 사용하여 포럼, 웹사이트 또는 기타 플랫폼에 이 이미지를 삽입하세요",
+    "tabs": {
+      "directLink": "직접 링크",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "이미지 파일에 대한 직접 URL",
+    "htmlDescription": "이 코드를 사용하여 HTML 페이지에 이미지를 삽입하세요",
+    "bbcodeDescription": "BBCode를 지원하는 포럼에 이미지를 삽입하려면 이 코드를 사용하세요"
   }
 }

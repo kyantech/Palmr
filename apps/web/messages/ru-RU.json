@@ -144,7 +144,15 @@
     "update": "Обновить",
     "click": "Нажмите для",
     "creating": "Создание...",
-    "loadingSimple": "Загрузка..."
+    "loadingSimple": "Загрузка...",
+    "create": "Создать",
+    "deleting": "Удаление...",
+    "move": "Переместить",
+    "rename": "Переименовать",
+    "search": "Поиск",
+    "share": "Поделиться",
+    "copied": "Скопировано",
+    "copy": "Копировать"
   },
   "createShare": {
     "title": "Создать общий доступ",
@@ -160,7 +168,53 @@
     "error": "Не удалось создать общий доступ",
     "descriptionLabel": "Описание",
     "descriptionPlaceholder": "Введите описание (опционально)",
-    "namePlaceholder": "Введите имя для вашего общего доступа"
+    "namePlaceholder": "Введите имя для вашего общего доступа",
+    "nextSelectFiles": "Далее: Выбор файлов",
+    "searchLabel": "Поиск",
+    "tabs": {
+      "shareDetails": "Детали общего доступа",
+      "selectFiles": "Выбрать файлы"
+    }
+  },
+  "customization": {
+    "breadcrumb": "Настройка",
+    "colors": {
+      "title": "Цвета темы",
+      "description": "Выберите предпочтительный основной цвет темы",
+      "presets": "Доступные цвета",
+      "presetsDescription": "Выберите из доступных цветовых тем",
+      "reset": "Сбросить по умолчанию"
+    },
+    "fonts": {
+      "title": "Типография",
+      "description": "Выберите предпочтительное семейство шрифтов",
+      "available": "Доступные шрифты",
+      "availableDescription": "Выберите из доступных семейств шрифтов",
+      "reset": "Сбросить по умолчанию"
+    },
+    "radius": {
+      "title": "Радиус границ",
+      "description": "Настройте закругление элементов интерфейса",
+      "available": "Варианты закругления",
+      "availableDescription": "Выберите, как должны выглядеть закругленные углы",
+      "reset": "Сбросить по умолчанию"
+    },
+    "background": {
+      "title": "Цвета фона",
+      "description": "Настройте цвета фона для светлого и темного режимов",
+      "lightMode": "Светлый режим",
+      "darkMode": "Темный режим",
+      "availableDescription": "Выберите цвета фона для светлой и темной тем",
+      "reset": "Сбросить по умолчанию"
+    },
+    "theme": {
+      "title": "Режим темы",
+      "description": "Выберите между светлой, темной или системной темой",
+      "selectTheme": "Предпочтительная тема",
+      "availableDescription": "Выберите предпочтительный режим темы",
+      "reset": "Сбросить на системную"
+    },
+    "pageTitle": "Настройка"
   },
   "dashboard": {
     "loadError": "Ошибка загрузки данных панели управления",
@@ -174,7 +228,42 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "Файлы для удаления",
-    "sharesToDelete": "Общие папки, которые будут удалены"
+    "sharesToDelete": "Общие папки, которые будут удалены",
+    "foldersToDelete": "Папки для удаления",
+    "itemsToDelete": "Элементы для удаления"
+  },
+  "downloadQueue": {
+    "downloadQueued": "Загрузка в очереди: {fileName}",
+    "queuedDescription": "Ваша загрузка начнется автоматически, когда освободится слот",
+    "queuePosition": "Загрузка в очереди на позиции {position}: {fileName}",
+    "estimatedWait": "Расчетное время ожидания: {time}",
+    "queueFull": "Очередь загрузки заполнена",
+    "queueFullDescription": "Пожалуйста, повторите попытку через несколько минут, когда в очереди появится место",
+    "cancelSuccess": "Загрузка успешно отменена",
+    "cancelError": "Не удалось отменить загрузку: {error}",
+    "status": {
+      "pending": "Подготовка...",
+      "queued": "В очереди",
+      "downloading": "Загрузка",
+      "completed": "Завершено",
+      "failed": "Не удалось"
+    },
+    "waitTime": {
+      "seconds": "{seconds} сек",
+      "minutes": "{minutes} мин",
+      "hoursMinutes": "{hours}ч {minutes}мин"
+    },
+    "indicator": {
+      "title": "Загрузки",
+      "downloads": "Очередь загрузки",
+      "active": "Активные",
+      "queued": "В очереди",
+      "position": "Позиция {position}",
+      "estimatedWait": "Ожидание: {time}",
+      "unknownFile": "Неизвестный файл",
+      "noDownloads": "Нет активных загрузок",
+      "refresh": "Обновить очередь"
+    }
   },
   "emptyState": {
     "noFiles": "Файлы еще не загружены",
@@ -203,7 +292,8 @@
     "descriptionPlaceholder": "Введите описание файла",
     "deleteFile": "Удалить файл",
     "deleteConfirmation": "Вы уверены, что хотите удалить ?",
-    "deleteWarning": "Это действие необратимо."
+    "deleteWarning": "Это действие необратимо.",
+    "addDescriptionPlaceholder": "Добавить описание..."
   },
   "fileManager": {
     "downloadError": "Ошибка скачивания файла",
@@ -214,6 +304,7 @@
   },
   "filePreview": {
     "title": "Предварительный просмотр файла",
+    "description": "Просмотр и загрузка файла",
     "loading": "Загрузка...",
     "notAvailable": "Предварительный просмотр недоступен для этого типа файла.",
     "downloadToView": "Используйте кнопку загрузки для скачивания файла.",
@@ -248,7 +339,8 @@
     "previewFile": "Предпросмотр файла",
     "addToShare": "Добавить в общий доступ",
     "removeFromShare": "Удалить из общего доступа",
-    "saveChanges": "Сохранить Изменения"
+    "saveChanges": "Сохранить Изменения",
+    "editFolder": "Редактировать папку"
   },
   "files": {
     "title": "Все файлы",
@@ -271,7 +363,20 @@
     "viewMode": {
       "table": "Таблица",
       "grid": "Сетка"
-    }
+    },
+    "bulkDeleteConfirmation": "Вы уверены, что хотите удалить {count, plural, =1 {1 файл} other {# файлов}}? Это действие нельзя отменить.",
+    "bulkDeleteTitle": "Удалить Выбранные Файлы",
+    "actions": {
+      "open": "Открыть",
+      "rename": "Переименовать",
+      "delete": "Удалить"
+    },
+    "empty": {
+      "title": "Пока нет файлов или папок",
+      "description": "Загрузите свой первый файл или создайте папку для начала работы"
+    },
+    "files": "файлы",
+    "folders": "папки"
   },
   "filesTable": {
     "ariaLabel": "Таблица файлов",
@@ -300,6 +405,33 @@
       "share": "Поделиться Выбранными",
       "delete": "Удалить Выбранные"
     }
+  },
+  "folderActions": {
+    "editFolder": "Редактировать папку",
+    "folderName": "Имя папки",
+    "folderNamePlaceholder": "Введите имя папки",
+    "folderDescription": "Описание",
+    "folderDescriptionPlaceholder": "Введите описание папки (необязательно)",
+    "createFolder": "Создать новую папку",
+    "renameFolder": "Переименовать папку",
+    "moveFolder": "Переместить папку",
+    "shareFolder": "Поделиться папкой",
+    "deleteFolder": "Удалить папку",
+    "moveTo": "Переместить в",
+    "selectDestination": "Выберите папку назначения",
+    "rootFolder": "Корень",
+    "folderCreated": "Папка успешно создана",
+    "folderRenamed": "Папка успешно переименована",
+    "folderMoved": "Папка успешно перемещена",
+    "folderDeleted": "Папка успешно удалена",
+    "folderShared": "Папка успешно отправлена",
+    "createFolderError": "Ошибка создания папки",
+    "renameFolderError": "Ошибка переименования папки",
+    "moveFolderError": "Ошибка перемещения папки",
+    "deleteFolderError": "Ошибка удаления папки",
+    "shareFolderError": "Ошибка обмена папкой",
+    "deleteConfirmation": "Вы уверены, что хотите удалить эту папку?",
+    "deleteWarning": "Это действие нельзя отменить."
   },
   "footer": {
     "poweredBy": "При поддержке",
@@ -402,16 +534,42 @@
       "removeFailed": "Ошибка удаления логотипа"
     }
   },
+  "moveItems": {
+    "itemsToMove": "Элементы для перемещения:",
+    "movingTo": "Перемещение в:",
+    "title": "Переместить {count, plural, =1 {элемент} other {элементы}}",
+    "description": "Переместить {count, plural, =1 {элемент} other {элементы}} в новое место",
+    "success": "Успешно перемещено {count} {count, plural, =1 {элемент} other {элементов}}"
+  },
   "navbar": {
     "logoAlt": "Логотип приложения",
     "profileMenu": "Меню профиля",
     "profile": "Профиль",
     "settings": "Настройки",
     "usersManagement": "Управление пользователями",
-    "logout": "Выйти"
+    "logout": "Выйти",
+    "customization": "Настройки"
   },
   "navigation": {
     "dashboard": "Панель управления"
+  },
+  "notifications": {
+    "permissionGranted": "Уведомления о загрузках включены",
+    "permissionDenied": "Уведомления о загрузках отключены",
+    "downloadComplete": {
+      "title": "Загрузка завершена",
+      "body": "Файл {fileName} успешно загружен"
+    },
+    "downloadFailed": {
+      "title": "Ошибка загрузки",
+      "body": "Не удалось загрузить {fileName}: {error}",
+      "unknownError": "Неизвестная ошибка"
+    },
+    "queueProcessing": {
+      "title": "Начало загрузки",
+      "body": "Файл {fileName} загружается{position}",
+      "position": " (был №{position} в очереди)"
+    }
   },
   "profile": {
     "password": {
@@ -795,7 +953,8 @@
           "timeout": "Время операции копирования истекло. Пожалуйста, попробуйте еще раз с файлом меньшего размера или проверьте подключение.",
           "failed": "Ошибка операции копирования. Пожалуйста, попробуйте еще раз.",
           "aborted": "Операция копирования была отменена из-за истечения времени ожидания."
-        }
+        },
+        "invalidDate": "Неверная дата"
       }
     },
     "form": {
@@ -900,7 +1059,8 @@
     "upload": {
       "metadata": {
         "title": "Отправка файлов - Palmr",
-        "description": "Отправка файлов через общую ссылку"
+        "description": "Отправка файлов через общую ссылку",
+        "descriptionWithLimit": "Загрузить файлы (макс. {limit} файлов)"
       },
       "layout": {
         "defaultTitle": "Отправка файлов",
@@ -1010,7 +1170,10 @@
   },
   "searchBar": {
     "placeholder": "Поиск файлов...",
-    "results": "Найдено {filtered} из {total} файлов"
+    "results": "Найдено {filtered} из {total} файлов",
+    "placeholderFolders": "Поиск папок...",
+    "noResults": "Не найдено результатов для \"{query}\"",
+    "placeholderFiles": "Поиск файлов..."
   },
   "settings": {
     "groups": {
@@ -1139,6 +1302,10 @@
       "passwordAuthEnabled": {
         "title": "Парольная аутентификация",
         "description": "Включить или отключить парольную аутентификацию"
+      },
+      "hideVersion": {
+        "title": "Скрыть Версию",
+        "description": "Скрыть версию Palmr в нижнем колонтитуле всех страниц"
       }
     },
     "buttons": {
@@ -1200,7 +1367,11 @@
       "description": "Этот общий доступ может быть удален или истек."
     },
     "pageTitle": "Общий доступ",
-    "downloadAll": "Скачать все"
+    "downloadAll": "Скачать все",
+    "metadata": {
+      "defaultDescription": "Безопасный обмен файлами",
+      "filesShared": "{count, plural, =1 {1 файл отправлен} other {# файлов отправлено}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "Удалить Общий Доступ",
@@ -1223,7 +1394,18 @@
     "editSuccess": "Общий доступ успешно обновлен",
     "editError": "Ошибка обновления общего доступа",
     "bulkDeleteConfirmation": "Вы уверены, что хотите удалить {count, plural, =1 {1 общую папку} other {# общих папок}}? Это действие нельзя отменить.",
-    "bulkDeleteTitle": "Удалить Выбранные Общие Папки"
+    "bulkDeleteTitle": "Удалить Выбранные Общие Папки",
+    "addDescriptionPlaceholder": "Добавить описание...",
+    "aliasLabel": "Псевдоним ссылки",
+    "aliasPlaceholder": "Введите пользовательский псевдоним",
+    "copyLink": "Копировать ссылку",
+    "fileTitle": "Поделиться файлом",
+    "folderTitle": "Поделиться папкой",
+    "generateLink": "Создать ссылку",
+    "linkDescriptionFile": "Создайте пользовательскую ссылку для обмена файлом",
+    "linkDescriptionFolder": "Создайте пользовательскую ссылку для обмена папкой",
+    "linkReady": "Ваша ссылка для обмена готова:",
+    "linkTitle": "Создать ссылку"
   },
   "shareDetails": {
     "title": "Детали Общего Доступа",
@@ -1350,7 +1532,8 @@
     "files": "файлов",
     "totalSize": "Общий размер",
     "creating": "Создание...",
-    "create": "Создать Общий Доступ"
+    "create": "Создать Общий Доступ",
+    "itemsToShare": "Элементы для обмена ({count} {count, plural, =1 {элемент} other {элементов}})"
   },
   "shareSecurity": {
     "subtitle": "Настройте защиту паролем и параметры безопасности для этого общего доступа",
@@ -1455,7 +1638,8 @@
       "download": "Скачать выбранный"
     },
     "selectAll": "Выбрать все",
-    "selectShare": "Выбрать общую папку {shareName}"
+    "selectShare": "Выбрать общую папку {shareName}",
+    "folderCount": "папки"
   },
   "storageUsage": {
     "title": "Использование хранилища",
@@ -1749,5 +1933,17 @@
     "passwordRequired": "Требуется пароль",
     "nameRequired": "Требуется имя",
     "required": "Это поле обязательно"
+  },
+  "embedCode": {
+    "title": "Встроить изображение",
+    "description": "Используйте эти коды для встраивания этого изображения на форумах, веб-сайтах или других платформах",
+    "tabs": {
+      "directLink": "Прямая ссылка",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "Прямой URL-адрес файла изображения",
+    "htmlDescription": "Используйте этот код для встраивания изображения в HTML-страницы",
+    "bbcodeDescription": "Используйте этот код для встраивания изображения на форумах, поддерживающих BBCode"
   }
 }

@@ -19,6 +19,14 @@ const publicPaths = [
   "/s/",
   "/r/",
 ];
+
+const unauthenticatedOnlyPaths = [
+  "/login",
+  "/forgot-password",
+  "/reset-password",
+  "/auth/callback",
+  "/auth/oidc/callback",
+];
 const homePaths = ["/"];
 
 export function RedirectHandler({ children }: RedirectHandlerProps) {
@@ -28,7 +36,7 @@ export function RedirectHandler({ children }: RedirectHandlerProps) {
 
   useEffect(() => {
     if (isAuthenticated === true) {
-      if (publicPaths.some((path) => pathname.startsWith(path)) || homePaths.includes(pathname)) {
+      if (unauthenticatedOnlyPaths.some((path) => pathname.startsWith(path)) || homePaths.includes(pathname)) {
         router.replace("/dashboard");
         return;
       }
@@ -46,7 +54,7 @@ export function RedirectHandler({ children }: RedirectHandlerProps) {
 
   if (
     isAuthenticated === true &&
-    (publicPaths.some((path) => pathname.startsWith(path)) || homePaths.includes(pathname))
+    (unauthenticatedOnlyPaths.some((path) => pathname.startsWith(path)) || homePaths.includes(pathname))
   ) {
     return <LoadingScreen />;
   }

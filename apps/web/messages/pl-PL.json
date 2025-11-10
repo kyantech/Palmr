@@ -144,7 +144,15 @@
     "back": "Wróć",
     "click": "Kliknij, aby",
     "creating": "Tworzenie...",
-    "loadingSimple": "Ładowanie..."
+    "loadingSimple": "Ładowanie...",
+    "create": "Utwórz",
+    "deleting": "Usuwanie...",
+    "move": "Przenieś",
+    "rename": "Zmień nazwę",
+    "search": "Szukaj",
+    "share": "Udostępnij",
+    "copied": "Skopiowano",
+    "copy": "Kopiuj"
   },
   "createShare": {
     "title": "Utwórz Udostępnienie",
@@ -160,7 +168,53 @@
     "create": "Utwórz Udostępnienie",
     "success": "Udostępnienie utworzone pomyślnie",
     "error": "Nie udało się utworzyć udostępnienia",
-    "namePlaceholder": "Wprowadź nazwę dla swojego udostępnienia"
+    "namePlaceholder": "Wprowadź nazwę dla swojego udostępnienia",
+    "nextSelectFiles": "Dalej: Wybierz pliki",
+    "searchLabel": "Szukaj",
+    "tabs": {
+      "shareDetails": "Szczegóły udostępniania",
+      "selectFiles": "Wybierz pliki"
+    }
+  },
+  "customization": {
+    "breadcrumb": "Personalizacja",
+    "colors": {
+      "title": "Kolory motywu",
+      "description": "Wybierz preferowany kolor podstawowy motywu",
+      "presets": "Dostępne kolory",
+      "presetsDescription": "Wybierz spośród dostępnych motywów kolorystycznych",
+      "reset": "Przywróć domyślne"
+    },
+    "fonts": {
+      "title": "Typografia",
+      "description": "Wybierz preferowaną rodzinę czcionek",
+      "available": "Dostępne czcionki",
+      "availableDescription": "Wybierz spośród dostępnych rodzin czcionek",
+      "reset": "Przywróć domyślne"
+    },
+    "radius": {
+      "title": "Zaokrąglenie krawędzi",
+      "description": "Dostosuj zaokrąglenie elementów interfejsu",
+      "available": "Opcje zaokrąglenia",
+      "availableDescription": "Wybierz stopień zaokrąglenia narożników",
+      "reset": "Przywróć domyślne"
+    },
+    "background": {
+      "title": "Kolory tła",
+      "description": "Dostosuj kolory tła dla trybów jasnego i ciemnego",
+      "lightMode": "Tryb jasny",
+      "darkMode": "Tryb ciemny",
+      "availableDescription": "Wybierz kolory tła dla motywów jasnego i ciemnego",
+      "reset": "Przywróć domyślne"
+    },
+    "theme": {
+      "title": "Tryb motywu",
+      "description": "Wybierz między trybem jasnym, ciemnym lub systemowym",
+      "selectTheme": "Preferencje motywu",
+      "availableDescription": "Wybierz preferowany tryb motywu",
+      "reset": "Przywróć ustawienia systemowe"
+    },
+    "pageTitle": "Personalizacja"
   },
   "dashboard": {
     "loadError": "Nie udało się załadować danych panelu głównego",
@@ -174,7 +228,42 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "Pliki do usunięcia",
-    "sharesToDelete": "Udostępnienia do usunięcia"
+    "sharesToDelete": "Udostępnienia do usunięcia",
+    "foldersToDelete": "Foldery do usunięcia",
+    "itemsToDelete": "Elementy do usunięcia"
+  },
+  "downloadQueue": {
+    "downloadQueued": "Pobieranie w kolejce: {fileName}",
+    "queuedDescription": "Pobieranie rozpocznie się automatycznie, gdy zwolni się miejsce",
+    "queuePosition": "Pobieranie w kolejce na pozycji {position}: {fileName}",
+    "estimatedWait": "Szacowany czas oczekiwania: {time}",
+    "queueFull": "Kolejka pobierania jest pełna",
+    "queueFullDescription": "Spróbuj ponownie za kilka minut, gdy w kolejce będzie miejsce",
+    "cancelSuccess": "Pobieranie anulowane pomyślnie",
+    "cancelError": "Nie udało się anulować pobierania: {error}",
+    "status": {
+      "pending": "Przygotowywanie...",
+      "queued": "W kolejce",
+      "downloading": "Pobieranie",
+      "completed": "Zakończone",
+      "failed": "Nie powiodło się"
+    },
+    "waitTime": {
+      "seconds": "{seconds}s",
+      "minutes": "{minutes}m",
+      "hoursMinutes": "{hours}g {minutes}m"
+    },
+    "indicator": {
+      "title": "Pobierania",
+      "downloads": "Kolejka pobierania",
+      "active": "Aktywne",
+      "queued": "W kolejce",
+      "position": "Pozycja {position}",
+      "estimatedWait": "Oczekiwanie: {time}",
+      "unknownFile": "Nieznany plik",
+      "noDownloads": "Brak aktywnych pobierań",
+      "refresh": "Odśwież kolejkę"
+    }
   },
   "emptyState": {
     "noFiles": "Brak przesłanych plików",
@@ -203,7 +292,8 @@
     "descriptionPlaceholder": "Wprowadź opis pliku",
     "deleteFile": "Usuń plik",
     "deleteConfirmation": "Czy na pewno chcesz usunąć ten plik?",
-    "deleteWarning": "Tej operacji nie można cofnąć."
+    "deleteWarning": "Tej operacji nie można cofnąć.",
+    "addDescriptionPlaceholder": "Dodaj opis..."
   },
   "fileManager": {
     "downloadError": "Nie udało się pobrać pliku",
@@ -214,6 +304,7 @@
   },
   "filePreview": {
     "title": "Podgląd pliku",
+    "description": "Podgląd i pobieranie pliku",
     "loading": "Ładowanie...",
     "notAvailable": "Podgląd niedostępny dla tego typu pliku",
     "downloadToView": "Użyj przycisku pobierania, aby wyświetlić ten plik",
@@ -248,7 +339,8 @@
     "previewFile": "Podgląd pliku",
     "addToShare": "Dodaj do udostępnienia",
     "removeFromShare": "Usuń z udostępnienia",
-    "saveChanges": "Zapisz zmiany"
+    "saveChanges": "Zapisz zmiany",
+    "editFolder": "Edytuj folder"
   },
   "files": {
     "title": "Wszystkie pliki",
@@ -271,7 +363,20 @@
     "viewMode": {
       "table": "Tabela",
       "grid": "Siatka"
-    }
+    },
+    "bulkDeleteConfirmation": "Czy na pewno chcesz usunąć {count, plural, =1 {1 plik} other {# plików}}? Ta akcja nie może zostać cofnięta.",
+    "bulkDeleteTitle": "Usuń Wybrane Pliki",
+    "actions": {
+      "open": "Otwórz",
+      "rename": "Zmień nazwę",
+      "delete": "Usuń"
+    },
+    "empty": {
+      "title": "Brak plików lub folderów",
+      "description": "Prześlij swój pierwszy plik lub utwórz folder, aby rozpocząć"
+    },
+    "files": "pliki",
+    "folders": "foldery"
   },
   "filesTable": {
     "ariaLabel": "Tabela plików",
@@ -300,6 +405,33 @@
       "share": "Udostępnij wybrane",
       "delete": "Usuń wybrane"
     }
+  },
+  "folderActions": {
+    "editFolder": "Edytuj folder",
+    "folderName": "Nazwa folderu",
+    "folderNamePlaceholder": "Wprowadź nazwę folderu",
+    "folderDescription": "Opis",
+    "folderDescriptionPlaceholder": "Wprowadź opis folderu (opcjonalnie)",
+    "createFolder": "Utwórz nowy folder",
+    "renameFolder": "Zmień nazwę folderu",
+    "moveFolder": "Przenieś folder",
+    "shareFolder": "Udostępnij folder",
+    "deleteFolder": "Usuń folder",
+    "moveTo": "Przenieś do",
+    "selectDestination": "Wybierz folder docelowy",
+    "rootFolder": "Katalog główny",
+    "folderCreated": "Folder utworzony pomyślnie",
+    "folderRenamed": "Nazwa folderu zmieniona pomyślnie",
+    "folderMoved": "Folder przeniesiony pomyślnie",
+    "folderDeleted": "Folder usunięty pomyślnie",
+    "folderShared": "Folder udostępniony pomyślnie",
+    "createFolderError": "Błąd podczas tworzenia folderu",
+    "renameFolderError": "Błąd podczas zmiany nazwy folderu",
+    "moveFolderError": "Błąd podczas przenoszenia folderu",
+    "deleteFolderError": "Błąd podczas usuwania folderu",
+    "shareFolderError": "Błąd podczas udostępniania folderu",
+    "deleteConfirmation": "Czy na pewno chcesz usunąć ten folder?",
+    "deleteWarning": "Ta operacja nie może zostać cofnięta."
   },
   "footer": {
     "poweredBy": "Zasilane przez",
@@ -402,16 +534,42 @@
       "removeFailed": "Nie udało się usunąć logo"
     }
   },
+  "moveItems": {
+    "itemsToMove": "Elementy do przeniesienia:",
+    "movingTo": "Przenoszenie do:",
+    "title": "Przenieś {count, plural, =1 {element} other {elementy}}",
+    "description": "Przenieś {count, plural, =1 {element} other {elementy}} do nowej lokalizacji",
+    "success": "Pomyślnie przeniesiono {count} {count, plural, =1 {element} other {elementów}}"
+  },
   "navbar": {
     "logoAlt": "Logo aplikacji",
     "profileMenu": "Menu profilu",
     "profile": "Profil",
     "settings": "Ustawienia",
     "usersManagement": "Zarządzanie użytkownikami",
-    "logout": "Wyloguj się"
+    "logout": "Wyloguj się",
+    "customization": "Dostosowanie"
   },
   "navigation": {
     "dashboard": "Panel główny"
+  },
+  "notifications": {
+    "permissionGranted": "Powiadomienia o pobieraniu włączone",
+    "permissionDenied": "Powiadomienia o pobieraniu wyłączone",
+    "downloadComplete": {
+      "title": "Pobieranie zakończone",
+      "body": "Plik {fileName} został pobrany"
+    },
+    "downloadFailed": {
+      "title": "Błąd pobierania",
+      "body": "Nie udało się pobrać pliku {fileName}: {error}",
+      "unknownError": "Nieznany błąd"
+    },
+    "queueProcessing": {
+      "title": "Rozpoczęcie pobierania",
+      "body": "Trwa pobieranie pliku {fileName}{position}",
+      "position": " (był #{position} w kolejce)"
+    }
   },
   "profile": {
     "password": {
@@ -795,7 +953,8 @@
           "timeout": "Operacja kopiowania przekroczyła limit czasu. Spróbuj ponownie z mniejszym plikiem lub sprawdź swoje połączenie.",
           "failed": "Operacja kopiowania nie powiodła się. Spróbuj ponownie.",
           "aborted": "Operacja kopiowania została anulowana z powodu przekroczenia limitu czasu."
-        }
+        },
+        "invalidDate": "Nieprawidłowa data"
       }
     },
     "form": {
@@ -900,7 +1059,8 @@
     "upload": {
       "metadata": {
         "title": "Wyślij pliki - Palmr",
-        "description": "Wysyłaj pliki za pośrednictwem udostępnionego linku"
+        "description": "Wysyłaj pliki za pośrednictwem udostępnionego linku",
+        "descriptionWithLimit": "Prześlij pliki (maks. {limit} plików)"
       },
       "layout": {
         "defaultTitle": "Wyślij pliki",
@@ -1010,7 +1170,10 @@
   },
   "searchBar": {
     "placeholder": "Szukaj plików...",
-    "results": "Znaleziono {filtered} z {total} plików"
+    "results": "Znaleziono {filtered} z {total} plików",
+    "placeholderFolders": "Szukaj folderów...",
+    "noResults": "Nie znaleziono wyników dla \"{query}\"",
+    "placeholderFiles": "Szukaj plików..."
   },
   "settings": {
     "groups": {
@@ -1139,6 +1302,10 @@
       "passwordAuthEnabled": {
         "title": "Uwierzytelnianie hasłem",
         "description": "Włącz lub wyłącz uwierzytelnianie oparte na haśle"
+      },
+      "hideVersion": {
+        "title": "Ukryj Wersję",
+        "description": "Ukryj wersję Palmr w stopce wszystkich stron"
       }
     },
     "buttons": {
@@ -1200,7 +1367,11 @@
       "description": "To udostępnienie mogło zostać usunięte lub wygasło."
     },
     "pageTitle": "Udostępnij",
-    "downloadAll": "Pobierz wszystkie"
+    "downloadAll": "Pobierz wszystkie",
+    "metadata": {
+      "defaultDescription": "Bezpiecznie udostępniaj pliki",
+      "filesShared": "{count, plural, =1 {1 plik udostępniony} other {# plików udostępnionych}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "Usuń udostępnienie",
@@ -1223,7 +1394,18 @@
     "editSuccess": "Udostępnienie zaktualizowane pomyślnie",
     "editError": "Nie udało się zaktualizować udostępnienia",
     "bulkDeleteConfirmation": "Czy na pewno chcesz usunąć {count, plural, =1 {1 udostępnienie} other {# udostępnień}}? Tej operacji nie można cofnąć.",
-    "bulkDeleteTitle": "Usuń wybrane udostępnienia"
+    "bulkDeleteTitle": "Usuń wybrane udostępnienia",
+    "addDescriptionPlaceholder": "Dodaj opis...",
+    "aliasLabel": "Alias linku",
+    "aliasPlaceholder": "Wprowadź niestandardowy alias",
+    "copyLink": "Kopiuj link",
+    "fileTitle": "Udostępnij plik",
+    "folderTitle": "Udostępnij folder",
+    "generateLink": "Generuj link",
+    "linkDescriptionFile": "Wygeneruj niestandardowy link do udostępnienia pliku",
+    "linkDescriptionFolder": "Wygeneruj niestandardowy link do udostępnienia folderu",
+    "linkReady": "Twój link udostępniania jest gotowy:",
+    "linkTitle": "Generuj link"
   },
   "shareDetails": {
     "title": "Szczegóły udostępnienia",
@@ -1350,7 +1532,8 @@
     "files": "plików",
     "totalSize": "Całkowity rozmiar",
     "creating": "Tworzenie...",
-    "create": "Utwórz udostępnienie"
+    "create": "Utwórz udostępnienie",
+    "itemsToShare": "Elementy do udostępnienia ({count} {count, plural, =1 {element} other {elementów}})"
   },
   "shareSecurity": {
     "title": "Ustawienia bezpieczeństwa udostępniania",
@@ -1455,7 +1638,8 @@
       "download": "Pobierz wybrany"
     },
     "selectAll": "Zaznacz wszystko",
-    "selectShare": "Wybierz udostępnienie {shareName}"
+    "selectShare": "Wybierz udostępnienie {shareName}",
+    "folderCount": "foldery"
   },
   "storageUsage": {
     "title": "Użycie pamięci",
@@ -1749,5 +1933,17 @@
     "passwordMinLength": "Hasło musi mieć co najmniej 6 znaków",
     "nameRequired": "Nazwa jest wymagana",
     "required": "To pole jest wymagane"
+  },
+  "embedCode": {
+    "title": "Osadź obraz",
+    "description": "Użyj tych kodów, aby osadzić ten obraz na forach, stronach internetowych lub innych platformach",
+    "tabs": {
+      "directLink": "Link bezpośredni",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "Bezpośredni adres URL pliku obrazu",
+    "htmlDescription": "Użyj tego kodu, aby osadzić obraz na stronach HTML",
+    "bbcodeDescription": "Użyj tego kodu, aby osadzić obraz na forach obsługujących BBCode"
   }
 }

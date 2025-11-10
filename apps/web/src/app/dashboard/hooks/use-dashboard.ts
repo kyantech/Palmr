@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
-import { useFileManager } from "@/hooks/use-file-manager";
+import { useEnhancedFileManager } from "@/hooks/use-enhanced-file-manager";
 import { useSecureConfigValue } from "@/hooks/use-secure-configs";
 import { useShareManager } from "@/hooks/use-share-manager";
 import { getDiskSpace, listFiles, listUserShares } from "@/http/endpoints";
@@ -79,7 +79,7 @@ export function useDashboard() {
     }
   }, [t]);
 
-  const fileManager = useFileManager(loadDashboardData);
+  const fileManager = useEnhancedFileManager(loadDashboardData);
   const shareManager = useShareManager(loadDashboardData);
 
   const handleCopyLink = (share: Share) => {

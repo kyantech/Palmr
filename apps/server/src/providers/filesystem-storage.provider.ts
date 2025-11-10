@@ -80,7 +80,8 @@ export class FilesystemStorageProvider implements StorageProvider {
   public createEncryptStream(): Transform {
     if (this.isEncryptionDisabled) {
       return new Transform({
-        transform(chunk, encoding, callback) {
+        highWaterMark: 64 * 1024,
+        transform(chunk, _encoding, callback) {
           this.push(chunk);
           callback();
         },
@@ -94,7 +95,8 @@ export class FilesystemStorageProvider implements StorageProvider {
     let isFirstChunk = true;
 
     return new Transform({
-      transform(chunk, encoding, callback) {
+      highWaterMark: 64 * 1024,
+      transform(chunk, _encoding, callback) {
         try {
           if (isFirstChunk) {
             this.push(iv);
@@ -124,7 +126,8 @@ export class FilesystemStorageProvider implements StorageProvider {
   public createDecryptStream(): Transform {
     if (this.isEncryptionDisabled) {
       return new Transform({
-        transform(chunk, encoding, callback) {
+        highWaterMark: 64 * 1024,
+        transform(chunk, _encoding, callback) {
           this.push(chunk);
           callback();
         },
@@ -137,15 +140,16 @@ export class FilesystemStorageProvider implements StorageProvider {
     let ivBuffer = Buffer.alloc(0);
 
     return new Transform({
-      transform(chunk, encoding, callback) {
+      highWaterMark: 64 * 1024,
+      transform(chunk, _encoding, callback) {
         try {
           if (!iv) {
             ivBuffer = Buffer.concat([ivBuffer, chunk]);
 
             if (ivBuffer.length >= 16) {
-              iv = ivBuffer.slice(0, 16);
+              iv = ivBuffer.subarray(0, 16);
               decipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
-              const remainingData = ivBuffer.slice(16);
+              const remainingData = ivBuffer.subarray(16);
               if (remainingData.length > 0) {
                 const decrypted = decipher.update(remainingData);
                 this.push(decrypted);
@@ -188,13 +192,9 @@ export class FilesystemStorageProvider implements StorageProvider {
     return `/api/filesystem/upload/${token}`;
   }
 
-  async getPresignedGetUrl(objectName: string, expires: number, fileName?: string): Promise<string> {
-    const token = crypto.randomBytes(32).toString("hex");
-    const expiresAt = Date.now() + expires * 1000;
-
-    this.downloadTokens.set(token, { objectName, expiresAt, fileName });
-
-    return `/api/filesystem/download/${token}`;
+  async getPresignedGetUrl(objectName: string): Promise<string> {
+    const encodedObjectName = encodeURIComponent(objectName);
+    return `/api/files/download?objectName=${encodedObjectName}`;
   }
 
   async deleteObject(objectName: string): Promise<void> {
@@ -236,7 +236,7 @@ export class FilesystemStorageProvider implements StorageProvider {
 
     try {
       await pipeline(inputStream, encryptStream, writeStream);
-      await fs.rename(tempPath, filePath);
+      await this.moveFile(tempPath, filePath);
     } catch (error) {
       await this.cleanupTempFile(tempPath);
       throw error;
@@ -267,30 +267,34 @@ export class FilesystemStorageProvider implements StorageProvider {
 
   createDownloadStream(objectName: string): NodeJS.ReadableStream {
     const filePath = this.getFilePath(objectName);
-    const fileStream = fsSync.createReadStream(filePath);
+
+    const streamOptions = {
+      highWaterMark: 64 * 1024,
+      autoDestroy: true,
+      emitClose: true,
+    };
+
+    const fileStream = fsSync.createReadStream(filePath, streamOptions);
 
     if (this.isEncryptionDisabled) {
-      fileStream.on("end", () => {
-        if (global.gc) {
-          global.gc();
-        }
-      });
-
-      fileStream.on("close", () => {
-        if (global.gc) {
-          global.gc();
-        }
-      });
-
+      this.setupStreamMemoryManagement(fileStream, objectName);
       return fileStream;
     }
 
     const decryptStream = this.createDecryptStream();
+    const { PassThrough } = require("stream");
+    const outputStream = new PassThrough(streamOptions);
+
     let isDestroyed = false;
+    let memoryCheckInterval: NodeJS.Timeout;
 
     const cleanup = () => {
       if (isDestroyed) return;
       isDestroyed = true;
+
+      if (memoryCheckInterval) {
+        clearInterval(memoryCheckInterval);
+      }
 
       try {
         if (fileStream && !fileStream.destroyed) {
@@ -299,28 +303,104 @@ export class FilesystemStorageProvider implements StorageProvider {
         if (decryptStream && !decryptStream.destroyed) {
           decryptStream.destroy();
         }
+        if (outputStream && !outputStream.destroyed) {
+          outputStream.destroy();
+        }
       } catch (error) {
         console.warn("Error during download stream cleanup:", error);
       }
 
-      if (global.gc) {
-        global.gc();
-      }
+      setImmediate(() => {
+        if (global.gc) {
+          global.gc();
+        }
+      });
     };
 
-    fileStream.on("error", cleanup);
-    decryptStream.on("error", cleanup);
-    decryptStream.on("end", cleanup);
-    decryptStream.on("close", cleanup);
+    memoryCheckInterval = setInterval(() => {
+      const memUsage = process.memoryUsage();
+      const memoryUsageMB = memUsage.heapUsed / 1024 / 1024;
 
-    decryptStream.on("pipe", (src: any) => {
+      if (memoryUsageMB > 1024) {
+        if (!fileStream.readableFlowing) return;
+
+        console.warn(
+          `[MEMORY THROTTLE] ${objectName} - Pausing stream due to high memory usage: ${memoryUsageMB.toFixed(2)}MB`
+        );
+        fileStream.pause();
+
+        if (global.gc) {
+          global.gc();
+        }
+
+        setTimeout(() => {
+          if (!isDestroyed && fileStream && !fileStream.destroyed) {
+            fileStream.resume();
+            console.log(`[MEMORY THROTTLE] ${objectName} - Stream resumed`);
+          }
+        }, 100);
+      }
+    }, 1000);
+
+    fileStream.on("error", (error: any) => {
+      console.error("File stream error:", error);
+      cleanup();
+    });
+
+    decryptStream.on("error", (error: any) => {
+      console.error("Decrypt stream error:", error);
+      cleanup();
+    });
+
+    outputStream.on("error", (error: any) => {
+      console.error("Output stream error:", error);
+      cleanup();
+    });
+
+    outputStream.on("close", cleanup);
+    outputStream.on("finish", cleanup);
+
+    outputStream.on("pipe", (src: any) => {
       if (src && src.on) {
         src.on("close", cleanup);
         src.on("error", cleanup);
       }
     });
 
-    return fileStream.pipe(decryptStream);
+    pipeline(fileStream, decryptStream, outputStream)
+      .then(() => {})
+      .catch((error: any) => {
+        console.error("Pipeline error during download:", error);
+        cleanup();
+      });
+
+    this.setupStreamMemoryManagement(outputStream, objectName);
+    return outputStream;
+  }
+
+  private setupStreamMemoryManagement(stream: NodeJS.ReadableStream, objectName: string): void {
+    let lastMemoryLog = 0;
+
+    stream.on("data", () => {
+      const now = Date.now();
+      if (now - lastMemoryLog > 30000) {
+        FilesystemStorageProvider.logMemoryUsage(`Active download: ${objectName}`);
+        lastMemoryLog = now;
+      }
+    });
+
+    stream.on("end", () => {
+      FilesystemStorageProvider.logMemoryUsage(`Download completed: ${objectName}`);
+      setImmediate(() => {
+        if (global.gc) {
+          global.gc();
+        }
+      });
+    });
+
+    stream.on("close", () => {
+      FilesystemStorageProvider.logMemoryUsage(`Download closed: ${objectName}`);
+    });
   }
 
   async createDownloadRangeStream(objectName: string, start: number, end: number): Promise<NodeJS.ReadableStream> {
@@ -552,13 +632,8 @@ export class FilesystemStorageProvider implements StorageProvider {
     return { objectName: data.objectName, fileName: data.fileName };
   }
 
-  consumeUploadToken(token: string): void {
-    this.uploadTokens.delete(token);
-  }
-
-  consumeDownloadToken(token: string): void {
-    this.downloadTokens.delete(token);
-  }
+  // Tokens are automatically cleaned up by cleanExpiredTokens() every 5 minutes
+  // No need to manually consume tokens - allows reuse for previews, range requests, etc.
 
   private async cleanupTempFile(tempPath: string): Promise<void> {
     try {
@@ -621,6 +696,20 @@ export class FilesystemStorageProvider implements StorageProvider {
       }
     } catch (error) {
       console.error("Error during temp directory cleanup:", error);
+    }
+  }
+
+  private async moveFile(src: string, dest: string): Promise<void> {
+    try {
+      await fs.rename(src, dest);
+    } catch (err: any) {
+      if (err.code === "EXDEV") {
+        // cross-device: fallback to copy + delete
+        await fs.copyFile(src, dest);
+        await fs.unlink(src);
+      } else {
+        throw err;
+      }
     }
   }
 }

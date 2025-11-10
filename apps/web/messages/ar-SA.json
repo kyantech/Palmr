@@ -144,7 +144,15 @@
     "update": "تحديث",
     "click": "انقر على",
     "creating": "جاري الإنشاء...",
-    "loadingSimple": "جاري التحميل..."
+    "loadingSimple": "جاري التحميل...",
+    "create": "إنشاء",
+    "deleting": "جاري الحذف...",
+    "move": "نقل",
+    "rename": "إعادة تسمية",
+    "search": "بحث",
+    "share": "مشاركة",
+    "copied": "تم النسخ",
+    "copy": "نسخ"
   },
   "createShare": {
     "title": "إنشاء مشاركة",
@@ -160,7 +168,53 @@
     "create": "إنشاء مشاركة",
     "success": "تم إنشاء المشاركة بنجاح",
     "error": "فشل في إنشاء المشاركة",
-    "namePlaceholder": "أدخل اسمًا لمشاركتك"
+    "namePlaceholder": "أدخل اسمًا لمشاركتك",
+    "nextSelectFiles": "التالي: اختيار الملفات",
+    "searchLabel": "بحث",
+    "tabs": {
+      "shareDetails": "تفاصيل المشاركة",
+      "selectFiles": "اختيار الملفات"
+    }
+  },
+  "customization": {
+    "breadcrumb": "التخصيص",
+    "colors": {
+      "title": "ألوان السمة",
+      "description": "اختر لون السمة الرئيسي المفضل لديك",
+      "presets": "الألوان المتاحة",
+      "presetsDescription": "اختر من بين السمات اللونية المتاحة",
+      "reset": "إعادة التعيين إلى الافتراضي"
+    },
+    "fonts": {
+      "title": "الخطوط",
+      "description": "اختر عائلة الخط المفضلة لديك",
+      "available": "الخطوط المتاحة",
+      "availableDescription": "اختر من بين عائلات الخطوط المتاحة",
+      "reset": "إعادة التعيين إلى الافتراضي"
+    },
+    "radius": {
+      "title": "حواف الإطار",
+      "description": "تخصيص استدارة عناصر الواجهة",
+      "available": "خيارات الاستدارة",
+      "availableDescription": "اختر كيف يجب أن تظهر الزوايا المستديرة",
+      "reset": "إعادة التعيين إلى الافتراضي"
+    },
+    "background": {
+      "title": "ألوان الخلفية",
+      "description": "تخصيص ألوان الخلفية للوضعين الفاتح والداكن",
+      "lightMode": "الوضع الفاتح",
+      "darkMode": "الوضع الداكن",
+      "availableDescription": "اختر ألوان الخلفية لكل من السمات الفاتحة والداكنة",
+      "reset": "إعادة التعيين إلى الافتراضي"
+    },
+    "theme": {
+      "title": "وضع السمة",
+      "description": "اختر بين السمة الفاتحة أو الداكنة أو سمة النظام",
+      "selectTheme": "تفضيلات السمة",
+      "availableDescription": "حدد وضع السمة المفضل لديك",
+      "reset": "إعادة التعيين إلى النظام"
+    },
+    "pageTitle": "التخصيص"
   },
   "dashboard": {
     "loadError": "فشل في تحميل بيانات لوحة التحكم",
@@ -174,7 +228,42 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "الملفات المراد حذفها",
-    "sharesToDelete": "المشاركات التي سيتم حذفها"
+    "sharesToDelete": "المشاركات التي سيتم حذفها",
+    "foldersToDelete": "المجلدات المراد حذفها",
+    "itemsToDelete": "العناصر المراد حذفها"
+  },
+  "downloadQueue": {
+    "downloadQueued": "تم إضافة التنزيل إلى قائمة الانتظار: {fileName}",
+    "queuedDescription": "سيبدأ التنزيل تلقائياً عندما يتوفر موقع",
+    "queuePosition": "التنزيل في قائمة الانتظار في الموقع {position}: {fileName}",
+    "estimatedWait": "وقت الانتظار المقدر: {time}",
+    "queueFull": "قائمة انتظار التنزيل ممتلئة",
+    "queueFullDescription": "يرجى المحاولة مرة أخرى بعد بضع دقائق عندما تتوفر مساحة في قائمة الانتظار",
+    "cancelSuccess": "تم إلغاء التنزيل بنجاح",
+    "cancelError": "فشل إلغاء التنزيل: {error}",
+    "status": {
+      "pending": "جارٍ التحضير...",
+      "queued": "في قائمة الانتظار",
+      "downloading": "جارٍ التنزيل",
+      "completed": "مكتمل",
+      "failed": "فشل"
+    },
+    "waitTime": {
+      "seconds": "{seconds} ثانية",
+      "minutes": "{minutes} دقيقة",
+      "hoursMinutes": "{hours} ساعة {minutes} دقيقة"
+    },
+    "indicator": {
+      "title": "التنزيلات",
+      "downloads": "قائمة التنزيل",
+      "active": "نشط",
+      "queued": "في قائمة الانتظار",
+      "position": "الموقع {position}",
+      "estimatedWait": "الانتظار: {time}",
+      "unknownFile": "ملف غير معروف",
+      "noDownloads": "لا توجد تنزيلات قيد التقدم",
+      "refresh": "تحديث قائمة الانتظار"
+    }
   },
   "emptyState": {
     "noFiles": "لم يتم رفع أي ملفات بعد",
@@ -203,7 +292,8 @@
     "descriptionPlaceholder": "أدخل وصف الملف",
     "deleteFile": "حذف الملف",
     "deleteConfirmation": "هل أنت متأكد أنك تريد حذف ؟",
-    "deleteWarning": "هذا الإجراء لا يمكن التراجع عنه."
+    "deleteWarning": "هذا الإجراء لا يمكن التراجع عنه.",
+    "addDescriptionPlaceholder": "إضافة وصف..."
   },
   "fileManager": {
     "downloadError": "فشل في تنزيل الملف",
@@ -214,6 +304,7 @@
   },
   "filePreview": {
     "title": "معاينة الملف",
+    "description": "معاينة وتنزيل الملف",
     "loading": "جاري التحميل...",
     "notAvailable": "المعاينة غير متاحة لهذا النوع من الملفات.",
     "downloadToView": "استخدم زر التحميل لتنزيل الملف.",
@@ -248,7 +339,8 @@
     "previewFile": "معاينة الملف",
     "addToShare": "إضافة إلى المشاركة",
     "removeFromShare": "إزالة من المشاركة",
-    "saveChanges": "حفظ التغييرات"
+    "saveChanges": "حفظ التغييرات",
+    "editFolder": "تحرير المجلد"
   },
   "files": {
     "title": "جميع الملفات",
@@ -271,7 +363,20 @@
       "table": "جدول",
       "grid": "شبكة"
     },
-    "totalFiles": "{count, plural, =0 {لا توجد ملفات} =1 {ملف واحد} other {# ملفات}}"
+    "totalFiles": "{count, plural, =0 {لا توجد ملفات} =1 {ملف واحد} other {# ملفات}}",
+    "bulkDeleteConfirmation": "هل أنت متأكد من رغبتك في حذف {count, plural, =1 {ملف واحد} other {# ملفات}}؟ لا يمكن التراجع عن هذا الإجراء.",
+    "bulkDeleteTitle": "حذف الملفات المحددة",
+    "actions": {
+      "open": "فتح",
+      "rename": "إعادة تسمية",
+      "delete": "حذف"
+    },
+    "empty": {
+      "title": "لا توجد ملفات أو مجلدات بعد",
+      "description": "ارفع ملفك الأول أو أنشئ مجلدًا للبدء"
+    },
+    "files": "ملفات",
+    "folders": "مجلدات"
   },
   "filesTable": {
     "ariaLabel": "جدول الملفات",
@@ -300,6 +405,33 @@
       "share": "مشاركة المحدد",
       "delete": "حذف المحدد"
     }
+  },
+  "folderActions": {
+    "editFolder": "تحرير المجلد",
+    "folderName": "اسم المجلد",
+    "folderNamePlaceholder": "أدخل اسم المجلد",
+    "folderDescription": "الوصف",
+    "folderDescriptionPlaceholder": "أدخل وصف المجلد (اختياري)",
+    "createFolder": "إنشاء مجلد جديد",
+    "renameFolder": "إعادة تسمية المجلد",
+    "moveFolder": "نقل المجلد",
+    "shareFolder": "مشاركة المجلد",
+    "deleteFolder": "حذف المجلد",
+    "moveTo": "نقل إلى",
+    "selectDestination": "اختر مجلد الوجهة",
+    "rootFolder": "الجذر",
+    "folderCreated": "تم إنشاء المجلد بنجاح",
+    "folderRenamed": "تم إعادة تسمية المجلد بنجاح",
+    "folderMoved": "تم نقل المجلد بنجاح",
+    "folderDeleted": "تم حذف المجلد بنجاح",
+    "folderShared": "تم مشاركة المجلد بنجاح",
+    "createFolderError": "خطأ في إنشاء المجلد",
+    "renameFolderError": "خطأ في إعادة تسمية المجلد",
+    "moveFolderError": "خطأ في نقل المجلد",
+    "deleteFolderError": "خطأ في حذف المجلد",
+    "shareFolderError": "خطأ في مشاركة المجلد",
+    "deleteConfirmation": "هل أنت متأكد من أنك تريد حذف هذا المجلد؟",
+    "deleteWarning": "لا يمكن التراجع عن هذا الإجراء."
   },
   "footer": {
     "poweredBy": "مدعوم من",
@@ -402,16 +534,42 @@
       "removeFailed": "فشل في حذف الشعار"
     }
   },
+  "moveItems": {
+    "itemsToMove": "العناصر المراد نقلها:",
+    "movingTo": "النقل إلى:",
+    "title": "نقل {count, plural, =1 {عنصر} other {عناصر}}",
+    "description": "نقل {count, plural, =1 {عنصر} other {عناصر}} إلى موقع جديد",
+    "success": "تم نقل {count} {count, plural, =1 {عنصر} other {عناصر}} بنجاح"
+  },
   "navbar": {
     "logoAlt": "شعار التطبيق",
     "profileMenu": "قائمة الملف الشخصي",
     "profile": "الملف الشخصي",
     "settings": "الإعدادات",
     "usersManagement": "إدارة المستخدمين",
-    "logout": "تسجيل الخروج"
+    "logout": "تسجيل الخروج",
+    "customization": "التخصيص"
   },
   "navigation": {
     "dashboard": "لوحة التحكم"
+  },
+  "notifications": {
+    "permissionGranted": "تم تمكين إشعارات التنزيل",
+    "permissionDenied": "تم تعطيل إشعارات التنزيل",
+    "downloadComplete": {
+      "title": "اكتمل التنزيل",
+      "body": "اكتمل تنزيل {fileName}"
+    },
+    "downloadFailed": {
+      "title": "فشل التنزيل",
+      "body": "فشل تنزيل {fileName}: {error}",
+      "unknownError": "خطأ غير معروف"
+    },
+    "queueProcessing": {
+      "title": "بدء التنزيل",
+      "body": "يتم الآن تنزيل {fileName}{position}",
+      "position": " (كان #{position} في قائمة الانتظار)"
+    }
   },
   "profile": {
     "password": {
@@ -795,7 +953,8 @@
           "timeout": "انتهت مهلة عملية النسخ. يرجى المحاولة مرة أخرى باستخدام ملف أصغر أو التحقق من اتصالك.",
           "failed": "فشلت عملية النسخ. يرجى المحاولة مرة أخرى.",
           "aborted": "تم إلغاء عملية النسخ بسبب انتهاء المهلة."
-        }
+        },
+        "invalidDate": "تاريخ غير صحيح"
       }
     },
     "form": {
@@ -900,7 +1059,8 @@
     "upload": {
       "metadata": {
         "title": "رفع الملفات - Palmr",
-        "description": "رفع الملفات عبر الرابط المشترك"
+        "description": "رفع الملفات عبر الرابط المشترك",
+        "descriptionWithLimit": "تحميل الملفات (الحد الأقصى {limit} ملفات)"
       },
       "layout": {
         "defaultTitle": "رفع الملفات",
@@ -1012,7 +1172,10 @@
   },
   "searchBar": {
     "placeholder": "ابحث عن الملفات...",
-    "results": "تم العثور على {filtered} من {total} ملف"
+    "results": "تم العثور على {filtered} من {total} ملف",
+    "placeholderFolders": "البحث في المجلدات...",
+    "noResults": "لم يتم العثور على نتائج لـ \"{query}\"",
+    "placeholderFiles": "البحث في الملفات..."
   },
   "settings": {
     "groups": {
@@ -1141,6 +1304,10 @@
       "passwordAuthEnabled": {
         "title": "المصادقة بالكلمة السرية",
         "description": "تمكين أو تعطيل المصادقة بالكلمة السرية"
+      },
+      "hideVersion": {
+        "title": "إخفاء الإصدار",
+        "description": "إخفاء إصدار Palmr في تذييل جميع الصفحات"
       }
     },
     "buttons": {
@@ -1202,7 +1369,11 @@
       "description": "قد يكون تم حذف هذه المشاركة أو انتهت صلاحيتها."
     },
     "pageTitle": "المشاركة",
-    "downloadAll": "تحميل الكل"
+    "downloadAll": "تحميل الكل",
+    "metadata": {
+      "defaultDescription": "مشاركة الملفات بشكل آمن",
+      "filesShared": "{count, plural, =1 {ملف واحد تمت مشاركته} other {# ملفات تمت مشاركتها}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "حذف المشاركة",
@@ -1225,7 +1396,18 @@
     "editSuccess": "تم تحديث المشاركة بنجاح",
     "editError": "فشل في تحديث المشاركة",
     "bulkDeleteConfirmation": "هل أنت متأكد من أنك تريد حذف {count, plural, =1 {مشاركة واحدة} other {# مشاركات}} محددة؟ لا يمكن التراجع عن هذا الإجراء.",
-    "bulkDeleteTitle": "حذف المشاركات المحددة"
+    "bulkDeleteTitle": "حذف المشاركات المحددة",
+    "addDescriptionPlaceholder": "إضافة وصف...",
+    "aliasLabel": "اسم مستعار للرابط",
+    "aliasPlaceholder": "أدخل اسمًا مستعارًا مخصصًا",
+    "copyLink": "نسخ الرابط",
+    "fileTitle": "مشاركة ملف",
+    "folderTitle": "مشاركة مجلد",
+    "generateLink": "إنشاء رابط",
+    "linkDescriptionFile": "إنشاء رابط مخصص لمشاركة الملف",
+    "linkDescriptionFolder": "إنشاء رابط مخصص لمشاركة المجلد",
+    "linkReady": "رابط المشاركة جاهز:",
+    "linkTitle": "إنشاء رابط"
   },
   "shareDetails": {
     "title": "تفاصيل المشاركة",
@@ -1352,7 +1534,8 @@
     "files": "ملفات",
     "totalSize": "الحجم الإجمالي",
     "creating": "جاري الإنشاء...",
-    "create": "إنشاء مشاركة"
+    "create": "إنشاء مشاركة",
+    "itemsToShare": "العناصر للمشاركة ({count} {count, plural, =1 {عنصر} other {عناصر}})"
   },
   "shareSecurity": {
     "subtitle": "تكوين حماية كلمة المرور وخيارات الأمان لهذه المشاركة",
@@ -1457,7 +1640,8 @@
       "download": "تنزيل محدد"
     },
     "selectAll": "تحديد الكل",
-    "selectShare": "تحديد المشاركة {shareName}"
+    "selectShare": "تحديد المشاركة {shareName}",
+    "folderCount": "مجلدات"
   },
   "storageUsage": {
     "title": "استخدام التخزين",
@@ -1751,5 +1935,17 @@
     "passwordRequired": "كلمة المرور مطلوبة",
     "nameRequired": "الاسم مطلوب",
     "required": "هذا الحقل مطلوب"
+  },
+  "embedCode": {
+    "title": "تضمين الصورة",
+    "description": "استخدم هذه الأكواد لتضمين هذه الصورة في المنتديات أو المواقع الإلكترونية أو المنصات الأخرى",
+    "tabs": {
+      "directLink": "رابط مباشر",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "عنوان URL مباشر لملف الصورة",
+    "htmlDescription": "استخدم هذا الكود لتضمين الصورة في صفحات HTML",
+    "bbcodeDescription": "استخدم هذا الكود لتضمين الصورة في المنتديات التي تدعم BBCode"
   }
 }

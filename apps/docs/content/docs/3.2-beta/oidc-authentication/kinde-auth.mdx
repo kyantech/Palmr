@@ -1,0 +1,369 @@
+---
+title: Kinde Auth
+icon: Users
+---
+
+import { ZoomableImage } from "@/components/ui/zoomable-image";
+
+Kinde Auth is one of Palmr's officially supported OIDC providers, offering modern authentication through Kinde's developer-friendly identity platform. This integration allows users to sign in to Palmr using Kinde's comprehensive authentication system, making it perfect for developers, startups, and organizations that need a modern, scalable authentication solution with excellent developer experience.
+
+<ZoomableImage src="/assets/v3/oidc/kinde/sign-in-with-kinde.png" alt="Sign in with Kinde" />
+
+## Why use Kinde Auth authentication?
+
+Kinde Auth authentication provides several advantages for modern applications and development teams:
+
+- **Developer-first experience** - Clean APIs, comprehensive SDKs, and excellent documentation
+- **Modern authentication** - Built with modern web standards and best practices
+- **Scalable infrastructure** - Enterprise-grade reliability with startup-friendly pricing
+- **Compliance ready** - Built-in compliance with GDPR, SOC 2, and other standards
+- **Advanced features** - Multi-factor authentication, social logins, and custom branding
+
+---
+
+## Prerequisites
+
+Before configuring Kinde Auth authentication, ensure you have:
+
+- **Kinde account** - Ability to create applications and manage tenants
+- **Admin privileges in Palmr** - Required to configure OIDC settings
+- **Domain configuration** - For production deployments with custom domains
+
+> **Note:** Kinde Auth is pre-configured as an official provider in Palmr, which means the technical configuration is handled automatically. You only need to provide your OAuth credentials.
+
+---
+
+## Setting up Kinde Auth Application
+
+### Creating a Kinde application
+
+To get started with Kinde Auth authentication, you'll need to create an application in your Kinde Dashboard.
+
+1. **Navigate to Kinde Dashboard**: Go to [your-tenant.kinde.com/admin](https://your-tenant.kinde.com/admin)
+
+<ZoomableImage src="/assets/v3/oidc/kinde/kinde-dashboard.png" alt="Kinde Dashboard" />
+
+2. **Create new application**: Click **"Add application"** button in the center of the page.
+
+3. **Select application type**: Choose **"Back-end web"** for web-based Palmr instances
+
+4. **Enter application details**:
+   - **Name**: Enter a descriptive name like "Palmr File Sharing"
+
+<ZoomableImage src="/assets/v3/oidc/kinde/application-type.png" alt="Kinde Application Type Selection" />
+
+5. **Create application**: Click **"Save"** to generate your Kinde application
+
+### Configuring application settings
+
+After creating your application, you'll be redirected to the application page.
+
+<ZoomableImage src="/assets/v3/oidc/kinde/application-page.png" alt="Kinde Application Page" />
+
+Click on the **"Details"** tab on the sidebar to configure the application settings and get the OAuth credentials.
+
+<ZoomableImage
+  src="/assets/v3/oidc/kinde/application-details.png"
+  alt="Kinde Application Details"
+  legend="This is a fake application, you have to use your own."
+/>
+
+### Getting OAuth credentials
+
+Now you'll get the credentials that Palmr will use to authenticate with Kinde.
+
+1. **Copy Domain**: Note your Kinde domain (e.g., `your-tenant.kinde.com`)
+
+2. **Copy Client ID**: The Client ID is displayed in the **"Client ID"** field
+
+3. **Copy Client Secret**: The Client Secret is displayed in the **"Client secret"** field
+
+<ZoomableImage
+  src="/assets/v3/oidc/kinde/oauth-credentials.png"
+  alt="Kinde OAuth Credentials"
+  legend="The client ID and client secret shown in the image are examples only (fake credentials). You must use your own credentials from Kinde."
+/>
+
+4. **Save credentials**: Copy the **Domain**, **Client ID**, and **Client Secret** for later use
+
+> **Note:** For now you only need this configuration, you can come back here later to configure the application as you want.
+
+###**Configure application URLs**:
+
+You'll need to configure several URLs in your Kinde application settings. Here's what to add for each environment:
+
+#### Allowed callback URLs
+
+| Environment | URL                                                             |
+| ----------- | --------------------------------------------------------------- |
+| Production  | `https://yourdomain.com/api/auth/providers/kinde/callback`      |
+| Development | `http://localhost:3000/api/auth/providers/kinde/callback`       |
+| Custom Port | `https://yourdomain.com:5487/api/auth/providers/kinde/callback` |
+
+#### Application homepage URI
+
+| Environment | URL                           |
+| ----------- | ----------------------------- |
+| Production  | `https://yourdomain.com`      |
+| Development | `http://localhost:3000`       |
+| Custom Port | `https://yourdomain.com:5487` |
+
+#### Application login URI
+
+| Environment | URL                                 |
+| ----------- | ----------------------------------- |
+| Production  | `https://yourdomain.com/login`      |
+| Development | `http://localhost:3000/login`       |
+| Custom Port | `https://yourdomain.com:5487/login` |
+
+#### Allowed logout redirect URLs
+
+| Environment | URL                           |
+| ----------- | ----------------------------- |
+| Production  | `https://yourdomain.com`      |
+| Development | `http://localhost:3000`       |
+| Custom Port | `https://yourdomain.com:5487` |
+
+> **Note:** Replace `yourdomain.com` with your actual domain name in all production and custom port URLs.
+> **Note:** You can add multiple redirect URIs for different environments (development, staging, production).
+
+<ZoomableImage
+  src="/assets/v3/oidc/kinde/config-urls.png"
+  alt="Kinde Application URLs Configuration"
+  legend="This is a fake application, you have to use your own."
+/>
+
+2. **Save changes**: Click **"Save"** on the top right corner to apply your configuration
+
+---
+
+## Configuring Palmr
+
+### Accessing OIDC settings
+
+To configure Kinde Auth authentication in Palmr, you need administrator access to the settings panel.
+
+1. **Login as administrator**: Sign in to Palmr with an admin account
+
+2. **Access settings**: Click your profile picture in the header and select **Settings**
+
+3. **Navigate to authentication**: Find and click on the **Authentication Providers** configuration section
+
+<ZoomableImage src="/assets/v3/oidc/auth-providers.png" alt="Palmr Authentication Providers" />
+
+### Enabling Kinde Auth provider
+
+Kinde Auth comes pre-configured as an official provider, so the setup process is streamlined.
+
+1. **Locate Kinde Auth provider**: Find Kinde Auth in the list of available providers
+
+2. **Enable the provider**: Toggle the status to **Enabled**
+
+<ZoomableImage src="/assets/v3/oidc/kinde/enabled-kinde.png" alt="Palmr Kinde Auth Provider Enabled" />
+
+After enabling the provider, click on the pen icon to configure the provider.
+
+3. **Configure credentials**:
+   - **Provider URL**: Paste your Kinde domain (e.g., `https://your-tenant.kinde.com`)
+   - **Client ID**: Paste the Client ID from Kinde application
+   - **Client Secret**: Paste the Client Secret from Kinde application
+   - **Scopes**: Add the scopes you want to use. The default scopes are `openid`, `profile`, and `email`. You don't need change this if you are not sure.
+
+<ZoomableImage
+  src="/assets/v3/oidc/kinde/edit-kinde.png"
+  alt="Edit Kinde Auth Provider"
+  legend="This is a fake application, you have to use your own."
+/>
+
+### Advanced configuration options
+
+Configure additional settings to customize the authentication behavior:
+
+**Auto Registration**: Enable this to automatically create user accounts when someone authenticates for the first time.
+
+**Sort Order**: Control where the Kinde Auth login button appears relative to other authentication providers.
+
+**Icon**: you can choose the icon you want to use for the Kinde Auth login button (default is `FaKey`).
+
+<ZoomableImage src="/assets/v3/oidc/kinde/kinde-icon.png" alt="Kinde Auth Icon" />
+
+> **Developer tip:** Kinde Auth authentication works great for modern applications requiring excellent developer experience and scalable authentication infrastructure.
+
+---
+
+## Account linking
+
+By default, if a user is already registered in Palmr with their Kinde Auth email, they will be automatically linked to their Palmr account.
+
+> **Note:** You can't disable account linking. If you want to unlink a user from their Kinde Auth account, you need to delete the user from Palmr.
+
+---
+
+## Technical configuration
+
+Kinde Auth's technical configuration is handled automatically, but understanding the setup can help with troubleshooting:
+
+```yaml
+Provider Type: OAuth 2.0 with OIDC Discovery
+Issuer URL: https://your-tenant.kinde.com
+Authorization Endpoint: /oauth2/auth
+Token Endpoint: /oauth2/token
+UserInfo Endpoint: /oauth2/user_profile
+Scopes: openid profile email
+```
+
+### Field mappings
+
+Palmr automatically maps Kinde Auth user information to local user accounts:
+
+- **User ID**: Maps from Kinde's `id` field
+- **Email**: Maps from Kinde's `preferred_email` field
+- **Full Name**: Maps from Kinde's `first_name` and `last_name` fields
+- **First Name**: Maps from Kinde's `first_name` field
+- **Last Name**: Maps from Kinde's `last_name` field
+- **Avatar**: Maps from Kinde's `picture` field
+- **Username**: Maps from Kinde's `preferred_username` field
+
+### Kinde Auth-specific features
+
+- **Custom Claims**: Can include custom user metadata and app metadata
+- **Social Logins**: Supports integration with various social providers
+- **Multi-factor Authentication**: Supports Kinde's MFA features
+- **Modern APIs**: Clean REST APIs and comprehensive SDKs
+- **Developer Tools**: Excellent documentation and developer experience
+
+---
+
+## Testing the configuration
+
+### Verifying the setup
+
+After configuring Kinde Auth authentication, test the integration to ensure everything works correctly.
+
+1. **Check login page**: Navigate to your Palmr login page and verify the "Sign in with Kinde" button appears
+
+2. **Test authentication flow**: Click the Kinde Auth sign-in button and complete the authentication process
+
+3. **Verify user creation**: Confirm that a new user account is created (if auto-registration is enabled)
+
+### Login flow verification
+
+The complete authentication process should work as follows:
+
+1. **User clicks "Sign in with Kinde"**: The browser redirects to Kinde's authorization page
+2. **User authenticates**: User completes authentication through Kinde (login, MFA, etc.)
+3. **Kinde redirects back to Palmr**: User returns to Palmr with authentication tokens
+4. **Palmr creates or updates user**: User account is automatically managed with Kinde information
+5. **User accesses Palmr**: User is logged in with their Kinde identity
+
+---
+
+## Troubleshooting common issues
+
+### Redirect URI mismatch error
+
+**Error message**: `invalid_redirect_uri`
+
+**Cause**: The redirect URI in your request doesn't match what's configured in Kinde application.
+
+**Solution**:
+
+1. Check the exact URL in the error message
+2. Add this exact URL to your Kinde application's redirect URIs
+3. Ensure you include the correct protocol (http/https) and port
+4. Remove any trailing slashes unless they're in the callback URL
+
+### Access denied error
+
+**Error message**: `access_denied`
+
+**Cause**: User denied permissions or the application isn't properly configured.
+
+**Solution**:
+
+1. Verify that your Kinde application requests the correct scopes
+2. Check that users are granting permissions during the authorization flow
+3. Ensure your application is not restricted or disabled
+4. Verify the application has proper permissions set up
+
+### Invalid client error
+
+**Error message**: `invalid_client`
+
+**Cause**: Incorrect Client ID, Client Secret, or Domain.
+
+**Solution**:
+
+1. Double-check that you've copied the credentials correctly from Kinde
+2. Ensure there are no extra spaces or characters in the credentials
+3. Verify you're using the correct domain format (e.g., `your-tenant.kinde.com`)
+4. Generate a new Client Secret if necessary
+
+### Domain configuration issues
+
+**Error message**: Domain not found or invalid
+
+**Cause**: Incorrect Kinde domain or tenant configuration.
+
+**Solution**:
+
+1. Verify your Kinde domain is correct (e.g., `your-tenant.kinde.com`)
+2. Check that your Kinde tenant is active and not suspended
+3. Ensure you're using the correct region for your tenant
+4. Verify DNS resolution for your Kinde domain
+
+### Custom claims not available
+
+**Cause**: Custom claims not properly configured in Kinde.
+
+**Solution**:
+
+1. Check Kinde custom claims configuration
+2. Verify that custom claims are included in the ID token
+3. Ensure the claims are properly formatted and accessible
+4. Test with a user that has the expected custom claims
+
+---
+
+## Security best practices
+
+### Credential management
+
+- **Never expose secrets**: Keep your Client Secret secure and never commit it to version control
+- **Rotate credentials regularly**: Generate new Client Secrets periodically for enhanced security
+- **Use environment variables**: Store sensitive configuration in environment variables, not config files
+- **Monitor access logs**: Regularly review authentication logs for suspicious activity
+
+### Scope and permission management
+
+- **Minimal scopes**: Only request `openid`, `profile`, and `email` scopes as required by Palmr
+- **User consent**: Ensure users understand what permissions they're granting
+- **Regular audits**: Review which users have connected their Kinde Auth accounts
+- **Access reviews**: Periodically check user access and remove inactive accounts
+
+### Production considerations
+
+- **Use HTTPS**: Always use HTTPS in production environments
+- **Configure proper domains**: Use production domains in Kinde application settings
+- **Test thoroughly**: Verify the complete authentication flow before going live
+- **Plan for failures**: Have fallback authentication methods available
+
+---
+
+## Next steps
+
+With Kinde Auth authentication configured, you might want to:
+
+- **Configure additional providers**: Set up other OIDC providers for more authentication options
+- **Customize user management**: Fine-tune auto-registration and admin assignment rules
+- **Review security settings**: Ensure your authentication setup meets your security requirements
+- **Monitor usage**: Keep track of authentication patterns and user activity
+
+For more information about OIDC authentication in Palmr, see the [OIDC Authentication overview](/docs/3.2-beta/oidc-authentication).
+
+## Useful resources
+
+- [Kinde Documentation](https://kinde.com/docs)
+- [Kinde OAuth 2.0 Guide](https://kinde.com/docs/developer-tools/oauth2)
+- [Kinde OpenID Connect](https://kinde.com/docs/developer-tools/openid-connect)
+- [Kinde Dashboard](https://app.kinde.com)

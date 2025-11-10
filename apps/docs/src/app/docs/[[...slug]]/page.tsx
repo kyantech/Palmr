@@ -11,7 +11,7 @@ import { Sponsor } from "../components/sponsor";
 export default async function Page(props: { params: Promise<{ slug?: string[] }> }) {
   const params = await props.params;
   const page = source.getPage(params.slug);
-  if (!page) redirect("/docs/3.1-beta");
+  if (!page) redirect("/docs/3.2-beta");
 
   const MDXContent = page.data.body;
 
@@ -49,7 +49,7 @@ export async function generateStaticParams() {
 export async function generateMetadata(props: { params: Promise<{ slug?: string[] }> }) {
   const params = await props.params;
   const page = source.getPage(params.slug);
-  if (!page) redirect("/docs/3.1-beta");
+  if (!page) redirect("/docs/3.2-beta");
 
   return {
     title: page.data.title + " | Palmr. Docs",

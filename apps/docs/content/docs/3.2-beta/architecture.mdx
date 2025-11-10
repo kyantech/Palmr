@@ -1,0 +1,143 @@
+---
+title: Architecture of Palmr.
+icon: ServerCog
+---
+
+import { ZoomableImage } from "@/components/ui/zoomable-image";
+
+## Overview
+
+Understanding the architecture of Palmr. is crucial for both deploying and scaling the application. The platform is designed with simplicity and flexibility in mind, offering a streamlined setup that can grow with your needs.
+
+<ZoomableImage src="/assets/v3/architecture/architecture.png" alt="Palmr. Architecture" />
+
+## Technologies used
+
+Each component in the Palmr. architecture plays a vital role in ensuring reliability, performance, and scalability. The stack is built with simplicity, performance, and flexibility in mind - everything is self-hosted, developer-friendly, and designed to scale without adding unnecessary complexity.
+
+### SQLite + Prisma ORM
+
+Palmr. uses **SQLite** as the primary database solution combined with **Prisma ORM** for type-safe database operations. SQLite is a lightweight, serverless database that's perfect for getting started quickly while still being powerful enough for production use. SQLite is fully ACID-compliant, which means it handles transactions safely and reliably. Prisma provides a modern database toolkit that generates a type-safe client, handles migrations, and offers an intuitive query API. Together, they create a powerful combination that eliminates database administration complexity while providing excellent developer experience.
+
+- Provides reliable and secure data storage with zero configuration required
+- **Prisma ORM** offers type-safe queries and automatic TypeScript integration
+- Lightweight and fast, perfect for both development and production environments
+- Fully ACID-compliant with excellent performance for metadata and transactional data
+- Self-contained with no external dependencies or server processes needed
+- Easy database migrations and schema management through Prisma
+
+### Next.js 15 + React + TypeScript
+
+The frontend of Palmr. is built using **Next.js 15**, along with **React** and **TypeScript**, forming a modern stack that's easy to maintain and super fast for end users. Next.js 15 brings server components, server actions, and a new app router system that makes rendering dynamic content incredibly efficient. This allows us to load only what's needed, when it's needed - which makes the app feel snappy even under load. React provides a clean, component-based structure that makes it easy to break the UI into reusable pieces, and TypeScript helps prevent bugs before they even happen by enforcing static typing and better code navigation.
+
+- **React** enables the creation of a dynamic and responsive user interface with a component-based architecture
+- **TypeScript** adds static typing, enhancing code quality and reducing runtime errors
+- **Next.js 15** handles routing, server-side rendering, and server components for performance at scale
+
+### Filesystem storage
+
+Palmr. uses **filesystem storage** as the default storage solution, keeping things simple and efficient. Files are organized in a structured directory layout on the local filesystem, making it easy to understand, backup, and manage. This approach eliminates external dependencies and provides excellent performance for most use cases. The system also supports **S3-compatible object storage** as an optional alternative for users who need cloud storage or additional scalability features.
+
+- Simple and reliable file storage with organized directory structure
+- No external dependencies required for basic operation
+- Excellent performance for local file operations
+- Optional S3-compatible storage support for cloud deployments and scalability
+
+#### Performance Considerations with Encryption
+
+By default, filesystem storage operates without encryption for optimal performance, providing fast uploads and downloads with minimal CPU overhead. This approach is ideal for most use cases where performance is prioritized.
+
+If you need to protect sensitive files at rest, you can enable encryption by setting `DISABLE_FILESYSTEM_ENCRYPTION=false` and providing an `ENCRYPTION_KEY` in your configuration. When enabled, Palmr uses AES-256-CBC encryption, which adds CPU overhead during uploads (encryption) and downloads (decryption), particularly for large files or in resource-constrained environments like containers or low-end VMs.
+
+For optimal performance with encryption enabled, ensure your hardware supports AES-NI acceleration (check with `cat /proc/cpuinfo | grep aes` on Linux).
+
+As an alternative, consider using S3-compatible object storage (e.g., AWS S3 or MinIO), which can offload file storage from the local filesystem and potentially reduce local CPU overhead for encryption/decryption. See [S3 Providers](/docs/3.2-beta/s3-providers) for setup instructions.
+
+### Fastify + Zod + TypeScript
+
+The backend of Palmr. is powered by **Fastify**, **Zod**, and **TypeScript**, creating a robust and type-safe API layer. Fastify is a super-fast Node.js web framework optimized for performance and low overhead, designed to handle lots of concurrent requests with minimal resource usage. Zod provides runtime type validation and schema definition, ensuring all incoming data is properly validated before reaching business logic. TypeScript adds compile-time type safety throughout the entire backend codebase. This combination creates a highly reliable and maintainable backend that prevents bugs and security issues while maintaining excellent performance.
+
+- **Fastify** provides fast request handling with a lightweight core
+- **Zod** enables runtime schema validation and type inference
+- **TypeScript** ensures type safety across the entire backend codebase
+- Built-in schema-based validation for secure and reliable API handling
+- Supports plugin-based architecture for easy extensibility
+- Optimized for high performance with minimal resource usage
+
+## How it works
+
+The Palmr. architecture follows a clean separation of concerns, making it easy to understand and maintain:
+
+1. **Frontend** — React + TypeScript + Next.js 15 handle the user interface and user interactions
+2. **Backend** — Fastify + Zod + TypeScript process requests with full type safety and validation
+3. **Database** — SQLite + Prisma ORM store and manage data with type-safe operations
+4. **File Storage** — Filesystem storage handles file operations with optional S3-compatible support
+
+## API integration and extensibility
+
+One of Palmr.'s key strengths is its **open API architecture**, designed to integrate seamlessly with existing workflows and third-party services. The API can be exposed publicly, allowing for powerful integrations and custom development opportunities.
+
+### Open API endpoints
+
+Palmr. provides comprehensive REST API endpoints that can be integrated with various services and platforms:
+
+**Popular integration possibilities:**
+
+- **Zapier** - Automate file sharing workflows and connect with 5,000+ apps
+- **Microsoft Power Automate** - Create automated workflows within Microsoft ecosystem
+- **IFTTT** - Simple automation for personal and business use cases
+- **n8n** - Self-hosted workflow automation for advanced users
+- **GitHub Actions** - Integrate file sharing into CI/CD pipelines
+- **Slack/Discord Bots** - Share files directly from chat platforms
+- **Mobile Apps** - Build custom mobile applications using the API
+- **Desktop Applications** - Create native desktop clients for specific use cases
+
+### Custom development opportunities
+
+The open API architecture enables developers to:
+
+- **Build custom clients** - Create specialized interfaces for specific industries or use cases
+- **Develop integrations** - Connect Palmr. with existing business systems and workflows
+- **Create automation scripts** - Automate repetitive file management tasks
+- **Build mobile apps** - Develop native iOS/Android applications
+- **Integrate with CMS** - Connect content management systems for seamless file handling
+- **Create backup solutions** - Build automated backup and sync tools
+
+### API benefits
+
+- **RESTful design** - Standard HTTP methods and status codes for easy integration
+- **Comprehensive documentation** - Complete API reference with examples and use cases
+- **Authentication support** - Secure API access with JWT token-based authentication
+- **Schema validation** - Built-in request/response validation using Zod schemas
+- **Type safety** - Full TypeScript support for reliable integrations
+- **Bulk operations** - Efficient handling of multiple files and batch operations
+
+This open architecture makes Palmr. not just a file-sharing platform, but a **file management ecosystem** that can adapt to any workflow or business requirement. Whether you're a developer looking to integrate file sharing into your application or a business wanting to automate file workflows, Palmr.'s API provides the flexibility and power you need.
+
+## Storage flexibility
+
+Palmr. is designed to be flexible in how you handle file storage:
+
+**Default setup (Filesystem):**
+
+- Files stored directly on the local filesystem
+- Simple directory structure for easy management
+- Perfect for single-server deployments and development
+- No additional configuration required
+
+**Optional S3-compatible storage:**
+
+- Enable S3 storage by setting `ENABLE_S3=true`, look at [S3 Providers](/docs/3.2-beta/s3-providers) for more information.
+- Compatible with AWS S3, MinIO, and other S3-compatible services
+- Ideal for cloud deployments and distributed setups
+- Provides additional scalability and redundancy options
+
+## Useful links
+
+- [SQLite Documentation](https://www.sqlite.org/docs.html)
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [Next.js Documentation](https://nextjs.org/docs)
+- [React Documentation](https://react.dev/)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+- [Fastify Documentation](https://fastify.dev/docs/latest/)
+- [Zod Documentation](https://zod.dev/)

@@ -6,22 +6,11 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { deleteReverseShareFile, downloadReverseShareFile } from "@/http/endpoints/reverse-shares";
+import { deleteReverseShareFile } from "@/http/endpoints/reverse-shares";
+import type { ReverseShareFile } from "@/http/endpoints/reverse-shares/types";
+import { downloadReverseShareWithQueue } from "@/utils/download-queue-utils";
 import { getFileIcon } from "@/utils/file-icons";
 import { ReverseShareFilePreviewModal } from "./reverse-share-file-preview-modal";
-
-interface ReverseShareFile {
-  id: string;
-  name: string;
-  description: string | null;
-  extension: string;
-  size: string;
-  objectName: string;
-  uploaderEmail: string | null;
-  uploaderName: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
 
 interface ReceivedFilesSectionProps {
   files: ReverseShareFile[];
@@ -67,30 +56,13 @@ export function ReceivedFilesSection({ files, onFileDeleted }: ReceivedFilesSect
 
   const handleDownload = async (file: ReverseShareFile) => {
     try {
-      const response = await downloadReverseShareFile(file.id);
-      const downloadUrl = response.data.url;
-
-      const fileResponse = await fetch(downloadUrl);
-      if (!fileResponse.ok) {
-        throw new Error(`Download failed: ${fileResponse.status}`);
-      }
-
-      const blob = await fileResponse.blob();
-      const url = window.URL.createObjectURL(blob);
-
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = file.name;
-      document.body.appendChild(link);
-      link.click();
-
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      toast.success(t("reverseShares.modals.details.downloadSuccess"));
+      await downloadReverseShareWithQueue(file.id, file.name, {
+        onComplete: () => toast.success(t("reverseShares.modals.details.downloadSuccess")),
+        onFail: () => toast.error(t("reverseShares.modals.details.downloadError")),
+      });
     } catch (error) {
       console.error("Download error:", error);
-      toast.error(t("reverseShares.modals.details.downloadError"));
+      // Error already handled in downloadReverseShareWithQueue
     }
   };
 
@@ -175,16 +147,7 @@ export function ReceivedFilesSection({ files, onFileDeleted }: ReceivedFilesSect
       </div>
 
       {previewFile && (
-        <ReverseShareFilePreviewModal
-          isOpen={!!previewFile}
-          onClose={() => setPreviewFile(null)}
-          file={{
-            id: previewFile.id,
-            name: previewFile.name,
-            objectName: previewFile.objectName,
-            extension: previewFile.extension,
-          }}
-        />
+        <ReverseShareFilePreviewModal isOpen={!!previewFile} onClose={() => setPreviewFile(null)} file={previewFile} />
       )}
     </>
   );

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { IconLogout, IconSettings, IconUser, IconUsers } from "@tabler/icons-react";
+import { IconLogout, IconPalette, IconSettings, IconUser, IconUsers } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 import { LanguageSwitcher } from "@/components/general/language-switcher";
@@ -86,6 +86,12 @@ export function Navbar() {
                   <Link href="/profile" className="flex items-center gap-2 cursor-pointer">
                     <IconUser className="h-4 w-4" />
                     {t("navbar.profile")}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/customization" className="flex items-center gap-2 cursor-pointer">
+                    <IconPalette className="h-4 w-4" />
+                    {t("navbar.customization")}
                   </Link>
                 </DropdownMenuItem>
                 {isAdmin && (

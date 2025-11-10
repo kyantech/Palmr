@@ -227,7 +227,7 @@ export class ReverseShareService {
       }
     }
 
-    const expires = 3600; // 1 hour
+    const expires = parseInt(env.PRESIGNED_URL_EXPIRATION);
     const url = await this.fileService.getPresignedPutUrl(objectName, expires);
 
     return { url, expiresIn: expires };
@@ -257,7 +257,7 @@ export class ReverseShareService {
       }
     }
 
-    const expires = 3600; // 1 hour
+    const expires = parseInt(env.PRESIGNED_URL_EXPIRATION);
     const url = await this.fileService.getPresignedPutUrl(objectName, expires);
 
     return { url, expiresIn: expires };
@@ -367,6 +367,25 @@ export class ReverseShareService {
     return this.formatFileResponse(file);
   }
 
+  async getFileInfo(fileId: string, creatorId: string) {
+    const file = await this.reverseShareRepository.findFileById(fileId);
+    if (!file) {
+      throw new Error("File not found");
+    }
+
+    if (file.reverseShare.creatorId !== creatorId) {
+      throw new Error("Unauthorized to access this file");
+    }
+
+    return {
+      id: file.id,
+      name: file.name,
+      size: file.size,
+      objectName: file.objectName,
+      extension: file.extension,
+    };
+  }
+
   async downloadReverseShareFile(fileId: string, creatorId: string) {
     const file = await this.reverseShareRepository.findFileById(fileId);
     if (!file) {
@@ -378,7 +397,7 @@ export class ReverseShareService {
     }
 
     const fileName = file.name;
-    const expires = 3600; // 1 hour
+    const expires = parseInt(env.PRESIGNED_URL_EXPIRATION);
     const url = await this.fileService.getPresignedGetUrl(file.objectName, expires, fileName);
     return { url, expiresIn: expires };
   }
@@ -752,6 +771,32 @@ export class ReverseShareService {
       reverseShareId: file.reverseShareId,
       createdAt: file.createdAt.toISOString(),
       updatedAt: file.updatedAt.toISOString(),
+    };
+  }
+
+  async getReverseShareMetadataByAlias(alias: string) {
+    const reverseShare = await this.reverseShareRepository.findByAlias(alias);
+    if (!reverseShare) {
+      throw new Error("Reverse share not found");
+    }
+
+    // Check if reverse share is expired
+    const isExpired = reverseShare.expiration && new Date(reverseShare.expiration) < new Date();
+
+    // Check if inactive
+    const isInactive = !reverseShare.isActive;
+
+    const totalFiles = reverseShare.files?.length || 0;
+    const hasPassword = !!reverseShare.password;
+
+    return {
+      name: reverseShare.name,
+      description: reverseShare.description,
+      totalFiles,
+      hasPassword,
+      isExpired,
+      isInactive,
+      maxFiles: reverseShare.maxFiles,
     };
   }
 }

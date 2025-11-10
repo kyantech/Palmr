@@ -34,3 +34,4 @@ apps/server/dist/*
 data/
 
 node_modules/
+screenshots/

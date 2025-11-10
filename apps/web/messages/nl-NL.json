@@ -144,7 +144,15 @@
     "update": "Bijwerken",
     "click": "Klik om",
     "creating": "Maken...",
-    "loadingSimple": "Laden..."
+    "loadingSimple": "Laden...",
+    "create": "Aanmaken",
+    "deleting": "Verwijderen...",
+    "move": "Verplaatsen",
+    "rename": "Hernoemen",
+    "search": "Zoeken",
+    "share": "Delen",
+    "copied": "Gekopieerd",
+    "copy": "Kopiëren"
   },
   "createShare": {
     "title": "Delen Maken",
@@ -160,7 +168,53 @@
     "create": "Delen Maken",
     "success": "Delen succesvol aangemaakt",
     "error": "Fout bij het aanmaken van delen",
-    "namePlaceholder": "Voer een naam in voor uw delen"
+    "namePlaceholder": "Voer een naam in voor uw delen",
+    "nextSelectFiles": "Volgende: Bestanden selecteren",
+    "searchLabel": "Zoeken",
+    "tabs": {
+      "shareDetails": "Deel details",
+      "selectFiles": "Bestanden selecteren"
+    }
+  },
+  "customization": {
+    "breadcrumb": "Aanpassing",
+    "colors": {
+      "title": "Thema Kleuren",
+      "description": "Kies je gewenste primaire kleurenthema",
+      "presets": "Beschikbare Kleuren",
+      "presetsDescription": "Selecteer uit beschikbare kleurenthema's",
+      "reset": "Standaardinstellingen Herstellen"
+    },
+    "fonts": {
+      "title": "Typografie",
+      "description": "Kies je gewenste lettertype",
+      "available": "Beschikbare Lettertypen",
+      "availableDescription": "Selecteer uit beschikbare lettertypen",
+      "reset": "Standaardinstellingen Herstellen"
+    },
+    "radius": {
+      "title": "Randradius",
+      "description": "Pas de rondheid van interface-elementen aan",
+      "available": "Rondheidsopties",
+      "availableDescription": "Kies hoe afgerond hoeken moeten verschijnen",
+      "reset": "Standaardinstellingen Herstellen"
+    },
+    "background": {
+      "title": "Achtergrondkleuren",
+      "description": "Pas achtergrondkleuren aan voor lichte en donkere modi",
+      "lightMode": "Lichte Modus",
+      "darkMode": "Donkere Modus",
+      "availableDescription": "Kies achtergrondkleuren voor zowel lichte als donkere thema's",
+      "reset": "Standaardinstellingen Herstellen"
+    },
+    "theme": {
+      "title": "Thema Modus",
+      "description": "Kies tussen licht, donker of systeemthema",
+      "selectTheme": "Thema Voorkeur",
+      "availableDescription": "Selecteer je gewenste thema modus",
+      "reset": "Terugzetten naar Systeem"
+    },
+    "pageTitle": "Aanpassing"
   },
   "dashboard": {
     "loadError": "Fout bij het laden van controlepaneel gegevens",
@@ -174,7 +228,42 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "Te verwijderen bestanden",
-    "sharesToDelete": "Delen die worden verwijderd"
+    "sharesToDelete": "Delen die worden verwijderd",
+    "foldersToDelete": "Mappen die worden verwijderd",
+    "itemsToDelete": "Items die worden verwijderd"
+  },
+  "downloadQueue": {
+    "downloadQueued": "Download in wachtrij: {fileName}",
+    "queuedDescription": "Je download start automatisch wanneer er een slot beschikbaar komt",
+    "queuePosition": "Download in wachtrij op positie {position}: {fileName}",
+    "estimatedWait": "Geschatte wachttijd: {time}",
+    "queueFull": "Downloadwachtrij is vol",
+    "queueFullDescription": "Probeer het over enkele minuten opnieuw wanneer er ruimte is in de wachtrij",
+    "cancelSuccess": "Download succesvol geannuleerd",
+    "cancelError": "Download annuleren mislukt: {error}",
+    "status": {
+      "pending": "Voorbereiden...",
+      "queued": "In wachtrij",
+      "downloading": "Downloaden",
+      "completed": "Voltooid",
+      "failed": "Mislukt"
+    },
+    "waitTime": {
+      "seconds": "{seconds}s",
+      "minutes": "{minutes}m",
+      "hoursMinutes": "{hours}u {minutes}m"
+    },
+    "indicator": {
+      "title": "Downloads",
+      "downloads": "Download Wachtrij",
+      "active": "Actief",
+      "queued": "In Wachtrij",
+      "position": "Positie {position}",
+      "estimatedWait": "Wachttijd: {time}",
+      "unknownFile": "Onbekend bestand",
+      "noDownloads": "Geen downloads actief",
+      "refresh": "Wachtrij Vernieuwen"
+    }
   },
   "emptyState": {
     "noFiles": "Nog geen bestanden geüpload",
@@ -203,7 +292,8 @@
     "descriptionPlaceholder": "Voer bestandsbeschrijving in",
     "deleteFile": "Bestand Verwijderen",
     "deleteConfirmation": "Weet je zeker dat je  wilt verwijderen?",
-    "deleteWarning": "Deze actie kan niet ongedaan worden gemaakt."
+    "deleteWarning": "Deze actie kan niet ongedaan worden gemaakt.",
+    "addDescriptionPlaceholder": "Beschrijving toevoegen..."
   },
   "fileManager": {
     "downloadError": "Fout bij het downloaden van bestand",
@@ -214,6 +304,7 @@
   },
   "filePreview": {
     "title": "Bestandsvoorbeeld",
+    "description": "Bestand bekijken en downloaden",
     "loading": "Laden...",
     "notAvailable": "Voorbeeld niet beschikbaar voor dit bestandstype.",
     "downloadToView": "Gebruik de downloadknop om het bestand te downloaden.",
@@ -248,7 +339,8 @@
     "previewFile": "Bestand bekijken",
     "addToShare": "Toevoegen aan share",
     "removeFromShare": "Verwijderen uit share",
-    "saveChanges": "Wijzigingen Opslaan"
+    "saveChanges": "Wijzigingen Opslaan",
+    "editFolder": "Map bewerken"
   },
   "files": {
     "title": "Alle Bestanden",
@@ -271,7 +363,20 @@
       "table": "Tabel",
       "grid": "Raster"
     },
-    "totalFiles": "{count, plural, =0 {Geen bestanden} =1 {1 bestand} other {# bestanden}}"
+    "totalFiles": "{count, plural, =0 {Geen bestanden} =1 {1 bestand} other {# bestanden}}",
+    "bulkDeleteConfirmation": "Weet je zeker dat je {count, plural, =1 {1 bestand} other {# bestanden}} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+    "bulkDeleteTitle": "Geselecteerde Bestanden Verwijderen",
+    "actions": {
+      "open": "Openen",
+      "rename": "Hernoemen",
+      "delete": "Verwijderen"
+    },
+    "empty": {
+      "title": "Nog geen bestanden of mappen",
+      "description": "Upload uw eerste bestand of maak een map om te beginnen"
+    },
+    "files": "bestanden",
+    "folders": "mappen"
   },
   "filesTable": {
     "ariaLabel": "Bestanden tabel",
@@ -300,6 +405,33 @@
       "share": "Geselecteerde Delen",
       "delete": "Geselecteerde Verwijderen"
     }
+  },
+  "folderActions": {
+    "editFolder": "Map bewerken",
+    "folderName": "Mapnaam",
+    "folderNamePlaceholder": "Voer mapnaam in",
+    "folderDescription": "Beschrijving",
+    "folderDescriptionPlaceholder": "Voer mapbeschrijving in (optioneel)",
+    "createFolder": "Nieuwe map maken",
+    "renameFolder": "Map hernoemen",
+    "moveFolder": "Map verplaatsen",
+    "shareFolder": "Map delen",
+    "deleteFolder": "Map verwijderen",
+    "moveTo": "Verplaatsen naar",
+    "selectDestination": "Bestemmingsmap selecteren",
+    "rootFolder": "Hoofdmap",
+    "folderCreated": "Map succesvol aangemaakt",
+    "folderRenamed": "Map succesvol hernoemd",
+    "folderMoved": "Map succesvol verplaatst",
+    "folderDeleted": "Map succesvol verwijderd",
+    "folderShared": "Map succesvol gedeeld",
+    "createFolderError": "Fout bij maken van map",
+    "renameFolderError": "Fout bij hernoemen van map",
+    "moveFolderError": "Fout bij verplaatsen van map",
+    "deleteFolderError": "Fout bij verwijderen van map",
+    "shareFolderError": "Fout bij delen van map",
+    "deleteConfirmation": "Weet u zeker dat u deze map wilt verwijderen?",
+    "deleteWarning": "Deze actie kan niet ongedaan worden gemaakt."
   },
   "footer": {
     "poweredBy": "Mogelijk gemaakt door",
@@ -402,16 +534,42 @@
       "removeFailed": "Fout bij het verwijderen van logo"
     }
   },
+  "moveItems": {
+    "itemsToMove": "Items om te verplaatsen:",
+    "movingTo": "Verplaatsen naar:",
+    "title": "{count, plural, =1 {Item} other {Items}} verplaatsen",
+    "description": "{count, plural, =1 {Item} other {Items}} naar een nieuwe locatie verplaatsen",
+    "success": "{count} {count, plural, =1 {item} other {items}} succesvol verplaatst"
+  },
   "navbar": {
     "logoAlt": "Applicatie Logo",
     "profileMenu": "Profiel Menu",
     "profile": "Profiel",
     "settings": "Instellingen",
     "usersManagement": "Gebruikersbeheer",
-    "logout": "Uitloggen"
+    "logout": "Uitloggen",
+    "customization": "Aanpassen"
   },
   "navigation": {
     "dashboard": "Controlepaneel"
+  },
+  "notifications": {
+    "permissionGranted": "Download meldingen ingeschakeld",
+    "permissionDenied": "Download meldingen uitgeschakeld",
+    "downloadComplete": {
+      "title": "Download Voltooid",
+      "body": "{fileName} is klaar met downloaden"
+    },
+    "downloadFailed": {
+      "title": "Download Mislukt",
+      "body": "Downloaden van {fileName} mislukt: {error}",
+      "unknownError": "Onbekende fout"
+    },
+    "queueProcessing": {
+      "title": "Download Start",
+      "body": "{fileName} wordt nu gedownload{position}",
+      "position": " (was #{position} in wachtrij)"
+    }
   },
   "profile": {
     "password": {
@@ -795,7 +953,8 @@
           "timeout": "Kopieeroperatie verlopen. Probeer het opnieuw met een kleiner bestand of controleer uw verbinding.",
           "failed": "Kopieeroperatie mislukt. Probeer het opnieuw.",
           "aborted": "Kopieeroperatie is geannuleerd vanwege een time-out."
-        }
+        },
+        "invalidDate": "Ongeldige datum"
       }
     },
     "form": {
@@ -900,7 +1059,8 @@
     "upload": {
       "metadata": {
         "title": "Bestanden Verzenden - Palmr",
-        "description": "Verzend bestanden via de gedeelde link"
+        "description": "Verzend bestanden via de gedeelde link",
+        "descriptionWithLimit": "Upload bestanden (max {limit} bestanden)"
       },
       "layout": {
         "defaultTitle": "Bestanden Verzenden",
@@ -1010,7 +1170,10 @@
   },
   "searchBar": {
     "placeholder": "Bestanden zoeken...",
-    "results": "{filtered} van {total} bestanden gevonden"
+    "results": "{filtered} van {total} bestanden gevonden",
+    "placeholderFolders": "Zoek mappen...",
+    "noResults": "Geen resultaten gevonden voor \"{query}\"",
+    "placeholderFiles": "Bestanden zoeken..."
   },
   "settings": {
     "groups": {
@@ -1139,6 +1302,10 @@
       "passwordAuthEnabled": {
         "title": "Wachtwoord Authenticatie",
         "description": "Wachtwoord-gebaseerde authenticatie inschakelen of uitschakelen"
+      },
+      "hideVersion": {
+        "title": "Versie Verbergen",
+        "description": "Verberg de Palmr-versie in de voettekst van alle pagina's"
       }
     },
     "buttons": {
@@ -1200,7 +1367,11 @@
       "description": "Dit delen is mogelijk verwijderd of verlopen."
     },
     "pageTitle": "Delen",
-    "downloadAll": "Alles Downloaden"
+    "downloadAll": "Alles Downloaden",
+    "metadata": {
+      "defaultDescription": "Bestanden veilig delen",
+      "filesShared": "{count, plural, =1 {1 bestand gedeeld} other {# bestanden gedeeld}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "Delen Verwijderen",
@@ -1223,7 +1394,18 @@
     "editSuccess": "Delen succesvol bijgewerkt",
     "editError": "Fout bij bijwerken van delen",
     "bulkDeleteConfirmation": "Weet je zeker dat je {count, plural, =1 {1 deel} other {# delen}} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
-    "bulkDeleteTitle": "Geselecteerde Delen Verwijderen"
+    "bulkDeleteTitle": "Geselecteerde Delen Verwijderen",
+    "addDescriptionPlaceholder": "Beschrijving toevoegen...",
+    "aliasLabel": "Link alias",
+    "aliasPlaceholder": "Voer aangepaste alias in",
+    "copyLink": "Link kopiëren",
+    "fileTitle": "Bestand delen",
+    "folderTitle": "Map delen",
+    "generateLink": "Link genereren",
+    "linkDescriptionFile": "Genereer een aangepaste link om het bestand te delen",
+    "linkDescriptionFolder": "Genereer een aangepaste link om de map te delen",
+    "linkReady": "Uw deel-link is klaar:",
+    "linkTitle": "Link genereren"
   },
   "shareDetails": {
     "title": "Delen Details",
@@ -1350,7 +1532,8 @@
     "files": "bestanden",
     "totalSize": "Totale grootte",
     "creating": "Aanmaken...",
-    "create": "Delen Maken"
+    "create": "Delen Maken",
+    "itemsToShare": "Items om te delen ({count} {count, plural, =1 {item} other {items}})"
   },
   "shareSecurity": {
     "subtitle": "Configureer wachtwoordbeveiliging en beveiligingsopties voor dit delen",
@@ -1455,7 +1638,8 @@
       "download": "Download geselecteerd"
     },
     "selectAll": "Alles selecteren",
-    "selectShare": "Deel {shareName} selecteren"
+    "selectShare": "Deel {shareName} selecteren",
+    "folderCount": "mappen"
   },
   "storageUsage": {
     "title": "Opslaggebruik",
@@ -1749,5 +1933,17 @@
     "passwordMinLength": "Wachtwoord moet minimaal 6 tekens bevatten",
     "nameRequired": "Naam is verplicht",
     "required": "Dit veld is verplicht"
+  },
+  "embedCode": {
+    "title": "Afbeelding insluiten",
+    "description": "Gebruik deze codes om deze afbeelding in te sluiten in forums, websites of andere platforms",
+    "tabs": {
+      "directLink": "Directe link",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "Directe URL naar het afbeeldingsbestand",
+    "htmlDescription": "Gebruik deze code om de afbeelding in te sluiten in HTML-pagina's",
+    "bbcodeDescription": "Gebruik deze code om de afbeelding in te sluiten in forums die BBCode ondersteunen"
   }
 }

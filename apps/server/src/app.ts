@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import * as http from "node:http";
 import fastifyCookie from "@fastify/cookie";
 import { fastifyCors } from "@fastify/cors";
 import fastifyJwt from "@fastify/jwt";
@@ -31,6 +32,31 @@ export async function buildApp() {
     keepAliveTimeout: envTimeoutOverrides.keepAliveTimeout,
     requestTimeout: envTimeoutOverrides.requestTimeout,
     trustProxy: true,
+    maxParamLength: 500,
+    onProtoPoisoning: "ignore",
+    onConstructorPoisoning: "ignore",
+    ignoreTrailingSlash: true,
+    serverFactory: (handler: (req: any, res: any) => void) => {
+      const server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
+        res.setTimeout(0);
+        req.setTimeout(0);
+
+        req.on("close", () => {
+          if (typeof global !== "undefined" && global.gc) {
+            setImmediate(() => global.gc!());
+          }
+        });
+
+        handler(req, res);
+      });
+
+      server.maxHeadersCount = 0;
+      server.timeout = 0;
+      server.keepAliveTimeout = envTimeoutOverrides.keepAliveTimeout;
+      server.headersTimeout = envTimeoutOverrides.keepAliveTimeout + 1000;
+
+      return server;
+    },
   }).withTypeProvider<ZodTypeProvider>();
 
   app.setValidatorCompiler(validatorCompiler);

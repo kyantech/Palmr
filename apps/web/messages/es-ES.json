@@ -144,7 +144,15 @@
     "update": "Actualizar",
     "click": "Haga clic para",
     "creating": "Creando...",
-    "loadingSimple": "Cargando..."
+    "loadingSimple": "Cargando...",
+    "create": "Crear",
+    "deleting": "Eliminando...",
+    "move": "Mover",
+    "rename": "Renombrar",
+    "search": "Buscar",
+    "share": "Compartir",
+    "copied": "Copiado",
+    "copy": "Copiar"
   },
   "createShare": {
     "title": "Crear Compartir",
@@ -160,7 +168,53 @@
     "create": "Crear Compartir",
     "success": "Compartir creado exitosamente",
     "error": "Error al crear compartir",
-    "namePlaceholder": "Ingrese un nombre para su compartir"
+    "namePlaceholder": "Ingrese un nombre para su compartir",
+    "nextSelectFiles": "Siguiente: Seleccionar archivos",
+    "searchLabel": "Buscar",
+    "tabs": {
+      "shareDetails": "Detalles del compartido",
+      "selectFiles": "Seleccionar archivos"
+    }
+  },
+  "customization": {
+    "breadcrumb": "Personalización",
+    "colors": {
+      "title": "Colores del Tema",
+      "description": "Elige tu color primario preferido para el tema",
+      "presets": "Colores Disponibles",
+      "presetsDescription": "Selecciona entre los temas de colores disponibles",
+      "reset": "Restablecer por Defecto"
+    },
+    "fonts": {
+      "title": "Tipografía",
+      "description": "Elige tu familia de fuentes preferida",
+      "available": "Fuentes Disponibles",
+      "availableDescription": "Selecciona entre las familias de fuentes disponibles",
+      "reset": "Restablecer por Defecto"
+    },
+    "radius": {
+      "title": "Radio del Borde",
+      "description": "Personaliza la redondez de los elementos de la interfaz",
+      "available": "Opciones de Redondez",
+      "availableDescription": "Elige cómo deben aparecer las esquinas redondeadas",
+      "reset": "Restablecer por Defecto"
+    },
+    "background": {
+      "title": "Colores de Fondo",
+      "description": "Personaliza los colores de fondo para los modos claro y oscuro",
+      "lightMode": "Modo Claro",
+      "darkMode": "Modo Oscuro",
+      "availableDescription": "Elige los colores de fondo para los temas claro y oscuro",
+      "reset": "Restablecer por Defecto"
+    },
+    "theme": {
+      "title": "Modo del Tema",
+      "description": "Elige entre tema claro, oscuro o del sistema",
+      "selectTheme": "Preferencia de Tema",
+      "availableDescription": "Selecciona tu modo de tema preferido",
+      "reset": "Restablecer al Sistema"
+    },
+    "pageTitle": "Personalización"
   },
   "dashboard": {
     "loadError": "Error al cargar los datos del tablero",
@@ -174,7 +228,42 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "Archivos que serán eliminados",
-    "sharesToDelete": "Compartidos que serán eliminados"
+    "sharesToDelete": "Compartidos que serán eliminados",
+    "foldersToDelete": "Carpetas a eliminar",
+    "itemsToDelete": "Elementos a eliminar"
+  },
+  "downloadQueue": {
+    "downloadQueued": "Descarga en cola: {fileName}",
+    "queuedDescription": "Tu descarga comenzará automáticamente cuando haya un espacio disponible",
+    "queuePosition": "Descarga en cola en posición {position}: {fileName}",
+    "estimatedWait": "Tiempo estimado de espera: {time}",
+    "queueFull": "Cola de descarga llena",
+    "queueFullDescription": "Por favor, inténtalo de nuevo en unos minutos cuando la cola tenga espacio",
+    "cancelSuccess": "Descarga cancelada exitosamente",
+    "cancelError": "Error al cancelar la descarga: {error}",
+    "status": {
+      "pending": "Preparando...",
+      "queued": "En cola",
+      "downloading": "Descargando",
+      "completed": "Completado",
+      "failed": "Fallido"
+    },
+    "waitTime": {
+      "seconds": "{seconds}s",
+      "minutes": "{minutes}m",
+      "hoursMinutes": "{hours}h {minutes}m"
+    },
+    "indicator": {
+      "title": "Descargas",
+      "downloads": "Cola de Descargas",
+      "active": "Activas",
+      "queued": "En Cola",
+      "position": "Posición {position}",
+      "estimatedWait": "Espera: {time}",
+      "unknownFile": "Archivo desconocido",
+      "noDownloads": "No hay descargas en progreso",
+      "refresh": "Actualizar Cola"
+    }
   },
   "emptyState": {
     "noFiles": "Aún no se han subido archivos",
@@ -201,6 +290,7 @@
     "extension": "Extensión",
     "descriptionLabel": "Descripción",
     "descriptionPlaceholder": "Introduce una descripción del archivo",
+    "addDescriptionPlaceholder": "Agregar descripción...",
     "deleteFile": "Eliminar archivo",
     "deleteConfirmation": "¿Estás seguro de que deseas eliminar ?",
     "deleteWarning": "Esta acción no se puede deshacer."
@@ -214,6 +304,7 @@
   },
   "filePreview": {
     "title": "Vista Previa del Archivo",
+    "description": "Vista previa y descarga de archivo",
     "loading": "Cargando...",
     "notAvailable": "Vista previa no disponible para este tipo de archivo.",
     "downloadToView": "Use el botón de descarga para descargar el archivo.",
@@ -248,7 +339,8 @@
     "previewFile": "Vista previa del archivo",
     "addToShare": "Agregar a compartición",
     "removeFromShare": "Quitar de compartición",
-    "saveChanges": "Guardar Cambios"
+    "saveChanges": "Guardar Cambios",
+    "editFolder": "Editar carpeta"
   },
   "files": {
     "title": "Todos los Archivos",
@@ -267,11 +359,24 @@
     "bulkDownloadFileError": "Error al descargar archivo {fileName}",
     "bulkDeleteSuccess": "{count, plural, =1 {1 archivo eliminado exitosamente} other {# archivos eliminados exitosamente}}",
     "bulkDeleteError": "Error al eliminar archivos seleccionados",
+    "bulkDeleteTitle": "Eliminar Archivos Seleccionados",
+    "bulkDeleteConfirmation": "¿Está seguro de que desea eliminar {count, plural, =1 {1 archivo} other {# archivos}}? Esta acción no se puede deshacer.",
     "viewMode": {
       "table": "Tabla",
       "grid": "Cuadrícula"
     },
-    "totalFiles": "{count, plural, =0 {Sin archivos} =1 {1 archivo} other {# archivos}}"
+    "totalFiles": "{count, plural, =0 {Sin archivos} =1 {1 archivo} other {# archivos}}",
+    "actions": {
+      "open": "Abrir",
+      "rename": "Renombrar",
+      "delete": "Eliminar"
+    },
+    "empty": {
+      "title": "Aún no hay archivos o carpetas",
+      "description": "Suba su primer archivo o cree una carpeta para comenzar"
+    },
+    "files": "archivos",
+    "folders": "carpetas"
   },
   "filesTable": {
     "ariaLabel": "Tabla de archivos",
@@ -300,6 +405,33 @@
       "share": "Compartir Seleccionados",
       "delete": "Eliminar Seleccionados"
     }
+  },
+  "folderActions": {
+    "editFolder": "Editar carpeta",
+    "folderName": "Nombre de carpeta",
+    "folderNamePlaceholder": "Ingrese nombre de carpeta",
+    "folderDescription": "Descripción",
+    "folderDescriptionPlaceholder": "Ingrese descripción de carpeta (opcional)",
+    "createFolder": "Crear nueva carpeta",
+    "renameFolder": "Renombrar carpeta",
+    "moveFolder": "Mover carpeta",
+    "shareFolder": "Compartir carpeta",
+    "deleteFolder": "Eliminar carpeta",
+    "moveTo": "Mover a",
+    "selectDestination": "Seleccionar carpeta destino",
+    "rootFolder": "Raíz",
+    "folderCreated": "Carpeta creada exitosamente",
+    "folderRenamed": "Carpeta renombrada exitosamente",
+    "folderMoved": "Carpeta movida exitosamente",
+    "folderDeleted": "Carpeta eliminada exitosamente",
+    "folderShared": "Carpeta compartida exitosamente",
+    "createFolderError": "Error al crear carpeta",
+    "renameFolderError": "Error al renombrar carpeta",
+    "moveFolderError": "Error al mover carpeta",
+    "deleteFolderError": "Error al eliminar carpeta",
+    "shareFolderError": "Error al compartir carpeta",
+    "deleteConfirmation": "¿Está seguro de que desea eliminar esta carpeta?",
+    "deleteWarning": "Esta acción no se puede deshacer."
   },
   "footer": {
     "poweredBy": "Desarrollado por",
@@ -402,16 +534,42 @@
       "removeFailed": "Error al eliminar el logo"
     }
   },
+  "moveItems": {
+    "itemsToMove": "Elementos a mover:",
+    "movingTo": "Moviendo a:",
+    "title": "Mover {count, plural, =1 {elemento} other {elementos}}",
+    "description": "Mover {count, plural, =1 {elemento} other {elementos}} a una nueva ubicación",
+    "success": "Se movieron exitosamente {count} {count, plural, =1 {elemento} other {elementos}}"
+  },
   "navbar": {
     "logoAlt": "Logo de la aplicación",
     "profileMenu": "Menú de perfil",
     "profile": "Perfil",
     "settings": "Configuración",
     "usersManagement": "Gestión de usuarios",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "customization": "Personalización"
   },
   "navigation": {
     "dashboard": "Panel de control"
+  },
+  "notifications": {
+    "permissionGranted": "Notificaciones de descarga habilitadas",
+    "permissionDenied": "Notificaciones de descarga deshabilitadas",
+    "downloadComplete": {
+      "title": "Descarga Completada",
+      "body": "{fileName} ha terminado de descargarse"
+    },
+    "downloadFailed": {
+      "title": "Descarga Fallida",
+      "body": "Error al descargar {fileName}: {error}",
+      "unknownError": "Error desconocido"
+    },
+    "queueProcessing": {
+      "title": "Descarga Iniciando",
+      "body": "{fileName} está descargándose ahora{position}",
+      "position": " (estaba en posición #{position} en la cola)"
+    }
   },
   "profile": {
     "password": {
@@ -750,6 +908,7 @@
         "noFiles": "Ningún archivo recibido aún",
         "noFilesDescription": "Los archivos enviados a través de este enlace aparecerán aquí",
         "fileCount": "{count, plural, =0 {Ningún archivo} =1 {1 archivo} other {# archivos}}",
+        "invalidDate": "Fecha inválida",
         "totalSize": "Tamaño total: {size}",
         "columns": {
           "file": "Archivo",
@@ -900,7 +1059,8 @@
     "upload": {
       "metadata": {
         "title": "Enviar Archivos - Palmr",
-        "description": "Envía archivos a través del enlace compartido"
+        "description": "Envía archivos a través del enlace compartido",
+        "descriptionWithLimit": "Subir archivos (máx. {limit} archivos)"
       },
       "layout": {
         "defaultTitle": "Enviar Archivos",
@@ -1010,7 +1170,10 @@
   },
   "searchBar": {
     "placeholder": "Buscar archivos...",
-    "results": "Se encontraron {filtered} de {total} archivos"
+    "results": "Se encontraron {filtered} de {total} archivos",
+    "placeholderFolders": "Buscar carpetas...",
+    "noResults": "No se encontraron resultados para \"{query}\"",
+    "placeholderFiles": "Buscar archivos..."
   },
   "settings": {
     "groups": {
@@ -1139,6 +1302,10 @@
       "passwordAuthEnabled": {
         "title": "Autenticación por Contraseña",
         "description": "Habilitar o deshabilitar la autenticación basada en contraseña"
+      },
+      "hideVersion": {
+        "title": "Ocultar Versión",
+        "description": "Ocultar la versión de Palmr en el pie de página de todas las páginas"
       }
     },
     "buttons": {
@@ -1200,11 +1367,16 @@
       "description": "Esta compartición puede haber sido eliminada o haber expirado."
     },
     "pageTitle": "Compartición",
-    "downloadAll": "Descargar Todo"
+    "downloadAll": "Descargar Todo",
+    "metadata": {
+      "defaultDescription": "Compartir archivos de forma segura",
+      "filesShared": "{count, plural, =1 {1 archivo compartido} other {# archivos compartidos}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "Eliminar Compartir",
     "deleteConfirmation": "¿Estás seguro de que deseas eliminar esta compartición? Esta acción no se puede deshacer.",
+    "addDescriptionPlaceholder": "Agregar descripción...",
     "editTitle": "Editar Compartir",
     "nameLabel": "Nombre del Compartir",
     "descriptionLabel": "Descripción",
@@ -1223,7 +1395,17 @@
     "editSuccess": "Compartir actualizado exitosamente",
     "editError": "Error al actualizar compartir",
     "bulkDeleteConfirmation": "¿Estás seguro de que quieres eliminar {count, plural, =1 {1 compartido} other {# compartidos}}? Esta acción no se puede deshacer.",
-    "bulkDeleteTitle": "Eliminar Compartidos Seleccionados"
+    "bulkDeleteTitle": "Eliminar Compartidos Seleccionados",
+    "aliasLabel": "Alias del enlace",
+    "aliasPlaceholder": "Ingrese alias personalizado",
+    "copyLink": "Copiar enlace",
+    "fileTitle": "Compartir archivo",
+    "folderTitle": "Compartir carpeta",
+    "generateLink": "Generar enlace",
+    "linkDescriptionFile": "Genere un enlace personalizado para compartir el archivo",
+    "linkDescriptionFolder": "Genere un enlace personalizado para compartir la carpeta",
+    "linkReady": "Su enlace de compartición está listo:",
+    "linkTitle": "Generar enlace"
   },
   "shareDetails": {
     "title": "Detalles del Compartir",
@@ -1350,7 +1532,8 @@
     "files": "archivos",
     "totalSize": "Tamaño total",
     "creating": "Creando...",
-    "create": "Crear Compartir"
+    "create": "Crear Compartir",
+    "itemsToShare": "Elementos a compartir ({count} {count, plural, =1 {elemento} other {elementos}})"
   },
   "shareSecurity": {
     "subtitle": "Configurar protección por contraseña y opciones de seguridad para este compartir",
@@ -1433,6 +1616,7 @@
       "public": "Público"
     },
     "filesCount": "archivos",
+    "folderCount": "carpetas",
     "recipientsCount": "destinatarios",
     "actions": {
       "menu": "Menú de acciones de compartir",
@@ -1749,5 +1933,17 @@
     "passwordRequired": "Se requiere la contraseña",
     "nameRequired": "El nombre es obligatorio",
     "required": "Este campo es obligatorio"
+  },
+  "embedCode": {
+    "title": "Insertar imagen",
+    "description": "Utiliza estos códigos para insertar esta imagen en foros, sitios web u otras plataformas",
+    "tabs": {
+      "directLink": "Enlace directo",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "URL directa al archivo de imagen",
+    "htmlDescription": "Utiliza este código para insertar la imagen en páginas HTML",
+    "bbcodeDescription": "Utiliza este código para insertar la imagen en foros que admiten BBCode"
   }
 }

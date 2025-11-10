@@ -382,7 +382,7 @@ export function SharesTable({
                             onChange={(e) => setEditValue(e.target.value)}
                             onKeyDown={handleKeyDown}
                             className="h-8 text-sm min-w-[250px]"
-                            placeholder="Adicionar descrição..."
+                            placeholder={t("shareActions.addDescriptionPlaceholder")}
                             onClick={(e) => e.stopPropagation()}
                           />
                           <Button
@@ -527,7 +527,8 @@ export function SharesTable({
                       onMouseLeave={() => setHoveredField(null)}
                     >
                       <span className="text-sm">
-                        {share.files?.length || 0} {t("sharesTable.filesCount")}
+                        {share.files?.length || 0} {t("sharesTable.filesCount")} • {share.folders?.length || 0}{" "}
+                        {t("sharesTable.folderCount")}
                       </span>
                       <div className="w-6 flex justify-center flex-shrink-0">
                         {isHoveringFiles && onManageFiles && (

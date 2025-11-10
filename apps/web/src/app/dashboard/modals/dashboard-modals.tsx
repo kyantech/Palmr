@@ -11,10 +11,11 @@ import { QrCodeModal } from "@/components/modals/qr-code-modal";
 import { ShareActionsModals } from "@/components/modals/share-actions-modals";
 import { ShareDetailsModal } from "@/components/modals/share-details-modal";
 import { ShareExpirationModal } from "@/components/modals/share-expiration-modal";
-import { ShareFileModal } from "@/components/modals/share-file-modal";
-import { ShareMultipleFilesModal } from "@/components/modals/share-multiple-files-modal";
+import { ShareItemModal } from "@/components/modals/share-item-modal";
+import { ShareMultipleItemsModal } from "@/components/modals/share-multiple-items-modal";
 import { ShareSecurityModal } from "@/components/modals/share-security-modal";
 import { UploadFileModal } from "@/components/modals/upload-file-modal";
+import { listFiles, listFolders } from "@/http/endpoints";
 import { DashboardModalsProps } from "../types";
 
 export function DashboardModals({ modals, fileManager, shareManager, onSuccess }: DashboardModalsProps) {
@@ -41,10 +42,14 @@ export function DashboardModals({ modals, fileManager, shareManager, onSuccess }
         onClose={() => fileManager.setPreviewFile(null)}
       />
 
-      <ShareFileModal
+      <ShareItemModal
         file={fileManager.fileToShare}
-        isOpen={!!fileManager.fileToShare}
-        onClose={() => fileManager.setFileToShare(null)}
+        folder={fileManager.folderToShare}
+        isOpen={!!(fileManager.fileToShare || fileManager.folderToShare)}
+        onClose={() => {
+          fileManager.setFileToShare(null);
+          fileManager.setFolderToShare(null);
+        }}
         onSuccess={onSuccess}
       />
 
@@ -61,19 +66,32 @@ export function DashboardModals({ modals, fileManager, shareManager, onSuccess }
         isOpen={fileManager.isBulkDownloadModalOpen}
         onClose={() => fileManager.setBulkDownloadModalOpen(false)}
         onDownload={(zipName) => {
-          if (fileManager.filesToDownload) {
-            fileManager.handleBulkDownloadWithZip(fileManager.filesToDownload, zipName);
+          if (fileManager.filesToDownload || fileManager.foldersToDownload) {
+            fileManager.handleBulkDownloadWithZip(fileManager.filesToDownload || [], zipName);
           }
         }}
-        fileCount={fileManager.filesToDownload?.length || 0}
+        items={[
+          ...(fileManager.filesToDownload?.map((file) => ({
+            id: file.id,
+            name: file.name,
+            size: file.size,
+            type: "file" as const,
+          })) || []),
+          ...(fileManager.foldersToDownload?.map((folder) => ({
+            id: folder.id,
+            name: folder.name,
+            size: folder.totalSize ? Number(folder.totalSize) : undefined,
+            type: "folder" as const,
+          })) || []),
+        ]}
       />
 
       <DeleteConfirmationModal
         isOpen={!!fileManager.filesToDelete}
         onClose={() => fileManager.setFilesToDelete(null)}
         onConfirm={fileManager.handleDeleteBulk}
-        title="Excluir Arquivos Selecionados"
-        description={`Tem certeza que deseja excluir ${fileManager.filesToDelete?.length || 0} arquivo(s)? Esta ação não pode ser desfeita.`}
+        title={t("files.bulkDeleteTitle")}
+        description={t("files.bulkDeleteConfirmation", { count: fileManager.filesToDelete?.length || 0 })}
         files={fileManager.filesToDelete?.map((f) => f.name) || []}
       />
 
@@ -87,17 +105,35 @@ export function DashboardModals({ modals, fileManager, shareManager, onSuccess }
         itemType="shares"
       />
 
-      <ShareMultipleFilesModal
+      <ShareMultipleItemsModal
         files={fileManager.filesToShare}
-        isOpen={!!fileManager.filesToShare}
-        onClose={() => fileManager.setFilesToShare(null)}
+        folders={fileManager.foldersToShare}
+        isOpen={!!(fileManager.filesToShare || fileManager.foldersToShare)}
+        onClose={() => {
+          fileManager.setFilesToShare(null);
+          fileManager.setFoldersToShare(null);
+        }}
         onSuccess={() => {
           fileManager.handleShareBulkSuccess();
           onSuccess();
         }}
       />
 
-      <CreateShareModal isOpen={modals.isCreateModalOpen} onClose={modals.onCloseCreateModal} onSuccess={onSuccess} />
+      <CreateShareModal
+        isOpen={modals.isCreateModalOpen}
+        onClose={modals.onCloseCreateModal}
+        onSuccess={() => {
+          modals.onCloseCreateModal();
+          onSuccess();
+        }}
+        getAllFilesAndFolders={async () => {
+          const [filesResponse, foldersResponse] = await Promise.all([listFiles(), listFolders()]);
+          return {
+            files: filesResponse.data.files || [],
+            folders: foldersResponse.data.folders || [],
+          };
+        }}
+      />
 
       <ShareActionsModals
         shareToDelete={shareManager.shareToDelete}
@@ -113,6 +149,7 @@ export function DashboardModals({ modals, fileManager, shareManager, onSuccess }
         onManageFiles={shareManager.handleManageFiles}
         onManageRecipients={shareManager.handleManageRecipients}
         onEditFile={fileManager.handleRename}
+        onEditFolder={shareManager.handleEditFolder}
         onSuccess={handleShareSuccess}
       />
 

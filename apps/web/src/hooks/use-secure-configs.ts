@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import { getAllConfigs } from "@/http/endpoints";
+import { getAllConfigs, getPublicConfigs } from "@/http/endpoints";
 
 interface Config {
   key: string;
@@ -13,8 +13,8 @@ interface Config {
 }
 
 /**
- * Hook to fetch configurations securely
- * Replaces direct use of getAllConfigs which exposed sensitive data
+ * Hook to fetch public configurations (excludes sensitive SMTP data)
+ * Safe to use without authentication
  */
 export function useSecureConfigs() {
   const [configs, setConfigs] = useState<Config[]>([]);
@@ -25,7 +25,7 @@ export function useSecureConfigs() {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await getAllConfigs();
+      const response = await getPublicConfigs();
       setConfigs(response.data.configs);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -95,8 +95,8 @@ export function useAdminConfigs() {
 }
 
 /**
- * Hook to fetch a specific configuration value
- * Useful when you only need a specific value (e.g. smtpEnabled)
+ * Hook to fetch a specific public configuration value
+ * Only returns non-sensitive config values (excludes SMTP credentials)
  */
 export function useSecureConfigValue(key: string) {
   const [value, setValue] = useState<string | null>(null);
@@ -107,7 +107,7 @@ export function useSecureConfigValue(key: string) {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await getAllConfigs();
+      const response = await getPublicConfigs();
       const config = response.data.configs.find((c) => c.key === key);
       setValue(config?.value || null);
     } catch (err) {

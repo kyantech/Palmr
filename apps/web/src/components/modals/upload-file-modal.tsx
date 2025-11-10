@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { checkFile, getPresignedUrl, registerFile } from "@/http/endpoints";
+import { checkFile, getFilePresignedUrl, registerFile } from "@/http/endpoints";
 import { getSystemInfo } from "@/http/endpoints/app";
 import { ChunkedUploader } from "@/utils/chunked-upload";
 import { getFileIcon } from "@/utils/file-icons";
@@ -21,6 +21,7 @@ interface UploadFileModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  currentFolderId?: string;
 }
 
 enum UploadStatus {
@@ -82,7 +83,7 @@ function ConfirmationModal({ isOpen, onConfirm, onCancel, uploadsInProgress }: C
   );
 }
 
-export function UploadFileModal({ isOpen, onClose, onSuccess }: UploadFileModalProps) {
+export function UploadFileModal({ isOpen, onClose, onSuccess, currentFolderId }: UploadFileModalProps) {
   const t = useTranslations();
   const [fileUploads, setFileUploads] = useState<FileUpload[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -220,7 +221,6 @@ export function UploadFileModal({ isOpen, onClose, onSuccess }: UploadFileModalP
 
     if (upload.objectName && upload.status === UploadStatus.UPLOADING) {
       try {
-        // await deleteUploadedFile(upload.objectName);
       } catch (error) {
         console.error("Failed to delete uploaded file:", error);
       }
@@ -229,6 +229,18 @@ export function UploadFileModal({ isOpen, onClose, onSuccess }: UploadFileModalP
     setFileUploads((prev) =>
       prev.map((u) => (u.id === fileId ? { ...u, status: UploadStatus.CANCELLED, abortController: undefined } : u))
     );
+  };
+
+  const calculateUploadTimeout = (fileSize: number): number => {
+    const baseTimeout = 300000;
+    const fileSizeMB = fileSize / (1024 * 1024);
+    if (fileSizeMB > 500) {
+      const extraMB = fileSizeMB - 500;
+      const extraMinutes = Math.ceil(extraMB / 100);
+      return baseTimeout + extraMinutes * 60000;
+    }
+
+    return baseTimeout;
   };
 
   const uploadFile = async (fileUpload: FileUpload) => {
@@ -245,6 +257,7 @@ export function UploadFileModal({ isOpen, onClose, onSuccess }: UploadFileModalP
           objectName: safeObjectName,
           size: file.size,
           extension: extension,
+          folderId: currentFolderId,
         });
       } catch (error) {
         console.error("File check failed:", error);
@@ -269,7 +282,7 @@ export function UploadFileModal({ isOpen, onClose, onSuccess }: UploadFileModalP
         prev.map((u) => (u.id === id ? { ...u, status: UploadStatus.UPLOADING, progress: 0 } : u))
       );
 
-      const presignedResponse = await getPresignedUrl({
+      const presignedResponse = await getFilePresignedUrl({
         filename: safeObjectName.replace(`.${extension}`, ""),
         extension: extension,
       });
@@ -308,14 +321,16 @@ export function UploadFileModal({ isOpen, onClose, onSuccess }: UploadFileModalP
           objectName: finalObjectName,
           size: file.size,
           extension: extension,
+          folderId: currentFolderId,
         });
       } else {
+        const uploadTimeout = calculateUploadTimeout(file.size);
         await axios.put(url, file, {
           headers: {
             "Content-Type": file.type,
           },
           signal: abortController.signal,
-          timeout: 300000, // 5 minutes timeout for direct uploads
+          timeout: uploadTimeout,
           maxContentLength: Infinity,
           maxBodyLength: Infinity,
           onUploadProgress: (progressEvent) => {
@@ -329,6 +344,7 @@ export function UploadFileModal({ isOpen, onClose, onSuccess }: UploadFileModalP
           objectName: objectName,
           size: file.size,
           extension: extension,
+          folderId: currentFolderId,
         });
       }
 
@@ -378,13 +394,12 @@ export function UploadFileModal({ isOpen, onClose, onSuccess }: UploadFileModalP
           const errorCount = currentUploads.filter((u) => u.status === UploadStatus.ERROR).length;
 
           if (successCount > 0) {
-            toast.success(
-              errorCount > 0
-                ? t("uploadFile.partialSuccess", { success: successCount, error: errorCount })
-                : t("uploadFile.allSuccess", { count: successCount })
-            );
+            if (errorCount > 0) {
+              toast.error(t("uploadFile.partialSuccess", { success: successCount, error: errorCount }));
+            }
             setHasShownSuccessToast(true);
-            onSuccess?.();
+
+            setTimeout(() => onSuccess?.(), 0);
           }
         }
 

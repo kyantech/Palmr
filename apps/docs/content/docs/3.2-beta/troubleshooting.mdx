@@ -1,0 +1,381 @@
+---
+title: Troubleshooting
+icon: "Bug"
+---
+
+Common issues and solutions for Palmr. deployment and usage.
+
+## 🚨 Permission Denied Errors
+
+**Most common issue**: Permission denied when uploading files or accessing data directories.
+
+### Quick Diagnosis
+
+```bash
+# Check if this is a permission issue
+docker-compose logs palmr | grep -i "permission\|denied\|eacces"
+
+# Common error messages:
+# EACCES: permission denied, open '/app/server/uploads/file.txt'
+# Error: EACCES: permission denied, mkdir '/app/server/temp-uploads'
+```
+
+### The Root Cause
+
+**Palmr. defaults**: UID 1001, GID 1001  
+**Linux standard**: UID 1000, GID 1000
+
+When using bind mounts, your host directories may have different ownership than Palmr's default UID/GID.
+
+### Solution 1: Environment Variables (Recommended)
+
+Set Palmr. to use your host system's UID/GID:
+
+```bash
+# Find your UID/GID
+id
+# Output: uid=1000(user) gid=1000(group) groups=1000(group),27(sudo)
+```
+
+Add to your `docker-compose.yaml`:
+
+```yaml
+services:
+  palmr:
+    environment:
+      - PALMR_UID=1000 # Your UID
+      - PALMR_GID=1000 # Your GID
+    # ... rest of config
+```
+
+Restart the container:
+
+```bash
+docker-compose down && docker-compose up -d
+```
+
+### Solution 2: Change Host Directory Ownership
+
+If you prefer to keep Palmr's defaults:
+
+```bash
+# For single data directory
+chown -R 1001:1001 ./data
+
+# For separate upload/temp directories
+mkdir -p uploads temp-uploads
+chown -R 1001:1001 uploads temp-uploads
+```
+
+### Solution 3: Docker Volume (Avoid the Issue)
+
+Use Docker named volumes instead of bind mounts:
+
+```yaml
+volumes:
+  - palmr_data:/app/server  # Named volume (no permission issues)
+  # Instead of:
+  # - ./data:/app/server    # Bind mount (permission issues)
+
+volumes:
+  palmr_data:
+```
+
+---
+
+## 🐳 Container Issues
+
+### Container Won't Start
+
+**Check logs first:**
+
+```bash
+docker-compose logs palmr
+```
+
+**Common issues:**
+
+1. **Port already in use**
+
+   ```bash
+   # Check what's using port 5487
+   sudo lsof -i :5487
+
+   # Or change port in docker-compose.yaml
+   ports:
+     - "5488:5487"  # Use different host port
+   ```
+
+2. **Invalid encryption key**
+
+   ```bash
+   # Error: Encryption key must be at least 32 characters (only if encryption is enabled)
+   # Fix: Either disable encryption or provide a valid key
+   environment:
+     - DISABLE_FILESYSTEM_ENCRYPTION=true  # Disable encryption (default)
+     # OR enable encryption with:
+     # - DISABLE_FILESYSTEM_ENCRYPTION=false
+     # - ENCRYPTION_KEY=your-very-long-secure-key-at-least-32-characters
+   ```
+
+3. **Missing environment variables**
+   ```bash
+   # Check variables are set (encryption is optional)
+   docker exec palmr env | grep -E "DISABLE_FILESYSTEM_ENCRYPTION|ENCRYPTION_KEY|DATABASE_URL"
+   ```
+
+### Container Starts But App Doesn't Load
+
+```bash
+# Check if services are running inside container
+docker exec palmr ps aux
+
+# Check if ports are bound correctly
+docker port palmr
+
+# Test API directly
+curl http://localhost:3333/health
+```
+
+---
+
+## 📁 File Upload Issues
+
+### Files Not Uploading
+
+1. **Check disk space:**
+
+   ```bash
+   df -h
+   # Ensure you have enough space in upload directory
+   ```
+
+2. **Check file permissions in container:**
+
+   ```bash
+   docker exec palmr ls -la /app/server/uploads/
+   # Should show ownership by palmr user (UID 1001)
+   ```
+
+3. **Check upload limits:**
+   - Default max file size is configurable
+   - Check browser network tab for 413 errors
+
+### Files Upload But Can't Be Downloaded
+
+```bash
+# Check file exists and is readable
+docker exec palmr ls -la /app/server/uploads/
+
+# Check file ownership
+docker exec palmr stat /app/server/uploads/your-file.txt
+```
+
+---
+
+## 🔑 Authentication Issues
+
+### Can't Login to Admin Account
+
+1. **Reset admin password:**
+
+   ```bash
+   # Using the built-in reset script
+   docker exec -it palmr /app/palmr-app/reset-password.sh
+   ```
+
+2. **Check database permissions:**
+   ```bash
+   docker exec palmr ls -la /app/server/prisma/
+   # palmr.db should be writable by palmr user (UID 1001)
+   ```
+
+### OIDC Authentication Not Working
+
+See our [OIDC Configuration Guide](/docs/3.0-beta/oidc-authentication) for detailed setup.
+
+---
+
+## 🌐 Network Issues
+
+### Can't Access Web Interface
+
+1. **From localhost:**
+
+   ```bash
+   # Test if container is responding
+   curl http://localhost:5487
+
+   # Check if port is bound
+   docker port palmr 5487
+   ```
+
+2. **From external network:**
+
+   ```bash
+   # Check firewall
+   sudo ufw status
+
+   # Test from external IP
+   curl http://YOUR_SERVER_IP:5487
+   ```
+
+### API Not Accessible
+
+```bash
+# Check if API port is exposed
+docker port palmr 3333
+
+# Test API health
+curl http://localhost:3333/health
+
+# Check API documentation
+curl http://localhost:3333/docs
+```
+
+---
+
+## 💾 Database Issues
+
+### Database Connection Errors
+
+```bash
+# Check database file exists and is writable
+docker exec palmr ls -la /app/server/prisma/palmr.db
+
+# Check database logs
+docker-compose logs palmr | grep -i database
+
+# Verify Prisma schema (run from palmr-app directory)
+docker exec palmr sh -c "cd /app/palmr-app && npx prisma db push"
+```
+
+### Database Corruption
+
+```bash
+# Stop container
+docker-compose down
+
+# Backup existing database
+cp ./data/prisma/palmr.db ./data/prisma/palmr.db.backup
+
+# Let Palmr recreate database on startup
+rm ./data/prisma/palmr.db
+
+# Start container (will recreate database)
+docker-compose up -d
+```
+
+---
+
+## 🚀 Performance Issues
+
+### Slow File Uploads
+
+1. **Check available disk space:**
+
+   ```bash
+   df -h
+   ```
+
+2. **Monitor container resources:**
+
+   ```bash
+   docker stats palmr
+   ```
+
+3. **Check temp directory permissions:**
+   ```bash
+   docker exec palmr ls -la /app/server/temp-uploads/
+   ```
+
+### High Memory Usage
+
+```bash
+# Check container memory usage
+docker stats palmr
+
+# Check Node.js memory usage
+docker exec palmr ps aux | grep node
+```
+
+---
+
+## 🔍 Diagnostic Commands
+
+### Complete Health Check
+
+```bash
+#!/bin/bash
+echo "=== Palmr. Health Check ==="
+
+echo "1. Container Status:"
+docker ps | grep palmr
+
+echo "2. Container Logs (last 20 lines):"
+docker-compose logs --tail=20 palmr
+
+echo "3. Port Status:"
+docker port palmr
+
+echo "4. File Permissions:"
+docker exec palmr ls -la /app/server/
+
+echo "5. Application Files:"
+docker exec palmr ls -la /app/palmr-app/
+
+echo "6. Environment Variables:"
+docker exec palmr env | grep -E "PALMR_|DISABLE_FILESYSTEM_ENCRYPTION|ENCRYPTION_|DATABASE_"
+
+echo "7. API Health:"
+curl -s http://localhost:3333/health || echo "API not accessible"
+
+echo "8. Web Interface:"
+curl -s -o /dev/null -w "%{http_code}" http://localhost:5487 || echo "Web interface not accessible"
+
+echo "9. Disk Space:"
+df -h
+
+echo "=== End Health Check ==="
+```
+
+### Log Analysis
+
+```bash
+# Check for common errors
+docker-compose logs palmr 2>&1 | grep -E "error|Error|ERROR|failed|Failed|FAILED"
+
+# Check permission issues
+docker-compose logs palmr 2>&1 | grep -E "permission|denied|EACCES"
+
+# Check startup sequence
+docker-compose logs palmr 2>&1 | grep -E "🌴|🔧|🚀|✅"
+```
+
+---
+
+## 📞 Getting Help
+
+If none of these solutions work:
+
+1. **Gather diagnostic information:**
+
+   ```bash
+   # Run the complete health check above
+   # Save the output to a file
+   ```
+
+2. **Check our documentation:**
+   - [UID/GID Configuration](/docs/3.0-beta/uid-gid-configuration)
+   - [Quick Start Guide](/docs/3.0-beta/quick-start)
+   - [API Reference](/docs/3.0-beta/api)
+
+3. **Open an issue on GitHub:**
+   - Include your `docker-compose.yaml`
+   - Include relevant log output
+   - Describe your system (OS, Docker version, etc.)
+   - [GitHub Issues](https://github.com/kyantech/Palmr/issues)
+
+4. **Check existing issues:**
+   - Search [closed issues](https://github.com/kyantech/Palmr/issues?q=is%3Aissue+is%3Aclosed) for similar problems
+   - Look for recent [discussions](https://github.com/kyantech/Palmr/discussions)

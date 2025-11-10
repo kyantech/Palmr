@@ -144,7 +144,15 @@
     "update": "Güncelle",
     "click": "Tıklayın",
     "creating": "Oluşturuluyor...",
-    "loadingSimple": "Yükleniyor..."
+    "loadingSimple": "Yükleniyor...",
+    "create": "Oluştur",
+    "deleting": "Siliniyor...",
+    "move": "Taşı",
+    "rename": "Yeniden Adlandır",
+    "search": "Ara",
+    "share": "Paylaş",
+    "copied": "Kopyalandı",
+    "copy": "Kopyala"
   },
   "createShare": {
     "title": "Paylaşım Oluştur",
@@ -160,7 +168,53 @@
     "error": "Paylaşım oluşturulamadı",
     "descriptionLabel": "Açıklama",
     "descriptionPlaceholder": "Açıklama girin (isteğe bağlı)",
-    "namePlaceholder": "Paylaşımınız için bir ad girin"
+    "namePlaceholder": "Paylaşımınız için bir ad girin",
+    "nextSelectFiles": "İleri: Dosyaları Seç",
+    "searchLabel": "Ara",
+    "tabs": {
+      "shareDetails": "Paylaşım Detayları",
+      "selectFiles": "Dosyaları Seç"
+    }
+  },
+  "customization": {
+    "breadcrumb": "Özelleştirme",
+    "colors": {
+      "title": "Tema Renkleri",
+      "description": "Tercih ettiğiniz birincil renk temasını seçin",
+      "presets": "Mevcut Renkler",
+      "presetsDescription": "Mevcut renk temalarından seçim yapın",
+      "reset": "Varsayılana Sıfırla"
+    },
+    "fonts": {
+      "title": "Tipografi",
+      "description": "Tercih ettiğiniz yazı tipini seçin",
+      "available": "Mevcut Yazı Tipleri",
+      "availableDescription": "Mevcut yazı tipi ailelerinden seçim yapın",
+      "reset": "Varsayılana Sıfırla"
+    },
+    "radius": {
+      "title": "Kenar Yuvarlaklığı",
+      "description": "Arayüz öğelerinin yuvarlaklığını özelleştirin",
+      "available": "Yuvarlaklık Seçenekleri",
+      "availableDescription": "Köşelerin ne kadar yuvarlak görüneceğini seçin",
+      "reset": "Varsayılana Sıfırla"
+    },
+    "background": {
+      "title": "Arka Plan Renkleri",
+      "description": "Açık ve karanlık modlar için arka plan renklerini özelleştirin",
+      "lightMode": "Açık Mod",
+      "darkMode": "Karanlık Mod",
+      "availableDescription": "Hem açık hem de karanlık temalar için arka plan renklerini seçin",
+      "reset": "Varsayılana Sıfırla"
+    },
+    "theme": {
+      "title": "Tema Modu",
+      "description": "Açık, karanlık veya sistem teması arasından seçim yapın",
+      "selectTheme": "Tema Tercihi",
+      "availableDescription": "Tercih ettiğiniz tema modunu seçin",
+      "reset": "Sisteme Sıfırla"
+    },
+    "pageTitle": "Özelleştirme"
   },
   "dashboard": {
     "loadError": "Gösterge paneli verileri yüklenemedi",
@@ -174,7 +228,42 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "Silinecek dosyalar",
-    "sharesToDelete": "Silinecek paylaşımlar"
+    "sharesToDelete": "Silinecek paylaşımlar",
+    "foldersToDelete": "Silinecek klasörler",
+    "itemsToDelete": "Silinecek öğeler"
+  },
+  "downloadQueue": {
+    "downloadQueued": "İndirme sıraya alındı: {fileName}",
+    "queuedDescription": "Bir slot uygun hale geldiğinde indirmeniz otomatik olarak başlayacak",
+    "queuePosition": "{position}. sırada indirme: {fileName}",
+    "estimatedWait": "Tahmini bekleme süresi: {time}",
+    "queueFull": "İndirme kuyruğu dolu",
+    "queueFullDescription": "Lütfen kuyrukta yer açıldığında birkaç dakika sonra tekrar deneyin",
+    "cancelSuccess": "İndirme başarıyla iptal edildi",
+    "cancelError": "İndirme iptal edilemedi: {error}",
+    "status": {
+      "pending": "Hazırlanıyor...",
+      "queued": "Kuyrukta",
+      "downloading": "İndiriliyor",
+      "completed": "Tamamlandı",
+      "failed": "Başarısız"
+    },
+    "waitTime": {
+      "seconds": "{seconds}sn",
+      "minutes": "{minutes}dk",
+      "hoursMinutes": "{hours}sa {minutes}dk"
+    },
+    "indicator": {
+      "title": "İndirmeler",
+      "downloads": "İndirme Kuyruğu",
+      "active": "Aktif",
+      "queued": "Sırada",
+      "position": "Konum {position}",
+      "estimatedWait": "Bekleme: {time}",
+      "unknownFile": "Bilinmeyen dosya",
+      "noDownloads": "Devam eden indirme yok",
+      "refresh": "Kuyruğu Yenile"
+    }
   },
   "emptyState": {
     "noFiles": "Henüz dosya yüklenmedi",
@@ -203,7 +292,8 @@
     "descriptionPlaceholder": "Dosya açıklamasını girin",
     "deleteFile": "Dosyayı Sil",
     "deleteConfirmation": " dosyasını silmek istediğinize emin misiniz?",
-    "deleteWarning": "Bu işlem geri alınamaz."
+    "deleteWarning": "Bu işlem geri alınamaz.",
+    "addDescriptionPlaceholder": "Açıklama ekle..."
   },
   "fileManager": {
     "downloadError": "Dosya indirilemedi",
@@ -214,6 +304,7 @@
   },
   "filePreview": {
     "title": "Dosya Önizleme",
+    "description": "Dosyayı önizleyin ve indirin",
     "loading": "Yükleniyor...",
     "notAvailable": "Bu dosya türü için önizleme mevcut değil.",
     "downloadToView": "Dosyayı indirmek için indirme düğmesini kullanın.",
@@ -248,7 +339,8 @@
     "previewFile": "Dosyayı önizle",
     "addToShare": "Paylaşıma ekle",
     "removeFromShare": "Paylaşımdan kaldır",
-    "saveChanges": "Değişiklikleri Kaydet"
+    "saveChanges": "Değişiklikleri Kaydet",
+    "editFolder": "Klasörü düzenle"
   },
   "files": {
     "title": "Tüm Dosyalar",
@@ -271,7 +363,20 @@
     "viewMode": {
       "table": "Tablo",
       "grid": "Izgara"
-    }
+    },
+    "bulkDeleteConfirmation": "{count, plural, =1 {1 dosyayı} other {# dosyayı}} silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+    "bulkDeleteTitle": "Seçili Dosyaları Sil",
+    "actions": {
+      "open": "Aç",
+      "rename": "Yeniden Adlandır",
+      "delete": "Sil"
+    },
+    "empty": {
+      "title": "Henüz dosya veya klasör yok",
+      "description": "Başlamak için ilk dosyanızı yükleyin veya bir klasör oluşturun"
+    },
+    "files": "dosyalar",
+    "folders": "klasörler"
   },
   "filesTable": {
     "ariaLabel": "Dosya Tablosu",
@@ -300,6 +405,33 @@
       "share": "Seçilenleri Paylaş",
       "delete": "Seçilenleri Sil"
     }
+  },
+  "folderActions": {
+    "editFolder": "Klasörü düzenle",
+    "folderName": "Klasör Adı",
+    "folderNamePlaceholder": "Klasör adını girin",
+    "folderDescription": "Açıklama",
+    "folderDescriptionPlaceholder": "Klasör açıklaması girin (isteğe bağlı)",
+    "createFolder": "Yeni Klasör Oluştur",
+    "renameFolder": "Klasörü Yeniden Adlandır",
+    "moveFolder": "Klasörü Taşı",
+    "shareFolder": "Klasörü Paylaş",
+    "deleteFolder": "Klasörü Sil",
+    "moveTo": "Taşı",
+    "selectDestination": "Hedef klasörü seç",
+    "rootFolder": "Kök",
+    "folderCreated": "Klasör başarıyla oluşturuldu",
+    "folderRenamed": "Klasör başarıyla yeniden adlandırıldı",
+    "folderMoved": "Klasör başarıyla taşındı",
+    "folderDeleted": "Klasör başarıyla silindi",
+    "folderShared": "Klasör başarıyla paylaşıldı",
+    "createFolderError": "Klasör oluşturulurken hata",
+    "renameFolderError": "Klasör yeniden adlandırılırken hata",
+    "moveFolderError": "Klasör taşınırken hata",
+    "deleteFolderError": "Klasör silinirken hata",
+    "shareFolderError": "Klasör paylaşılırken hata",
+    "deleteConfirmation": "Bu klasörü silmek istediğinizden emin misiniz?",
+    "deleteWarning": "Bu işlem geri alınamaz."
   },
   "footer": {
     "poweredBy": "Tarafından destekleniyor:",
@@ -402,16 +534,42 @@
       "removeFailed": "Logo kaldırılamadı"
     }
   },
+  "moveItems": {
+    "itemsToMove": "Taşınacak öğeler:",
+    "movingTo": "Taşınıyor:",
+    "title": "{count, plural, =1 {Öğe} other {Öğeler}} Taşı",
+    "description": "{count, plural, =1 {Öğeyi} other {Öğeleri}} yeni konuma taşı",
+    "success": "{count} {count, plural, =1 {öğe} other {öğe}} başarıyla taşındı"
+  },
   "navbar": {
     "logoAlt": "Uygulama Logosu",
     "profileMenu": "Profil Menüsü",
     "profile": "Profil",
     "settings": "Ayarlar",
     "usersManagement": "Kullanıcı Yönetimi",
-    "logout": "Oturumu Kapat"
+    "logout": "Oturumu Kapat",
+    "customization": "Özelleştirme"
   },
   "navigation": {
     "dashboard": "Gösterge Paneli"
+  },
+  "notifications": {
+    "permissionGranted": "İndirme bildirimleri etkinleştirildi",
+    "permissionDenied": "İndirme bildirimleri devre dışı bırakıldı",
+    "downloadComplete": {
+      "title": "İndirme Tamamlandı",
+      "body": "{fileName} indirmesi tamamlandı"
+    },
+    "downloadFailed": {
+      "title": "İndirme Başarısız",
+      "body": "{fileName} indirilemedi: {error}",
+      "unknownError": "Bilinmeyen hata"
+    },
+    "queueProcessing": {
+      "title": "İndirme Başlıyor",
+      "body": "{fileName} şimdi indiriliyor{position}",
+      "position": " (kuyrukta #{position} sıradaydı)"
+    }
   },
   "profile": {
     "password": {
@@ -795,7 +953,8 @@
           "timeout": "Kopyalama işlemi zaman aşımına uğradı. Lütfen daha küçük bir dosya ile tekrar deneyin veya bağlantınızı kontrol edin.",
           "failed": "Kopyalama işlemi başarısız oldu. Lütfen tekrar deneyin.",
           "aborted": "Kopyalama işlemi zaman aşımı nedeniyle iptal edildi."
-        }
+        },
+        "invalidDate": "Geçersiz tarih"
       }
     },
     "form": {
@@ -900,7 +1059,8 @@
     "upload": {
       "metadata": {
         "title": "Dosya Gönder - Palmr",
-        "description": "Paylaşılan bağlantı üzerinden dosya gönderin"
+        "description": "Paylaşılan bağlantı üzerinden dosya gönderin",
+        "descriptionWithLimit": "Dosya yükle (maks. {limit} dosya)"
       },
       "layout": {
         "defaultTitle": "Dosya Gönder",
@@ -1010,7 +1170,10 @@
   },
   "searchBar": {
     "placeholder": "Dosya ara...",
-    "results": "Toplam {total} dosya içinde {filtered} dosya bulundu"
+    "results": "Toplam {total} dosya içinde {filtered} dosya bulundu",
+    "placeholderFolders": "Klasörleri ara...",
+    "noResults": "\"{query}\" için sonuç bulunamadı",
+    "placeholderFiles": "Dosya ara..."
   },
   "settings": {
     "groups": {
@@ -1139,6 +1302,10 @@
       "passwordAuthEnabled": {
         "title": "Şifre Doğrulama",
         "description": "Şifre tabanlı doğrulamayı etkinleştirme veya devre dışı bırakma"
+      },
+      "hideVersion": {
+        "title": "Sürümü Gizle",
+        "description": "Tüm sayfaların alt bilgisinde Palmr sürümünü gizle"
       }
     },
     "buttons": {
@@ -1200,7 +1367,11 @@
       "description": "Bu paylaşım silinmiş veya süresi dolmuş olabilir."
     },
     "pageTitle": "Paylaşım",
-    "downloadAll": "Tümünü İndir"
+    "downloadAll": "Tümünü İndir",
+    "metadata": {
+      "defaultDescription": "Dosyaları güvenli bir şekilde paylaşın",
+      "filesShared": "{count, plural, =1 {1 dosya paylaşıldı} other {# dosya paylaşıldı}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "Paylaşımı Sil",
@@ -1223,7 +1394,18 @@
     "editSuccess": "Paylaşım başarıyla güncellendi",
     "editError": "Paylaşım güncelleme başarısız",
     "bulkDeleteConfirmation": "{count, plural, =1 {1 paylaşımı} other {# paylaşımı}} silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
-    "bulkDeleteTitle": "Seçili Paylaşımları Sil"
+    "bulkDeleteTitle": "Seçili Paylaşımları Sil",
+    "addDescriptionPlaceholder": "Açıklama ekle...",
+    "aliasLabel": "Bağlantı Takma Adı",
+    "aliasPlaceholder": "Özel takma ad girin",
+    "copyLink": "Bağlantıyı Kopyala",
+    "fileTitle": "Dosyayı Paylaş",
+    "folderTitle": "Klasörü Paylaş",
+    "generateLink": "Bağlantı Oluştur",
+    "linkDescriptionFile": "Dosyayı paylaşmak için özel bağlantı oluşturun",
+    "linkDescriptionFolder": "Klasörü paylaşmak için özel bağlantı oluşturun",
+    "linkReady": "Paylaşım bağlantınız hazır:",
+    "linkTitle": "Bağlantı Oluştur"
   },
   "shareDetails": {
     "title": "Paylaşım Detayları",
@@ -1350,7 +1532,8 @@
     "files": "dosya",
     "totalSize": "Toplam boyut",
     "creating": "Oluşturuluyor...",
-    "create": "Paylaşım Oluştur"
+    "create": "Paylaşım Oluştur",
+    "itemsToShare": "Paylaşılacak öğeler ({count} {count, plural, =1 {öğe} other {öğe}})"
   },
   "shareSecurity": {
     "subtitle": "Bu paylaşım için şifre koruması ve güvenlik seçeneklerini yapılandırın",
@@ -1455,7 +1638,8 @@
       "download": "Seçili indir"
     },
     "selectAll": "Tümünü seç",
-    "selectShare": "Paylaşım {shareName} seç"
+    "selectShare": "Paylaşım {shareName} seç",
+    "folderCount": "klasörler"
   },
   "storageUsage": {
     "title": "Depolama Kullanımı",
@@ -1749,5 +1933,17 @@
     "passwordRequired": "Şifre gerekli",
     "nameRequired": "İsim gereklidir",
     "required": "Bu alan zorunludur"
+  },
+  "embedCode": {
+    "title": "Resmi Yerleştir",
+    "description": "Bu görüntüyü forumlara, web sitelerine veya diğer platformlara yerleştirmek için bu kodları kullanın",
+    "tabs": {
+      "directLink": "Doğrudan Bağlantı",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "Resim dosyasının doğrudan URL'si",
+    "htmlDescription": "Resmi HTML sayfalarına yerleştirmek için bu kodu kullanın",
+    "bbcodeDescription": "BBCode destekleyen forumlara resmi yerleştirmek için bu kodu kullanın"
   }
 }

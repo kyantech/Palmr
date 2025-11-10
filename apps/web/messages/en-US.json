@@ -136,6 +136,7 @@
     "update": "Update",
     "updating": "Updating...",
     "delete": "Delete",
+    "deleting": "Deleting...",
     "close": "Close",
     "download": "Download",
     "unexpectedError": "An unexpected error occurred. Please try again.",
@@ -144,7 +145,14 @@
     "dashboard": "Dashboard",
     "back": "Back",
     "click": "Click to",
-    "creating": "Creating..."
+    "creating": "Creating...",
+    "create": "Create",
+    "rename": "Rename",
+    "move": "Move",
+    "share": "Share",
+    "search": "Search",
+    "copy": "Copy",
+    "copied": "Copied"
   },
   "createShare": {
     "title": "Create Share",
@@ -160,7 +168,53 @@
     "passwordLabel": "Password",
     "create": "Create Share",
     "success": "Share created successfully",
-    "error": "Failed to create share"
+    "error": "Failed to create share",
+    "tabs": {
+      "shareDetails": "Share Details",
+      "selectFiles": "Select Files"
+    },
+    "nextSelectFiles": "Next: Select Files",
+    "searchLabel": "Search"
+  },
+  "customization": {
+    "breadcrumb": "Customization",
+    "colors": {
+      "title": "Theme Colors",
+      "description": "Choose your preferred primary color theme",
+      "presets": "Available Colors",
+      "presetsDescription": "Select from available color themes",
+      "reset": "Reset to Default"
+    },
+    "fonts": {
+      "title": "Typography",
+      "description": "Choose your preferred font family",
+      "available": "Available Fonts",
+      "availableDescription": "Select from available font families",
+      "reset": "Reset to Default"
+    },
+    "radius": {
+      "title": "Border Radius",
+      "description": "Customize the roundness of interface elements",
+      "available": "Roundness Options",
+      "availableDescription": "Choose how rounded corners should appear",
+      "reset": "Reset to Default"
+    },
+    "background": {
+      "title": "Background Colors",
+      "description": "Customize background colors for light and dark modes",
+      "lightMode": "Light Mode",
+      "darkMode": "Dark Mode",
+      "availableDescription": "Choose background colors for both light and dark themes",
+      "reset": "Reset to Default"
+    },
+    "theme": {
+      "title": "Theme Mode",
+      "description": "Choose between light, dark, or system theme",
+      "selectTheme": "Theme Preference",
+      "availableDescription": "Select your preferred theme mode",
+      "reset": "Reset to System"
+    },
+    "pageTitle": "Customization"
   },
   "dashboard": {
     "loadError": "Failed to load dashboard data",
@@ -174,7 +228,42 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "Files to be deleted",
+    "foldersToDelete": "Folders to be deleted",
+    "itemsToDelete": "Items to be deleted",
     "sharesToDelete": "Shares to be deleted"
+  },
+  "downloadQueue": {
+    "downloadQueued": "Download queued: {fileName}",
+    "queuedDescription": "Your download will start automatically when a slot becomes available",
+    "queuePosition": "Download queued at position {position}: {fileName}",
+    "estimatedWait": "Estimated wait time: {time}",
+    "queueFull": "Download queue is full",
+    "queueFullDescription": "Please try again in a few minutes when the queue has space",
+    "cancelSuccess": "Download cancelled successfully",
+    "cancelError": "Failed to cancel download: {error}",
+    "status": {
+      "pending": "Preparing...",
+      "queued": "In queue",
+      "downloading": "Downloading",
+      "completed": "Completed",
+      "failed": "Failed"
+    },
+    "waitTime": {
+      "seconds": "{seconds}s",
+      "minutes": "{minutes}m",
+      "hoursMinutes": "{hours}h {minutes}m"
+    },
+    "indicator": {
+      "title": "Downloads",
+      "downloads": "Download Queue",
+      "active": "Active",
+      "queued": "Queued",
+      "position": "Position {position}",
+      "estimatedWait": "Wait: {time}",
+      "unknownFile": "Unknown file",
+      "noDownloads": "No downloads in progress",
+      "refresh": "Refresh Queue"
+    }
   },
   "emptyState": {
     "noFiles": "No files uploaded yet",
@@ -201,6 +290,7 @@
     "extension": "Extension",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Enter file description",
+    "addDescriptionPlaceholder": "Add description...",
     "deleteFile": "Delete File",
     "deleteConfirmation": "Are you sure you want to delete this file?",
     "deleteWarning": "This action cannot be undone."
@@ -214,6 +304,7 @@
   },
   "filePreview": {
     "title": "Preview File",
+    "description": "Preview and download file",
     "loading": "Loading...",
     "notAvailable": "Preview not available for this file type",
     "downloadToView": "Use the download button to view this file",
@@ -245,6 +336,7 @@
     "fileCount": "{count, plural, =1 {file} other {files}}",
     "filesSelected": "{count, plural, =0 {No files selected} =1 {1 file selected} other {# files selected}}",
     "editFile": "Edit file",
+    "editFolder": "Edit folder",
     "previewFile": "Preview file",
     "addToShare": "Add to share",
     "removeFromShare": "Remove from share",
@@ -265,9 +357,22 @@
     "bulkDownloadSuccess": "Files download started successfully",
     "bulkDownloadError": "Error creating ZIP file",
     "bulkDownloadFileError": "Error downloading file {fileName}",
-    "bulkDeleteSuccess": "{count, plural, =1 {1 file deleted successfully} other {# files deleted successfully}}",
-    "bulkDeleteError": "Error deleting selected files",
+    "bulkDeleteSuccess": "{count, plural, =1 {1 item deleted successfully} other {# items deleted successfully}}",
+    "bulkDeleteError": "Error deleting selected items",
+    "bulkDeleteTitle": "Delete Selected Items",
+    "bulkDeleteConfirmation": "Are you sure you want to delete {count, plural, =1 {1 item} other {# items}}? This action cannot be undone.",
     "totalFiles": "{count, plural, =0 {No files} =1 {1 file} other {# files}}",
+    "empty": {
+      "title": "No files or folders yet",
+      "description": "Upload your first file or create a folder to get started"
+    },
+    "files": "files",
+    "folders": "folders",
+    "actions": {
+      "open": "Open",
+      "rename": "Rename",
+      "delete": "Delete"
+    },
     "viewMode": {
       "table": "Table",
       "grid": "Grid"
@@ -300,6 +405,33 @@
       "share": "Share Selected",
       "delete": "Delete Selected"
     }
+  },
+  "folderActions": {
+    "editFolder": "Edit Folder",
+    "folderName": "Folder Name",
+    "folderNamePlaceholder": "Enter folder name",
+    "folderDescription": "Description",
+    "folderDescriptionPlaceholder": "Enter folder description (optional)",
+    "createFolder": "Create Folder",
+    "renameFolder": "Rename Folder",
+    "moveFolder": "Move Folder",
+    "shareFolder": "Share Folder",
+    "deleteFolder": "Delete Folder",
+    "moveTo": "Move to",
+    "selectDestination": "Select destination folder",
+    "rootFolder": "Root",
+    "folderCreated": "Folder created successfully",
+    "folderRenamed": "Folder renamed successfully",
+    "folderMoved": "Folder moved successfully",
+    "folderDeleted": "Folder deleted successfully",
+    "folderShared": "Folder shared successfully",
+    "createFolderError": "Error creating folder",
+    "renameFolderError": "Error renaming folder",
+    "moveFolderError": "Error moving folder",
+    "deleteFolderError": "Error deleting folder",
+    "shareFolderError": "Error sharing folder",
+    "deleteConfirmation": "Are you sure you want to delete this folder?",
+    "deleteWarning": "This action cannot be undone."
   },
   "footer": {
     "poweredBy": "Powered by",
@@ -402,16 +534,42 @@
       "removeFailed": "Failed to remove logo"
     }
   },
+  "moveItems": {
+    "itemsToMove": "Items to move:",
+    "movingTo": "Moving to:",
+    "title": "Move {count, plural, =1 {Item} other {Items}}",
+    "description": "Move {count, plural, =1 {item} other {items}} to a new location",
+    "success": "Successfully moved {count} {count, plural, =1 {item} other {items}}"
+  },
   "navbar": {
     "logoAlt": "App Logo",
     "profileMenu": "Profile Menu",
     "profile": "Profile",
+    "customization": "Customization",
     "settings": "Settings",
     "usersManagement": "User Management",
     "logout": "Log Out"
   },
   "navigation": {
     "dashboard": "Dashboard"
+  },
+  "notifications": {
+    "permissionGranted": "Download notifications enabled",
+    "permissionDenied": "Download notifications disabled",
+    "downloadComplete": {
+      "title": "Download Complete",
+      "body": "{fileName} has finished downloading"
+    },
+    "downloadFailed": {
+      "title": "Download Failed",
+      "body": "Failed to download {fileName}: {error}",
+      "unknownError": "Unknown error"
+    },
+    "queueProcessing": {
+      "title": "Download Starting",
+      "body": "{fileName} is now downloading{position}",
+      "position": " (was #{position} in queue)"
+    }
   },
   "profile": {
     "password": {
@@ -750,6 +908,7 @@
         "noFiles": "No files received yet",
         "noFilesDescription": "Files sent through this link will appear here",
         "fileCount": "{count, plural, =0 {No files} =1 {1 file} other {# files}}",
+        "invalidDate": "Invalid date",
         "totalSize": "Total size: {size}",
         "columns": {
           "file": "File",
@@ -901,7 +1060,8 @@
     "upload": {
       "metadata": {
         "title": "Send Files - Palmr",
-        "description": "Send files through the shared link"
+        "description": "Send files through the shared link",
+        "descriptionWithLimit": "Upload files (max {limit} files)"
       },
       "layout": {
         "defaultTitle": "Send Files",
@@ -1007,8 +1167,11 @@
     }
   },
   "searchBar": {
-    "placeholder": "Search files...",
-    "results": "Found {filtered} of {total} files"
+    "placeholder": "Search files and folders...",
+    "placeholderFiles": "Search files...",
+    "placeholderFolders": "Search folders...",
+    "results": "Showing {filtered} of {total} items",
+    "noResults": "No results found for \"{query}\""
   },
   "settings": {
     "groups": {
@@ -1051,6 +1214,10 @@
       "showHomePage": {
         "title": "Show Home Page",
         "description": "Show Home Page after installation"
+      },
+      "hideVersion": {
+        "title": "Hide Version",
+        "description": "Hide the Palmr version from the footer on all pages"
       },
       "smtpEnabled": {
         "title": "SMTP Enabled",
@@ -1198,22 +1365,27 @@
       "title": "Share Not Found",
       "description": "This share may have been deleted or expired."
     },
-    "pageTitle": "Share"
+    "pageTitle": "Share",
+    "metadata": {
+      "defaultDescription": "Share files securely",
+      "filesShared": "{count, plural, =1 {1 file shared} other {# files shared}}"
+    }
   },
   "shareActions": {
+    "fileTitle": "Share File",
+    "folderTitle": "Share Folder",
+    "linkTitle": "Generate Link",
+    "linkDescriptionFile": "Generate a custom link to share the file",
+    "linkDescriptionFolder": "Generate a custom link to share the folder",
+    "aliasLabel": "Link Alias",
+    "aliasPlaceholder": "Enter custom alias",
+    "linkReady": "Your share link is ready:",
+    "generateLink": "Generate Link",
+    "copyLink": "Copy Link",
     "deleteTitle": "Delete Share",
     "deleteConfirmation": "Are you sure you want to delete this share? This action cannot be undone.",
+    "addDescriptionPlaceholder": "Add description...",
     "editTitle": "Edit Share",
-    "nameLabel": "Share Name",
-    "descriptionLabel": "Description",
-    "descriptionPlaceholder": "Enter a description (optional)",
-    "expirationLabel": "Expiration Date",
-    "expirationPlaceholder": "MM/DD/YYYY HH:MM",
-    "maxViewsLabel": "Max Views",
-    "maxViewsPlaceholder": "Leave empty for unlimited",
-    "passwordProtection": "Password Protected",
-    "passwordLabel": "Password",
-    "passwordPlaceholder": "Enter password",
     "newPasswordLabel": "New Password (leave empty to keep current)",
     "newPasswordPlaceholder": "Enter new password",
     "manageFilesTitle": "Manage Files",
@@ -1284,28 +1456,6 @@
       "noExpiration": "This share will never expire and will remain accessible indefinitely."
     }
   },
-  "shareFile": {
-    "title": "Share File",
-    "linkTitle": "Generate Link",
-    "nameLabel": "Share Name",
-    "namePlaceholder": "Enter share name",
-    "descriptionLabel": "Description",
-    "descriptionPlaceholder": "Enter a description (optional)",
-    "expirationLabel": "Expiration Date",
-    "expirationPlaceholder": "MM/DD/YYYY HH:MM",
-    "maxViewsLabel": "Maximum Views",
-    "maxViewsPlaceholder": "Leave empty for unlimited",
-    "passwordProtection": "Password Protected",
-    "passwordLabel": "Password",
-    "passwordPlaceholder": "Enter password",
-    "linkDescription": "Generate a custom link to share the file",
-    "aliasLabel": "Link Alias",
-    "aliasPlaceholder": "Enter custom alias",
-    "linkReady": "Your share link is ready:",
-    "createShare": "Create Share",
-    "generateLink": "Generate Link",
-    "copyLink": "Copy Link"
-  },
   "shareManager": {
     "deleteSuccess": "Share deleted successfully",
     "deleteError": "Failed to delete share",
@@ -1343,11 +1493,12 @@
     "shareNamePlaceholder": "Enter share name",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Enter a description (optional)",
-    "filesToShare": "Files to share",
+    "filesToShare": "Files to Share",
     "files": "files",
     "totalSize": "Total size",
-    "creating": "Creating...",
-    "create": "Create Share"
+    "creating": "Creating share...",
+    "create": "Create Share",
+    "itemsToShare": "Items to share ({count} {count, plural, =1 {item} other {items}})"
   },
   "shareSecurity": {
     "title": "Share Security Settings",
@@ -1430,6 +1581,7 @@
       "public": "Public"
     },
     "filesCount": "files",
+    "folderCount": "folders",
     "recipientsCount": "recipients",
     "actions": {
       "menu": "Share actions menu",
@@ -1731,6 +1883,18 @@
       "admin": "Admin",
       "userr": "User"
     }
+  },
+  "embedCode": {
+    "title": "Embed Image",
+    "description": "Use these codes to embed this image in forums, websites, or other platforms",
+    "tabs": {
+      "directLink": "Direct Link",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "Direct URL to the image file",
+    "htmlDescription": "Use this code to embed the image in HTML pages",
+    "bbcodeDescription": "Use this code to embed the image in forums that support BBCode"
   },
   "validation": {
     "firstNameRequired": "First name is required",

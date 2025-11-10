@@ -9,7 +9,7 @@ export class AppController {
   private logoService = new LogoService();
   private emailService = new EmailService();
 
-  async getAppInfo(request: FastifyRequest, reply: FastifyReply) {
+  async getAppInfo(_request: FastifyRequest, reply: FastifyReply) {
     try {
       const appInfo = await this.appService.getAppInfo();
       return reply.send(appInfo);
@@ -18,7 +18,7 @@ export class AppController {
     }
   }
 
-  async getSystemInfo(request: FastifyRequest, reply: FastifyReply) {
+  async getSystemInfo(_request: FastifyRequest, reply: FastifyReply) {
     try {
       const systemInfo = await this.appService.getSystemInfo();
       return reply.send(systemInfo);
@@ -27,9 +27,18 @@ export class AppController {
     }
   }
 
-  async getAllConfigs(request: FastifyRequest, reply: FastifyReply) {
+  async getAllConfigs(_request: FastifyRequest, reply: FastifyReply) {
     try {
       const configs = await this.appService.getAllConfigs();
+      return reply.send({ configs });
+    } catch (error: any) {
+      return reply.status(400).send({ error: error.message });
+    }
+  }
+
+  async getPublicConfigs(_request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const configs = await this.appService.getPublicConfigs();
       return reply.send({ configs });
     } catch (error: any) {
       return reply.status(400).send({ error: error.message });
@@ -90,9 +99,8 @@ export class AppController {
         return reply.status(400).send({ error: "Only images are allowed" });
       }
 
-      // Logo files should be small (max 5MB), so we can safely use streaming to buffer
       const chunks: Buffer[] = [];
-      const maxLogoSize = 5 * 1024 * 1024; // 5MB
+      const maxLogoSize = 5 * 1024 * 1024;
       let totalSize = 0;
 
       for await (const chunk of file.file) {
@@ -114,7 +122,7 @@ export class AppController {
     }
   }
 
-  async removeLogo(request: FastifyRequest, reply: FastifyReply) {
+  async removeLogo(_request: FastifyRequest, reply: FastifyReply) {
     try {
       await this.logoService.deleteLogo();
       return reply.send({ message: "Logo removed successfully" });

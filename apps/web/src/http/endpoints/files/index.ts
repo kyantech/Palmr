@@ -9,6 +9,8 @@ import type {
   GetPresignedUrlParams,
   GetPresignedUrlResult,
   ListFilesResult,
+  MoveFileBody,
+  MoveFileResult,
   RegisterFileBody,
   RegisterFileResult,
   UpdateFileBody,
@@ -17,9 +19,9 @@ import type {
 
 /**
  * Generates a pre-signed URL for direct upload to S3-compatible storage
- * @summary Get Presigned URL
+ * @summary Get Presigned URL for File
  */
-export const getPresignedUrl = <TData = GetPresignedUrlResult>(
+export const getFilePresignedUrl = <TData = GetPresignedUrlResult>(
   params: GetPresignedUrlParams,
   options?: AxiosRequestConfig
 ): Promise<TData> => {
@@ -55,8 +57,19 @@ export const registerFile = <TData = RegisterFileResult>(
  * Lists user files
  * @summary List Files
  */
-export const listFiles = <TData = ListFilesResult>(options?: AxiosRequestConfig): Promise<TData> => {
-  return apiInstance.get(`/api/files`, options);
+export const listFiles = <TData = ListFilesResult>(
+  params: { folderId?: string; recursive?: boolean } = {},
+  options?: AxiosRequestConfig
+): Promise<TData> => {
+  const queryParams = {
+    ...params,
+    recursive: params.recursive !== undefined ? params.recursive.toString() : undefined,
+  };
+
+  return apiInstance.get(`/api/files`, {
+    ...options,
+    params: { ...queryParams, ...options?.params },
+  });
 };
 
 /**
@@ -67,7 +80,8 @@ export const getDownloadUrl = <TData = GetDownloadUrlResult>(
   objectName: string,
   options?: AxiosRequestConfig
 ): Promise<TData> => {
-  return apiInstance.get(`/api/files/download/${objectName}`, options);
+  const encodedObjectName = encodeURIComponent(objectName);
+  return apiInstance.get(`/api/files/download-url?objectName=${encodedObjectName}`, options);
 };
 
 /**
@@ -88,4 +102,16 @@ export const updateFile = <TData = UpdateFileResult>(
   options?: AxiosRequestConfig
 ): Promise<TData> => {
   return apiInstance.patch(`/api/files/${id}`, updateFileBody, options);
+};
+
+/**
+ * Moves a file to a different folder
+ * @summary Move File
+ */
+export const moveFile = <TData = MoveFileResult>(
+  id: string,
+  moveFileBody: MoveFileBody,
+  options?: AxiosRequestConfig
+): Promise<TData> => {
+  return apiInstance.put(`/api/files/${id}/move`, moveFileBody, options);
 };

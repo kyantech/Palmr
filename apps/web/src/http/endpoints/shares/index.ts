@@ -179,3 +179,43 @@ export const notifyRecipients = <TData = NotifyRecipientsResult>(
 ): Promise<TData> => {
   return apiInstance.post(`/api/shares/recipients/notify/${shareId}`, notifyRecipientsBody, options);
 };
+
+/**
+ * @summary Add folders to share
+ */
+export const addFolders = <TData = any>(
+  shareId: string,
+  addFoldersBody: { folders: string[] },
+  options?: AxiosRequestConfig
+): Promise<TData> => {
+  return apiInstance.post(`/api/shares/folders/add/${shareId}`, addFoldersBody, options);
+};
+
+/**
+ * @summary Remove folders from share
+ */
+export const removeFolders = <TData = any>(
+  shareId: string,
+  removeFoldersBody: { folders: string[] },
+  options?: AxiosRequestConfig
+): Promise<TData> => {
+  return apiInstance.delete(`/api/shares/folders/remove/${shareId}`, {
+    data: removeFoldersBody,
+    ...options,
+  });
+};
+
+/**
+ * @summary Get folder contents within a share
+ */
+export const getShareFolderContents = <TData = any>(
+  shareId: string,
+  folderId: string,
+  password?: string,
+  options?: AxiosRequestConfig
+): Promise<TData> => {
+  return apiInstance.get(`/api/shares/${shareId}/folders/${folderId}/contents`, {
+    ...options,
+    params: { password, ...options?.params },
+  });
+};

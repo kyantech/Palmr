@@ -144,7 +144,15 @@
     "update": "更新",
     "click": "クリックして",
     "creating": "作成中...",
-    "loadingSimple": "読み込み中..."
+    "loadingSimple": "読み込み中...",
+    "create": "作成",
+    "deleting": "削除中...",
+    "move": "移動",
+    "rename": "名前を変更",
+    "search": "検索",
+    "share": "共有",
+    "copied": "コピーしました",
+    "copy": "コピー"
   },
   "createShare": {
     "title": "共有を作成",
@@ -160,7 +168,53 @@
     "create": "共有を作成",
     "success": "共有が正常に作成されました",
     "error": "共有の作成に失敗しました",
-    "namePlaceholder": "共有の名前を入力してください"
+    "namePlaceholder": "共有の名前を入力してください",
+    "nextSelectFiles": "次へ：ファイルを選択",
+    "searchLabel": "検索",
+    "tabs": {
+      "shareDetails": "共有の詳細",
+      "selectFiles": "ファイルを選択"
+    }
+  },
+  "customization": {
+    "breadcrumb": "カスタマイズ",
+    "colors": {
+      "title": "テーマカラー",
+      "description": "お好みのプライマリカラーテーマを選択してください",
+      "presets": "利用可能な色",
+      "presetsDescription": "利用可能なカラーテーマから選択",
+      "reset": "デフォルトにリセット"
+    },
+    "fonts": {
+      "title": "タイポグラフィ",
+      "description": "お好みのフォントファミリーを選択してください",
+      "available": "利用可能なフォント",
+      "availableDescription": "利用可能なフォントファミリーから選択",
+      "reset": "デフォルトにリセット"
+    },
+    "radius": {
+      "title": "角丸",
+      "description": "インターフェース要素の丸みをカスタマイズ",
+      "available": "丸みのオプション",
+      "availableDescription": "角の丸みの表示方法を選択",
+      "reset": "デフォルトにリセット"
+    },
+    "background": {
+      "title": "背景色",
+      "description": "ライトモードとダークモードの背景色をカスタマイズ",
+      "lightMode": "ライトモード",
+      "darkMode": "ダークモード",
+      "availableDescription": "ライトテーマとダークテーマの背景色を選択",
+      "reset": "デフォルトにリセット"
+    },
+    "theme": {
+      "title": "テーマモード",
+      "description": "ライト、ダーク、またはシステムテーマから選択",
+      "selectTheme": "テーマ設定",
+      "availableDescription": "お好みのテーマモードを選択",
+      "reset": "システム設定に戻す"
+    },
+    "pageTitle": "カスタマイズ"
   },
   "dashboard": {
     "loadError": "ダッシュボードデータの読み込みに失敗しました",
@@ -174,7 +228,42 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "削除するファイル",
-    "sharesToDelete": "削除される共有"
+    "sharesToDelete": "削除される共有",
+    "foldersToDelete": "削除するフォルダ",
+    "itemsToDelete": "削除するアイテム"
+  },
+  "downloadQueue": {
+    "downloadQueued": "ダウンロードキューに追加: {fileName}",
+    "queuedDescription": "空きスロットができ次第、自動的にダウンロードが開始されます",
+    "queuePosition": "順番{position}でキューに追加: {fileName}",
+    "estimatedWait": "推定待ち時間: {time}",
+    "queueFull": "ダウンロードキューが満杯です",
+    "queueFullDescription": "キューに空きができるまで数分お待ちください",
+    "cancelSuccess": "ダウンロードをキャンセルしました",
+    "cancelError": "ダウンロードのキャンセルに失敗: {error}",
+    "status": {
+      "pending": "準備中...",
+      "queued": "キュー待ち",
+      "downloading": "ダウンロード中",
+      "completed": "完了",
+      "failed": "失敗"
+    },
+    "waitTime": {
+      "seconds": "{seconds}秒",
+      "minutes": "{minutes}分",
+      "hoursMinutes": "{hours}時間{minutes}分"
+    },
+    "indicator": {
+      "title": "ダウンロード",
+      "downloads": "ダウンロードキュー",
+      "active": "実行中",
+      "queued": "待機中",
+      "position": "順番 {position}",
+      "estimatedWait": "待ち時間: {time}",
+      "unknownFile": "不明なファイル",
+      "noDownloads": "進行中のダウンロードはありません",
+      "refresh": "キューを更新"
+    }
   },
   "emptyState": {
     "noFiles": "まだファイルがアップロードされていません",
@@ -203,7 +292,8 @@
     "descriptionPlaceholder": "ファイルの説明を入力してください",
     "deleteFile": "ファイルを削除",
     "deleteConfirmation": "を削除してもよろしいですか？",
-    "deleteWarning": "この操作は元に戻せません。"
+    "deleteWarning": "この操作は元に戻せません。",
+    "addDescriptionPlaceholder": "説明を追加..."
   },
   "fileManager": {
     "downloadError": "ファイルのダウンロードに失敗しました",
@@ -214,6 +304,7 @@
   },
   "filePreview": {
     "title": "ファイルプレビュー",
+    "description": "ファイルをプレビューしてダウンロード",
     "loading": "読み込み中...",
     "notAvailable": "このファイルタイプのプレビューは利用できません。",
     "downloadToView": "ダウンロードボタンを使用してファイルをダウンロードしてください。",
@@ -248,7 +339,8 @@
     "previewFile": "ファイルをプレビュー",
     "addToShare": "共有に追加",
     "removeFromShare": "共有から削除",
-    "saveChanges": "変更を保存"
+    "saveChanges": "変更を保存",
+    "editFolder": "フォルダを編集"
   },
   "files": {
     "title": "すべてのファイル",
@@ -271,7 +363,20 @@
       "table": "テーブル",
       "grid": "グリッド"
     },
-    "totalFiles": "{count, plural, =0 {ファイルなし} =1 {1ファイル} other {#ファイル}}"
+    "totalFiles": "{count, plural, =0 {ファイルなし} =1 {1ファイル} other {#ファイル}}",
+    "bulkDeleteConfirmation": "{count, plural, =1 {1つのファイル} other {#つのファイル}}を削除してよろしいですか？この操作は元に戻せません。",
+    "bulkDeleteTitle": "選択したファイルを削除",
+    "actions": {
+      "open": "開く",
+      "rename": "名前を変更",
+      "delete": "削除"
+    },
+    "empty": {
+      "title": "まだファイルやフォルダがありません",
+      "description": "最初のファイルをアップロードするか、フォルダを作成して始めましょう"
+    },
+    "files": "ファイル",
+    "folders": "フォルダ"
   },
   "filesTable": {
     "ariaLabel": "ファイルテーブル",
@@ -300,6 +405,33 @@
       "share": "選択済みを共有",
       "delete": "選択済みを削除"
     }
+  },
+  "folderActions": {
+    "editFolder": "フォルダを編集",
+    "folderName": "フォルダ名",
+    "folderNamePlaceholder": "フォルダ名を入力",
+    "folderDescription": "説明",
+    "folderDescriptionPlaceholder": "フォルダの説明を入力（任意）",
+    "createFolder": "新しいフォルダを作成",
+    "renameFolder": "フォルダ名を変更",
+    "moveFolder": "フォルダを移動",
+    "shareFolder": "フォルダを共有",
+    "deleteFolder": "フォルダを削除",
+    "moveTo": "移動先",
+    "selectDestination": "移動先フォルダを選択",
+    "rootFolder": "ルート",
+    "folderCreated": "フォルダが正常に作成されました",
+    "folderRenamed": "フォルダが正常に名前変更されました",
+    "folderMoved": "フォルダが正常に移動されました",
+    "folderDeleted": "フォルダが正常に削除されました",
+    "folderShared": "フォルダが正常に共有されました",
+    "createFolderError": "フォルダの作成中にエラーが発生しました",
+    "renameFolderError": "フォルダの名前変更中にエラーが発生しました",
+    "moveFolderError": "フォルダの移動中にエラーが発生しました",
+    "deleteFolderError": "フォルダの削除中にエラーが発生しました",
+    "shareFolderError": "フォルダの共有中にエラーが発生しました",
+    "deleteConfirmation": "このフォルダを削除してもよろしいですか？",
+    "deleteWarning": "この操作は元に戻すことができません。"
   },
   "footer": {
     "poweredBy": "提供:",
@@ -402,16 +534,42 @@
       "removeFailed": "ロゴの削除に失敗しました"
     }
   },
+  "moveItems": {
+    "itemsToMove": "移動するアイテム：",
+    "movingTo": "移動先：",
+    "title": "アイテムを移動",
+    "description": "アイテムを新しい場所に移動",
+    "success": "{count}個のアイテムが正常に移動されました"
+  },
   "navbar": {
     "logoAlt": "アプリケーションロゴ",
     "profileMenu": "プロフィールメニュー",
     "profile": "プロフィール",
     "settings": "設定",
     "usersManagement": "ユーザー管理",
-    "logout": "ログアウト"
+    "logout": "ログアウト",
+    "customization": "カスタマイズ"
   },
   "navigation": {
     "dashboard": "ダッシュボード"
+  },
+  "notifications": {
+    "permissionGranted": "ダウンロード通知が有効になりました",
+    "permissionDenied": "ダウンロード通知が無効になりました",
+    "downloadComplete": {
+      "title": "ダウンロード完了",
+      "body": "{fileName}のダウンロードが完了しました"
+    },
+    "downloadFailed": {
+      "title": "ダウンロード失敗",
+      "body": "{fileName}のダウンロードに失敗: {error}",
+      "unknownError": "不明なエラー"
+    },
+    "queueProcessing": {
+      "title": "ダウンロード開始",
+      "body": "{fileName}のダウンロードを開始しています{position}",
+      "position": "（キュー内{position}番目）"
+    }
   },
   "profile": {
     "password": {
@@ -795,7 +953,8 @@
           "timeout": "コピー操作がタイムアウトしました。より小さいファイルで再試行するか、接続を確認してください。",
           "failed": "コピー操作に失敗しました。もう一度お試しください。",
           "aborted": "タイムアウトによりコピー操作がキャンセルされました。"
-        }
+        },
+        "invalidDate": "無効な日付"
       }
     },
     "form": {
@@ -900,7 +1059,8 @@
     "upload": {
       "metadata": {
         "title": "ファイルを送信 - Palmr",
-        "description": "共有リンクを通じてファイルを送信"
+        "description": "共有リンクを通じてファイルを送信",
+        "descriptionWithLimit": "ファイルをアップロード（最大{limit}ファイル）"
       },
       "layout": {
         "defaultTitle": "ファイルを送信",
@@ -1010,7 +1170,10 @@
   },
   "searchBar": {
     "placeholder": "ファイルを検索...",
-    "results": "全{total}件中{filtered}件が見つかりました"
+    "results": "全{total}件中{filtered}件が見つかりました",
+    "placeholderFolders": "フォルダを検索...",
+    "noResults": "\"{query}\"の検索結果が見つかりませんでした",
+    "placeholderFiles": "ファイルを検索..."
   },
   "settings": {
     "groups": {
@@ -1139,6 +1302,10 @@
       "passwordAuthEnabled": {
         "title": "パスワード認証",
         "description": "パスワード認証を有効または無効にする"
+      },
+      "hideVersion": {
+        "title": "バージョンを非表示",
+        "description": "すべてのページのフッターにあるPalmrバージョンを非表示にする"
       }
     },
     "buttons": {
@@ -1200,7 +1367,11 @@
       "description": "この共有は削除されたか、期限が切れている可能性があります。"
     },
     "pageTitle": "共有",
-    "downloadAll": "すべてダウンロード"
+    "downloadAll": "すべてダウンロード",
+    "metadata": {
+      "defaultDescription": "ファイルを安全に共有",
+      "filesShared": "{count, plural, =1 {1 ファイルが共有されました} other {# ファイルが共有されました}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "共有を削除",
@@ -1223,7 +1394,18 @@
     "editSuccess": "共有が正常に更新されました",
     "editError": "共有の更新に失敗しました",
     "bulkDeleteConfirmation": "{count, plural, =1 {1つの共有} other {#つの共有}}を削除してもよろしいですか？この操作は元に戻せません。",
-    "bulkDeleteTitle": "選択した共有を削除"
+    "bulkDeleteTitle": "選択した共有を削除",
+    "addDescriptionPlaceholder": "説明を追加...",
+    "aliasLabel": "リンクエイリアス",
+    "aliasPlaceholder": "カスタムエイリアスを入力",
+    "copyLink": "リンクをコピー",
+    "fileTitle": "ファイルを共有",
+    "folderTitle": "フォルダを共有",
+    "generateLink": "リンクを生成",
+    "linkDescriptionFile": "ファイルを共有するためのカスタムリンクを生成",
+    "linkDescriptionFolder": "フォルダを共有するためのカスタムリンクを生成",
+    "linkReady": "共有リンクの準備ができました：",
+    "linkTitle": "リンクを生成"
   },
   "shareDetails": {
     "title": "共有詳細",
@@ -1350,7 +1532,8 @@
     "files": "ファイル",
     "totalSize": "合計サイズ",
     "creating": "作成中...",
-    "create": "共有を作成"
+    "create": "共有を作成",
+    "itemsToShare": "共有するアイテム（{count}個のアイテム）"
   },
   "shareSecurity": {
     "subtitle": "この共有のパスワード保護とセキュリティオプションを設定",
@@ -1455,7 +1638,8 @@
       "download": "選択したダウンロード"
     },
     "selectAll": "すべて選択",
-    "selectShare": "共有{shareName}を選択"
+    "selectShare": "共有{shareName}を選択",
+    "folderCount": "フォルダ"
   },
   "storageUsage": {
     "title": "ストレージ使用量",
@@ -1749,5 +1933,17 @@
     "passwordRequired": "パスワードは必須です",
     "nameRequired": "名前は必須です",
     "required": "このフィールドは必須です"
+  },
+  "embedCode": {
+    "title": "画像を埋め込む",
+    "description": "これらのコードを使用して、この画像をフォーラム、ウェブサイト、またはその他のプラットフォームに埋め込みます",
+    "tabs": {
+      "directLink": "直接リンク",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "画像ファイルへの直接URL",
+    "htmlDescription": "このコードを使用してHTMLページに画像を埋め込みます",
+    "bbcodeDescription": "BBCodeをサポートするフォーラムに画像を埋め込むには、このコードを使用します"
   }
 }

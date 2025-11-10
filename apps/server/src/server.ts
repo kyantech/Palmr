@@ -12,7 +12,9 @@ import { authProvidersRoutes } from "./modules/auth-providers/routes";
 import { authRoutes } from "./modules/auth/routes";
 import { fileRoutes } from "./modules/file/routes";
 import { ChunkManager } from "./modules/filesystem/chunk-manager";
+import { downloadQueueRoutes } from "./modules/filesystem/download-queue-routes";
 import { filesystemRoutes } from "./modules/filesystem/routes";
+import { folderRoutes } from "./modules/folder/routes";
 import { healthRoutes } from "./modules/health/routes";
 import { reverseShareRoutes } from "./modules/reverse-share/routes";
 import { shareRoutes } from "./modules/share/routes";
@@ -74,16 +76,17 @@ async function startServer() {
   app.register(twoFactorRoutes, { prefix: "/auth" });
   app.register(userRoutes);
   app.register(fileRoutes);
-
-  if (env.ENABLE_S3 !== "true") {
-    app.register(filesystemRoutes);
-  }
-
+  app.register(folderRoutes);
+  app.register(downloadQueueRoutes);
   app.register(shareRoutes);
   app.register(reverseShareRoutes);
   app.register(storageRoutes);
   app.register(appRoutes);
   app.register(healthRoutes);
+
+  if (env.ENABLE_S3 !== "true") {
+    app.register(filesystemRoutes);
+  }
 
   await app.listen({
     port: 3333,

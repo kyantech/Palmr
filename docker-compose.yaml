@@ -5,12 +5,23 @@ services:
     environment:
       # Optional: Uncomment and configure as needed (if you don`t use, you can remove)
       # - ENABLE_S3=false # Set to true to enable S3-compatible storage (OPTIONAL - default is false)
+      # - S3_REJECT_UNAUTHORIZED=false # Set to false to allow self-signed certificates (OPTIONAL - default is true)
       # - DISABLE_FILESYSTEM_ENCRYPTION=true # Set to false to enable file encryption (ENCRYPTION_KEY becomes required) | (OPTIONAL - default is true)
       # - ENCRYPTION_KEY=change-this-key-in-production-min-32-chars # CHANGE THIS KEY FOR SECURITY (REQUIRED if DISABLE_FILESYSTEM_ENCRYPTION is false)
       # - PALMR_UID=1000 # UID for the container processes (OPTIONAL - default is 1000) | See our UID/GID Documentation for more information
       # - PALMR_GID=1000 # GID for the container processes (OPTIONAL - default is 1000) | See our UID/GID Documentation for more information
       # - DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US) | See the docs to see all supported languages
+      # - PRESIGNED_URL_EXPIRATION=3600 # Duration in seconds for presigned URL expiration (OPTIONAL - default is 3600 seconds / 1 hour)
       # - SECURE_SITE=true # Set to true if you are using a reverse proxy (OPTIONAL - default is false)
+
+      # Download Memory Management Configuration (OPTIONAL - See documentation for details)
+      # - DOWNLOAD_MAX_CONCURRENT=5 # Maximum number of simultaneous downloads (OPTIONAL - auto-scales based on system memory if not set)
+      # - DOWNLOAD_MEMORY_THRESHOLD_MB=2048 # Memory threshold in MB before throttling (OPTIONAL - auto-scales based on system memory if not set)
+      # - DOWNLOAD_QUEUE_SIZE=25 # Maximum queue size for pending downloads (OPTIONAL - auto-scales based on system memory if not set)
+      # - DOWNLOAD_MIN_FILE_SIZE_GB=3.0 # Minimum file size in GB to activate memory management (OPTIONAL - default is 3.0)
+      # - DOWNLOAD_AUTO_SCALE=true # Enable auto-scaling based on system memory (OPTIONAL - default is true)
+      # - NODE_OPTIONS=--expose-gc # Enable garbage collection for large file downloads (RECOMMENDED for production)
+      # - NEXT_PUBLIC_UPLOAD_CHUNK_SIZE_MB=100 # Chunk size in MB for large file uploads (OPTIONAL - auto-calculates if not set)
     ports:
       - "5487:5487" # Web port
       - "3333:3333" # API port (OPTIONAL EXPOSED - ONLY IF YOU WANT TO ACCESS THE API DIRECTLY)

@@ -41,6 +41,30 @@ export class AppService {
     });
   }
 
+  async getPublicConfigs() {
+    const sensitiveKeys = [
+      "smtpHost",
+      "smtpPort",
+      "smtpUser",
+      "smtpPass",
+      "smtpSecure",
+      "smtpNoAuth",
+      "smtpTrustSelfSigned",
+      "jwtSecret",
+    ];
+
+    return prisma.appConfig.findMany({
+      where: {
+        key: {
+          notIn: sensitiveKeys,
+        },
+      },
+      orderBy: {
+        group: "asc",
+      },
+    });
+  }
+
   async updateConfig(key: string, value: string) {
     if (key === "jwtSecret") {
       throw new Error("JWT Secret cannot be updated through this endpoint");

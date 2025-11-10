@@ -27,13 +27,13 @@ export function ReverseSharesSearch({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <h2 className="text-xl font-semibold">{t("reverseShares.search.title")}</h2>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <Button variant="outline" size="icon" onClick={onRefresh} disabled={isRefreshing}>
             <IconRefresh className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
           </Button>
-          <Button onClick={onCreateReverseShare}>
+          <Button onClick={onCreateReverseShare} className="w-full sm:w-auto">
             <IconPlus className="h-4 w-4" />
             {t("reverseShares.search.createButton")}
           </Button>

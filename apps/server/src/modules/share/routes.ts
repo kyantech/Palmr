@@ -6,7 +6,7 @@ import {
   CreateShareSchema,
   ShareAliasResponseSchema,
   ShareResponseSchema,
-  UpdateShareFilesSchema,
+  UpdateShareItemsSchema,
   UpdateSharePasswordSchema,
   UpdateShareRecipientsSchema,
   UpdateShareSchema,
@@ -32,7 +32,7 @@ export async function shareRoutes(app: FastifyInstance) {
         tags: ["Share"],
         operationId: "createShare",
         summary: "Create a new share",
-        description: "Create a new share",
+        description: "Create a new share with files and/or folders",
         body: CreateShareSchema,
         response: {
           201: z.object({
@@ -164,17 +164,17 @@ export async function shareRoutes(app: FastifyInstance) {
   );
 
   app.post(
-    "/shares/:shareId/files",
+    "/shares/:shareId/items",
     {
       preValidation,
       schema: {
         tags: ["Share"],
-        operationId: "addFiles",
-        summary: "Add files to share",
+        operationId: "addItems",
+        summary: "Add files and/or folders to share",
         params: z.object({
           shareId: z.string().describe("The share ID"),
         }),
-        body: UpdateShareFilesSchema,
+        body: UpdateShareItemsSchema,
         response: {
           200: z.object({
             share: ShareResponseSchema,
@@ -185,21 +185,21 @@ export async function shareRoutes(app: FastifyInstance) {
         },
       },
     },
-    shareController.addFiles.bind(shareController)
+    shareController.addItems.bind(shareController)
   );
 
   app.delete(
-    "/shares/:shareId/files",
+    "/shares/:shareId/items",
     {
       preValidation,
       schema: {
         tags: ["Share"],
-        operationId: "removeFiles",
-        summary: "Remove files from share",
+        operationId: "removeItems",
+        summary: "Remove files and/or folders from share",
         params: z.object({
           shareId: z.string().describe("The share ID"),
         }),
-        body: UpdateShareFilesSchema,
+        body: UpdateShareItemsSchema,
         response: {
           200: z.object({
             share: ShareResponseSchema,
@@ -210,7 +210,7 @@ export async function shareRoutes(app: FastifyInstance) {
         },
       },
     },
-    shareController.removeFiles.bind(shareController)
+    shareController.removeItems.bind(shareController)
   );
 
   app.post(
@@ -346,5 +346,33 @@ export async function shareRoutes(app: FastifyInstance) {
       },
     },
     shareController.notifyRecipients.bind(shareController)
+  );
+
+  app.get(
+    "/shares/alias/:alias/metadata",
+    {
+      schema: {
+        tags: ["Share"],
+        operationId: "getShareMetadataByAlias",
+        summary: "Get share metadata by alias for Open Graph",
+        description: "Get lightweight metadata for a share by alias, used for social media previews",
+        params: z.object({
+          alias: z.string().describe("The share alias"),
+        }),
+        response: {
+          200: z.object({
+            name: z.string().nullable(),
+            description: z.string().nullable(),
+            totalFiles: z.number(),
+            totalFolders: z.number(),
+            hasPassword: z.boolean(),
+            isExpired: z.boolean(),
+            isMaxViewsReached: z.boolean(),
+          }),
+          404: z.object({ error: z.string() }),
+        },
+      },
+    },
+    shareController.getShareMetadataByAlias.bind(shareController)
   );
 }

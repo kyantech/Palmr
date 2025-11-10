@@ -150,6 +150,18 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
     return fileName.split(".").pop() || "";
   };
 
+  const calculateUploadTimeout = (fileSize: number): number => {
+    const baseTimeout = 300000;
+    const fileSizeMB = fileSize / (1024 * 1024);
+    if (fileSizeMB > 500) {
+      const extraMB = fileSizeMB - 500;
+      const extraMinutes = Math.ceil(extraMB / 100);
+      return baseTimeout + extraMinutes * 60000;
+    }
+
+    return baseTimeout;
+  };
+
   const uploadFileToStorage = async (
     file: File,
     presignedUrl: string,
@@ -172,10 +184,14 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
         throw new Error(result.error || "Chunked upload failed");
       }
     } else {
+      const uploadTimeout = calculateUploadTimeout(file.size);
       await axios.put(presignedUrl, file, {
         headers: {
           "Content-Type": file.type,
         },
+        timeout: uploadTimeout,
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
         onUploadProgress: (progressEvent) => {
           if (onProgress && progressEvent.total) {
             const progress = (progressEvent.loaded / progressEvent.total) * 100;
@@ -421,7 +437,7 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
                 );
               }}
               disabled={isUploading}
-              title={t("reverseShares.upload.retry")}
+              title={t("reverseShares.upload.errors.retry")}
             >
               <IconUpload className="h-4 w-4" />
             </Button>

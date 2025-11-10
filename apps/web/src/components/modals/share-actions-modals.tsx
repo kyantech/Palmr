@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
-import { FileSelector } from "@/components/general/file-selector";
 import { RecipientSelector } from "@/components/general/recipient-selector";
+import { FileTree, TreeFile, TreeFolder } from "@/components/tables/files-tree";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,7 +18,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { updateSharePassword } from "@/http/endpoints";
+import { addFiles, addFolders, removeFiles, removeFolders, updateSharePassword } from "@/http/endpoints";
+import { listFolders } from "@/http/endpoints/folders";
 
 export interface ShareActionsModalsProps {
   shareToDelete: any;
@@ -31,9 +32,10 @@ export interface ShareActionsModalsProps {
   onCloseManageRecipients: () => void;
   onDelete: (shareId: string) => Promise<void>;
   onEdit: (shareId: string, data: any) => Promise<void>;
-  onManageFiles: (shareId: string, files: string[]) => Promise<void>;
+  onManageFiles: (shareId: string, files: string[], folders: string[]) => Promise<void>;
   onManageRecipients: (shareId: string, recipients: string[]) => Promise<void>;
   onEditFile?: (fileId: string, newName: string, description?: string) => Promise<void>;
+  onEditFolder?: (folderId: string, newName: string, description?: string) => Promise<void>;
   onSuccess: () => void;
 }
 
@@ -48,12 +50,39 @@ export function ShareActionsModals({
   onCloseManageRecipients,
   onDelete,
   onEdit,
-  onManageFiles,
-  onEditFile,
   onSuccess,
 }: ShareActionsModalsProps) {
   const t = useTranslations();
   const [isLoading, setIsLoading] = useState(false);
+  const [allFiles, setAllFiles] = useState<any[]>([]);
+  const [allFolders, setAllFolders] = useState<any[]>([]);
+
+  const [manageFilesSelectedItems, setManageFilesSelectedItems] = useState<string[]>([]);
+  const [manageFilesTreeFiles, setManageFilesTreeFiles] = useState<TreeFile[]>([]);
+  const [manageFilesTreeFolders, setManageFilesTreeFolders] = useState<TreeFolder[]>([]);
+  const [isManageFilesLoading, setIsManageFilesLoading] = useState(false);
+  const [isManageFilesSaving, setIsManageFilesSaving] = useState(false);
+  const [manageFilesSearchQuery, setManageFilesSearchQuery] = useState("");
+
+  React.useEffect(() => {
+    const loadAllData = async () => {
+      try {
+        const [allFoldersResponse, allFilesResponse] = await Promise.all([
+          listFolders(),
+          fetch("/api/files?recursive=true").then((res) => res.json()),
+        ]);
+        setAllFolders(allFoldersResponse.data.folders || []);
+        setAllFiles(allFilesResponse.files || []);
+      } catch (error) {
+        console.error("Error loading all files and folders:", error);
+        setAllFolders([]);
+        setAllFiles([]);
+      }
+    };
+
+    loadAllData();
+  }, []);
+
   const [editForm, setEditForm] = useState({
     name: "",
     description: "",
@@ -75,6 +104,45 @@ export function ShareActionsModals({
       });
     }
   }, [shareToEdit]);
+
+  const loadManageFilesData = useCallback(async () => {
+    try {
+      setIsManageFilesLoading(true);
+
+      const treeFiles: TreeFile[] = allFiles.map((file) => ({
+        id: file.id,
+        name: file.name,
+        type: "file" as const,
+        size: file.size,
+        parentId: file.folderId || null,
+      }));
+
+      const treeFolders: TreeFolder[] = allFolders.map((folder) => ({
+        id: folder.id,
+        name: folder.name,
+        type: "folder" as const,
+        parentId: folder.parentId || null,
+        totalSize: folder.totalSize,
+      }));
+
+      setManageFilesTreeFiles(treeFiles);
+      setManageFilesTreeFolders(treeFolders);
+    } catch (error) {
+      console.error("Error loading files and folders:", error);
+    } finally {
+      setIsManageFilesLoading(false);
+    }
+  }, [allFiles, allFolders]);
+
+  useEffect(() => {
+    if (shareToManageFiles) {
+      loadManageFilesData();
+
+      const initialSelectedFiles = shareToManageFiles?.files?.map((f: any) => f.id) || [];
+      const initialSelectedFolders = shareToManageFiles?.folders?.map((f: any) => f.id) || [];
+      setManageFilesSelectedItems([...initialSelectedFiles, ...initialSelectedFolders]);
+    }
+  }, [shareToManageFiles, loadManageFilesData]);
 
   const handleDelete = async () => {
     if (!shareToDelete) return;
@@ -113,6 +181,64 @@ export function ShareActionsModals({
     }
   };
 
+  const handleManageFilesSave = async () => {
+    if (!shareToManageFiles?.id) return;
+
+    try {
+      setIsManageFilesSaving(true);
+
+      const selectedFiles = manageFilesSelectedItems.filter((id) =>
+        manageFilesTreeFiles.some((file) => file.id === id)
+      );
+      const selectedFolders = manageFilesSelectedItems.filter((id) =>
+        manageFilesTreeFolders.some((folder) => folder.id === id)
+      );
+
+      const currentFileIds = shareToManageFiles.files?.map((f: any) => f.id) || [];
+      const currentFolderIds = shareToManageFiles.folders?.map((f: any) => f.id) || [];
+
+      const filesToAdd = selectedFiles.filter((id: string) => !currentFileIds.includes(id));
+      const filesToRemove = currentFileIds.filter((id: string) => !selectedFiles.includes(id));
+
+      const foldersToAdd = selectedFolders.filter((id: string) => !currentFolderIds.includes(id));
+      const foldersToRemove = currentFolderIds.filter((id: string) => !selectedFolders.includes(id));
+
+      const promises = [];
+
+      if (filesToAdd.length > 0) {
+        promises.push(addFiles(shareToManageFiles.id, { files: filesToAdd }));
+      }
+      if (filesToRemove.length > 0) {
+        promises.push(removeFiles(shareToManageFiles.id, { files: filesToRemove }));
+      }
+      if (foldersToAdd.length > 0) {
+        promises.push(addFolders(shareToManageFiles.id, { folders: foldersToAdd }));
+      }
+      if (foldersToRemove.length > 0) {
+        promises.push(removeFolders(shareToManageFiles.id, { folders: foldersToRemove }));
+      }
+
+      await Promise.all(promises);
+      onSuccess();
+      onCloseManageFiles();
+      toast.success(t("shareActions.editSuccess"));
+    } catch (error) {
+      console.error("Error updating share files:", error);
+      toast.error(t("shareActions.editError"));
+      throw error;
+    } finally {
+      setIsManageFilesSaving(false);
+    }
+  };
+
+  const handleManageFilesClose = () => {
+    if (!isManageFilesSaving) {
+      setManageFilesSelectedItems([]);
+      setManageFilesSearchQuery("");
+      onCloseManageFiles();
+    }
+  };
+
   return (
     <>
       <Dialog open={!!shareToDelete} onOpenChange={() => onCloseDelete()}>
@@ -139,31 +265,31 @@ export function ShareActionsModals({
           </DialogHeader>
           <div className="flex flex-col gap-4">
             <div className="grid w-full items-center gap-1.5">
-              <Label>{t("shareActions.nameLabel")}</Label>
+              <Label>{t("createShare.nameLabel")}</Label>
               <Input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
             </div>
             <div className="grid w-full items-center gap-1.5">
-              <Label>{t("shareActions.descriptionLabel")}</Label>
+              <Label>{t("createShare.descriptionLabel")}</Label>
               <Input
                 value={editForm.description}
                 onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                placeholder={t("shareActions.descriptionPlaceholder")}
+                placeholder={t("createShare.descriptionPlaceholder")}
               />
             </div>
             <div className="grid w-full items-center gap-1.5">
-              <Label>{t("shareActions.expirationLabel")}</Label>
+              <Label>{t("createShare.expirationLabel")}</Label>
               <Input
-                placeholder={t("shareActions.expirationPlaceholder")}
+                placeholder={t("createShare.expirationPlaceholder")}
                 type="datetime-local"
                 value={editForm.expiresAt}
                 onChange={(e) => setEditForm({ ...editForm, expiresAt: e.target.value })}
               />
             </div>
             <div className="grid w-full items-center gap-1.5">
-              <Label>{t("shareActions.maxViewsLabel")}</Label>
+              <Label>{t("createShare.maxViewsLabel")}</Label>
               <Input
                 min="1"
-                placeholder={t("shareActions.maxViewsPlaceholder")}
+                placeholder={t("createShare.maxViewsPlaceholder")}
                 type="number"
                 value={editForm.maxViews}
                 onChange={(e) => setEditForm({ ...editForm, maxViews: e.target.value })}
@@ -180,20 +306,20 @@ export function ShareActionsModals({
                   })
                 }
               />
-              <Label>{t("shareActions.passwordProtection")}</Label>
+              <Label>{t("createShare.passwordProtection")}</Label>
             </div>
             {editForm.isPasswordProtected && (
               <div className="grid w-full items-center gap-1.5">
                 <Label>
                   {shareToEdit?.security?.hasPassword
                     ? t("shareActions.newPasswordLabel")
-                    : t("shareActions.passwordLabel")}
+                    : t("createShare.passwordLabel")}
                 </Label>
                 <Input
                   placeholder={
                     shareToEdit?.security?.hasPassword
                       ? t("shareActions.newPasswordPlaceholder")
-                      : t("shareActions.passwordPlaceholder")
+                      : t("createShare.passwordLabel")
                   }
                   type="password"
                   value={editForm.password}
@@ -213,22 +339,84 @@ export function ShareActionsModals({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!shareToManageFiles} onOpenChange={() => onCloseManageFiles()}>
-        <DialogContent className="sm:max-w-[450px] md:max-w-[550px] lg:max-w-[650px] max-h-[80vh] overflow-hidden">
+      <Dialog open={!!shareToManageFiles} onOpenChange={handleManageFilesClose}>
+        <DialogContent className="max-w-2xl max-h-[80vh] w-full">
           <DialogHeader>
             <DialogTitle>{t("shareActions.manageFilesTitle")}</DialogTitle>
+            <DialogDescription>Select files and folders to include in this share</DialogDescription>
           </DialogHeader>
-          <div className="overflow-y-auto max-h-[calc(80vh-120px)]">
-            <FileSelector
-              selectedFiles={shareToManageFiles?.files?.map((file: { id: string }) => file.id) || []}
-              shareId={shareToManageFiles?.id}
-              onSave={async (files) => {
-                await onManageFiles(shareToManageFiles?.id, files);
-                onSuccess();
-              }}
-              onEditFile={onEditFile}
-            />
+
+          <div className="flex flex-col gap-4 flex-1 min-h-0 w-full overflow-hidden">
+            {/* Search */}
+            <div className="space-y-2">
+              <Label htmlFor="manage-files-search">{t("common.search")}</Label>
+              <Input
+                id="manage-files-search"
+                type="search"
+                placeholder={t("searchBar.placeholder")}
+                value={manageFilesSearchQuery}
+                onChange={(e) => setManageFilesSearchQuery(e.target.value)}
+                disabled={isManageFilesLoading}
+              />
+            </div>
+
+            {/* Selection Count */}
+            <div className="text-sm text-muted-foreground">
+              {manageFilesSelectedItems.length > 0 && <span>{manageFilesSelectedItems.length} items selected</span>}
+            </div>
+
+            {/* File Tree */}
+            <div className="flex-1 min-h-0 w-full overflow-hidden">
+              {isManageFilesLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-sm text-muted-foreground">{t("common.loadingSimple")}</div>
+                </div>
+              ) : (
+                <FileTree
+                  files={manageFilesTreeFiles.map((file) => ({
+                    id: file.id,
+                    name: file.name,
+                    description: "",
+                    extension: "",
+                    size: file.size?.toString() || "0",
+                    objectName: "",
+                    userId: "",
+                    folderId: file.parentId,
+                    createdAt: "",
+                    updatedAt: "",
+                  }))}
+                  folders={manageFilesTreeFolders.map((folder) => ({
+                    id: folder.id,
+                    name: folder.name,
+                    description: "",
+                    parentId: folder.parentId,
+                    userId: "",
+                    createdAt: "",
+                    updatedAt: "",
+                    totalSize: folder.totalSize,
+                  }))}
+                  selectedItems={manageFilesSelectedItems}
+                  onSelectionChange={setManageFilesSelectedItems}
+                  showFiles={true}
+                  showFolders={true}
+                  maxHeight="400px"
+                  searchQuery={manageFilesSearchQuery}
+                />
+              )}
+            </div>
           </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={handleManageFilesClose} disabled={isManageFilesSaving}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              onClick={handleManageFilesSave}
+              disabled={isManageFilesLoading || isManageFilesSaving || manageFilesSelectedItems.length === 0}
+            >
+              {isManageFilesSaving ? t("common.saving") : t("common.save")}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

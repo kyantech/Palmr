@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 
 import { FileController } from "./controller";
-import { CheckFileSchema, RegisterFileSchema, UpdateFileSchema } from "./dto";
+import { CheckFileSchema, ListFilesSchema, MoveFileSchema, RegisterFileSchema, UpdateFileSchema } from "./dto";
 
 export async function fileRoutes(app: FastifyInstance) {
   const fileController = new FileController();
@@ -62,6 +62,7 @@ export async function fileRoutes(app: FastifyInstance) {
               size: z.string().describe("The file size"),
               objectName: z.string().describe("The object name of the file"),
               userId: z.string().describe("The user ID"),
+              folderId: z.string().nullable().describe("The folder ID"),
               createdAt: z.date().describe("The file creation date"),
               updatedAt: z.date().describe("The file last update date"),
             }),
@@ -78,6 +79,7 @@ export async function fileRoutes(app: FastifyInstance) {
   app.post(
     "/files/check",
     {
+      preValidation,
       schema: {
         tags: ["File"],
         operationId: "checkFile",
@@ -104,15 +106,16 @@ export async function fileRoutes(app: FastifyInstance) {
   );
 
   app.get(
-    "/files/:objectName/download",
+    "/files/download-url",
     {
       schema: {
         tags: ["File"],
         operationId: "getDownloadUrl",
         summary: "Get Download URL",
-        description: "Generates a pre-signed URL for downloading a private file",
-        params: z.object({
+        description: "Generates a pre-signed URL for downloading a file",
+        querystring: z.object({
           objectName: z.string().min(1, "The objectName is required"),
+          password: z.string().optional().describe("Share password if required"),
         }),
         response: {
           200: z.object({
@@ -129,6 +132,46 @@ export async function fileRoutes(app: FastifyInstance) {
   );
 
   app.get(
+    "/embed/:id",
+    {
+      schema: {
+        tags: ["File"],
+        operationId: "embedFile",
+        summary: "Embed File (Public Access)",
+        description:
+          "Returns a media file (image/video/audio) for public embedding without authentication. Only works for media files.",
+        params: z.object({
+          id: z.string().min(1, "File ID is required").describe("The file ID"),
+        }),
+        response: {
+          400: z.object({ error: z.string().describe("Error message") }),
+          403: z.object({ error: z.string().describe("Error message - not a media file") }),
+          404: z.object({ error: z.string().describe("Error message") }),
+          500: z.object({ error: z.string().describe("Error message") }),
+        },
+      },
+    },
+    fileController.embedFile.bind(fileController)
+  );
+
+  app.get(
+    "/files/download",
+    {
+      schema: {
+        tags: ["File"],
+        operationId: "downloadFile",
+        summary: "Download File",
+        description: "Downloads a file directly (returns file content)",
+        querystring: z.object({
+          objectName: z.string().min(1, "The objectName is required"),
+          password: z.string().optional().describe("Share password if required"),
+        }),
+      },
+    },
+    fileController.downloadFile.bind(fileController)
+  );
+
+  app.get(
     "/files",
     {
       preValidation,
@@ -136,7 +179,8 @@ export async function fileRoutes(app: FastifyInstance) {
         tags: ["File"],
         operationId: "listFiles",
         summary: "List Files",
-        description: "Lists user files",
+        description: "Lists user files recursively by default, optionally filtered by folder",
+        querystring: ListFilesSchema,
         response: {
           200: z.object({
             files: z.array(
@@ -148,6 +192,8 @@ export async function fileRoutes(app: FastifyInstance) {
                 size: z.string().describe("The file size"),
                 objectName: z.string().describe("The object name of the file"),
                 userId: z.string().describe("The user ID"),
+                folderId: z.string().nullable().describe("The folder ID"),
+                relativePath: z.string().nullable().describe("The relative path (only for recursive listing)"),
                 createdAt: z.date().describe("The file creation date"),
                 updatedAt: z.date().describe("The file last update date"),
               })
@@ -158,6 +204,84 @@ export async function fileRoutes(app: FastifyInstance) {
       },
     },
     fileController.listFiles.bind(fileController)
+  );
+
+  app.patch(
+    "/files/:id",
+    {
+      preValidation,
+      schema: {
+        tags: ["File"],
+        operationId: "updateFile",
+        summary: "Update File Metadata",
+        description: "Updates file metadata in the database",
+        params: z.object({
+          id: z.string().min(1, "The file id is required").describe("The file ID"),
+        }),
+        body: UpdateFileSchema,
+        response: {
+          200: z.object({
+            file: z.object({
+              id: z.string().describe("The file ID"),
+              name: z.string().describe("The file name"),
+              description: z.string().nullable().describe("The file description"),
+              extension: z.string().describe("The file extension"),
+              size: z.string().describe("The file size"),
+              objectName: z.string().describe("The object name of the file"),
+              userId: z.string().describe("The user ID"),
+              folderId: z.string().nullable().describe("The folder ID"),
+              createdAt: z.date().describe("The file creation date"),
+              updatedAt: z.date().describe("The file last update date"),
+            }),
+            message: z.string().describe("Success message"),
+          }),
+          400: z.object({ error: z.string().describe("Error message") }),
+          401: z.object({ error: z.string().describe("Error message") }),
+          403: z.object({ error: z.string().describe("Error message") }),
+          404: z.object({ error: z.string().describe("Error message") }),
+        },
+      },
+    },
+    fileController.updateFile.bind(fileController)
+  );
+
+  app.put(
+    "/files/:id/move",
+    {
+      preValidation,
+      schema: {
+        tags: ["File"],
+        operationId: "moveFile",
+        summary: "Move File",
+        description: "Moves a file to a different folder",
+        params: z.object({
+          id: z.string().min(1, "The file id is required").describe("The file ID"),
+        }),
+        body: MoveFileSchema,
+        response: {
+          200: z.object({
+            file: z.object({
+              id: z.string().describe("The file ID"),
+              name: z.string().describe("The file name"),
+              description: z.string().nullable().describe("The file description"),
+              extension: z.string().describe("The file extension"),
+              size: z.string().describe("The file size"),
+              objectName: z.string().describe("The object name of the file"),
+              userId: z.string().describe("The user ID"),
+              folderId: z.string().nullable().describe("The folder ID"),
+              createdAt: z.date().describe("The file creation date"),
+              updatedAt: z.date().describe("The file last update date"),
+            }),
+            message: z.string().describe("Success message"),
+          }),
+          400: z.object({ error: z.string().describe("Error message") }),
+          401: z.object({ error: z.string().describe("Error message") }),
+          403: z.object({ error: z.string().describe("Error message") }),
+          404: z.object({ error: z.string().describe("Error message") }),
+        },
+      },
+    },
+    fileController.moveFile.bind(fileController)
   );
 
   app.delete(
@@ -184,43 +308,5 @@ export async function fileRoutes(app: FastifyInstance) {
       },
     },
     fileController.deleteFile.bind(fileController)
-  );
-
-  app.patch(
-    "/files/:id",
-    {
-      preValidation,
-      schema: {
-        tags: ["File"],
-        operationId: "updateFile",
-        summary: "Update File Metadata",
-        description: "Updates file metadata in the database",
-        params: z.object({
-          id: z.string().min(1, "The file id is required").describe("The file ID"),
-        }),
-        body: UpdateFileSchema,
-        response: {
-          200: z.object({
-            file: z.object({
-              id: z.string().describe("The file ID"),
-              name: z.string().describe("The file name"),
-              description: z.string().nullable().describe("The file description"),
-              extension: z.string().describe("The file extension"),
-              size: z.string().describe("The file size"),
-              objectName: z.string().describe("The object name of the file"),
-              userId: z.string().describe("The user ID"),
-              createdAt: z.date().describe("The file creation date"),
-              updatedAt: z.date().describe("The file last update date"),
-            }),
-            message: z.string().describe("Success message"),
-          }),
-          400: z.object({ error: z.string().describe("Error message") }),
-          401: z.object({ error: z.string().describe("Error message") }),
-          403: z.object({ error: z.string().describe("Error message") }),
-          404: z.object({ error: z.string().describe("Error message") }),
-        },
-      },
-    },
-    fileController.updateFile.bind(fileController)
   );
 }

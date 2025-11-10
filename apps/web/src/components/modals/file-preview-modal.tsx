@@ -3,10 +3,20 @@
 import { IconDownload } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
+import { EmbedCodeDisplay } from "@/components/files/embed-code-display";
+import { MediaEmbedLink } from "@/components/files/media-embed-link";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useFilePreview } from "@/hooks/use-file-preview";
 import { getFileIcon } from "@/utils/file-icons";
+import { getFileType } from "@/utils/file-types";
 import { FilePreviewRenderer } from "./previews";
 
 interface FilePreviewModalProps {
@@ -20,11 +30,22 @@ interface FilePreviewModalProps {
     description?: string;
   };
   isReverseShare?: boolean;
+  sharePassword?: string;
 }
 
-export function FilePreviewModal({ isOpen, onClose, file, isReverseShare = false }: FilePreviewModalProps) {
+export function FilePreviewModal({
+  isOpen,
+  onClose,
+  file,
+  isReverseShare = false,
+  sharePassword,
+}: FilePreviewModalProps) {
   const t = useTranslations();
-  const previewState = useFilePreview({ file, isOpen, isReverseShare });
+  const previewState = useFilePreview({ file, isOpen, isReverseShare, sharePassword });
+  const fileType = getFileType(file.name);
+  const isImage = fileType === "image";
+  const isVideo = fileType === "video";
+  const isAudio = fileType === "audio";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -37,6 +58,7 @@ export function FilePreviewModal({ isOpen, onClose, file, isReverseShare = false
             })()}
             <span className="truncate">{file.name}</span>
           </DialogTitle>
+          <DialogDescription className="sr-only">{t("filePreview.description")}</DialogDescription>
         </DialogHeader>
         <div className="flex-1 overflow-auto">
           <FilePreviewRenderer
@@ -52,6 +74,16 @@ export function FilePreviewModal({ isOpen, onClose, file, isReverseShare = false
             description={file.description}
             onDownload={previewState.handleDownload}
           />
+          {isImage && previewState.previewUrl && !previewState.isLoading && file.id && (
+            <div className="mt-4 mb-2">
+              <EmbedCodeDisplay imageUrl={previewState.previewUrl} fileName={file.name} fileId={file.id} />
+            </div>
+          )}
+          {(isVideo || isAudio) && !previewState.isLoading && file.id && (
+            <div className="mt-4 mb-2">
+              <MediaEmbedLink fileId={file.id} />
+            </div>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>

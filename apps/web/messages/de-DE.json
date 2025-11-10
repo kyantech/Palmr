@@ -144,7 +144,15 @@
     "update": "Aktualisieren",
     "click": "Klicken Sie auf",
     "creating": "Erstellen...",
-    "loadingSimple": "Lade..."
+    "loadingSimple": "Lade...",
+    "create": "Erstellen",
+    "deleting": "Lösche...",
+    "move": "Verschieben",
+    "rename": "Umbenennen",
+    "search": "Suchen",
+    "share": "Teilen",
+    "copied": "Kopiert",
+    "copy": "Kopieren"
   },
   "createShare": {
     "title": "Freigabe Erstellen",
@@ -160,7 +168,53 @@
     "create": "Freigabe Erstellen",
     "success": "Freigabe erfolgreich erstellt",
     "error": "Fehler beim Erstellen der Freigabe",
-    "namePlaceholder": "Geben Sie einen Namen für Ihre Freigabe ein"
+    "namePlaceholder": "Geben Sie einen Namen für Ihre Freigabe ein",
+    "nextSelectFiles": "Weiter: Dateien auswählen",
+    "searchLabel": "Suchen",
+    "tabs": {
+      "shareDetails": "Freigabe-Details",
+      "selectFiles": "Dateien auswählen"
+    }
+  },
+  "customization": {
+    "breadcrumb": "Anpassung",
+    "colors": {
+      "title": "Farbthema",
+      "description": "Wählen Sie Ihre bevorzugte Primärfarbe für das Theme",
+      "presets": "Verfügbare Farben",
+      "presetsDescription": "Wählen Sie aus verfügbaren Farbthemen",
+      "reset": "Auf Standard zurücksetzen"
+    },
+    "fonts": {
+      "title": "Typografie",
+      "description": "Wählen Sie Ihre bevorzugte Schriftart",
+      "available": "Verfügbare Schriftarten",
+      "availableDescription": "Wählen Sie aus verfügbaren Schriftfamilien",
+      "reset": "Auf Standard zurücksetzen"
+    },
+    "radius": {
+      "title": "Rahmenradius",
+      "description": "Passen Sie die Rundung der Oberflächenelemente an",
+      "available": "Rundungsoptionen",
+      "availableDescription": "Wählen Sie, wie abgerundet die Ecken erscheinen sollen",
+      "reset": "Auf Standard zurücksetzen"
+    },
+    "background": {
+      "title": "Hintergrundfarben",
+      "description": "Passen Sie Hintergrundfarben für Hell- und Dunkelmodus an",
+      "lightMode": "Hellmodus",
+      "darkMode": "Dunkelmodus",
+      "availableDescription": "Wählen Sie Hintergrundfarben für helle und dunkle Themes",
+      "reset": "Auf Standard zurücksetzen"
+    },
+    "theme": {
+      "title": "Themenmodus",
+      "description": "Wählen Sie zwischen hellem, dunklem oder Systemmodus",
+      "selectTheme": "Theme-Einstellung",
+      "availableDescription": "Wählen Sie Ihren bevorzugten Themenmodus",
+      "reset": "Auf System zurücksetzen"
+    },
+    "pageTitle": "Anpassung"
   },
   "dashboard": {
     "loadError": "Fehler beim Laden der Dashboard-Daten",
@@ -174,7 +228,42 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "Zu löschende Dateien",
-    "sharesToDelete": "Freigaben, die gelöscht werden"
+    "sharesToDelete": "Freigaben, die gelöscht werden",
+    "foldersToDelete": "Zu löschende Ordner",
+    "itemsToDelete": "Zu löschende Elemente"
+  },
+  "downloadQueue": {
+    "downloadQueued": "Download in Warteschlange: {fileName}",
+    "queuedDescription": "Ihr Download startet automatisch, sobald ein Platz frei wird",
+    "queuePosition": "Download an Position {position} in der Warteschlange: {fileName}",
+    "estimatedWait": "Geschätzte Wartezeit: {time}",
+    "queueFull": "Download-Warteschlange ist voll",
+    "queueFullDescription": "Bitte versuchen Sie es in einigen Minuten erneut, wenn die Warteschlange Platz hat",
+    "cancelSuccess": "Download erfolgreich abgebrochen",
+    "cancelError": "Download konnte nicht abgebrochen werden: {error}",
+    "status": {
+      "pending": "Wird vorbereitet...",
+      "queued": "In Warteschlange",
+      "downloading": "Wird heruntergeladen",
+      "completed": "Abgeschlossen",
+      "failed": "Fehlgeschlagen"
+    },
+    "waitTime": {
+      "seconds": "{seconds}s",
+      "minutes": "{minutes}m",
+      "hoursMinutes": "{hours}h {minutes}m"
+    },
+    "indicator": {
+      "title": "Downloads",
+      "downloads": "Download-Warteschlange",
+      "active": "Aktiv",
+      "queued": "In Warteschlange",
+      "position": "Position {position}",
+      "estimatedWait": "Wartezeit: {time}",
+      "unknownFile": "Unbekannte Datei",
+      "noDownloads": "Keine laufenden Downloads",
+      "refresh": "Warteschlange aktualisieren"
+    }
   },
   "emptyState": {
     "noFiles": "Noch keine Dateien hochgeladen",
@@ -201,6 +290,7 @@
     "extension": "Erweiterung",
     "descriptionLabel": "Beschreibung",
     "descriptionPlaceholder": "Dateibeschreibung eingeben",
+    "addDescriptionPlaceholder": "Beschreibung hinzufügen...",
     "deleteFile": "Datei löschen",
     "deleteConfirmation": "Sind Sie sicher, dass Sie  löschen möchten?",
     "deleteWarning": "Diese Aktion kann nicht rückgängig gemacht werden."
@@ -214,6 +304,7 @@
   },
   "filePreview": {
     "title": "Datei-Vorschau",
+    "description": "Vorschau und Download der Datei",
     "loading": "Laden...",
     "notAvailable": "Vorschau für diesen Dateityp nicht verfügbar.",
     "downloadToView": "Verwenden Sie die Download-Schaltfläche, um die Datei herunterzuladen.",
@@ -248,7 +339,8 @@
     "previewFile": "Datei-Vorschau",
     "addToShare": "Zur Freigabe hinzufügen",
     "removeFromShare": "Aus Freigabe entfernen",
-    "saveChanges": "Änderungen Speichern"
+    "saveChanges": "Änderungen Speichern",
+    "editFolder": "Ordner bearbeiten"
   },
   "files": {
     "title": "Alle Dateien",
@@ -267,11 +359,24 @@
     "bulkDownloadFileError": "Fehler beim Herunterladen der Datei {fileName}",
     "bulkDeleteSuccess": "{count, plural, =1 {1 Datei erfolgreich gelöscht} other {# Dateien erfolgreich gelöscht}}",
     "bulkDeleteError": "Fehler beim Löschen der ausgewählten Dateien",
+    "bulkDeleteTitle": "Ausgewählte Dateien Löschen",
+    "bulkDeleteConfirmation": "Sind Sie sicher, dass Sie {count, plural, =1 {1 Datei} other {# Dateien}} löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
     "viewMode": {
       "table": "Tabelle",
       "grid": "Raster"
     },
-    "totalFiles": "{count, plural, =0 {Keine Dateien} =1 {1 Datei} other {# Dateien}}"
+    "totalFiles": "{count, plural, =0 {Keine Dateien} =1 {1 Datei} other {# Dateien}}",
+    "actions": {
+      "open": "Öffnen",
+      "rename": "Umbenennen",
+      "delete": "Löschen"
+    },
+    "empty": {
+      "title": "Noch keine Dateien oder Ordner",
+      "description": "Laden Sie Ihre erste Datei hoch oder erstellen Sie einen Ordner, um zu beginnen"
+    },
+    "files": "Dateien",
+    "folders": "Ordner"
   },
   "filesTable": {
     "ariaLabel": "Dateien-Tabelle",
@@ -300,6 +405,33 @@
       "share": "Ausgewählte Teilen",
       "delete": "Ausgewählte Löschen"
     }
+  },
+  "folderActions": {
+    "editFolder": "Ordner bearbeiten",
+    "folderName": "Ordnername",
+    "folderNamePlaceholder": "Ordnername eingeben",
+    "folderDescription": "Beschreibung",
+    "folderDescriptionPlaceholder": "Ordnerbeschreibung eingeben (optional)",
+    "createFolder": "Neuen Ordner erstellen",
+    "renameFolder": "Ordner umbenennen",
+    "moveFolder": "Ordner verschieben",
+    "shareFolder": "Ordner teilen",
+    "deleteFolder": "Ordner löschen",
+    "moveTo": "Verschieben nach",
+    "selectDestination": "Zielordner auswählen",
+    "rootFolder": "Stammordner",
+    "folderCreated": "Ordner erfolgreich erstellt",
+    "folderRenamed": "Ordner erfolgreich umbenannt",
+    "folderMoved": "Ordner erfolgreich verschoben",
+    "folderDeleted": "Ordner erfolgreich gelöscht",
+    "folderShared": "Ordner erfolgreich geteilt",
+    "createFolderError": "Fehler beim Erstellen des Ordners",
+    "renameFolderError": "Fehler beim Umbenennen des Ordners",
+    "moveFolderError": "Fehler beim Verschieben des Ordners",
+    "deleteFolderError": "Fehler beim Löschen des Ordners",
+    "shareFolderError": "Fehler beim Teilen des Ordners",
+    "deleteConfirmation": "Sind Sie sicher, dass Sie diesen Ordner löschen möchten?",
+    "deleteWarning": "Diese Aktion kann nicht rückgängig gemacht werden."
   },
   "footer": {
     "poweredBy": "Angetrieben von",
@@ -402,16 +534,42 @@
       "removeFailed": "Fehler beim Entfernen des Logos"
     }
   },
+  "moveItems": {
+    "itemsToMove": "Zu verschiebende Elemente:",
+    "movingTo": "Verschieben nach:",
+    "title": "{count, plural, =1 {Element} other {Elemente}} verschieben",
+    "description": "{count, plural, =1 {Element} other {Elemente}} an einen neuen Ort verschieben",
+    "success": "Erfolgreich {count} {count, plural, =1 {Element} other {Elemente}} verschoben"
+  },
   "navbar": {
     "logoAlt": "Anwendungslogo",
     "profileMenu": "Profilmenü",
     "profile": "Profil",
     "settings": "Einstellungen",
     "usersManagement": "Benutzerverwaltung",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "customization": "Anpassung"
   },
   "navigation": {
     "dashboard": "Übersicht"
+  },
+  "notifications": {
+    "permissionGranted": "Download-Benachrichtigungen aktiviert",
+    "permissionDenied": "Download-Benachrichtigungen deaktiviert",
+    "downloadComplete": {
+      "title": "Download abgeschlossen",
+      "body": "{fileName} wurde erfolgreich heruntergeladen"
+    },
+    "downloadFailed": {
+      "title": "Download fehlgeschlagen",
+      "body": "Fehler beim Herunterladen von {fileName}: {error}",
+      "unknownError": "Unbekannter Fehler"
+    },
+    "queueProcessing": {
+      "title": "Download startet",
+      "body": "{fileName} wird jetzt heruntergeladen{position}",
+      "position": " (war #{position} in der Warteschlange)"
+    }
   },
   "profile": {
     "password": {
@@ -750,6 +908,7 @@
         "noFiles": "Noch keine Dateien empfangen",
         "noFilesDescription": "Über diesen Link gesendete Dateien erscheinen hier",
         "fileCount": "{count, plural, =0 {Keine Dateien} =1 {1 Datei} other {# Dateien}}",
+        "invalidDate": "Ungültiges Datum",
         "totalSize": "Gesamtgröße: {size}",
         "columns": {
           "file": "Datei",
@@ -900,7 +1059,8 @@
     "upload": {
       "metadata": {
         "title": "Dateien senden - Palmr",
-        "description": "Senden Sie Dateien über den geteilten Link"
+        "description": "Senden Sie Dateien über den geteilten Link",
+        "descriptionWithLimit": "Dateien hochladen (max. {limit} Dateien)"
       },
       "layout": {
         "defaultTitle": "Dateien senden",
@@ -1010,7 +1170,10 @@
   },
   "searchBar": {
     "placeholder": "Dateien suchen...",
-    "results": "Gefunden {filtered} von {total} Dateien"
+    "results": "Gefunden {filtered} von {total} Dateien",
+    "placeholderFolders": "Ordner durchsuchen...",
+    "noResults": "Keine Ergebnisse für \"{query}\" gefunden",
+    "placeholderFiles": "Dateien suchen..."
   },
   "settings": {
     "groups": {
@@ -1139,6 +1302,10 @@
       "passwordAuthEnabled": {
         "title": "Passwort-Authentifizierung",
         "description": "Passwort-basierte Authentifizierung aktivieren oder deaktivieren"
+      },
+      "hideVersion": {
+        "title": "Version Ausblenden",
+        "description": "Die Palmr-Version in der Fußzeile aller Seiten ausblenden"
       }
     },
     "buttons": {
@@ -1200,11 +1367,16 @@
       "description": "Diese Freigabe wurde möglicherweise gelöscht oder ist abgelaufen."
     },
     "pageTitle": "Freigabe",
-    "downloadAll": "Alle herunterladen"
+    "downloadAll": "Alle herunterladen",
+    "metadata": {
+      "defaultDescription": "Dateien sicher teilen",
+      "filesShared": "{count, plural, =1 {1 Datei geteilt} other {# Dateien geteilt}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "Freigabe Löschen",
     "deleteConfirmation": "Sind Sie sicher, dass Sie diese Freigabe löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "addDescriptionPlaceholder": "Beschreibung hinzufügen...",
     "editTitle": "Freigabe Bearbeiten",
     "nameLabel": "Freigabe-Name",
     "descriptionLabel": "Beschreibung",
@@ -1223,7 +1395,17 @@
     "editSuccess": "Freigabe erfolgreich aktualisiert",
     "editError": "Fehler beim Aktualisieren der Freigabe",
     "bulkDeleteConfirmation": "Sind Sie sicher, dass Sie {count, plural, =1 {1 Freigabe} other {# Freigaben}} löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "bulkDeleteTitle": "Ausgewählte Freigaben löschen"
+    "bulkDeleteTitle": "Ausgewählte Freigaben löschen",
+    "aliasLabel": "Link-Alias",
+    "aliasPlaceholder": "Benutzerdefinierten Alias eingeben",
+    "copyLink": "Link kopieren",
+    "fileTitle": "Datei teilen",
+    "folderTitle": "Ordner teilen",
+    "generateLink": "Link generieren",
+    "linkDescriptionFile": "Erstellen Sie einen benutzerdefinierten Link zum Teilen der Datei",
+    "linkDescriptionFolder": "Erstellen Sie einen benutzerdefinierten Link zum Teilen des Ordners",
+    "linkReady": "Ihr Freigabe-Link ist bereit:",
+    "linkTitle": "Link generieren"
   },
   "shareDetails": {
     "title": "Freigabe-Details",
@@ -1350,7 +1532,8 @@
     "files": "Dateien",
     "totalSize": "Gesamtgröße",
     "creating": "Erstellen...",
-    "create": "Freigabe Erstellen"
+    "create": "Freigabe Erstellen",
+    "itemsToShare": "Zu teilende Elemente ({count} {count, plural, =1 {Element} other {Elemente}})"
   },
   "shareSecurity": {
     "subtitle": "Passwortschutz und Sicherheitsoptionen für diese Freigabe konfigurieren",
@@ -1455,7 +1638,8 @@
       "download": "Download ausgewählt"
     },
     "selectAll": "Alle auswählen",
-    "selectShare": "Freigabe {shareName} auswählen"
+    "selectShare": "Freigabe {shareName} auswählen",
+    "folderCount": "Ordner"
   },
   "storageUsage": {
     "title": "Speichernutzung",
@@ -1749,5 +1933,17 @@
     "passwordRequired": "Passwort ist erforderlich",
     "nameRequired": "Name ist erforderlich",
     "required": "Dieses Feld ist erforderlich"
+  },
+  "embedCode": {
+    "title": "Bild einbetten",
+    "description": "Verwenden Sie diese Codes, um dieses Bild in Foren, Websites oder anderen Plattformen einzubetten",
+    "tabs": {
+      "directLink": "Direkter Link",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "Direkte URL zur Bilddatei",
+    "htmlDescription": "Verwenden Sie diesen Code, um das Bild in HTML-Seiten einzubetten",
+    "bbcodeDescription": "Verwenden Sie diesen Code, um das Bild in Foren einzubetten, die BBCode unterstützen"
   }
 }

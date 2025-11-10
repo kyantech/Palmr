@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 
 import {
   CreateShareSchema,
-  UpdateShareFilesSchema,
+  UpdateShareItemsSchema,
   UpdateSharePasswordSchema,
   UpdateShareRecipientsSchema,
   UpdateShareSchema,
@@ -116,7 +116,7 @@ export class ShareController {
     }
   }
 
-  async addFiles(request: FastifyRequest, reply: FastifyReply) {
+  async addItems(request: FastifyRequest, reply: FastifyReply) {
     try {
       await request.jwtVerify();
       const userId = (request as any).user?.userId;
@@ -125,9 +125,9 @@ export class ShareController {
       }
 
       const { shareId } = request.params as { shareId: string };
-      const { files } = UpdateShareFilesSchema.parse(request.body);
+      const { files, folders } = UpdateShareItemsSchema.parse(request.body);
 
-      const share = await this.shareService.addFilesToShare(shareId, userId, files);
+      const share = await this.shareService.addItemsToShare(shareId, userId, files || [], folders || []);
       return reply.send({ share });
     } catch (error: any) {
       if (error.message === "Share not found") {
@@ -136,14 +136,14 @@ export class ShareController {
       if (error.message === "Unauthorized to update this share") {
         return reply.status(401).send({ error: error.message });
       }
-      if (error.message.startsWith("Files not found:")) {
+      if (error.message.startsWith("Files not found:") || error.message.startsWith("Folders not found:")) {
         return reply.status(404).send({ error: error.message });
       }
       return reply.status(400).send({ error: error.message });
     }
   }
 
-  async removeFiles(request: FastifyRequest, reply: FastifyReply) {
+  async removeItems(request: FastifyRequest, reply: FastifyReply) {
     try {
       await request.jwtVerify();
       const userId = (request as any).user?.userId;
@@ -152,9 +152,9 @@ export class ShareController {
       }
 
       const { shareId } = request.params as { shareId: string };
-      const { files } = UpdateShareFilesSchema.parse(request.body);
+      const { files, folders } = UpdateShareItemsSchema.parse(request.body);
 
-      const share = await this.shareService.removeFilesFromShare(shareId, userId, files);
+      const share = await this.shareService.removeItemsFromShare(shareId, userId, files || [], folders || []);
       return reply.send({ share });
     } catch (error: any) {
       if (error.message === "Share not found") {
@@ -291,6 +291,19 @@ export class ShareController {
       }
       if (error.message === "SMTP is not enabled") {
         return reply.status(400).send({ error: error.message });
+      }
+      return reply.status(400).send({ error: error.message });
+    }
+  }
+
+  async getShareMetadataByAlias(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { alias } = request.params as { alias: string };
+      const metadata = await this.shareService.getShareMetadataByAlias(alias);
+      return reply.send(metadata);
+    } catch (error: any) {
+      if (error.message === "Share not found") {
+        return reply.status(404).send({ error: error.message });
       }
       return reply.status(400).send({ error: error.message });
     }

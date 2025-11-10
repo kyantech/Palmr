@@ -144,7 +144,15 @@
     "update": "更新",
     "click": "点击",
     "creating": "创建中...",
-    "loadingSimple": "加载中..."
+    "loadingSimple": "加载中...",
+    "create": "创建",
+    "deleting": "删除中...",
+    "move": "移动",
+    "rename": "重命名",
+    "search": "搜索",
+    "share": "分享",
+    "copied": "已复制",
+    "copy": "复制"
   },
   "createShare": {
     "title": "创建分享",
@@ -160,7 +168,53 @@
     "create": "创建分享",
     "success": "分享创建成功",
     "error": "创建分享失败",
-    "namePlaceholder": "输入分享名称"
+    "namePlaceholder": "输入分享名称",
+    "nextSelectFiles": "下一步：选择文件",
+    "searchLabel": "搜索",
+    "tabs": {
+      "shareDetails": "分享详情",
+      "selectFiles": "选择文件"
+    }
+  },
+  "customization": {
+    "breadcrumb": "自定义",
+    "colors": {
+      "title": "主题颜色",
+      "description": "选择您喜欢的主题颜色",
+      "presets": "可用颜色",
+      "presetsDescription": "从可用的颜色主题中选择",
+      "reset": "恢复默认值"
+    },
+    "fonts": {
+      "title": "字体",
+      "description": "选择您喜欢的字体系列",
+      "available": "可用字体",
+      "availableDescription": "从可用的字体系列中选择",
+      "reset": "恢复默认值"
+    },
+    "radius": {
+      "title": "边框圆角",
+      "description": "自定义界面元素的圆角程度",
+      "available": "圆角选项",
+      "availableDescription": "选择圆角的显示方式",
+      "reset": "恢复默认值"
+    },
+    "background": {
+      "title": "背景颜色",
+      "description": "自定义明暗模式的背景颜色",
+      "lightMode": "明亮模式",
+      "darkMode": "暗黑模式",
+      "availableDescription": "为明暗主题选择背景颜色",
+      "reset": "恢复默认值"
+    },
+    "theme": {
+      "title": "主题模式",
+      "description": "在明亮、暗黑或系统主题之间选择",
+      "selectTheme": "主题偏好",
+      "availableDescription": "选择您喜欢的主题模式",
+      "reset": "恢复系统设置"
+    },
+    "pageTitle": "自定义"
   },
   "dashboard": {
     "loadError": "加载仪表盘数据失败",
@@ -174,7 +228,42 @@
   },
   "deleteConfirmation": {
     "filesToDelete": "要删除的文件",
-    "sharesToDelete": "将被删除的共享"
+    "sharesToDelete": "将被删除的共享",
+    "foldersToDelete": "要删除的文件夹",
+    "itemsToDelete": "要删除的项目"
+  },
+  "downloadQueue": {
+    "downloadQueued": "已加入下载队列：{fileName}",
+    "queuedDescription": "当有空闲位置时，您的下载将自动开始",
+    "queuePosition": "在队列位置 {position} 等待下载：{fileName}",
+    "estimatedWait": "预计等待时间：{time}",
+    "queueFull": "下载队列已满",
+    "queueFullDescription": "请等待几分钟后当队列有空位时再试",
+    "cancelSuccess": "下载已成功取消",
+    "cancelError": "取消下载失败：{error}",
+    "status": {
+      "pending": "准备中...",
+      "queued": "排队中",
+      "downloading": "下载中",
+      "completed": "已完成",
+      "failed": "失败"
+    },
+    "waitTime": {
+      "seconds": "{seconds}秒",
+      "minutes": "{minutes}分",
+      "hoursMinutes": "{hours}小时 {minutes}分"
+    },
+    "indicator": {
+      "title": "下载",
+      "downloads": "下载队列",
+      "active": "进行中",
+      "queued": "排队中",
+      "position": "位置 {position}",
+      "estimatedWait": "等待：{time}",
+      "unknownFile": "未知文件",
+      "noDownloads": "当前没有下载任务",
+      "refresh": "刷新队列"
+    }
   },
   "emptyState": {
     "noFiles": "尚未上传任何文件",
@@ -203,7 +292,8 @@
     "descriptionPlaceholder": "请输入文件描述",
     "deleteFile": "删除文件",
     "deleteConfirmation": "您确定要删除{fileName}吗？",
-    "deleteWarning": "此操作不可撤销。"
+    "deleteWarning": "此操作不可撤销。",
+    "addDescriptionPlaceholder": "添加描述..."
   },
   "fileManager": {
     "downloadError": "文件下载失败",
@@ -214,6 +304,7 @@
   },
   "filePreview": {
     "title": "文件预览",
+    "description": "预览和下载文件",
     "loading": "加载中...",
     "notAvailable": "此文件类型不支持预览。",
     "downloadToView": "使用下载按钮下载文件。",
@@ -248,7 +339,8 @@
     "previewFile": "预览文件",
     "addToShare": "添加到共享",
     "removeFromShare": "从共享中移除",
-    "saveChanges": "保存更改"
+    "saveChanges": "保存更改",
+    "editFolder": "编辑文件夹"
   },
   "files": {
     "title": "所有文件",
@@ -271,7 +363,20 @@
       "table": "表格",
       "grid": "网格"
     },
-    "totalFiles": "{count, plural, =0 {无文件} =1 {1个文件} other {#个文件}}"
+    "totalFiles": "{count, plural, =0 {无文件} =1 {1个文件} other {#个文件}}",
+    "bulkDeleteConfirmation": "您确定要删除 {count, plural, =1 {1 个文件} other {# 个文件}}吗？此操作无法撤销。",
+    "bulkDeleteTitle": "删除所选文件",
+    "actions": {
+      "open": "打开",
+      "rename": "重命名",
+      "delete": "删除"
+    },
+    "empty": {
+      "title": "还没有文件或文件夹",
+      "description": "上传您的第一个文件或创建文件夹以开始使用"
+    },
+    "files": "文件",
+    "folders": "文件夹"
   },
   "filesTable": {
     "ariaLabel": "文件表格",
@@ -300,6 +405,33 @@
       "share": "分享选中项",
       "delete": "删除选中项"
     }
+  },
+  "folderActions": {
+    "editFolder": "编辑文件夹",
+    "folderName": "文件夹名称",
+    "folderNamePlaceholder": "输入文件夹名称",
+    "folderDescription": "描述",
+    "folderDescriptionPlaceholder": "输入文件夹描述（可选）",
+    "createFolder": "创建新文件夹",
+    "renameFolder": "重命名文件夹",
+    "moveFolder": "移动文件夹",
+    "shareFolder": "分享文件夹",
+    "deleteFolder": "删除文件夹",
+    "moveTo": "移动到",
+    "selectDestination": "选择目标文件夹",
+    "rootFolder": "根目录",
+    "folderCreated": "文件夹创建成功",
+    "folderRenamed": "文件夹重命名成功",
+    "folderMoved": "文件夹移动成功",
+    "folderDeleted": "文件夹删除成功",
+    "folderShared": "文件夹分享成功",
+    "createFolderError": "创建文件夹时出错",
+    "renameFolderError": "重命名文件夹时出错",
+    "moveFolderError": "移动文件夹时出错",
+    "deleteFolderError": "删除文件夹时出错",
+    "shareFolderError": "分享文件夹时出错",
+    "deleteConfirmation": "您确定要删除此文件夹吗？",
+    "deleteWarning": "此操作无法撤销。"
   },
   "footer": {
     "poweredBy": "技术支持：",
@@ -402,16 +534,42 @@
       "removeFailed": "Logo删除失败"
     }
   },
+  "moveItems": {
+    "itemsToMove": "要移动的项目：",
+    "movingTo": "移动到：",
+    "title": "移动 {count, plural, =1 {项目} other {项目}}",
+    "description": "将 {count, plural, =1 {项目} other {项目}} 移动到新位置",
+    "success": "成功移动了 {count} 个项目"
+  },
   "navbar": {
     "logoAlt": "应用Logo",
     "profileMenu": "个人菜单",
     "profile": "个人资料",
     "settings": "设置",
     "usersManagement": "用户管理",
-    "logout": "退出登录"
+    "logout": "退出登录",
+    "customization": "自定义"
   },
   "navigation": {
     "dashboard": "仪表盘"
+  },
+  "notifications": {
+    "permissionGranted": "下载通知已启用",
+    "permissionDenied": "下载通知已禁用",
+    "downloadComplete": {
+      "title": "下载完成",
+      "body": "{fileName} 已下载完成"
+    },
+    "downloadFailed": {
+      "title": "下载失败",
+      "body": "下载 {fileName} 失败：{error}",
+      "unknownError": "未知错误"
+    },
+    "queueProcessing": {
+      "title": "开始下载",
+      "body": "{fileName} 正在下载{position}",
+      "position": "（队列中第 {position} 位）"
+    }
   },
   "profile": {
     "password": {
@@ -795,7 +953,8 @@
           "timeout": "复制操作超时。请尝试使用较小的文件或检查您的连接。",
           "failed": "复制操作失败。请重试。",
           "aborted": "由于超时，复制操作已取消。"
-        }
+        },
+        "invalidDate": "无效日期"
       }
     },
     "form": {
@@ -900,7 +1059,8 @@
     "upload": {
       "metadata": {
         "title": "上传文件 - Palmr",
-        "description": "通过共享链接上传文件"
+        "description": "通过共享链接上传文件",
+        "descriptionWithLimit": "上传文件（最多 {limit} 个文件）"
       },
       "layout": {
         "defaultTitle": "上传文件",
@@ -1010,7 +1170,10 @@
   },
   "searchBar": {
     "placeholder": "搜索文件...",
-    "results": "共{total}个文件，找到{filtered}个"
+    "results": "共{total}个文件，找到{filtered}个",
+    "placeholderFolders": "搜索文件夹...",
+    "noResults": "未找到 \"{query}\" 的搜索结果",
+    "placeholderFiles": "搜索文件..."
   },
   "settings": {
     "groups": {
@@ -1139,6 +1302,10 @@
       "passwordAuthEnabled": {
         "title": "密码认证",
         "description": "启用或禁用基于密码的认证"
+      },
+      "hideVersion": {
+        "title": "隐藏版本",
+        "description": "在所有页面的页脚中隐藏Palmr版本"
       }
     },
     "buttons": {
@@ -1200,7 +1367,11 @@
       "description": "该共享可能已被删除或已过期。"
     },
     "pageTitle": "共享",
-    "downloadAll": "下载所有"
+    "downloadAll": "下载所有",
+    "metadata": {
+      "defaultDescription": "安全共享文件",
+      "filesShared": "{count, plural, =1 {已共享 1 个文件} other {已共享 # 个文件}}"
+    }
   },
   "shareActions": {
     "deleteTitle": "删除共享",
@@ -1223,7 +1394,18 @@
     "descriptionPlaceholder": "输入描述（可选）",
     "descriptionLabel": "描述",
     "bulkDeleteConfirmation": "您确定要删除{count, plural, =1 {1个共享} other {#个共享}}吗？此操作无法撤销。",
-    "bulkDeleteTitle": "删除选中的共享"
+    "bulkDeleteTitle": "删除选中的共享",
+    "addDescriptionPlaceholder": "添加描述...",
+    "aliasLabel": "链接别名",
+    "aliasPlaceholder": "输入自定义别名",
+    "copyLink": "复制链接",
+    "fileTitle": "分享文件",
+    "folderTitle": "分享文件夹",
+    "generateLink": "生成链接",
+    "linkDescriptionFile": "生成自定义链接以分享文件",
+    "linkDescriptionFolder": "生成自定义链接以分享文件夹",
+    "linkReady": "您的分享链接已准备好：",
+    "linkTitle": "生成链接"
   },
   "shareDetails": {
     "title": "共享详情",
@@ -1350,7 +1532,8 @@
     "files": "文件",
     "totalSize": "总大小",
     "creating": "创建中...",
-    "create": "创建分享"
+    "create": "创建分享",
+    "itemsToShare": "要分享的项目（{count} 个项目）"
   },
   "shareSecurity": {
     "subtitle": "为此分享配置密码保护和安全选项",
@@ -1455,7 +1638,8 @@
       "download": "选择下载"
     },
     "selectAll": "全选",
-    "selectShare": "选择共享 {shareName}"
+    "selectShare": "选择共享 {shareName}",
+    "folderCount": "文件夹"
   },
   "storageUsage": {
     "title": "存储使用情况",
@@ -1512,7 +1696,11 @@
       "copyToClipboard": "复制到剪贴板",
       "savedMessage": "我已保存备用码",
       "available": "可用备用码：{count}个",
-      "instructions": ["• 将这些代码保存在安全的位置", "• 每个备用码只能使用一次", "• 您可以随时生成新的备用码"]
+      "instructions": [
+        "• 将这些代码保存在安全的位置",
+        "• 每个备用码只能使用一次",
+        "• 您可以随时生成新的备用码"
+      ]
     },
     "verification": {
       "title": "双重认证",
@@ -1745,5 +1933,17 @@
     "passwordRequired": "密码为必填项",
     "nameRequired": "名称为必填项",
     "required": "此字段为必填项"
+  },
+  "embedCode": {
+    "title": "嵌入图片",
+    "description": "使用这些代码将此图片嵌入到论坛、网站或其他平台中",
+    "tabs": {
+      "directLink": "直接链接",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "图片文件的直接URL",
+    "htmlDescription": "使用此代码将图片嵌入HTML页面",
+    "bbcodeDescription": "使用此代码将图片嵌入支持BBCode的论坛"
   }
 }

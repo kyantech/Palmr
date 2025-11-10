@@ -1,10 +1,10 @@
-import { FileManagerHook } from "@/hooks/use-file-manager";
+import { EnhancedFileManagerHook } from "@/hooks/use-enhanced-file-manager";
 import { ShareManagerHook } from "@/hooks/use-share-manager";
 import { Share } from "@/http/endpoints/shares/types";
 
 export interface RecentFilesProps {
   files: any[];
-  fileManager: FileManagerHook;
+  fileManager: EnhancedFileManagerHook;
   isUploadModalOpen: boolean;
   onOpenUploadModal: () => void;
 }
@@ -35,7 +35,7 @@ export interface DashboardModalsProps {
     onCloseUploadModal: () => void;
     onCloseCreateModal: () => void;
   };
-  fileManager: FileManagerHook;
+  fileManager: EnhancedFileManagerHook;
   shareManager: ShareManagerHook;
   onSuccess: () => Promise<void>;
   smtpEnabled?: string;
