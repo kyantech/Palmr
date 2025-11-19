@@ -192,9 +192,13 @@ export class FilesystemStorageProvider implements StorageProvider {
     return `/api/filesystem/upload/${token}`;
   }
 
-  async getPresignedGetUrl(objectName: string): Promise<string> {
-    const encodedObjectName = encodeURIComponent(objectName);
-    return `/api/files/download?objectName=${encodedObjectName}`;
+  async getPresignedGetUrl(objectName: string, expires: number, fileName?: string): Promise<string> {
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiresAt = Date.now() + expires * 1000;
+
+    this.downloadTokens.set(token, { objectName, expiresAt, fileName });
+
+    return `/api/filesystem/download/${token}`;
   }
 
   async deleteObject(objectName: string): Promise<void> {
