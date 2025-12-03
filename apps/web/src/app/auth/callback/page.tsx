@@ -78,7 +78,7 @@ export default function AuthCallbackPage() {
     }
 
     router.push("/login");
-  }, [router, searchParams, setUser, setIsAuthenticated, setIsAdmin]);
+  }, [router, searchParams, setUser, setIsAuthenticated, setIsAdmin, t]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">
