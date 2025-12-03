@@ -395,7 +395,9 @@ export function FileSelector({
         </div>
 
         <div className="flex items-center justify-between pt-4 border-t">
-          <div className="text-sm text-muted-foreground">{shareFiles.length + shareFolders.length} items selected</div>
+          <div className="text-sm text-muted-foreground">
+            {t("fileSelector.itemsSelected", { count: shareFiles.length + shareFolders.length })}
+          </div>
           <Button onClick={handleSave} disabled={isLoading} className="gap-2">
             {isLoading ? (
               <>

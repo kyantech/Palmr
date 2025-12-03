@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { IconLayoutDashboard, IconUserPlus, IconUsers } from "@tabler/icons-react";
+import { IconLayoutDashboard, IconLink, IconUserPlus, IconUsers } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 import {
@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { UsersHeaderProps } from "../types";
 
-export function UsersHeader({ onCreateUser }: UsersHeaderProps) {
+export function UsersHeader({ onCreateUser, onGenerateInvite }: UsersHeaderProps) {
   const t = useTranslations();
 
   return (
@@ -23,10 +23,16 @@ export function UsersHeader({ onCreateUser }: UsersHeaderProps) {
           <IconUsers className="text-2xl" />
           <h1 className="text-2xl font-bold">{t("users.header.title")}</h1>
         </div>
-        <Button className="font-semibold" onClick={onCreateUser}>
-          <IconUserPlus size={18} />
-          {t("users.header.addUser")}
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" className="font-semibold" onClick={onGenerateInvite}>
+            <IconLink size={18} />
+            {t("users.invite.button")}
+          </Button>
+          <Button className="font-semibold" onClick={onCreateUser}>
+            <IconUserPlus size={18} />
+            {t("users.header.addUser")}
+          </Button>
+        </div>
       </div>
       <Separator />
       <Breadcrumb>

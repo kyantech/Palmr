@@ -1,0 +1,78 @@
+---
+title: Available Languages
+icon: Globe
+---
+
+The project leverages next-intl, a powerful and flexible internationalization (i18n) library, to provide comprehensive language support across the entire application. This robust solution enables seamless translation management, date/time formatting, number formatting, and pluralization rules across different locales.
+
+The integration of next-intl ensures consistent internationalization throughout the application's components, pages, and features, while maintaining optimal performance through efficient bundle splitting and lazy loading of language resources. With its TypeScript support and React Server Components compatibility, next-intl serves as the foundation for delivering a truly global and accessible user experience.
+
+## Supported languages
+
+Palmr currently supports 23 languages with complete translations across all application features and interfaces.
+
+---
+
+| Language             | Code  | Description                                              | Translation |
+| -------------------- | ----- | -------------------------------------------------------- | ----------- |
+| English              | en-US | Primary development language and default fallback option | 100%        |
+| Portuguese           | pt-BR | Standard Brazilian Portuguese support                    | 100%        |
+| French               | fr-FR | Standard French language support                         | 100%        |
+| Spanish              | es-ES | Standard Spanish language support                        | 100%        |
+| German               | de-DE | Standard German language support                         | 100%        |
+| Russian              | ru-RU | Standard Russian language support                        | 100%        |
+| Hindi                | hi-IN | Standard Hindi language support                          | 100%        |
+| Arabic               | ar-SA | Standard Arabic language support with RTL                | 100%        |
+| Japanese             | ja-JP | Standard Japanese language support                       | 100%        |
+| Korean               | ko-KR | Standard Korean language support                         | 100%        |
+| Turkish              | tr-TR | Standard Turkish language support                        | 100%        |
+| Chinese (Simplified) | zh-CN | Standard Simplified Chinese support                      | 100%        |
+| Italian              | it-IT | Standard Italian language support                        | 100%        |
+| Dutch                | nl-NL | Standard Dutch language support                          | 100%        |
+| Polish               | pl-PL | Standard Polish language support                         | 100%        |
+| Greek                | el-GR | Standard Greek language support                          | 100%        |
+| Persian              | fa-IR | Standard Persian (Farsi) language support with RTL      | 100%        |
+| Hebrew               | he-IL | Standard Hebrew language support with RTL                | 100%        |
+| Indonesian           | id-ID | Standard Indonesian language support                     | 100%        |
+| Swedish              | sv-SE | Standard Swedish language support                        | 100%        |
+| Thai                 | th-TH | Standard Thai language support                           | 100%        |
+| Ukrainian            | uk-UA | Standard Ukrainian language support                      | 100%        |
+| Vietnamese           | vi-VN | Standard Vietnamese language support                     | 100%        |
+
+## Language selection
+
+The application provides two convenient methods for language selection, ensuring a seamless user experience across different user preferences and scenarios.
+
+### Automatic detection
+
+The application features sophisticated automatic detection of the user's preferred browser language settings. It intelligently utilizes the browser's preconfigured language preferences to set the initial application language, providing an immediate localized experience without requiring user intervention.
+
+### Manual selection
+
+![Language Selector](/assets/v3/languages/languages.png)
+
+Users have complete control to manually select their preferred language through an intuitive language selector interface in the UI. The language selector is easily accessible and provides immediate language switching capabilities.
+
+Selected language preferences are persistently stored in the browser's localStorage, ensuring a consistent experience across sessions and eliminating the need to reselect languages on subsequent visits.
+
+## Default language
+
+English (en-US) serves as the system's fallback language, ensuring consistent functionality even when language detection or selection encounters issues. This means that if a user's preferred language is not available or if there are any problems with language selection, the application will automatically default to English.
+
+This fallback mechanism is crucial for maintaining a seamless user experience and preventing any potential language-related disruptions. Additionally, all new features and updates are first implemented in English before being translated into other supported languages, ensuring that the English version always remains the most up-to-date and comprehensive.
+
+## Language detection
+
+The application employs advanced detection mechanisms to automatically identify and apply the user's browser language settings as the initial language configuration. This process analyzes the browser's language preferences and matches them against available translations.
+
+For maximum flexibility, users can easily override this automatic selection at any time using the convenient language switcher, accessible via the globe icon prominently displayed in the navigation bar.
+
+## RTL support
+
+The application incorporates comprehensive right-to-left (RTL) text handling capabilities for languages that require this reading direction. Currently supported RTL languages include:
+
+- **Arabic (ar-SA)** - Standard Arabic with full RTL support
+- **Persian (fa-IR)** - Farsi language with RTL text direction
+- **Hebrew (he-IL)** - Hebrew language with RTL support
+
+This includes proper text alignment, layout direction, and user interface elements that adapt to RTL reading patterns. RTL support ensures that speakers of these languages receive a native and intuitive experience, with all interface elements properly oriented and text flowing in the correct direction for optimal readability and usability.

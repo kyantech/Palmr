@@ -3,7 +3,6 @@ import Link from "next/link";
 import { IconLayoutDashboard } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
-import { DownloadQueueIndicator } from "@/components/download-queue-indicator";
 import { Navbar } from "@/components/layout/navbar";
 import {
   Breadcrumb,
@@ -21,14 +20,6 @@ interface FileManagerLayoutProps {
   icon: ReactNode;
   breadcrumbLabel?: string;
   showBreadcrumb?: boolean;
-  pendingDownloads?: Array<{
-    downloadId: string;
-    fileName: string;
-    objectName: string;
-    startTime: number;
-    status: "pending" | "queued" | "downloading" | "completed" | "failed";
-  }>;
-  onCancelDownload?: (downloadId: string) => void;
 }
 
 export function FileManagerLayout({
@@ -37,8 +28,6 @@ export function FileManagerLayout({
   icon,
   breadcrumbLabel,
   showBreadcrumb = true,
-  pendingDownloads = [],
-  onCancelDownload,
 }: FileManagerLayoutProps) {
   const t = useTranslations();
 
@@ -79,8 +68,6 @@ export function FileManagerLayout({
         </div>
       </div>
       <DefaultFooter />
-
-      <DownloadQueueIndicator pendingDownloads={pendingDownloads} onCancelDownload={onCancelDownload} />
     </div>
   );
 }

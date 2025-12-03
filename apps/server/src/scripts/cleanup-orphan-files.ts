@@ -1,5 +1,3 @@
-import { isS3Enabled } from "../config/storage.config";
-import { FilesystemStorageProvider } from "../providers/filesystem-storage.provider";
 import { S3StorageProvider } from "../providers/s3-storage.provider";
 import { prisma } from "../shared/prisma";
 import { StorageProvider } from "../types/storage";
@@ -10,14 +8,10 @@ import { StorageProvider } from "../types/storage";
  */
 async function cleanupOrphanFiles() {
   console.log("Starting orphan file cleanup...");
-  console.log(`Storage mode: ${isS3Enabled ? "S3" : "Filesystem"}`);
+  console.log(`Storage mode: S3 (Garage or External)`);
 
-  let storageProvider: StorageProvider;
-  if (isS3Enabled) {
-    storageProvider = new S3StorageProvider();
-  } else {
-    storageProvider = FilesystemStorageProvider.getInstance();
-  }
+  // Always use S3 storage provider
+  const storageProvider: StorageProvider = new S3StorageProvider();
 
   // Get all files from database
   const allFiles = await prisma.file.findMany({

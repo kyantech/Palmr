@@ -36,8 +36,6 @@ export function FontPickerForm() {
     document.documentElement.style.setProperty("--font-serif", fontValue);
 
     document.body.style.fontFamily = fontValue;
-
-    console.log("Applied font:", fontValue);
   }, []);
 
   useEffect(() => {

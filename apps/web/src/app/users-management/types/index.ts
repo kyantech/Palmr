@@ -55,6 +55,7 @@ export interface UserStatusModalProps {
 
 export interface UsersHeaderProps {
   onCreateUser: () => void;
+  onGenerateInvite: () => void;
 }
 
 export interface AuthUser {

@@ -1,3 +1,5 @@
 {
-  "pages": ["3.2-beta", "2.0.0-beta"]
+  "pages": [
+    "v3-beta"
+  ]
 }

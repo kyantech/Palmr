@@ -316,3 +316,15 @@ model Folder {
   @@index([parentId])
   @@map("folders")
 }
+
+model InviteToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdBy String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("invite_tokens")
+}

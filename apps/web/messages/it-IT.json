@@ -6,7 +6,9 @@
       "token_expired": "Token scaduto. Riprova.",
       "config_error": "Errore di configurazione. Contatta il supporto.",
       "auth_failed": "Autenticazione fallita. Riprova."
-    }
+    },
+    "authenticationFailed": "Autenticazione fallita",
+    "successfullyAuthenticated": "Autenticazione completata con successo!"
   },
   "authProviders": {
     "title": "Provider di Autenticazione",
@@ -174,7 +176,14 @@
     "tabs": {
       "shareDetails": "Dettagli condivisione",
       "selectFiles": "Seleziona file"
-    }
+    },
+    "errors": {
+      "nameRequired": "Il nome della condivisione è obbligatorio",
+      "selectItems": "Seleziona almeno un file o una cartella"
+    },
+    "itemsSelected": "{count, plural, =0 {Nessun elemento selezionato} =1 {1 elemento selezionato} other {# elementi selezionati}}",
+    "passwordPlaceholder": "Inserisci password",
+    "selectItemsPrompt": "Seleziona file e cartelle da condividere"
   },
   "customization": {
     "breadcrumb": "Personalizzazione",
@@ -340,7 +349,8 @@
     "addToShare": "Aggiungi alla condivisione",
     "removeFromShare": "Rimuovi dalla condivisione",
     "saveChanges": "Salva Modifiche",
-    "editFolder": "Modifica cartella"
+    "editFolder": "Modifica cartella",
+    "itemsSelected": "{count, plural, =0 {Nessun elemento selezionato} =1 {1 elemento selezionato} other {# elementi selezionati}}"
   },
   "files": {
     "title": "Tutti i File",
@@ -376,7 +386,12 @@
       "description": "Carica il tuo primo file o crea una cartella per iniziare"
     },
     "files": "file",
-    "folders": "cartelle"
+    "folders": "cartelle",
+    "errors": {
+      "moveItemsFailed": "Impossibile spostare gli elementi. Riprova.",
+      "cannotMoveHere": "Impossibile spostare gli elementi in questa posizione"
+    },
+    "openFolder": "Apri cartella"
   },
   "filesTable": {
     "ariaLabel": "Tabella dei file",
@@ -539,7 +554,10 @@
     "movingTo": "Spostamento in:",
     "title": "Sposta {count, plural, =1 {elemento} other {elementi}}",
     "description": "Sposta {count, plural, =1 {elemento} other {elementi}} in una nuova posizione",
-    "success": "Spostati con successo {count} {count, plural, =1 {elemento} other {elementi}}"
+    "success": "Spostati con successo {count} {count, plural, =1 {elemento} other {elementi}}",
+    "errors": {
+      "moveFailed": "Impossibile spostare gli elementi"
+    }
   },
   "navbar": {
     "logoAlt": "Logo dell'App",
@@ -1153,8 +1171,6 @@
       },
       "fileActions": {
         "edit": "Modifica",
-        "save": "Salva",
-        "cancel": "Annulla",
         "preview": "Anteprima",
         "download": "Scarica",
         "delete": "Elimina",
@@ -1378,16 +1394,6 @@
     "deleteConfirmation": "Sei sicuro di voler eliminare questa condivisione? Questa azione non può essere annullata.",
     "addDescriptionPlaceholder": "Aggiungi descrizione...",
     "editTitle": "Modifica Condivisione",
-    "nameLabel": "Nome Condivisione",
-    "descriptionLabel": "Descrizione",
-    "descriptionPlaceholder": "Inserisci una descrizione (opzionale)",
-    "expirationLabel": "Data di Scadenza",
-    "expirationPlaceholder": "GG/MM/AAAA HH:MM",
-    "maxViewsLabel": "Visualizzazioni Massime",
-    "maxViewsPlaceholder": "Lasciare vuoto per illimitato",
-    "passwordProtection": "Protetto da Password",
-    "passwordLabel": "Password",
-    "passwordPlaceholder": "Inserisci password",
     "newPasswordLabel": "Nuova Password (lasciare vuoto per mantenere quella attuale)",
     "newPasswordPlaceholder": "Inserisci nuova password",
     "manageFilesTitle": "Gestisci File",
@@ -1405,7 +1411,9 @@
     "linkDescriptionFile": "Genera un collegamento personalizzato per condividere il file",
     "linkDescriptionFolder": "Genera un collegamento personalizzato per condividere la cartella",
     "linkReady": "Il tuo collegamento di condivisione è pronto:",
-    "linkTitle": "Genera collegamento"
+    "linkTitle": "Genera collegamento",
+    "itemsSelected": "{count, plural, =0 {Nessun elemento selezionato} =1 {1 elemento selezionato} other {# elementi selezionati}}",
+    "manageFilesDescription": "Seleziona file e cartelle da includere in questa condivisione"
   },
   "shareDetails": {
     "title": "Dettagli Condivisione",
@@ -1421,7 +1429,6 @@
     "noLink": "Nessun link generato ancora",
     "copyLink": "Copia link",
     "openLink": "Apri in nuova scheda",
-    "linkCopied": "Link copiato negli appunti",
     "views": "Visualizzazioni",
     "dates": "Date",
     "created": "Creato",
@@ -1469,28 +1476,6 @@
     "expires": "Scade:",
     "expirationDate": "Data di Scadenza"
   },
-  "shareFile": {
-    "title": "Condividi File",
-    "linkTitle": "Genera Link",
-    "nameLabel": "Nome Condivisione",
-    "namePlaceholder": "Inserisci nome condivisione",
-    "descriptionLabel": "Descrizione",
-    "descriptionPlaceholder": "Inserisci una descrizione (opzionale)",
-    "expirationLabel": "Data di Scadenza",
-    "expirationPlaceholder": "GG/MM/AAAA HH:MM",
-    "maxViewsLabel": "Visualizzazioni Massime",
-    "maxViewsPlaceholder": "Lasciare vuoto per illimitato",
-    "passwordProtection": "Protetto da Password",
-    "passwordLabel": "Password",
-    "passwordPlaceholder": "Inserisci password",
-    "linkDescription": "Genera un link personalizzato per condividere il file",
-    "aliasLabel": "Alias Link",
-    "aliasPlaceholder": "Inserisci alias personalizzato",
-    "linkReady": "Il tuo link di condivisione è pronto:",
-    "createShare": "Crea Condivisione",
-    "generateLink": "Genera Link",
-    "copyLink": "Copia Link"
-  },
   "shareManager": {
     "deleteSuccess": "Condivisione eliminata con successo",
     "deleteError": "Errore durante l'eliminazione della condivisione",
@@ -1520,7 +1505,10 @@
     "noFilesToDownload": "Nessun file disponibile per il download",
     "singleShareZipName": "{Sharename} _files.zip",
     "zipDownloadError": "Impossibile creare un file zip",
-    "zipDownloadSuccess": "File zip scaricato correttamente"
+    "zipDownloadSuccess": "File zip scaricato correttamente",
+    "errors": {
+      "multipleDownloadNotSupported": "Il download di più condivisioni non è ancora supportato - scarica le condivisioni singolarmente"
+    }
   },
   "shareMultipleFiles": {
     "title": "Condividi File Multipli",
@@ -1917,6 +1905,23 @@
       "inactive": "Inattivo",
       "admin": "Amministratore",
       "userr": "Utente"
+    },
+    "invite": {
+      "button": "Genera Link di Invito",
+      "title": "Genera Link di Invito Utente",
+      "description": "Genera un link di utilizzo una tantum che permette a qualcuno di creare il proprio account. Il link scade in 15 minuti.",
+      "generating": "Generazione in corso...",
+      "generate": "Genera Link",
+      "generated": "Link di invito generato con successo!",
+      "linkReady": "Link di invito pronto",
+      "linkReadyDescription": "Condividi questo link con la persona che vuoi invitare. Potranno creare il proprio account come utente regolare.",
+      "copyLink": "Copia Link",
+      "linkCopied": "Link di invito copiato negli appunti!",
+      "expiresIn": "Scade in 15 minuti",
+      "close": "Chiudi",
+      "errors": {
+        "generateFailed": "Impossibile generare il link di invito"
+      }
     }
   },
   "validation": {
@@ -1935,15 +1940,62 @@
     "required": "Questo campo è obbligatorio"
   },
   "embedCode": {
-    "title": "Incorpora immagine",
-    "description": "Usa questi codici per incorporare questa immagine in forum, siti web o altre piattaforme",
+    "title": "Incorpora contenuto multimediale",
+    "description": "Usa questi codici per incorporare questo contenuto multimediale in forum, siti web o altre piattaforme",
     "tabs": {
       "directLink": "Link diretto",
       "html": "HTML",
       "bbcode": "BBCode"
     },
-    "directLinkDescription": "URL diretto al file immagine",
-    "htmlDescription": "Usa questo codice per incorporare l'immagine nelle pagine HTML",
-    "bbcodeDescription": "Usa questo codice per incorporare l'immagine nei forum che supportano BBCode"
+    "directLinkDescription": "URL diretto al file multimediale",
+    "htmlDescription": "Usa questo codice per incorporare il contenuto multimediale nelle pagine HTML",
+    "bbcodeDescription": "Usa questo codice per incorporare il contenuto multimediale nei forum che supportano BBCode"
+  },
+  "contextMenu": {
+    "newFolder": "Nuova cartella",
+    "uploadFile": "Carica file"
+  },
+  "registerWithInvite": {
+    "title": "Crea il Tuo Account",
+    "description": "Compila le informazioni sottostanti per creare il tuo account",
+    "labels": {
+      "firstName": "Nome",
+      "firstNamePlaceholder": "Inserisci il tuo nome",
+      "lastName": "Cognome",
+      "lastNamePlaceholder": "Inserisci il tuo cognome",
+      "username": "Nome Utente",
+      "usernamePlaceholder": "Scegli un nome utente",
+      "email": "Email",
+      "emailPlaceholder": "Inserisci la tua email",
+      "password": "Password",
+      "passwordPlaceholder": "Scegli una password",
+      "confirmPassword": "Conferma Password",
+      "confirmPasswordPlaceholder": "Conferma la tua password"
+    },
+    "buttons": {
+      "creating": "Creazione account in corso...",
+      "createAccount": "Crea Account"
+    },
+    "validation": {
+      "firstNameRequired": "Il nome è obbligatorio",
+      "lastNameRequired": "Il cognome è obbligatorio",
+      "usernameMinLength": "Il nome utente deve essere di almeno 3 caratteri",
+      "invalidEmail": "Email non valida",
+      "passwordMinLength": "La password deve essere di almeno 8 caratteri",
+      "passwordsMatch": "Le password devono corrispondere"
+    },
+    "messages": {
+      "success": "Account creato con successo! Reindirizzamento al login...",
+      "redirecting": "Reindirizzamento al login..."
+    },
+    "errors": {
+      "invalidToken": "Errore con il link di invito",
+      "tokenUsed": "Questo link di invito è già stato utilizzato",
+      "tokenExpired": "Questo link di invito è scaduto",
+      "usernameExists": "Il nome utente esiste già",
+      "emailExists": "L'email esiste già",
+      "createFailed": "Impossibile creare l'account. Riprova."
+    },
+    "pageTitle": "Crea Account"
   }
 }

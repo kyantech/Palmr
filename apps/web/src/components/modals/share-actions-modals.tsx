@@ -343,7 +343,7 @@ export function ShareActionsModals({
         <DialogContent className="max-w-2xl max-h-[80vh] w-full">
           <DialogHeader>
             <DialogTitle>{t("shareActions.manageFilesTitle")}</DialogTitle>
-            <DialogDescription>Select files and folders to include in this share</DialogDescription>
+            <DialogDescription>{t("shareActions.manageFilesDescription")}</DialogDescription>
           </DialogHeader>
 
           <div className="flex flex-col gap-4 flex-1 min-h-0 w-full overflow-hidden">
@@ -362,7 +362,9 @@ export function ShareActionsModals({
 
             {/* Selection Count */}
             <div className="text-sm text-muted-foreground">
-              {manageFilesSelectedItems.length > 0 && <span>{manageFilesSelectedItems.length} items selected</span>}
+              {manageFilesSelectedItems.length > 0 && (
+                <span>{t("shareActions.itemsSelected", { count: manageFilesSelectedItems.length })}</span>
+              )}
             </div>
 
             {/* File Tree */}

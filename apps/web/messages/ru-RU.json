@@ -6,7 +6,9 @@
       "token_expired": "Token expirado. Tente novamente.",
       "config_error": "Erro de configuração. Contate o suporte.",
       "auth_failed": "Falha na autenticação. Tente novamente."
-    }
+    },
+    "authenticationFailed": "Ошибка аутентификации",
+    "successfullyAuthenticated": "Успешно аутентифицирован!"
   },
   "authProviders": {
     "title": "Провайдеры аутентификации",
@@ -174,7 +176,14 @@
     "tabs": {
       "shareDetails": "Детали общего доступа",
       "selectFiles": "Выбрать файлы"
-    }
+    },
+    "errors": {
+      "nameRequired": "Требуется имя общего ресурса",
+      "selectItems": "Выберите хотя бы один файл или папку"
+    },
+    "itemsSelected": "Выбрано элементов: {count}",
+    "passwordPlaceholder": "Введите пароль",
+    "selectItemsPrompt": "Выберите файлы и папки для общего доступа"
   },
   "customization": {
     "breadcrumb": "Настройка",
@@ -340,7 +349,8 @@
     "addToShare": "Добавить в общий доступ",
     "removeFromShare": "Удалить из общего доступа",
     "saveChanges": "Сохранить Изменения",
-    "editFolder": "Редактировать папку"
+    "editFolder": "Редактировать папку",
+    "itemsSelected": "Выбрано элементов: {count}"
   },
   "files": {
     "title": "Все файлы",
@@ -376,7 +386,12 @@
       "description": "Загрузите свой первый файл или создайте папку для начала работы"
     },
     "files": "файлы",
-    "folders": "папки"
+    "folders": "папки",
+    "errors": {
+      "moveItemsFailed": "Не удалось переместить элементы. Попробуйте еще раз.",
+      "cannotMoveHere": "Невозможно переместить элементы в это место"
+    },
+    "openFolder": "Открыть папку"
   },
   "filesTable": {
     "ariaLabel": "Таблица файлов",
@@ -539,7 +554,10 @@
     "movingTo": "Перемещение в:",
     "title": "Переместить {count, plural, =1 {элемент} other {элементы}}",
     "description": "Переместить {count, plural, =1 {элемент} other {элементы}} в новое место",
-    "success": "Успешно перемещено {count} {count, plural, =1 {элемент} other {элементов}}"
+    "success": "Успешно перемещено {count} {count, plural, =1 {элемент} other {элементов}}",
+    "errors": {
+      "moveFailed": "Не удалось переместить элементы"
+    }
   },
   "navbar": {
     "logoAlt": "Логотип приложения",
@@ -1153,8 +1171,6 @@
       },
       "fileActions": {
         "edit": "Редактировать",
-        "save": "Сохранить",
-        "cancel": "Отмена",
         "preview": "Предпросмотр",
         "download": "Скачать",
         "delete": "Удалить",
@@ -1377,16 +1393,6 @@
     "deleteTitle": "Удалить Общий Доступ",
     "deleteConfirmation": "Вы уверены, что хотите удалить этот общий доступ? Это действие нельзя отменить.",
     "editTitle": "Редактировать Общий Доступ",
-    "nameLabel": "Название Общего Доступа",
-    "descriptionLabel": "Описание",
-    "descriptionPlaceholder": "Введите описание (опционально)",
-    "expirationLabel": "Дата Истечения",
-    "expirationPlaceholder": "ДД.ММ.ГГГГ ЧЧ:ММ",
-    "maxViewsLabel": "Максимальные Просмотры",
-    "maxViewsPlaceholder": "Оставьте пустым для неограниченного",
-    "passwordProtection": "Защищено Паролем",
-    "passwordLabel": "Пароль",
-    "passwordPlaceholder": "Введите пароль",
     "newPasswordLabel": "Новый Пароль (оставьте пустым, чтобы сохранить текущий)",
     "newPasswordPlaceholder": "Введите новый пароль",
     "manageFilesTitle": "Управление Файлами",
@@ -1405,7 +1411,9 @@
     "linkDescriptionFile": "Создайте пользовательскую ссылку для обмена файлом",
     "linkDescriptionFolder": "Создайте пользовательскую ссылку для обмена папкой",
     "linkReady": "Ваша ссылка для обмена готова:",
-    "linkTitle": "Создать ссылку"
+    "linkTitle": "Создать ссылку",
+    "itemsSelected": "Выбрано элементов: {count}",
+    "manageFilesDescription": "Выберите файлы и папки для включения в этот общий доступ"
   },
   "shareDetails": {
     "title": "Детали Общего Доступа",
@@ -1421,7 +1429,6 @@
     "noLink": "Ссылка еще не сгенерирована",
     "copyLink": "Скопировать ссылку",
     "openLink": "Открыть в новой вкладке",
-    "linkCopied": "Ссылка скопирована в буфер обмена",
     "views": "Просмотры",
     "dates": "Даты",
     "created": "Создано",
@@ -1469,28 +1476,6 @@
     "expires": "Истекает:",
     "expirationDate": "Дата истечения"
   },
-  "shareFile": {
-    "title": "Поделиться Файлом",
-    "linkTitle": "Сгенерировать Ссылку",
-    "nameLabel": "Название Общего Доступа",
-    "namePlaceholder": "Введите название общего доступа",
-    "descriptionLabel": "Описание",
-    "descriptionPlaceholder": "Введите описание (опционально)",
-    "expirationLabel": "Дата Истечения",
-    "expirationPlaceholder": "ДД.ММ.ГГГГ ЧЧ:ММ",
-    "maxViewsLabel": "Максимальные Просмотры",
-    "maxViewsPlaceholder": "Оставьте пустым для неограниченного",
-    "passwordProtection": "Защищено Паролем",
-    "passwordLabel": "Пароль",
-    "passwordPlaceholder": "Введите пароль",
-    "linkDescription": "Сгенерируйте пользовательскую ссылку для отправки файла",
-    "aliasLabel": "Псевдоним Ссылки",
-    "aliasPlaceholder": "Введите пользовательский псевдоним",
-    "linkReady": "Ваша ссылка для общего доступа готова:",
-    "createShare": "Создать Общий Доступ",
-    "generateLink": "Сгенерировать Ссылку",
-    "copyLink": "Скопировать Ссылку"
-  },
   "shareManager": {
     "deleteSuccess": "Общий доступ успешно удален",
     "deleteError": "Ошибка при удалении общего доступа",
@@ -1520,7 +1505,10 @@
     "noFilesToDownload": "Нет файлов для скачивания",
     "singleShareZipName": "{shareme} _files.zip",
     "zipDownloadError": "Не удалось создать zip -файл",
-    "zipDownloadSuccess": "Zip -файл успешно загружен"
+    "zipDownloadSuccess": "Zip -файл успешно загружен",
+    "errors": {
+      "multipleDownloadNotSupported": "Множественная загрузка общих ресурсов пока не поддерживается - загружайте общие ресурсы по отдельности"
+    }
   },
   "shareMultipleFiles": {
     "title": "Поделиться Несколькими Файлами",
@@ -1917,6 +1905,23 @@
       "inactive": "Неактивен",
       "admin": "Администратор",
       "userr": "Пользователь"
+    },
+    "invite": {
+      "button": "Создать ссылку приглашения",
+      "title": "Создать ссылку приглашения пользователя",
+      "description": "Создайте одноразовую ссылку, которая позволит кому-то создать свою учетную запись. Ссылка истекает через 15 минут.",
+      "generating": "Генерация...",
+      "generate": "Создать ссылку",
+      "generated": "Ссылка приглашения успешно создана!",
+      "linkReady": "Ссылка приглашения готова",
+      "linkReadyDescription": "Поделитесь этой ссылкой с человеком, которого хотите пригласить. Они смогут создать свою учетную запись как обычный пользователь.",
+      "copyLink": "Копировать ссылку",
+      "linkCopied": "Ссылка приглашения скопирована в буфер обмена!",
+      "expiresIn": "Истекает через 15 минут",
+      "close": "Закрыть",
+      "errors": {
+        "generateFailed": "Не удалось создать ссылку приглашения"
+      }
     }
   },
   "validation": {
@@ -1935,15 +1940,62 @@
     "required": "Это поле обязательно"
   },
   "embedCode": {
-    "title": "Встроить изображение",
-    "description": "Используйте эти коды для встраивания этого изображения на форумах, веб-сайтах или других платформах",
+    "title": "Встроить медиа",
+    "description": "Используйте эти коды для встраивания этого медиа на форумах, веб-сайтах или других платформах",
     "tabs": {
       "directLink": "Прямая ссылка",
       "html": "HTML",
       "bbcode": "BBCode"
     },
-    "directLinkDescription": "Прямой URL-адрес файла изображения",
-    "htmlDescription": "Используйте этот код для встраивания изображения в HTML-страницы",
-    "bbcodeDescription": "Используйте этот код для встраивания изображения на форумах, поддерживающих BBCode"
+    "directLinkDescription": "Прямой URL-адрес медиафайла",
+    "htmlDescription": "Используйте этот код для встраивания медиа в HTML-страницы",
+    "bbcodeDescription": "Используйте этот код для встраивания медиа на форумах, поддерживающих BBCode"
+  },
+  "contextMenu": {
+    "newFolder": "Новая папка",
+    "uploadFile": "Загрузить файл"
+  },
+  "registerWithInvite": {
+    "title": "Создайте свою учетную запись",
+    "description": "Заполните информацию ниже, чтобы создать свою учетную запись",
+    "labels": {
+      "firstName": "Имя",
+      "firstNamePlaceholder": "Введите ваше имя",
+      "lastName": "Фамилия",
+      "lastNamePlaceholder": "Введите вашу фамилию",
+      "username": "Имя пользователя",
+      "usernamePlaceholder": "Выберите имя пользователя",
+      "email": "Электронная почта",
+      "emailPlaceholder": "Введите вашу электронную почту",
+      "password": "Пароль",
+      "passwordPlaceholder": "Выберите пароль",
+      "confirmPassword": "Подтвердите пароль",
+      "confirmPasswordPlaceholder": "Подтвердите ваш пароль"
+    },
+    "buttons": {
+      "creating": "Создание учетной записи...",
+      "createAccount": "Создать учетную запись"
+    },
+    "validation": {
+      "firstNameRequired": "Имя обязательно",
+      "lastNameRequired": "Фамилия обязательна",
+      "usernameMinLength": "Имя пользователя должно содержать не менее 3 символов",
+      "invalidEmail": "Неверный адрес электронной почты",
+      "passwordMinLength": "Пароль должен содержать не менее 8 символов",
+      "passwordsMatch": "Пароли должны совпадать"
+    },
+    "messages": {
+      "success": "Учетная запись успешно создана! Перенаправление на вход...",
+      "redirecting": "Перенаправление на вход..."
+    },
+    "errors": {
+      "invalidToken": "Ошибка с ссылкой приглашения",
+      "tokenUsed": "Эта ссылка приглашения уже была использована",
+      "tokenExpired": "Срок действия этой ссылки приглашения истек",
+      "usernameExists": "Имя пользователя уже существует",
+      "emailExists": "Электронная почта уже существует",
+      "createFailed": "Не удалось создать учетную запись. Пожалуйста, попробуйте еще раз."
+    },
+    "pageTitle": "Создать учетную запись"
   }
 }

@@ -37,7 +37,8 @@ interface Folder {
 
 interface FilesViewProps {
   files: File[];
-  onPreview: (file: File) => void;
+  folders?: Folder[];
+  onPreview?: (file: File) => void;
   onRename: (file: File) => void;
   onUpdateName: (fileId: string, newName: string) => void;
   onUpdateDescription: (fileId: string, newDescription: string) => void;

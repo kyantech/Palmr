@@ -1,5 +1,7 @@
 {
   "auth": {
+    "successfullyAuthenticated": "Successfully authenticated!",
+    "authenticationFailed": "Authentication failed",
     "errors": {
       "account_inactive": "Account inactive. Please contact the administrator.",
       "registration_disabled": "SSO registration is disabled.",
@@ -7,6 +9,10 @@
       "config_error": "Configuration error. Please contact support.",
       "auth_failed": "Authentication failed. Please try again."
     }
+  },
+  "contextMenu": {
+    "newFolder": "New folder",
+    "uploadFile": "Upload file"
   },
   "authProviders": {
     "title": "Authentication Providers",
@@ -166,9 +172,16 @@
     "maxViewsPlaceholder": "Leave empty for unlimited",
     "passwordProtection": "Password Protected",
     "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter password",
     "create": "Create Share",
     "success": "Share created successfully",
     "error": "Failed to create share",
+    "errors": {
+      "nameRequired": "Share name is required",
+      "selectItems": "Please select at least one file or folder"
+    },
+    "itemsSelected": "{count} items selected",
+    "selectItemsPrompt": "Select files and folders to share",
     "tabs": {
       "shareDetails": "Share Details",
       "selectFiles": "Select Files"
@@ -335,6 +348,7 @@
     "uploadNewFiles": "Upload new files to add them",
     "fileCount": "{count, plural, =1 {file} other {files}}",
     "filesSelected": "{count, plural, =0 {No files selected} =1 {1 file selected} other {# files selected}}",
+    "itemsSelected": "{count} items selected",
     "editFile": "Edit file",
     "editFolder": "Edit folder",
     "previewFile": "Preview file",
@@ -362,6 +376,11 @@
     "bulkDeleteTitle": "Delete Selected Items",
     "bulkDeleteConfirmation": "Are you sure you want to delete {count, plural, =1 {1 item} other {# items}}? This action cannot be undone.",
     "totalFiles": "{count, plural, =0 {No files} =1 {1 file} other {# files}}",
+    "openFolder": "Open folder",
+    "errors": {
+      "moveItemsFailed": "Failed to move items. Please try again.",
+      "cannotMoveHere": "Cannot move items to this location"
+    },
     "empty": {
       "title": "No files or folders yet",
       "description": "Upload your first file or create a folder to get started"
@@ -539,7 +558,10 @@
     "movingTo": "Moving to:",
     "title": "Move {count, plural, =1 {Item} other {Items}}",
     "description": "Move {count, plural, =1 {item} other {items}} to a new location",
-    "success": "Successfully moved {count} {count, plural, =1 {item} other {items}}"
+    "success": "Successfully moved {count} {count, plural, =1 {item} other {items}}",
+    "errors": {
+      "moveFailed": "Failed to move items"
+    }
   },
   "navbar": {
     "logoAlt": "App Logo",
@@ -699,6 +721,49 @@
       "creating": "Creating...",
       "createAdmin": "Create Admin Account"
     }
+  },
+  "registerWithInvite": {
+    "title": "Create Your Account",
+    "description": "Fill in the information below to create your account",
+    "labels": {
+      "firstName": "First Name",
+      "firstNamePlaceholder": "Enter your first name",
+      "lastName": "Last Name",
+      "lastNamePlaceholder": "Enter your last name",
+      "username": "Username",
+      "usernamePlaceholder": "Choose a username",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "password": "Password",
+      "passwordPlaceholder": "Choose a password",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm your password"
+    },
+    "buttons": {
+      "creating": "Creating account...",
+      "createAccount": "Create Account"
+    },
+    "validation": {
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "usernameMinLength": "Username must be at least 3 characters",
+      "invalidEmail": "Invalid email",
+      "passwordMinLength": "Password must be at least 8 characters",
+      "passwordsMatch": "Passwords must match"
+    },
+    "messages": {
+      "success": "Account created successfully! Redirecting to login...",
+      "redirecting": "Redirecting to login..."
+    },
+    "errors": {
+      "invalidToken": "Error with invite link",
+      "tokenUsed": "This invite link has already been used",
+      "tokenExpired": "This invite link has expired",
+      "usernameExists": "Username already exists",
+      "emailExists": "Email already exists",
+      "createFailed": "Failed to create account. Please try again."
+    },
+    "pageTitle": "Create Account"
   },
   "resetPassword": {
     "pageTitle": "Reset Password",
@@ -1389,7 +1454,9 @@
     "newPasswordLabel": "New Password (leave empty to keep current)",
     "newPasswordPlaceholder": "Enter new password",
     "manageFilesTitle": "Manage Files",
+    "manageFilesDescription": "Select files and folders to include in this share",
     "manageRecipientsTitle": "Manage Recipients",
+    "itemsSelected": "{count} items selected",
     "editSuccess": "Share updated successfully",
     "editError": "Failed to update share",
     "bulkDeleteConfirmation": "Are you sure you want to delete {count, plural, =1 {1 share} other {# shares}}? This action cannot be undone.",
@@ -1483,6 +1550,9 @@
     "creatingZip": "Creating ZIP file...",
     "zipDownloadSuccess": "ZIP file downloaded successfully",
     "zipDownloadError": "Failed to create ZIP file",
+    "errors": {
+      "multipleDownloadNotSupported": "Multiple share download not yet supported - please download shares individually"
+    },
     "singleShareZipName": "{shareName}_files.zip",
     "multipleSharesZipName": "{count}_shares_files.zip",
     "defaultShareName": "Share"
@@ -1882,19 +1952,36 @@
       "inactive": "Inactive",
       "admin": "Admin",
       "userr": "User"
+    },
+    "invite": {
+      "button": "Generate Invite Link",
+      "title": "Generate User Invite Link",
+      "description": "Generate a one-time use link that allows someone to create their own account. The link expires in 15 minutes.",
+      "generating": "Generating...",
+      "generate": "Generate Link",
+      "generated": "Invite link generated successfully!",
+      "linkReady": "Invite link ready",
+      "linkReadyDescription": "Share this link with the person you want to invite. They'll be able to create their own account as a regular user.",
+      "copyLink": "Copy Link",
+      "linkCopied": "Invite link copied to clipboard!",
+      "expiresIn": "Expires in 15 minutes",
+      "close": "Close",
+      "errors": {
+        "generateFailed": "Failed to generate invite link"
+      }
     }
   },
   "embedCode": {
-    "title": "Embed Image",
-    "description": "Use these codes to embed this image in forums, websites, or other platforms",
+    "title": "Embed Media",
+    "description": "Use these codes to embed this media in forums, websites, or other platforms",
     "tabs": {
       "directLink": "Direct Link",
       "html": "HTML",
       "bbcode": "BBCode"
     },
-    "directLinkDescription": "Direct URL to the image file",
-    "htmlDescription": "Use this code to embed the image in HTML pages",
-    "bbcodeDescription": "Use this code to embed the image in forums that support BBCode"
+    "directLinkDescription": "Direct URL to the media file",
+    "htmlDescription": "Use this code to embed the media in HTML pages",
+    "bbcodeDescription": "Use this code to embed the media in forums that support BBCode"
   },
   "validation": {
     "firstNameRequired": "First name is required",

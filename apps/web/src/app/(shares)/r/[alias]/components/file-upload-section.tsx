@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { IconCheck, IconFile, IconMail, IconUpload, IconUser, IconX } from "@tabler/icons-react";
-import axios from "axios";
 import { useTranslations } from "next-intl";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
@@ -13,118 +12,103 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
+import { useUppyUpload } from "@/hooks/useUppyUpload";
 import { getPresignedUrlForUploadByAlias, registerFileUploadByAlias } from "@/http/endpoints";
-import { getSystemInfo } from "@/http/endpoints/app";
-import { ChunkedUploader } from "@/utils/chunked-upload";
 import { formatFileSize } from "@/utils/format-file-size";
-import { FILE_STATUS, UPLOAD_CONFIG, UPLOAD_PROGRESS } from "../constants";
-import { FileUploadSectionProps, FileWithProgress } from "../types";
+import { UPLOAD_CONFIG } from "../constants";
+import { FileUploadSectionProps } from "../types";
 
 export function FileUploadSection({ reverseShare, password, alias, onUploadSuccess }: FileUploadSectionProps) {
-  const [files, setFiles] = useState<FileWithProgress[]>([]);
   const [uploaderName, setUploaderName] = useState("");
   const [uploaderEmail, setUploaderEmail] = useState("");
   const [description, setDescription] = useState("");
-  const [isUploading, setIsUploading] = useState(false);
-  const [isS3Enabled, setIsS3Enabled] = useState<boolean | null>(null);
 
   const t = useTranslations();
 
-  useEffect(() => {
-    const fetchSystemInfo = async () => {
-      try {
-        const response = await getSystemInfo();
-        setIsS3Enabled(response.data.s3Enabled);
-      } catch (error) {
-        console.warn("Failed to fetch system info, defaulting to filesystem mode:", error);
-        setIsS3Enabled(false);
-      }
-    };
-
-    fetchSystemInfo();
-  }, []);
-
-  const validateFileSize = useCallback(
-    (file: File): string | null => {
-      if (!reverseShare.maxFileSize) return null;
-
-      if (file.size > reverseShare.maxFileSize) {
-        return t("reverseShares.upload.errors.fileTooLarge", {
+  const { addFiles, startUpload, removeFile, retryUpload, fileUploads, isUploading } = useUppyUpload({
+    onValidate: async (file) => {
+      // Client-side validations
+      if (reverseShare.maxFileSize && file.size > reverseShare.maxFileSize) {
+        const error = t("reverseShares.upload.errors.fileTooLarge", {
           maxSize: formatFileSize(reverseShare.maxFileSize),
         });
+        toast.error(error);
+        throw new Error(error);
       }
-      return null;
-    },
-    [reverseShare.maxFileSize, t]
-  );
 
-  const validateFileType = useCallback(
-    (file: File): string | null => {
-      if (!reverseShare.allowedFileTypes) return null;
-
-      const allowedTypes = reverseShare.allowedFileTypes.split(",").map((type) => type.trim().toLowerCase());
-
-      const fileExtension = file.name.split(".").pop()?.toLowerCase();
-
-      if (fileExtension && !allowedTypes.includes(fileExtension)) {
-        return t("reverseShares.upload.errors.fileTypeNotAllowed", {
-          allowedTypes: reverseShare.allowedFileTypes,
-        });
-      }
-      return null;
-    },
-    [reverseShare.allowedFileTypes, t]
-  );
-
-  const validateFileCount = useCallback((): string | null => {
-    if (!reverseShare.maxFiles) return null;
-
-    const totalFiles = files.length + 1 + reverseShare.currentFileCount;
-    if (totalFiles > reverseShare.maxFiles) {
-      return t("reverseShares.upload.errors.maxFilesExceeded", {
-        maxFiles: reverseShare.maxFiles,
-      });
-    }
-    return null;
-  }, [reverseShare.maxFiles, reverseShare.currentFileCount, files.length, t]);
-
-  const validateFile = useCallback(
-    (file: File): string | null => {
-      return validateFileSize(file) || validateFileType(file) || validateFileCount();
-    },
-    [validateFileSize, validateFileType, validateFileCount]
-  );
-
-  const createFileWithProgress = (file: File): FileWithProgress => ({
-    file,
-    progress: UPLOAD_PROGRESS.INITIAL,
-    status: FILE_STATUS.PENDING,
-  });
-
-  const processAcceptedFiles = useCallback(
-    (acceptedFiles: File[]): FileWithProgress[] => {
-      const validFiles: FileWithProgress[] = [];
-
-      for (const file of acceptedFiles) {
-        const validationError = validateFile(file);
-        if (validationError) {
-          toast.error(validationError);
-          continue;
+      if (reverseShare.allowedFileTypes) {
+        const extension = file.name.split(".").pop()?.toLowerCase();
+        const allowed = reverseShare.allowedFileTypes.split(",").map((t) => t.trim().toLowerCase());
+        if (extension && !allowed.includes(extension)) {
+          const error = t("reverseShares.upload.errors.fileTypeNotAllowed", {
+            allowedTypes: reverseShare.allowedFileTypes,
+          });
+          toast.error(error);
+          throw new Error(error);
         }
-        validFiles.push(createFileWithProgress(file));
       }
 
-      return validFiles;
+      if (reverseShare.maxFiles) {
+        const totalFiles = fileUploads.length + 1 + reverseShare.currentFileCount;
+        if (totalFiles > reverseShare.maxFiles) {
+          const error = t("reverseShares.upload.errors.maxFilesExceeded", {
+            maxFiles: reverseShare.maxFiles,
+          });
+          toast.error(error);
+          throw new Error(error);
+        }
+      }
     },
-    [validateFile]
-  );
+    onBeforeUpload: async (file) => {
+      const timestamp = Date.now();
+      const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+      return `reverse-shares/${alias}/${timestamp}-${sanitizedFileName}`;
+    },
+    getPresignedUrl: async (objectName) => {
+      const response = await getPresignedUrlForUploadByAlias(
+        alias,
+        { objectName },
+        password ? { password } : undefined
+      );
+      return { url: response.data.url, method: "PUT" };
+    },
+    onAfterUpload: async (fileId, file, objectName) => {
+      const fileExtension = file.name.split(".").pop() || "";
+
+      await registerFileUploadByAlias(
+        alias,
+        {
+          name: file.name,
+          description: description || undefined,
+          extension: fileExtension,
+          size: file.size,
+          objectName,
+          uploaderEmail: uploaderEmail || undefined,
+          uploaderName: uploaderName || undefined,
+        },
+        password ? { password } : undefined
+      );
+    },
+    onSuccess: () => {
+      const successCount = fileUploads.filter((u) => u.status === "success").length;
+
+      if (successCount > 0) {
+        toast.success(
+          t("reverseShares.upload.success.countMessage", {
+            count: successCount,
+          })
+        );
+
+        onUploadSuccess?.();
+      }
+    },
+  });
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
-      const newFiles = processAcceptedFiles(acceptedFiles);
-      setFiles((previousFiles) => [...previousFiles, ...newFiles]);
+      addFiles(acceptedFiles);
     },
-    [processAcceptedFiles]
+    [addFiles]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -133,132 +117,8 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
     disabled: isUploading,
   });
 
-  const removeFile = (index: number) => {
-    setFiles((previousFiles) => previousFiles.filter((_, i) => i !== index));
-  };
-
-  const updateFileStatus = (index: number, updates: Partial<FileWithProgress>) => {
-    setFiles((previousFiles) => previousFiles.map((file, i) => (i === index ? { ...file, ...updates } : file)));
-  };
-
-  const generateObjectName = (fileName: string): string => {
-    const timestamp = Date.now();
-    return `reverse-shares/${alias}/${timestamp}-${fileName}`;
-  };
-
-  const getFileExtension = (fileName: string): string => {
-    return fileName.split(".").pop() || "";
-  };
-
-  const calculateUploadTimeout = (fileSize: number): number => {
-    const baseTimeout = 300000;
-    const fileSizeMB = fileSize / (1024 * 1024);
-    if (fileSizeMB > 500) {
-      const extraMB = fileSizeMB - 500;
-      const extraMinutes = Math.ceil(extraMB / 100);
-      return baseTimeout + extraMinutes * 60000;
-    }
-
-    return baseTimeout;
-  };
-
-  const uploadFileToStorage = async (
-    file: File,
-    presignedUrl: string,
-    onProgress?: (progress: number) => void
-  ): Promise<void> => {
-    const shouldUseChunked = ChunkedUploader.shouldUseChunkedUpload(file.size, isS3Enabled ?? undefined);
-
-    if (shouldUseChunked) {
-      const chunkSize = ChunkedUploader.calculateOptimalChunkSize(file.size);
-
-      const result = await ChunkedUploader.uploadFile({
-        file,
-        url: presignedUrl,
-        chunkSize,
-        isS3Enabled: isS3Enabled ?? undefined,
-        onProgress,
-      });
-
-      if (!result.success) {
-        throw new Error(result.error || "Chunked upload failed");
-      }
-    } else {
-      const uploadTimeout = calculateUploadTimeout(file.size);
-      await axios.put(presignedUrl, file, {
-        headers: {
-          "Content-Type": file.type,
-        },
-        timeout: uploadTimeout,
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity,
-        onUploadProgress: (progressEvent) => {
-          if (onProgress && progressEvent.total) {
-            const progress = (progressEvent.loaded / progressEvent.total) * 100;
-            onProgress(Math.round(progress));
-          }
-        },
-      });
-    }
-  };
-
-  const registerUploadedFile = async (file: File, objectName: string): Promise<void> => {
-    const fileExtension = getFileExtension(file.name);
-
-    await registerFileUploadByAlias(
-      alias,
-      {
-        name: file.name,
-        description: description || undefined,
-        extension: fileExtension,
-        size: file.size,
-        objectName,
-        uploaderEmail: uploaderEmail || undefined,
-        uploaderName: uploaderName || undefined,
-      },
-      password ? { password } : undefined
-    );
-  };
-
-  const uploadFile = async (fileWithProgress: FileWithProgress, index: number): Promise<void> => {
-    const { file } = fileWithProgress;
-
-    try {
-      updateFileStatus(index, {
-        status: FILE_STATUS.UPLOADING,
-        progress: UPLOAD_PROGRESS.INITIAL,
-      });
-
-      const objectName = generateObjectName(file.name);
-      const presignedResponse = await getPresignedUrlForUploadByAlias(
-        alias,
-        { objectName },
-        password ? { password } : undefined
-      );
-
-      await uploadFileToStorage(file, presignedResponse.data.url, (progress) => {
-        updateFileStatus(index, { progress });
-      });
-
-      updateFileStatus(index, { progress: UPLOAD_PROGRESS.COMPLETE });
-
-      await registerUploadedFile(file, objectName);
-
-      updateFileStatus(index, { status: FILE_STATUS.SUCCESS });
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error || t("reverseShares.upload.errors.uploadFailed");
-
-      updateFileStatus(index, {
-        status: FILE_STATUS.ERROR,
-        error: errorMessage,
-      });
-
-      toast.error(errorMessage);
-    }
-  };
-
   const validateUploadRequirements = (): boolean => {
-    if (files.length === 0) {
+    if (fileUploads.length === 0) {
       toast.error(t("reverseShares.upload.errors.selectAtLeastOneFile"));
       return false;
     }
@@ -279,36 +139,13 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
     return true;
   };
 
-  const processAllUploads = async (): Promise<void> => {
-    const uploadPromises = files.map((fileWithProgress, index) => uploadFile(fileWithProgress, index));
-
-    await Promise.all(uploadPromises);
-
-    const successfulUploads = files.filter((file) => file.status === FILE_STATUS.SUCCESS);
-    if (successfulUploads.length > 0) {
-      toast.success(
-        t("reverseShares.upload.success.countMessage", {
-          count: successfulUploads.length,
-        })
-      );
-    }
-  };
-
   const handleUpload = async () => {
     if (!validateUploadRequirements()) return;
-
-    setIsUploading(true);
-
-    try {
-      await processAllUploads();
-    } catch {
-    } finally {
-      setIsUploading(false);
-    }
+    startUpload();
   };
 
   const getCanUpload = (): boolean => {
-    if (files.length === 0 || isUploading) return false;
+    if (fileUploads.length === 0 || isUploading) return false;
 
     const nameRequired = reverseShare.nameFieldRequired === "REQUIRED";
     const emailRequired = reverseShare.emailFieldRequired === "REQUIRED";
@@ -325,16 +162,8 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
   };
 
   const canUpload = getCanUpload();
-  const allFilesProcessed = files.every(
-    (file) => file.status === FILE_STATUS.SUCCESS || file.status === FILE_STATUS.ERROR
-  );
-  const hasSuccessfulUploads = files.some((file) => file.status === FILE_STATUS.SUCCESS);
-
-  useEffect(() => {
-    if (allFilesProcessed && hasSuccessfulUploads && files.length > 0) {
-      onUploadSuccess?.();
-    }
-  }, [allFilesProcessed, hasSuccessfulUploads, files.length, onUploadSuccess]);
+  const allFilesProcessed = fileUploads.every((file) => file.status === "success" || file.status === "error");
+  const hasSuccessfulUploads = fileUploads.some((file) => file.status === "success");
 
   const getDragActiveStyles = () => {
     if (isDragActive) {
@@ -354,7 +183,7 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
   const renderFileRestrictions = () => {
     const calculateRemainingFiles = (): number => {
       if (!reverseShare.maxFiles) return 0;
-      const currentTotal = reverseShare.currentFileCount + files.length;
+      const currentTotal = reverseShare.currentFileCount + fileUploads.length;
       const remaining = reverseShare.maxFiles - currentTotal;
       return Math.max(0, remaining);
     };
@@ -387,8 +216,8 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
     );
   };
 
-  const renderFileStatusBadge = (fileWithProgress: FileWithProgress) => {
-    if (fileWithProgress.status === FILE_STATUS.SUCCESS) {
+  const renderFileStatusBadge = (fileStatus: string) => {
+    if (fileStatus === "success") {
       return (
         <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
           <IconCheck className="h-3 w-3 mr-1" />
@@ -397,51 +226,41 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
       );
     }
 
-    if (fileWithProgress.status === FILE_STATUS.ERROR) {
+    if (fileStatus === "error") {
       return <Badge variant="destructive">{t("reverseShares.upload.fileList.statusError")}</Badge>;
     }
 
     return null;
   };
 
-  const renderFileItem = (fileWithProgress: FileWithProgress, index: number) => (
-    <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+  const renderFileItem = (upload: any) => (
+    <div key={upload.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
       <IconFile className="h-5 w-5 text-gray-500 flex-shrink-0" />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{fileWithProgress.file.name}</p>
-        <p className="text-xs text-gray-500">{formatFileSize(fileWithProgress.file.size)}</p>
-        {fileWithProgress.status === FILE_STATUS.UPLOADING && (
-          <Progress value={fileWithProgress.progress} className="mt-2 h-2" />
-        )}
-        {fileWithProgress.status === FILE_STATUS.ERROR && (
-          <p className="text-xs text-red-500 mt-1">{fileWithProgress.error}</p>
-        )}
+        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{upload.file.name}</p>
+        <p className="text-xs text-gray-500">{formatFileSize(upload.file.size)}</p>
+        {upload.status === "uploading" && <Progress value={upload.progress} className="mt-2 h-2" />}
+        {upload.status === "error" && upload.error && <p className="text-xs text-red-500 mt-1">{upload.error}</p>}
       </div>
       <div className="flex items-center gap-2">
-        {renderFileStatusBadge(fileWithProgress)}
-        {fileWithProgress.status === FILE_STATUS.PENDING && (
-          <Button size="sm" variant="ghost" onClick={() => removeFile(index)} disabled={isUploading}>
+        {renderFileStatusBadge(upload.status)}
+        {upload.status === "pending" && (
+          <Button size="sm" variant="ghost" onClick={() => removeFile(upload.id)} disabled={isUploading}>
             <IconX className="h-4 w-4" />
           </Button>
         )}
-        {fileWithProgress.status === FILE_STATUS.ERROR && (
+        {upload.status === "error" && (
           <div className="flex gap-1">
             <Button
               size="sm"
               variant="ghost"
-              onClick={() => {
-                setFiles((prev) =>
-                  prev.map((file, i) =>
-                    i === index ? { ...file, status: FILE_STATUS.PENDING, error: undefined } : file
-                  )
-                );
-              }}
+              onClick={() => retryUpload(upload.id)}
               disabled={isUploading}
               title={t("reverseShares.upload.errors.retry")}
             >
               <IconUpload className="h-4 w-4" />
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => removeFile(index)} disabled={isUploading}>
+            <Button size="sm" variant="ghost" onClick={() => removeFile(upload.id)} disabled={isUploading}>
               <IconX className="h-4 w-4" />
             </Button>
           </div>
@@ -463,10 +282,10 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
         {renderFileRestrictions()}
       </div>
 
-      {files.length > 0 && (
+      {fileUploads.length > 0 && (
         <div className="space-y-2">
           <h4 className="font-medium text-gray-900 dark:text-white">{t("reverseShares.upload.fileList.title")}</h4>
-          {files.map(renderFileItem)}
+          {fileUploads.map(renderFileItem)}
         </div>
       )}
 
@@ -528,7 +347,7 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
       <Button onClick={handleUpload} disabled={!canUpload} className="w-full text-white" size="lg" variant="default">
         {isUploading
           ? t("reverseShares.upload.form.uploading")
-          : t("reverseShares.upload.form.uploadButton", { count: files.length })}
+          : t("reverseShares.upload.form.uploadButton", { count: fileUploads.length })}
       </Button>
 
       {allFilesProcessed && hasSuccessfulUploads && (

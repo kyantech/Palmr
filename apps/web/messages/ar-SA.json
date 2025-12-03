@@ -6,7 +6,9 @@
       "token_expired": "انتهت صلاحية الرمز المميز. حاول مرة أخرى.",
       "config_error": "خطأ في التكوين. اتصل بالدعم الفني.",
       "auth_failed": "فشل في المصادقة. حاول مرة أخرى."
-    }
+    },
+    "authenticationFailed": "فشلت المصادقة",
+    "successfullyAuthenticated": "تم المصادقة بنجاح!"
   },
   "authProviders": {
     "title": "مزودي المصادقة",
@@ -174,7 +176,14 @@
     "tabs": {
       "shareDetails": "تفاصيل المشاركة",
       "selectFiles": "اختيار الملفات"
-    }
+    },
+    "errors": {
+      "nameRequired": "اسم المشاركة مطلوب",
+      "selectItems": "يرجى اختيار ملف أو مجلد واحد على الأقل"
+    },
+    "itemsSelected": "{count} عنصر محدد",
+    "passwordPlaceholder": "أدخل كلمة المرور",
+    "selectItemsPrompt": "اختر الملفات والمجلدات للمشاركة"
   },
   "customization": {
     "breadcrumb": "التخصيص",
@@ -340,7 +349,8 @@
     "addToShare": "إضافة إلى المشاركة",
     "removeFromShare": "إزالة من المشاركة",
     "saveChanges": "حفظ التغييرات",
-    "editFolder": "تحرير المجلد"
+    "editFolder": "تحرير المجلد",
+    "itemsSelected": "{count} عنصر محدد"
   },
   "files": {
     "title": "جميع الملفات",
@@ -376,7 +386,12 @@
       "description": "ارفع ملفك الأول أو أنشئ مجلدًا للبدء"
     },
     "files": "ملفات",
-    "folders": "مجلدات"
+    "folders": "مجلدات",
+    "errors": {
+      "moveItemsFailed": "فشل نقل العناصر. يرجى المحاولة مرة أخرى.",
+      "cannotMoveHere": "لا يمكن نقل العناصر إلى هذا الموقع"
+    },
+    "openFolder": "فتح المجلد"
   },
   "filesTable": {
     "ariaLabel": "جدول الملفات",
@@ -539,7 +554,10 @@
     "movingTo": "النقل إلى:",
     "title": "نقل {count, plural, =1 {عنصر} other {عناصر}}",
     "description": "نقل {count, plural, =1 {عنصر} other {عناصر}} إلى موقع جديد",
-    "success": "تم نقل {count} {count, plural, =1 {عنصر} other {عناصر}} بنجاح"
+    "success": "تم نقل {count} {count, plural, =1 {عنصر} other {عناصر}} بنجاح",
+    "errors": {
+      "moveFailed": "فشل نقل العناصر"
+    }
   },
   "navbar": {
     "logoAlt": "شعار التطبيق",
@@ -1149,14 +1167,10 @@
     "components": {
       "fileRow": {
         "addDescription": "إضافة وصف...",
-        "anonymous": "مجهول",
-        "deleteError": "خطأ في حذف الملف",
-        "deleteSuccess": "تم حذف الملف بنجاح"
+        "anonymous": "مجهول"
       },
       "fileActions": {
         "edit": "تحرير",
-        "save": "حفظ",
-        "cancel": "إلغاء",
         "preview": "معاينة",
         "download": "تحميل",
         "delete": "حذف",
@@ -1379,16 +1393,6 @@
     "deleteTitle": "حذف المشاركة",
     "deleteConfirmation": "هل أنت متأكد من أنك تريد حذف هذه المشاركة؟ لا يمكن التراجع عن هذا الإجراء.",
     "editTitle": "تحرير المشاركة",
-    "nameLabel": "اسم المشاركة",
-    "descriptionLabel": "الوصف",
-    "descriptionPlaceholder": "أدخل وصفاً (اختياري)",
-    "expirationLabel": "تاريخ انتهاء الصلاحية",
-    "expirationPlaceholder": "YYYY/MM/DD HH:MM",
-    "maxViewsLabel": "الحد الأقصى للمشاهدات",
-    "maxViewsPlaceholder": "اتركه فارغاً للمشاهدات غير المحدودة",
-    "passwordProtection": "محمي بكلمة مرور",
-    "passwordLabel": "كلمة المرور",
-    "passwordPlaceholder": "أدخل كلمة المرور",
     "newPasswordLabel": "كلمة المرور الجديدة (اتركها فارغة للاحتفاظ بالحالية)",
     "newPasswordPlaceholder": "أدخل كلمة المرور الجديدة",
     "manageFilesTitle": "إدارة الملفات",
@@ -1407,7 +1411,9 @@
     "linkDescriptionFile": "إنشاء رابط مخصص لمشاركة الملف",
     "linkDescriptionFolder": "إنشاء رابط مخصص لمشاركة المجلد",
     "linkReady": "رابط المشاركة جاهز:",
-    "linkTitle": "إنشاء رابط"
+    "linkTitle": "إنشاء رابط",
+    "itemsSelected": "{count} عنصر محدد",
+    "manageFilesDescription": "اختر الملفات والمجلدات لتضمينها في هذه المشاركة"
   },
   "shareDetails": {
     "title": "تفاصيل المشاركة",
@@ -1423,7 +1429,6 @@
     "noLink": "لم يتم إنشاء رابط بعد",
     "copyLink": "نسخ الرابط",
     "openLink": "فتح في علامة تبويب جديدة",
-    "linkCopied": "تم نسخ الرابط إلى الحافظة",
     "views": "المشاهدات",
     "dates": "التواريخ",
     "created": "تم الإنشاء",
@@ -1471,28 +1476,6 @@
     "expires": "تنتهي صلاحيته:",
     "expirationDate": "تاريخ انتهاء الصلاحية"
   },
-  "shareFile": {
-    "title": "مشاركة ملف",
-    "linkTitle": "إنشاء رابط",
-    "nameLabel": "اسم المشاركة",
-    "namePlaceholder": "أدخل اسم المشاركة",
-    "descriptionLabel": "الوصف",
-    "descriptionPlaceholder": "أدخل وصفاً (اختياري)",
-    "expirationLabel": "تاريخ انتهاء الصلاحية",
-    "expirationPlaceholder": "YYYY/MM/DD HH:MM",
-    "maxViewsLabel": "الحد الأقصى للمشاهدات",
-    "maxViewsPlaceholder": "اتركه فارغاً للمشاهدات غير المحدودة",
-    "passwordProtection": "محمي بكلمة مرور",
-    "passwordLabel": "كلمة المرور",
-    "passwordPlaceholder": "أدخل كلمة المرور",
-    "linkDescription": "إنشاء رابط مخصص لمشاركة الملف",
-    "aliasLabel": "اسم مستعار للرابط",
-    "aliasPlaceholder": "أدخل اسماً مستعاراً مخصصاً",
-    "linkReady": "رابط المشاركة جاهز:",
-    "createShare": "إنشاء مشاركة",
-    "generateLink": "إنشاء رابط",
-    "copyLink": "نسخ الرابط"
-  },
   "shareManager": {
     "deleteSuccess": "تم حذف المشاركة بنجاح",
     "deleteError": "فشل في حذف المشاركة",
@@ -1522,7 +1505,10 @@
     "noFilesToDownload": "لا توجد ملفات متاحة للتنزيل",
     "singleShareZipName": "{ShareName} _files.zip",
     "zipDownloadError": "فشل في إنشاء ملف مضغوط",
-    "zipDownloadSuccess": "تم تنزيل ملف zip بنجاح"
+    "zipDownloadSuccess": "تم تنزيل ملف zip بنجاح",
+    "errors": {
+      "multipleDownloadNotSupported": "تنزيل مشاركات متعددة غير مدعوم حالياً - يرجى تنزيل المشاركات بشكل فردي"
+    }
   },
   "shareMultipleFiles": {
     "title": "مشاركة ملفات متعددة",
@@ -1919,6 +1905,23 @@
       "inactive": "غير مفعل",
       "admin": "مسؤول",
       "userr": "مستخدم"
+    },
+    "invite": {
+      "button": "إنشاء رابط دعوة",
+      "title": "إنشاء رابط دعوة للمستخدم",
+      "description": "إنشاء رابط يستخدم لمرة واحدة يسمح لشخص ما بإنشاء حسابه الخاص. ينتهي الرابط بعد 15 دقيقة.",
+      "generating": "جاري الإنشاء...",
+      "generate": "إنشاء الرابط",
+      "generated": "تم إنشاء رابط الدعوة بنجاح!",
+      "linkReady": "رابط الدعوة جاهز",
+      "linkReadyDescription": "شارك هذا الرابط مع الشخص الذي تريد دعوته. سيتمكن من إنشاء حسابه الخاص كمستخدم عادي.",
+      "copyLink": "نسخ الرابط",
+      "linkCopied": "تم نسخ رابط الدعوة إلى الحافظة!",
+      "expiresIn": "ينتهي بعد 15 دقيقة",
+      "close": "إغلاق",
+      "errors": {
+        "generateFailed": "فشل في إنشاء رابط الدعوة"
+      }
     }
   },
   "validation": {
@@ -1937,15 +1940,62 @@
     "required": "هذا الحقل مطلوب"
   },
   "embedCode": {
-    "title": "تضمين الصورة",
-    "description": "استخدم هذه الأكواد لتضمين هذه الصورة في المنتديات أو المواقع الإلكترونية أو المنصات الأخرى",
+    "title": "تضمين الوسائط",
+    "description": "استخدم هذه الأكواد لتضمين هذه الوسائط في المنتديات أو المواقع الإلكترونية أو المنصات الأخرى",
     "tabs": {
       "directLink": "رابط مباشر",
       "html": "HTML",
       "bbcode": "BBCode"
     },
-    "directLinkDescription": "عنوان URL مباشر لملف الصورة",
-    "htmlDescription": "استخدم هذا الكود لتضمين الصورة في صفحات HTML",
-    "bbcodeDescription": "استخدم هذا الكود لتضمين الصورة في المنتديات التي تدعم BBCode"
+    "directLinkDescription": "عنوان URL مباشر لملف الوسائط",
+    "htmlDescription": "استخدم هذا الكود لتضمين الوسائط في صفحات HTML",
+    "bbcodeDescription": "استخدم هذا الكود لتضمين الوسائط في المنتديات التي تدعم BBCode"
+  },
+  "contextMenu": {
+    "newFolder": "مجلد جديد",
+    "uploadFile": "رفع ملف"
+  },
+  "registerWithInvite": {
+    "title": "إنشاء حسابك",
+    "description": "املأ المعلومات أدناه لإنشاء حسابك",
+    "labels": {
+      "firstName": "الاسم الأول",
+      "firstNamePlaceholder": "أدخل اسمك الأول",
+      "lastName": "اسم العائلة",
+      "lastNamePlaceholder": "أدخل اسم عائلتك",
+      "username": "اسم المستخدم",
+      "usernamePlaceholder": "اختر اسم مستخدم",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "أدخل بريدك الإلكتروني",
+      "password": "كلمة المرور",
+      "passwordPlaceholder": "اختر كلمة مرور",
+      "confirmPassword": "تأكيد كلمة المرور",
+      "confirmPasswordPlaceholder": "أكد كلمة مرورك"
+    },
+    "buttons": {
+      "creating": "جاري إنشاء الحساب...",
+      "createAccount": "إنشاء حساب"
+    },
+    "validation": {
+      "firstNameRequired": "الاسم الأول مطلوب",
+      "lastNameRequired": "اسم العائلة مطلوب",
+      "usernameMinLength": "يجب أن يحتوي اسم المستخدم على 3 أحرف على الأقل",
+      "invalidEmail": "البريد الإلكتروني غير صالح",
+      "passwordMinLength": "يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل",
+      "passwordsMatch": "يجب أن تتطابق كلمتا المرور"
+    },
+    "messages": {
+      "success": "تم إنشاء الحساب بنجاح! جارٍ إعادة التوجيه إلى تسجيل الدخول...",
+      "redirecting": "جارٍ إعادة التوجيه إلى تسجيل الدخول..."
+    },
+    "errors": {
+      "invalidToken": "خطأ في رابط الدعوة",
+      "tokenUsed": "تم استخدام رابط الدعوة هذا بالفعل",
+      "tokenExpired": "انتهت صلاحية رابط الدعوة هذا",
+      "usernameExists": "اسم المستخدم موجود بالفعل",
+      "emailExists": "البريد الإلكتروني موجود بالفعل",
+      "createFailed": "فشل في إنشاء الحساب. يرجى المحاولة مرة أخرى."
+    },
+    "pageTitle": "إنشاء حساب"
   }
 }

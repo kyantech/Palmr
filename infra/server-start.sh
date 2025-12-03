@@ -1,7 +1,35 @@
 #!/bin/sh
 set -e
 
-echo "🌴 Starting Palmr Server..."
+echo "🚀 Starting Palmr Server..."
+
+# Wait for storage system credentials to be ready (if using internal storage)
+if [ "${ENABLE_S3}" != "true" ]; then
+    echo "⏳ Waiting for internal storage to initialize..."
+    MAX_WAIT=60
+    WAIT_COUNT=0
+    
+    while [ $WAIT_COUNT -lt $MAX_WAIT ]; do
+        if [ -f "/app/server/.minio-credentials" ]; then
+            echo "✅ Internal storage ready!"
+            break
+        fi
+        
+        WAIT_COUNT=$((WAIT_COUNT + 1))
+        echo "   Waiting for storage... ($WAIT_COUNT/$MAX_WAIT)"
+        sleep 1
+    done
+    
+    if [ $WAIT_COUNT -eq $MAX_WAIT ]; then
+        echo "⚠️  WARNING: Internal storage not ready after ${MAX_WAIT}s"
+        echo "⚠️  Server will start but storage may not work until ready"
+    fi
+fi
+
+# Load storage system credentials if available
+if [ -f "/app/load-minio-credentials.sh" ]; then
+    . /app/load-minio-credentials.sh
+fi
 
 TARGET_UID=${PALMR_UID:-1000}
 TARGET_GID=${PALMR_GID:-1000}
@@ -31,8 +59,10 @@ echo "📁 Creating data directories..."
 mkdir -p /app/server/prisma /app/server/uploads /app/server/temp-uploads
 
 if [ "$(id -u)" = "0" ]; then
-    echo "🔐 Ensuring proper ownership before database operations..."
-    chown -R $TARGET_UID:$TARGET_GID /app/server/prisma 2>/dev/null || true
+    echo "🔐 Ensuring proper ownership for all operations..."
+    # Fix permissions for entire /app/server to allow migration and storage system operations
+    chown -R $TARGET_UID:$TARGET_GID /app/server 2>/dev/null || true
+    chmod -R 755 /app/server 2>/dev/null || true
 fi
 
 run_as_user() {

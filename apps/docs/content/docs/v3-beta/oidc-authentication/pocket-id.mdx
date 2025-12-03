@@ -1,0 +1,279 @@
+---
+title: Pocket ID
+icon: IdCardLanyard
+---
+
+import { ZoomableImage } from "@/components/ui/zoomable-image";
+
+Pocket ID is one of Palmr's officially supported OIDC providers, offering a robust and flexible identity management solution. This integration allows users to sign in to Palmr using Pocket ID's authentication system, making it perfect for organizations that need a self-hosted identity provider with OIDC support.
+
+<ZoomableImage src="/assets/v3/oidc/pocket-id/sign-in-with-pocket-id.png" alt="Sign in with Pocket ID" />
+
+## Why use Pocket ID authentication?
+
+Pocket ID authentication provides several advantages for organizations seeking a self-hosted identity solution:
+
+- **Self-hosted control** - Full control over your authentication infrastructure and data
+- **OIDC compliance** - Standard OpenID Connect implementation for seamless integration
+- **Flexible deployment** - Deploy on any infrastructure that suits your needs
+- **Automatic discovery** - Supports OIDC discovery for streamlined configuration
+- **Simple configuration** - Intuitive setup process with minimal complexity
+- **Data sovereignty** - Keep all authentication data within your infrastructure
+- **Cost-effective** - No per-user pricing, perfect for growing organizations
+
+---
+
+## Prerequisites
+
+Before configuring Pocket ID authentication, ensure you have:
+
+- **Pocket ID instance** - A running Pocket ID server accessible via HTTPS
+- **Admin privileges in Palmr** - Required to configure OIDC settings
+- **Domain configuration** - For production deployments with custom domains
+
+> **Note:** Pocket ID is pre-configured as an official provider in Palmr, which means the technical configuration is handled automatically. You only need to provide your OAuth credentials.
+
+---
+
+## Setting up Pocket ID Application
+
+### Creating a Pocket ID application
+
+To get started with Pocket ID authentication, you'll need to create an application in your Pocket ID admin interface.
+
+1. **Navigate to Pocket ID Admin**: Go to your Pocket ID instance URL (e.g., `https://your-pocket-id.domain.com`)
+
+<ZoomableImage src="/assets/v3/oidc/pocket-id/pocket-id-console.png" alt="Pocket ID Console" />
+
+2. **Navigate to OIDC Clients**: Click **"OIDC Clients"** in the applications in the left sidebar, you will be redirected to the OIDC Clients page
+
+<ZoomableImage src="/assets/v3/oidc/pocket-id/oidc-clients.png" alt="OIDC Clients" />
+
+3. **Create a new OIDC Client**: Click **"Add OIDC Client"** button in the OIDC Clients page
+
+<ZoomableImage src="/assets/v3/oidc/pocket-id/create-oidc-client-button.png" alt="Create OIDC Client Button" />
+
+Configure the following settings:
+
+- **Name**: "Palmr File Sharing" (or your preferred name)
+- **Public Client**: "Diasabled"
+- **PKCE**: "Disabled"
+- **Logo**: "Upload a logo image"
+
+<ZoomableImage src="/assets/v3/oidc/pocket-id/create-oidc-client.png" alt="Create OIDC Client" />
+
+### Configuring application URLs
+
+You'll need to configure several URLs in your Pocket ID application settings. Here's what to add for each environment:
+
+### Redirect URIs
+
+| Environment | URL                                                                |
+| ----------- | ------------------------------------------------------------------ |
+| Production  | `https://yourdomain.com/api/auth/providers/pocketid/callback`      |
+| Development | `http://localhost:3000/api/auth/providers/pocketid/callback`       |
+| Custom Port | `https://yourdomain.com:5487/api/auth/providers/pocketid/callback` |
+
+### Post Logout Redirect URIs
+
+| Environment | URL                           |
+| ----------- | ----------------------------- |
+| Production  | `https://yourdomain.com`      |
+| Development | `http://localhost:3000`       |
+| Custom Port | `https://yourdomain.com:5487` |
+
+> **Note:** Replace `yourdomain.com` with your actual domain name in all production and custom port URLs.
+> **Note:** You can add multiple redirect URIs for different environments (development, staging, production).
+
+<ZoomableImage src="/assets/v3/oidc/pocket-id/config-urls.png" alt="Pocket ID Application URLs Configuration" />
+
+### Getting OAuth credentials
+
+After creating your application, you'll receive your OAuth credentials:
+
+<ZoomableImage
+  src="/assets/v3/oidc/pocket-id/credentials.png"
+  alt="Pocket ID OAuth Credentials"
+  legend="The client ID and client secret shown in the image are examples only (fake credentials). You must use your own credentials from Pocket ID."
+/>
+
+Save these credentials securely - you'll need them to configure Palmr:
+
+- Client ID
+- Client Secret
+- Provider URL (your Pocket ID instance URL)
+
+---
+
+## Configuring Palmr
+
+### Accessing OIDC settings
+
+To configure Pocket ID authentication in Palmr:
+
+1. **Login as administrator**: Sign in to Palmr with an admin account
+2. **Access settings**: Click your profile picture in the header and select **Settings**
+3. **Navigate to authentication**: Find and click on the **Authentication Providers** section
+
+<ZoomableImage src="/assets/v3/oidc/auth-providers.png" alt="Palmr Authentication Providers" />
+
+### Enabling Pocket ID provider
+
+1. **Locate Pocket ID**: Find Pocket ID in the list of available providers
+2. **Enable the provider**: Toggle the status to **Enabled**
+
+<ZoomableImage src="/assets/v3/oidc/pocket-id/enabled-pocket-id.png" alt="Palmr Pocket ID Provider Enabled" />
+
+3. **Configure credentials**:
+   - **Provider URL**: Your Pocket ID server URL (e.g., `https://auth.yourdomain.com`)
+   - **Client ID**: Paste the Client ID from your Pocket ID application
+   - **Client Secret**: Paste the Client Secret from your Pocket ID application
+
+<ZoomableImage
+  src="/assets/v3/oidc/pocket-id/edit-pocket-id.png"
+  alt="Edit Pocket ID Provider"
+  legend="This is a fake application, you have to use your own credentials."
+/>
+
+### Advanced configuration options
+
+Configure additional settings to customize the authentication behavior:
+
+**Auto Registration**: Enable to automatically create user accounts when someone authenticates for the first time.
+
+**Sort Order**: Control where the Pocket ID login button appears relative to other authentication providers.
+
+**Icon**: Choose a custom icon for the Pocket ID login button (default is `Key`).
+
+<ZoomableImage src="/assets/v3/oidc/pocket-id/pocket-id-icon.png" alt="Pocket ID Icon" />
+
+---
+
+## Account linking
+
+By default, if a user is already registered in Palmr with their Pocket ID email, they will be automatically linked to their Palmr account.
+
+> **Note:** You can't disable account linking. If you want to unlink a user from their Pocket ID account, you need to delete the user from Palmr.
+
+---
+
+## Technical configuration
+
+Pocket ID's technical configuration is handled automatically through OIDC discovery, but understanding the setup can help with troubleshooting:
+
+```yaml
+Provider Type: OAuth 2.0 with OIDC Discovery
+Issuer URL: https://your-pocket-id.domain.com
+Authorization Endpoint: /authorize
+Token Endpoint: /api/oidc/token
+UserInfo Endpoint: /api/oidc/userinfo
+Scopes: openid profile email
+```
+
+### Field mappings
+
+Palmr automatically maps Pocket ID user information to local user accounts:
+
+- **User ID**: Maps from Pocket ID's `sub` field
+- **Email**: Maps from Pocket ID's `email` field
+- **Name**: Maps from Pocket ID's `name` field, falls back to `preferred_username`
+- **First Name**: Maps from Pocket ID's `given_name` field
+- **Last Name**: Maps from Pocket ID's `family_name` field
+- **Avatar**: Maps from Pocket ID's `picture` field
+
+---
+
+## Testing the configuration
+
+### Verifying the setup
+
+After configuring Pocket ID authentication, test the integration:
+
+1. **Check login page**: Verify the "Sign in with Pocket ID" button appears
+2. **Test authentication flow**: Click the button and complete authentication
+3. **Verify user creation**: Confirm new user account creation (if auto-registration is enabled)
+
+### Login flow verification
+
+The complete authentication process should work as follows:
+
+1. User clicks "Sign in with Pocket ID"
+2. User is redirected to Pocket ID login page
+3. User authenticates with their credentials
+4. Pocket ID redirects back to Palmr
+5. Palmr creates or updates the user account
+6. User gains access to Palmr
+
+---
+
+## Troubleshooting common issues
+
+### Redirect URI mismatch
+
+**Error**: `invalid_redirect_uri`
+
+**Solution**:
+
+1. Verify the exact callback URL in your Pocket ID application
+2. Check for protocol mismatches (http vs https)
+3. Ensure no trailing slashes unless specified
+4. Add development URLs if testing locally
+
+### Authentication failures
+
+**Error**: `access_denied` or `unauthorized_client`
+
+**Solution**:
+
+1. Verify Client ID and Secret are correct
+2. Check if the application is enabled in Pocket ID
+3. Ensure required scopes are configured
+4. Verify the user has necessary permissions
+
+### Discovery endpoint issues
+
+**Error**: Cannot fetch OIDC configuration
+
+**Solution**:
+
+1. Verify your Pocket ID server is accessible
+2. Check if the discovery endpoint (`/.well-known/openid-configuration`) is available
+3. Ensure SSL certificates are valid
+4. Check network connectivity and firewall rules
+
+---
+
+## Security best practices
+
+### Credential management
+
+- **Secure storage**: Keep Client Secret secure and never commit to version control
+- **Regular rotation**: Periodically rotate Client Secret
+- **Environment variables**: Store credentials in environment variables
+- **Access monitoring**: Regular review of authentication logs
+
+### Production considerations
+
+- **HTTPS required**: Always use HTTPS in production
+- **Valid certificates**: Ensure SSL certificates are valid
+- **Regular updates**: Keep Pocket ID server updated
+- **Backup strategy**: Regular backups of Pocket ID configuration
+
+---
+
+## Next steps
+
+After configuring Pocket ID authentication:
+
+- **Monitor usage**: Track authentication patterns
+- **Configure MFA**: Set up multi-factor authentication if needed
+- **User management**: Review auto-registration settings
+- **Backup verification**: Test backup and restore procedures
+
+For more information about OIDC authentication in Palmr, see the [OIDC Authentication overview](/docs/v3-beta/oidc-authentication).
+
+## Useful resources
+
+- [Pocket ID Documentation](https://docs.pocket-id.org)
+- [OIDC Specification](https://openid.net/specs/openid-connect-core-1_0.html)
+- [Palmr OIDC Overview](/docs/v3-beta/oidc-authentication)

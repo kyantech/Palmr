@@ -5,10 +5,20 @@ RUN apk add --no-cache \
   gcompat \
   supervisor \
   curl \
+  wget \
+  openssl \
   su-exec
 
 # Enable pnpm
 RUN corepack enable pnpm
+
+# Install storage system for S3-compatible storage
+COPY infra/install-minio.sh /tmp/install-minio.sh
+RUN chmod +x /tmp/install-minio.sh && /tmp/install-minio.sh
+
+# Install storage client (mc)
+RUN wget https://dl.min.io/client/mc/release/linux-amd64/mc -O /usr/local/bin/mc && \
+  chmod +x /usr/local/bin/mc
 
 # Set working directory
 WORKDIR /app
@@ -119,11 +129,14 @@ RUN mkdir -p /etc/supervisor/conf.d
 
 # Copy server start script and configuration files
 COPY infra/server-start.sh /app/server-start.sh
+COPY infra/start-minio.sh /app/start-minio.sh
+COPY infra/minio-setup.sh /app/minio-setup.sh
+COPY infra/load-minio-credentials.sh /app/load-minio-credentials.sh
 COPY infra/configs.json /app/infra/configs.json
 COPY infra/providers.json /app/infra/providers.json
 COPY infra/check-missing.js /app/infra/check-missing.js
-RUN chmod +x /app/server-start.sh
-RUN chown -R palmr:nodejs /app/server-start.sh /app/infra
+RUN chmod +x /app/server-start.sh /app/start-minio.sh /app/minio-setup.sh /app/load-minio-credentials.sh
+RUN chown -R palmr:nodejs /app/server-start.sh /app/start-minio.sh /app/minio-setup.sh /app/load-minio-credentials.sh /app/infra
 
 # Copy supervisor configuration
 COPY infra/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
@@ -144,9 +157,42 @@ export DATABASE_URL="file:/app/server/prisma/palmr.db"
 export NEXT_PUBLIC_DEFAULT_LANGUAGE=\${DEFAULT_LANGUAGE:-en-US}
 
 # Ensure /app/server directory exists for bind mounts
-mkdir -p /app/server/uploads /app/server/temp-uploads /app/server/prisma
+mkdir -p /app/server/uploads /app/server/temp-uploads /app/server/prisma /app/server/minio-data
 
-echo "Data directories ready for first run..."
+# CRITICAL: Fix permissions BEFORE starting any services
+# This runs on EVERY startup to handle updates and corrupted metadata
+echo "🔐 Fixing permissions for internal storage..."
+
+# DYNAMIC: Detect palmr user's actual UID and GID
+# Works with any Docker --user configuration
+PALMR_UID=\$(id -u palmr 2>/dev/null || echo "1001")
+PALMR_GID=\$(id -g palmr 2>/dev/null || echo "1001")
+echo "   Target user: palmr (UID:\$PALMR_UID, GID:\$PALMR_GID)"
+
+# ALWAYS remove storage system metadata to prevent corruption issues
+# This is safe - storage system recreates it automatically
+# User data (files) are NOT in .minio.sys, they're safe
+if [ -d "/app/server/minio-data/.minio.sys" ]; then
+    echo "   🧹 Cleaning storage system metadata (safe, auto-regenerated)..."
+    rm -rf /app/server/minio-data/.minio.sys 2>/dev/null || true
+fi
+
+# Fix ownership and permissions (safe for updates)
+echo "   🔧 Setting ownership and permissions..."
+chown -R \$PALMR_UID:\$PALMR_GID /app/server 2>/dev/null || echo "   ⚠️  chown skipped"
+chmod -R 755 /app/server 2>/dev/null || echo "   ⚠️  chmod skipped"
+
+# Verify critical directories are writable
+if touch /app/server/.test-write 2>/dev/null; then
+    rm -f /app/server/.test-write
+    echo "   ✅ Storage directory is writable"
+else
+    echo "   ❌ FATAL: /app/server is NOT writable!"
+    echo "   Check Docker volume permissions"
+    ls -la /app/server 2>/dev/null || true
+fi
+
+echo "✅ Storage ready, starting services..."
 
 # Start supervisor
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
@@ -158,7 +204,7 @@ RUN chmod +x /app/start.sh
 VOLUME ["/app/server"]
 
 # Expose ports
-EXPOSE 3333 5487
+EXPOSE 3333 5487 9379 9378
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
