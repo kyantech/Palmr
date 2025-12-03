@@ -1,6 +1,6 @@
 {
   "name": "palmr-docs",
-  "version": "3.2.5-beta",
+  "version": "3.3.0-beta",
   "description": "Docs for Palmr",
   "private": true,
   "author": "Daniel Luiz Alves <daniel@kyantech.com.br>",
@@ -28,6 +28,7 @@
     "validate": "pnpm lint && pnpm type-check"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.15",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "fumadocs-core": "15.2.7",

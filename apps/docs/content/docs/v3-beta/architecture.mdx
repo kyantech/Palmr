@@ -51,7 +51,7 @@ If you need to protect sensitive files at rest, you can enable encryption by set
 
 For optimal performance with encryption enabled, ensure your hardware supports AES-NI acceleration (check with `cat /proc/cpuinfo | grep aes` on Linux).
 
-As an alternative, consider using S3-compatible object storage (e.g., AWS S3 or MinIO), which can offload file storage from the local filesystem and potentially reduce local CPU overhead for encryption/decryption. See [S3 Providers](/docs/3.2-beta/s3-providers) for setup instructions.
+As an alternative, consider using S3-compatible object storage (e.g., AWS S3 or MinIO), which can offload file storage from the local filesystem and potentially reduce local CPU overhead for encryption/decryption. See [S3 Providers](/docs/v3-beta/s3-providers) for setup instructions.
 
 ### Fastify + Zod + TypeScript
 
@@ -127,7 +127,7 @@ Palmr. is designed to be flexible in how you handle file storage:
 
 **Optional S3-compatible storage:**
 
-- Enable S3 storage by setting `ENABLE_S3=true`, look at [S3 Providers](/docs/3.2-beta/s3-providers) for more information.
+- Enable S3 storage by setting `ENABLE_S3=true`, look at [S3 Providers](/docs/v3-beta/s3-providers) for more information.
 - Compatible with AWS S3, MinIO, and other S3-compatible services
 - Ideal for cloud deployments and distributed setups
 - Provides additional scalability and redundancy options

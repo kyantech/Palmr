@@ -25,30 +25,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         <Banner variant="rainbow" id="banner-21-beta">
           <Link href={LATEST_VERSION_PATH}>Palmr. {LATEST_VERSION} has released!</Link>
         </Banner>
-        <RootProvider
-          search={{
-            options: {
-              defaultTag: "3.2-beta",
-              tags: [
-                {
-                  name: "v2.0.0 Beta",
-                  value: "2.0.0-beta",
-                },
-                {
-                  name: "v3.0 Beta ✨",
-                  value: "3.2-beta",
-                  props: {
-                    style: {
-                      border: "1px solid rgba(0,165,80,0.2)",
-                    },
-                  },
-                },
-              ],
-            },
-          }}
-        >
-          {children}
-        </RootProvider>
+        <RootProvider>{children}</RootProvider>
       </body>
     </html>
   );

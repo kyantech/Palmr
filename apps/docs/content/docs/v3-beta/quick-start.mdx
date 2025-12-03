@@ -1,0 +1,386 @@
+---
+title: Quick Start (Docker)
+icon: "Rocket"
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
+import { Card, CardGrid } from "@/components/ui/card";
+
+Welcome to the fastest way to deploy <span className="font-bold">Palmr.</span> - your secure, self-hosted file sharing solution. This guide will have you up and running in minutes, whether you're new to self-hosting or an experienced developer.
+
+Palmr. offers flexible deployment options to match your infrastructure needs. This guide focuses on Docker deployment with our recommended filesystem storage, perfect for most use cases.
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+- **Docker** - Container runtime ([installation guide](https://docs.docker.com/get-docker/))
+- **Docker Compose** - Multi-container orchestration ([installation guide](https://docs.docker.com/compose/install/))
+- **2GB+ available disk space** for the application and your files
+- **Port 5487** available for the web interface
+- **Port 9379** available for internal S3-compatible storage (**REQUIRED** unless using external S3)
+- **Port 3333** available for API access (optional)
+
+<Callout type="warn">
+  **Critical**: Port **9379** is **REQUIRED** for internal storage operations. This port exposes Palmr's built-in S3-compatible storage server. If you cannot expose this port, you **must** configure external S3 storage using the `ENABLE_S3=true` option.
+</Callout>
+
+<Callout>
+  **Platform Support**: Palmr. is developed on macOS and extensively tested on Linux servers. While we haven't formally
+  tested other platforms, Docker's cross-platform nature should ensure compatibility. Report any issues on our [GitHub
+  repository](https://github.com/kyantech/Palmr/issues).
+</Callout>
+
+## Storage Options
+
+Palmr. supports two storage approaches for persistent data:
+
+- **Named Volumes (Recommended)** - Docker-managed storage with optimal performance and no permission issues
+- **Bind Mounts** - Direct host filesystem access, ideal for development and direct file management
+
+## Deployment Options
+
+Choose your storage method based on your needs:
+
+<Tabs items={['Named Volumes (Recommended)', 'Bind Mounts']}>
+  <Tab value="Named Volumes (Recommended)">
+    Docker-managed storage that provides the best balance of performance, security, and ease of use:
+
+    - **No Permission Issues**: Docker handles all permission management automatically
+    - **Performance**: Optimized for container workloads with better I/O performance
+    - **Production Ready**: Recommended for production deployments
+
+    ### Configuration
+
+    Create a `docker-compose.yml` file:
+
+    ```yaml
+    services:
+      palmr:
+        image: kyantech/palmr:latest
+        container_name: palmr
+        environment:
+          # ==============================================================================
+          # STORAGE CONFIGURATION
+          # ==============================================================================
+          # By default, Palmr uses internal storage - ZERO CONFIG NEEDED!
+          # Files are managed automatically with no setup required.
+          #
+          # Want to use external S3 storage (AWS, S3-compatible, etc)? Just add:
+          # - ENABLE_S3=true                    # Enable external S3
+          # - S3_ENDPOINT=s3.amazonaws.com      # Your S3 endpoint
+          # - S3_ACCESS_KEY=your-access-key     # Your access key
+          # - S3_SECRET_KEY=your-secret-key     # Your secret key
+          # - S3_BUCKET_NAME=palmr-files        # Your bucket name
+          # - S3_REGION=us-east-1               # Region (optional)
+          # - S3_USE_SSL=true                   # Use SSL (optional)
+          # - S3_FORCE_PATH_STYLE=false         # Path-style URLs (optional, true for Minio)
+          # - S3_REJECT_UNAUTHORIZED=true       # Reject self-signed certs (optional)
+          #
+          # ==============================================================================
+          # USER/GROUP CONFIGURATION
+          # ==============================================================================
+          # - PALMR_UID=1000                    # UID for container processes (optional)
+          # - PALMR_GID=1000                    # GID for container processes (optional)
+          #
+          # ==============================================================================
+          # APPLICATION SETTINGS
+          # ==============================================================================
+          # - DEFAULT_LANGUAGE=en-US            # Default language (optional)
+          # - PRESIGNED_URL_EXPIRATION=3600     # Presigned URL expiration in seconds (optional)
+          # - SECURE_SITE=true                  # Set true if using HTTPS reverse proxy (optional)
+          STORAGE_URL: "https://your-domain:9379" # REQUIRED for internal storage: Full storage URL with protocol. Replace with your actual domain/IP.
+          #
+        ports:
+          - "9379:9379" # Internal storage (S3-compatible, REQUIRED for file uploads when using internal storage)
+          - "5487:5487" # Web interface
+          - "3333:3333" # API (optional, only if you need direct API access)
+        volumes:
+          - palmr_data:/app/server
+        restart: unless-stopped
+
+    volumes:
+      palmr_data:
+    ```
+
+    <Callout type="info">
+      **Having upload or permission issues?** Add `PALMR_UID=1000` and `PALMR_GID=1000` to your environment variables. Check our [UID/GID Configuration](/docs/v3-beta/uid-gid-configuration) guide for more details.
+    </Callout>
+
+    ### Deploy
+
+    ```bash
+    docker-compose up -d
+    ```
+
+  </Tab>
+  <Tab value="Bind Mounts">
+    Direct mapping to host filesystem directories, providing direct file access:
+
+    - **Direct Access**: Files are directly accessible from your host system
+    - **Development Friendly**: Easy to inspect, modify, or backup files manually
+    - **Platform Dependent**: May require UID/GID configuration, especially on NAS systems
+
+    ### Configuration
+
+    Create a `docker-compose.yml` file:
+
+    ```yaml
+    services:
+      palmr:
+        image: kyantech/palmr:latest
+        container_name: palmr
+        environment:
+          # ==============================================================================
+          # STORAGE CONFIGURATION
+          # ==============================================================================
+          # By default, Palmr uses internal storage - ZERO CONFIG NEEDED!
+          # Files are managed automatically with no setup required.
+          #
+          # Want to use external S3 storage (AWS, S3-compatible, etc)? Just add:
+          # - ENABLE_S3=true                    # Enable external S3
+          # - S3_ENDPOINT=s3.amazonaws.com      # Your S3 endpoint
+          # - S3_ACCESS_KEY=your-access-key     # Your access key
+          # - S3_SECRET_KEY=your-secret-key     # Your secret key
+          # - S3_BUCKET_NAME=palmr-files        # Your bucket name
+          # - S3_REGION=us-east-1               # Region (optional)
+          # - S3_USE_SSL=true                   # Use SSL (optional)
+          # - S3_FORCE_PATH_STYLE=false         # Path-style URLs (optional, true for Minio)
+          # - S3_REJECT_UNAUTHORIZED=true       # Reject self-signed certs (optional)
+          #
+          # ==============================================================================
+          # USER/GROUP CONFIGURATION
+          # ==============================================================================
+          # - PALMR_UID=1000                    # UID for container processes (optional)
+          # - PALMR_GID=1000                    # GID for container processes (optional)
+          #
+          # ==============================================================================
+          # APPLICATION SETTINGS
+          # ==============================================================================
+          # - DEFAULT_LANGUAGE=en-US            # Default language (optional)
+          # - PRESIGNED_URL_EXPIRATION=3600     # Presigned URL expiration in seconds (optional)
+          # - SECURE_SITE=true                  # Set true if using HTTPS reverse proxy (optional)
+          STORAGE_URL: "https://your-domain:9379" # REQUIRED for internal storage: Full storage URL with protocol. Replace with your actual domain/IP.
+          #
+        ports:
+          - "9379:9379" # Internal storage (S3-compatible, REQUIRED for file uploads when using internal storage)
+          - "5487:5487" # Web interface
+          - "3333:3333" # API (optional, only if you need direct API access)
+        volumes:
+          - ./data:/app/server
+        restart: unless-stopped
+    ```
+
+    <Callout type="info">
+      **Having upload or permission issues?** Add `PALMR_UID=1000` and `PALMR_GID=1000` to your environment variables. Check our [UID/GID Configuration](/docs/v3-beta/uid-gid-configuration) guide for more details.
+    </Callout>
+
+    ### Deploy
+
+    ```bash
+    docker-compose up -d
+    ```
+
+  </Tab>
+</Tabs>
+
+## Configuration
+
+Customize Palmr's behavior with these environment variables:
+
+| Variable                     | Default | Description                                                                                                                       |
+| ---------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `STORAGE_URL`                | -       | **REQUIRED for internal storage**: Full storage URL with protocol (e.g., `https://yourdomain:9379`)                     |
+| `ENABLE_S3`                  | `false` | Enable S3-compatible storage backends (if true, STORAGE_URL is not needed)                                                |
+| `S3_ENDPOINT`                | -       | S3 server endpoint URL (required when using S3)                                                                          |
+| `S3_ACCESS_KEY`              | -       | S3 access key for authentication (required when using S3)                                                                |
+| `S3_SECRET_KEY`              | -       | S3 secret key for authentication (required when using S3)                                                                |
+| `S3_BUCKET_NAME`             | -       | S3 bucket name for file storage (required when using S3)                                                                 |
+| `S3_REGION`                  | -       | S3 region configuration (optional when using S3)                                                                         |
+| `S3_USE_SSL`                 | `true`  | Enable SSL for S3 connections (optional when using S3)                                                                   |
+| `S3_FORCE_PATH_STYLE`        | `false` | Force path-style S3 URLs (optional when using S3, set to `true` for Minio)                                              |
+| `S3_REJECT_UNAUTHORIZED`     | `true`  | Enable strict SSL certificate validation for S3 (set to `false` for self-signed certificates)                           |
+| `PALMR_UID`                  | `1000`  | User ID for container processes (helps with file permissions)                                                            |
+| `PALMR_GID`                  | `1000`  | Group ID for container processes (helps with file permissions)                                                           |
+| `DEFAULT_LANGUAGE`           | `en-US` | Default application language ([see available languages](/docs/v3-beta/available-languages))                             |
+| `PRESIGNED_URL_EXPIRATION`   | `3600`  | Duration in seconds for presigned URL expiration (applies to both internal and S3 storage)                              |
+| `SECURE_SITE`                | `false` | Enable secure cookies for HTTPS/reverse proxy deployments (set to `true` when using HTTPS)                             |
+
+<Callout type="info">
+  **Storage Architecture**: Palmr v3.3+ uses an internal S3-compatible storage server for better performance and compatibility. Port 9379 **must** be accessible for file operations to work properly.
+</Callout>
+
+<Callout>
+  **Using a Reverse Proxy?** Set `SECURE_SITE=true` and check our [Reverse Proxy
+  Configuration](/docs/v3-beta/reverse-proxy-configuration) guide for proper HTTPS setup.
+</Callout>
+
+
+
+## Access Your Instance
+
+Once deployed, open Palmr in your browser:
+
+- **Web Interface**: `http://localhost:5487` (local) or `http://YOUR_SERVER_IP:5487` (remote)
+- **Internal Storage**: `http://localhost:9379` (S3-compatible API, **REQUIRED** for file operations)
+- **API Documentation**: `http://localhost:3333/docs` (if port 3333 is exposed)
+
+<Callout type="info">
+  **Learn More**: For complete API documentation, authentication, and integration examples, see our [API
+  Reference](/docs/v3-beta/api) guide
+</Callout>
+
+<Callout type="warn">
+  **Production Ready?** Configure HTTPS with a valid SSL certificate for secure production deployments.
+</Callout>
+
+---
+
+## Docker CLI Alternative
+
+Prefer Docker commands over Compose? Here are the equivalent commands:
+
+<Tabs items={["Named Volume", "Bind Mount"]}>
+  <Tab value="Named Volume">
+
+    ```bash
+    docker run -d \
+      --name palmr \
+      -e STORAGE_URL="https://your-domain:9379" \
+      # Optional: Configure as needed
+      # -e ENABLE_S3=true \ # Set to true to enable S3-compatible storage
+      # -e S3_ENDPOINT=s3.amazonaws.com \
+      # -e S3_ACCESS_KEY=your-access-key \
+      # -e S3_SECRET_KEY=your-secret-key \
+      # -e S3_BUCKET_NAME=palmr-files \
+      # -e PALMR_UID=1000 \
+      # -e PALMR_GID=1000 \
+      # -e SECURE_SITE=true \
+      # -e DEFAULT_LANGUAGE=en-US \
+      -p 9379:9379 \
+      -p 5487:5487 \
+      -p 3333:3333 \
+      -v palmr_data:/app/server \
+      --restart unless-stopped \
+      kyantech/palmr:latest
+    ```
+
+
+    <Callout type="info">
+      **Permission Issues?** Add `-e PALMR_UID=1000 -e PALMR_GID=1000` to the command above. See our [UID/GID Configuration](/docs/v3-beta/uid-gid-configuration) guide for details.
+    </Callout>
+
+  </Tab>
+
+  <Tab value="Bind Mount">
+
+    ```bash
+    docker run -d \
+      --name palmr \
+      -e STORAGE_URL="https://your-domain:9379" \
+      # Optional: Configure as needed
+      # -e ENABLE_S3=true \ # Set to true to enable S3-compatible storage
+      # -e S3_ENDPOINT=s3.amazonaws.com \
+      # -e S3_ACCESS_KEY=your-access-key \
+      # -e S3_SECRET_KEY=your-secret-key \
+      # -e S3_BUCKET_NAME=palmr-files \
+      # -e PALMR_UID=1000 \
+      # -e PALMR_GID=1000 \
+      # -e SECURE_SITE=true \
+      # -e DEFAULT_LANGUAGE=en-US \
+      -p 9379:9379 \
+      -p 5487:5487 \
+      -p 3333:3333 \
+      -v $(pwd)/data:/app/server \
+      --restart unless-stopped \
+      kyantech/palmr:latest
+    ```
+
+    <Callout type="info">
+      **Permission Issues?** Add `-e PALMR_UID=1000 -e PALMR_GID=1000` to the command above. See our [UID/GID Configuration](/docs/v3-beta/uid-gid-configuration) guide for details.
+    </Callout>
+
+  </Tab>
+</Tabs>
+
+---
+
+## Common Configuration Options
+
+### Storage URL Configuration (REQUIRED)
+
+Palmr requires the `STORAGE_URL` environment variable when using internal storage. This tells Palmr how to generate download URLs for files.
+
+```yaml
+environment:
+  - STORAGE_URL="https://your-domain.com:9379"  # Use your actual domain
+  # or for local testing:
+  - STORAGE_URL="http://localhost:9379"
+```
+
+**Important Notes:**
+- **Must include protocol** (`http://` or `https://`)
+- **Must include port 9379** unless you're using a reverse proxy
+- **Use your actual domain/IP** that clients will access
+- **Not needed if using S3** (`ENABLE_S3=true`)
+
+### Presigned URL Expiration
+
+Palmr. uses temporary URLs (presigned URLs) for secure file access. These URLs expire after a configurable time period to enhance security.
+
+**Default:** 1 hour (3600 seconds)
+
+You can customize this for all storage types (internal or S3) by adding:
+
+```yaml
+environment:
+  - PRESIGNED_URL_EXPIRATION=7200 # 2 hours
+```
+
+**When to adjust:**
+
+- **Shorter time (1800 = 30 min):** Higher security, but users may need to refresh download links
+- **Longer time (7200-21600 = 2-6 hours):** Better for large file transfers, but URLs stay valid longer
+- **Default (3600 = 1 hour):** Good balance for most use cases
+
+
+
+
+
+---
+
+## Maintenance
+
+### Updates
+
+Keep Palmr up to date with the latest features and security patches:
+
+```bash
+docker-compose pull
+docker-compose up -d
+```
+
+
+
+---
+
+## What's Next?
+
+Your Palmr instance is ready! Here's what you can explore:
+
+### Advanced Configuration
+
+- **[UID/GID Configuration](/docs/v3-beta/uid-gid-configuration)** - Configure user permissions for NAS systems and custom environments
+- **[Download Memory Management](/docs/v3-beta/download-memory-management)** - Configure large file download handling and queue system
+- **[S3 Storage](/docs/v3-beta/s3-configuration)** - Scale with Amazon S3 or compatible storage providers
+- **[Manual Installation](/docs/v3-beta/manual-installation)** - Manual installation and custom configurations
+
+### Integration & Development
+
+- **[API Reference](/docs/v3-beta/api)** - Integrate Palmr. with your applications
+
+---
+
+**Questions?** Visit our [GitHub Issues](https://github.com/kyantech/Palmr/issues) or join the community discussions.

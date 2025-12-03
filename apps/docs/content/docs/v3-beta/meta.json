@@ -14,11 +14,8 @@
     "available-languages",
     "uid-gid-configuration",
     "reverse-proxy-configuration",
-    "download-memory-management",
     "password-reset-without-smtp",
-    "cleanup-orphan-files",
     "oidc-authentication",
-    "troubleshooting",
     "---Developers---",
     "architecture",
     "github-architecture",
@@ -31,5 +28,5 @@
     "gh-sponsor"
   ],
   "root": true,
-  "title": "v3.2-beta"
+  "title": "v3-beta"
 }

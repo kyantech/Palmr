@@ -23,13 +23,13 @@ Palmr. supports runtime UID/GID configuration to resolve permission conflicts wh
 
 ```bash
 # When you see errors like:
-EACCES: permission denied, open '/app/server/uploads/file.txt'
+EACCES: permission denied, open '/app/server/data/database.db'
 ```
 
 ```bash
 # Or when checking permissions:
-$ ls -la uploads/
-drwxr-xr-x 2 user user 4096 Jan 15 10:00 uploads/
+$ ls -la data/
+drwxr-xr-x 2 user user 4096 Jan 15 10:00 data/
 # Container tries to write with different UID/GID than directory owner
 ```
 
@@ -47,11 +47,12 @@ services:
     environment:
       - PALMR_UID=1000
       - PALMR_GID=1000
+      - STORAGE_URL="https://your-domain:9379"
     ports:
+      - "9379:9379"
       - "5487:5487"
     volumes:
-      - ./uploads:/app/server/uploads:rw
-      - ./temp-uploads:/app/server/temp-uploads:rw
+      - ./data:/app/server
     restart: unless-stopped
 ```
 
@@ -60,9 +61,9 @@ services:
 If you prefer to keep Palmr's defaults:
 
 ```bash
-# Create directories with correct ownership
-mkdir -p uploads temp-uploads
-chown -R 1001:1001 uploads temp-uploads
+# Create directory with correct ownership
+mkdir -p data
+chown -R 1001:1001 data
 ```
 
 ## Environment Variables
@@ -104,7 +105,9 @@ services:
     environment:
       - PALMR_UID=1000
       - PALMR_GID=1000
+      - STORAGE_URL="https://your-domain:9379"
     ports:
+      - "9379:9379"
       - "5487:5487"
     volumes:
       - ./data:/app/server
@@ -121,7 +124,9 @@ services:
     environment:
       - PALMR_UID=1026
       - PALMR_GID=100
+      - STORAGE_URL="https://your-synology-nas:9379"
     ports:
+      - "9379:9379"
       - "5487:5487"
     volumes:
       - /volume1/docker/palmr:/app/server
@@ -138,7 +143,9 @@ services:
     environment:
       - PALMR_UID=1000
       - PALMR_GID=100
+      - STORAGE_URL="https://your-qnap-nas:9379"
     ports:
+      - "9379:9379"
       - "5487:5487"
     volumes:
       - /share/Container/palmr:/app/server
@@ -158,7 +165,7 @@ services:
 id
 
 # 2. Check directory ownership
-ls -la uploads/ temp-uploads/
+ls -la data/
 
 # 3. Fix via environment variables (preferred)
 # Add to docker-compose.yaml:
@@ -166,7 +173,7 @@ ls -la uploads/ temp-uploads/
 # - PALMR_GID=1000
 
 # 4. Or fix via chown (alternative)
-chown -R 1001:1001 uploads temp-uploads
+chown -R 1001:1001 data
 ```
 
 **Error**: Container starts but files aren't accessible
@@ -215,13 +222,12 @@ cat /etc/passwd | grep -v nobody
 **Docker bind mount issues:**
 
 ```bash
-# Check if directories exist and are writable
-test -w uploads && echo "uploads writable" || echo "uploads NOT writable"
-test -w temp-uploads && echo "temp-uploads writable" || echo "temp-uploads NOT writable"
+# Check if data directory exists and is writable
+test -w data && echo "data writable" || echo "data NOT writable"
 
-# Create directories with correct permissions
-mkdir -p uploads temp-uploads
-sudo chown -R $(id -u):$(id -g) uploads temp-uploads
+# Create directory with correct permissions
+mkdir -p data
+sudo chown -R $(id -u):$(id -g) data
 ```
 
 ---
@@ -260,9 +266,6 @@ To add UID/GID configuration to running installations:
 
    ```bash
    cp -r ./data ./data-backup
-   # or
-   cp -r ./uploads ./uploads-backup
-   cp -r ./temp-uploads ./temp-uploads-backup
    ```
 
 3. **Check your UID/GID**
