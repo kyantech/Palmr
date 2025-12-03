@@ -47,7 +47,7 @@ Palmr. uses **filesystem storage** as the default storage solution, keeping thin
 
 By default, filesystem storage operates without encryption for optimal performance, providing fast uploads and downloads with minimal CPU overhead. This approach is ideal for most use cases where performance is prioritized.
 
-If you need to protect sensitive files at rest, you can enable encryption by setting `DISABLE_FILESYSTEM_ENCRYPTION=false` and providing an `ENCRYPTION_KEY` in your configuration. When enabled, Palmr uses AES-256-CBC encryption, which adds CPU overhead during uploads (encryption) and downloads (decryption), particularly for large files or in resource-constrained environments like containers or low-end VMs.
+File encryption is handled at the storage layer. For external S3 storage, encryption is managed by your S3 provider. For internal storage, files are stored securely with the built-in S3-compatible server.
 
 For optimal performance with encryption enabled, ensure your hardware supports AES-NI acceleration (check with `cat /proc/cpuinfo | grep aes` on Linux).
 
