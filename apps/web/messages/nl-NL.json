@@ -6,7 +6,9 @@
       "token_expired": "Token verlopen. Probeer het opnieuw.",
       "config_error": "Configuratiefout. Neem contact op met support.",
       "auth_failed": "Authenticatie mislukt. Probeer het opnieuw."
-    }
+    },
+    "authenticationFailed": "Authenticatie mislukt",
+    "successfullyAuthenticated": "Succesvol geauthenticeerd!"
   },
   "authProviders": {
     "title": "Authenticatie Providers",
@@ -174,7 +176,14 @@
     "tabs": {
       "shareDetails": "Deel details",
       "selectFiles": "Bestanden selecteren"
-    }
+    },
+    "errors": {
+      "nameRequired": "Deelnaam is verplicht",
+      "selectItems": "Selecteer ten minste één bestand of map"
+    },
+    "itemsSelected": "{count} items geselecteerd",
+    "passwordPlaceholder": "Voer wachtwoord in",
+    "selectItemsPrompt": "Selecteer bestanden en mappen om te delen"
   },
   "customization": {
     "breadcrumb": "Aanpassing",
@@ -340,7 +349,8 @@
     "addToShare": "Toevoegen aan share",
     "removeFromShare": "Verwijderen uit share",
     "saveChanges": "Wijzigingen Opslaan",
-    "editFolder": "Map bewerken"
+    "editFolder": "Map bewerken",
+    "itemsSelected": "{count} items geselecteerd"
   },
   "files": {
     "title": "Alle Bestanden",
@@ -376,7 +386,12 @@
       "description": "Upload uw eerste bestand of maak een map om te beginnen"
     },
     "files": "bestanden",
-    "folders": "mappen"
+    "folders": "mappen",
+    "errors": {
+      "moveItemsFailed": "Verplaatsen van items mislukt. Probeer het opnieuw.",
+      "cannotMoveHere": "Kan items niet naar deze locatie verplaatsen"
+    },
+    "openFolder": "Map openen"
   },
   "filesTable": {
     "ariaLabel": "Bestanden tabel",
@@ -539,7 +554,10 @@
     "movingTo": "Verplaatsen naar:",
     "title": "{count, plural, =1 {Item} other {Items}} verplaatsen",
     "description": "{count, plural, =1 {Item} other {Items}} naar een nieuwe locatie verplaatsen",
-    "success": "{count} {count, plural, =1 {item} other {items}} succesvol verplaatst"
+    "success": "{count} {count, plural, =1 {item} other {items}} succesvol verplaatst",
+    "errors": {
+      "moveFailed": "Verplaatsen van items mislukt"
+    }
   },
   "navbar": {
     "logoAlt": "Applicatie Logo",
@@ -1153,8 +1171,6 @@
       },
       "fileActions": {
         "edit": "Bewerken",
-        "save": "Opslaan",
-        "cancel": "Annuleren",
         "preview": "Voorvertoning",
         "download": "Downloaden",
         "delete": "Verwijderen",
@@ -1377,16 +1393,6 @@
     "deleteTitle": "Delen Verwijderen",
     "deleteConfirmation": "Weet je zeker dat je dit delen wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
     "editTitle": "Delen Bewerken",
-    "nameLabel": "Delen Naam",
-    "descriptionLabel": "Beschrijving",
-    "descriptionPlaceholder": "Voer een beschrijving in (optioneel)",
-    "expirationLabel": "Vervaldatum",
-    "expirationPlaceholder": "DD/MM/JJJJ UU:MM",
-    "maxViewsLabel": "Maximale Weergaven",
-    "maxViewsPlaceholder": "Laat leeg voor onbeperkt",
-    "passwordProtection": "Wachtwoord Beveiligd",
-    "passwordLabel": "Wachtwoord",
-    "passwordPlaceholder": "Voer wachtwoord in",
     "newPasswordLabel": "Nieuw Wachtwoord (laat leeg om huidig te behouden)",
     "newPasswordPlaceholder": "Voer nieuw wachtwoord in",
     "manageFilesTitle": "Bestanden Beheren",
@@ -1405,7 +1411,9 @@
     "linkDescriptionFile": "Genereer een aangepaste link om het bestand te delen",
     "linkDescriptionFolder": "Genereer een aangepaste link om de map te delen",
     "linkReady": "Uw deel-link is klaar:",
-    "linkTitle": "Link genereren"
+    "linkTitle": "Link genereren",
+    "itemsSelected": "{count} items geselecteerd",
+    "manageFilesDescription": "Selecteer bestanden en mappen om in dit deel op te nemen"
   },
   "shareDetails": {
     "title": "Delen Details",
@@ -1421,7 +1429,6 @@
     "noLink": "Nog geen link gegenereerd",
     "copyLink": "Link kopiëren",
     "openLink": "Openen in nieuw tabblad",
-    "linkCopied": "Link gekopieerd naar klembord",
     "views": "Weergaven",
     "dates": "Data",
     "created": "Aangemaakt",
@@ -1469,28 +1476,6 @@
     "expires": "Verloopt:",
     "expirationDate": "Vervaldatum"
   },
-  "shareFile": {
-    "title": "Bestand Delen",
-    "linkTitle": "Link Genereren",
-    "nameLabel": "Delen Naam",
-    "namePlaceholder": "Voer delen naam in",
-    "descriptionLabel": "Beschrijving",
-    "descriptionPlaceholder": "Voer een beschrijving in (optioneel)",
-    "expirationLabel": "Vervaldatum",
-    "expirationPlaceholder": "DD/MM/JJJJ UU:MM",
-    "maxViewsLabel": "Maximale Weergaven",
-    "maxViewsPlaceholder": "Laat leeg voor onbeperkt",
-    "passwordProtection": "Wachtwoord Beveiligd",
-    "passwordLabel": "Wachtwoord",
-    "passwordPlaceholder": "Voer wachtwoord in",
-    "linkDescription": "Genereer een aangepaste link om het bestand te delen",
-    "aliasLabel": "Link Alias",
-    "aliasPlaceholder": "Voer aangepaste alias in",
-    "linkReady": "Jouw delen link is klaar:",
-    "createShare": "Delen Aanmaken",
-    "generateLink": "Link Genereren",
-    "copyLink": "Link Kopiëren"
-  },
   "shareManager": {
     "deleteSuccess": "Delen succesvol verwijderd",
     "deleteError": "Fout bij het verwijderen van delen",
@@ -1520,7 +1505,10 @@
     "noFilesToDownload": "Geen bestanden beschikbaar om te downloaden",
     "singleShareZipName": "{Sharename} _files.zip",
     "zipDownloadError": "Kan zip -bestand niet maken",
-    "zipDownloadSuccess": "Zipbestand met succes gedownload"
+    "zipDownloadSuccess": "Zipbestand met succes gedownload",
+    "errors": {
+      "multipleDownloadNotSupported": "Download van meerdere delen wordt nog niet ondersteund - download delen afzonderlijk"
+    }
   },
   "shareMultipleFiles": {
     "title": "Meerdere Bestanden Delen",
@@ -1917,6 +1905,23 @@
       "inactive": "Inactief",
       "admin": "Beheerder",
       "userr": "Gebruiker"
+    },
+    "invite": {
+      "button": "Genereer Uitnodigingslink",
+      "title": "Genereer Gebruikersuitnodigingslink",
+      "description": "Genereer een eenmalige link waarmee iemand zijn eigen account kan aanmaken. De link verloopt over 15 minuten.",
+      "generating": "Genereren...",
+      "generate": "Link Genereren",
+      "generated": "Uitnodigingslink succesvol gegenereerd!",
+      "linkReady": "Uitnodigingslink klaar",
+      "linkReadyDescription": "Deel deze link met de persoon die je wilt uitnodigen. Ze kunnen hun eigen account aanmaken als gewone gebruiker.",
+      "copyLink": "Link Kopiëren",
+      "linkCopied": "Uitnodigingslink gekopieerd naar klembord!",
+      "expiresIn": "Verloopt over 15 minuten",
+      "close": "Sluiten",
+      "errors": {
+        "generateFailed": "Genereren van uitnodigingslink mislukt"
+      }
     }
   },
   "validation": {
@@ -1935,15 +1940,62 @@
     "required": "Dit veld is verplicht"
   },
   "embedCode": {
-    "title": "Afbeelding insluiten",
-    "description": "Gebruik deze codes om deze afbeelding in te sluiten in forums, websites of andere platforms",
+    "title": "Media insluiten",
+    "description": "Gebruik deze codes om deze media in te sluiten in forums, websites of andere platforms",
     "tabs": {
       "directLink": "Directe link",
       "html": "HTML",
       "bbcode": "BBCode"
     },
-    "directLinkDescription": "Directe URL naar het afbeeldingsbestand",
-    "htmlDescription": "Gebruik deze code om de afbeelding in te sluiten in HTML-pagina's",
-    "bbcodeDescription": "Gebruik deze code om de afbeelding in te sluiten in forums die BBCode ondersteunen"
+    "directLinkDescription": "Directe URL naar het mediabestand",
+    "htmlDescription": "Gebruik deze code om de media in te sluiten in HTML-pagina's",
+    "bbcodeDescription": "Gebruik deze code om de media in te sluiten in forums die BBCode ondersteunen"
+  },
+  "contextMenu": {
+    "newFolder": "Nieuwe map",
+    "uploadFile": "Bestand uploaden"
+  },
+  "registerWithInvite": {
+    "title": "Maak Uw Account Aan",
+    "description": "Vul de onderstaande informatie in om uw account aan te maken",
+    "labels": {
+      "firstName": "Voornaam",
+      "firstNamePlaceholder": "Voer uw voornaam in",
+      "lastName": "Achternaam",
+      "lastNamePlaceholder": "Voer uw achternaam in",
+      "username": "Gebruikersnaam",
+      "usernamePlaceholder": "Kies een gebruikersnaam",
+      "email": "E-mail",
+      "emailPlaceholder": "Voer uw e-mail in",
+      "password": "Wachtwoord",
+      "passwordPlaceholder": "Kies een wachtwoord",
+      "confirmPassword": "Bevestig Wachtwoord",
+      "confirmPasswordPlaceholder": "Bevestig uw wachtwoord"
+    },
+    "buttons": {
+      "creating": "Account aanmaken...",
+      "createAccount": "Account Aanmaken"
+    },
+    "validation": {
+      "firstNameRequired": "Voornaam is verplicht",
+      "lastNameRequired": "Achternaam is verplicht",
+      "usernameMinLength": "Gebruikersnaam moet minimaal 3 tekens bevatten",
+      "invalidEmail": "Ongeldig e-mailadres",
+      "passwordMinLength": "Wachtwoord moet minimaal 8 tekens bevatten",
+      "passwordsMatch": "Wachtwoorden moeten overeenkomen"
+    },
+    "messages": {
+      "success": "Account succesvol aangemaakt! Doorverwijzen naar inloggen...",
+      "redirecting": "Doorverwijzen naar inloggen..."
+    },
+    "errors": {
+      "invalidToken": "Fout met uitnodigingslink",
+      "tokenUsed": "Deze uitnodigingslink is al gebruikt",
+      "tokenExpired": "Deze uitnodigingslink is verlopen",
+      "usernameExists": "Gebruikersnaam bestaat al",
+      "emailExists": "E-mailadres bestaat al",
+      "createFailed": "Aanmaken van account mislukt. Probeer het opnieuw."
+    },
+    "pageTitle": "Account Aanmaken"
   }
 }

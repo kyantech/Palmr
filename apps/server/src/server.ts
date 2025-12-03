@@ -1,27 +1,22 @@
 import * as fs from "fs/promises";
 import crypto from "node:crypto";
-import path from "path";
 import fastifyMultipart from "@fastify/multipart";
-import fastifyStatic from "@fastify/static";
 
 import { buildApp } from "./app";
 import { directoriesConfig } from "./config/directories.config";
-import { env } from "./env";
 import { appRoutes } from "./modules/app/routes";
 import { authProvidersRoutes } from "./modules/auth-providers/routes";
 import { authRoutes } from "./modules/auth/routes";
 import { fileRoutes } from "./modules/file/routes";
-import { ChunkManager } from "./modules/filesystem/chunk-manager";
-import { downloadQueueRoutes } from "./modules/filesystem/download-queue-routes";
-import { filesystemRoutes } from "./modules/filesystem/routes";
 import { folderRoutes } from "./modules/folder/routes";
 import { healthRoutes } from "./modules/health/routes";
+import { inviteRoutes } from "./modules/invite/routes";
 import { reverseShareRoutes } from "./modules/reverse-share/routes";
+import { s3StorageRoutes } from "./modules/s3-storage/routes";
 import { shareRoutes } from "./modules/share/routes";
 import { storageRoutes } from "./modules/storage/routes";
 import { twoFactorRoutes } from "./modules/two-factor/routes";
 import { userRoutes } from "./modules/user/routes";
-import { IS_RUNNING_IN_CONTAINER } from "./utils/container-detection";
 
 if (typeof globalThis.crypto === "undefined") {
   globalThis.crypto = crypto.webcrypto as any;
@@ -51,6 +46,9 @@ async function startServer() {
   const app = await buildApp();
 
   await ensureDirectories();
+  const { isInternalStorage, isExternalS3 } = await import("./config/storage.config.js");
+  const { runAutoMigration } = await import("./scripts/migrate-filesystem-to-s3.js");
+  await runAutoMigration();
 
   await app.register(fastifyMultipart, {
     limits: {
@@ -63,29 +61,26 @@ async function startServer() {
     },
   });
 
-  if (env.ENABLE_S3 !== "true") {
-    await app.register(fastifyStatic, {
-      root: directoriesConfig.uploads,
-      prefix: "/uploads/",
-      decorateReply: false,
-    });
-  }
-
   app.register(authRoutes);
   app.register(authProvidersRoutes, { prefix: "/auth" });
   app.register(twoFactorRoutes, { prefix: "/auth" });
+  app.register(inviteRoutes);
   app.register(userRoutes);
-  app.register(fileRoutes);
   app.register(folderRoutes);
-  app.register(downloadQueueRoutes);
+  app.register(fileRoutes);
   app.register(shareRoutes);
   app.register(reverseShareRoutes);
   app.register(storageRoutes);
   app.register(appRoutes);
   app.register(healthRoutes);
+  app.register(s3StorageRoutes);
 
-  if (env.ENABLE_S3 !== "true") {
-    app.register(filesystemRoutes);
+  if (isInternalStorage) {
+    console.log("📦 Using internal storage (auto-configured)");
+  } else if (isExternalS3) {
+    console.log("📦 Using external S3 storage (AWS/S3-compatible)");
+  } else {
+    console.log("⚠️  WARNING: Storage not configured! Storage may not work.");
   }
 
   await app.listen({
@@ -93,36 +88,11 @@ async function startServer() {
     host: "0.0.0.0",
   });
 
-  let authProviders = "Disabled";
-  try {
-    const { AuthProvidersService } = await import("./modules/auth-providers/service.js");
-    const authService = new AuthProvidersService();
-    const enabledProviders = await authService.getEnabledProviders();
-    authProviders = enabledProviders.length > 0 ? `Enabled (${enabledProviders.length} providers)` : "Disabled";
-  } catch (error) {
-    console.error("Error getting auth providers status:", error);
-  }
+  console.log(`🌴 Palmr server running on port 3333`);
 
-  console.log(`🌴 Palmr server running on port 3333 🌴`);
-  console.log(
-    `📦 Storage mode: ${env.ENABLE_S3 === "true" ? "S3" : `Local Filesystem ${env.DISABLE_FILESYSTEM_ENCRYPTION === "true" ? "(Unencrypted)" : "(Encrypted)"}`}`
-  );
-  console.log(`🔐 Auth Providers: ${authProviders}`);
-
-  console.log("\n📚 API Documentation:");
-  console.log(`   - API Reference: http://localhost:3333/docs\n`);
-
-  process.on("SIGINT", async () => {
-    const chunkManager = ChunkManager.getInstance();
-    chunkManager.destroy();
-    process.exit(0);
-  });
-
-  process.on("SIGTERM", async () => {
-    const chunkManager = ChunkManager.getInstance();
-    chunkManager.destroy();
-    process.exit(0);
-  });
+  // Cleanup on shutdown
+  process.on("SIGINT", () => process.exit(0));
+  process.on("SIGTERM", () => process.exit(0));
 }
 
 startServer().catch((err) => {

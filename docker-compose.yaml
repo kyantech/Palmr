@@ -3,31 +3,53 @@ services:
     image: kyantech/palmr:latest
     container_name: palmr
     environment:
-      # Optional: Uncomment and configure as needed (if you don`t use, you can remove)
-      # - ENABLE_S3=false # Set to true to enable S3-compatible storage (OPTIONAL - default is false)
-      # - S3_REJECT_UNAUTHORIZED=false # Set to false to allow self-signed certificates (OPTIONAL - default is true)
-      # - DISABLE_FILESYSTEM_ENCRYPTION=true # Set to false to enable file encryption (ENCRYPTION_KEY becomes required) | (OPTIONAL - default is true)
-      # - ENCRYPTION_KEY=change-this-key-in-production-min-32-chars # CHANGE THIS KEY FOR SECURITY (REQUIRED if DISABLE_FILESYSTEM_ENCRYPTION is false)
-      # - PALMR_UID=1000 # UID for the container processes (OPTIONAL - default is 1000) | See our UID/GID Documentation for more information
-      # - PALMR_GID=1000 # GID for the container processes (OPTIONAL - default is 1000) | See our UID/GID Documentation for more information
-      # - DEFAULT_LANGUAGE=en-US # Default language for the application (optional, defaults to en-US) | See the docs to see all supported languages
-      # - PRESIGNED_URL_EXPIRATION=3600 # Duration in seconds for presigned URL expiration (OPTIONAL - default is 3600 seconds / 1 hour)
-      # - SECURE_SITE=true # Set to true if you are using a reverse proxy (OPTIONAL - default is false)
-
-      # Download Memory Management Configuration (OPTIONAL - See documentation for details)
-      # - DOWNLOAD_MAX_CONCURRENT=5 # Maximum number of simultaneous downloads (OPTIONAL - auto-scales based on system memory if not set)
-      # - DOWNLOAD_MEMORY_THRESHOLD_MB=2048 # Memory threshold in MB before throttling (OPTIONAL - auto-scales based on system memory if not set)
-      # - DOWNLOAD_QUEUE_SIZE=25 # Maximum queue size for pending downloads (OPTIONAL - auto-scales based on system memory if not set)
-      # - DOWNLOAD_MIN_FILE_SIZE_GB=3.0 # Minimum file size in GB to activate memory management (OPTIONAL - default is 3.0)
-      # - DOWNLOAD_AUTO_SCALE=true # Enable auto-scaling based on system memory (OPTIONAL - default is true)
-      # - NODE_OPTIONS=--expose-gc # Enable garbage collection for large file downloads (RECOMMENDED for production)
-      # - NEXT_PUBLIC_UPLOAD_CHUNK_SIZE_MB=100 # Chunk size in MB for large file uploads (OPTIONAL - auto-calculates if not set)
+      # ==============================================================================
+      # STORAGE CONFIGURATION
+      # ==============================================================================
+      # By default, Palmr uses internal storage - ZERO CONFIG NEEDED!
+      # Files are managed automatically with no setup required.
+      #
+      # Want to use external S3 storage (AWS, S3-compatible, etc)? Just add:
+      # - ENABLE_S3=true                    # Enable external S3
+      # - S3_ENDPOINT=s3.amazonaws.com      # Your S3 endpoint
+      # - S3_ACCESS_KEY=your-access-key     # Your access key
+      # - S3_SECRET_KEY=your-secret-key     # Your secret key
+      # - S3_BUCKET_NAME=palmr-files        # Your bucket name
+      # - S3_REGION=us-east-1               # Region (optional)
+      # - S3_USE_SSL=true                   # Use SSL (optional)
+      # - S3_FORCE_PATH_STYLE=false         # Path-style URLs (optional, true for Minio)
+      # - S3_REJECT_UNAUTHORIZED=true       # Reject self-signed certs (optional)
+      #
+      # ==============================================================================
+      # USER/GROUP CONFIGURATION
+      # ==============================================================================
+      # - PALMR_UID=1000                    # UID for container processes (optional)
+      # - PALMR_GID=1000                    # GID for container processes (optional)
+      #
+      # ==============================================================================
+      # APPLICATION SETTINGS
+      # ==============================================================================
+      # - DEFAULT_LANGUAGE=en-US            # Default language (optional)
+      # - PRESIGNED_URL_EXPIRATION=3600     # Presigned URL expiration in seconds (optional)
+      # - SECURE_SITE=true                  # Set true if using HTTPS reverse proxy (optional)
+      STORAGE_URL: "https://palmr-demo:9379" # REQUIRED for internal storage: Full storage URL with protocol (e.g., https://syrg.palmr.com or http://192.168.1.100:9379). Not needed when ENABLE_S3=true.
+      #
     ports:
-      - "5487:5487" # Web port
-      - "3333:3333" # API port (OPTIONAL EXPOSED - ONLY IF YOU WANT TO ACCESS THE API DIRECTLY)
+      - "9379:9379" # Internal storage (S3-compatible, REQUIRED for file uploads when using internal storage)
+      - "5487:5487" # Web interface
+      - "3333:3333" # API (optional, only if you need direct API access)
     volumes:
-      - palmr_data:/app/server # Volume for the application data (changed from /data to /app/server)
-    restart: unless-stopped # Restart the container unless it is stopped
+      - palmr_data:/app/server
+      # ==============================================================================
+      # ADVANCED: Use a different disk for file storage (for larger capacity)
+      # ==============================================================================
+      # Uncomment the line below to store files on a different disk:
+      # - /path/to/your/large/disk:/app/server/data
+      #
+      # Example: Mount a 2TB drive for files while keeping database on fast SSD
+      # - /mnt/storage/palmr-files:/app/server/data
+      #
+    restart: unless-stopped
 
 volumes:
   palmr_data:

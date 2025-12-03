@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
-import { deleteFile, getDownloadUrl, updateFile } from "@/http/endpoints";
+import { deleteFile, updateFile } from "@/http/endpoints";
 import { deleteFolder, registerFolder, updateFolder } from "@/http/endpoints/folders";
-import { useDownloadQueue } from "./use-download-queue";
-import { usePushNotifications } from "./use-push-notifications";
+import { getCachedDownloadUrl } from "@/lib/download-url-cache";
 
 interface FileToRename {
   id: string;
@@ -62,6 +61,7 @@ interface BulkFile {
   description?: string;
   size: number;
   objectName: string;
+  folderId?: string;
   createdAt: string;
   updatedAt: string;
   relativePath?: string;
@@ -83,14 +83,6 @@ interface BulkFolder {
   };
 }
 
-interface PendingDownload {
-  downloadId: string;
-  fileName: string;
-  objectName: string;
-  startTime: number;
-  status: "pending" | "queued" | "downloading" | "completed" | "failed";
-}
-
 export interface EnhancedFileManagerHook {
   previewFile: PreviewFile | null;
   fileToDelete: any;
@@ -101,7 +93,6 @@ export interface EnhancedFileManagerHook {
   filesToDownload: BulkFile[] | null;
   foldersToDelete: BulkFolder[] | null;
   isBulkDownloadModalOpen: boolean;
-  pendingDownloads: PendingDownload[];
 
   folderToDelete: FolderToDelete | null;
   folderToRename: FolderToRename | null;
@@ -144,15 +135,16 @@ export interface EnhancedFileManagerHook {
 
   clearSelection?: () => void;
   setClearSelectionCallback?: (callback: () => void) => void;
-  getDownloadStatus: (objectName: string) => PendingDownload | null;
-  cancelPendingDownload: (downloadId: string) => Promise<void>;
-  isDownloadPending: (objectName: string) => boolean;
 }
 
-export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSelection?: () => void) {
+export function useEnhancedFileManager(
+  onRefresh: () => Promise<void>,
+  clearSelection?: () => void,
+  handleImmediateUpdate?: (itemId: string, itemType: "file" | "folder", newParentId: string | null) => void,
+  allFiles?: BulkFile[],
+  allFolders?: BulkFolder[]
+) {
   const t = useTranslations();
-  const downloadQueue = useDownloadQueue(true, 3000);
-  const notifications = usePushNotifications();
 
   const [previewFile, setPreviewFile] = useState<PreviewFile | null>(null);
   const [fileToRename, setFileToRename] = useState<FileToRename | null>(null);
@@ -168,97 +160,10 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
   const [folderToShare, setFolderToShare] = useState<FolderToShare | null>(null);
   const [isCreateFolderModalOpen, setCreateFolderModalOpen] = useState(false);
   const [isBulkDownloadModalOpen, setBulkDownloadModalOpen] = useState(false);
-  const [pendingDownloads, setPendingDownloads] = useState<PendingDownload[]>([]);
   const [clearSelectionCallback, setClearSelectionCallbackState] = useState<(() => void) | null>(null);
 
   const [foldersToShare, setFoldersToShare] = useState<BulkFolder[] | null>(null);
   const [foldersToDownload, setFoldersToDownload] = useState<BulkFolder[] | null>(null);
-
-  const startActualDownload = async (
-    downloadId: string,
-    objectName: string,
-    fileName: string,
-    downloadUrl?: string
-  ) => {
-    try {
-      setPendingDownloads((prev) =>
-        prev.map((d) => (d.downloadId === downloadId ? { ...d, status: "downloading" } : d))
-      );
-
-      let url = downloadUrl;
-      if (!url) {
-        const response = await getDownloadUrl(objectName);
-        url = response.data.url;
-      }
-
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      const wasQueued = pendingDownloads.some((d) => d.downloadId === downloadId);
-
-      if (wasQueued) {
-        setPendingDownloads((prev) =>
-          prev.map((d) => (d.downloadId === downloadId ? { ...d, status: "completed" } : d))
-        );
-
-        const completedDownload = pendingDownloads.find((d) => d.downloadId === downloadId);
-        if (completedDownload) {
-          const fileSize = completedDownload.startTime ? Date.now() - completedDownload.startTime : undefined;
-          await notifications.notifyDownloadComplete(fileName, fileSize);
-        }
-
-        setTimeout(() => {
-          setPendingDownloads((prev) => prev.filter((d) => d.downloadId !== downloadId));
-        }, 5000);
-      }
-
-      if (!wasQueued) {
-        toast.success(t("files.downloadStart", { fileName }));
-      }
-    } catch (error: any) {
-      const wasQueued = pendingDownloads.some((d) => d.downloadId === downloadId);
-
-      if (wasQueued) {
-        setPendingDownloads((prev) => prev.map((d) => (d.downloadId === downloadId ? { ...d, status: "failed" } : d)));
-
-        const errorMessage =
-          error?.response?.data?.message || error?.message || t("notifications.downloadFailed.unknownError");
-        await notifications.notifyDownloadFailed(fileName, errorMessage);
-
-        setTimeout(() => {
-          setPendingDownloads((prev) => prev.filter((d) => d.downloadId !== downloadId));
-        }, 10000);
-      }
-
-      if (!pendingDownloads.some((d) => d.downloadId === downloadId)) {
-        toast.error(t("files.downloadError"));
-      }
-      throw error;
-    }
-  };
-
-  useEffect(() => {
-    if (!downloadQueue.queueStatus) return;
-
-    pendingDownloads.forEach(async (download) => {
-      if (download.status === "queued") {
-        const stillQueued = downloadQueue.queueStatus?.queuedDownloads.find((qd) => qd.fileName === download.fileName);
-
-        if (!stillQueued) {
-          console.log(`[DOWNLOAD] Processing queued download: ${download.fileName}`);
-
-          await notifications.notifyQueueProcessing(download.fileName);
-
-          await startActualDownload(download.downloadId, download.objectName, download.fileName);
-        }
-      }
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [downloadQueue.queueStatus, pendingDownloads, notifications]);
 
   const setClearSelectionCallback = useCallback((callback: () => void) => {
     setClearSelectionCallbackState(() => callback);
@@ -266,46 +171,22 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
 
   const handleDownload = async (objectName: string, fileName: string) => {
     try {
-      const { downloadFileWithQueue } = await import("@/utils/download-queue-utils");
+      const loadingToast = toast.loading(t("share.messages.downloadStarted"));
+      const url = await getCachedDownloadUrl(objectName);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-      await toast.promise(
-        downloadFileWithQueue(objectName, fileName, {
-          silent: true,
-          showToasts: false,
-        }),
-        {
-          loading: t("share.messages.downloadStarted"),
-          success: t("shareManager.downloadSuccess"),
-          error: t("share.errors.downloadFailed"),
-        }
-      );
+      toast.dismiss(loadingToast);
+      toast.success(t("shareManager.downloadSuccess"));
     } catch (error) {
-      console.error("Download error:", error);
+      console.error(`[FileManager] ❌ Download failed for ${fileName}:`, error);
+      toast.error(t("share.errors.downloadFailed"));
     }
   };
-
-  const cancelPendingDownload = async (downloadId: string) => {
-    try {
-      await downloadQueue.cancelDownload(downloadId);
-      setPendingDownloads((prev) => prev.filter((d) => d.downloadId !== downloadId));
-    } catch (error) {
-      console.error("Error cancelling download:", error);
-    }
-  };
-
-  const getDownloadStatus = useCallback(
-    (objectName: string): PendingDownload | null => {
-      return pendingDownloads.find((d) => d.objectName === objectName) || null;
-    },
-    [pendingDownloads]
-  );
-
-  const isDownloadPending = useCallback(
-    (objectName: string): boolean => {
-      return pendingDownloads.some((d) => d.objectName === objectName && d.status !== "completed");
-    },
-    [pendingDownloads]
-  );
 
   const handleRename = async (fileId: string, newName: string, description?: string) => {
     try {
@@ -313,7 +194,6 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
         name: newName,
         description: description || null,
       });
-      await onRefresh();
       toast.success(t("files.updateSuccess"));
       setFileToRename(null);
     } catch (error) {
@@ -324,8 +204,12 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
 
   const handleDelete = async (fileId: string) => {
     try {
+      // Optimistic update - remove from UI immediately
+      if (handleImmediateUpdate) {
+        handleImmediateUpdate(fileId, "file", "__DELETE__" as any);
+      }
+
       await deleteFile(fileId);
-      await onRefresh();
       toast.success(t("files.deleteSuccess"));
       setFileToDelete(null);
     } catch (error) {
@@ -362,65 +246,98 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
     }
   };
 
-  const handleSingleFolderDownload = async (folderId: string, folderName: string) => {
-    try {
-      const { downloadFolderWithQueue } = await import("@/utils/download-queue-utils");
-
-      await toast.promise(
-        downloadFolderWithQueue(folderId, folderName, {
-          silent: true,
-          showToasts: false,
-        }),
-        {
-          loading: t("shareManager.creatingZip"),
-          success: t("shareManager.zipDownloadSuccess"),
-          error: t("share.errors.downloadFailed"),
-        }
-      );
-    } catch (error) {
-      console.error("Error downloading folder:", error);
-    }
-  };
-
   const handleBulkDownloadWithZip = async (files: BulkFile[], zipName: string) => {
     try {
       const folders = foldersToDownload || [];
-      const { bulkDownloadWithQueue } = await import("@/utils/download-queue-utils");
 
-      const allItems = [
-        ...files.map((file) => ({
-          objectName: file.objectName,
-          name: file.relativePath || file.name,
-          isReverseShare: false,
-          type: "file" as const,
-        })),
-        ...folders.map((folder) => ({
-          id: folder.id,
-          name: folder.name,
-          type: "folder" as const,
-        })),
-      ];
-
-      if (allItems.length === 0) {
+      if (files.length === 0 && folders.length === 0) {
         toast.error(t("shareManager.noFilesToDownload"));
         return;
       }
 
-      toast.promise(
-        bulkDownloadWithQueue(allItems, zipName, undefined, false).then(() => {
-          setBulkDownloadModalOpen(false);
-          setFilesToDownload(null);
-          setFoldersToDownload(null);
-          if (clearSelectionCallback) {
-            clearSelectionCallback();
+      const loadingToast = toast.loading(t("shareManager.creatingZip"));
+
+      try {
+        // Collect all files including those in folders recursively
+        const allFilesToDownload: Array<{ url: string; name: string }> = [];
+
+        // Helper function to get all files in a folder recursively with paths
+        const getFolderFilesWithPath = (
+          targetFolderId: string,
+          currentPath: string = ""
+        ): Array<{ file: BulkFile; path: string }> => {
+          if (!allFiles || !allFolders) return [];
+
+          const filesWithPath: Array<{ file: BulkFile; path: string }> = [];
+
+          // Get direct files in this folder
+          const directFiles = allFiles.filter((f) => f.folderId === targetFolderId);
+          directFiles.forEach((file) => {
+            filesWithPath.push({ file, path: currentPath });
+          });
+
+          // Get subfolders and process them recursively
+          const subfolders = allFolders.filter((f) => f.parentId === targetFolderId);
+          for (const subfolder of subfolders) {
+            const subfolderPath = currentPath ? `${currentPath}/${subfolder.name}` : subfolder.name;
+            filesWithPath.push(...getFolderFilesWithPath(subfolder.id, subfolderPath));
           }
-        }),
-        {
-          loading: t("shareManager.creatingZip"),
-          success: t("shareManager.zipDownloadSuccess"),
-          error: t("shareManager.zipDownloadError"),
+
+          return filesWithPath;
+        };
+
+        // Get presigned URLs for direct files (not in folders)
+        const directFileItems = await Promise.all(
+          files.map(async (file) => {
+            const url = await getCachedDownloadUrl(file.objectName);
+            return {
+              url,
+              name: file.name,
+            };
+          })
+        );
+        allFilesToDownload.push(...directFileItems);
+
+        // Get presigned URLs for files in selected folders
+        for (const folder of folders) {
+          const folderFilesWithPath = getFolderFilesWithPath(folder.id, folder.name);
+
+          const folderFileItems = await Promise.all(
+            folderFilesWithPath.map(async ({ file, path }) => {
+              const url = await getCachedDownloadUrl(file.objectName);
+              return {
+                url,
+                name: path ? `${path}/${file.name}` : file.name,
+              };
+            })
+          );
+          allFilesToDownload.push(...folderFileItems);
         }
-      );
+
+        if (allFilesToDownload.length === 0) {
+          toast.dismiss(loadingToast);
+          toast.error(t("shareManager.noFilesToDownload"));
+          return;
+        }
+
+        // Create ZIP with all files
+        const { downloadFilesAsZip } = await import("@/utils/zip-download");
+        await downloadFilesAsZip(allFilesToDownload, zipName.endsWith(".zip") ? zipName : `${zipName}.zip`);
+
+        toast.dismiss(loadingToast);
+        toast.success(t("shareManager.zipDownloadSuccess"));
+      } catch (error) {
+        toast.dismiss(loadingToast);
+        toast.error(t("shareManager.zipDownloadError"));
+        throw error;
+      }
+
+      setBulkDownloadModalOpen(false);
+      setFilesToDownload(null);
+      setFoldersToDownload(null);
+      if (clearSelectionCallback) {
+        clearSelectionCallback();
+      }
     } catch (error) {
       console.error("Error in bulk download:", error);
       setBulkDownloadModalOpen(false);
@@ -433,6 +350,16 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
     if (!filesToDelete && !foldersToDelete) return;
 
     try {
+      // Optimistic update - remove all items from UI immediately
+      if (handleImmediateUpdate) {
+        filesToDelete?.forEach((file) => {
+          handleImmediateUpdate(file.id, "file", "__DELETE__" as any);
+        });
+        foldersToDelete?.forEach((folder) => {
+          handleImmediateUpdate(folder.id, "folder", "__DELETE__" as any);
+        });
+      }
+
       const deletePromises = [];
 
       if (filesToDelete) {
@@ -449,7 +376,6 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
       toast.success(t("files.bulkDeleteSuccess", { count: totalCount }));
       setFilesToDelete(null);
       setFoldersToDelete(null);
-      onRefresh();
     } catch (error) {
       console.error("Failed to delete items:", error);
       toast.error(t("files.bulkDeleteError"));
@@ -467,7 +393,6 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
 
       await registerFolder(folderData);
       toast.success(t("folderActions.folderCreated"));
-      await onRefresh();
       setCreateFolderModalOpen(false);
     } catch (error) {
       console.error("Error creating folder:", error);
@@ -480,7 +405,6 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
     try {
       await updateFolder(folderId, { name: newName, description });
       toast.success(t("folderActions.folderRenamed"));
-      await onRefresh();
       setFolderToRename(null);
     } catch (error) {
       console.error("Error renaming folder:", error);
@@ -490,9 +414,13 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
 
   const handleFolderDelete = async (folderId: string) => {
     try {
+      // Optimistic update - remove from UI immediately
+      if (handleImmediateUpdate) {
+        handleImmediateUpdate(folderId, "folder", "__DELETE__" as any);
+      }
+
       await deleteFolder(folderId);
       toast.success(t("folderActions.folderDeleted"));
-      await onRefresh();
       setFolderToDelete(null);
       if (clearSelectionCallback) {
         clearSelectionCallback();
@@ -522,7 +450,6 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
     setFoldersToDelete,
     isBulkDownloadModalOpen,
     setBulkDownloadModalOpen,
-    pendingDownloads,
     handleDownload,
     handleRename,
     handleDelete,
@@ -552,9 +479,5 @@ export function useEnhancedFileManager(onRefresh: () => Promise<void>, clearSele
 
     clearSelection,
     setClearSelectionCallback,
-    getDownloadStatus,
-    handleSingleFolderDownload,
-    cancelPendingDownload,
-    isDownloadPending,
   };
 }

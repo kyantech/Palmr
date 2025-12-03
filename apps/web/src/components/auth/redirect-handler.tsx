@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
+import { publicPaths } from "@/components/auth/paths/public-paths";
+import { unauthenticatedOnlyPaths } from "@/components/auth/paths/unahthenticated-only-paths";
 import { LoadingScreen } from "@/components/layout/loading-screen";
 import { useAuth } from "@/contexts/auth-context";
 
@@ -10,23 +12,6 @@ interface RedirectHandlerProps {
   children: React.ReactNode;
 }
 
-const publicPaths = [
-  "/login",
-  "/forgot-password",
-  "/reset-password",
-  "/auth/callback",
-  "/auth/oidc/callback",
-  "/s/",
-  "/r/",
-];
-
-const unauthenticatedOnlyPaths = [
-  "/login",
-  "/forgot-password",
-  "/reset-password",
-  "/auth/callback",
-  "/auth/oidc/callback",
-];
 const homePaths = ["/"];
 
 export function RedirectHandler({ children }: RedirectHandlerProps) {

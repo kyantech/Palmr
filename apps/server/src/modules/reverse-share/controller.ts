@@ -319,59 +319,12 @@ export class ReverseShareController {
 
       const { fileId } = request.params as { fileId: string };
 
-      const fileInfo = await this.reverseShareService.getFileInfo(fileId, userId);
-      const downloadId = `reverse-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+      // Pass request context for internal storage proxy URLs
+      const requestContext = { protocol: "https", host: "localhost" }; // Simplified - frontend will handle the real URL
 
-      const { DownloadMemoryManager } = await import("../../utils/download-memory-manager.js");
-      const memoryManager = DownloadMemoryManager.getInstance();
+      const result = await this.reverseShareService.downloadReverseShareFile(fileId, userId, requestContext);
 
-      const fileSizeMB = Number(fileInfo.size) / (1024 * 1024);
-      console.log(
-        `[REVERSE-DOWNLOAD] Requesting slot for ${downloadId}: ${fileInfo.name} (${fileSizeMB.toFixed(1)}MB)`
-      );
-
-      try {
-        await memoryManager.requestDownloadSlot(downloadId, {
-          fileName: fileInfo.name,
-          fileSize: Number(fileInfo.size),
-          objectName: fileInfo.objectName,
-        });
-      } catch (error: any) {
-        console.warn(`[REVERSE-DOWNLOAD] Queued ${downloadId}: ${error.message}`);
-        return reply.status(202).send({
-          queued: true,
-          downloadId: downloadId,
-          message: "Download queued due to memory constraints",
-          estimatedWaitTime: error.estimatedWaitTime || 60,
-        });
-      }
-
-      console.log(`[REVERSE-DOWNLOAD] Starting ${downloadId}: ${fileInfo.name} (${fileSizeMB.toFixed(1)}MB)`);
-      memoryManager.startDownload(downloadId);
-
-      try {
-        const result = await this.reverseShareService.downloadReverseShareFile(fileId, userId);
-
-        const originalUrl = result.url;
-        reply.header("X-Download-ID", downloadId);
-
-        reply.raw.on("finish", () => {
-          memoryManager.endDownload(downloadId);
-        });
-
-        reply.raw.on("close", () => {
-          memoryManager.endDownload(downloadId);
-        });
-
-        reply.raw.on("error", () => {
-          memoryManager.endDownload(downloadId);
-        });
-
-        return reply.send(result);
-      } catch (downloadError) {
-        memoryManager.endDownload(downloadId);
-        throw downloadError;
-      }
+      return reply.send(result);
     } catch (error: any) {
       if (error.message === "File not found") {
         return reply.status(404).send({ error: error.message });
@@ -513,11 +466,7 @@ export class ReverseShareController {
         return reply.status(401).send({ error: "Unauthorized" });
       }
 
-      console.log(`Copy to my files: User ${userId} copying file ${fileId}`);
-
       const file = await this.reverseShareService.copyReverseShareFileToUserFiles(fileId, userId);
-
-      console.log(`Copy to my files: Successfully copied file ${fileId}`);
 
       return reply.send({ file, message: "File copied to your files successfully" });
     } catch (error: any) {

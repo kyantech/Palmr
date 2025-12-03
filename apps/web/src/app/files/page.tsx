@@ -20,6 +20,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { moveFile } from "@/http/endpoints/files";
 import { listFolders, moveFolder } from "@/http/endpoints/folders";
+import { getCachedDownloadUrl } from "@/lib/download-url-cache";
 import { FilesViewManager } from "./components/files-view-manager";
 import { Header } from "./components/header";
 import { useFileBrowser } from "./hooks/use-file-browser";
@@ -69,7 +70,10 @@ export default function FilesPage() {
     navigateToRoot,
     handleSearch,
     loadFiles,
+    handleImmediateUpdate,
     modals,
+    allFiles,
+    allFolders,
   } = useFileBrowser();
 
   const handleMoveFile = (file: any) => {
@@ -103,13 +107,77 @@ export default function FilesPage() {
       setItemsToMove(null);
     } catch (error) {
       console.error("Error moving items:", error);
-      toast.error("Failed to move items. Please try again.");
+      toast.error(t("files.errors.moveItemsFailed"));
     }
   };
 
   const handleUploadSuccess = async () => {
     await loadFiles();
-    toast.success("Files uploaded successfully");
+    // Toast is already shown by the upload modal
+  };
+
+  const handleFolderDownload = async (folderId: string, folderName: string) => {
+    try {
+      // Get all files in this folder and subfolders recursively with their paths
+      const getFolderFilesWithPath = (
+        targetFolderId: string,
+        currentPath: string = ""
+      ): Array<{ file: File; path: string }> => {
+        const filesWithPath: Array<{ file: File; path: string }> = [];
+
+        // Get direct files in this folder
+        const directFiles = allFiles.filter((f) => f.folderId === targetFolderId);
+        directFiles.forEach((file) => {
+          filesWithPath.push({ file, path: currentPath });
+        });
+
+        // Get subfolders and process them recursively
+        const subfolders = allFolders.filter((f) => f.parentId === targetFolderId);
+        for (const subfolder of subfolders) {
+          const subfolderPath = currentPath ? `${currentPath}/${subfolder.name}` : subfolder.name;
+          filesWithPath.push(...getFolderFilesWithPath(subfolder.id, subfolderPath));
+        }
+
+        return filesWithPath;
+      };
+
+      const folderFilesWithPath = getFolderFilesWithPath(folderId);
+
+      if (folderFilesWithPath.length === 0) {
+        toast.error(t("shareManager.noFilesToDownload"));
+        return;
+      }
+
+      const loadingToast = toast.loading(t("shareManager.creatingZip"));
+
+      try {
+        // Get presigned URLs for all files with their relative paths
+        const downloadItems = await Promise.all(
+          folderFilesWithPath.map(async ({ file, path }) => {
+            const url = await getCachedDownloadUrl(file.objectName);
+            return {
+              url,
+              name: path ? `${path}/${file.name}` : file.name,
+            };
+          })
+        );
+
+        // Create ZIP with all files
+        const { downloadFilesAsZip } = await import("@/utils/zip-download");
+        const zipName = `${folderName}.zip`;
+        await downloadFilesAsZip(downloadItems, zipName);
+
+        toast.dismiss(loadingToast);
+        toast.success(t("shareManager.zipDownloadSuccess"));
+      } catch (error) {
+        toast.dismiss(loadingToast);
+        toast.error(t("shareManager.zipDownloadError"));
+        throw error;
+      }
+    } catch (error) {
+      console.error("Error downloading folder:", error);
+      toast.error(t("share.errors.downloadFailed"));
+    }
   };
 
   return (
@@ -122,8 +190,6 @@ export default function FilesPage() {
           breadcrumbLabel={t("files.breadcrumb")}
           icon={<IconFolderOpen size={20} />}
           title={t("files.pageTitle")}
-          pendingDownloads={fileManager.pendingDownloads}
-          onCancelDownload={fileManager.cancelPendingDownload}
         >
           <Card>
             <CardContent>
@@ -140,11 +206,63 @@ export default function FilesPage() {
                   onSearch={handleSearch}
                   onDownload={fileManager.handleDownload}
                   isLoading={isLoading}
+                  onCreateFolder={() => fileManager.setCreateFolderModalOpen(true)}
+                  onUpload={modals.onOpenUploadModal}
                   breadcrumbs={
                     <Breadcrumb>
                       <BreadcrumbList>
                         <BreadcrumbItem>
-                          <BreadcrumbLink className="flex items-center gap-1 cursor-pointer" onClick={navigateToRoot}>
+                          <BreadcrumbLink
+                            className="flex items-center gap-1.5 cursor-pointer transition-colors p-0.5 rounded-md"
+                            onClick={navigateToRoot}
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              e.currentTarget.classList.add("bg-primary/10", "text-primary");
+                            }}
+                            onDragLeave={(e) => {
+                              e.currentTarget.classList.remove("bg-primary/10", "text-primary");
+                            }}
+                            onDrop={async (e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              e.currentTarget.classList.remove("bg-primary/10", "text-primary");
+
+                              try {
+                                const itemData = e.dataTransfer.getData("text/plain");
+                                const items = JSON.parse(itemData);
+
+                                // Update UI immediately
+                                items.forEach((item: any) => {
+                                  handleImmediateUpdate(item.id, item.type, null);
+                                });
+
+                                // Move all items in parallel
+                                const movePromises = items.map((item: any) => {
+                                  if (item.type === "file") {
+                                    return moveFile(item.id, { folderId: null });
+                                  } else if (item.type === "folder") {
+                                    return moveFolder(item.id, { parentId: null });
+                                  }
+                                  return Promise.resolve();
+                                });
+
+                                await Promise.all(movePromises);
+
+                                if (items.length === 1) {
+                                  toast.success(
+                                    `${items[0].type === "folder" ? "Folder" : "File"} "${items[0].name}" moved to root folder`
+                                  );
+                                } else {
+                                  toast.success(`${items.length} items moved to root folder`);
+                                }
+                              } catch (error) {
+                                console.error("Error moving items:", error);
+                                toast.error(t("files.errors.moveItemsFailed"));
+                                await loadFiles();
+                              }
+                            }}
+                          >
                             <IconFolderOpen size={16} />
                             {t("folderActions.rootFolder")}
                           </BreadcrumbLink>
@@ -155,9 +273,75 @@ export default function FilesPage() {
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
                               {index === currentPath.length - 1 ? (
-                                <BreadcrumbPage>{folder.name}</BreadcrumbPage>
+                                <BreadcrumbPage className="flex items-center gap-1.5">
+                                  <IconFolderOpen size={16} />
+                                  {folder.name}
+                                </BreadcrumbPage>
                               ) : (
-                                <BreadcrumbLink className="cursor-pointer" onClick={() => navigateToFolder(folder.id)}>
+                                <BreadcrumbLink
+                                  className="flex items-center gap-1 cursor-pointer transition-colors p-0.5 rounded-md"
+                                  onClick={() => navigateToFolder(folder.id)}
+                                  onDragOver={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    e.currentTarget.classList.add("bg-primary/10", "text-primary");
+                                  }}
+                                  onDragLeave={(e) => {
+                                    e.currentTarget.classList.remove("bg-primary/10", "text-primary");
+                                  }}
+                                  onDrop={async (e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    e.currentTarget.classList.remove("bg-primary/10", "text-primary");
+
+                                    try {
+                                      const itemData = e.dataTransfer.getData("text/plain");
+                                      const items = JSON.parse(itemData);
+
+                                      // Filter out invalid moves
+                                      const validItems = items.filter((item: any) => {
+                                        if (item.id === folder.id) return false;
+                                        if (item.type === "folder" && item.id === folder.id) return false;
+                                        return true;
+                                      });
+
+                                      if (validItems.length === 0) {
+                                        toast.error(t("files.errors.cannotMoveHere"));
+                                        return;
+                                      }
+
+                                      // Update UI immediately
+                                      validItems.forEach((item: any) => {
+                                        handleImmediateUpdate(item.id, item.type, folder.id);
+                                      });
+
+                                      // Move all items in parallel
+                                      const movePromises = validItems.map((item: any) => {
+                                        if (item.type === "file") {
+                                          return moveFile(item.id, { folderId: folder.id });
+                                        } else if (item.type === "folder") {
+                                          return moveFolder(item.id, { parentId: folder.id });
+                                        }
+                                        return Promise.resolve();
+                                      });
+
+                                      await Promise.all(movePromises);
+
+                                      if (validItems.length === 1) {
+                                        toast.success(
+                                          `${validItems[0].type === "folder" ? "Folder" : "File"} "${validItems[0].name}" moved to "${folder.name}"`
+                                        );
+                                      } else {
+                                        toast.success(`${validItems.length} items moved to "${folder.name}"`);
+                                      }
+                                    } catch (error) {
+                                      console.error("Error moving items:", error);
+                                      toast.error(t("files.errors.moveItemsFailed"));
+                                      await loadFiles();
+                                    }
+                                  }}
+                                >
+                                  <IconFolderOpen size={16} />
                                   {folder.name}
                                 </BreadcrumbLink>
                               )}
@@ -183,8 +367,10 @@ export default function FilesPage() {
                   }
                   onMoveFolder={handleMoveFolder}
                   onMoveFile={handleMoveFile}
+                  onRefresh={loadFiles}
+                  onImmediateUpdate={handleImmediateUpdate}
                   onShareFolder={fileManager.setFolderToShare}
-                  onDownloadFolder={fileManager.handleSingleFolderDownload}
+                  onDownloadFolder={handleFolderDownload}
                   onPreview={fileManager.setPreviewFile}
                   onRename={fileManager.setFileToRename}
                   onShare={fileManager.setFileToShare}

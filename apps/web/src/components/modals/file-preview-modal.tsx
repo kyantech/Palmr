@@ -74,12 +74,12 @@ export function FilePreviewModal({
             description={file.description}
             onDownload={previewState.handleDownload}
           />
-          {isImage && previewState.previewUrl && !previewState.isLoading && file.id && (
+          {!isReverseShare && isImage && previewState.previewUrl && !previewState.isLoading && file.id && (
             <div className="mt-4 mb-2">
               <EmbedCodeDisplay imageUrl={previewState.previewUrl} fileName={file.name} fileId={file.id} />
             </div>
           )}
-          {(isVideo || isAudio) && !previewState.isLoading && file.id && (
+          {!isReverseShare && (isVideo || isAudio) && !previewState.isLoading && file.id && (
             <div className="mt-4 mb-2">
               <MediaEmbedLink fileId={file.id} />
             </div>

@@ -6,7 +6,9 @@
       "token_expired": "토큰이 만료되었습니다. 다시 시도하세요.",
       "config_error": "구성 오류. 지원팀에 문의하세요.",
       "auth_failed": "인증에 실패했습니다. 다시 시도하세요."
-    }
+    },
+    "authenticationFailed": "인증에 실패했습니다",
+    "successfullyAuthenticated": "인증에 성공했습니다!"
   },
   "authProviders": {
     "title": "인증 제공자",
@@ -174,7 +176,14 @@
     "tabs": {
       "shareDetails": "공유 세부사항",
       "selectFiles": "파일 선택"
-    }
+    },
+    "errors": {
+      "nameRequired": "공유 이름은 필수입니다",
+      "selectItems": "최소 하나의 파일 또는 폴더를 선택해주세요"
+    },
+    "itemsSelected": "{count, plural, =0 {선택된 항목 없음} =1 {1개 항목 선택됨} other {#개 항목 선택됨}}",
+    "passwordPlaceholder": "비밀번호를 입력하세요",
+    "selectItemsPrompt": "공유할 파일과 폴더를 선택하세요"
   },
   "customization": {
     "breadcrumb": "커스터마이징",
@@ -340,7 +349,8 @@
     "addToShare": "공유에 추가",
     "removeFromShare": "공유에서 제거",
     "saveChanges": "변경사항 저장",
-    "editFolder": "폴더 편집"
+    "editFolder": "폴더 편집",
+    "itemsSelected": "{count, plural, =0 {선택된 항목 없음} =1 {1개 항목 선택됨} other {#개 항목 선택됨}}"
   },
   "files": {
     "title": "모든 파일",
@@ -376,7 +386,12 @@
       "description": "첫 번째 파일을 업로드하거나 폴더를 만들어 시작하세요"
     },
     "files": "파일",
-    "folders": "폴더"
+    "folders": "폴더",
+    "errors": {
+      "moveItemsFailed": "항목 이동에 실패했습니다. 다시 시도해주세요.",
+      "cannotMoveHere": "이 위치로 항목을 이동할 수 없습니다"
+    },
+    "openFolder": "폴더 열기"
   },
   "filesTable": {
     "ariaLabel": "파일 테이블",
@@ -539,7 +554,10 @@
     "movingTo": "이동 위치:",
     "title": "항목 이동",
     "description": "항목을 새 위치로 이동",
-    "success": "{count}개 항목이 성공적으로 이동되었습니다"
+    "success": "{count}개 항목이 성공적으로 이동되었습니다",
+    "errors": {
+      "moveFailed": "항목 이동에 실패했습니다"
+    }
   },
   "navbar": {
     "logoAlt": "애플리케이션 로고",
@@ -1153,8 +1171,6 @@
       },
       "fileActions": {
         "edit": "편집",
-        "save": "저장",
-        "cancel": "취소",
         "preview": "미리보기",
         "download": "다운로드",
         "delete": "삭제",
@@ -1377,16 +1393,6 @@
     "deleteTitle": "공유 삭제",
     "deleteConfirmation": "이 공유를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
     "editTitle": "공유 편집",
-    "nameLabel": "공유 이름",
-    "descriptionLabel": "설명",
-    "descriptionPlaceholder": "설명을 입력하세요 (선택사항)",
-    "expirationLabel": "만료 날짜",
-    "expirationPlaceholder": "YYYY/MM/DD HH:MM",
-    "maxViewsLabel": "최대 조회수",
-    "maxViewsPlaceholder": "무제한은 공백으로 두세요",
-    "passwordProtection": "비밀번호 보호",
-    "passwordLabel": "비밀번호",
-    "passwordPlaceholder": "비밀번호를 입력하세요",
     "newPasswordLabel": "새 비밀번호 (현재 비밀번호를 유지하려면 공백으로 두세요)",
     "newPasswordPlaceholder": "새 비밀번호를 입력하세요",
     "manageFilesTitle": "파일 관리",
@@ -1405,7 +1411,9 @@
     "linkDescriptionFile": "파일을 공유할 사용자 정의 링크 생성",
     "linkDescriptionFolder": "폴더를 공유할 사용자 정의 링크 생성",
     "linkReady": "공유 링크가 준비되었습니다:",
-    "linkTitle": "링크 생성"
+    "linkTitle": "링크 생성",
+    "itemsSelected": "{count}개 항목 선택됨",
+    "manageFilesDescription": "이 공유에 포함할 파일 및 폴더 선택"
   },
   "shareDetails": {
     "title": "공유 세부 정보",
@@ -1421,7 +1429,6 @@
     "noLink": "아직 링크가 생성되지 않았습니다",
     "copyLink": "링크 복사",
     "openLink": "새 탭에서 열기",
-    "linkCopied": "링크가 클립보드에 복사되었습니다",
     "views": "조회수",
     "dates": "날짜",
     "created": "생성됨",
@@ -1469,28 +1476,6 @@
     "expires": "만료:",
     "expirationDate": "만료 날짜"
   },
-  "shareFile": {
-    "title": "파일 공유",
-    "linkTitle": "링크 생성",
-    "nameLabel": "공유 이름",
-    "namePlaceholder": "공유 이름을 입력하세요",
-    "descriptionLabel": "설명",
-    "descriptionPlaceholder": "설명을 입력하세요 (선택사항)",
-    "expirationLabel": "만료 날짜",
-    "expirationPlaceholder": "YYYY/MM/DD HH:MM",
-    "maxViewsLabel": "최대 조회수",
-    "maxViewsPlaceholder": "무제한은 공백으로 두세요",
-    "passwordProtection": "비밀번호 보호",
-    "passwordLabel": "비밀번호",
-    "passwordPlaceholder": "비밀번호를 입력하세요",
-    "linkDescription": "파일을 공유할 맞춤 링크를 생성하세요",
-    "aliasLabel": "링크 별칭",
-    "aliasPlaceholder": "맞춤 별칭을 입력하세요",
-    "linkReady": "공유 링크가 준비되었습니다:",
-    "createShare": "공유 생성",
-    "generateLink": "링크 생성",
-    "copyLink": "링크 복사"
-  },
   "shareManager": {
     "deleteSuccess": "공유가 성공적으로 삭제되었습니다",
     "deleteError": "공유 삭제에 실패했습니다",
@@ -1520,7 +1505,10 @@
     "noFilesToDownload": "다운로드 할 수있는 파일이 없습니다",
     "singleShareZipName": "{sharename} _files.zip",
     "zipDownloadError": "zip 파일을 만들지 못했습니다",
-    "zipDownloadSuccess": "zip 파일이 성공적으로 다운로드되었습니다"
+    "zipDownloadSuccess": "zip 파일이 성공적으로 다운로드되었습니다",
+    "errors": {
+      "multipleDownloadNotSupported": "여러 공유 다운로드는 아직 지원되지 않습니다 - 공유를 개별적으로 다운로드해주세요"
+    }
   },
   "shareMultipleFiles": {
     "title": "여러 파일 공유",
@@ -1917,6 +1905,23 @@
       "inactive": "비활성",
       "admin": "관리자",
       "userr": "사용자"
+    },
+    "invite": {
+      "button": "초대 링크 생성",
+      "title": "사용자 초대 링크 생성",
+      "description": "한 번 사용할 수 있는 링크를 생성하여 누군가가 자신의 계정을 만들 수 있도록 합니다. 링크는 15분 후에 만료됩니다.",
+      "generating": "생성 중...",
+      "generate": "링크 생성",
+      "generated": "초대 링크가 성공적으로 생성되었습니다!",
+      "linkReady": "초대 링크 준비됨",
+      "linkReadyDescription": "이 링크를 초대하려는 사람과 공유하세요. 그들은 일반 사용자로 자신의 계정을 만들 수 있습니다.",
+      "copyLink": "링크 복사",
+      "linkCopied": "초대 링크가 클립보드에 복사되었습니다!",
+      "expiresIn": "15분 후 만료",
+      "close": "닫기",
+      "errors": {
+        "generateFailed": "초대 링크 생성 실패"
+      }
     }
   },
   "validation": {
@@ -1935,15 +1940,62 @@
     "required": "이 필드는 필수입니다"
   },
   "embedCode": {
-    "title": "이미지 삽입",
-    "description": "이 코드를 사용하여 포럼, 웹사이트 또는 기타 플랫폼에 이 이미지를 삽입하세요",
+    "title": "미디어 삽입",
+    "description": "이 코드를 사용하여 포럼, 웹사이트 또는 기타 플랫폼에 이 미디어를 삽입하세요",
     "tabs": {
       "directLink": "직접 링크",
       "html": "HTML",
       "bbcode": "BBCode"
     },
-    "directLinkDescription": "이미지 파일에 대한 직접 URL",
-    "htmlDescription": "이 코드를 사용하여 HTML 페이지에 이미지를 삽입하세요",
-    "bbcodeDescription": "BBCode를 지원하는 포럼에 이미지를 삽입하려면 이 코드를 사용하세요"
+    "directLinkDescription": "미디어 파일에 대한 직접 URL",
+    "htmlDescription": "이 코드를 사용하여 HTML 페이지에 미디어를 삽입하세요",
+    "bbcodeDescription": "BBCode를 지원하는 포럼에 미디어를 삽입하려면 이 코드를 사용하세요"
+  },
+  "contextMenu": {
+    "newFolder": "새 폴더",
+    "uploadFile": "파일 업로드"
+  },
+  "registerWithInvite": {
+    "title": "계정 만들기",
+    "description": "아래 정보를 입력하여 계정을 만드세요",
+    "labels": {
+      "firstName": "이름",
+      "firstNamePlaceholder": "이름을 입력하세요",
+      "lastName": "성",
+      "lastNamePlaceholder": "성을 입력하세요",
+      "username": "사용자 이름",
+      "usernamePlaceholder": "사용자 이름을 선택하세요",
+      "email": "이메일",
+      "emailPlaceholder": "이메일을 입력하세요",
+      "password": "비밀번호",
+      "passwordPlaceholder": "비밀번호를 선택하세요",
+      "confirmPassword": "비밀번호 확인",
+      "confirmPasswordPlaceholder": "비밀번호를 확인하세요"
+    },
+    "buttons": {
+      "creating": "계정 생성 중...",
+      "createAccount": "계정 만들기"
+    },
+    "validation": {
+      "firstNameRequired": "이름은 필수입니다",
+      "lastNameRequired": "성은 필수입니다",
+      "usernameMinLength": "사용자 이름은 최소 3자 이상이어야 합니다",
+      "invalidEmail": "유효하지 않은 이메일입니다",
+      "passwordMinLength": "비밀번호는 최소 8자 이상이어야 합니다",
+      "passwordsMatch": "비밀번호가 일치해야 합니다"
+    },
+    "messages": {
+      "success": "계정이 성공적으로 생성되었습니다! 로그인 페이지로 이동합니다...",
+      "redirecting": "로그인 페이지로 이동합니다..."
+    },
+    "errors": {
+      "invalidToken": "초대 링크에 오류가 있습니다",
+      "tokenUsed": "이 초대 링크는 이미 사용되었습니다",
+      "tokenExpired": "이 초대 링크는 만료되었습니다",
+      "usernameExists": "사용자 이름이 이미 존재합니다",
+      "emailExists": "이메일이 이미 존재합니다",
+      "createFailed": "계정 생성에 실패했습니다. 다시 시도해주세요."
+    },
+    "pageTitle": "계정 만들기"
   }
 }

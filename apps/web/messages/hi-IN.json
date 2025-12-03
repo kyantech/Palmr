@@ -6,7 +6,9 @@
       "token_expired": "टोकन समाप्त हो गया है। कृपया पुनः प्रयास करें।",
       "config_error": "कॉन्फ़िगरेशन त्रुटि। कृपया सहायता से संपर्क करें।",
       "auth_failed": "प्रमाणीकरण विफल। कृपया पुनः प्रयास करें।"
-    }
+    },
+    "authenticationFailed": "प्रमाणीकरण विफल",
+    "successfullyAuthenticated": "सफलतापूर्वक प्रमाणित!"
   },
   "authProviders": {
     "title": "प्रमाणीकरण प्रदाता",
@@ -174,7 +176,14 @@
     "tabs": {
       "shareDetails": "साझाकरण विवरण",
       "selectFiles": "फ़ाइलें चुनें"
-    }
+    },
+    "errors": {
+      "nameRequired": "शेयर का नाम आवश्यक है",
+      "selectItems": "कृपया कम से कम एक फ़ाइल या फ़ोल्डर चुनें"
+    },
+    "itemsSelected": "{count, plural, =0 {कोई आइटम चयनित नहीं} =1 {1 आइटम चयनित} other {# आइटम चयनित}}",
+    "passwordPlaceholder": "पासवर्ड दर्ज करें",
+    "selectItemsPrompt": "साझा करने के लिए फ़ाइलें और फ़ोल्डर चुनें"
   },
   "customization": {
     "breadcrumb": "अनुकूलन",
@@ -340,7 +349,8 @@
     "addToShare": "साझाकरण में जोड़ें",
     "removeFromShare": "साझाकरण से हटाएं",
     "saveChanges": "परिवर्तन सहेजें",
-    "editFolder": "फ़ोल्डर संपादित करें"
+    "editFolder": "फ़ोल्डर संपादित करें",
+    "itemsSelected": "{count, plural, =0 {कोई आइटम चयनित नहीं} =1 {1 आइटम चयनित} other {# आइटम चयनित}}"
   },
   "files": {
     "title": "सभी फाइलें",
@@ -376,7 +386,12 @@
       "description": "आरंभ करने के लिए अपनी पहली फ़ाइल अपलोड करें या फ़ोल्डर बनाएं"
     },
     "files": "फ़ाइलें",
-    "folders": "फ़ोल्डर"
+    "folders": "फ़ोल्डर",
+    "errors": {
+      "moveItemsFailed": "आइटम स्थानांतरित करने में विफल। कृपया पुनः प्रयास करें।",
+      "cannotMoveHere": "इस स्थान पर आइटम स्थानांतरित नहीं कर सकते"
+    },
+    "openFolder": "फ़ोल्डर खोलें"
   },
   "filesTable": {
     "ariaLabel": "फाइल तालिका",
@@ -539,7 +554,10 @@
     "movingTo": "यहाँ स्थानांतरित कर रहे हैं:",
     "title": "आइटम स्थानांतरित करें",
     "description": "आइटम को नए स्थान पर स्थानांतरित करें",
-    "success": "{count} आइटम सफलतापूर्वक स्थानांतरित किए गए"
+    "success": "{count} आइटम सफलतापूर्वक स्थानांतरित किए गए",
+    "errors": {
+      "moveFailed": "आइटम स्थानांतरित करने में विफल"
+    }
   },
   "navbar": {
     "logoAlt": "एप्लिकेशन लोगो",
@@ -1153,8 +1171,6 @@
       },
       "fileActions": {
         "edit": "संपादित करें",
-        "save": "सहेजें",
-        "cancel": "रद्द करें",
         "preview": "पूर्वावलोकन",
         "download": "डाउनलोड",
         "delete": "हटाएं",
@@ -1377,16 +1393,6 @@
     "deleteTitle": "साझाकरण हटाएं",
     "deleteConfirmation": "क्या आप वाकई इस साझाकरण को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
     "editTitle": "साझाकरण संपादित करें",
-    "nameLabel": "साझाकरण नाम",
-    "descriptionLabel": "विवरण",
-    "descriptionPlaceholder": "विवरण दर्ज करें (वैकल्पिक)",
-    "expirationLabel": "समाप्ति तिथि",
-    "expirationPlaceholder": "DD/MM/YYYY HH:MM",
-    "maxViewsLabel": "अधिकतम दृश्य",
-    "maxViewsPlaceholder": "असीमित के लिए खाली छोड़ें",
-    "passwordProtection": "पासवर्ड संरक्षित",
-    "passwordLabel": "पासवर्ड",
-    "passwordPlaceholder": "पासवर्ड दर्ज करें",
     "newPasswordLabel": "नया पासवर्ड (वर्तमान रखने के लिए खाली छोड़ें)",
     "newPasswordPlaceholder": "नया पासवर्ड दर्ज करें",
     "manageFilesTitle": "फाइलें प्रबंधित करें",
@@ -1405,7 +1411,9 @@
     "linkDescriptionFile": "फ़ाइल साझा करने के लिए कस्टम लिंक जेनरेट करें",
     "linkDescriptionFolder": "फ़ोल्डर साझा करने के लिए कस्टम लिंक जेनरेट करें",
     "linkReady": "आपका साझाकरण लिंक तैयार है:",
-    "linkTitle": "लिंक जेनरेट करें"
+    "linkTitle": "लिंक जेनरेट करें",
+    "itemsSelected": "{count, plural, =0 {कोई आइटम चयनित नहीं} =1 {1 आइटम चयनित} other {# आइटम चयनित}}",
+    "manageFilesDescription": "इस साझाकरण में शामिल करने के लिए फ़ाइलें और फ़ोल्डर चुनें"
   },
   "shareDetails": {
     "title": "साझाकरण विवरण",
@@ -1421,7 +1429,6 @@
     "noLink": "अभी तक कोई लिंक जेनरेट नहीं किया गया",
     "copyLink": "लिंक कॉपी करें",
     "openLink": "नए टैब में खोलें",
-    "linkCopied": "लिंक क्लिपबोर्ड में कॉपी कर दिया गया",
     "views": "दृश्य",
     "dates": "तिथियां",
     "created": "बनाया गया",
@@ -1469,28 +1476,6 @@
     "expires": "समाप्त होता है:",
     "expirationDate": "समाप्ति तिथि"
   },
-  "shareFile": {
-    "title": "फाइल साझा करें",
-    "linkTitle": "लिंक जेनरेट करें",
-    "nameLabel": "साझाकरण नाम",
-    "namePlaceholder": "साझाकरण नाम दर्ज करें",
-    "descriptionLabel": "विवरण",
-    "descriptionPlaceholder": "विवरण दर्ज करें (वैकल्पिक)",
-    "expirationLabel": "समाप्ति तिथि",
-    "expirationPlaceholder": "DD/MM/YYYY HH:MM",
-    "maxViewsLabel": "अधिकतम दृश्य",
-    "maxViewsPlaceholder": "असीमित के लिए खाली छोड़ें",
-    "passwordProtection": "पासवर्ड संरक्षित",
-    "passwordLabel": "पासवर्ड",
-    "passwordPlaceholder": "पासवर्ड दर्ज करें",
-    "linkDescription": "फाइल साझा करने के लिए कस्टम लिंक जेनरेट करें",
-    "aliasLabel": "लिंक उपनाम",
-    "aliasPlaceholder": "कस्टम उपनाम दर्ज करें",
-    "linkReady": "आपका साझाकरण लिंक तैयार है:",
-    "createShare": "साझाकरण बनाएं",
-    "generateLink": "लिंक जेनरेट करें",
-    "copyLink": "लिंक कॉपी करें"
-  },
   "shareManager": {
     "deleteSuccess": "साझाकरण सफलतापूर्वक हटाया गया",
     "deleteError": "साझाकरण हटाने में त्रुटि",
@@ -1520,7 +1505,10 @@
     "noFilesToDownload": "डाउनलोड करने के लिए कोई फाइलें उपलब्ध नहीं हैं",
     "singleShareZipName": "{Sharename} _files.zip",
     "zipDownloadError": "ज़िप फ़ाइल बनाने में विफल",
-    "zipDownloadSuccess": "ज़िप फ़ाइल सफलतापूर्वक डाउनलोड की गई"
+    "zipDownloadSuccess": "ज़िप फ़ाइल सफलतापूर्वक डाउनलोड की गई",
+    "errors": {
+      "multipleDownloadNotSupported": "कई साझाकरण डाउनलोड अभी तक समर्थित नहीं है - कृपया साझाकरण को अलग-अलग डाउनलोड करें"
+    }
   },
   "shareMultipleFiles": {
     "title": "कई फाइलें साझा करें",
@@ -1917,6 +1905,23 @@
       "inactive": "निष्क्रिय",
       "admin": "व्यवस्थापक",
       "userr": "उपयोगकर्ता"
+    },
+    "invite": {
+      "button": "आमंत्रण लिंक जनरेट करें",
+      "title": "उपयोगकर्ता आमंत्रण लिंक जनरेट करें",
+      "description": "एक एक-बार-उपयोग लिंक जनरेट करें जो किसी को अपना खाता बनाने की अनुमति देता है। लिंक 15 मिनट में समाप्त हो जाता है।",
+      "generating": "जनरेट हो रहा है...",
+      "generate": "लिंक जनरेट करें",
+      "generated": "आमंत्रण लिंक सफलतापूर्वक जनरेट हुआ!",
+      "linkReady": "आमंत्रण लिंक तैयार",
+      "linkReadyDescription": "इस लिंक को उस व्यक्ति के साथ साझा करें जिसे आप आमंत्रित करना चाहते हैं। वे एक नियमित उपयोगकर्ता के रूप में अपना खाता बना सकेंगे।",
+      "copyLink": "लिंक कॉपी करें",
+      "linkCopied": "आमंत्रण लिंक क्लिपबोर्ड पर कॉपी किया गया!",
+      "expiresIn": "15 मिनट में समाप्त होता है",
+      "close": "बंद करें",
+      "errors": {
+        "generateFailed": "आमंत्रण लिंक जनरेट करने में विफल"
+      }
     }
   },
   "validation": {
@@ -1935,15 +1940,62 @@
     "required": "यह फ़ील्ड आवश्यक है"
   },
   "embedCode": {
-    "title": "छवि एम्बेड करें",
-    "description": "इस छवि को मंचों, वेबसाइटों या अन्य प्लेटफार्मों में एम्बेड करने के लिए इन कोड का उपयोग करें",
+    "title": "मीडिया एम्बेड करें",
+    "description": "इस मीडिया को मंचों, वेबसाइटों या अन्य प्लेटफार्मों में एम्बेड करने के लिए इन कोड का उपयोग करें",
     "tabs": {
       "directLink": "सीधा लिंक",
       "html": "HTML",
       "bbcode": "BBCode"
     },
-    "directLinkDescription": "छवि फ़ाइल का सीधा URL",
-    "htmlDescription": "HTML पेजों में छवि एम्बेड करने के लिए इस कोड का उपयोग करें",
-    "bbcodeDescription": "BBCode का समर्थन करने वाले मंचों में छवि एम्बेड करने के लिए इस कोड का उपयोग करें"
+    "directLinkDescription": "मीडिया फ़ाइल का सीधा URL",
+    "htmlDescription": "HTML पेजों में मीडिया एम्बेड करने के लिए इस कोड का उपयोग करें",
+    "bbcodeDescription": "BBCode का समर्थन करने वाले मंचों में मीडिया एम्बेड करने के लिए इस कोड का उपयोग करें"
+  },
+  "contextMenu": {
+    "newFolder": "नया फ़ोल्डर",
+    "uploadFile": "फ़ाइल अपलोड करें"
+  },
+  "registerWithInvite": {
+    "title": "अपना खाता बनाएं",
+    "description": "अपना खाता बनाने के लिए नीचे दी गई जानकारी भरें",
+    "labels": {
+      "firstName": "पहला नाम",
+      "firstNamePlaceholder": "अपना पहला नाम दर्ज करें",
+      "lastName": "अंतिम नाम",
+      "lastNamePlaceholder": "अपना अंतिम नाम दर्ज करें",
+      "username": "उपयोगकर्ता नाम",
+      "usernamePlaceholder": "एक उपयोगकर्ता नाम चुनें",
+      "email": "ईमेल",
+      "emailPlaceholder": "अपना ईमेल दर्ज करें",
+      "password": "पासवर्ड",
+      "passwordPlaceholder": "एक पासवर्ड चुनें",
+      "confirmPassword": "पासवर्ड की पुष्टि करें",
+      "confirmPasswordPlaceholder": "अपना पासवर्ड पुष्टि करें"
+    },
+    "buttons": {
+      "creating": "खाता बनाया जा रहा है...",
+      "createAccount": "खाता बनाएं"
+    },
+    "validation": {
+      "firstNameRequired": "पहला नाम आवश्यक है",
+      "lastNameRequired": "अंतिम नाम आवश्यक है",
+      "usernameMinLength": "उपयोगकर्ता नाम कम से कम 3 अक्षर का होना चाहिए",
+      "invalidEmail": "अमान्य ईमेल",
+      "passwordMinLength": "पासवर्ड कम से कम 8 अक्षर का होना चाहिए",
+      "passwordsMatch": "पासवर्ड मेल खाना चाहिए"
+    },
+    "messages": {
+      "success": "खाता सफलतापूर्वक बनाया गया! लॉगिन पर पुनर्निर्देशित किया जा रहा है...",
+      "redirecting": "लॉगिन पर पुनर्निर्देशित किया जा रहा है..."
+    },
+    "errors": {
+      "invalidToken": "आमंत्रण लिंक में त्रुटि",
+      "tokenUsed": "यह आमंत्रण लिंक पहले ही उपयोग किया जा चुका है",
+      "tokenExpired": "यह आमंत्रण लिंक समाप्त हो गया है",
+      "usernameExists": "उपयोगकर्ता नाम पहले से मौजूद है",
+      "emailExists": "ईमेल पहले से मौजूद है",
+      "createFailed": "खाता बनाने में विफल। कृपया पुनः प्रयास करें।"
+    },
+    "pageTitle": "खाता बनाएं"
   }
 }

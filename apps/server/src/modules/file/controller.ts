@@ -1,4 +1,3 @@
-import * as fs from "fs";
 import bcrypt from "bcryptjs";
 import { FastifyReply, FastifyRequest } from "fastify";
 
@@ -29,31 +28,30 @@ export class FileController {
   private fileService = new FileService();
   private configService = new ConfigService();
 
-  async getPresignedUrl(request: FastifyRequest, reply: FastifyReply) {
-    try {
-      const { filename, extension } = request.query as {
-        filename?: string;
-        extension?: string;
-      };
-      if (!filename || !extension) {
-        return reply.status(400).send({
-          error: "The 'filename' and 'extension' parameters are required.",
-        });
-      }
+  async getPresignedUrl(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    const { filename, extension } = request.query as { filename: string; extension: string };
 
+    if (!filename || !extension) {
+      return reply.status(400).send({ error: "filename and extension are required" });
+    }
+
+    try {
+      // JWT already verified by preValidation in routes.ts
       const userId = (request as any).user?.userId;
       if (!userId) {
-        return reply.status(401).send({ error: "Unauthorized: a valid token is required to access this resource." });
+        return reply.status(401).send({ error: "Unauthorized" });
       }
 
-      const objectName = `${userId}/${Date.now()}-${filename}.${extension}`;
+      // Generate unique object name
+      const objectName = `${userId}/${Date.now()}-${Math.random().toString(36).substring(7)}-${filename}.${extension}`;
       const expires = parseInt(env.PRESIGNED_URL_EXPIRATION);
 
       const url = await this.fileService.getPresignedPutUrl(objectName, expires);
-      return reply.send({ url, objectName });
+
+      return reply.status(200).send({ url, objectName });
     } catch (error) {
       console.error("Error in getPresignedUrl:", error);
-      return reply.status(500).send({ error: "Internal server error." });
+      return reply.status(500).send({ error: "Internal server error" });
     }
   }
 
@@ -219,9 +217,6 @@ export class FileController {
 
       let hasAccess = false;
 
-      // Don't log raw passwords. Log only whether a password was provided (for debugging access flow).
-      console.log(`Requested file access for object="${objectName}" passwordProvided=${password ? true : false}`);
-
       const shares = await prisma.share.findMany({
         where: {
           files: {
@@ -264,6 +259,8 @@ export class FileController {
 
       const fileName = fileRecord.name;
       const expires = parseInt(env.PRESIGNED_URL_EXPIRATION);
+
+      // Always use presigned URLs (works for both internal and external storage)
       const url = await this.fileService.getPresignedGetUrl(objectName, expires, fileName);
       return reply.send({ url, expiresIn: expires });
     } catch (error) {
@@ -309,16 +306,14 @@ export class FileController {
             return reply.status(401).send({ error: "Unauthorized access to file." });
           }
 
-          const storageProvider = (this.fileService as any).storageProvider;
-          const filePath = storageProvider.getFilePath(objectName);
-
+          // Stream from S3/storage system
+          const stream = await this.fileService.getObjectStream(objectName);
           const contentType = getContentType(reverseShareFile.name);
           const fileName = reverseShareFile.name;
 
           reply.header("Content-Type", contentType);
           reply.header("Content-Disposition", `inline; filename="${encodeURIComponent(fileName)}"`);
 
-          const stream = fs.createReadStream(filePath);
           return reply.send(stream);
         }
 
@@ -367,16 +362,14 @@ export class FileController {
         return reply.status(401).send({ error: "Unauthorized access to file." });
       }
 
-      const storageProvider = (this.fileService as any).storageProvider;
-      const filePath = storageProvider.getFilePath(objectName);
-
+      // Stream from S3/MinIO
+      const stream = await this.fileService.getObjectStream(objectName);
       const contentType = getContentType(fileRecord.name);
       const fileName = fileRecord.name;
 
       reply.header("Content-Type", contentType);
       reply.header("Content-Disposition", `inline; filename="${encodeURIComponent(fileName)}"`);
 
-      const stream = fs.createReadStream(filePath);
       return reply.send(stream);
     } catch (error) {
       console.error("Error in downloadFile:", error);
@@ -612,9 +605,8 @@ export class FileController {
         });
       }
 
-      const storageProvider = (this.fileService as any).storageProvider;
-      const filePath = storageProvider.getFilePath(fileRecord.objectName);
-
+      // Stream from S3/MinIO
+      const stream = await this.fileService.getObjectStream(fileRecord.objectName);
       const contentType = getContentType(fileRecord.name);
       const fileName = fileRecord.name;
 
@@ -622,7 +614,6 @@ export class FileController {
       reply.header("Content-Disposition", `inline; filename="${encodeURIComponent(fileName)}"`);
       reply.header("Cache-Control", "public, max-age=31536000"); // Cache por 1 ano
 
-      const stream = fs.createReadStream(filePath);
       return reply.send(stream);
     } catch (error) {
       console.error("Error in embedFile:", error);
@@ -653,5 +644,124 @@ export class FileController {
     }
 
     return allFiles;
+  }
+
+  // Multipart upload endpoints
+  async createMultipartUpload(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    try {
+      const userId = (request as any).user?.userId;
+      if (!userId) {
+        return reply.status(401).send({ error: "Unauthorized" });
+      }
+
+      const { filename, extension } = request.body as { filename: string; extension: string };
+
+      if (!filename || !extension) {
+        return reply.status(400).send({ error: "filename and extension are required" });
+      }
+
+      // Generate unique object name (same pattern as simple upload)
+      const objectName = `${userId}/${Date.now()}-${Math.random().toString(36).substring(7)}-${filename}.${extension}`;
+
+      const uploadId = await this.fileService.createMultipartUpload(objectName);
+
+      return reply.status(200).send({
+        uploadId,
+        objectName,
+        message: "Multipart upload initialized",
+      });
+    } catch (error) {
+      console.error("[Multipart] Error creating multipart upload:", error);
+      return reply.status(500).send({ error: "Failed to create multipart upload" });
+    }
+  }
+
+  async getMultipartPartUrl(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    try {
+      const userId = (request as any).user?.userId;
+      if (!userId) {
+        return reply.status(401).send({ error: "Unauthorized" });
+      }
+
+      const { uploadId, objectName, partNumber } = request.query as {
+        uploadId: string;
+        objectName: string;
+        partNumber: string;
+      };
+
+      if (!uploadId || !objectName || !partNumber) {
+        return reply.status(400).send({ error: "uploadId, objectName, and partNumber are required" });
+      }
+
+      const partNum = parseInt(partNumber);
+      if (isNaN(partNum) || partNum < 1 || partNum > 10000) {
+        return reply.status(400).send({ error: "partNumber must be between 1 and 10000" });
+      }
+
+      const expires = parseInt(env.PRESIGNED_URL_EXPIRATION);
+
+      const url = await this.fileService.getPresignedPartUrl(objectName, uploadId, partNum, expires);
+
+      return reply.status(200).send({ url });
+    } catch (error) {
+      console.error("[Multipart] Error getting part URL:", error);
+      return reply.status(500).send({ error: "Failed to get presigned URL for part" });
+    }
+  }
+
+  async completeMultipartUpload(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    try {
+      const userId = (request as any).user?.userId;
+      if (!userId) {
+        return reply.status(401).send({ error: "Unauthorized" });
+      }
+
+      const { uploadId, objectName, parts } = request.body as {
+        uploadId: string;
+        objectName: string;
+        parts: Array<{ PartNumber: number; ETag: string }>;
+      };
+
+      if (!uploadId || !objectName || !parts || !Array.isArray(parts)) {
+        return reply.status(400).send({ error: "uploadId, objectName, and parts are required" });
+      }
+
+      await this.fileService.completeMultipartUpload(objectName, uploadId, parts);
+
+      return reply.status(200).send({
+        message: "Multipart upload completed successfully",
+        objectName,
+      });
+    } catch (error) {
+      console.error("[Multipart] Error completing multipart upload:", error);
+      return reply.status(500).send({ error: "Failed to complete multipart upload" });
+    }
+  }
+
+  async abortMultipartUpload(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    try {
+      const userId = (request as any).user?.userId;
+      if (!userId) {
+        return reply.status(401).send({ error: "Unauthorized" });
+      }
+
+      const { uploadId, objectName } = request.body as {
+        uploadId: string;
+        objectName: string;
+      };
+
+      if (!uploadId || !objectName) {
+        return reply.status(400).send({ error: "uploadId and objectName are required" });
+      }
+
+      await this.fileService.abortMultipartUpload(objectName, uploadId);
+
+      return reply.status(200).send({
+        message: "Multipart upload aborted successfully",
+      });
+    } catch (error) {
+      console.error("[Multipart] Error aborting multipart upload:", error);
+      return reply.status(500).send({ error: "Failed to abort multipart upload" });
+    }
   }
 }

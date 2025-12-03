@@ -1,0 +1,2001 @@
+{
+  "auth": {
+    "successfullyAuthenticated": "Đã xác thực thành công!",
+    "authenticationFailed": "Xác thực không thành công",
+    "errors": {
+      "account_inactive": "Tài khoản không hoạt động. Vui lòng liên hệ với quản trị viên.",
+      "registration_disabled": "Đăng ký SSO đã bị tắt.",
+      "token_expired": "Mã thông báo đã hết hạn. Vui lòng thử lại.",
+      "config_error": "Lỗi cấu hình. Vui lòng liên hệ với bộ phận hỗ trợ.",
+      "auth_failed": "Xác thực không thành công. Vui lòng thử lại."
+    }
+  },
+  "contextMenu": {
+    "newFolder": "Thư mục mới",
+    "uploadFile": "Tải lên tệp"
+  },
+  "authProviders": {
+    "title": "Nhà cung cấp xác thực",
+    "description": "Định cấu hình nhà cung cấp xác thực bên ngoài cho SSO",
+    "enabledCount": "{count} đã bật",
+    "loadingProviders": "Đang tải nhà cung cấp...",
+    "providersConfigured": "{count} nhà cung cấp đã được định cấu hình",
+    "enabledOfTotal": "{enabled} đã bật trong tổng số {total} nhà cung cấp",
+    "hideDisabledProviders": "Ẩn các nhà cung cấp đã tắt",
+    "addProvider": "Thêm nhà cung cấp",
+    "addProviderTitle": "Thêm nhà cung cấp",
+    "editProvider": "Chỉnh sửa nhà cung cấp",
+    "deleteProvider": "Xóa nhà cung cấp",
+    "enabled": "Đã bật",
+    "disabled": "Đã tắt",
+    "officialProvider": "Nhà cung cấp chính thức",
+    "dragToReorder": "Kéo để sắp xếp lại",
+    "dragDisabledMessage": "Kéo và thả bị tắt khi lọc nhà cung cấp. Hiển thị tất cả các nhà cung cấp để sắp xếp lại chúng.",
+    "dragEnabledMessage": "Kéo nhà cung cấp để sắp xếp lại chúng. Thứ tự này sẽ được phản ánh trên trang đăng nhập.",
+    "noProvidersEnabled": "Không có nhà cung cấp xác thực nào được bật",
+    "noProvidersConfigured": "Chưa có nhà cung cấp xác thực nào được định cấu hình",
+    "form": {
+      "providerName": "Tên nhà cung cấp",
+      "providerNamePlaceholder": "ví dụ: mycompany",
+      "displayName": "Tên hiển thị",
+      "displayNamePlaceholder": "ví dụ: My Company SSO",
+      "type": "Loại",
+      "typeOidc": "OIDC (OpenID Connect)",
+      "typeOauth2": "OAuth 2.0",
+      "icon": "Biểu tượng",
+      "iconPlaceholder": "Chọn một biểu tượng",
+      "clientId": "ID khách hàng",
+      "clientIdPlaceholder": "ID khách hàng OAuth của bạn",
+      "clientSecret": "Bí mật khách hàng",
+      "clientSecretPlaceholder": "Bí mật khách hàng OAuth của bạn",
+      "oauthScopes": "Phạm vi OAuth",
+      "scopesPlaceholder": "Nhập phạm vi (ví dụ: openid, profile, email)",
+      "scopesHelpOidc": "Phạm vi được đề xuất tự động dựa trên URL của nhà cung cấp. Các phạm vi OIDC phổ biến: openid, profile, email, groups",
+      "scopesHelpOauth2": "Phạm vi được đề xuất tự động dựa trên URL của nhà cung cấp. Các phạm vi OAuth2 phổ biến phụ thuộc vào nhà cung cấp",
+      "providerUrl": "URL nhà cung cấp",
+      "providerUrlPlaceholder": "https://auth.example.com",
+      "providerUrlAutoPlaceholder": "https://your-provider.com (các điểm cuối sẽ được tự động phát hiện)",
+      "providerUrlManualPlaceholder": "https://your-provider.com",
+      "autoDiscoveryHelp": "Hệ thống sẽ tự động phát hiện các điểm cuối ủy quyền, mã thông báo và thông tin người dùng",
+      "manualConfigurationHelp": "URL cơ sở của nhà cung cấp của bạn (các điểm cuối sẽ tương đối với URL này)",
+      "authorizationEndpoint": "Điểm cuối ủy quyền",
+      "authorizationEndpointPlaceholder": "https://auth.example.com/auth",
+      "tokenEndpoint": "Điểm cuối mã thông báo",
+      "tokenEndpointPlaceholder": "https://auth.example.com/token",
+      "userInfoEndpoint": "Điểm cuối thông tin người dùng",
+      "userInfoEndpointPlaceholder": "https://auth.example.com/userinfo",
+      "configurationMethod": "Phương pháp cấu hình",
+      "autoDiscovery": "Tự động phát hiện",
+      "autoDiscoveryDescription": "Tự động phát hiện các điểm cuối từ URL của nhà cung cấp",
+      "manualEndpoints": "Điểm cuối thủ công (Được khuyến nghị)",
+      "manualEndpointsDescription": "Định cấu hình thủ công các điểm cuối ủy quyền, mã thông báo và thông tin người dùng",
+      "callbackUrl": "URL gọi lại",
+      "callbackUrlDescription": "Sử dụng URL này trong cấu hình nhà cung cấp OAuth của bạn",
+      "copyCallbackUrl": "Sao chép URL gọi lại",
+      "callbackUrlCopied": "URL gọi lại đã được sao chép vào khay nhớ tạm!",
+      "adminEmailDomains": "Miền email quản trị",
+      "adminEmailDomainsPlaceholder": "Nhập miền (ví dụ: admin.company.com)",
+      "adminEmailDomainsHelp": "Người dùng có email từ các miền này sẽ được cấp đặc quyền quản trị",
+      "autoRegister": "Tự động đăng ký người dùng mới",
+      "officialProviderUrlPlaceholder": "Thay thế trình giữ chỗ bằng URL {displayName} của bạn",
+      "officialProviderHelp": "Đây là nhà cung cấp chính thức. Các điểm cuối đã được định cấu hình sẵn. Bạn chỉ có thể chỉnh sửa URL này.",
+      "officialProviderIconHelp": "Bạn có thể tùy chỉnh biểu tượng cho nhà cung cấp chính thức này."
+    },
+    "buttons": {
+      "cancel": "Hủy",
+      "save": "Lưu",
+      "saving": "Đang lưu...",
+      "adding": "Đang thêm...",
+      "updating": "Đang cập nhật...",
+      "saveProvider": "Lưu nhà cung cấp",
+      "delete": "Xóa",
+      "deleting": "Đang xóa...",
+      "edit": "Chỉnh sửa",
+      "enable": "Bật",
+      "disable": "Tắt"
+    },
+    "messages": {
+      "providerAdded": "Đã thêm nhà cung cấp thành công",
+      "providerUpdated": "Đã cập nhật nhà cung cấp thành công",
+      "providerDeleted": "Đã xóa nhà cung cấp thành công",
+      "providerOrderUpdated": "Đã cập nhật thứ tự nhà cung cấp thành công",
+      "fillRequiredFields": "Vui lòng điền vào tất cả các trường bắt buộc (tên, tên hiển thị, ID khách hàng, bí mật khách hàng)",
+      "provideUrlOrEndpoints": "Cung cấp URL nhà cung cấp để tự động phát hiện HOẶC cả ba điểm cuối tùy chỉnh",
+      "chooseDiscoveryOrManual": "Chọn tự động phát hiện (URL nhà cung cấp) HOẶC điểm cuối thủ công, không phải cả hai",
+      "loadFailed": "Không thể tải nhà cung cấp",
+      "addFailed": "Không thể thêm nhà cung cấp",
+      "updateFailed": "Không thể cập nhật nhà cung cấp",
+      "deleteFailed": "Không thể xóa nhà cung cấp",
+      "orderUpdateFailed": "Không thể cập nhật thứ tự nhà cung cấp"
+    },
+    "info": {
+      "title": "Thông tin",
+      "officialProvidersRecommended": "Để có chức năng tốt hơn, hãy cân nhắc sử dụng các nhà cung cấp chính thức. Nếu bạn gặp sự cố với nhà cung cấp tùy chỉnh, hãy cân nhắc mở một vấn đề trên",
+      "github": "GitHub",
+      "officialProvider": "Nhà cung cấp chính thức",
+      "officialProviderDescription": "Nhà cung cấp này được tối ưu hóa bởi Palmr. Chỉ có thể sửa đổi thông tin đăng nhập và cấu hình.",
+      "manualConfigTitle": "Cấu hình thủ công",
+      "manualConfigDescription": "Bạn đang cung cấp tất cả các điểm cuối theo cách thủ công. Đảm bảo chúng chính xác cho nhà cung cấp của bạn."
+    },
+    "deleteModal": {
+      "title": "Xóa nhà cung cấp xác thực",
+      "confirmMessage": "Bạn có chắc chắn muốn xóa nhà cung cấp \"{displayName}\"? Hành động này không thể hoàn tác.",
+      "providerId": "ID nhà cung cấp: {name}",
+      "cancel": "Hủy",
+      "delete": "Xóa nhà cung cấp",
+      "deleting": "Đang xóa..."
+    }
+  },
+  "bulkDownload": {
+    "title": "Tải xuống hàng loạt",
+    "zipNameLabel": "Tên tệp ZIP",
+    "zipNamePlaceholder": "Nhập tên tệp",
+    "description": "{count, plural, =1 {1 tệp sẽ được nén} other {# tệp sẽ được nén}}",
+    "download": "Tải xuống ZIP"
+  },
+  "common": {
+    "loading": "Đang tải, vui lòng đợi...",
+    "loadingSimple": "Đang tải...",
+    "cancel": "Hủy",
+    "save": "Lưu",
+    "saving": "Đang lưu...",
+    "update": "Cập nhật",
+    "updating": "Đang cập nhật...",
+    "delete": "Xóa",
+    "deleting": "Đang xóa...",
+    "close": "Đóng",
+    "download": "Tải xuống",
+    "unexpectedError": "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.",
+    "yes": "Có",
+    "no": "Không",
+    "dashboard": "Bảng điều khiển",
+    "back": "Quay lại",
+    "click": "Nhấp để",
+    "creating": "Đang tạo...",
+    "create": "Tạo",
+    "rename": "Đổi tên",
+    "move": "Di chuyển",
+    "share": "Chia sẻ",
+    "search": "Tìm kiếm",
+    "copy": "Sao chép",
+    "copied": "Đã sao chép"
+  },
+  "createShare": {
+    "title": "Tạo chia sẻ",
+    "nameLabel": "Tên chia sẻ",
+    "namePlaceholder": "Nhập tên cho chia sẻ của bạn",
+    "descriptionLabel": "Mô tả",
+    "descriptionPlaceholder": "Nhập mô tả (tùy chọn)",
+    "expirationLabel": "Ngày hết hạn",
+    "expirationPlaceholder": "MM/DD/YYYY HH:MM",
+    "maxViewsLabel": "Lượt xem tối đa",
+    "maxViewsPlaceholder": "Để trống để không giới hạn",
+    "passwordProtection": "Được bảo vệ bằng mật khẩu",
+    "passwordLabel": "Mật khẩu",
+    "passwordPlaceholder": "Nhập mật khẩu",
+    "create": "Tạo chia sẻ",
+    "success": "Đã tạo chia sẻ thành công",
+    "error": "Không thể tạo chia sẻ",
+    "errors": {
+      "nameRequired": "Tên chia sẻ là bắt buộc",
+      "selectItems": "Vui lòng chọn ít nhất một tệp hoặc thư mục"
+    },
+    "itemsSelected": "{count} mục đã chọn",
+    "selectItemsPrompt": "Chọn tệp và thư mục để chia sẻ",
+    "tabs": {
+      "shareDetails": "Chi tiết chia sẻ",
+      "selectFiles": "Chọn tệp"
+    },
+    "nextSelectFiles": "Tiếp theo: Chọn tệp",
+    "searchLabel": "Tìm kiếm"
+  },
+  "customization": {
+    "breadcrumb": "Tùy chỉnh",
+    "colors": {
+      "title": "Màu chủ đề",
+      "description": "Chọn chủ đề màu chính ưa thích của bạn",
+      "presets": "Màu có sẵn",
+      "presetsDescription": "Chọn từ các chủ đề màu có sẵn",
+      "reset": "Đặt lại về mặc định"
+    },
+    "fonts": {
+      "title": "Kiểu chữ",
+      "description": "Chọn họ phông chữ ưa thích của bạn",
+      "available": "Phông chữ có sẵn",
+      "availableDescription": "Chọn từ các họ phông chữ có sẵn",
+      "reset": "Đặt lại về mặc định"
+    },
+    "radius": {
+      "title": "Bán kính đường viền",
+      "description": "Tùy chỉnh độ tròn của các phần tử giao diện",
+      "available": "Tùy chọn độ tròn",
+      "availableDescription": "Chọn cách các góc tròn sẽ xuất hiện",
+      "reset": "Đặt lại về mặc định"
+    },
+    "background": {
+      "title": "Màu nền",
+      "description": "Tùy chỉnh màu nền cho chế độ sáng và tối",
+      "lightMode": "Chế độ sáng",
+      "darkMode": "Chế độ tối",
+      "availableDescription": "Chọn màu nền cho cả chủ đề sáng và tối",
+      "reset": "Đặt lại về mặc định"
+    },
+    "theme": {
+      "title": "Chế độ chủ đề",
+      "description": "Chọn giữa chủ đề sáng, tối hoặc hệ thống",
+      "selectTheme": "Tùy chọn chủ đề",
+      "availableDescription": "Chọn chế độ chủ đề ưa thích của bạn",
+      "reset": "Đặt lại về hệ thống"
+    },
+    "pageTitle": "Tùy chỉnh"
+  },
+  "dashboard": {
+    "loadError": "Không thể tải dữ liệu bảng điều khiển",
+    "linkCopied": "Đã sao chép liên kết vào khay nhớ tạm",
+    "pageTitle": "Bảng điều khiển",
+    "breadcrumb": "Bảng điều khiển",
+    "recentFiles": {
+      "title": "Tệp gần đây",
+      "description": "Các tệp được tải lên gần đây nhất của bạn"
+    }
+  },
+  "deleteConfirmation": {
+    "filesToDelete": "Các tệp sẽ bị xóa",
+    "foldersToDelete": "Các thư mục sẽ bị xóa",
+    "itemsToDelete": "Các mục sẽ bị xóa",
+    "sharesToDelete": "Các chia sẻ sẽ bị xóa"
+  },
+  "downloadQueue": {
+    "downloadQueued": "Đã xếp hàng tải xuống: {fileName}",
+    "queuedDescription": "Quá trình tải xuống của bạn sẽ tự động bắt đầu khi có một vị trí trống",
+    "queuePosition": "Đã xếp hàng tải xuống ở vị trí {position}: {fileName}",
+    "estimatedWait": "Thời gian chờ ước tính: {time}",
+    "queueFull": "Hàng đợi tải xuống đã đầy",
+    "queueFullDescription": "Vui lòng thử lại sau vài phút khi hàng đợi có dung lượng trống",
+    "cancelSuccess": "Đã hủy tải xuống thành công",
+    "cancelError": "Không thể hủy tải xuống: {error}",
+    "status": {
+      "pending": "Đang chuẩn bị...",
+      "queued": "Trong hàng đợi",
+      "downloading": "Đang tải xuống",
+      "completed": "Đã hoàn tất",
+      "failed": "Không thành công"
+    },
+    "waitTime": {
+      "seconds": "{seconds} giây",
+      "minutes": "{minutes} phút",
+      "hoursMinutes": "{hours} giờ {minutes} phút"
+    },
+    "indicator": {
+      "title": "Tải xuống",
+      "downloads": "Hàng đợi tải xuống",
+      "active": "Đang hoạt động",
+      "queued": "Đã xếp hàng",
+      "position": "Vị trí {position}",
+      "estimatedWait": "Chờ: {time}",
+      "unknownFile": "Tệp không xác định",
+      "noDownloads": "Không có bản tải xuống nào đang diễn ra",
+      "refresh": "Làm mới hàng đợi"
+    }
+  },
+  "emptyState": {
+    "noFiles": "Chưa có tệp nào được tải lên",
+    "uploadFile": "Tải lên tệp"
+  },
+  "errors": {
+    "invalidCredentials": "Email hoặc mật khẩu không hợp lệ",
+    "userNotFound": "Không tìm thấy người dùng",
+    "accountLocked": "Tài khoản bị khóa. Vui lòng thử lại sau",
+    "unexpectedError": "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại",
+    "Invalid verification code": "Mã xác minh không hợp lệ",
+    "Two-factor authentication is already enabled": "Xác thực hai yếu tố đã được bật",
+    "Two-factor authentication is not enabled": "Xác thực hai yếu tố chưa được bật",
+    "Invalid password": "Mật khẩu không hợp lệ",
+    "Password verification required": "Yêu cầu xác minh mật khẩu",
+    "Invalid two-factor authentication code": "Mã xác thực hai yếu tố không hợp lệ",
+    "Two-factor authentication required": "Yêu cầu xác thực hai yếu tố",
+    "noUserData": "Không có dữ liệu người dùng"
+  },
+  "fileActions": {
+    "editFile": "Chỉnh sửa tệp",
+    "nameLabel": "Tên",
+    "namePlaceholder": "Nhập tên mới",
+    "extension": "Phần mở rộng",
+    "descriptionLabel": "Mô tả",
+    "descriptionPlaceholder": "Nhập mô tả tệp",
+    "addDescriptionPlaceholder": "Thêm mô tả...",
+    "deleteFile": "Xóa tệp",
+    "deleteConfirmation": "Bạn có chắc chắn muốn xóa tệp này không?",
+    "deleteWarning": "Hành động này không thể hoàn tác."
+  },
+  "fileManager": {
+    "downloadError": "Không thể tải xuống tệp",
+    "updateSuccess": "Đã cập nhật tệp thành công",
+    "updateError": "Không thể cập nhật tệp",
+    "deleteSuccess": "Đã xóa tệp thành công",
+    "deleteError": "Không thể xóa tệp"
+  },
+  "filePreview": {
+    "title": "Xem trước tệp",
+    "description": "Xem trước và tải xuống tệp",
+    "loading": "Đang tải...",
+    "notAvailable": "Không có bản xem trước cho loại tệp này",
+    "downloadToView": "Sử dụng nút tải xuống để xem tệp này",
+    "loadError": "Lỗi khi tải bản xem trước tệp",
+    "downloadError": "Lỗi khi tải xuống tệp",
+    "audioNotSupported": "Trình duyệt của bạn không hỗ trợ phát lại âm thanh",
+    "videoNotSupported": "Trình duyệt của bạn không hỗ trợ phát lại video",
+    "pdfPreviewNotAvailable": "Không có bản xem trước PDF. Hãy thử chế độ xem thay thế hoặc tải xuống",
+    "tryAlternativeView": "Thử chế độ xem thay thế",
+    "loadingAlternative": "Đang tải chế độ xem thay thế...",
+    "loadingAudio": "Đang tải âm thanh..."
+  },
+  "fileSelector": {
+    "availableFiles": "Tệp có sẵn ({count})",
+    "shareFiles": "Tệp được chia sẻ ({count})",
+    "shareFilesDescription": "Các tệp hiện có trong chia sẻ này",
+    "availableFilesDescription": "Chọn tệp để thêm vào chia sẻ này",
+    "searchPlaceholder": "Tìm kiếm tệp...",
+    "searchSelectedFiles": "Tìm kiếm các tệp đã chọn...",
+    "noMatchingFiles": "Không tìm thấy tệp phù hợp",
+    "noAvailableFiles": "Không có tệp nào",
+    "noFilesInShare": "Không có tệp nào trong chia sẻ này",
+    "noFilesFound": "Không tìm thấy tệp nào",
+    "noFilesFoundWith": "Không tìm thấy tệp nào khớp với \"{query}\"",
+    "addFilesFromList": "Thêm tệp từ danh sách bên dưới",
+    "tryDifferentSearch": "Thử các cụm từ tìm kiếm khác",
+    "allFilesInShare": "Tất cả các tệp đã có trong chia sẻ này",
+    "uploadNewFiles": "Tải lên tệp mới để thêm chúng",
+    "fileCount": "{count, plural, =1 {tệp} other {tệp}}",
+    "filesSelected": "{count, plural, =0 {Không có tệp nào được chọn} =1 {1 tệp đã được chọn} other {# tệp đã được chọn}}",
+    "itemsSelected": "{count} mục đã chọn",
+    "editFile": "Chỉnh sửa tệp",
+    "editFolder": "Chỉnh sửa thư mục",
+    "previewFile": "Xem trước tệp",
+    "addToShare": "Thêm vào chia sẻ",
+    "removeFromShare": "Xóa khỏi chia sẻ",
+    "saveChanges": "Lưu thay đổi"
+  },
+  "files": {
+    "title": "Tất cả các tệp",
+    "uploadFile": "Tải lên tệp",
+    "loadError": "Không thể tải tệp",
+    "pageTitle": "Tệp của tôi",
+    "breadcrumb": "Tệp của tôi",
+    "downloadStart": "Đã bắt đầu tải xuống",
+    "downloadError": "Không thể tải xuống tệp",
+    "updateSuccess": "Đã cập nhật tệp thành công",
+    "updateError": "Không thể cập nhật tệp",
+    "deleteSuccess": "Đã xóa tệp thành công",
+    "deleteError": "Không thể xóa tệp",
+    "bulkDownloadSuccess": "Đã bắt đầu tải xuống tệp thành công",
+    "bulkDownloadError": "Lỗi khi tạo tệp ZIP",
+    "bulkDownloadFileError": "Lỗi khi tải xuống tệp {fileName}",
+    "bulkDeleteSuccess": "{count, plural, =1 {1 mục đã được xóa thành công} other {# mục đã được xóa thành công}}",
+    "bulkDeleteError": "Lỗi khi xóa các mục đã chọn",
+    "bulkDeleteTitle": "Xóa các mục đã chọn",
+    "bulkDeleteConfirmation": "Bạn có chắc chắn muốn xóa {count, plural, =1 {1 mục} other {# mục}} không? Hành động này không thể hoàn tác.",
+    "totalFiles": "{count, plural, =0 {Không có tệp nào} =1 {1 tệp} other {# tệp}}",
+    "openFolder": "Mở thư mục",
+    "errors": {
+      "moveItemsFailed": "Không thể di chuyển các mục. Vui lòng thử lại.",
+      "cannotMoveHere": "Không thể di chuyển các mục đến vị trí này"
+    },
+    "empty": {
+      "title": "Chưa có tệp hoặc thư mục nào",
+      "description": "Tải lên tệp đầu tiên của bạn hoặc tạo một thư mục để bắt đầu"
+    },
+    "files": "tệp",
+    "folders": "thư mục",
+    "actions": {
+      "open": "Mở",
+      "rename": "Đổi tên",
+      "delete": "Xóa"
+    },
+    "viewMode": {
+      "table": "Bảng",
+      "grid": "Lưới"
+    }
+  },
+  "filesTable": {
+    "ariaLabel": "Bảng tệp",
+    "selectAll": "Chọn tất cả",
+    "selectFile": "Chọn tệp {fileName}",
+    "columns": {
+      "name": "TÊN",
+      "description": "MÔ TẢ",
+      "size": "KÍCH THƯỚC",
+      "createdAt": "NGÀY TẠO",
+      "updatedAt": "NGÀY CẬP NHẬT",
+      "actions": "HÀNH ĐỘNG"
+    },
+    "actions": {
+      "menu": "Menu hành động tệp",
+      "preview": "Xem trước",
+      "edit": "Chỉnh sửa",
+      "share": "Chia sẻ",
+      "download": "Tải xuống",
+      "delete": "Xóa"
+    },
+    "bulkActions": {
+      "selected": "{count, plural, =1 {1 tệp đã được chọn} other {# tệp đã được chọn}}",
+      "actions": "Hành động",
+      "download": "Tải xuống các mục đã chọn",
+      "share": "Chia sẻ các mục đã chọn",
+      "delete": "Xóa các mục đã chọn"
+    }
+  },
+  "folderActions": {
+    "editFolder": "Chỉnh sửa thư mục",
+    "folderName": "Tên thư mục",
+    "folderNamePlaceholder": "Nhập tên thư mục",
+    "folderDescription": "Mô tả",
+    "folderDescriptionPlaceholder": "Nhập mô tả thư mục (tùy chọn)",
+    "createFolder": "Tạo thư mục",
+    "renameFolder": "Đổi tên thư mục",
+    "moveFolder": "Di chuyển thư mục",
+    "shareFolder": "Chia sẻ thư mục",
+    "deleteFolder": "Xóa thư mục",
+    "moveTo": "Di chuyển đến",
+    "selectDestination": "Chọn thư mục đích",
+    "rootFolder": "Gốc",
+    "folderCreated": "Đã tạo thư mục thành công",
+    "folderRenamed": "Đã đổi tên thư mục thành công",
+    "folderMoved": "Đã di chuyển thư mục thành công",
+    "folderDeleted": "Đã xóa thư mục thành công",
+    "folderShared": "Đã chia sẻ thư mục thành công",
+    "createFolderError": "Lỗi khi tạo thư mục",
+    "renameFolderError": "Lỗi khi đổi tên thư mục",
+    "moveFolderError": "Lỗi khi di chuyển thư mục",
+    "deleteFolderError": "Lỗi khi xóa thư mục",
+    "shareFolderError": "Lỗi khi chia sẻ thư mục",
+    "deleteConfirmation": "Bạn có chắc chắn muốn xóa thư mục này không?",
+    "deleteWarning": "Hành động này không thể hoàn tác."
+  },
+  "footer": {
+    "poweredBy": "Cung cấp bởi",
+    "kyanHomepage": "Trang chủ Kyantech"
+  },
+  "forgotPassword": {
+    "emailLabel": "Địa chỉ email",
+    "emailPlaceholder": "Nhập email của bạn",
+    "sending": "Đang gửi...",
+    "submit": "Gửi hướng dẫn đặt lại",
+    "backToLogin": "Quay lại đăng nhập",
+    "title": "Quên mật khẩu",
+    "description": "Nhập địa chỉ email của bạn và chúng tôi sẽ gửi cho bạn hướng dẫn để đặt lại mật khẩu của bạn",
+    "resetInstructions": "Hướng dẫn đặt lại đã được gửi đến email của bạn",
+    "pageTitle": "Quên mật khẩu",
+    "passwordAuthDisabled": "Xác thực bằng mật khẩu đã bị tắt. Vui lòng liên hệ với quản trị viên của bạn hoặc sử dụng nhà cung cấp xác thực bên ngoài."
+  },
+  "generateShareLink": {
+    "generateTitle": "Tạo liên kết chia sẻ",
+    "updateTitle": "Cập nhật liên kết chia sẻ",
+    "generateDescription": "Tạo một liên kết tùy chỉnh cho chia sẻ này. Bạn có thể tùy chỉnh URL để dễ nhớ hơn.",
+    "updateDescription": "Cập nhật liên kết tùy chỉnh cho chia sẻ này. Bạn có thể tùy chỉnh URL để dễ nhớ hơn.",
+    "aliasPlaceholder": "ID tùy chỉnh cho liên kết",
+    "linkReady": "Liên kết chia sẻ của bạn đã sẵn sàng. Bạn có thể sao chép nó ngay bây giờ.",
+    "readyDescription": "Liên kết chia sẻ của bạn đã sẵn sàng. Bạn có thể quét mã QR trực tiếp, tải xuống để sử dụng sau hoặc sao chép liên kết bên dưới.",
+    "generateButton": "Tạo liên kết",
+    "updateButton": "Cập nhật liên kết",
+    "copyButton": "Sao chép liên kết",
+    "success": "Đã tạo liên kết thành công",
+    "error": "Không thể tạo liên kết",
+    "copied": "Đã sao chép liên kết vào khay nhớ tạm",
+    "tabs": {
+      "link": "Liên kết",
+      "qrcode": "Mã QR"
+    }
+  },
+  "home": {
+    "description": "Giải pháp thay thế mã nguồn mở cho WeTransfer. Chia sẻ tệp một cách an toàn, không theo dõi hoặc giới hạn.",
+    "documentation": "Tài liệu",
+    "starOnGithub": "Gắn sao trên GitHub",
+    "privacyMessage": "Được xây dựng với sự riêng tư. Các tệp của bạn chỉ có thể được truy cập bởi những người có liên kết chia sẻ trước khi tải lên. Mãi mãi miễn phí và mã nguồn mở.",
+    "header": {
+      "fileSharing": "Chia sẻ tệp",
+      "tagline": "đơn giản và miễn phí"
+    },
+    "pageTitle": "Trang chủ"
+  },
+  "iconPicker": {
+    "title": "Chọn biểu tượng",
+    "placeholder": "Chọn một biểu tượng",
+    "searchPlaceholder": "Tìm kiếm biểu tượng...",
+    "loadingMore": "Đang tải thêm biểu tượng...",
+    "allIconsLoaded": "Đã tải tất cả {count} biểu tượng",
+    "noIconsFound": "Không tìm thấy biểu tượng nào cho \"{search}\"",
+    "tabs": {
+      "all": "Tất cả các biểu tượng",
+      "popular": "Phổ biến",
+      "auth": "Nhà cung cấp xác thực"
+    },
+    "stats": "{iconCount} biểu tượng từ {libraryCount} thư viện",
+    "categoryBadge": "{category} ({count} biểu tượng)"
+  },
+  "imageEdit": {
+    "title": "Chỉnh sửa hình ảnh",
+    "rotate": "Xoay",
+    "zoom": "Phóng to",
+    "cropInstructions": "Kéo để định vị lại, thay đổi kích thước các góc để điều chỉnh vùng cắt"
+  },
+  "login": {
+    "welcome": "Chào mừng đến với",
+    "signInToContinue": "Đăng nhập để tiếp tục",
+    "emailOrUsernameLabel": "Email hoặc Tên người dùng",
+    "emailOrUsernamePlaceholder": "Nhập email hoặc tên người dùng của bạn",
+    "emailLabel": "Địa chỉ email",
+    "emailPlaceholder": "Nhập email của bạn",
+    "passwordLabel": "Mật khẩu",
+    "passwordPlaceholder": "Nhập mật khẩu của bạn",
+    "signIn": "Đăng nhập",
+    "signingIn": "Đang đăng nhập...",
+    "forgotPassword": "Quên mật khẩu?",
+    "pageTitle": "Đăng nhập",
+    "or": "hoặc",
+    "continueWithSSO": "Tiếp tục với SSO",
+    "processing": "Đang xử lý xác thực..."
+  },
+  "logo": {
+    "labels": {
+      "appLogo": "Logo ứng dụng"
+    },
+    "buttons": {
+      "upload": "Tải lên logo",
+      "remove": "Xóa logo"
+    },
+    "messages": {
+      "uploadSuccess": "Đã tải lên logo thành công",
+      "removeSuccess": "Đã xóa logo thành công"
+    },
+    "errors": {
+      "uploadFailed": "Không thể tải lên logo",
+      "removeFailed": "Không thể xóa logo"
+    }
+  },
+  "moveItems": {
+    "itemsToMove": "Các mục cần di chuyển:",
+    "movingTo": "Đang di chuyển đến:",
+    "title": "Di chuyển {count, plural, =1 {mục} other {mục}}",
+    "description": "Di chuyển {count, plural, =1 {mục} other {mục}} đến một vị trí mới",
+    "success": "Đã di chuyển thành công {count} {count, plural, =1 {mục} other {mục}}",
+    "errors": {
+      "moveFailed": "Không thể di chuyển các mục"
+    }
+  },
+  "navbar": {
+    "logoAlt": "Logo ứng dụng",
+    "profileMenu": "Menu hồ sơ",
+    "profile": "Hồ sơ",
+    "customization": "Tùy chỉnh",
+    "settings": "Cài đặt",
+    "usersManagement": "Quản lý người dùng",
+    "logout": "Đăng xuất"
+  },
+  "navigation": {
+    "dashboard": "Bảng điều khiển"
+  },
+  "notifications": {
+    "permissionGranted": "Đã bật thông báo tải xuống",
+    "permissionDenied": "Đã tắt thông báo tải xuống",
+    "downloadComplete": {
+      "title": "Tải xuống hoàn tất",
+      "body": "{fileName} đã tải xuống xong"
+    },
+    "downloadFailed": {
+      "title": "Tải xuống không thành công",
+      "body": "Không thể tải xuống {fileName}: {error}",
+      "unknownError": "Lỗi không xác định"
+    },
+    "queueProcessing": {
+      "title": "Bắt đầu tải xuống",
+      "body": "{fileName} hiện đang được tải xuống{position}",
+      "position": " (đã ở vị trí #{position} trong hàng đợi)"
+    }
+  },
+  "profile": {
+    "password": {
+      "title": "Thay đổi mật khẩu",
+      "newPassword": "Mật khẩu mới",
+      "confirmPassword": "Xác nhận mật khẩu mới",
+      "updateButton": "Cập nhật mật khẩu"
+    },
+    "form": {
+      "title": "Thông tin hồ sơ",
+      "firstName": "Tên",
+      "lastName": "Họ",
+      "username": "Tên người dùng",
+      "email": "Email",
+      "updateButton": "Cập nhật hồ sơ"
+    },
+    "header": {
+      "title": "Hồ sơ",
+      "subtitle": "Quản lý thông tin cá nhân và mật khẩu của bạn"
+    },
+    "picture": {
+      "title": "Ảnh hồ sơ",
+      "description": "Nhấp vào biểu tượng máy ảnh để thay đổi ảnh hồ sơ của bạn",
+      "uploadPhoto": "Tải lên ảnh",
+      "removePhoto": "Xóa ảnh"
+    },
+    "errors": {
+      "loadFailed": "Không thể tải dữ liệu người dùng",
+      "updateFailed": "Không thể cập nhật hồ sơ",
+      "passwordFailed": "Không thể cập nhật mật khẩu",
+      "imageFailed": "Không thể cập nhật ảnh hồ sơ",
+      "imageRemoveFailed": "Không thể xóa ảnh hồ sơ"
+    },
+    "messages": {
+      "noChanges": "Không có thay đổi nào để lưu",
+      "updateSuccess": "Đã cập nhật hồ sơ thành công",
+      "fillPasswords": "Vui lòng điền vào cả hai trường mật khẩu",
+      "passwordSuccess": "Đã cập nhật mật khẩu thành công",
+      "imageSuccess": "Đã cập nhật ảnh hồ sơ thành công",
+      "imageRemoved": "Đã xóa ảnh hồ sơ thành công"
+    },
+    "pageTitle": "Hồ sơ"
+  },
+  "qrCodeModal": {
+    "title": "Chia sẻ mã QR",
+    "description": "Quét mã QR này để truy cập liên kết.",
+    "download": "Tải xuống mã QR"
+  },
+  "quickAccess": {
+    "files": {
+      "title": "Tệp của tôi",
+      "description": "Truy cập và quản lý các tệp đã tải lên của bạn"
+    },
+    "shares": {
+      "title": "Chia sẻ của tôi",
+      "description": "Xem và quản lý các tệp được chia sẻ của bạn"
+    },
+    "reverseShares": {
+      "title": "Nhận tệp",
+      "description": "Tạo liên kết để người khác gửi tệp cho bạn"
+    }
+  },
+  "recentFiles": {
+    "title": "Tải lên gần đây",
+    "viewAll": "Xem tất cả",
+    "upload": "Tải lên",
+    "uploadFile": "Tải lên tệp",
+    "noFiles": "Chưa có tệp nào được tải lên"
+  },
+  "recentShares": {
+    "title": "Chia sẻ gần đây",
+    "viewAll": "Xem tất cả",
+    "createShare": "Tạo chia sẻ",
+    "noShares": "Chưa có chia sẻ nào được tạo",
+    "createFirst": "Tạo chia sẻ đầu tiên của bạn"
+  },
+  "recipientSelector": {
+    "emailPlaceholder": "Nhập email người nhận",
+    "add": "Thêm",
+    "recipients": "Người nhận ({count})",
+    "notifyAll": "Thông báo cho tất cả",
+    "noRecipients": "Chưa có người nhận nào được thêm",
+    "addSuccess": "Đã thêm người nhận thành công",
+    "addError": "Không thể thêm người nhận",
+    "removeSuccess": "Đã xóa người nhận thành công",
+    "removeError": "Không thể xóa người nhận",
+    "sendingNotifications": "Đang gửi thông báo...",
+    "notifySuccess": "Đã thông báo cho người nhận thành công",
+    "notifyError": "Không thể thông báo cho người nhận",
+    "selectAll": "Chọn tất cả",
+    "selectedCount": "{count} đã chọn",
+    "selectRecipient": "Chọn {email}",
+    "notifySelected": "Thông báo cho các mục đã chọn",
+    "removeSelected": "Xóa các mục đã chọn",
+    "notifySingle": "Thông báo cho người nhận này",
+    "removeSingle": "Xóa người nhận này",
+    "bulkRemoveSuccess": "Đã xóa thành công {count} người nhận",
+    "bulkRemoveError": "Không thể xóa các người nhận đã chọn",
+    "bulkNotifySuccess": "Đã gửi thông báo đến {count} người nhận",
+    "bulkNotifyError": "Không thể thông báo cho các người nhận đã chọn",
+    "singleNotifySuccess": "Đã gửi thông báo đến {email}",
+    "singleNotifyError": "Không thể thông báo cho người nhận",
+    "modalDescription": "Thêm và quản lý người nhận cho chia sẻ này. Bạn có thể thông báo cho tất cả hoặc các người nhận cụ thể khi SMTP được định cấu hình.",
+    "addRecipient": "Thêm người nhận",
+    "invalidEmail": "Vui lòng nhập một địa chỉ email hợp lệ",
+    "duplicateEmail": "Người nhận này đã được thêm",
+    "noRecipientsDescription": "Thêm người nhận để chia sẻ nội dung này qua email"
+  },
+  "register": {
+    "validation": {
+      "firstNameRequired": "Tên là bắt buộc",
+      "lastNameRequired": "Họ là bắt buộc",
+      "usernameMinLength": "Tên người dùng phải có ít nhất 3 ký tự",
+      "invalidEmail": "Email không hợp lệ",
+      "passwordMinLength": "Mật khẩu phải có ít nhất 8 ký tự",
+      "success": "Người dùng quản trị đã được tạo thành công!",
+      "error": "Lỗi khi tạo người dùng quản trị"
+    },
+    "labels": {
+      "firstName": "Tên",
+      "lastName": "Họ",
+      "username": "Tên người dùng",
+      "email": "Email",
+      "password": "Mật khẩu"
+    },
+    "buttons": {
+      "creating": "Đang tạo...",
+      "createAdmin": "Tạo tài khoản quản trị"
+    }
+  },
+  "resetPassword": {
+    "pageTitle": "Đặt lại mật khẩu",
+    "header": {
+      "title": "Đặt lại mật khẩu",
+      "description": "Nhập mật khẩu mới của bạn bên dưới"
+    },
+    "form": {
+      "newPassword": "Mật khẩu mới",
+      "newPasswordPlaceholder": "Nhập mật khẩu mới của bạn",
+      "confirmPassword": "Xác nhận mật khẩu mới",
+      "confirmPasswordPlaceholder": "Xác nhận mật khẩu mới của bạn",
+      "resetting": "Đang đặt lại mật khẩu...",
+      "submit": "Đặt lại mật khẩu",
+      "backToLogin": "Quay lại đăng nhập"
+    },
+    "messages": {
+      "success": "Đã đặt lại mật khẩu thành công"
+    },
+    "errors": {
+      "serverError": "Không thể đặt lại mật khẩu. Vui lòng thử lại.",
+      "invalidToken": "Mã thông báo đặt lại không hợp lệ hoặc bị thiếu"
+    }
+  },
+  "reverseShares": {
+    "pageTitle": "Nhận tệp",
+    "search": {
+      "title": "Quản lý liên kết nhận",
+      "createButton": "Tạo liên kết",
+      "placeholder": "Tìm kiếm liên kết nhận...",
+      "results": "Đã tìm thấy {filtered} trong số {total} liên kết nhận"
+    },
+    "labels": {
+      "files": "tệp",
+      "size": "kích thước",
+      "status": "trạng thái",
+      "access": "quyền truy cập",
+      "description": "Mô tả",
+      "pageLayout": "Bố cục trang",
+      "security": "Bảo mật & Trạng thái",
+      "limits": "Giới hạn",
+      "maxFiles": "Tệp tối đa",
+      "maxFileSize": "Kích thước tối đa",
+      "allowedTypes": "Loại được phép",
+      "filesReceived": "Tệp đã nhận",
+      "fileLimit": "Giới hạn tệp",
+      "noLimit": "Không giới hạn",
+      "noLinkCreated": "Chưa tạo liên kết",
+      "publicAccess": "Truy cập công khai",
+      "protectedByPassword": "Được bảo vệ bằng mật khẩu",
+      "configureProtection": "Nhấp để định cấu hình bảo vệ",
+      "enterPassword": "Nhập mật khẩu",
+      "thisLinkProtected": "Liên kết này sẽ được bảo vệ bằng mật khẩu",
+      "thisLinkPublic": "Liên kết này sẽ được cung cấp công khai",
+      "configureExpiration": "Định cấu hình hết hạn",
+      "configureLimits": "Định cấu hình giới hạn tệp",
+      "protectWithPassword": "Bảo vệ bằng mật khẩu",
+      "layoutOptions": {
+        "default": "Mặc định",
+        "wetransfer": "Kiểu WeTransfer"
+      },
+      "noFilesLimit": "Không giới hạn tệp",
+      "noSizeLimit": "Không giới hạn kích thước",
+      "allFileTypes": "Tất cả các loại tệp",
+      "fileTypesHelp": "Nhập các phần mở rộng không có dấu chấm, được phân tách bằng dấu cách, dấu phẩy, dấu gạch ngang hoặc dấu gạch đứng",
+      "fieldRequirements": "Yêu cầu trường",
+      "nameFieldRequired": "Trường tên",
+      "emailFieldRequired": "Trường email",
+      "fieldOptions": {
+        "hidden": "Ẩn",
+        "optional": "Tùy chọn",
+        "required": "Bắt buộc"
+      }
+    },
+    "card": {
+      "untitled": "Liên kết không có tiêu đề",
+      "noDescription": "Không có mô tả",
+      "addDescriptionPlaceholder": "Thêm mô tả...",
+      "files": "tệp",
+      "progress": "Tiến trình",
+      "created": "Đã tạo",
+      "expired": "Đã hết hạn",
+      "expires": "Hết hạn",
+      "viewDetails": "Xem chi tiết",
+      "viewQrCode": "Xem mã QR",
+      "copyLink": "Sao chép liên kết",
+      "openInNewTab": "Mở trong tab mới",
+      "editLink": "Chỉnh sửa liên kết",
+      "createLink": "Tạo liên kết",
+      "delete": "Xóa",
+      "copyLinkTitle": "Sao chép liên kết",
+      "createLinkCTA": "Tạo liên kết nhận"
+    },
+    "status": {
+      "active": "Đang hoạt động",
+      "inactive": "Không hoạt động",
+      "expired": "Đã hết hạn",
+      "protected": "Được bảo vệ",
+      "public": "Công khai"
+    },
+    "actions": {
+      "copyLink": "Sao chép liên kết",
+      "editAlias": "Chỉnh sửa bí danh",
+      "createAlias": "Tạo bí danh",
+      "viewDetails": "Xem chi tiết",
+      "edit": "Chỉnh sửa",
+      "delete": "Xóa",
+      "viewFiles": "Tệp đã nhận",
+      "viewQrCode": "Xem mã QR"
+    },
+    "empty": {
+      "title": "Chưa tạo liên kết nhận",
+      "description": "Tạo liên kết tùy chỉnh để người khác gửi tệp trực tiếp cho bạn một cách an toàn và có tổ chức.",
+      "createButton": "Tạo liên kết đầu tiên"
+    },
+    "modals": {
+      "create": {
+        "title": "Tạo liên kết nhận",
+        "description": "Định cấu hình một liên kết tùy chỉnh để nhận tệp từ người khác"
+      },
+      "edit": {
+        "title": "Chỉnh sửa liên kết nhận",
+        "description": "Cập nhật cài đặt cho liên kết nhận này",
+        "updating": "Đang cập nhật...",
+        "saveChanges": "Lưu thay đổi"
+      },
+      "details": {
+        "title": "Chi tiết liên kết",
+        "description": "Xem và chỉnh sửa thông tin liên kết nhận của bạn",
+        "pageLayout": "Bố cục trang",
+        "linkSection": "Liên kết nhận",
+        "noLinkCreated": "Chưa tạo liên kết",
+        "limits": "Giới hạn",
+        "maxFiles": "Tệp tối đa",
+        "maxFileSize": "Kích thước tối đa",
+        "allowedTypes": "Loại được phép",
+        "noLimit": "Không giới hạn",
+        "security": "Bảo mật",
+        "status": "Trạng thái",
+        "password": "Mật khẩu",
+        "files": "Tệp đã nhận",
+        "noFiles": "Chưa nhận được tệp nào",
+        "copyLink": "Sao chép liên kết",
+        "openLink": "Mở liên kết",
+        "editAlias": "Chỉnh sửa bí danh",
+        "createAlias": "Tạo bí danh",
+        "editPassword": "Chỉnh sửa bảo vệ bằng mật khẩu",
+        "basicInfo": "Thông tin cơ bản",
+        "securityAndStatus": "Bảo mật & Trạng thái",
+        "protection": "Bảo vệ",
+        "protectedByPassword": "Được bảo vệ bằng mật khẩu",
+        "publicAccess": "Truy cập công khai",
+        "active": "Đang hoạt động",
+        "inactive": "Không hoạt động",
+        "deactivate": "Hủy kích hoạt",
+        "activate": "Kích hoạt",
+        "expiration": "Hết hạn",
+        "dates": "Ngày",
+        "createdAt": "Được tạo vào",
+        "updatedAt": "Được cập nhật vào",
+        "allTypes": "Tất cả các loại",
+        "placeholderTypes": ".pdf,.jpg,.png (phân tách bằng dấu phẩy)",
+        "downloadSuccess": "Đã bắt đầu tải xuống",
+        "downloadError": "Lỗi khi tải xuống tệp",
+        "editSuccess": "Đã cập nhật tệp thành công",
+        "editError": "Lỗi khi cập nhật tệp",
+        "previewNotAvailable": "Không có bản xem trước",
+        "notAvailable": "Không có sẵn",
+        "invalidDate": "Ngày không hợp lệ"
+      },
+      "alias": {
+        "editTitle": "Chỉnh sửa bí danh",
+        "createTitle": "Tạo bí danh",
+        "editDescription": "Cập nhật bí danh cho liên kết nhận này",
+        "createDescription": "Tạo một bí danh tùy chỉnh cho liên kết nhận này",
+        "aliasLabel": "Bí danh liên kết",
+        "aliasPlaceholder": "my-custom-link",
+        "preview": "Xem trước:",
+        "currentLink": "Liên kết hiện tại:",
+        "copyCurrentLink": "Sao chép liên kết hiện tại",
+        "randomTooltip": "Tạo bí danh ngẫu nhiên",
+        "cancel": "Hủy",
+        "creating": "Đang tạo...",
+        "updating": "Đang cập nhật...",
+        "create": "Tạo bí danh",
+        "update": "Cập nhật bí danh",
+        "validation": {
+          "required": "Bí danh là bắt buộc",
+          "minLength": "Bí danh phải có ít nhất 3 ký tự",
+          "maxLength": "Bí danh phải có tối đa 50 ký tự",
+          "pattern": "Bí danh chỉ được chứa chữ cái, số, dấu gạch ngang và dấu gạch dưới"
+        },
+        "help": "3-50 ký tự. Dấu cách sẽ tự động được chuyển đổi thành dấu gạch ngang."
+      },
+      "password": {
+        "title": "Chỉnh sửa bảo vệ bằng mật khẩu",
+        "description": "Định cấu hình bảo vệ bằng mật khẩu cho liên kết này",
+        "hasPassword": "Được bảo vệ bằng mật khẩu",
+        "password": "Mật khẩu",
+        "cancel": "Hủy",
+        "save": "Lưu",
+        "saving": "Đang lưu..."
+      },
+      "receivedFiles": {
+        "title": "Tệp đã nhận",
+        "description": "Xem và quản lý các tệp được gửi đến liên kết này",
+        "noFiles": "Chưa nhận được tệp nào",
+        "noFilesDescription": "Các tệp được gửi qua liên kết này sẽ xuất hiện ở đây",
+        "fileCount": "{count, plural, =0 {Không có tệp nào} =1 {1 tệp} other {# tệp}}",
+        "invalidDate": "Ngày không hợp lệ",
+        "totalSize": "Tổng kích thước: {size}",
+        "columns": {
+          "file": "Tệp",
+          "size": "Kích thước",
+          "sender": "Được gửi bởi",
+          "date": "Ngày",
+          "actions": "Hành động"
+        },
+        "actions": {
+          "preview": "Xem trước",
+          "download": "Tải xuống",
+          "copyToMyFiles": "Sao chép vào các tệp của tôi",
+          "copying": "Đang sao chép..."
+        },
+        "uploadedBy": "Được tải lên bởi {name}",
+        "anonymous": "Ẩn danh",
+        "downloadSuccess": "Đã bắt đầu tải xuống",
+        "downloadError": "Lỗi khi tải xuống tệp",
+        "editSuccess": "Đã cập nhật tệp thành công",
+        "editError": "Lỗi khi cập nhật tệp",
+        "previewNotAvailable": "Không có bản xem trước",
+        "copySuccess": "Đã sao chép tệp vào tệp của bạn thành công",
+        "copyError": "Lỗi khi sao chép tệp vào tệp của bạn",
+        "deleteSuccess": "Đã xóa tệp thành công",
+        "deleteError": "Lỗi khi xóa tệp",
+        "bulkCopySuccess": "{count, plural, =1 {1 tệp đã được sao chép thành công vào tệp của bạn} other {# tệp đã được sao chép thành công vào tệp của bạn}}",
+        "bulkDeleteSuccess": "{count, plural, =1 {1 tệp đã được xóa thành công} other {# tệp đã được xóa thành công}}",
+        "bulkCopyProgress": "Đang sao chép {count, plural, =1 {1 tệp} other {# tệp}} vào tệp của bạn...",
+        "bulkDeleteProgress": "Đang xóa {count, plural, =1 {1 tệp} other {# tệp}}...",
+        "bulkDeleteConfirmTitle": "Xóa các tệp đã chọn",
+        "bulkDeleteConfirmMessage": "Bạn có chắc chắn muốn xóa {count, plural, =1 {tệp này} other {# tệp này}} không? Hành động này không thể hoàn tác.",
+        "bulkDeleteConfirmButton": "Xóa {count, plural, =1 {tệp} other {tệp}}",
+        "bulkActions": {
+          "selected": "{count, plural, =1 {1 tệp đã được chọn} other {# tệp đã được chọn}}",
+          "actions": "Hành động",
+          "download": "Tải xuống các mục đã chọn",
+          "copyToMyFiles": "Sao chép các mục đã chọn vào tệp của tôi",
+          "delete": "Xóa các mục đã chọn"
+        },
+        "selectAll": "Chọn tất cả",
+        "selectFile": "Chọn tệp {fileName}",
+        "copyErrors": {
+          "timeout": "Thao tác sao chép đã hết thời gian chờ. Vui lòng thử lại với tệp nhỏ hơn hoặc kiểm tra kết nối của bạn.",
+          "failed": "Thao tác sao chép không thành công. Vui lòng thử lại.",
+          "aborted": "Thao tác sao chép đã bị hủy do hết thời gian chờ."
+        }
+      }
+    },
+    "form": {
+      "name": {
+        "label": "Tên liên kết",
+        "placeholder": "ví dụ: Tài liệu dự án, Ảnh gia đình..."
+      },
+      "description": {
+        "label": "Mô tả",
+        "placeholder": "Mô tả loại tệp bạn mong đợi nhận được...",
+        "description": "Tùy chọn. Giúp mọi người hiểu những gì cần gửi."
+      },
+      "status": {
+        "label": "Trạng thái liên kết",
+        "description": "Kích hoạt hoặc hủy kích hoạt liên kết nhận này"
+      },
+      "expiration": {
+        "label": "Ngày hết hạn",
+        "description": "Tùy chọn. Liên kết sẽ bị hủy kích hoạt sau ngày này.",
+        "configure": "Định cấu hình hết hạn"
+      },
+      "fileLimits": {
+        "configure": "Định cấu hình giới hạn tệp"
+      },
+      "maxFiles": {
+        "label": "Tệp tối đa",
+        "placeholder": "ví dụ: 10",
+        "description": "Tùy chọn. Giới hạn tổng số tệp có thể được gửi.",
+        "noLimit": "Không giới hạn tệp"
+      },
+      "maxFileSize": {
+        "label": "Kích thước tệp tối đa",
+        "placeholder": "ví dụ: 100",
+        "description": "Tùy chọn. Giới hạn kích thước riêng của mỗi tệp.",
+        "noLimit": "Không giới hạn kích thước"
+      },
+      "allowedFileTypes": {
+        "label": "Loại tệp được phép",
+        "placeholder": "ví dụ: pdf, jpg, png, docx",
+        "description": "Nhập các phần mở rộng không có dấu chấm, được phân tách bằng dấu cách, dấu phẩy, dấu gạch ngang hoặc dấu gạch đứng",
+        "allTypes": "Tất cả các loại tệp"
+      },
+      "pageLayout": {
+        "label": "Bố cục trang",
+        "placeholder": "Chọn bố cục",
+        "description": "Trang tải lên sẽ xuất hiện như thế nào với người dùng.",
+        "options": {
+          "default": "Bố cục mặc định",
+          "wetransfer": "Kiểu WeTransfer"
+        }
+      },
+      "password": {
+        "label": "Mật khẩu bảo vệ",
+        "placeholder": "Tùy chọn. Thêm mật khẩu để bảo vệ liên kết",
+        "description": "Tùy chọn. Người dùng sẽ cần mật khẩu này để truy cập liên kết.",
+        "configurePassword": "Định cấu hình mật khẩu",
+        "protectWithPassword": "Bảo vệ bằng mật khẩu",
+        "passwordHelp": "Mật khẩu phải có ít nhất 4 ký tự",
+        "passwordPlaceholder": "Nhập mật khẩu để bảo vệ liên kết"
+      },
+      "nameFieldRequired": {
+        "label": "Yêu cầu trường tên",
+        "description": "Định cấu hình xem trường tên người tải lên có được hiển thị hay không và có bắt buộc hay không"
+      },
+      "emailFieldRequired": {
+        "label": "Yêu cầu trường email",
+        "description": "Định cấu hình xem trường email người tải lên có được hiển thị hay không và có bắt buộc hay không"
+      },
+      "fieldRequirements": {
+        "title": "Yêu cầu trường",
+        "description": "Định cấu hình các trường được hiển thị trong biểu mẫu tải lên"
+      },
+      "submit": "Tạo liên kết nhận"
+    },
+    "messages": {
+      "created": "Đã tạo liên kết nhận thành công!",
+      "createSuccess": "Đã tạo liên kết nhận thành công!",
+      "updateSuccess": "Đã cập nhật liên kết nhận thành công!",
+      "linkCopied": "Đã sao chép liên kết vào khay nhớ tạm!",
+      "deleteSuccess": "Đã xóa liên kết nhận thành công!",
+      "aliasCreated": "Đã tạo bí danh thành công!",
+      "activateSuccess": "Đã kích hoạt liên kết nhận thành công!",
+      "deactivateSuccess": "Đã hủy kích hoạt liên kết nhận thành công!",
+      "passwordProtectionEnabled": "Đã bật bảo vệ bằng mật khẩu thành công!",
+      "passwordProtectionDisabled": "Đã xóa bảo vệ bằng mật khẩu thành công!"
+    },
+    "defaultLinkName": "Tệp đã nhận",
+    "errors": {
+      "loadFailed": "Không thể tải liên kết nhận",
+      "createFailed": "Không thể tạo liên kết nhận. Vui lòng thử lại.",
+      "updateFailed": "Không thể cập nhật liên kết nhận. Vui lòng thử lại.",
+      "deleteFailed": "Không thể xóa liên kết nhận. Vui lòng thử lại.",
+      "aliasCreateFailed": "Không thể tạo bí danh. Vui lòng thử lại.",
+      "passwordUpdateFailed": "Không thể cập nhật bảo vệ bằng mật khẩu"
+    },
+    "delete": {
+      "title": "Xóa liên kết nhận",
+      "description": "Hành động này không thể hoàn tác. Liên kết sẽ bị xóa vĩnh viễn và sẽ không thể nhận tệp nữa.",
+      "confirmButton": "Xóa liên kết",
+      "cancelButton": "Hủy",
+      "deleting": "Đang xóa..."
+    },
+    "upload": {
+      "metadata": {
+        "title": "Gửi tệp - Palmr",
+        "description": "Gửi tệp qua liên kết được chia sẻ",
+        "descriptionWithLimit": "Tải lên tệp (tối đa {limit} tệp)"
+      },
+      "layout": {
+        "defaultTitle": "Gửi tệp",
+        "importantInfo": "Thông tin quan trọng:",
+        "maxFiles": "Tối đa {count} tệp",
+        "maxFileSize": "Kích thước tệp tối đa: {size}MB",
+        "allowedTypes": "Loại được phép: {types}",
+        "loading": "Đang tải..."
+      },
+      "password": {
+        "title": "Liên kết được bảo vệ",
+        "description": "Liên kết này được bảo vệ bằng mật khẩu. Nhập mật khẩu để tiếp tục.",
+        "label": "Mật khẩu",
+        "placeholder": "Nhập mật khẩu",
+        "cancel": "Hủy",
+        "submit": "Tiếp tục",
+        "verifying": "Đang xác minh..."
+      },
+      "errors": {
+        "loadFailed": "Không thể tải thông tin. Vui lòng thử lại.",
+        "passwordIncorrect": "Mật khẩu không chính xác. Vui lòng thử lại.",
+        "linkNotFound": "Không tìm thấy liên kết hoặc đã hết hạn.",
+        "linkInactive": "Liên kết này không hoạt động.",
+        "linkExpired": "Liên kết này đã hết hạn.",
+        "uploadFailed": "Lỗi khi tải lên tệp",
+        "retry": "Thử lại",
+        "fileTooLarge": "Tệp quá lớn. Kích thước tối đa: {maxSize}",
+        "fileTypeNotAllowed": "Loại tệp không được phép. Các loại được chấp nhận: {allowedTypes}",
+        "maxFilesExceeded": "Chỉ được phép tối đa {maxFiles} tệp",
+        "selectAtLeastOneFile": "Chọn ít nhất một tệp",
+        "provideNameOrEmail": "Vui lòng cung cấp tên hoặc email của bạn",
+        "provideNameRequired": "Tên là bắt buộc",
+        "provideEmailRequired": "Email là bắt buộc"
+      },
+      "fileDropzone": {
+        "dragActive": "Thả tệp vào đây",
+        "dragInactive": "Kéo tệp vào đây hoặc nhấp để chọn",
+        "acceptedTypes": "Loại được chấp nhận: {types}",
+        "maxFileSize": "Kích thước tối đa: {size}",
+        "maxFiles": "Tối đa {count} tệp",
+        "remainingFiles": "Còn lại {remaining} trong số {max} tệp"
+      },
+      "fileList": {
+        "title": "Các tệp đã chọn:",
+        "statusUploaded": "Đã tải lên",
+        "statusError": "Lỗi",
+        "retry": "Thử lại"
+      },
+      "form": {
+        "nameLabel": "Tên",
+        "nameLabelOptional": "Tên (tùy chọn)",
+        "namePlaceholder": "Tên của bạn",
+        "emailLabel": "Email",
+        "emailLabelOptional": "Email (tùy chọn)",
+        "emailPlaceholder": "your@email.com",
+        "descriptionLabel": "Mô tả (tùy chọn)",
+        "descriptionPlaceholder": "Thêm mô tả cho các tệp...",
+        "uploadButton": "Gửi {count} tệp",
+        "uploading": "Đang gửi..."
+      },
+      "success": {
+        "title": "Đã gửi tệp thành công! 🎉",
+        "description": "Bạn có thể đóng trang này.",
+        "countMessage": "Đã gửi thành công {count} tệp!"
+      },
+      "maxFilesReached": {
+        "title": "Đã đạt đến giới hạn tệp",
+        "description": "Liên kết này đã nhận được số lượng tệp tối đa cho phép là {maxFiles}.",
+        "contactOwner": "Nếu có lỗi hoặc bạn cần gửi thêm tệp, hãy liên hệ với chủ sở hữu liên kết."
+      },
+      "linkInactive": {
+        "title": "Liên kết không hoạt động",
+        "description": "Liên kết nhận này tạm thời không hoạt động.",
+        "contactOwner": "Liên hệ với chủ sở hữu liên kết để biết thêm thông tin."
+      },
+      "linkNotFound": {
+        "title": "Không tìm thấy liên kết",
+        "description": "Liên kết này có thể đã bị xóa hoặc chưa từng tồn tại."
+      },
+      "linkExpired": {
+        "title": "Liên kết đã hết hạn",
+        "description": "Liên kết nhận này đã hết hạn và không còn chấp nhận tệp nữa.",
+        "contactOwner": "Liên hệ với chủ sở hữu liên kết nếu bạn cần gửi tệp."
+      }
+    },
+    "components": {
+      "fileRow": {
+        "addDescription": "Thêm mô tả...",
+        "anonymous": "Ẩn danh"
+      },
+      "fileActions": {
+        "edit": "Chỉnh sửa",
+        "preview": "Xem trước",
+        "download": "Tải xuống",
+        "delete": "Xóa",
+        "copyToMyFiles": "Sao chép vào các tệp của tôi",
+        "copying": "Đang sao chép..."
+      },
+      "editField": {
+        "saveChanges": "Lưu thay đổi",
+        "cancelEdit": "Hủy chỉnh sửa"
+      }
+    }
+  },
+  "searchBar": {
+    "placeholder": "Tìm kiếm tệp và thư mục...",
+    "placeholderFiles": "Tìm kiếm tệp...",
+    "placeholderFolders": "Tìm kiếm thư mục...",
+    "results": "Hiển thị {filtered} trong số {total} mục",
+    "noResults": "Không tìm thấy kết quả nào cho \"{query}\""
+  },
+  "settings": {
+    "groups": {
+      "defaultDescription": "Tùy chọn cấu hình",
+      "general": {
+        "title": "Chung",
+        "description": "Cài đặt ứng dụng cơ bản"
+      },
+      "email": {
+        "title": "Email",
+        "description": "Cấu hình máy chủ email"
+      },
+      "security": {
+        "title": "Bảo mật",
+        "description": "Cài đặt bảo mật và xác thực"
+      },
+      "storage": {
+        "title": "Lưu trữ",
+        "description": "Cấu hình lưu trữ tệp"
+      },
+      "oidc": {
+        "title": "OpenID Connect (SSO)",
+        "description": "Định cấu hình xác thực SSO qua OpenID Connect"
+      }
+    },
+    "fields": {
+      "noDescription": "Không có mô tả nào",
+      "appLogo": {
+        "title": "Logo ứng dụng",
+        "description": "Hình ảnh logo ứng dụng"
+      },
+      "appName": {
+        "title": "Tên ứng dụng",
+        "description": "Tên ứng dụng được hiển thị cho người dùng"
+      },
+      "appDescription": {
+        "title": "Mô tả ứng dụng",
+        "description": "Mô tả ngắn gọn về ứng dụng"
+      },
+      "showHomePage": {
+        "title": "Hiển thị trang chủ",
+        "description": "Hiển thị trang chủ sau khi cài đặt"
+      },
+      "hideVersion": {
+        "title": "Ẩn phiên bản",
+        "description": "Ẩn phiên bản Palmr khỏi chân trang trên tất cả các trang"
+      },
+      "smtpEnabled": {
+        "title": "Đã bật SMTP",
+        "description": "Bật hoặc tắt chức năng email SMTP"
+      },
+      "smtpHost": {
+        "title": "Máy chủ SMTP",
+        "description": "Địa chỉ máy chủ SMTP"
+      },
+      "smtpPort": {
+        "title": "Cổng SMTP",
+        "description": "Cổng máy chủ SMTP"
+      },
+      "smtpUser": {
+        "title": "Tên người dùng SMTP",
+        "description": "Tên người dùng để xác thực SMTP"
+      },
+      "smtpPass": {
+        "title": "Mật khẩu SMTP",
+        "description": "Mật khẩu để xác thực SMTP"
+      },
+      "smtpFromName": {
+        "title": "Tên người gửi",
+        "description": "Tên hiển thị cho các email đã gửi"
+      },
+      "smtpFromEmail": {
+        "title": "Email người gửi",
+        "description": "Địa chỉ email của người gửi"
+      },
+      "smtpSecure": {
+        "title": "Bảo mật kết nối",
+        "description": "Phương thức bảo mật kết nối SMTP - Tự động (được khuyến nghị), SSL, STARTTLS hoặc Không có (không an toàn)",
+        "options": {
+          "auto": "Tự động (Được khuyến nghị)",
+          "ssl": "SSL (Cổng 465)",
+          "tls": "STARTTLS (Cổng 587)",
+          "none": "Không có (Không an toàn)"
+        }
+      },
+      "smtpNoAuth": {
+        "title": "Không xác thực",
+        "description": "Bật tính năng này cho các máy chủ nội bộ không yêu cầu tên người dùng/mật khẩu (ẩn các trường xác thực)"
+      },
+      "smtpTrustSelfSigned": {
+        "title": "Tin cậy chứng chỉ tự ký",
+        "description": "Bật tính năng này để tin cậy các chứng chỉ SSL/TLS tự ký (hữu ích cho môi trường phát triển)"
+      },
+      "testSmtp": {
+        "title": "Kiểm tra kết nối SMTP",
+        "description": "Kiểm tra xem cấu hình SMTP có hợp lệ không"
+      },
+      "maxLoginAttempts": {
+        "title": "Số lần đăng nhập tối đa",
+        "description": "Số lần đăng nhập tối đa trước khi bị chặn"
+      },
+      "loginBlockDuration": {
+        "title": "Thời gian chặn",
+        "description": "Thời gian (tính bằng giây) để chặn sau khi vượt quá số lần thử"
+      },
+      "passwordMinLength": {
+        "title": "Độ dài mật khẩu tối thiểu",
+        "description": "Số ký tự tối thiểu cho mật khẩu"
+      },
+      "passwordResetTokenExpiration": {
+        "title": "Hết hạn mã thông báo đặt lại",
+        "description": "Thời gian hiệu lực (tính bằng giây) cho mã thông báo đặt lại mật khẩu"
+      },
+      "maxFileSize": {
+        "title": "Kích thước tệp tối đa",
+        "description": "Kích thước tệp tối đa được phép tải lên"
+      },
+      "maxTotalStoragePerUser": {
+        "title": "Dung lượng lưu trữ tối đa cho mỗi người dùng",
+        "description": "Tổng giới hạn dung lượng lưu trữ cho mỗi người dùng"
+      },
+      "firstUserAccess": {
+        "title": "Quyền truy cập của người dùng đầu tiên",
+        "description": "Cài đặt cho lần truy cập đầu tiên của người dùng mới"
+      },
+      "serverUrl": {
+        "title": "URL máy chủ",
+        "description": "URL cơ sở của máy chủ Palmr (ví dụ: https://palmr.example.com)"
+      },
+      "passwordAuthEnabled": {
+        "title": "Xác thực bằng mật khẩu",
+        "description": "Bật hoặc tắt xác thực dựa trên mật khẩu"
+      }
+    },
+    "buttons": {
+      "save": "Lưu {group}",
+      "testSmtp": "Kiểm tra kết nối",
+      "testing": "Đang kiểm tra..."
+    },
+    "errors": {
+      "loadFailed": "Không thể tải cài đặt",
+      "updateFailed": "Không thể cập nhật cài đặt",
+      "passwordAuthRequiresProvider": "Không thể tắt xác thực bằng mật khẩu mà không có ít nhất một nhà cung cấp xác thực đang hoạt động"
+    },
+    "messages": {
+      "noChanges": "Không có thay đổi nào để lưu",
+      "updateSuccess": "Đã cập nhật cài đặt {group} thành công",
+      "smtpTestSuccess": "Kết nối SMTP thành công! Cấu hình email của bạn đang hoạt động chính xác.",
+      "smtpTestFailed": "Kết nối SMTP không thành công: {error}",
+      "smtpTestGenericError": "Không thể kiểm tra kết nối SMTP. Vui lòng kiểm tra cài đặt của bạn và thử lại.",
+      "smtpNotEnabled": "SMTP chưa được bật. Vui lòng bật SMTP trước.",
+      "smtpMissingHostPort": "Vui lòng điền vào Máy chủ và Cổng SMTP trước khi kiểm tra.",
+      "smtpMissingAuth": "Vui lòng điền vào Tên người dùng và Mật khẩu SMTP hoặc bật tùy chọn 'Không xác thực'."
+    },
+    "title": "Cài đặt",
+    "breadcrumb": "Cài đặt",
+    "pageTitle": "Cài đặt",
+    "tooltips": {
+      "testSmtp": "Kiểm tra kết nối SMTP với các giá trị hiện được nhập trong biểu mẫu. Để thực hiện các thay đổi vĩnh viễn, hãy nhớ lưu cài đặt của bạn sau khi kiểm tra.",
+      "defaultPlaceholder": "Nhập và nhấn Enter"
+    },
+    "redirectUri": {
+      "placeholder": "https://mysite.com",
+      "previewLabel": "URL hoàn chỉnh sẽ được lưu:"
+    }
+  },
+  "share": {
+    "errors": {
+      "invalidPassword": "Mật khẩu không hợp lệ. Vui lòng thử lại.",
+      "loadFailed": "Không thể tải chia sẻ",
+      "downloadFailed": "Không thể tải xuống tệp"
+    },
+    "messages": {
+      "downloadStarted": "Đã bắt đầu tải xuống"
+    },
+    "password": {
+      "title": "Chia sẻ được bảo vệ bằng mật khẩu",
+      "protected": "Chia sẻ này được bảo vệ bằng mật khẩu",
+      "incorrect": "Mật khẩu không chính xác. Vui lòng thử lại.",
+      "label": "Mật khẩu",
+      "placeholder": "Nhập mật khẩu chia sẻ",
+      "submit": "Gửi"
+    },
+    "details": {
+      "untitled": "Chia sẻ không có tiêu đề",
+      "created": "Đã tạo: {date}",
+      "expires": "Hết hạn: {date}"
+    },
+    "downloadAll": "Tải xuống tất cả",
+    "notFound": {
+      "title": "Không tìm thấy chia sẻ",
+      "description": "Chia sẻ này có thể đã bị xóa hoặc đã hết hạn."
+    },
+    "pageTitle": "Chia sẻ",
+    "metadata": {
+      "defaultDescription": "Chia sẻ tệp một cách an toàn",
+      "filesShared": "{count, plural, =1 {1 tệp đã được chia sẻ} other {# tệp đã được chia sẻ}}"
+    }
+  },
+  "shareActions": {
+    "fileTitle": "Chia sẻ tệp",
+    "folderTitle": "Chia sẻ thư mục",
+    "linkTitle": "Tạo liên kết",
+    "linkDescriptionFile": "Tạo một liên kết tùy chỉnh để chia sẻ tệp",
+    "linkDescriptionFolder": "Tạo một liên kết tùy chỉnh để chia sẻ thư mục",
+    "aliasLabel": "Bí danh liên kết",
+    "aliasPlaceholder": "Nhập bí danh tùy chỉnh",
+    "linkReady": "Liên kết chia sẻ của bạn đã sẵn sàng:",
+    "generateLink": "Tạo liên kết",
+    "copyLink": "Sao chép liên kết",
+    "deleteTitle": "Xóa chia sẻ",
+    "deleteConfirmation": "Bạn có chắc chắn muốn xóa chia sẻ này không? Hành động này không thể hoàn tác.",
+    "addDescriptionPlaceholder": "Thêm mô tả...",
+    "editTitle": "Chỉnh sửa chia sẻ",
+    "newPasswordLabel": "Mật khẩu mới (để trống để giữ mật khẩu hiện tại)",
+    "newPasswordPlaceholder": "Nhập mật khẩu mới",
+    "manageFilesTitle": "Quản lý tệp",
+    "manageFilesDescription": "Chọn tệp và thư mục để đưa vào chia sẻ này",
+    "manageRecipientsTitle": "Quản lý người nhận",
+    "itemsSelected": "{count} mục đã chọn",
+    "editSuccess": "Đã cập nhật chia sẻ thành công",
+    "editError": "Không thể cập nhật chia sẻ",
+    "bulkDeleteConfirmation": "Bạn có chắc chắn muốn xóa {count, plural, =1 {1 chia sẻ} other {# chia sẻ}} không? Hành động này không thể hoàn tác.",
+    "bulkDeleteTitle": "Xóa các chia sẻ đã chọn"
+  },
+  "shareDetails": {
+    "title": "Chi tiết chia sẻ",
+    "subtitle": "Xem và quản lý chi tiết cho chia sẻ này",
+    "basicInfo": "Thông tin cơ bản",
+    "name": "Tên",
+    "description": "Mô tả",
+    "shareLink": "Liên kết chia sẻ",
+    "dates": "Ngày",
+    "security": "Bảo mật",
+    "files": "Tệp",
+    "recipients": "Người nhận",
+    "views": "Lượt xem",
+    "created": "Đã tạo",
+    "expires": "Hết hạn",
+    "never": "Không bao giờ",
+    "untitled": "Chia sẻ không có tiêu đề",
+    "noDescription": "Không có mô tả",
+    "notAvailable": "Không có sẵn",
+    "invalidDate": "Ngày không hợp lệ",
+    "passwordProtected": "Được bảo vệ bằng mật khẩu",
+    "publicAccess": "Truy cập công khai",
+    "maxViews": "Lượt xem tối đa:",
+    "noLink": "Chưa tạo liên kết",
+    "generateLink": "Tạo liên kết",
+    "editLink": "Chỉnh sửa liên kết",
+    "copyLink": "Sao chép liên kết",
+    "openLink": "Mở liên kết",
+    "editSecurity": "Chỉnh sửa bảo mật",
+    "editExpiration": "Chỉnh sửa hết hạn",
+    "qrCode": "Mã QR",
+    "downloadQrCode": "Tải xuống mã QR",
+    "clickToEnlargeQrCode": "Nhấp để phóng to mã QR",
+    "loadError": "Không thể tải chi tiết chia sẻ"
+  },
+  "shareExpiration": {
+    "title": "Cài đặt hết hạn chia sẻ",
+    "subtitle": "Định cấu hình khi nào chia sẻ này sẽ hết hạn",
+    "currentStatus": "Trạng thái hiện tại",
+    "expires": "Hết hạn:",
+    "neverExpires": "Không bao giờ hết hạn",
+    "enableExpiration": "Bật hết hạn",
+    "expirationDate": "Ngày hết hạn",
+    "validation": {
+      "dateRequired": "Vui lòng chọn ngày hết hạn",
+      "dateMustBeFuture": "Ngày hết hạn phải trong tương lai"
+    },
+    "success": {
+      "expirationSet": "Đã đặt ngày hết hạn thành công",
+      "expirationUpdated": "Đã cập nhật ngày hết hạn thành công",
+      "expirationRemoved": "Đã xóa hết hạn thành công - chia sẻ hiện là vĩnh viễn"
+    },
+    "error": {
+      "updateFailed": "Không thể cập nhật cài đặt hết hạn"
+    },
+    "info": {
+      "title": "Về việc hết hạn:",
+      "willBeInaccessible": "Chia sẻ sẽ không thể truy cập được sau ngày này",
+      "canBeChanged": "Bạn có thể thay đổi hoặc xóa ngày hết hạn bất cứ lúc nào",
+      "noExpiration": "Chia sẻ này sẽ không bao giờ hết hạn và sẽ vẫn có thể truy cập vô thời hạn."
+    }
+  },
+  "shareManager": {
+    "deleteSuccess": "Đã xóa chia sẻ thành công",
+    "deleteError": "Không thể xóa chia sẻ",
+    "updateSuccess": "Đã cập nhật chia sẻ thành công",
+    "updateError": "Không thể cập nhật chia sẻ",
+    "securityUpdateSuccess": "Đã cập nhật cài đặt bảo mật thành công",
+    "securityUpdateError": "Không thể cập nhật cài đặt bảo mật",
+    "expirationUpdateSuccess": "Đã cập nhật cài đặt hết hạn thành công",
+    "expirationUpdateError": "Không thể cập nhật cài đặt hết hạn",
+    "filesUpdateSuccess": "Đã cập nhật tệp thành công",
+    "filesUpdateError": "Không thể cập nhật tệp",
+    "recipientsUpdateSuccess": "Đã cập nhật người nhận thành công",
+    "recipientsUpdateError": "Không thể cập nhật người nhận",
+    "linkGenerateSuccess": "Đã tạo liên kết chia sẻ thành công",
+    "linkGenerateError": "Không thể tạo liên kết chia sẻ",
+    "notifyLoading": "Đang gửi thông báo...",
+    "notifySuccess": "Đã thông báo cho người nhận thành công",
+    "notifyError": "Không thể thông báo cho người nhận",
+    "bulkDeleteError": "Không thể xóa chia sẻ",
+    "bulkDeleteLoading": "Đang xóa {count, plural, =1 {1 chia sẻ} other {# chia sẻ}}...",
+    "bulkDeleteSuccess": "{count, plural, =1 {1 chia sẻ đã được xóa thành công} other {# chia sẻ đã được xóa thành công}}",
+    "downloadSuccess": "Đã bắt đầu tải xuống thành công",
+    "downloadError": "Không thể tải xuống tệp chia sẻ",
+    "noFilesToDownload": "Không có tệp nào để tải xuống",
+    "creatingZip": "Đang tạo tệp ZIP...",
+    "zipDownloadSuccess": "Đã tải xuống tệp ZIP thành công",
+    "zipDownloadError": "Không thể tạo tệp ZIP",
+    "errors": {
+      "multipleDownloadNotSupported": "Chưa hỗ trợ tải xuống nhiều chia sẻ - vui lòng tải xuống từng chia sẻ riêng lẻ"
+    },
+    "singleShareZipName": "{shareName}_files.zip",
+    "multipleSharesZipName": "{count}_shares_files.zip",
+    "defaultShareName": "Chia sẻ"
+  },
+  "shareMultipleFiles": {
+    "title": "Chia sẻ nhiều tệp",
+    "shareNameLabel": "Tên chia sẻ",
+    "shareNamePlaceholder": "Nhập tên chia sẻ",
+    "descriptionLabel": "Mô tả",
+    "descriptionPlaceholder": "Nhập mô tả (tùy chọn)",
+    "filesToShare": "Tệp để chia sẻ",
+    "files": "tệp",
+    "totalSize": "Tổng kích thước",
+    "creating": "Đang tạo chia sẻ...",
+    "create": "Tạo chia sẻ",
+    "itemsToShare": "Các mục để chia sẻ ({count} {count, plural, =1 {mục} other {mục}})"
+  },
+  "shareSecurity": {
+    "title": "Cài đặt bảo mật chia sẻ",
+    "subtitle": "Định cấu hình bảo vệ bằng mật khẩu và các tùy chọn bảo mật cho chia sẻ này",
+    "currentStatus": "Trạng thái hiện tại",
+    "passwordProtection": "Bảo vệ bằng mật khẩu",
+    "password": "Mật khẩu",
+    "newPassword": "Mật khẩu mới",
+    "passwordPlaceholder": "Nhập mật khẩu an toàn",
+    "existingPasswordMessage": "Chia sẻ này đã có mật khẩu. Nếu bạn muốn cập nhật nó, hãy nhập mật khẩu mới vào trường bên dưới và lưu.",
+    "passwordRequirements": {
+      "title": "Yêu cầu mật khẩu:",
+      "minLength": "Ít nhất 2 ký tự"
+    },
+    "info": {
+      "title": "Cách hoạt động:",
+      "withPassword": "Người dùng sẽ cần nhập mật khẩu để truy cập chia sẻ này.",
+      "withoutPassword": "Bất kỳ ai có liên kết đều có thể truy cập chia sẻ này mà không cần mật khẩu."
+    },
+    "validation": {
+      "passwordRequired": "Mật khẩu là bắt buộc",
+      "passwordTooShort": "Mật khẩu phải có ít nhất 2 ký tự"
+    },
+    "success": {
+      "passwordSet": "Đã bật bảo vệ bằng mật khẩu thành công",
+      "passwordUpdated": "Đã cập nhật mật khẩu thành công",
+      "passwordRemoved": "Đã xóa bảo vệ bằng mật khẩu thành công"
+    },
+    "error": {
+      "updateFailed": "Không thể cập nhật cài đặt bảo mật"
+    }
+  },
+  "shares": {
+    "errors": {
+      "loadFailed": "Không thể tải chia sẻ",
+      "notifyFailed": "Không thể thông báo cho người nhận",
+      "smtpConfigFailed": "Không thể tải cấu hình SMTP"
+    },
+    "messages": {
+      "linkCopied": "Đã sao chép liên kết vào khay nhớ tạm",
+      "recipientsNotified": "Đã thông báo cho người nhận thành công"
+    },
+    "empty": {
+      "message": "Chưa có chia sẻ nào được tạo",
+      "createButton": "Tạo chia sẻ"
+    },
+    "header": {
+      "title": "Chia sẻ của tôi",
+      "myShares": "Chia sẻ của tôi"
+    },
+    "search": {
+      "title": "Tất cả các chia sẻ",
+      "createButton": "Tạo chia sẻ",
+      "placeholder": "Tìm kiếm chia sẻ...",
+      "results": "Đã tìm thấy {filtered} trong số {total} chia sẻ"
+    },
+    "pageTitle": "Chia sẻ"
+  },
+  "sharesTable": {
+    "ariaLabel": "Bảng chia sẻ",
+    "never": "Không bao giờ",
+    "columns": {
+      "name": "TÊN",
+      "description": "MÔ TẢ",
+      "createdAt": "NGÀY TẠO",
+      "expiresAt": "NGÀY HẾT HẠN",
+      "status": "TRẠNG THÁI",
+      "security": "BẢO MẬT",
+      "files": "TỆP",
+      "recipients": "NGƯỜI NHẬN",
+      "actions": "HÀNH ĐỘNG"
+    },
+    "status": {
+      "neverExpires": "Không bao giờ hết hạn",
+      "active": "Đang hoạt động",
+      "expired": "Đã hết hạn"
+    },
+    "security": {
+      "protected": "Được bảo vệ",
+      "public": "Công khai"
+    },
+    "filesCount": "tệp",
+    "folderCount": "thư mục",
+    "recipientsCount": "người nhận",
+    "actions": {
+      "menu": "Menu hành động chia sẻ",
+      "edit": "Chỉnh sửa",
+      "manageFiles": "Quản lý tệp",
+      "manageRecipients": "Quản lý người nhận",
+      "viewDetails": "Xem chi tiết",
+      "generateLink": "Tạo liên kết",
+      "editLink": "Chỉnh sửa liên kết",
+      "copyLink": "Sao chép liên kết",
+      "viewQrCode": "Xem mã QR",
+      "notifyRecipients": "Thông báo cho người nhận",
+      "downloadShareFiles": "Tải xuống tất cả các tệp",
+      "delete": "Xóa"
+    },
+    "bulkActions": {
+      "actions": "Hành động",
+      "download": "Tải xuống các mục đã chọn",
+      "delete": "Xóa",
+      "selected": "{count, plural, =1 {1 chia sẻ đã được chọn} other {# chia sẻ đã được chọn}}"
+    },
+    "selectAll": "Chọn tất cả",
+    "selectShare": "Chọn chia sẻ {shareName}"
+  },
+  "storageUsage": {
+    "title": "Sử dụng bộ nhớ",
+    "ariaLabel": "Thanh tiến trình sử dụng bộ nhớ",
+    "used": "đã sử dụng",
+    "available": "có sẵn",
+    "total": "Tổng",
+    "loading": "Đang tải...",
+    "retry": "Thử lại",
+    "errors": {
+      "title": "Thông tin bộ nhớ không có sẵn",
+      "detectionFailed": "Không thể phát hiện dung lượng đĩa. Điều này có thể do sự cố cấu hình hệ thống hoặc quyền không đủ.",
+      "serverError": "Đã xảy ra lỗi máy chủ khi truy xuất thông tin bộ nhớ. Vui lòng thử lại sau.",
+      "unknown": "Đã xảy ra lỗi không mong muốn khi tải thông tin bộ nhớ."
+    }
+  },
+  "theme": {
+    "toggle": "Chuyển đổi chủ đề",
+    "light": "Sáng",
+    "dark": "Tối",
+    "system": "Hệ thống"
+  },
+  "twoFactor": {
+    "title": "Xác thực hai yếu tố",
+    "description": "Thêm một lớp bảo mật bổ sung vào tài khoản của bạn",
+    "enabled": "Tài khoản của bạn được bảo vệ bằng xác thực hai yếu tố",
+    "disabled": "Xác thực hai yếu tố chưa được bật",
+    "status": {
+      "label": "Trạng thái:",
+      "enabled": "Đã bật",
+      "disabled": "Đã tắt"
+    },
+    "buttons": {
+      "enable2FA": "Bật 2FA",
+      "disable2FA": "Tắt 2FA"
+    },
+    "setup": {
+      "title": "Bật xác thực hai yếu tố",
+      "description": "Quét mã QR bằng ứng dụng xác thực của bạn, sau đó nhập mã xác minh.",
+      "qrCode": "Mã QR",
+      "manualEntryKey": "Khóa nhập thủ công",
+      "verificationCode": "Mã xác minh",
+      "verificationCodePlaceholder": "Nhập mã 6 chữ số",
+      "verificationCodeDescription": "Nhập mã 6 chữ số từ ứng dụng xác thực của bạn",
+      "verifyAndEnable": "Xác minh & Bật",
+      "cancel": "Hủy"
+    },
+    "disable": {
+      "title": "Tắt xác thực hai yếu tố",
+      "description": "Nhập mật khẩu của bạn để xác nhận tắt xác thực hai yếu tố.",
+      "password": "Mật khẩu",
+      "passwordPlaceholder": "Nhập mật khẩu của bạn",
+      "confirm": "Xác nhận tắt",
+      "cancel": "Hủy"
+    },
+    "backupCodes": {
+      "title": "Mã dự phòng",
+      "description": "Lưu các mã dự phòng này ở nơi an toàn. Bạn có thể sử dụng chúng để truy cập tài khoản của mình nếu mất thiết bị xác thực.",
+      "warning": "Quan trọng:",
+      "warningText": "Mỗi mã dự phòng chỉ có thể được sử dụng một lần. Giữ chúng an toàn và không chia sẻ với bất kỳ ai.",
+      "generateNew": "Tạo mã dự phòng mới",
+      "download": "Tải xuống mã dự phòng",
+      "copyToClipboard": "Sao chép vào khay nhớ tạm",
+      "savedMessage": "Tôi đã lưu mã dự phòng của mình",
+      "available": "{count} mã dự phòng có sẵn",
+      "instructions": [
+        "• Lưu các mã này ở một vị trí an toàn",
+        "• Mỗi mã dự phòng chỉ có thể được sử dụng một lần",
+        "• Bạn có thể tạo mã mới bất cứ lúc nào"
+      ]
+    },
+    "verification": {
+      "title": "Xác thực hai yếu tố",
+      "description": "Nhập mã 6 chữ số từ ứng dụng xác thực của bạn",
+      "backupDescription": "Nhập một trong các mã dự phòng của bạn để tiếp tục",
+      "verificationCode": "Mã xác minh",
+      "backupCode": "Mã dự phòng",
+      "verificationCodePlaceholder": "000000",
+      "backupCodePlaceholder": "XXXX-XXXX",
+      "verify": "Xác minh",
+      "verifying": "Đang xác minh...",
+      "useBackupCode": "Sử dụng mã dự phòng thay thế",
+      "useAuthenticatorCode": "Sử dụng mã xác thực thay thế",
+      "rememberDevice": "Ghi nhớ thiết bị này trong 30 ngày",
+      "rememberDeviceDescription": "Bạn sẽ không cần nhập mã 2FA trên thiết bị này trong 30 ngày"
+    },
+    "trustedDevices": {
+      "title": "Thiết bị đáng tin cậy - 2FA",
+      "description": "Các thiết bị không yêu cầu xác minh 2FA",
+      "noDevices": "Không có thiết bị đáng tin cậy",
+      "deviceName": "Thiết bị",
+      "addedOn": "Đã thêm vào",
+      "expiresOn": "Hết hạn vào",
+      "remove": "Xóa",
+      "removeAll": "Xóa tất cả",
+      "confirmRemove": "Bạn có chắc chắn muốn xóa thiết bị đáng tin cậy này không?",
+      "confirmRemoveAll": "Bạn có chắc chắn muốn xóa tất cả các thiết bị đáng tin cậy không?",
+      "deviceRemoved": "Đã xóa thiết bị đáng tin cậy thành công",
+      "allDevicesRemoved": "Đã xóa tất cả các thiết bị đáng tin cậy thành công",
+      "loadFailed": "Không thể tải thiết bị đáng tin cậy",
+      "removeFailed": "Không thể xóa thiết bị đáng tin cậy",
+      "removeAllFailed": "Không thể xóa tất cả các thiết bị đáng tin cậy",
+      "loading": "Đang tải thiết bị đáng tin cậy...",
+      "noDevicesDescription": "Các thiết bị sẽ xuất hiện ở đây khi bạn chọn tin cậy chúng trong quá trình xác minh 2FA",
+      "tableHeaders": {
+        "device": "Thiết bị",
+        "added": "Đã thêm",
+        "expires": "Hết hạn",
+        "lastUsed": "Sử dụng lần cuối",
+        "ipAddress": "Địa chỉ IP",
+        "actions": "Hành động"
+      },
+      "status": {
+        "never": "Không bao giờ",
+        "expired": "Đã hết hạn"
+      },
+      "modals": {
+        "removeDevice": {
+          "title": "Xóa thiết bị đáng tin cậy",
+          "added": "Đã thêm:",
+          "ip": "IP:"
+        },
+        "removeAllDevices": {
+          "title": "Xóa tất cả các thiết bị đáng tin cậy",
+          "description": "Thao tác này sẽ xóa {count} thiết bị đáng tin cậy. Bạn sẽ cần xác minh lại 2FA trên tất cả các thiết bị."
+        },
+        "buttons": {
+          "cancel": "Hủy",
+          "removing": "Đang xóa...",
+          "removeDevice": "Xóa thiết bị",
+          "removeAllDevices": "Xóa tất cả các thiết bị"
+        }
+      }
+    },
+    "messages": {
+      "enabledSuccess": "Đã bật xác thực hai yếu tố thành công!",
+      "disabledSuccess": "Đã tắt xác thực hai yếu tố thành công",
+      "backupCodesGenerated": "Đã tạo mã dự phòng mới thành công",
+      "backupCodesCopied": "Đã sao chép mã dự phòng vào khay nhớ tạm",
+      "setupFailed": "Không thể tạo thiết lập 2FA",
+      "verificationFailed": "Mã xác minh không hợp lệ",
+      "disableFailed": "Không thể tắt 2FA. Vui lòng kiểm tra mật khẩu của bạn.",
+      "backupCodesFailed": "Không thể tạo mã dự phòng",
+      "backupCodesCopyFailed": "Không thể sao chép mã dự phòng",
+      "statusLoadFailed": "Không thể tải trạng thái 2FA",
+      "enterVerificationCode": "Vui lòng nhập mã xác minh",
+      "enterPassword": "Vui lòng nhập mật khẩu của bạn",
+      "deviceTrusted": "Thiết bị này đã được đánh dấu là đáng tin cậy trong 30 ngày"
+    },
+    "errors": {
+      "invalidVerificationCode": "Mã xác minh không hợp lệ",
+      "invalidTwoFactorCode": "Mã xác thực hai yếu tố không hợp lệ",
+      "twoFactorRequired": "Yêu cầu xác thực hai yếu tố",
+      "twoFactorAlreadyEnabled": "Xác thực hai yếu tố đã được bật",
+      "twoFactorNotEnabled": "Xác thực hai yếu tố chưa được bật",
+      "passwordVerificationRequired": "Yêu cầu xác minh mật khẩu",
+      "invalidPassword": "Mật khẩu không hợp lệ",
+      "userNotFound": "Không tìm thấy người dùng"
+    },
+    "deviceNames": {
+      "unknownDevice": "Thiết bị không xác định",
+      "browsers": {
+        "chrome": "Chrome",
+        "firefox": "Firefox",
+        "safari": "Safari",
+        "edge": "Edge"
+      },
+      "platforms": {
+        "windows": " trên Windows",
+        "macos": " trên macOS",
+        "linux": " trên Linux",
+        "iphone": " trên iPhone",
+        "android": " trên Android"
+      }
+    }
+  },
+  "uploadFile": {
+    "title": "Tải lên tệp",
+    "multipleTitle": "Tải lên tệp",
+    "selectFile": "Nhấp để chọn tệp",
+    "selectMultipleFiles": "Nhấp để chọn một hoặc nhiều tệp",
+    "dragAndDrop": "hoặc kéo và thả tệp vào đây",
+    "filesQueued": "{count, plural, one {# tệp đã được xếp hàng để tải lên} other {# tệp đã được xếp hàng để tải lên}}",
+    "preview": "Xem trước",
+    "uploadProgress": "Tiến trình tải lên",
+    "upload": "Tải lên",
+    "startUploads": "Bắt đầu tải lên",
+    "retry": "Thử lại",
+    "finish": "Hoàn thành",
+    "success": "Đã tải lên tệp thành công",
+    "allSuccess": "{count, plural, =1 {Đã tải lên tệp thành công} other {# tệp đã tải lên thành công}}",
+    "partialSuccess": "{success} tệp đã được tải lên thành công, {error} không thành công",
+    "error": "Không thể tải lên tệp",
+    "fileSizeExceeded": "Kích thước tệp vượt quá giới hạn {maxsizemb}MB.",
+    "insufficientStorage": "Không đủ dung lượng lưu trữ. Bạn còn {availablespace}MB.",
+    "unauthorized": "Không được phép: cần có mã thông báo hợp lệ để truy cập tài nguyên này.",
+    "globalDrop": {
+      "title": "Thả tệp để tải lên",
+      "description": "Thả để tải lên tệp của bạn"
+    },
+    "confirmCancel": {
+      "title": "Hủy tải lên",
+      "messageSingle": "Có một quá trình tải lên đang diễn ra.",
+      "messageMultiple": "Có {count} quá trình tải lên đang diễn ra.",
+      "warning": "Nếu bạn đóng ngay bây giờ, quá trình tải lên sẽ bị hủy và mọi tiến trình sẽ bị mất.",
+      "continue": "Tiếp tục tải lên",
+      "cancel": "Hủy tải lên"
+    },
+    "pasteSuccess": "{count, plural, =1 {Hình ảnh đã được dán và tải lên thành công} other {# hình ảnh đã được dán và tải lên thành công}}"
+  },
+  "users": {
+    "modes": {
+      "create": "tạo",
+      "edit": "chỉnh sửa"
+    },
+    "errors": {
+      "loadFailed": "Không thể tải người dùng",
+      "submitFailed": "Không thể {mode} người dùng",
+      "deleteFailed": "Không thể xóa người dùng",
+      "statusUpdateFailed": "Không thể cập nhật trạng thái người dùng"
+    },
+    "messages": {
+      "createSuccess": "Đã tạo người dùng thành công",
+      "updateSuccess": "Đã cập nhật người dùng thành công",
+      "deleteSuccess": "Đã xóa người dùng thành công",
+      "activateSuccess": "Đã kích hoạt người dùng thành công",
+      "deactivateSuccess": "Đã hủy kích hoạt người dùng thành công"
+    },
+    "actions": {
+      "edit": "Chỉnh sửa",
+      "activate": "Kích hoạt",
+      "deactivate": "Hủy kích hoạt",
+      "delete": "Xóa"
+    },
+    "delete": {
+      "title": "Xác nhận xóa người dùng",
+      "confirmation": "Bạn có chắc chắn muốn xóa người dùng {firstName} {lastName} không? Hành động này không thể hoàn tác.",
+      "confirm": "Xóa người dùng"
+    },
+    "form": {
+      "titleCreate": "Thêm người dùng mới",
+      "titleEdit": "Chỉnh sửa người dùng",
+      "firstName": "Tên",
+      "lastName": "Họ",
+      "username": "Tên người dùng",
+      "email": "Email",
+      "password": "Mật khẩu",
+      "newPassword": "Mật khẩu mới (tùy chọn)",
+      "passwordPlaceholder": "Để trống để giữ mật khẩu hiện tại",
+      "role": "Vai trò",
+      "roleUser": "Người dùng",
+      "roleAdmin": "Quản trị viên",
+      "create": "Tạo",
+      "save": "Lưu"
+    },
+    "status": {
+      "title": "Xác nhận thay đổi trạng thái",
+      "confirmation": "Bạn có chắc chắn muốn {action} người dùng {firstName} {lastName} không?",
+      "activate": "kích hoạt",
+      "deactivate": "hủy kích hoạt",
+      "user": "Người dùng"
+    },
+    "header": {
+      "title": "Quản lý người dùng",
+      "addUser": "Thêm người dùng",
+      "management": "Quản lý người dùng"
+    },
+    "table": {
+      "user": "NGƯỜI DÙNG",
+      "email": "EMAIL",
+      "status": "TRẠNG THÁI",
+      "role": "VAI TRÒ",
+      "actions": "HÀNH ĐỘNG",
+      "active": "Đang hoạt động",
+      "inactive": "Không hoạt động",
+      "admin": "Quản trị viên",
+      "userr": "Người dùng"
+    },
+    "invite": {
+      "button": "Tạo liên kết mời",
+      "title": "Tạo liên kết mời người dùng",
+      "description": "Tạo một liên kết sử dụng một lần cho phép ai đó tạo tài khoản của riêng họ. Liên kết hết hạn sau 15 phút.",
+      "generating": "Đang tạo...",
+      "generate": "Tạo liên kết",
+      "generated": "Đã tạo liên kết mời thành công!",
+      "linkReady": "Liên kết mời đã sẵn sàng",
+      "linkReadyDescription": "Chia sẻ liên kết này với người bạn muốn mời. Họ sẽ có thể tạo tài khoản của riêng mình với tư cách là người dùng thông thường.",
+      "copyLink": "Sao chép liên kết",
+      "linkCopied": "Đã sao chép liên kết mời vào khay nhớ tạm!",
+      "expiresIn": "Hết hạn sau 15 phút",
+      "close": "Đóng",
+      "errors": {
+        "generateFailed": "Không thể tạo liên kết mời"
+      }
+    }
+  },
+  "embedCode": {
+    "title": "Nhúng phương tiện",
+    "description": "Sử dụng các mã này để nhúng phương tiện này vào diễn đàn, trang web hoặc các nền tảng khác",
+    "tabs": {
+      "directLink": "Liên kết trực tiếp",
+      "html": "HTML",
+      "bbcode": "BBCode"
+    },
+    "directLinkDescription": "URL trực tiếp đến tệp phương tiện",
+    "htmlDescription": "Sử dụng mã này để nhúng phương tiện vào các trang HTML",
+    "bbcodeDescription": "Sử dụng mã này để nhúng phương tiện vào các diễn đàn hỗ trợ BBCode"
+  },
+  "validation": {
+    "firstNameRequired": "Tên là bắt buộc",
+    "lastNameRequired": "Họ là bắt buộc",
+    "usernameLength": "Tên người dùng phải có ít nhất 3 ký tự",
+    "usernameSpaces": "Tên người dùng không được chứa dấu cách",
+    "invalidEmail": "Vui lòng nhập một địa chỉ email hợp lệ",
+    "passwordLength": "Mật khẩu phải có ít nhất 8 ký tự",
+    "passwordsMatch": "Mật khẩu phải khớp",
+    "emailRequired": "Email là bắt buộc",
+    "emailOrUsernameRequired": "Email hoặc tên người dùng là bắt buộc",
+    "passwordRequired": "Mật khẩu là bắt buộc",
+    "passwordMinLength": "Mật khẩu phải có ít nhất 6 ký tự",
+    "nameRequired": "Tên là bắt buộc",
+    "required": "Trường này là bắt buộc"
+  },
+  "registerWithInvite": {
+    "title": "Tạo Tài Khoản Của Bạn",
+    "description": "Điền thông tin bên dưới để tạo tài khoản của bạn",
+    "labels": {
+      "firstName": "Tên",
+      "firstNamePlaceholder": "Nhập tên của bạn",
+      "lastName": "Họ",
+      "lastNamePlaceholder": "Nhập họ của bạn",
+      "username": "Tên người dùng",
+      "usernamePlaceholder": "Chọn tên người dùng",
+      "email": "Email",
+      "emailPlaceholder": "Nhập email của bạn",
+      "password": "Mật khẩu",
+      "passwordPlaceholder": "Chọn mật khẩu",
+      "confirmPassword": "Xác nhận mật khẩu",
+      "confirmPasswordPlaceholder": "Xác nhận mật khẩu của bạn"
+    },
+    "buttons": {
+      "creating": "Đang tạo tài khoản...",
+      "createAccount": "Tạo Tài Khoản"
+    },
+    "validation": {
+      "firstNameRequired": "Tên là bắt buộc",
+      "lastNameRequired": "Họ là bắt buộc",
+      "usernameMinLength": "Tên người dùng phải có ít nhất 3 ký tự",
+      "invalidEmail": "Email không hợp lệ",
+      "passwordMinLength": "Mật khẩu phải có ít nhất 8 ký tự",
+      "passwordsMatch": "Mật khẩu phải khớp"
+    },
+    "messages": {
+      "success": "Đã tạo tài khoản thành công! Đang chuyển hướng đến đăng nhập...",
+      "redirecting": "Đang chuyển hướng đến đăng nhập..."
+    },
+    "errors": {
+      "invalidToken": "Lỗi với liên kết mời",
+      "tokenUsed": "Liên kết mời này đã được sử dụng",
+      "tokenExpired": "Liên kết mời này đã hết hạn",
+      "usernameExists": "Tên người dùng đã tồn tại",
+      "emailExists": "Email đã tồn tại",
+      "createFailed": "Không thể tạo tài khoản. Vui lòng thử lại."
+    },
+    "pageTitle": "Tạo Tài Khoản"
+  }
+}

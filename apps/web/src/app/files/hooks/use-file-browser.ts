@@ -69,7 +69,9 @@ export function useFileBrowser() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [clearSelectionCallback, setClearSelectionCallbackState] = useState<(() => void) | undefined>();
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [forceUpdate] = useState(0);
   const isNavigatingRef = useRef(false);
+  const loadFilesRef = useRef<(() => Promise<void>) | null>(null);
 
   const urlFolderSlug = searchParams.get("folder") || null;
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
@@ -171,7 +173,11 @@ export function useFileBrowser() {
       if (dataLoaded && allFiles.length > 0) {
         isNavigatingRef.current = true;
         navigateToFolderDirect(targetFolderId);
-        setTimeout(() => {
+        // Refresh data when navigating to ensure we have latest state
+        setTimeout(async () => {
+          if (loadFilesRef.current) {
+            await loadFilesRef.current();
+          }
           isNavigatingRef.current = false;
         }, 0);
       } else {
@@ -239,7 +245,52 @@ export function useFileBrowser() {
     }
   }, [urlFolderSlug, buildBreadcrumbPath, t, getFolderIdFromPathSlug]);
 
-  const fileManager = useEnhancedFileManager(loadFiles, clearSelectionCallback);
+  const handleImmediateUpdate = useCallback(
+    (itemId: string, itemType: "file" | "folder", newParentId: string | null) => {
+      // Use requestAnimationFrame for smoother updates
+      requestAnimationFrame(() => {
+        // Check if this is a delete operation
+        const isDelete = newParentId === ("__DELETE__" as any);
+
+        if (itemType === "file") {
+          setFiles((prevFiles) => {
+            return prevFiles.filter((file) => file.id !== itemId);
+          });
+
+          // Update allFiles to keep state consistent
+          setAllFiles((prevAllFiles) => {
+            if (isDelete) {
+              return prevAllFiles.filter((file) => file.id !== itemId);
+            }
+            return prevAllFiles.map((file) => (file.id === itemId ? { ...file, folderId: newParentId } : file));
+          });
+        } else if (itemType === "folder") {
+          setFolders((prevFolders) => {
+            return prevFolders.filter((folder) => folder.id !== itemId);
+          });
+
+          // Update allFolders to keep state consistent
+          setAllFolders((prevAllFolders) => {
+            if (isDelete) {
+              return prevAllFolders.filter((folder) => folder.id !== itemId);
+            }
+            return prevAllFolders.map((folder) =>
+              folder.id === itemId ? { ...folder, parentId: newParentId } : folder
+            );
+          });
+        }
+      });
+    },
+    []
+  );
+
+  const fileManager = useEnhancedFileManager(
+    loadFiles,
+    clearSelectionCallback,
+    handleImmediateUpdate,
+    allFiles,
+    allFolders
+  );
 
   const getImmediateChildFoldersWithMatches = useCallback(() => {
     if (!searchQuery) return [];
@@ -300,11 +351,16 @@ export function useFileBrowser() {
 
   const filteredFolders = searchQuery ? getImmediateChildFoldersWithMatches() : folders;
 
+  // Update loadFilesRef whenever loadFiles changes
   useEffect(() => {
-    if (!isNavigatingRef.current) {
-      loadFiles();
-    }
+    loadFilesRef.current = loadFiles;
   }, [loadFiles]);
+
+  // Load files only on mount or when explicitly called
+  useEffect(() => {
+    loadFiles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - load only on mount
 
   return {
     isLoading,
@@ -333,6 +389,8 @@ export function useFileBrowser() {
 
     handleSearch: setSearchQuery,
     loadFiles,
+    handleImmediateUpdate,
+    forceUpdate,
 
     allFiles,
     allFolders,

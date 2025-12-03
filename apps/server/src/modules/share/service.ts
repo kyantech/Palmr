@@ -448,10 +448,10 @@ export class ShareService {
     }
 
     // Check if share is expired
-    const isExpired = share.expiration && new Date(share.expiration) < new Date();
+    const isExpired = share.expiration ? new Date(share.expiration) < new Date() : false;
 
     // Check if max views reached
-    const isMaxViewsReached = share.security.maxViews !== null && share.views >= share.security.maxViews;
+    const isMaxViewsReached = share.security.maxViews !== null ? share.views >= share.security.maxViews : false;
 
     const totalFiles = share.files?.length || 0;
     const totalFolders = share.folders?.length || 0;

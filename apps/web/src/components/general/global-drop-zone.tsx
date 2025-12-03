@@ -2,15 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { IconCloudUpload, IconLoader, IconX } from "@tabler/icons-react";
-import axios from "axios";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useUppyUpload } from "@/hooks/useUppyUpload";
 import { checkFile, getFilePresignedUrl, registerFile } from "@/http/endpoints";
-import { getSystemInfo } from "@/http/endpoints/app";
-import { ChunkedUploader } from "@/utils/chunked-upload";
 import { getFileIcon } from "@/utils/file-icons";
 import { generateSafeFileName } from "@/utils/file-utils";
 import { formatFileSize } from "@/utils/format-file-size";
@@ -22,209 +20,133 @@ interface GlobalDropZoneProps {
   currentFolderId?: string;
 }
 
-enum UploadStatus {
-  PENDING = "pending",
-  UPLOADING = "uploading",
-  SUCCESS = "success",
-  ERROR = "error",
-  CANCELLED = "cancelled",
-}
-
-interface FileUpload {
-  id: string;
-  file: File;
-  status: UploadStatus;
-  progress: number;
-  error?: string;
-  abortController?: AbortController;
-  objectName?: string;
-}
-
 export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalDropZoneProps) {
   const t = useTranslations();
   const [isDragOver, setIsDragOver] = useState(false);
-  const [fileUploads, setFileUploads] = useState<FileUpload[]>([]);
-  const [hasShownSuccessToast, setHasShownSuccessToast] = useState(false);
-  const [isS3Enabled, setIsS3Enabled] = useState<boolean | null>(null);
 
-  const generateFileId = useCallback(() => {
-    return Date.now().toString() + Math.random().toString(36).substr(2, 9);
-  }, []);
+  const { addFiles, startUpload, fileUploads, removeFile, retryUpload } = useUppyUpload({
+    onValidate: async (file) => {
+      const fileName = file.name;
+      const extension = fileName.split(".").pop() || "";
+      const safeObjectName = generateSafeFileName(fileName);
 
-  const createFileUpload = useCallback(
-    (file: File): FileUpload => {
-      const id = generateFileId();
-      return {
-        id,
-        file,
-        status: UploadStatus.PENDING,
-        progress: 0,
-      };
+      try {
+        await checkFile({
+          name: fileName,
+          objectName: safeObjectName,
+          size: file.size,
+          extension: extension,
+          folderId: currentFolderId,
+        });
+      } catch (error) {
+        console.error("File check failed:", error);
+        const errorData = getErrorData(error);
+        let errorMessage = t("uploadFile.error");
+
+        if (errorData.code === "fileSizeExceeded") {
+          errorMessage = t(`uploadFile.${errorData.code}`, { maxsizemb: errorData.details || "0" });
+        } else if (errorData.code === "insufficientStorage") {
+          errorMessage = t(`uploadFile.${errorData.code}`, { availablespace: errorData.details || "0" });
+        } else if (errorData.code) {
+          errorMessage = t(`uploadFile.${errorData.code}`);
+        }
+
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
+      }
     },
-    [generateFileId]
-  );
+    onBeforeUpload: async (file) => {
+      const safeObjectName = generateSafeFileName(file.name);
+      return safeObjectName;
+    },
+    getPresignedUrl: async (objectName, extension) => {
+      const response = await getFilePresignedUrl({
+        filename: objectName.replace(`.${extension}`, ""),
+        extension,
+      });
 
-  const calculateUploadTimeout = useCallback((fileSize: number): number => {
-    const baseTimeout = 300000;
-    const fileSizeMB = fileSize / (1024 * 1024);
-    if (fileSizeMB > 500) {
-      const extraMB = fileSizeMB - 500;
-      const extraMinutes = Math.ceil(extraMB / 100);
-      return baseTimeout + extraMinutes * 60000;
+      // IMPORTANT: Use the objectName returned by backend, not the one we generated!
+      // The backend generates: userId/timestamp-random-filename.extension
+      const actualObjectName = response.data.objectName;
+
+      return { url: response.data.url, method: "PUT", actualObjectName };
+    },
+    onAfterUpload: async (fileId, file, objectName) => {
+      const fileName = file.name;
+      const extension = fileName.split(".").pop() || "";
+
+      await registerFile({
+        name: fileName,
+        objectName,
+        size: file.size,
+        extension,
+        folderId: currentFolderId,
+      });
+    },
+  });
+
+  // Monitor upload completion separately from the hook
+  useEffect(() => {
+    // Only process if we have uploads completed
+    if (fileUploads.length === 0) return;
+
+    const successCount = fileUploads.filter((u) => u.status === "success").length;
+    const errorCount = fileUploads.filter((u) => u.status === "error").length;
+    const pendingCount = fileUploads.filter((u) => u.status === "pending" || u.status === "uploading").length;
+
+    // All uploads are done (no pending/uploading)
+    if (pendingCount === 0 && successCount > 0) {
+      toast.success(
+        errorCount > 0
+          ? t("uploadFile.partialSuccess", { success: successCount, error: errorCount })
+          : t("uploadFile.allSuccess", { count: successCount })
+      );
+
+      onSuccess?.();
+
+      // Auto-remove successful uploads after 3 seconds
+      setTimeout(() => {
+        fileUploads.forEach((upload) => {
+          if (upload.status === "success") {
+            removeFile(upload.id);
+          }
+        });
+      }, 3000);
     }
-
-    return baseTimeout;
-  }, []);
+  }, [fileUploads, onSuccess, removeFile, t]);
 
   const handleDragOver = useCallback((event: DragEvent) => {
+    // Check if this is a move operation (dragging existing items)
+    const isMoveOperation = event.dataTransfer?.types.includes("application/x-move-item");
+    if (isMoveOperation) {
+      return; // Don't interfere with move operations
+    }
+
     event.preventDefault();
     event.stopPropagation();
     setIsDragOver(true);
   }, []);
 
   const handleDragLeave = useCallback((event: DragEvent) => {
+    // Check if this is a move operation (dragging existing items)
+    const isMoveOperation = event.dataTransfer?.types.includes("application/x-move-item");
+    if (isMoveOperation) {
+      return; // Don't interfere with move operations
+    }
+
     event.preventDefault();
     event.stopPropagation();
     setIsDragOver(false);
   }, []);
 
-  const uploadFile = useCallback(
-    async (fileUpload: FileUpload) => {
-      const { file, id } = fileUpload;
-
-      try {
-        const fileName = file.name;
-        const extension = fileName.split(".").pop() || "";
-        const safeObjectName = generateSafeFileName(fileName);
-
-        try {
-          await checkFile({
-            name: fileName,
-            objectName: safeObjectName,
-            size: file.size,
-            extension: extension,
-            folderId: currentFolderId,
-          });
-        } catch (error) {
-          console.error("File check failed:", error);
-          const errorData = getErrorData(error);
-          let errorMessage = t("uploadFile.error");
-
-          if (errorData.code === "fileSizeExceeded") {
-            errorMessage = t(`uploadFile.${errorData.code}`, { maxsizemb: errorData.details || "0" });
-          } else if (errorData.code === "insufficientStorage") {
-            errorMessage = t(`uploadFile.${errorData.code}`, { availablespace: errorData.details || "0" });
-          } else if (errorData.code) {
-            errorMessage = t(`uploadFile.${errorData.code}`);
-          }
-
-          setFileUploads((prev) =>
-            prev.map((u) => (u.id === id ? { ...u, status: UploadStatus.ERROR, error: errorMessage } : u))
-          );
-          return;
-        }
-
-        setFileUploads((prev) =>
-          prev.map((u) => (u.id === id ? { ...u, status: UploadStatus.UPLOADING, progress: 0 } : u))
-        );
-
-        const presignedResponse = await getFilePresignedUrl({
-          filename: safeObjectName.replace(`.${extension}`, ""),
-          extension: extension,
-        });
-
-        const { url, objectName } = presignedResponse.data;
-
-        setFileUploads((prev) => prev.map((u) => (u.id === id ? { ...u, objectName } : u)));
-
-        const abortController = new AbortController();
-        setFileUploads((prev) => prev.map((u) => (u.id === id ? { ...u, abortController } : u)));
-
-        const shouldUseChunked = ChunkedUploader.shouldUseChunkedUpload(file.size, isS3Enabled ?? undefined);
-
-        if (shouldUseChunked) {
-          const chunkSize = ChunkedUploader.calculateOptimalChunkSize(file.size);
-
-          const result = await ChunkedUploader.uploadFile({
-            file,
-            url,
-            chunkSize,
-            signal: abortController.signal,
-            isS3Enabled: isS3Enabled ?? undefined,
-            onProgress: (progress) => {
-              setFileUploads((prev) => prev.map((u) => (u.id === id ? { ...u, progress } : u)));
-            },
-          });
-
-          if (!result.success) {
-            throw new Error(result.error || "Chunked upload failed");
-          }
-
-          const finalObjectName = result.finalObjectName || objectName;
-
-          await registerFile({
-            name: fileName,
-            objectName: finalObjectName,
-            size: file.size,
-            extension: extension,
-            folderId: currentFolderId,
-          });
-        } else {
-          const uploadTimeout = calculateUploadTimeout(file.size);
-
-          await axios.put(url, file, {
-            headers: {
-              "Content-Type": file.type,
-            },
-            signal: abortController.signal,
-            timeout: uploadTimeout, // Dynamic timeout based on file size
-            maxContentLength: Infinity,
-            maxBodyLength: Infinity,
-            onUploadProgress: (progressEvent: any) => {
-              const progress = (progressEvent.loaded / (progressEvent.total || file.size)) * 100;
-              setFileUploads((prev) => prev.map((u) => (u.id === id ? { ...u, progress: Math.round(progress) } : u)));
-            },
-          });
-
-          await registerFile({
-            name: fileName,
-            objectName: objectName,
-            size: file.size,
-            extension: extension,
-            folderId: currentFolderId,
-          });
-        }
-
-        setFileUploads((prev) =>
-          prev.map((u) =>
-            u.id === id ? { ...u, status: UploadStatus.SUCCESS, progress: 100, abortController: undefined } : u
-          )
-        );
-      } catch (error: any) {
-        if (error.name === "AbortError" || error.code === "ERR_CANCELED") {
-          return;
-        }
-
-        console.error("Upload failed:", error);
-        const errorData = getErrorData(error);
-        let errorMessage = t("uploadFile.error");
-
-        if (errorData.code && errorData.code !== "error") {
-          errorMessage = t(`uploadFile.${errorData.code}`);
-        }
-
-        setFileUploads((prev) =>
-          prev.map((u) =>
-            u.id === id ? { ...u, status: UploadStatus.ERROR, error: errorMessage, abortController: undefined } : u
-          )
-        );
-      }
-    },
-    [t, isS3Enabled, currentFolderId, calculateUploadTimeout]
-  );
-
   const handleDrop = useCallback(
     (event: DragEvent) => {
+      // Check if this is a move operation (dragging existing items)
+      const isMoveOperation = event.dataTransfer?.types.includes("application/x-move-item");
+      if (isMoveOperation) {
+        return; // Don't interfere with move operations
+      }
+
       event.preventDefault();
       event.stopPropagation();
       setIsDragOver(false);
@@ -232,13 +154,11 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalD
       const files = event.dataTransfer?.files;
       if (!files || files.length === 0) return;
 
-      const newUploads = Array.from(files).map(createFileUpload);
-      setFileUploads((prev) => [...prev, ...newUploads]);
-      setHasShownSuccessToast(false);
-
-      newUploads.forEach((upload) => uploadFile(upload));
+      const filesArray = Array.from(files);
+      addFiles(filesArray);
+      toast.info(t("uploadFile.filesQueued", { count: filesArray.length }));
     },
-    [uploadFile, createFileUpload]
+    [addFiles, t]
   );
 
   const handlePaste = useCallback(
@@ -261,46 +181,39 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalD
       event.preventDefault();
       event.stopPropagation();
 
-      const newUploads: FileUpload[] = [];
+      const newFiles: File[] = [];
 
       imageItems.forEach((item) => {
         const file = item.getAsFile();
         if (file) {
           const timestamp = Date.now();
           const extension = file.type.split("/")[1] || "png";
-          const fileName = `${timestamp}.${extension}`;
+          const fileName = `pasted-${timestamp}.${extension}`;
 
           const renamedFile = new File([file], fileName, { type: file.type });
-
-          newUploads.push(createFileUpload(renamedFile));
+          newFiles.push(renamedFile);
         }
       });
 
-      if (newUploads.length > 0) {
-        setFileUploads((prev) => [...prev, ...newUploads]);
-        setHasShownSuccessToast(false);
-
-        newUploads.forEach((upload) => uploadFile(upload));
-
-        toast.success(t("uploadFile.pasteSuccess", { count: newUploads.length }));
+      if (newFiles.length > 0) {
+        addFiles(newFiles);
+        toast.success(t("uploadFile.pasteSuccess", { count: newFiles.length }));
       }
     },
-    [uploadFile, t, createFileUpload]
+    [addFiles, t]
   );
 
+  // Auto-start uploads when files are added
   useEffect(() => {
-    const fetchSystemInfo = async () => {
-      try {
-        const response = await getSystemInfo();
-        setIsS3Enabled(response.data.s3Enabled);
-      } catch (error) {
-        console.warn("Failed to fetch system info, defaulting to filesystem mode:", error);
-        setIsS3Enabled(false);
-      }
-    };
+    if (fileUploads.some((f) => f.status === "pending")) {
+      // Wait a bit for all validations, then start upload
+      const timer = setTimeout(() => {
+        startUpload();
+      }, 200);
 
-    fetchSystemInfo();
-  }, []);
+      return () => clearTimeout(timer);
+    }
+  }, [fileUploads, startUpload]);
 
   useEffect(() => {
     document.addEventListener("dragover", handleDragOver);
@@ -316,71 +229,23 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalD
     };
   }, [handleDragOver, handleDragLeave, handleDrop, handlePaste]);
 
-  const removeFile = (fileId: string) => {
-    setFileUploads((prev) => {
-      const upload = prev.find((u) => u.id === fileId);
-      if (upload?.abortController) {
-        upload.abortController.abort();
-      }
-      return prev.filter((u) => u.id !== fileId);
-    });
-  };
-
-  const retryUpload = (fileId: string) => {
-    const upload = fileUploads.find((u) => u.id === fileId);
-    if (upload) {
-      setFileUploads((prev) =>
-        prev.map((u) => (u.id === fileId ? { ...u, status: UploadStatus.PENDING, error: undefined, progress: 0 } : u))
-      );
-      uploadFile({ ...upload, status: UploadStatus.PENDING, error: undefined, progress: 0 });
-    }
-  };
-
   const renderFileIcon = (fileName: string) => {
     const { icon: FileIcon, color } = getFileIcon(fileName);
     return <FileIcon size={16} className={color} />;
   };
 
-  const getStatusIcon = (status: UploadStatus) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
-      case UploadStatus.UPLOADING:
+      case "uploading":
         return <IconLoader size={14} className="animate-spin text-blue-500" />;
-      case UploadStatus.SUCCESS:
+      case "success":
         return <IconCloudUpload size={14} className="text-green-500" />;
-      case UploadStatus.ERROR:
+      case "error":
         return <IconX size={14} className="text-red-500" />;
       default:
         return null;
     }
   };
-
-  useEffect(() => {
-    if (fileUploads.length > 0) {
-      const allComplete = fileUploads.every(
-        (u) => u.status === UploadStatus.SUCCESS || u.status === UploadStatus.ERROR
-      );
-
-      if (allComplete && !hasShownSuccessToast) {
-        const successCount = fileUploads.filter((u) => u.status === UploadStatus.SUCCESS).length;
-        const errorCount = fileUploads.filter((u) => u.status === UploadStatus.ERROR).length;
-
-        if (successCount > 0) {
-          toast.success(
-            errorCount > 0
-              ? t("uploadFile.partialSuccess", { success: successCount, error: errorCount })
-              : t("uploadFile.allSuccess", { count: successCount })
-          );
-          setHasShownSuccessToast(true);
-          onSuccess?.();
-        }
-
-        setTimeout(() => {
-          setFileUploads([]);
-          setHasShownSuccessToast(false);
-        }, 3000);
-      }
-    }
-  }, [fileUploads, hasShownSuccessToast, onSuccess, t]);
 
   return (
     <>
@@ -409,20 +274,20 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalD
                 </div>
                 <p className="text-xs text-muted-foreground">{formatFileSize(upload.file.size)}</p>
 
-                {upload.status === UploadStatus.UPLOADING && (
+                {upload.status === "uploading" && (
                   <div className="mt-1">
                     <Progress value={upload.progress} className="h-1" />
                     <p className="text-xs text-muted-foreground mt-1">{upload.progress}%</p>
                   </div>
                 )}
 
-                {upload.status === UploadStatus.ERROR && upload.error && (
+                {upload.status === "error" && upload.error && (
                   <p className="text-xs text-destructive mt-1">{upload.error}</p>
                 )}
               </div>
 
               <div className="flex-shrink-0">
-                {upload.status === UploadStatus.ERROR ? (
+                {upload.status === "error" ? (
                   <div className="flex gap-1">
                     <Button
                       variant="ghost"
@@ -437,7 +302,7 @@ export function GlobalDropZone({ onSuccess, children, currentFolderId }: GlobalD
                       <IconX size={12} />
                     </Button>
                   </div>
-                ) : upload.status === UploadStatus.SUCCESS ? null : (
+                ) : upload.status === "success" ? null : (
                   <Button variant="ghost" size="sm" onClick={() => removeFile(upload.id)} className="h-6 w-6 p-0">
                     <IconX size={12} />
                   </Button>

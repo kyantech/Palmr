@@ -1,12 +1,14 @@
 {
   "auth": {
     "errors": {
-      "account_inactive": "Conta inativa. Entre em contato com o administrador.",
-      "registration_disabled": "Registro via SSO está desabilitado.",
-      "token_expired": "Token expirado. Tente novamente.",
-      "config_error": "Erro de configuração. Contate o suporte.",
-      "auth_failed": "Falha na autenticação. Tente novamente."
-    }
+      "account_inactive": "账户未激活。请联系管理员。",
+      "registration_disabled": "通过SSO注册已被禁用。",
+      "token_expired": "令牌已过期。请重试。",
+      "config_error": "配置错误。请联系支持人员。",
+      "auth_failed": "认证失败。请重试。"
+    },
+    "authenticationFailed": "身份验证失败",
+    "successfullyAuthenticated": "身份验证成功！"
   },
   "authProviders": {
     "title": "身份验证提供商",
@@ -174,7 +176,14 @@
     "tabs": {
       "shareDetails": "分享详情",
       "selectFiles": "选择文件"
-    }
+    },
+    "errors": {
+      "nameRequired": "分享名称为必填项",
+      "selectItems": "请至少选择一个文件或文件夹"
+    },
+    "itemsSelected": "已选择 {count} 项",
+    "passwordPlaceholder": "输入密码",
+    "selectItemsPrompt": "选择要分享的文件和文件夹"
   },
   "customization": {
     "breadcrumb": "自定义",
@@ -340,7 +349,8 @@
     "addToShare": "添加到共享",
     "removeFromShare": "从共享中移除",
     "saveChanges": "保存更改",
-    "editFolder": "编辑文件夹"
+    "editFolder": "编辑文件夹",
+    "itemsSelected": "已选择 {count} 项"
   },
   "files": {
     "title": "所有文件",
@@ -376,7 +386,12 @@
       "description": "上传您的第一个文件或创建文件夹以开始使用"
     },
     "files": "文件",
-    "folders": "文件夹"
+    "folders": "文件夹",
+    "errors": {
+      "moveItemsFailed": "移动项目失败，请重试。",
+      "cannotMoveHere": "无法将项目移动到此位置"
+    },
+    "openFolder": "打开文件夹"
   },
   "filesTable": {
     "ariaLabel": "文件表格",
@@ -539,7 +554,10 @@
     "movingTo": "移动到：",
     "title": "移动 {count, plural, =1 {项目} other {项目}}",
     "description": "将 {count, plural, =1 {项目} other {项目}} 移动到新位置",
-    "success": "成功移动了 {count} 个项目"
+    "success": "成功移动了 {count} 个项目",
+    "errors": {
+      "moveFailed": "移动项目失败"
+    }
   },
   "navbar": {
     "logoAlt": "应用Logo",
@@ -1153,8 +1171,6 @@
       },
       "fileActions": {
         "edit": "编辑",
-        "save": "保存",
-        "cancel": "取消",
         "preview": "预览",
         "download": "下载",
         "delete": "删除",
@@ -1377,22 +1393,12 @@
     "deleteTitle": "删除共享",
     "deleteConfirmation": "您确定要删除此共享吗？此操作不可撤销。",
     "editTitle": "编辑共享",
-    "nameLabel": "共享名称",
-    "expirationLabel": "过期日期",
-    "expirationPlaceholder": "MM/DD/YYYY HH:MM",
-    "maxViewsLabel": "最大查看次数",
-    "maxViewsPlaceholder": "留空表示无限",
-    "passwordProtection": "密码保护",
-    "passwordLabel": "密码",
-    "passwordPlaceholder": "请输入密码",
     "newPasswordLabel": "新密码（留空表示保持当前密码）",
     "newPasswordPlaceholder": "请输入新密码",
     "manageFilesTitle": "管理文件",
     "manageRecipientsTitle": "管理收件人",
     "editSuccess": "共享更新成功",
     "editError": "更新共享失败",
-    "descriptionPlaceholder": "输入描述（可选）",
-    "descriptionLabel": "描述",
     "bulkDeleteConfirmation": "您确定要删除{count, plural, =1 {1个共享} other {#个共享}}吗？此操作无法撤销。",
     "bulkDeleteTitle": "删除选中的共享",
     "addDescriptionPlaceholder": "添加描述...",
@@ -1405,7 +1411,9 @@
     "linkDescriptionFile": "生成自定义链接以分享文件",
     "linkDescriptionFolder": "生成自定义链接以分享文件夹",
     "linkReady": "您的分享链接已准备好：",
-    "linkTitle": "生成链接"
+    "linkTitle": "生成链接",
+    "itemsSelected": "已选择 {count} 项",
+    "manageFilesDescription": "选择要包含在此分享中的文件和文件夹"
   },
   "shareDetails": {
     "title": "共享详情",
@@ -1435,7 +1443,6 @@
     "generateLink": "生成链接",
     "noLink": "尚未生成链接",
     "description": "描述",
-    "linkCopied": "链接已复制到剪贴板",
     "editSecurity": "编辑安全",
     "editExpiration": "编辑过期",
     "clickToEnlargeQrCode": "点击放大QR Code",
@@ -1469,28 +1476,6 @@
     "expires": "过期:",
     "expirationDate": "过期日期"
   },
-  "shareFile": {
-    "title": "分享文件",
-    "linkTitle": "生成链接",
-    "nameLabel": "分享名称",
-    "namePlaceholder": "输入分享名称",
-    "expirationLabel": "过期日期",
-    "expirationPlaceholder": "MM/DD/YYYY HH:MM",
-    "maxViewsLabel": "最大查看次数",
-    "maxViewsPlaceholder": "留空为无限制",
-    "passwordProtection": "密码保护",
-    "passwordLabel": "密码",
-    "passwordPlaceholder": "输入密码",
-    "linkDescription": "生成自定义链接来分享文件",
-    "aliasLabel": "链接别名",
-    "aliasPlaceholder": "输入自定义别名",
-    "linkReady": "您的分享链接已准备就绪：",
-    "createShare": "创建分享",
-    "generateLink": "生成链接",
-    "copyLink": "复制链接",
-    "descriptionLabel": "描述",
-    "descriptionPlaceholder": "输入描述（可选）"
-  },
   "shareManager": {
     "deleteSuccess": "共享删除成功",
     "deleteError": "共享删除失败",
@@ -1520,7 +1505,10 @@
     "noFilesToDownload": "无需下载文件",
     "singleShareZipName": "{sharename} _files.zip",
     "zipDownloadError": "无法创建zip文件",
-    "zipDownloadSuccess": "zip文件成功下载了"
+    "zipDownloadSuccess": "zip文件成功下载了",
+    "errors": {
+      "multipleDownloadNotSupported": "暂不支持多个分享下载 - 请分别下载各个分享"
+    }
   },
   "shareMultipleFiles": {
     "title": "分享多个文件",
@@ -1917,6 +1905,23 @@
       "inactive": "停用",
       "admin": "管理员",
       "userr": "用户"
+    },
+    "invite": {
+      "button": "生成邀请链接",
+      "title": "生成用户邀请链接",
+      "description": "生成一个一次性使用的链接，允许某人创建自己的账户。该链接在15分钟后过期。",
+      "generating": "生成中...",
+      "generate": "生成链接",
+      "generated": "邀请链接生成成功！",
+      "linkReady": "邀请链接准备就绪",
+      "linkReadyDescription": "与您想要邀请的人分享此链接。他们将能够作为普通用户创建自己的账户。",
+      "copyLink": "复制链接",
+      "linkCopied": "邀请链接已复制到剪贴板！",
+      "expiresIn": "15分钟后过期",
+      "close": "关闭",
+      "errors": {
+        "generateFailed": "生成邀请链接失败"
+      }
     }
   },
   "validation": {
@@ -1935,15 +1940,62 @@
     "required": "此字段为必填项"
   },
   "embedCode": {
-    "title": "嵌入图片",
-    "description": "使用这些代码将此图片嵌入到论坛、网站或其他平台中",
+    "title": "嵌入媒体",
+    "description": "使用这些代码将此媒体嵌入到论坛、网站或其他平台中",
     "tabs": {
       "directLink": "直接链接",
       "html": "HTML",
       "bbcode": "BBCode"
     },
-    "directLinkDescription": "图片文件的直接URL",
-    "htmlDescription": "使用此代码将图片嵌入HTML页面",
-    "bbcodeDescription": "使用此代码将图片嵌入支持BBCode的论坛"
+    "directLinkDescription": "媒体文件的直接URL",
+    "htmlDescription": "使用此代码将媒体嵌入HTML页面",
+    "bbcodeDescription": "使用此代码将媒体嵌入支持BBCode的论坛"
+  },
+  "contextMenu": {
+    "newFolder": "新建文件夹",
+    "uploadFile": "上传文件"
+  },
+  "registerWithInvite": {
+    "title": "创建您的账户",
+    "description": "填写以下信息以创建您的账户",
+    "labels": {
+      "firstName": "名字",
+      "firstNamePlaceholder": "输入您的名字",
+      "lastName": "姓氏",
+      "lastNamePlaceholder": "输入您的姓氏",
+      "username": "用户名",
+      "usernamePlaceholder": "选择一个用户名",
+      "email": "电子邮件",
+      "emailPlaceholder": "输入您的电子邮件",
+      "password": "密码",
+      "passwordPlaceholder": "选择一个密码",
+      "confirmPassword": "确认密码",
+      "confirmPasswordPlaceholder": "确认您的密码"
+    },
+    "buttons": {
+      "creating": "正在创建账户...",
+      "createAccount": "创建账户"
+    },
+    "validation": {
+      "firstNameRequired": "名字为必填项",
+      "lastNameRequired": "姓氏为必填项",
+      "usernameMinLength": "用户名至少需要3个字符",
+      "invalidEmail": "无效的电子邮件",
+      "passwordMinLength": "密码至少需要8个字符",
+      "passwordsMatch": "密码必须匹配"
+    },
+    "messages": {
+      "success": "账户创建成功！正在重定向到登录...",
+      "redirecting": "正在重定向到登录..."
+    },
+    "errors": {
+      "invalidToken": "邀请链接错误",
+      "tokenUsed": "此邀请链接已被使用",
+      "tokenExpired": "此邀请链接已过期",
+      "usernameExists": "用户名已存在",
+      "emailExists": "电子邮件已存在",
+      "createFailed": "创建账户失败。请重试。"
+    },
+    "pageTitle": "创建账户"
   }
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { IconLayoutGrid, IconSearch, IconTable } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
+import { FilesGridSkeleton, FilesTableSkeleton } from "@/components/skeletons";
 import { FilesGrid } from "@/components/tables/files-grid";
 import { FilesTable } from "@/components/tables/files-table";
 import { Button } from "@/components/ui/button";
@@ -41,13 +42,17 @@ interface FilesViewManagerProps {
   folders?: Folder[];
   searchQuery: string;
   onSearch: (query: string) => void;
-  onNavigateToFolder?: (folderId?: string) => void;
+  onNavigateToFolder?: (folderId: string) => void;
   onDownload: (objectName: string, fileName: string) => void;
   breadcrumbs?: React.ReactNode;
   isLoading?: boolean;
   emptyStateComponent?: React.ComponentType;
   isShareMode?: boolean;
+  onCreateFolder?: () => void;
+  onUpload?: () => void;
   onDeleteFolder?: (folder: Folder) => void;
+  onImmediateUpdate?: (itemId: string, itemType: "file" | "folder", newParentId: string | null) => void;
+  onRefresh?: () => Promise<void>;
   onRenameFolder?: (folder: Folder) => void;
   onMoveFolder?: (folder: Folder) => void;
   onMoveFile?: (file: File) => void;
@@ -83,9 +88,13 @@ export function FilesViewManager({
   isLoading = false,
   emptyStateComponent: EmptyStateComponent,
   isShareMode = false,
+  onCreateFolder,
+  onUpload,
   onDeleteFolder,
   onRenameFolder,
   onMoveFolder,
+  onImmediateUpdate,
+  onRefresh,
   onMoveFile,
   onShareFolder,
   onDownloadFolder,
@@ -124,6 +133,8 @@ export function FilesViewManager({
     files,
     folders: folders || [],
     onNavigateToFolder,
+    onCreateFolder: isShareMode ? undefined : onCreateFolder,
+    onUpload: isShareMode ? undefined : onUpload,
     onDeleteFolder: isShareMode ? undefined : onDeleteFolder,
     onRenameFolder: isShareMode ? undefined : onRenameFolder,
     onMoveFolder: isShareMode ? undefined : onMoveFolder,
@@ -131,6 +142,8 @@ export function FilesViewManager({
     onShareFolder: isShareMode ? undefined : onShareFolder,
     onDownloadFolder,
     onPreview,
+    onImmediateUpdate,
+    onRefresh,
     onRename: isShareMode ? undefined : onRename,
     onDownload,
     onShare: isShareMode ? undefined : onShare,
@@ -194,10 +207,11 @@ export function FilesViewManager({
       </div>
 
       {isLoading ? (
-        <div className="text-center py-8">
-          <div className="animate-spin h-8 w-8 border-2 border-current border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
+        viewMode === "table" ? (
+          <FilesTableSkeleton rowCount={10} />
+        ) : (
+          <FilesGridSkeleton itemCount={12} />
+        )
       ) : showEmptyState ? (
         EmptyStateComponent ? (
           <EmptyStateComponent />

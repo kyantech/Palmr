@@ -1,0 +1,423 @@
+---
+title: Zitadel
+icon: Shield
+---
+
+import { ZoomableImage } from "@/components/ui/zoomable-image";
+
+Zitadel is one of Palmr's officially supported OIDC providers, offering enterprise-grade authentication through Zitadel's identity platform. This integration allows users to sign in to Palmr using Zitadel's comprehensive authentication system, making it perfect for enterprise organizations, applications requiring advanced security features, and teams that need centralized identity management with both cloud and self-hosted deployment options.
+
+<ZoomableImage src="/assets/v3/oidc/zitadel/sign-in-with-zitadel.png" alt="Sign in with Zitadel" />
+
+## Why use Zitadel authentication?
+
+Zitadel authentication provides several advantages for enterprise and security-focused organizations:
+
+- **Enterprise-grade security** - Advanced security features like MFA, adaptive authentication, and threat detection
+- **Flexible deployment** - Choose between cloud-hosted or self-hosted deployment options
+- **Centralized identity management** - Single platform to manage users across multiple applications
+- **Compliance ready** - Built-in compliance with GDPR, SOC 2, and other enterprise standards
+- **Advanced customization** - Actions, flows, and custom branding capabilities
+
+---
+
+## Prerequisites
+
+Before configuring Zitadel authentication, ensure you have:
+
+- **Zitadel instance** - Either cloud-hosted or self-hosted Zitadel installation
+- **Admin privileges in Palmr** - Required to configure OIDC settings
+- **Domain configuration** - For production deployments with custom domains
+
+> **Note:** Zitadel is pre-configured as an official provider in Palmr, which means the technical configuration is handled automatically. You only need to provide your OAuth credentials.
+
+---
+
+## Setting up Zitadel Application
+
+### Creating a Zitadel application
+
+To get started with Zitadel authentication, you'll need to create an application in your Zitadel Console.
+
+1. **Navigate to Zitadel Console**: Go to your Zitadel instance URL (e.g., `your-instance.zitadel.cloud` for cloud or `your self-hosted URL`)
+
+<ZoomableImage src="/assets/v3/oidc/zitadel/zitadel-console.png" alt="Zitadel Console" />
+
+2. **Create new application**: Click **"Create Application"** button in the home screen.
+3. **Enter application details**:
+
+- Enter a descriptive name like "Palmr File Sharing" for your project, ou select an existing project.
+- Select Framework: Select "`Other (OIDC, SAML, API)`"
+
+<ZoomableImage src="/assets/v3/oidc/zitadel/create-application.png" alt="Zitadel Create Application" />
+
+4. **Create application**: Click **"Create"** to generate your Zitadel application
+
+After creating your application, you'll be redirected to the application configuration page step-by-step. in this page you can configure your application.
+
+### Configuring application settings
+
+5. **Select application type**: in the first step:
+
+- Choose **"Web"** for web-based Palmr instances
+- Add a descriptive name for your application (e.g. "Palmr File Sharing")
+
+<ZoomableImage
+  src="/assets/v3/oidc/zitadel/step-1.png"
+  alt="Zitadel Application Type Selection"
+  legend="This is a fake application, you have to use your own."
+/>
+
+click on **"Continue"** to advance to the next step.
+
+6. **Select application type**: in the second step:
+
+- Choose **"CODE"** for authentication method and click on **"Continue"** to advance to the next step.
+
+<ZoomableImage
+  src="/assets/v3/oidc/zitadel/step-2.png"
+  alt="Zitadel Application Authentication Method Selection"
+  legend="This is a fake application, you have to use your own."
+/>
+
+7. **Configure application URLs**:
+
+You'll need to configure several URLs in your Zitadel application settings. Here's what to add for each environment:
+
+### Redirect URIs
+
+| Environment | URL                                                               |
+| ----------- | ----------------------------------------------------------------- |
+| Production  | `https://yourdomain.com/api/auth/providers/zitadel/callback`      |
+| Development | `http://localhost:3000/api/auth/providers/zitadel/callback`       |
+| Custom Port | `https://yourdomain.com:5487/api/auth/providers/zitadel/callback` |
+
+### Post Logout Redirect URIs
+
+| Environment | URL                           |
+| ----------- | ----------------------------- |
+| Production  | `https://yourdomain.com`      |
+| Development | `http://localhost:3000`       |
+| Custom Port | `https://yourdomain.com:5487` |
+
+> **Note:** Replace `yourdomain.com` with your actual domain name in all production and custom port URLs.
+> **Note:** If you using http:// (not https://) in your redirect URIs, you need to enable `Development mode` switch.
+> **Note:** You can add multiple redirect URIs for different environments (development, staging, production).
+
+<ZoomableImage
+  src="/assets/v3/oidc/zitadel/config-urls.png"
+  alt="Zitadel Application URLs Configuration"
+  legend="This is a fake application, you have to use your own."
+/>
+
+Click on **"Continue"** to advance to the last step. That is just a summary of the configuration you have done.
+
+8. **Save changes**: Click **"Save"** to apply your configuration
+
+<ZoomableImage
+  src="/assets/v3/oidc/zitadel/config-overview.png"
+  alt="Zitadel Application Summary"
+  legend="This is a fake application, you have to use your own."
+/>
+
+You can click on **"Create"** to create your application.
+
+### Getting OAuth credentials
+
+After creating your application, a modal will appear with the credentials that Palmr will use to authenticate with Zitadel.
+
+<ZoomableImage
+  src="/assets/v3/oidc/zitadel/credentials-modal.png"
+  alt="Zitadel OAuth Credentials"
+  legend="The client ID and client secret shown in the image are examples only (fake credentials). You must use your own credentials from Zitadel."
+/>
+
+you can copy the credentials and save them in a safe place for later use.
+
+### Final Zitadel configuration
+
+**Confirm the Zitadel application configuration**:
+
+After closing the modal, you'll be redirected to the Zitadel application page.
+
+<ZoomableImage
+  src="/assets/v3/oidc/zitadel/application-page.png"
+  alt="Zitadel Application Page"
+  legend="This is a fake application, you have to use your own."
+/>
+
+Confirm the application configuration fields:
+
+- **Application Type**: The Application Type has been set to **"Web"**
+- **Response Type**: The Response Type has been set to **"Code"**
+- **Authentication Method**: The Authentication Method has been set to **"Basic"**
+- **Grant Types**: The Grant Types has been set to **"Authorization Code"**
+- **Refresh Token**: The Refresh Token has been set to **"Disabled"**
+
+You can edit the application configuration if you want to change something and click on **"Save"** to save the application configuration.
+
+> **Note:** If you edit your client ID, you need to update the credentials that you saved in the previous step.
+
+Select the **"Token Settings"** section in the side menu, you can configure the token settings for your application.
+
+The default Auth Token Type is **"Bearer"** and you can change it to **"JWT"** and click on **"Save"** to save the token settings.
+
+<ZoomableImage
+  src="/assets/v3/oidc/zitadel/token-settings.png"
+  alt="Zitadel Auth Token Settings"
+  legend="This is a fake application, you have to use your own."
+/>
+
+Click on **Redirect Settings** section in the side menu, you can configure the redirect settings for your application. Just confirm the previous URLs you have configured in the previous step. If you want to add more redirect URLs, you can add them by clicking on **"+"** button. If you need to edit the redirect URLs, you can edit them by clicking on the pen icon.
+
+<ZoomableImage
+  src="/assets/v3/oidc/zitadel/redirect-settings-page.png"
+  alt="Zitadel Redirect Settings"
+  legend="This is a fake application, you have to use your own."
+/>
+
+The last step in Zitadel is grab your instance URL. You can find it clicking on the **"URLs"** in the side menu.
+
+<ZoomableImage
+  src="/assets/v3/oidc/zitadel/urls-page.png"
+  alt="Zitadel Instance URL"
+  legend="This is a fake application, you have to use your own."
+/>
+
+You dont need copy the complete URL, just the domain name and protocol and port if you are using a custom port.
+For example: `https://palmr-zaxijp.us1.zitadel.cloud` (image bellow case) or `https://zitadel.yourdomain.com` or `https://zitadel.yourdomain.com:5487` if you are using a custom port.
+
+> **Note:** In Zitadel we finish the configuration. Let's go to Palmr to configure the provider. Remember you need `Client ID`, `Client Secret` and `Instance URL` to configure the provider in Palmr.
+
+---
+
+## Configuring Palmr
+
+### Accessing OIDC settings
+
+To configure Zitadel authentication in Palmr, you need administrator access to the settings panel.
+
+1. **Login as administrator**: Sign in to Palmr with an admin account
+
+2. **Access settings**: Click your profile picture in the header and select **Settings**
+
+3. **Navigate to authentication**: Find and click on the **Authentication Providers** configuration section
+
+<ZoomableImage src="/assets/v3/oidc/auth-providers.png" alt="Palmr Authentication Providers" />
+
+### Enabling Zitadel provider
+
+Zitadel comes pre-configured as an official provider, so the setup process is streamlined.
+
+1. **Locate Zitadel provider**: Find Zitadel in the list of available providers
+
+2. **Enable the provider**: Toggle the status to **Enabled**
+
+<ZoomableImage src="/assets/v3/oidc/zitadel/enabled-zitadel.png" alt="Palmr Zitadel Provider Enabled" />
+
+After enabling the provider, click on the pen icon to configure the provider.
+
+3. **Configure credentials**:
+   - **Provider URL**: Paste your Zitadel instance URL (e.g., `https://your-instance.zitadel.cloud`)
+   - **Client ID**: Paste the Client ID from Zitadel application
+   - **Client Secret**: Paste the Client Secret from Zitadel application
+   - **Scopes**: Add the scopes you want to use. The default scopes are `openid`, `profile`, and `email`. You don't need change this if you are not sure.
+
+<ZoomableImage
+  src="/assets/v3/oidc/zitadel/edit-zitadel.png"
+  alt="Edit Zitadel Provider"
+  legend="This is a fake application, you have to use your own."
+/>
+
+### Advanced configuration options
+
+Configure additional settings to customize the authentication behavior:
+
+**Auto Registration**: Enable this to automatically create user accounts when someone authenticates for the first time.
+
+**Sort Order**: Control where the Zitadel login button appears relative to other authentication providers.
+
+**Icon**: you can choose the icon you want to use for the Zitadel login button (default is `FaShieldAlt`).
+
+<ZoomableImage src="/assets/v3/oidc/zitadel/zitadel-icon.png" alt="Zitadel Icon" />
+
+> **Enterprise tip:** Zitadel authentication works great for enterprise organizations requiring advanced security features and centralized identity management with deployment flexibility.
+
+---
+
+## Account linking
+
+By default, if a user is already registered in Palmr with their Zitadel email, they will be automatically linked to their Palmr account.
+
+> **Note:** You can't disable account linking. If you want to unlink a user from their Zitadel account, you need to delete the user from Palmr.
+
+---
+
+## Technical configuration
+
+Zitadel's technical configuration is handled automatically, but understanding the setup can help with troubleshooting:
+
+```yaml
+Provider Type: OAuth 2.0 with OIDC Discovery
+Issuer URL: https://your-instance.zitadel.cloud
+Authorization Endpoint: /oauth/v2/authorize
+Token Endpoint: /oauth/v2/token
+UserInfo Endpoint: /oidc/v1/userinfo
+Scopes: openid profile email
+```
+
+### Field mappings
+
+Palmr automatically maps Zitadel user information to local user accounts:
+
+- **User ID**: Maps from Zitadel's `sub` field
+- **Email**: Maps from Zitadel's `email` field
+- **Full Name**: Maps from Zitadel's `name` field
+- **First Name**: Maps from Zitadel's `given_name` field
+- **Last Name**: Maps from Zitadel's `family_name` field
+- **Avatar**: Maps from Zitadel's `picture` field
+- **Username**: Maps from Zitadel's `preferred_username` field
+
+### Zitadel-specific features
+
+- **Custom Claims**: Can include custom user metadata and app metadata
+- **Actions Support**: Can customize authentication flow with custom actions
+- **Multi-factor Authentication**: Supports Zitadel's MFA features
+- **Enterprise SSO**: Integrates with SAML, LDAP, and other enterprise systems
+- **Self-hosted Support**: Full functionality with self-hosted Zitadel instances
+
+---
+
+## Testing the configuration
+
+### Verifying the setup
+
+After configuring Zitadel authentication, test the integration to ensure everything works correctly.
+
+1. **Check login page**: Navigate to your Palmr login page and verify the "Sign in with Zitadel" button appears
+
+2. **Test authentication flow**: Click the Zitadel sign-in button and complete the authentication process
+
+3. **Verify user creation**: Confirm that a new user account is created (if auto-registration is enabled)
+
+### Login flow verification
+
+The complete authentication process should work as follows:
+
+1. **User clicks "Sign in with Zitadel"**: The browser redirects to Zitadel's authorization page
+2. **User authenticates**: User completes authentication through Zitadel (login, MFA, etc.)
+3. **Zitadel redirects back to Palmr**: User returns to Palmr with authentication tokens
+4. **Palmr creates or updates user**: User account is automatically managed with Zitadel information
+5. **User accesses Palmr**: User is logged in with their Zitadel identity
+
+---
+
+## Troubleshooting common issues
+
+### Redirect URI mismatch error
+
+**Error message**: `invalid_redirect_uri`
+
+**Cause**: The redirect URI in your request doesn't match what's configured in Zitadel application.
+
+**Solution**:
+
+1. Check the exact URL in the error message
+2. Add this exact URL to your Zitadel application's redirect URIs
+3. Ensure you include the correct protocol (http/https) and port
+4. Remove any trailing slashes unless they're in the callback URL
+
+### Access denied error
+
+**Error message**: `access_denied`
+
+**Cause**: User denied permissions or the application isn't properly configured.
+
+**Solution**:
+
+1. Verify that your Zitadel application requests the correct scopes
+2. Check that users are granting permissions during the authorization flow
+3. Ensure your application is not restricted or disabled
+4. Verify the application has proper permissions set up
+
+### Invalid client error
+
+**Error message**: `invalid_client`
+
+**Cause**: Incorrect Client ID, Client Secret, or Instance URL.
+
+**Solution**:
+
+1. Double-check that you've copied the credentials correctly from Zitadel
+2. Ensure there are no extra spaces or characters in the credentials
+3. Verify you're using the correct instance URL format
+4. Generate a new Client Secret if necessary
+
+### Instance URL configuration issues
+
+**Error message**: Instance not found or invalid
+
+**Cause**: Incorrect Zitadel instance URL or instance configuration.
+
+**Solution**:
+
+1. Verify your Zitadel instance URL is correct
+2. Check that your Zitadel instance is active and accessible
+3. Ensure you're using the correct protocol (https://)
+4. Verify DNS resolution for your Zitadel instance
+
+### Self-hosted connectivity issues
+
+**Cause**: Network connectivity problems with self-hosted Zitadel instance.
+
+**Solution**:
+
+1. Check server firewall and network connectivity
+2. Verify DNS resolution from your server to the Zitadel instance
+3. Ensure the Zitadel instance is properly configured and running
+4. Check SSL certificate validity for the Zitadel instance
+
+---
+
+## Security best practices
+
+### Credential management
+
+- **Never expose secrets**: Keep your Client Secret secure and never commit it to version control
+- **Rotate credentials regularly**: Generate new Client Secrets periodically for enhanced security
+- **Use environment variables**: Store sensitive configuration in environment variables, not config files
+- **Monitor access logs**: Regularly review authentication logs for suspicious activity
+
+### Scope and permission management
+
+- **Minimal scopes**: Only request `openid`, `profile`, and `email` scopes as required by Palmr
+- **User consent**: Ensure users understand what permissions they're granting
+- **Regular audits**: Review which users have connected their Zitadel accounts
+- **Access reviews**: Periodically check user access and remove inactive accounts
+
+### Production considerations
+
+- **Use HTTPS**: Always use HTTPS in production environments
+- **Configure proper domains**: Use production domains in Zitadel application settings
+- **Test thoroughly**: Verify the complete authentication flow before going live
+- **Plan for failures**: Have fallback authentication methods available
+
+---
+
+## Next steps
+
+With Zitadel authentication configured, you might want to:
+
+- **Configure additional providers**: Set up other OIDC providers for more authentication options
+- **Customize user management**: Fine-tune auto-registration and admin assignment rules
+- **Review security settings**: Ensure your authentication setup meets your security requirements
+- **Monitor usage**: Keep track of authentication patterns and user activity
+
+For more information about OIDC authentication in Palmr, see the [OIDC Authentication overview](/docs/v3-beta/oidc-authentication).
+
+## Useful resources
+
+- [Zitadel Documentation](https://zitadel.com/docs)
+- [Zitadel OAuth 2.0 Guide](https://zitadel.com/docs/apis/openidoauth)
+- [Zitadel OpenID Connect](https://zitadel.com/docs/apis/openidoauth/oidc)
+- [Zitadel Console](https://cloud.zitadel.com)

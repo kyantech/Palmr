@@ -26,7 +26,6 @@ export function RadiusPickerForm() {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const applyRadius = useCallback((radiusValue: string) => {
     document.documentElement.style.setProperty("--radius", radiusValue);
-    console.log("Applied radius:", radiusValue);
   }, []);
 
   useEffect(() => {

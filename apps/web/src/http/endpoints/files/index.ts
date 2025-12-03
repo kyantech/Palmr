@@ -2,10 +2,18 @@ import type { AxiosRequestConfig } from "axios";
 
 import apiInstance from "@/config/api";
 import type {
+  AbortMultipartUploadBody,
+  AbortMultipartUploadResult,
   CheckFileBody,
   CheckFileResult,
+  CompleteMultipartUploadBody,
+  CompleteMultipartUploadResult,
+  CreateMultipartUploadBody,
+  CreateMultipartUploadResult,
   DeleteFileResult,
   GetDownloadUrlResult,
+  GetMultipartPartUrlParams,
+  GetMultipartPartUrlResult,
   GetPresignedUrlParams,
   GetPresignedUrlResult,
   ListFilesResult,
@@ -114,4 +122,51 @@ export const moveFile = <TData = MoveFileResult>(
   options?: AxiosRequestConfig
 ): Promise<TData> => {
   return apiInstance.put(`/api/files/${id}/move`, moveFileBody, options);
+};
+
+/**
+ * Creates a multipart upload session
+ * @summary Create Multipart Upload
+ */
+export const createMultipartUpload = <TData = CreateMultipartUploadResult>(
+  createMultipartUploadBody: CreateMultipartUploadBody,
+  options?: AxiosRequestConfig
+): Promise<TData> => {
+  return apiInstance.post(`/api/files/multipart/create`, createMultipartUploadBody, options);
+};
+
+/**
+ * Gets a presigned URL for uploading a specific part
+ * @summary Get Multipart Part URL
+ */
+export const getMultipartPartUrl = <TData = GetMultipartPartUrlResult>(
+  params: GetMultipartPartUrlParams,
+  options?: AxiosRequestConfig
+): Promise<TData> => {
+  return apiInstance.get(`/api/files/multipart/part-url`, {
+    ...options,
+    params: { ...params, ...options?.params },
+  });
+};
+
+/**
+ * Completes a multipart upload
+ * @summary Complete Multipart Upload
+ */
+export const completeMultipartUpload = <TData = CompleteMultipartUploadResult>(
+  completeMultipartUploadBody: CompleteMultipartUploadBody,
+  options?: AxiosRequestConfig
+): Promise<TData> => {
+  return apiInstance.post(`/api/files/multipart/complete`, completeMultipartUploadBody, options);
+};
+
+/**
+ * Aborts a multipart upload
+ * @summary Abort Multipart Upload
+ */
+export const abortMultipartUpload = <TData = AbortMultipartUploadResult>(
+  abortMultipartUploadBody: AbortMultipartUploadBody,
+  options?: AxiosRequestConfig
+): Promise<TData> => {
+  return apiInstance.post(`/api/files/multipart/abort`, abortMultipartUploadBody, options);
 };
