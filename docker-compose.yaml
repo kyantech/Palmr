@@ -35,10 +35,9 @@ services:
       STORAGE_URL: "https://palmr-demo:9379" # REQUIRED for internal storage: Full storage URL with protocol (e.g., https://syrg.palmr.com or http://192.168.1.100:9379). Not needed when ENABLE_S3=true.
       #
     ports:
+      - "9379:9379" # Internal storage (S3-compatible, REQUIRED for file uploads when using internal storage)
       - "5487:5487" # Web interface
       - "3333:3333" # API (optional, only if you need direct API access)
-      - "9379:9379" # Internal storage (S3-compatible, required for file uploads when using internal storage)
-      - "9378:9378" # Storage Console (optional, for storage management UI)
     volumes:
       - palmr_data:/app/server
       # ==============================================================================

@@ -5,7 +5,7 @@ icon: Cog
 
 Hey there! Looking to run **Palmr.** your way, with complete control over every piece of the stack? This manual installation guide is for you. No Docker, no pre-built containers just the raw source code to tweak, customize, and deploy as you see fit.
 
-> **Prefer a quicker setup?** If this hands-on approach feels like overkill, check out our [**Quick Start (Docker)**](/docs/3.2-beta/quick-start) guide for a fast, containerized deployment. This manual path is tailored for developers who want to dive deep, modify the codebase, or integrate custom services.
+> **Prefer a quicker setup?** If this hands-on approach feels like overkill, check out our [**Quick Start (Docker)**](/docs/v3-beta/quick-start) guide for a fast, containerized deployment. This manual path is tailored for developers who want to dive deep, modify the codebase, or integrate custom services.
 
 Here's what you'll do at a glance:
 
@@ -38,6 +38,10 @@ Let's make sure your environment is ready to roll. Check that you've got these t
 - **Memory**: At least 4GB RAM is suggested.
 - **Storage**: Depends on how much file storage you'll need.
 - **CPU**: 2+ cores for smooth performance.
+- **S3-Compatible Storage**: **REQUIRED** - Either:
+  - External S3 service (AWS S3, DigitalOcean Spaces, etc.)
+  - Local Minio server running on port 9379
+  - Another S3-compatible service
 
 ---
 
@@ -71,7 +75,31 @@ Before anything else, we need to set up the environment variables Palmr. relies 
 cp .env.example .env
 ```
 
-This copies the template into a new `.env` file with all the necessary settings. Open it up if you need to tweak anything specific to your setup.
+This copies the template into a new `.env` file with all the necessary settings. **Important**: You must configure S3-compatible storage for Palmr v3+ to work. Edit the `.env` file to either:
+
+**Option 1: External S3 Service**
+```bash
+ENABLE_S3=true
+S3_ENDPOINT=s3.amazonaws.com
+S3_ACCESS_KEY=your-access-key
+S3_SECRET_KEY=your-secret-key
+S3_BUCKET_NAME=palmr-files
+S3_REGION=us-east-1
+```
+
+**Option 2: Local Minio (for development)**
+```bash
+# First, start Minio locally:
+# docker run -p 9379:9000 -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin minio/minio server /data
+
+ENABLE_S3=true
+S3_ENDPOINT=localhost:9379
+S3_ACCESS_KEY=minioadmin
+S3_SECRET_KEY=minioadmin
+S3_BUCKET_NAME=palmr-files
+S3_USE_SSL=false
+S3_FORCE_PATH_STYLE=true
+```
 
 #### Install dependencies
 
@@ -165,26 +193,7 @@ cp .env.example .env
 
 This creates a `.env` file with the necessary configurations for the frontend.
 
-##### Upload Configuration
 
-Palmr. supports configurable chunked uploading for large files. You can customize the chunk size by setting the following environment variable in your `.env` file:
-
-```bash
-NEXT_PUBLIC_UPLOAD_CHUNK_SIZE_MB=100
-```
-
-**How it works:**
-
-- If `NEXT_PUBLIC_UPLOAD_CHUNK_SIZE_MB` is set, Palmr. will use this value (in megabytes) as the chunk size for all file uploads that exceed this threshold.
-- If not set or left empty, Palmr. automatically calculates optimal chunk sizes based on file size:
-  - Files ≤ 100MB: uploaded without chunking
-  - Files > 100MB and ≤ 1GB: 75MB chunks
-  - Files > 1GB: 150MB chunks
-
-**When to configure:**
-
-- **Default (not set):** Recommended for most use cases. Palmr. will intelligently determine the best chunk size.
-- **Custom value:** Set this if you have specific network conditions or want to optimize for your infrastructure (e.g., slower connections may benefit from smaller chunks like 50MB, while fast networks can handle larger chunks like 200MB, or the upload size per payload may be limited by a proxy like Cloudflare)
 
 #### Install dependencies
 
@@ -220,7 +229,13 @@ You should see the full Palmr. application ready to go!
 
 ## Quick notes
 
-This guide sets up Palmr. using the local file system for storage. Want to use an S3-compatible object storage instead? You can configure that in the `.env` file. Check the Palmr. documentation for details on setting up S3 storage just update the environment variables, then build and run as shown here.
+**Storage Requirement**: Palmr v3+ requires S3-compatible storage to function. This guide assumes you've configured either external S3 or local Minio as shown in the environment variables section above. Without proper S3 configuration, file uploads will not work.
+
+**Development Tip**: For local development, we recommend using Minio as it's lightweight and S3-compatible. Start it with Docker before running Palmr:
+
+```bash
+docker run -p 9379:9000 -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin minio/minio server /data
+```
 
 ### Custom Installation Paths and Symlinks
 
@@ -240,6 +255,9 @@ This tells Palmr. to check your custom path first when determining available dis
 Here's a quick reference for all the commands we've covered perfect for copy-pasting once you're familiar with the steps:
 
 ```bash
+# --- Prerequisites (if using local Minio) ---
+docker run -p 9379:9000 -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin minio/minio server /data
+
 # --- Backend (Fastify API) ---
 cd apps/server
 pnpm install
@@ -264,10 +282,10 @@ pnpm serve
 
 Palmr. is now up and running locally . Here are some suggested next steps:
 
-- **Manage Users**: Dive into the [Users Management](/docs/3.2-beta/manage-users) guide.
+- **Manage Users**: Dive into the [Users Management](/docs/v3-beta/manage-users) guide.
 - **Switch to Object Storage**: Update `.env` variables to use an S3-compatible bucket (see Quick Notes above).
 - **Secure Your Instance**: Put Palmr. behind a reverse proxy like **Nginx** or **Caddy** and enable HTTPS.
-- **Learn the Internals**: Explore how everything connects in the [Architecture](/docs/3.2-beta/architecture) overview.
+- **Learn the Internals**: Explore how everything connects in the [Architecture](/docs/v3-beta/architecture) overview.
 
 Jump into whichever area fits your needs our docs are designed for exploration in any order.
 
