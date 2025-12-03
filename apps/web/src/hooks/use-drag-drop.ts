@@ -243,7 +243,7 @@ export function useDragDrop({
         handleDragEnd();
       }
     },
-    [moveFile, moveFolder, onImmediateUpdate, t, onRefresh, handleDragEnd]
+    [onImmediateUpdate, t, onRefresh, handleDragEnd]
   );
 
   return {

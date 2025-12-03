@@ -69,7 +69,7 @@ export function V3BetaModal() {
           </DialogDescription>
         </DialogHeader>
         <div className="flex gap-3 justify-end pt-6">
-          <Button variant="outline" onClick={handleClose} className="px-6">
+          <Button onClick={handleClose} className="px-6">
             Got it
           </Button>
           <Button onClick={handleGoToQuickStart} className="px-6 ">

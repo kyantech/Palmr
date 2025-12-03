@@ -360,7 +360,7 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
       uppy.off("upload-error", handleError);
       uppy.off("complete", handleComplete);
     };
-  }, []); // Empty dependency array - callbacks use refs
+  }, [t]); // Empty dependency array - callbacks use refs
 
   /**
    * Add files to upload queue
