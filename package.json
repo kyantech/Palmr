@@ -1,6 +1,6 @@
 {
   "name": "palmr-monorepo",
-  "version": "3.3.0-beta",
+  "version": "3.3.1-beta",
   "description": "Palmr monorepo with Husky configuration",
   "private": true,
   "packageManager": "pnpm@10.6.0",
