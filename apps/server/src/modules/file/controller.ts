@@ -313,6 +313,7 @@ export class FileController {
 
           reply.header("Content-Type", contentType);
           reply.header("Content-Disposition", `inline; filename="${encodeURIComponent(fileName)}"`);
+          reply.header("Content-Length", reverseShareFile.size.toString());
 
           return reply.send(stream);
         }
@@ -369,6 +370,7 @@ export class FileController {
 
       reply.header("Content-Type", contentType);
       reply.header("Content-Disposition", `inline; filename="${encodeURIComponent(fileName)}"`);
+      reply.header("Content-Length", fileRecord.size.toString());
 
       return reply.send(stream);
     } catch (error) {
@@ -612,6 +614,7 @@ export class FileController {
 
       reply.header("Content-Type", contentType);
       reply.header("Content-Disposition", `inline; filename="${encodeURIComponent(fileName)}"`);
+      reply.header("Content-Length", fileRecord.size.toString());
       reply.header("Cache-Control", "public, max-age=31536000"); // Cache por 1 ano
 
       return reply.send(stream);
