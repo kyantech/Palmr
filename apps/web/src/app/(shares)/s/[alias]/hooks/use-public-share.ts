@@ -335,64 +335,71 @@ export function usePublicShare() {
     }
 
     try {
-      // Prepare all items for the share-specific bulk download
-      const allItems: Array<{
-        objectName?: string;
-        name: string;
-        id?: string;
-        type?: "file" | "folder";
-      }> = [];
-
-      if (share.files) {
-        share.files.forEach((file) => {
-          if (!file.folderId) {
-            allItems.push({
-              objectName: file.objectName,
-              name: file.name,
-              type: "file",
-            });
-          }
-        });
-      }
-
-      if (share.folders) {
-        const folderIds = new Set(share.folders.map((f) => f.id));
-        share.folders.forEach((folder) => {
-          if (!folder.parentId || !folderIds.has(folder.parentId)) {
-            allItems.push({
-              id: folder.id,
-              name: folder.name,
-              type: "folder",
-            });
-          }
-        });
-      }
-
-      if (allItems.length === 0) {
-        toast.error(t("shareManager.noFilesToDownload"));
-        return;
-      }
-
       const loadingToast = toast.loading(t("shareManager.creatingZip"));
 
       try {
-        // Get presigned URLs for all files
-        const downloadItems = await Promise.all(
-          allItems
-            .filter((item) => item.type === "file" && item.objectName)
-            .map(async (item) => {
+        // Helper function to get all files in a folder recursively with paths
+        const getFolderFilesWithPath = (
+          targetFolderId: string,
+          currentPath: string = ""
+        ): Array<{ file: any; path: string }> => {
+          const filesWithPath: Array<{ file: any; path: string }> = [];
+
+          // Get direct files in this folder
+          const directFiles = share.files?.filter((f) => f.folderId === targetFolderId) || [];
+          directFiles.forEach((file) => {
+            filesWithPath.push({ file, path: currentPath });
+          });
+
+          // Get subfolders and process them recursively
+          const subfolders = share.folders?.filter((f) => f.parentId === targetFolderId) || [];
+          for (const subfolder of subfolders) {
+            const subfolderPath = currentPath ? `${currentPath}/${subfolder.name}` : subfolder.name;
+            filesWithPath.push(...getFolderFilesWithPath(subfolder.id, subfolderPath));
+          }
+
+          return filesWithPath;
+        };
+
+        const allFilesToDownload: Array<{ url: string; name: string }> = [];
+
+        // Get presigned URLs for root level files (not in any folder)
+        const rootFiles = share.files?.filter((f) => !f.folderId) || [];
+        const rootFileItems = await Promise.all(
+          rootFiles.map(async (file) => {
+            const url = await getCachedDownloadUrl(
+              file.objectName,
+              password ? { headers: { "x-share-password": password } } : undefined
+            );
+            return {
+              url,
+              name: file.name,
+            };
+          })
+        );
+        allFilesToDownload.push(...rootFileItems);
+
+        // Get presigned URLs for files in root level folders
+        const rootFolders = share.folders?.filter((f) => !f.parentId) || [];
+        for (const folder of rootFolders) {
+          const folderFilesWithPath = getFolderFilesWithPath(folder.id, folder.name);
+
+          const folderFileItems = await Promise.all(
+            folderFilesWithPath.map(async ({ file, path }) => {
               const url = await getCachedDownloadUrl(
-                item.objectName!,
+                file.objectName,
                 password ? { headers: { "x-share-password": password } } : undefined
               );
               return {
                 url,
-                name: item.name,
+                name: path ? `${path}/${file.name}` : file.name,
               };
             })
-        );
+          );
+          allFilesToDownload.push(...folderFileItems);
+        }
 
-        if (downloadItems.length === 0) {
+        if (allFilesToDownload.length === 0) {
           toast.dismiss(loadingToast);
           toast.error(t("shareManager.noFilesToDownload"));
           return;
@@ -401,7 +408,7 @@ export function usePublicShare() {
         // Create ZIP with all files
         const { downloadFilesAsZip } = await import("@/utils/zip-download");
         const zipName = `${share.name || t("shareManager.defaultShareName")}.zip`;
-        await downloadFilesAsZip(downloadItems, zipName);
+        await downloadFilesAsZip(allFilesToDownload, zipName);
 
         toast.dismiss(loadingToast);
         toast.success(t("shareManager.zipDownloadSuccess"));
