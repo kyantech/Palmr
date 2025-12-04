@@ -90,7 +90,13 @@ export class S3StorageProvider implements StorageProvider {
       Key: objectName,
     });
 
-    return await getSignedUrl(client, command, { expiresIn: expires });
+    // Exclude checksum headers from the presigned URL signature
+    // AWS SDK v3 adds checksum headers by default which some S3-compatible services
+    // (like Wasabi) don't handle correctly, causing 400 Bad Request errors on large file uploads
+    return await getSignedUrl(client, command, {
+      expiresIn: expires,
+      unsignableHeaders: new Set(["x-amz-checksum-crc32"]),
+    });
   }
 
   async getPresignedGetUrl(objectName: string, expires: number, fileName?: string): Promise<string> {
@@ -219,7 +225,13 @@ export class S3StorageProvider implements StorageProvider {
       PartNumber: partNumber,
     });
 
-    const url = await getSignedUrl(client, command, { expiresIn: expires });
+    // Exclude checksum headers from the presigned URL signature
+    // AWS SDK v3 adds checksum headers by default which some S3-compatible services
+    // (like Wasabi) don't handle correctly, causing 400 Bad Request errors on large file uploads
+    const url = await getSignedUrl(client, command, {
+      expiresIn: expires,
+      unsignableHeaders: new Set(["x-amz-checksum-crc32"]),
+    });
     return url;
   }
 
