@@ -16,9 +16,9 @@ RUN corepack enable pnpm
 COPY infra/install-minio.sh /tmp/install-minio.sh
 RUN chmod +x /tmp/install-minio.sh && /tmp/install-minio.sh
 
-# Install storage client (mc)
-RUN wget https://dl.min.io/client/mc/release/linux-amd64/mc -O /usr/local/bin/mc && \
-  chmod +x /usr/local/bin/mc
+# Install storage client (mc) for appropriate architecture
+COPY infra/install-mc.sh /tmp/install-mc.sh
+RUN chmod +x /tmp/install-mc.sh && /tmp/install-mc.sh
 
 # Set working directory
 WORKDIR /app
