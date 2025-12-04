@@ -45,9 +45,10 @@ async function getBaseUrl(): Promise<string> {
   return `${protocol}://${host}`;
 }
 
-export async function generateMetadata({ params }: { params: { alias: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ alias: string }> }): Promise<Metadata> {
   const t = await getTranslations();
-  const metadata = await getReverseShareMetadata(params.alias);
+  const resolvedParams = await params;
+  const metadata = await getReverseShareMetadata(resolvedParams.alias);
   const appInfo = await getAppInfo();
 
   const title = metadata?.name || t("reverseShares.upload.metadata.title");
@@ -58,7 +59,7 @@ export async function generateMetadata({ params }: { params: { alias: string } }
       : t("reverseShares.upload.metadata.description"));
 
   const baseUrl = await getBaseUrl();
-  const shareUrl = `${baseUrl}/r/${params.alias}`;
+  const shareUrl = `${baseUrl}/r/${resolvedParams.alias}`;
 
   return {
     title,

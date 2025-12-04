@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 
 interface LayoutProps {
   children: React.ReactNode;
-  params: { alias: string };
+  params: Promise<{ alias: string }>;
 }
 
 async function getShareMetadata(alias: string) {
@@ -50,9 +50,10 @@ async function getBaseUrl(): Promise<string> {
   return `${protocol}://${host}`;
 }
 
-export async function generateMetadata({ params }: { params: { alias: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ alias: string }> }): Promise<Metadata> {
   const t = await getTranslations();
-  const metadata = await getShareMetadata(params.alias);
+  const resolvedParams = await params;
+  const metadata = await getShareMetadata(resolvedParams.alias);
   const appInfo = await getAppInfo();
 
   const title = metadata?.name || t("share.pageTitle");
@@ -63,7 +64,7 @@ export async function generateMetadata({ params }: { params: { alias: string } }
       : appInfo.appDescription || t("share.metadata.defaultDescription"));
 
   const baseUrl = await getBaseUrl();
-  const shareUrl = `${baseUrl}/s/${params.alias}`;
+  const shareUrl = `${baseUrl}/s/${resolvedParams.alias}`;
 
   return {
     title,
