@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
-import { getCachedDownloadUrl, getCachedReverseShareDownloadUrl } from "@/lib/download-url-cache";
+import { getCachedDownloadUrl } from "@/lib/download-url-cache";
 import { getFileExtension, getFileType, type FileType } from "@/utils/file-types";
 
 interface FilePreviewState {
@@ -176,7 +176,9 @@ export function useFilePreview({ file, isOpen, isReverseShare = false, sharePass
       let url: string;
 
       if (isReverseShare) {
-        url = await getCachedReverseShareDownloadUrl(file.id!);
+        // Use the same-origin proxy URL with objectName for reverse share files
+        // The backend /api/files/download handles reverse share files when objectName starts with "reverse-shares/"
+        url = await getCachedDownloadUrl(file.objectName);
       } else {
         const options = sharePassword ? { headers: { "x-share-password": sharePassword } } : undefined;
         url = await getCachedDownloadUrl(file.objectName, options);
@@ -224,14 +226,14 @@ export function useFilePreview({ file, isOpen, isReverseShare = false, sharePass
   ]);
 
   const handleDownload = useCallback(async () => {
-    const fileKey = isReverseShare ? file.id : file.objectName;
-    if (!fileKey) return;
+    if (!file.objectName) return;
 
     try {
       const loadingToast = toast.loading(t("filePreview.downloading") || "Downloading...");
       let url: string;
       if (isReverseShare) {
-        url = await getCachedReverseShareDownloadUrl(file.id!);
+        // Use the same-origin proxy URL with objectName for reverse share files
+        url = await getCachedDownloadUrl(file.objectName);
       } else {
         const options = sharePassword ? { headers: { "x-share-password": sharePassword } } : undefined;
         url = await getCachedDownloadUrl(file.objectName, options);
@@ -250,7 +252,7 @@ export function useFilePreview({ file, isOpen, isReverseShare = false, sharePass
       console.error("Download error:", error);
       toast.error(t("filePreview.downloadError"));
     }
-  }, [isReverseShare, file.id, file.objectName, file.name, sharePassword, t]);
+  }, [isReverseShare, file.objectName, file.name, sharePassword, t]);
 
   useEffect(() => {
     const fileKey = isReverseShare ? file.id : file.objectName;

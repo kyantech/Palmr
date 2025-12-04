@@ -41,10 +41,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import {
   copyReverseShareFileToUserFiles,
   deleteReverseShareFile,
-  downloadReverseShareFile,
   updateReverseShareFile,
 } from "@/http/endpoints/reverse-shares";
 import type { ReverseShareFile } from "@/http/endpoints/reverse-shares/types";
+import { getCachedDownloadUrl } from "@/lib/download-url-cache";
 import { getFileIcon } from "@/utils/file-icons";
 import { truncateFileName } from "@/utils/file-utils";
 import { ReverseShare } from "../hooks/use-reverse-shares";
@@ -472,10 +472,11 @@ export function ReceivedFilesModal({
   const handleDownload = async (file: ReverseShareFile) => {
     try {
       const loadingToast = toast.loading(t("reverseShares.modals.receivedFiles.downloading") || "Downloading...");
-      const response = await downloadReverseShareFile(file.id);
+      // Use same-origin proxy URL to avoid Safari cross-site tracking issues
+      const url = await getCachedDownloadUrl(file.objectName);
 
       const link = document.createElement("a");
-      link.href = response.data.url;
+      link.href = url;
       link.download = file.name;
       document.body.appendChild(link);
       link.click();
@@ -611,11 +612,11 @@ export function ReceivedFilesModal({
       const loadingToast = toast.loading(t("shareManager.creatingZip"));
 
       try {
-        // Download files individually
+        // Download files individually using same-origin proxy URL
         for (const file of selectedFileObjects) {
-          const response = await downloadReverseShareFile(file.id);
+          const url = await getCachedDownloadUrl(file.objectName);
           const link = document.createElement("a");
-          link.href = response.data.url;
+          link.href = url;
           link.download = file.name;
           document.body.appendChild(link);
           link.click();

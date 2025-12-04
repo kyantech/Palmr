@@ -6,8 +6,9 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { deleteReverseShareFile, downloadReverseShareFile } from "@/http/endpoints/reverse-shares";
+import { deleteReverseShareFile } from "@/http/endpoints/reverse-shares";
 import type { ReverseShareFile } from "@/http/endpoints/reverse-shares/types";
+import { getCachedDownloadUrl } from "@/lib/download-url-cache";
 import { getFileIcon } from "@/utils/file-icons";
 import { ReverseShareFilePreviewModal } from "./reverse-share-file-preview-modal";
 
@@ -56,10 +57,11 @@ export function ReceivedFilesSection({ files, onFileDeleted }: ReceivedFilesSect
   const handleDownload = async (file: ReverseShareFile) => {
     try {
       const loadingToast = toast.loading(t("reverseShares.modals.details.downloading") || "Downloading...");
-      const response = await downloadReverseShareFile(file.id);
+      // Use same-origin proxy URL to avoid Safari cross-site tracking issues
+      const url = await getCachedDownloadUrl(file.objectName);
 
       const link = document.createElement("a");
-      link.href = response.data.url;
+      link.href = url;
       link.download = file.name;
       document.body.appendChild(link);
       link.click();
