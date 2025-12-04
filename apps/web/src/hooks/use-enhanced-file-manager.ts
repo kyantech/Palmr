@@ -394,6 +394,7 @@ export function useEnhancedFileManager(
       await registerFolder(folderData);
       toast.success(t("folderActions.folderCreated"));
       setCreateFolderModalOpen(false);
+      await onRefresh();
     } catch (error) {
       console.error("Error creating folder:", error);
       toast.error(t("folderActions.createFolderError"));
@@ -406,6 +407,7 @@ export function useEnhancedFileManager(
       await updateFolder(folderId, { name: newName, description });
       toast.success(t("folderActions.folderRenamed"));
       setFolderToRename(null);
+      await onRefresh();
     } catch (error) {
       console.error("Error renaming folder:", error);
       toast.error(t("folderActions.renameFolderError"));
@@ -414,7 +416,6 @@ export function useEnhancedFileManager(
 
   const handleFolderDelete = async (folderId: string) => {
     try {
-      // Optimistic update - remove from UI immediately
       if (handleImmediateUpdate) {
         handleImmediateUpdate(folderId, "folder", "__DELETE__" as any);
       }
