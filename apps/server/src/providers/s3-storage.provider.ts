@@ -90,7 +90,10 @@ export class S3StorageProvider implements StorageProvider {
       Key: objectName,
     });
 
-    return await getSignedUrl(client, command, { expiresIn: expires });
+    return await getSignedUrl(client, command, {
+      expiresIn: expires,
+      unsignableHeaders: new Set(["x-amz-checksum-crc32"]),
+    });
   }
 
   async getPresignedGetUrl(objectName: string, expires: number, fileName?: string): Promise<string> {
@@ -219,7 +222,10 @@ export class S3StorageProvider implements StorageProvider {
       PartNumber: partNumber,
     });
 
-    const url = await getSignedUrl(client, command, { expiresIn: expires });
+    const url = await getSignedUrl(client, command, {
+      expiresIn: expires,
+      unsignableHeaders: new Set(["x-amz-checksum-crc32"]),
+    });
     return url;
   }
 
