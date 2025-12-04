@@ -1,5 +1,4 @@
 import { getDownloadUrl } from "@/http/endpoints";
-import { downloadReverseShareFile } from "@/http/endpoints/reverse-shares";
 
 interface CacheEntry {
   url: string;
@@ -60,8 +59,9 @@ class DownloadUrlCache {
   }
 
   /**
-   * Gets download URL with intelligent caching.
+   * Gets download URL for file content fetching (previews, etc).
    * Uses same-origin backend proxy URL to avoid Safari cross-site tracking issues.
+   * Works for both regular files and reverse share files (objectName starting with "reverse-shares/").
    */
   async getCachedDownloadUrl(
     objectName: string,
@@ -75,6 +75,7 @@ class DownloadUrlCache {
   /**
    * Gets presigned S3 URL for direct downloads (e.g., for download buttons).
    * This is used when we need a direct download link that can be opened in a new tab.
+   * Note: This may not work with Safari's cross-site tracking prevention for fetch requests.
    */
   async getPresignedDownloadUrl(
     objectName: string,
@@ -104,51 +105,13 @@ class DownloadUrlCache {
 
     return url;
   }
-
-  /**
-   * Gets download URL for reverse share.
-   * Uses same-origin backend proxy URL to avoid Safari cross-site tracking issues.
-   */
-  async getCachedReverseShareDownloadUrl(fileId: string): Promise<string> {
-    // Return same-origin proxy URL for reverse share files
-    return `/api/reverse-shares/files/${fileId}/download`;
-  }
-
-  /**
-   * Gets presigned S3 URL for reverse share direct downloads.
-   */
-  async getPresignedReverseShareDownloadUrl(fileId: string): Promise<string> {
-    const cacheKey = `reverse:${fileId}`;
-    const now = Date.now();
-    const cached = this.cache.get(cacheKey);
-
-    if (cached && this.isValidCacheEntry(cached)) {
-      return cached.url;
-    }
-
-    const response = await downloadReverseShareFile(fileId);
-    const url = response.data.url;
-    const entry: CacheEntry = {
-      url,
-      expires: now + this.CACHE_DURATION,
-      createdAt: now,
-    };
-
-    this.cache.set(cacheKey, entry);
-
-    return url;
-  }
 }
 
 // Singleton instance
 export const downloadUrlCache = new DownloadUrlCache();
 
-// Export main methods - these use same-origin proxy URLs for Safari compatibility
+// Export main method - uses same-origin proxy URLs for Safari compatibility
 export const getCachedDownloadUrl = downloadUrlCache.getCachedDownloadUrl.bind(downloadUrlCache);
-export const getCachedReverseShareDownloadUrl =
-  downloadUrlCache.getCachedReverseShareDownloadUrl.bind(downloadUrlCache);
 
-// Export presigned URL methods for direct downloads
+// Export presigned URL method for direct downloads (may not work with Safari cross-site tracking)
 export const getPresignedDownloadUrl = downloadUrlCache.getPresignedDownloadUrl.bind(downloadUrlCache);
-export const getPresignedReverseShareDownloadUrl =
-  downloadUrlCache.getPresignedReverseShareDownloadUrl.bind(downloadUrlCache);
