@@ -179,10 +179,7 @@ export class S3StorageProvider implements StorageProvider {
    * Returns uploadId for subsequent part uploads
    */
   async createMultipartUpload(objectName: string): Promise<string> {
-    const client = createPublicS3Client();
-    if (!client) {
-      throw new Error("S3 client could not be created");
-    }
+    const client = this.ensureClient();
 
     const command = new CreateMultipartUploadCommand({
       Bucket: bucketName,
