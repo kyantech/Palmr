@@ -120,10 +120,7 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
         return response.data;
       },
       getMultipartPartUrl: async (uploadId: string, objectName: string, partNumber: string) => {
-        const response = await getMultipartPartUrlByAlias(
-          alias,
-          { uploadId, objectName, partNumber, password },
-        );
+        const response = await getMultipartPartUrlByAlias(alias, { uploadId, objectName, partNumber, password });
         return response.data;
       },
       completeMultipartUpload: async (
