@@ -13,7 +13,14 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { useUppyUpload } from "@/hooks/useUppyUpload";
-import { getPresignedUrlForUploadByAlias, registerFileUploadByAlias } from "@/http/endpoints";
+import {
+  abortMultipartUploadByAlias,
+  completeMultipartUploadByAlias,
+  createMultipartUploadByAlias,
+  getMultipartPartUrlByAlias,
+  getPresignedUrlForUploadByAlias,
+  registerFileUploadByAlias,
+} from "@/http/endpoints";
 import { formatFileSize } from "@/utils/format-file-size";
 import { UPLOAD_CONFIG } from "../constants";
 import { FileUploadSectionProps } from "../types";
@@ -101,6 +108,44 @@ export function FileUploadSection({ reverseShare, password, alias, onUploadSucce
 
         onUploadSuccess?.();
       }
+    },
+    // Custom multipart functions for reverse share uploads (no auth required)
+    customMultipartFunctions: {
+      createMultipartUpload: async (filename: string, extension: string) => {
+        const response = await createMultipartUploadByAlias(
+          alias,
+          { filename, extension },
+          password ? { password } : undefined
+        );
+        return response.data;
+      },
+      getMultipartPartUrl: async (uploadId: string, objectName: string, partNumber: string) => {
+        const response = await getMultipartPartUrlByAlias(
+          alias,
+          { uploadId, objectName, partNumber, password },
+        );
+        return response.data;
+      },
+      completeMultipartUpload: async (
+        uploadId: string,
+        objectName: string,
+        parts: Array<{ PartNumber: number; ETag: string }>
+      ) => {
+        const response = await completeMultipartUploadByAlias(
+          alias,
+          { uploadId, objectName, parts },
+          password ? { password } : undefined
+        );
+        return response.data;
+      },
+      abortMultipartUpload: async (uploadId: string, objectName: string) => {
+        const response = await abortMultipartUploadByAlias(
+          alias,
+          { uploadId, objectName },
+          password ? { password } : undefined
+        );
+        return response.data;
+      },
     },
   });
 
