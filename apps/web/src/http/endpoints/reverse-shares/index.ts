@@ -273,3 +273,66 @@ export const copyReverseShareFileToUserFiles = <TData = any>(
 ): Promise<TData> => {
   return apiInstance.post(`/api/reverse-shares/files/${fileId}/copy`, undefined, options);
 };
+
+/**
+ * Create a multipart upload for reverse share (public endpoint)
+ * @summary Create Multipart Upload for Reverse Share (Public)
+ */
+export const createMultipartUploadByAlias = <TData = any>(
+  alias: string,
+  body: { filename: string; extension: string },
+  params?: { password?: string },
+  options?: AxiosRequestConfig
+): Promise<TData> => {
+  return apiInstance.post(`/api/reverse-shares/alias/${alias}/multipart/create`, body, {
+    ...options,
+    params: { ...params, ...options?.params },
+  });
+};
+
+/**
+ * Get presigned URL for a multipart upload part for reverse share (public endpoint)
+ * @summary Get Multipart Part URL for Reverse Share (Public)
+ */
+export const getMultipartPartUrlByAlias = <TData = any>(
+  alias: string,
+  params: { uploadId: string; objectName: string; partNumber: string; password?: string },
+  options?: AxiosRequestConfig
+): Promise<TData> => {
+  return apiInstance.get(`/api/reverse-shares/alias/${alias}/multipart/part-url`, {
+    ...options,
+    params: { ...params, ...options?.params },
+  });
+};
+
+/**
+ * Complete a multipart upload for reverse share (public endpoint)
+ * @summary Complete Multipart Upload for Reverse Share (Public)
+ */
+export const completeMultipartUploadByAlias = <TData = any>(
+  alias: string,
+  body: { uploadId: string; objectName: string; parts: Array<{ PartNumber: number; ETag: string }> },
+  params?: { password?: string },
+  options?: AxiosRequestConfig
+): Promise<TData> => {
+  return apiInstance.post(`/api/reverse-shares/alias/${alias}/multipart/complete`, body, {
+    ...options,
+    params: { ...params, ...options?.params },
+  });
+};
+
+/**
+ * Abort a multipart upload for reverse share (public endpoint)
+ * @summary Abort Multipart Upload for Reverse Share (Public)
+ */
+export const abortMultipartUploadByAlias = <TData = any>(
+  alias: string,
+  body: { uploadId: string; objectName: string },
+  params?: { password?: string },
+  options?: AxiosRequestConfig
+): Promise<TData> => {
+  return apiInstance.post(`/api/reverse-shares/alias/${alias}/multipart/abort`, body, {
+    ...options,
+    params: { ...params, ...options?.params },
+  });
+};
