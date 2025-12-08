@@ -73,8 +73,6 @@ export interface UseUppyUploadOptions {
    */
   customMultipartFunctions?: CustomMultipartFunctions;
 }
-  currentFolderId?: string;
-}
 
 /**
  * Status of a file upload
