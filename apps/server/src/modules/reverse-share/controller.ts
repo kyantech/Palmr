@@ -486,6 +486,159 @@ export class ReverseShareController {
     }
   }
 
+  // Multipart upload endpoints for reverse shares
+  async createMultipartUploadByAlias(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { alias } = request.params as { alias: string };
+      const { password } = request.query as { password?: string };
+      const { filename, extension } = request.body as { filename: string; extension: string };
+
+      if (!filename || !extension) {
+        return reply.status(400).send({ error: "filename and extension are required" });
+      }
+
+      const result = await this.reverseShareService.createMultipartUploadByAlias(alias, filename, extension, password);
+      return reply.status(200).send({
+        uploadId: result.uploadId,
+        objectName: result.objectName,
+        message: "Multipart upload initialized",
+      });
+    } catch (error: any) {
+      console.error("[Multipart] Create multipart upload error:", error);
+      if (error.message === "Reverse share not found") {
+        return reply.status(404).send({ error: error.message });
+      }
+      if (error.message === "Reverse share is inactive") {
+        return reply.status(403).send({ error: error.message });
+      }
+      if (error.message === "Reverse share has expired") {
+        return reply.status(410).send({ error: error.message });
+      }
+      if (error.message === "Password required" || error.message === "Invalid password") {
+        return reply.status(401).send({ error: error.message });
+      }
+      return reply.status(500).send({ error: "Failed to create multipart upload" });
+    }
+  }
+
+  async getMultipartPartUrlByAlias(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { alias } = request.params as { alias: string };
+      const { password, uploadId, objectName, partNumber } = request.query as {
+        password?: string;
+        uploadId: string;
+        objectName: string;
+        partNumber: string;
+      };
+
+      if (!uploadId || !objectName || !partNumber) {
+        return reply.status(400).send({ error: "uploadId, objectName, and partNumber are required" });
+      }
+
+      const partNum = parseInt(partNumber);
+      if (isNaN(partNum) || partNum < 1 || partNum > 10000) {
+        return reply.status(400).send({ error: "partNumber must be between 1 and 10000" });
+      }
+
+      const result = await this.reverseShareService.getMultipartPartUrlByAlias(
+        alias,
+        uploadId,
+        objectName,
+        partNum,
+        password
+      );
+      return reply.status(200).send({ url: result.url });
+    } catch (error: any) {
+      console.error("[Multipart] Get part URL error:", error);
+      if (error.message === "Reverse share not found") {
+        return reply.status(404).send({ error: error.message });
+      }
+      if (error.message === "Reverse share is inactive") {
+        return reply.status(403).send({ error: error.message });
+      }
+      if (error.message === "Reverse share has expired") {
+        return reply.status(410).send({ error: error.message });
+      }
+      if (error.message === "Password required" || error.message === "Invalid password") {
+        return reply.status(401).send({ error: error.message });
+      }
+      return reply.status(500).send({ error: "Failed to get presigned URL for part" });
+    }
+  }
+
+  async completeMultipartUploadByAlias(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { alias } = request.params as { alias: string };
+      const { password } = request.query as { password?: string };
+      const { uploadId, objectName, parts } = request.body as {
+        uploadId: string;
+        objectName: string;
+        parts: Array<{ PartNumber: number; ETag: string }>;
+      };
+
+      if (!uploadId || !objectName || !parts || !Array.isArray(parts)) {
+        return reply.status(400).send({ error: "uploadId, objectName, and parts are required" });
+      }
+
+      const result = await this.reverseShareService.completeMultipartUploadByAlias(
+        alias,
+        uploadId,
+        objectName,
+        parts,
+        password
+      );
+      return reply.status(200).send(result);
+    } catch (error: any) {
+      console.error("[Multipart] Complete multipart upload error:", error);
+      if (error.message === "Reverse share not found") {
+        return reply.status(404).send({ error: error.message });
+      }
+      if (error.message === "Reverse share is inactive") {
+        return reply.status(403).send({ error: error.message });
+      }
+      if (error.message === "Reverse share has expired") {
+        return reply.status(410).send({ error: error.message });
+      }
+      if (error.message === "Password required" || error.message === "Invalid password") {
+        return reply.status(401).send({ error: error.message });
+      }
+      return reply.status(500).send({ error: "Failed to complete multipart upload" });
+    }
+  }
+
+  async abortMultipartUploadByAlias(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { alias } = request.params as { alias: string };
+      const { password } = request.query as { password?: string };
+      const { uploadId, objectName } = request.body as {
+        uploadId: string;
+        objectName: string;
+      };
+
+      if (!uploadId || !objectName) {
+        return reply.status(400).send({ error: "uploadId and objectName are required" });
+      }
+
+      const result = await this.reverseShareService.abortMultipartUploadByAlias(alias, uploadId, objectName, password);
+      return reply.status(200).send(result);
+    } catch (error: any) {
+      console.error("[Multipart] Abort multipart upload error:", error);
+      if (error.message === "Reverse share not found") {
+        return reply.status(404).send({ error: error.message });
+      }
+      if (error.message === "Reverse share is inactive") {
+        return reply.status(403).send({ error: error.message });
+      }
+      if (error.message === "Reverse share has expired") {
+        return reply.status(410).send({ error: error.message });
+      }
+      if (error.message === "Password required" || error.message === "Invalid password") {
+        return reply.status(401).send({ error: error.message });
+      }
+      return reply.status(500).send({ error: "Failed to abort multipart upload" });
+    }
+  }
+
   async getReverseShareMetadataByAlias(request: FastifyRequest, reply: FastifyReply) {
     try {
       const { alias } = request.params as { alias: string };
