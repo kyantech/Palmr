@@ -17,11 +17,7 @@ import {
  */
 export interface CustomMultipartFunctions {
   createMultipartUpload: (filename: string, extension: string) => Promise<{ uploadId: string; objectName: string }>;
-  getMultipartPartUrl: (
-    uploadId: string,
-    objectName: string,
-    partNumber: string
-  ) => Promise<{ url: string }>;
+  getMultipartPartUrl: (uploadId: string, objectName: string, partNumber: string) => Promise<{ url: string }>;
   completeMultipartUpload: (
     uploadId: string,
     objectName: string,
@@ -215,10 +211,12 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
             response = await customMultipartRef.current.createMultipartUpload(filename, extension);
           } else {
             // Use default authenticated multipart upload
-            response = (await createMultipartUpload({
-              filename,
-              extension,
-            })).data;
+            response = (
+              await createMultipartUpload({
+                filename,
+                extension,
+              })
+            ).data;
           }
 
           const { uploadId, objectName: actualObjectName } = response;
@@ -256,18 +254,16 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
           let response;
           if (customMultipartRef.current) {
             // Use custom multipart functions (e.g., for reverse shares)
-            response = await customMultipartRef.current.getMultipartPartUrl(
-              uploadId,
-              key,
-              partNumber.toString()
-            );
+            response = await customMultipartRef.current.getMultipartPartUrl(uploadId, key, partNumber.toString());
           } else {
             // Use default authenticated multipart upload
-            response = (await getMultipartPartUrl({
-              uploadId,
-              objectName: key,
-              partNumber: partNumber.toString(),
-            })).data;
+            response = (
+              await getMultipartPartUrl({
+                uploadId,
+                objectName: key,
+                partNumber: partNumber.toString(),
+              })
+            ).data;
           }
 
           // Return the signed URL object directly - Uppy expects { url, headers }
@@ -289,11 +285,7 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
         try {
           if (customMultipartRef.current) {
             // Use custom multipart functions (e.g., for reverse shares)
-            await customMultipartRef.current.completeMultipartUpload(
-              uploadId,
-              meta.objectName || key,
-              parts
-            );
+            await customMultipartRef.current.completeMultipartUpload(uploadId, meta.objectName || key, parts);
           } else {
             // Use default authenticated multipart upload
             await completeMultipartUpload({
@@ -317,10 +309,7 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
         try {
           if (customMultipartRef.current) {
             // Use custom multipart functions (e.g., for reverse shares)
-            await customMultipartRef.current.abortMultipartUpload(
-              uploadId,
-              meta.objectName || key
-            );
+            await customMultipartRef.current.abortMultipartUpload(uploadId, meta.objectName || key);
           } else {
             // Use default authenticated multipart upload
             await abortMultipartUpload({

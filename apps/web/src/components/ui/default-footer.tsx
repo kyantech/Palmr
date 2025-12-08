@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import { useSecureConfigValue } from "@/hooks/use-secure-configs";
-
 import packageJson from "../../../package.json";
 
 const { version } = packageJson;
