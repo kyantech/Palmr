@@ -35,6 +35,7 @@ function loadInternalStorageCredentials(): Partial<StorageConfig> | null {
         region: credentials.S3_REGION || "default",
         bucketName: credentials.S3_BUCKET_NAME || "palmr-files",
         forcePathStyle: true,
+        disableChecksums: false,
       };
     }
   } catch (error) {
