@@ -12,6 +12,7 @@ const envSchema = z.object({
   S3_BUCKET_NAME: z.string().optional(),
   S3_FORCE_PATH_STYLE: z.union([z.literal("true"), z.literal("false")]).default("false"),
   S3_REJECT_UNAUTHORIZED: z.union([z.literal("true"), z.literal("false")]).default("true"),
+  S3_DISABLE_CHECKSUMS: z.union([z.literal("true"), z.literal("false")]).default("false"),
 
   // Legacy encryption vars (kept for backward compatibility but not used with S3/Garage)
   ENCRYPTION_KEY: z.string().optional(),
