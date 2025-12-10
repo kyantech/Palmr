@@ -147,10 +147,18 @@ COPY <<EOF /app/start.sh
 set -e
 
 echo "Starting Palmr Application..."
-echo "Storage Mode: \${ENABLE_S3:-false}"
-echo "Secure Site: \${SECURE_SITE:-false}"
-echo "Encryption: \${DISABLE_FILESYSTEM_ENCRYPTION:-true}"
-echo "Database: SQLite"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+if [ "\${ENABLE_S3:-false}" = "true" ]; then
+    echo "📦 Storage Mode: External S3"
+    echo "   Endpoint: \${S3_ENDPOINT:-not set}"
+    echo "   Region: \${S3_REGION:-not set}"
+else
+    echo "📦 Storage Mode: Internal (Auto-configured)"
+    echo "   MinIO will start on port 9379"
+fi
+echo "🔒 Secure Site: \${SECURE_SITE:-false}"
+echo "💾 Database: SQLite"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # Set global environment variables
 export DATABASE_URL="file:/app/server/prisma/palmr.db"

@@ -46,7 +46,8 @@ async function startServer() {
   const app = await buildApp();
 
   await ensureDirectories();
-  const { isInternalStorage, isExternalS3 } = await import("./config/storage.config.js");
+  const { isInternalStorage, isExternalS3, storageConfig } = await import("./config/storage.config.js");
+  const { env } = await import("./env.js");
   const { runAutoMigration } = await import("./scripts/migrate-filesystem-to-s3.js");
   await runAutoMigration();
 
@@ -77,8 +78,22 @@ async function startServer() {
 
   if (isInternalStorage) {
     console.log("📦 Using internal storage (auto-configured)");
+    if (!env.STORAGE_URL) {
+      console.log("⚠️  WARNING: STORAGE_URL not set for internal storage!");
+      console.log("⚠️  File uploads may fail. Set STORAGE_URL to your public storage URL.");
+      console.log("⚠️  Example: STORAGE_URL=https://storage.yourdomain.com:9379");
+    }
   } else if (isExternalS3) {
     console.log("📦 Using external S3 storage (AWS/S3-compatible)");
+    console.log(`   Endpoint: ${storageConfig.endpoint}`);
+    console.log(`   Region: ${storageConfig.region}`);
+    console.log(`   Bucket: ${storageConfig.bucketName}`);
+    
+    // Warn if STORAGE_URL is set for external S3 (common mistake)
+    if (env.STORAGE_URL) {
+      console.log("⚠️  WARNING: STORAGE_URL is set but not used with external S3 (ENABLE_S3=true)");
+      console.log("⚠️  STORAGE_URL is only needed for internal storage. You can remove it.");
+    }
   } else {
     console.log("⚠️  WARNING: Storage not configured! Storage may not work.");
   }

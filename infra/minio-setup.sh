@@ -5,6 +5,13 @@
 
 set -e
 
+# Skip internal storage setup if external S3 is enabled
+if [ "$ENABLE_S3" = "true" ]; then
+  echo "[STORAGE-SYSTEM-SETUP] External S3 enabled (ENABLE_S3=true)"
+  echo "[STORAGE-SYSTEM-SETUP] Skipping internal storage setup"
+  exit 0
+fi
+
 # Configuration
 MINIO_DATA_DIR="${MINIO_DATA_DIR:-/app/server/minio-data}"
 MINIO_ROOT_USER="palmr-minio-admin"
@@ -13,7 +20,7 @@ MINIO_BUCKET="${MINIO_BUCKET:-palmr-files}"
 MINIO_INITIALIZED_FLAG="/app/server/.minio-initialized"
 MINIO_CREDENTIALS="/app/server/.minio-credentials"
 
-echo "[STORAGE-SYSTEM-SETUP] Starting storage system configuration..."
+echo "[STORAGE-SYSTEM-SETUP] Starting internal storage system configuration..."
 
 # Create data directory
 mkdir -p "$MINIO_DATA_DIR"
