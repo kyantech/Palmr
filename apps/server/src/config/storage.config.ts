@@ -120,8 +120,6 @@ export function createPublicS3Client(): S3Client | null {
     return null;
   }
 
-  let publicEndpoint: string;
-
   if (isInternalStorage) {
     // Internal storage: use STORAGE_URL
     if (!env.STORAGE_URL) {
@@ -130,26 +128,55 @@ export function createPublicS3Client(): S3Client | null {
           "Set STORAGE_URL to your public storage URL with protocol (e.g., https://syrg.palmr.com or http://192.168.1.100:9379)"
       );
     }
-    publicEndpoint = env.STORAGE_URL;
-  } else {
-    // External S3: use the original endpoint configuration
-    publicEndpoint = storageConfig.useSSL
-      ? `https://${storageConfig.endpoint}${storageConfig.port ? `:${storageConfig.port}` : ""}`
-      : `http://${storageConfig.endpoint}${storageConfig.port ? `:${storageConfig.port}` : ""}`;
-  }
+    const publicEndpoint = env.STORAGE_URL;
 
-  return new S3Client({
-    endpoint: publicEndpoint,
-    region: storageConfig.region,
-    credentials: {
-      accessKeyId: storageConfig.accessKey,
-      secretAccessKey: storageConfig.secretKey,
-    },
-    forcePathStyle: storageConfig.forcePathStyle,
-    requestHandler: {
-      requestTimeout: 300000, // 5 minutes timeout for S3 operations
-    },
-    // Disable automatic checksums when configured (e.g., for Cloudflare R2 compatibility)
-    requestChecksumCalculation: storageConfig.disableChecksums ? "WHEN_REQUIRED" : "WHEN_SUPPORTED",
-  });
+    return new S3Client({
+      endpoint: publicEndpoint,
+      region: storageConfig.region,
+      credentials: {
+        accessKeyId: storageConfig.accessKey,
+        secretAccessKey: storageConfig.secretKey,
+      },
+      forcePathStyle: storageConfig.forcePathStyle,
+      requestHandler: {
+        requestTimeout: 300000, // 5 minutes timeout for S3 operations
+      },
+      // Disable automatic checksums when configured (e.g., for Cloudflare R2 compatibility)
+      requestChecksumCalculation: storageConfig.disableChecksums ? "WHEN_REQUIRED" : "WHEN_SUPPORTED",
+    });
+  } else {
+    // External S3
+    // When using virtual-hosted-style URLs (forcePathStyle=false) with standard S3-compatible services,
+    // we should NOT set an explicit endpoint. The SDK will construct the proper URL from the region.
+    // Only set endpoint for custom/self-hosted S3 services or when using path-style URLs.
+    const isStandardS3Service =
+      !storageConfig.forcePathStyle &&
+      (storageConfig.endpoint.includes(".amazonaws.com") ||
+        storageConfig.endpoint.includes(".wasabisys.com") ||
+        storageConfig.endpoint.includes(".backblazeb2.com") ||
+        storageConfig.endpoint.includes(".digitaloceanspaces.com"));
+
+    const clientConfig: any = {
+      region: storageConfig.region,
+      credentials: {
+        accessKeyId: storageConfig.accessKey,
+        secretAccessKey: storageConfig.secretKey,
+      },
+      forcePathStyle: storageConfig.forcePathStyle,
+      requestHandler: {
+        requestTimeout: 300000, // 5 minutes timeout for S3 operations
+      },
+      // Disable automatic checksums when configured (e.g., for Cloudflare R2 compatibility)
+      requestChecksumCalculation: storageConfig.disableChecksums ? "WHEN_REQUIRED" : "WHEN_SUPPORTED",
+    };
+
+    // Only set endpoint for custom S3 services or path-style URLs
+    if (!isStandardS3Service) {
+      clientConfig.endpoint = storageConfig.useSSL
+        ? `https://${storageConfig.endpoint}${storageConfig.port ? `:${storageConfig.port}` : ""}`
+        : `http://${storageConfig.endpoint}${storageConfig.port ? `:${storageConfig.port}` : ""}`;
+    }
+
+    return new S3Client(clientConfig);
+  }
 }
