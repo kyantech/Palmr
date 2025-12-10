@@ -4,11 +4,21 @@
 
 set -e
 
+# Skip internal storage if external S3 is enabled
+if [ "$ENABLE_S3" = "true" ]; then
+  echo "[STORAGE-SYSTEM] External S3 enabled (ENABLE_S3=true)"
+  echo "[STORAGE-SYSTEM] Skipping internal storage system"
+  # Keep supervisor happy by sleeping forever instead of exiting
+  # This prevents supervisor from trying to restart the process
+  # Alternative would be to dynamically generate supervisord.conf, but this is simpler
+  exec tail -f /dev/null
+fi
+
 DATA_DIR="/app/server/minio-data"
 PASSWORD_FILE="/app/server/.minio-root-password"
 MINIO_USER="palmr"
 
-echo "[STORAGE-SYSTEM] Initializing storage..."
+echo "[STORAGE-SYSTEM] Initializing internal storage..."
 
 # USE ENVIRONMENT VARIABLES: Allow runtime UID/GID configuration
 # Falls back to palmr user's UID/GID if not specified
