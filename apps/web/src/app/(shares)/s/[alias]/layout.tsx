@@ -45,7 +45,9 @@ async function getAppInfo() {
 
 async function getBaseUrl(): Promise<string> {
   const headersList = await headers();
-  const protocol = headersList.get("x-forwarded-proto") || "http";
+  // Handle multiple protocols in x-forwarded-proto (e.g., "https, https" from multiple proxies)
+  const forwardedProto = headersList.get("x-forwarded-proto");
+  const protocol = forwardedProto ? forwardedProto.split(",")[0].trim() : "http";
   const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost:3000";
   return `${protocol}://${host}`;
 }
