@@ -13,6 +13,20 @@ import {
 } from "@/http/endpoints/files";
 
 /**
+ * Custom multipart upload functions for non-authenticated uploads (e.g., reverse shares)
+ */
+export interface CustomMultipartFunctions {
+  createMultipartUpload: (filename: string, extension: string) => Promise<{ uploadId: string; objectName: string }>;
+  getMultipartPartUrl: (uploadId: string, objectName: string, partNumber: string) => Promise<{ url: string }>;
+  completeMultipartUpload: (
+    uploadId: string,
+    objectName: string,
+    parts: Array<{ PartNumber: number; ETag: string }>
+  ) => Promise<any>;
+  abortMultipartUpload: (uploadId: string, objectName: string) => Promise<any>;
+}
+
+/**
  * Options for the useUppyUpload hook
  */
 export interface UseUppyUploadOptions {
@@ -49,6 +63,11 @@ export interface UseUppyUploadOptions {
    * Optional folder context for file organization
    */
   currentFolderId?: string;
+
+  /**
+   * Optional custom multipart upload functions (for unauthenticated uploads like reverse shares)
+   */
+  customMultipartFunctions?: CustomMultipartFunctions;
 }
 
 /**
@@ -85,6 +104,7 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
   const onAfterUploadRef = useRef(options.onAfterUpload);
   const getPresignedUrlRef = useRef(options.getPresignedUrl);
   const onSuccessRef = useRef(options.onSuccess);
+  const customMultipartRef = useRef(options.customMultipartFunctions);
 
   // Update refs when callbacks change
   useEffect(() => {
@@ -93,6 +113,7 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
     onAfterUploadRef.current = options.onAfterUpload;
     getPresignedUrlRef.current = options.getPresignedUrl;
     onSuccessRef.current = options.onSuccess;
+    customMultipartRef.current = options.customMultipartFunctions;
   }, [options]);
 
   // Initialize Uppy instance only once
@@ -184,12 +205,21 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
           const filename = objectName.replace(`.${extension}`, "");
 
           // 3. Create multipart upload on backend
-          const response = await createMultipartUpload({
-            filename,
-            extension,
-          });
+          let response;
+          if (customMultipartRef.current) {
+            // Use custom multipart functions (e.g., for reverse shares)
+            response = await customMultipartRef.current.createMultipartUpload(filename, extension);
+          } else {
+            // Use default authenticated multipart upload
+            response = (
+              await createMultipartUpload({
+                filename,
+                extension,
+              })
+            ).data;
+          }
 
-          const { uploadId, objectName: actualObjectName } = response.data;
+          const { uploadId, objectName: actualObjectName } = response;
 
           // Store metadata
           uppy.setFileMeta(file.id, {
@@ -221,15 +251,24 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
         const { uploadId, key, partNumber } = partData;
 
         try {
-          const response = await getMultipartPartUrl({
-            uploadId,
-            objectName: key,
-            partNumber: partNumber.toString(),
-          });
+          let response;
+          if (customMultipartRef.current) {
+            // Use custom multipart functions (e.g., for reverse shares)
+            response = await customMultipartRef.current.getMultipartPartUrl(uploadId, key, partNumber.toString());
+          } else {
+            // Use default authenticated multipart upload
+            response = (
+              await getMultipartPartUrl({
+                uploadId,
+                objectName: key,
+                partNumber: partNumber.toString(),
+              })
+            ).data;
+          }
 
           // Return the signed URL object directly - Uppy expects { url, headers }
           return {
-            url: response.data.url,
+            url: response.url,
             headers: {},
           };
         } catch (error) {
@@ -244,11 +283,17 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
         const meta = file.meta as { objectName: string };
 
         try {
-          await completeMultipartUpload({
-            uploadId,
-            objectName: meta.objectName || key,
-            parts,
-          });
+          if (customMultipartRef.current) {
+            // Use custom multipart functions (e.g., for reverse shares)
+            await customMultipartRef.current.completeMultipartUpload(uploadId, meta.objectName || key, parts);
+          } else {
+            // Use default authenticated multipart upload
+            await completeMultipartUpload({
+              uploadId,
+              objectName: meta.objectName || key,
+              parts,
+            });
+          }
 
           return {};
         } catch (error) {
@@ -262,10 +307,16 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
         const meta = file.meta as { objectName: string };
 
         try {
-          await abortMultipartUpload({
-            uploadId,
-            objectName: meta.objectName || key,
-          });
+          if (customMultipartRef.current) {
+            // Use custom multipart functions (e.g., for reverse shares)
+            await customMultipartRef.current.abortMultipartUpload(uploadId, meta.objectName || key);
+          } else {
+            // Use default authenticated multipart upload
+            await abortMultipartUpload({
+              uploadId,
+              objectName: meta.objectName || key,
+            });
+          }
         } catch (error) {
           console.error("[Upload:Multipart] Failed to abort multipart upload:", error);
           // Don't throw - abort is cleanup, shouldn't fail the operation
