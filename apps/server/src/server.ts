@@ -88,7 +88,7 @@ async function startServer() {
     console.log(`   Endpoint: ${storageConfig.endpoint}`);
     console.log(`   Region: ${storageConfig.region}`);
     console.log(`   Bucket: ${storageConfig.bucketName}`);
-    
+
     // Warn if STORAGE_URL is set for external S3 (common mistake)
     if (env.STORAGE_URL) {
       console.log("⚠️  WARNING: STORAGE_URL is set but not used with external S3 (ENABLE_S3=true)");
