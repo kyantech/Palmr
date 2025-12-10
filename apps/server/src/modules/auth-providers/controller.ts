@@ -48,8 +48,12 @@ export class AuthProvidersController {
   }
 
   private buildRequestContext(request: FastifyRequest): RequestContext {
+    // Handle multiple protocols in x-forwarded-proto (e.g., "https, https" from multiple proxies)
+    const forwardedProto = request.headers["x-forwarded-proto"] as string;
+    const protocol = forwardedProto ? forwardedProto.split(",")[0].trim() : request.protocol;
+    
     return {
-      protocol: (request.headers["x-forwarded-proto"] as string) || request.protocol,
+      protocol,
       host: (request.headers["x-forwarded-host"] as string) || (request.headers.host as string),
       headers: request.headers,
     };

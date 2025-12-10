@@ -8,7 +8,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const url = new URL(request.url);
     const queryString = url.search;
     const originalHost = request.headers.get("host") || url.host;
-    const originalProtocol = request.headers.get("x-forwarded-proto") || url.protocol.replace(":", "");
+    // Handle multiple protocols in x-forwarded-proto (e.g., "https, https" from multiple proxies)
+    const forwardedProto = request.headers.get("x-forwarded-proto");
+    const originalProtocol = forwardedProto ? forwardedProto.split(",")[0].trim() : url.protocol.replace(":", "");
     const callbackUrl = `${API_BASE_URL}/auth/providers/${provider}/callback${queryString}`;
 
     const apiRes = await fetch(callbackUrl, {
