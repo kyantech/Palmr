@@ -163,11 +163,11 @@ mkdir -p /app/server/uploads /app/server/temp-uploads /app/server/prisma /app/se
 # This runs on EVERY startup to handle updates and corrupted metadata
 echo "🔐 Fixing permissions for internal storage..."
 
-# DYNAMIC: Detect palmr user's actual UID and GID
-# Works with any Docker --user configuration
-PALMR_UID=\$(id -u palmr 2>/dev/null || echo "1001")
-PALMR_GID=\$(id -g palmr 2>/dev/null || echo "1001")
-echo "   Target user: palmr (UID:\$PALMR_UID, GID:\$PALMR_GID)"
+# USE ENVIRONMENT VARIABLES: Allow runtime UID/GID configuration
+# Falls back to palmr user's UID/GID if not specified
+TARGET_UID=\${PALMR_UID:-\$(id -u palmr 2>/dev/null || echo "1001")}
+TARGET_GID=\${PALMR_GID:-\$(id -g palmr 2>/dev/null || echo "1001")}
+echo "   Target user: palmr (UID:\$TARGET_UID, GID:\$TARGET_GID)"
 
 # ALWAYS remove storage system metadata to prevent corruption issues
 # This is safe - storage system recreates it automatically
@@ -177,10 +177,59 @@ if [ -d "/app/server/minio-data/.minio.sys" ]; then
     rm -rf /app/server/minio-data/.minio.sys 2>/dev/null || true
 fi
 
-# Fix ownership and permissions (safe for updates)
-echo "   🔧 Setting ownership and permissions..."
-chown -R \$PALMR_UID:\$PALMR_GID /app/server 2>/dev/null || echo "   ⚠️  chown skipped"
-chmod -R 755 /app/server 2>/dev/null || echo "   ⚠️  chmod skipped"
+# SMART CHOWN: Only run expensive recursive chown when UID/GID changed
+# This dramatically speeds up subsequent starts
+UIDGID_MARKER="/app/server/.palmr-uidgid"
+CURRENT_OWNER="\$TARGET_UID:\$TARGET_GID"
+NEEDS_CHOWN=false
+
+if [ -f "\$UIDGID_MARKER" ]; then
+    STORED_OWNER=\$(cat "\$UIDGID_MARKER" 2>/dev/null || echo "")
+    if [ "\$STORED_OWNER" != "\$CURRENT_OWNER" ]; then
+        echo "   📝 UID/GID changed (\$STORED_OWNER → \$CURRENT_OWNER)"
+        NEEDS_CHOWN=true
+    else
+        echo "   ✓ UID/GID unchanged (\$CURRENT_OWNER), skipping chown"
+    fi
+else
+    echo "   📝 First run or marker missing, will set ownership"
+    NEEDS_CHOWN=true
+fi
+
+if [ "\$NEEDS_CHOWN" = "true" ]; then
+    echo "   🔧 Setting ownership (this may take a moment on first run)..."
+    
+    # Only chown the directories that need it
+    chown \$TARGET_UID:\$TARGET_GID /app/server 2>/dev/null || true
+    
+    # For most directories, just chown the directory itself (fast)
+    for dir in uploads temp-uploads; do
+        if [ -d "/app/server/\$dir" ]; then
+            chown \$TARGET_UID:\$TARGET_GID "/app/server/\$dir" 2>/dev/null || true
+        fi
+    done
+    
+    # For prisma directory, we need recursive chown for database files
+    if [ -d "/app/server/prisma" ]; then
+        echo "   🔧 Fixing database permissions..."
+        chown -R \$TARGET_UID:\$TARGET_GID "/app/server/prisma" 2>/dev/null || true
+    fi
+    
+    # For minio-data, we NEED recursive chown because MinIO creates subdirectories
+    # and needs write access to all of them
+    if [ -d "/app/server/minio-data" ]; then
+        echo "   🔧 Fixing MinIO storage permissions..."
+        chown -R \$TARGET_UID:\$TARGET_GID "/app/server/minio-data" 2>/dev/null || true
+    fi
+    
+    # Save current UID/GID to marker
+    echo "\$CURRENT_OWNER" > "\$UIDGID_MARKER"
+    chown \$TARGET_UID:\$TARGET_GID "\$UIDGID_MARKER" 2>/dev/null || true
+    
+    echo "   ✅ Ownership updated and cached"
+fi
+
+chmod 755 /app/server 2>/dev/null || echo "   ⚠️  chmod skipped"
 
 # Verify critical directories are writable
 if touch /app/server/.test-write 2>/dev/null; then

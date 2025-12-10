@@ -88,6 +88,9 @@ export const s3Client = hasValidConfig
         secretAccessKey: storageConfig.secretKey,
       },
       forcePathStyle: storageConfig.forcePathStyle,
+      requestHandler: {
+        requestTimeout: 300000, // 5 minutes timeout for S3 operations
+      },
     })
   : null;
 
@@ -139,5 +142,8 @@ export function createPublicS3Client(): S3Client | null {
       secretAccessKey: storageConfig.secretKey,
     },
     forcePathStyle: storageConfig.forcePathStyle,
+    requestHandler: {
+      requestTimeout: 300000, // 5 minutes timeout for S3 operations
+    },
   });
 }

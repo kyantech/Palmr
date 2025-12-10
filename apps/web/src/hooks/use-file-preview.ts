@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { getCachedDownloadUrl, getCachedReverseShareDownloadUrl } from "@/lib/download-url-cache";
 import { getFileExtension, getFileType, type FileType } from "@/utils/file-types";
+import { getMimeType } from "@/utils/mime-types";
 
 interface FilePreviewState {
   previewUrl: string | null;
@@ -73,35 +74,49 @@ export function useFilePreview({ file, isOpen, isReverseShare = false, sharePass
     });
   }, []);
 
-  const loadVideoPreview = useCallback(async (url: string) => {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+  const loadVideoPreview = useCallback(
+    async (url: string) => {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        // Create a new blob with the correct MIME type based on file extension
+        // This fixes issues when the server returns application/octet-stream
+        const mimeType = getMimeType(file.name);
+        const typedBlob = new Blob([blob], { type: mimeType });
+        const blobUrl = URL.createObjectURL(typedBlob);
+        setState((prev) => ({ ...prev, videoBlob: blobUrl }));
+      } catch {
+        setState((prev) => ({ ...prev, previewUrl: url }));
       }
+    },
+    [file.name]
+  );
 
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      setState((prev) => ({ ...prev, videoBlob: blobUrl }));
-    } catch {
-      setState((prev) => ({ ...prev, previewUrl: url }));
-    }
-  }, []);
+  const loadAudioPreview = useCallback(
+    async (url: string) => {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-  const loadAudioPreview = useCallback(async (url: string) => {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const blob = await response.blob();
+        // Create a new blob with the correct MIME type based on file extension
+        // This fixes issues when the server returns application/octet-stream
+        const mimeType = getMimeType(file.name);
+        const typedBlob = new Blob([blob], { type: mimeType });
+        const blobUrl = URL.createObjectURL(typedBlob);
+        setState((prev) => ({ ...prev, previewUrl: blobUrl }));
+      } catch {
+        setState((prev) => ({ ...prev, previewUrl: url }));
       }
-
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      setState((prev) => ({ ...prev, previewUrl: blobUrl }));
-    } catch {
-      setState((prev) => ({ ...prev, previewUrl: url }));
-    }
-  }, []);
+    },
+    [file.name]
+  );
 
   const handlePdfLoadError = useCallback(() => {
     setState((prev) => {
