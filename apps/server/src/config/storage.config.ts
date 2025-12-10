@@ -1,9 +1,21 @@
 import * as fs from "fs";
 import process from "node:process";
-import { S3Client } from "@aws-sdk/client-s3";
+import { S3Client, S3ClientConfig } from "@aws-sdk/client-s3";
 
 import { env } from "../env";
 import { StorageConfig } from "../types/storage";
+
+/**
+ * Standard S3-compatible service domains that support virtual-hosted-style URLs.
+ * When using these services with forcePathStyle=false, the AWS SDK should
+ * construct the proper URL from the region, so we should NOT set an explicit endpoint.
+ */
+const STANDARD_S3_SERVICE_DOMAINS = [
+  ".amazonaws.com",
+  ".wasabisys.com",
+  ".backblazeb2.com",
+  ".digitaloceanspaces.com",
+] as const;
 
 /**
  * Load internal storage credentials if they exist
@@ -151,12 +163,9 @@ export function createPublicS3Client(): S3Client | null {
     // Only set endpoint for custom/self-hosted S3 services or when using path-style URLs.
     const isStandardS3Service =
       !storageConfig.forcePathStyle &&
-      (storageConfig.endpoint.includes(".amazonaws.com") ||
-        storageConfig.endpoint.includes(".wasabisys.com") ||
-        storageConfig.endpoint.includes(".backblazeb2.com") ||
-        storageConfig.endpoint.includes(".digitaloceanspaces.com"));
+      STANDARD_S3_SERVICE_DOMAINS.some((domain) => storageConfig.endpoint.includes(domain));
 
-    const clientConfig: any = {
+    const clientConfig: S3ClientConfig = {
       region: storageConfig.region,
       credentials: {
         accessKeyId: storageConfig.accessKey,
