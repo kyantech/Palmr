@@ -163,7 +163,7 @@ export function createPublicS3Client(): S3Client | null {
     // Only set endpoint for custom/self-hosted S3 services or when using path-style URLs.
     const isStandardS3Service =
       !storageConfig.forcePathStyle &&
-      STANDARD_S3_SERVICE_DOMAINS.some((domain) => storageConfig.endpoint.includes(domain));
+      STANDARD_S3_SERVICE_DOMAINS.some((domain) => storageConfig.endpoint.endsWith(domain));
 
     const clientConfig: S3ClientConfig = {
       region: storageConfig.region,
