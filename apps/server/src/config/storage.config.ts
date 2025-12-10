@@ -35,6 +35,7 @@ function loadInternalStorageCredentials(): Partial<StorageConfig> | null {
         region: credentials.S3_REGION || "default",
         bucketName: credentials.S3_BUCKET_NAME || "palmr-files",
         forcePathStyle: true,
+        disableChecksums: false,
       };
     }
   } catch (error) {
@@ -60,6 +61,7 @@ export const storageConfig: StorageConfig = (internalStorageConfig as StorageCon
   region: env.S3_REGION || "",
   bucketName: env.S3_BUCKET_NAME || "",
   forcePathStyle: env.S3_FORCE_PATH_STYLE === "true",
+  disableChecksums: env.S3_DISABLE_CHECKSUMS === "true",
 };
 
 if (storageConfig.useSSL && env.S3_REJECT_UNAUTHORIZED === "false") {
@@ -91,6 +93,8 @@ export const s3Client = hasValidConfig
       requestHandler: {
         requestTimeout: 300000, // 5 minutes timeout for S3 operations
       },
+      // Disable automatic checksums when configured (e.g., for Cloudflare R2 compatibility)
+      requestChecksumCalculation: storageConfig.disableChecksums ? "WHEN_REQUIRED" : "WHEN_SUPPORTED",
     })
   : null;
 
@@ -145,5 +149,7 @@ export function createPublicS3Client(): S3Client | null {
     requestHandler: {
       requestTimeout: 300000, // 5 minutes timeout for S3 operations
     },
+    // Disable automatic checksums when configured (e.g., for Cloudflare R2 compatibility)
+    requestChecksumCalculation: storageConfig.disableChecksums ? "WHEN_REQUIRED" : "WHEN_SUPPORTED",
   });
 }

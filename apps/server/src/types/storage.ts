@@ -25,4 +25,5 @@ export interface StorageConfig {
   region: string;
   bucketName: string;
   forcePathStyle?: boolean;
+  disableChecksums?: boolean;
 }
