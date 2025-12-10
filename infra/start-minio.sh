@@ -10,41 +10,39 @@ MINIO_USER="palmr"
 
 echo "[STORAGE-SYSTEM] Initializing storage..."
 
-# DYNAMIC: Detect palmr user's actual UID and GID
-# This works with any Docker user configuration
-MINIO_UID=$(id -u $MINIO_USER 2>/dev/null || echo "1001")
-MINIO_GID=$(id -g $MINIO_USER 2>/dev/null || echo "1001")
+# USE ENVIRONMENT VARIABLES: Allow runtime UID/GID configuration
+# Falls back to palmr user's UID/GID if not specified
+export MINIO_UID=${PALMR_UID:-$(id -u $MINIO_USER 2>/dev/null || echo "1001")}
+export MINIO_GID=${PALMR_GID:-$(id -g $MINIO_USER 2>/dev/null || echo "1001")}
 
 echo "[STORAGE-SYSTEM]   Target user: $MINIO_USER (UID:$MINIO_UID, GID:$MINIO_GID)"
 
-# CRITICAL: Fix permissions as root (supervisor runs this as root via user=root)
-# This MUST happen before dropping to palmr user
+# Ensure directory exists and has correct permissions
 if [ "$(id -u)" = "0" ]; then
-    echo "[STORAGE-SYSTEM]   Fixing permissions (running as root)..."
+    mkdir -p "$DATA_DIR"
     
-    # Clean metadata
+    # Clean metadata if exists
     if [ -d "$DATA_DIR/.minio.sys" ]; then
         echo "[STORAGE-SYSTEM]   Cleaning metadata..."
         rm -rf "$DATA_DIR/.minio.sys" 2>/dev/null || true
     fi
     
-    # Ensure directory exists
-    mkdir -p "$DATA_DIR"
+    # CRITICAL: MinIO needs write access to ALL subdirectories for multipart uploads
+    # Check if ownership is correct before doing expensive recursive chown
+    CURRENT_OWNER=$(stat -c '%u:%g' "$DATA_DIR" 2>/dev/null || stat -f '%u:%g' "$DATA_DIR" 2>/dev/null || echo "0:0")
+    TARGET_OWNER="${MINIO_UID}:${MINIO_GID}"
     
-    # FIX: Change ownership to palmr (using detected UID:GID)
-    chown -R ${MINIO_UID}:${MINIO_GID} "$DATA_DIR" 2>/dev/null || {
-        echo "[STORAGE-SYSTEM] ⚠️  chown -R failed, trying non-recursive..."
-        chown ${MINIO_UID}:${MINIO_GID} "$DATA_DIR" 2>/dev/null || true
-    }
+    if [ "$CURRENT_OWNER" != "$TARGET_OWNER" ] || [ -n "$(find "$DATA_DIR" -type f -o -type d ! -user ${MINIO_UID} 2>/dev/null | head -1)" ]; then
+        echo "[STORAGE-SYSTEM]   Fixing storage permissions recursively..."
+        chown -R ${MINIO_UID}:${MINIO_GID} "$DATA_DIR" 2>/dev/null || true
+        echo "[STORAGE-SYSTEM]   ✓ Permissions fixed (owner: ${MINIO_UID}:${MINIO_GID})"
+    else
+        echo "[STORAGE-SYSTEM]   ✓ Permissions already correct"
+    fi
     
     chmod 755 "$DATA_DIR" 2>/dev/null || true
-    
-    # Force filesystem sync to ensure changes are visible immediately
-    sync
-    
-    echo "[STORAGE-SYSTEM]   ✓ Permissions fixed (owner: ${MINIO_UID}:${MINIO_GID})"
 else
-    echo "[STORAGE-SYSTEM] ⚠️  WARNING: Not running as root, cannot fix permissions"
+    echo "[STORAGE-SYSTEM] ⚠️  WARNING: Not running as root"
 fi
 
 # Verify directory is writable (test as palmr with detected UID:GID)
