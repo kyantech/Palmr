@@ -8,7 +8,9 @@ set -e
 if [ "$ENABLE_S3" = "true" ]; then
   echo "[STORAGE-SYSTEM] External S3 enabled (ENABLE_S3=true)"
   echo "[STORAGE-SYSTEM] Skipping internal storage system"
-  # Sleep forever to keep supervisor happy (won't restart)
+  # Keep supervisor happy by sleeping forever instead of exiting
+  # This prevents supervisor from trying to restart the process
+  # Alternative would be to dynamically generate supervisord.conf, but this is simpler
   exec tail -f /dev/null
 fi
 

@@ -79,9 +79,11 @@ async function startServer() {
   if (isInternalStorage) {
     console.log("📦 Using internal storage (auto-configured)");
     if (!env.STORAGE_URL) {
-      console.log("⚠️  WARNING: STORAGE_URL not set for internal storage!");
-      console.log("⚠️  File uploads may fail. Set STORAGE_URL to your public storage URL.");
-      console.log("⚠️  Example: STORAGE_URL=https://storage.yourdomain.com:9379");
+      console.log(
+        "⚠️  WARNING: STORAGE_URL not set for internal storage!\n" +
+          "   File uploads may fail. Set STORAGE_URL to your public storage URL.\n" +
+          "   Example: STORAGE_URL=https://storage.yourdomain.com:9379"
+      );
     }
   } else if (isExternalS3) {
     console.log("📦 Using external S3 storage (AWS/S3-compatible)");
@@ -91,8 +93,10 @@ async function startServer() {
 
     // Warn if STORAGE_URL is set for external S3 (common mistake)
     if (env.STORAGE_URL) {
-      console.log("⚠️  WARNING: STORAGE_URL is set but not used with external S3 (ENABLE_S3=true)");
-      console.log("⚠️  STORAGE_URL is only needed for internal storage. You can remove it.");
+      console.log(
+        "⚠️  WARNING: STORAGE_URL is set but not used with external S3 (ENABLE_S3=true)\n" +
+          "   STORAGE_URL is only needed for internal storage. You can remove it."
+      );
     }
   } else {
     console.log("⚠️  WARNING: Storage not configured! Storage may not work.");
