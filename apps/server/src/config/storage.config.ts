@@ -1,9 +1,31 @@
 import * as fs from "fs";
 import process from "node:process";
-import { S3Client } from "@aws-sdk/client-s3";
+import { S3Client, S3ClientConfig } from "@aws-sdk/client-s3";
 
 import { env } from "../env";
 import { StorageConfig } from "../types/storage";
+
+/**
+ * Standard S3-compatible service domains that support virtual-hosted-style URLs.
+ * When using these services with forcePathStyle=false, the AWS SDK should
+ * construct the proper URL from the region, so we should NOT set an explicit endpoint.
+ * 
+ * Criteria for adding domains to this list:
+ * - The service must be a well-known, publicly accessible S3-compatible service
+ * - The service must support AWS SDK's automatic URL construction from region
+ * - The service must use standard S3 virtual-hosted-style URL format
+ * 
+ * Examples of services that should NOT be in this list:
+ * - Self-hosted MinIO, Garage, or other S3-compatible servers
+ * - Services that require custom endpoint configuration
+ * - Services that only support path-style URLs
+ */
+const STANDARD_S3_SERVICE_DOMAINS = [
+  ".amazonaws.com", // AWS S3
+  ".wasabisys.com", // Wasabi
+  ".backblazeb2.com", // Backblaze B2
+  ".digitaloceanspaces.com", // DigitalOcean Spaces
+] as const;
 
 /**
  * Load internal storage credentials if they exist
@@ -120,8 +142,6 @@ export function createPublicS3Client(): S3Client | null {
     return null;
   }
 
-  let publicEndpoint: string;
-
   if (isInternalStorage) {
     // Internal storage: use STORAGE_URL
     if (!env.STORAGE_URL) {
@@ -130,26 +150,53 @@ export function createPublicS3Client(): S3Client | null {
           "Set STORAGE_URL to your public storage URL with protocol (e.g., https://syrg.palmr.com or http://192.168.1.100:9379)"
       );
     }
-    publicEndpoint = env.STORAGE_URL;
-  } else {
-    // External S3: use the original endpoint configuration
-    publicEndpoint = storageConfig.useSSL
-      ? `https://${storageConfig.endpoint}${storageConfig.port ? `:${storageConfig.port}` : ""}`
-      : `http://${storageConfig.endpoint}${storageConfig.port ? `:${storageConfig.port}` : ""}`;
-  }
+    const publicEndpoint = env.STORAGE_URL;
 
-  return new S3Client({
-    endpoint: publicEndpoint,
-    region: storageConfig.region,
-    credentials: {
-      accessKeyId: storageConfig.accessKey,
-      secretAccessKey: storageConfig.secretKey,
-    },
-    forcePathStyle: storageConfig.forcePathStyle,
-    requestHandler: {
-      requestTimeout: 300000, // 5 minutes timeout for S3 operations
-    },
-    // Disable automatic checksums when configured (e.g., for Cloudflare R2 compatibility)
-    requestChecksumCalculation: storageConfig.disableChecksums ? "WHEN_REQUIRED" : "WHEN_SUPPORTED",
-  });
+    return new S3Client({
+      endpoint: publicEndpoint,
+      region: storageConfig.region,
+      credentials: {
+        accessKeyId: storageConfig.accessKey,
+        secretAccessKey: storageConfig.secretKey,
+      },
+      forcePathStyle: storageConfig.forcePathStyle,
+      requestHandler: {
+        requestTimeout: 300000, // 5 minutes timeout for S3 operations
+      },
+      // Disable automatic checksums when configured (e.g., for Cloudflare R2 compatibility)
+      requestChecksumCalculation: storageConfig.disableChecksums ? "WHEN_REQUIRED" : "WHEN_SUPPORTED",
+    });
+  } else {
+    // External S3
+    // When using virtual-hosted-style URLs (forcePathStyle=false) with standard S3-compatible services,
+    // we should NOT set an explicit endpoint. The SDK will construct the proper URL from the region.
+    // Only set endpoint for custom/self-hosted S3 services or when using path-style URLs.
+    const isStandardS3Service =
+      !storageConfig.forcePathStyle &&
+      storageConfig.endpoint &&
+      STANDARD_S3_SERVICE_DOMAINS.some((domain) => storageConfig.endpoint.endsWith(domain));
+
+    const clientConfig: S3ClientConfig = {
+      region: storageConfig.region,
+      credentials: {
+        accessKeyId: storageConfig.accessKey,
+        secretAccessKey: storageConfig.secretKey,
+      },
+      forcePathStyle: storageConfig.forcePathStyle,
+      requestHandler: {
+        requestTimeout: 300000, // 5 minutes timeout for S3 operations
+      },
+      // Disable automatic checksums when configured (e.g., for Cloudflare R2 compatibility)
+      requestChecksumCalculation: storageConfig.disableChecksums ? "WHEN_REQUIRED" : "WHEN_SUPPORTED",
+    };
+
+    // Only set endpoint for custom S3 services or path-style URLs
+    if (!isStandardS3Service) {
+      clientConfig.endpoint = storageConfig.useSSL
+        ? `https://${storageConfig.endpoint}${storageConfig.port ? `:${storageConfig.port}` : ""}`
+        : `http://${storageConfig.endpoint}${storageConfig.port ? `:${storageConfig.port}` : ""}`;
+    }
+
+    return new S3Client(clientConfig);
+  }
 }
