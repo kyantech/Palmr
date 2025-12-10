@@ -130,8 +130,8 @@ export function useUppyUpload(options: UseUppyUploadOptions) {
     // Files <100MB: Use simple PUT upload
     // Files ≥100MB: Use multipart chunked upload
     uppy.use(AwsS3, {
-      limit: 6, // Allow 6 concurrent part uploads
-      getChunkSize: () => 8 * 1024 * 1024, // 8MB chunk size
+      limit: 3, // Allow 3 concurrent part uploads (reduced for stability)
+      getChunkSize: () => 5 * 1024 * 1024, // 5MB chunk size (reduced for better performance)
       shouldUseMultipart: (file: any) => {
         const fileSize = file.size || 0;
         const useMultipart = fileSize >= UPLOAD_CONFIG.MULTIPART_THRESHOLD;
