@@ -42,6 +42,7 @@ To enable S3-compatible storage, set `ENABLE_S3=true` and configure the followin
 | `S3_BUCKET_NAME`         | Bucket/container name                    | Yes      | -                 |
 | `S3_FORCE_PATH_STYLE`    | Use path-style URLs                      | No       | `false`           |
 | `S3_REJECT_UNAUTHORIZED` | Enable strict SSL certificate validation | No       | `true`            |
+| `S3_DISABLE_CHECKSUMS`   | Disable automatic checksums (required for Cloudflare R2) | No | `false` |
 
 ## Provider configurations
 
@@ -172,6 +173,43 @@ S3_FORCE_PATH_STYLE=false
 - Significantly lower storage costs
 - Free egress to Cloudflare CDN
 - Pay-as-you-go pricing model
+
+### Cloudflare R2
+
+Cloudflare R2 offers zero-egress-fee object storage with global edge network integration.
+
+```bash
+ENABLE_S3=true
+S3_ENDPOINT=your-account-id.r2.cloudflarestorage.com
+S3_USE_SSL=true
+S3_ACCESS_KEY=your-r2-access-key-id
+S3_SECRET_KEY=your-r2-secret-access-key
+S3_REGION=auto
+S3_BUCKET_NAME=your-bucket-name
+S3_FORCE_PATH_STYLE=false
+S3_DISABLE_CHECKSUMS=true  # Required for R2 compatibility
+```
+
+**Important notes:**
+
+- **Must set `S3_DISABLE_CHECKSUMS=true`** - R2 has limited checksum support and will return `400 Bad Request` without this setting
+- R2 uses `auto` as the region value
+- Your endpoint includes your account ID: `https://your-account-id.r2.cloudflarestorage.com`
+- R2 only supports CRC32C checksums (not CRC32), so Palmr disables checksums when this flag is set
+
+**Benefits:**
+
+- Zero egress fees regardless of data transfer volume
+- Global edge network for low latency
+- S3-compatible API for easy migration
+- Integration with Cloudflare's CDN and Workers
+
+**Getting credentials:**
+
+1. Go to Cloudflare Dashboard → R2 → Overview
+2. Click "Manage R2 API Tokens"
+3. Create a new API token with R2 permissions
+4. Note your account ID from the R2 overview page
 
 ### Wasabi
 
@@ -351,6 +389,19 @@ S3_REJECT_UNAUTHORIZED=false
 - Ensure bucket exists and is accessible
 - Verify region settings match bucket location
 - Check bucket policies and ACL settings
+
+**Checksum errors (400 Bad Request):**
+
+If you're using Cloudflare R2 and encountering `400 Bad Request` errors during uploads, this is likely due to incompatible checksum algorithms. R2 has limited checksum support and only accepts CRC32C checksums.
+
+**Solution:**
+Set `S3_DISABLE_CHECKSUMS=true` in your environment variables:
+
+```bash
+S3_DISABLE_CHECKSUMS=true
+```
+
+This disables automatic checksum calculation, which resolves compatibility issues with R2 and other S3-compatible providers with limited checksum support.
 
 ## Testing your configuration
 
