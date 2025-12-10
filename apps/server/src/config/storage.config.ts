@@ -9,12 +9,22 @@ import { StorageConfig } from "../types/storage";
  * Standard S3-compatible service domains that support virtual-hosted-style URLs.
  * When using these services with forcePathStyle=false, the AWS SDK should
  * construct the proper URL from the region, so we should NOT set an explicit endpoint.
+ * 
+ * Criteria for adding domains to this list:
+ * - The service must be a well-known, publicly accessible S3-compatible service
+ * - The service must support AWS SDK's automatic URL construction from region
+ * - The service must use standard S3 virtual-hosted-style URL format
+ * 
+ * Examples of services that should NOT be in this list:
+ * - Self-hosted MinIO, Garage, or other S3-compatible servers
+ * - Services that require custom endpoint configuration
+ * - Services that only support path-style URLs
  */
 const STANDARD_S3_SERVICE_DOMAINS = [
-  ".amazonaws.com",
-  ".wasabisys.com",
-  ".backblazeb2.com",
-  ".digitaloceanspaces.com",
+  ".amazonaws.com", // AWS S3
+  ".wasabisys.com", // Wasabi
+  ".backblazeb2.com", // Backblaze B2
+  ".digitaloceanspaces.com", // DigitalOcean Spaces
 ] as const;
 
 /**
@@ -163,6 +173,7 @@ export function createPublicS3Client(): S3Client | null {
     // Only set endpoint for custom/self-hosted S3 services or when using path-style URLs.
     const isStandardS3Service =
       !storageConfig.forcePathStyle &&
+      storageConfig.endpoint &&
       STANDARD_S3_SERVICE_DOMAINS.some((domain) => storageConfig.endpoint.endsWith(domain));
 
     const clientConfig: S3ClientConfig = {
