@@ -395,6 +395,13 @@
     "viewMode": {
       "table": "Table",
       "grid": "Grid"
+    },
+    "sort": {
+      "name": "Name",
+      "date": "Date",
+      "size": "Size",
+      "ascending": "Sort Ascending",
+      "descending": "Sort Descending"
     }
   },
   "filesTable": {

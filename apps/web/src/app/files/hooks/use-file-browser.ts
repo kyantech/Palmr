@@ -72,6 +72,8 @@ export function useFileBrowser() {
   const [forceUpdate] = useState(0);
   const isNavigatingRef = useRef(false);
   const loadFilesRef = useRef<(() => Promise<void>) | null>(null);
+  const [sortBy, setSortBy] = useState<"name" | "date" | "size">("name");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   const urlFolderSlug = searchParams.get("folder") || null;
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
@@ -127,18 +129,38 @@ export function useFileBrowser() {
     return pathParts.join(" / ");
   }, []);
 
+  const sortItems = useCallback(
+    <T extends { name: string; createdAt: string; size?: number }>(items: T[]): T[] => {
+      return [...items].sort((a, b) => {
+        let comparison = 0;
+
+        switch (sortBy) {
+          case "name":
+            comparison = a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+            break;
+          case "date":
+            comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+            break;
+          case "size":
+            comparison = (a.size || 0) - (b.size || 0);
+            break;
+          default:
+            comparison = 0;
+        }
+
+        return sortOrder === "asc" ? comparison : -comparison;
+      });
+    },
+    [sortBy, sortOrder]
+  );
+
   const navigateToFolderDirect = useCallback(
     (targetFolderId: string | null) => {
       const currentFiles = allFiles.filter((file: any) => (file.folderId || null) === targetFolderId);
       const currentFolders = allFolders.filter((folder: any) => (folder.parentId || null) === targetFolderId);
 
-      const sortedFiles = [...currentFiles].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-
-      const sortedFolders = [...currentFolders].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+      const sortedFiles = sortItems(currentFiles);
+      const sortedFolders = sortItems(currentFolders);
 
       setFiles(sortedFiles);
       setFolders(sortedFolders);
@@ -163,14 +185,14 @@ export function useFileBrowser() {
       }
       window.history.pushState({}, "", `/files?${params.toString()}`);
     },
-    [allFiles, allFolders, buildBreadcrumbPath, searchParams, getFolderPathSlugFromId]
+    [allFiles, allFolders, buildBreadcrumbPath, searchParams, getFolderPathSlugFromId, sortItems]
   );
 
   const navigateToFolder = useCallback(
     (folderId?: string) => {
       const targetFolderId = folderId || null;
 
-      if (dataLoaded && allFiles.length > 0) {
+      if (dataLoaded) {
         isNavigatingRef.current = true;
         navigateToFolderDirect(targetFolderId);
         // Refresh data when navigating to ensure we have latest state
@@ -195,7 +217,7 @@ export function useFileBrowser() {
         router.push(`/files?${params.toString()}`);
       }
     },
-    [dataLoaded, allFiles.length, navigateToFolderDirect, searchParams, router, getFolderPathSlugFromId, allFolders]
+    [dataLoaded, navigateToFolderDirect, searchParams, router, getFolderPathSlugFromId, allFolders]
   );
 
   const navigateToRoot = useCallback(() => {
@@ -221,13 +243,8 @@ export function useFileBrowser() {
       const currentFiles = fetchedFiles.filter((file: any) => (file.folderId || null) === resolvedFolderId);
       const currentFolders = fetchedFolders.filter((folder: any) => (folder.parentId || null) === resolvedFolderId);
 
-      const sortedFiles = [...currentFiles].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-
-      const sortedFolders = [...currentFolders].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+      const sortedFiles = sortItems(currentFiles);
+      const sortedFolders = sortItems(currentFolders);
 
       setFiles(sortedFiles);
       setFolders(sortedFolders);
@@ -243,7 +260,7 @@ export function useFileBrowser() {
     } finally {
       setIsLoading(false);
     }
-  }, [urlFolderSlug, buildBreadcrumbPath, t, getFolderIdFromPathSlug]);
+  }, [urlFolderSlug, buildBreadcrumbPath, t, getFolderIdFromPathSlug, sortItems]);
 
   const handleImmediateUpdate = useCallback(
     (itemId: string, itemType: "file" | "folder", newParentId: string | null) => {
@@ -337,19 +354,18 @@ export function useFileBrowser() {
 
     return allFolders
       .filter((folder: any) => matchingItems.has(folder.id))
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [searchQuery, allFiles, allFolders, currentFolderId]);
 
   const filteredFiles = searchQuery
-    ? allFiles
-        .filter(
+    ? sortItems(
+        allFiles.filter(
           (file: any) =>
             file.name.toLowerCase().includes(searchQuery.toLowerCase()) && (file.folderId || null) === currentFolderId
         )
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      )
     : files;
 
-  const filteredFolders = searchQuery ? getImmediateChildFoldersWithMatches() : folders;
+  const filteredFolders = searchQuery ? sortItems(getImmediateChildFoldersWithMatches()) : folders;
 
   // Update loadFilesRef whenever loadFiles changes
   useEffect(() => {
@@ -395,6 +411,11 @@ export function useFileBrowser() {
     allFiles,
     allFolders,
     buildFolderPath,
+
+    sortBy,
+    sortOrder,
+    setSortBy,
+    setSortOrder,
   };
 }
 
