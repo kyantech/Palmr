@@ -130,7 +130,7 @@ export function useFileBrowser() {
   }, []);
 
   const sortItems = useCallback(
-    <T extends { name: string; createdAt: string; size?: number }>(items: T[]): T[] => {
+    <T extends { name: string; createdAt: string; size?: number | string }>(items: T[]): T[] => {
       return [...items].sort((a, b) => {
         let comparison = 0;
 
@@ -141,9 +141,13 @@ export function useFileBrowser() {
           case "date":
             comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
             break;
-          case "size":
-            comparison = (a.size || 0) - (b.size || 0);
+          case "size": {
+            // Handle both number and string sizes (for files and folders)
+            const aSize = typeof a.size === "number" ? a.size : 0;
+            const bSize = typeof b.size === "number" ? b.size : 0;
+            comparison = aSize - bSize;
             break;
+          }
           default:
             comparison = 0;
         }
@@ -352,8 +356,7 @@ export function useFileBrowser() {
         }
       });
 
-    return allFolders
-      .filter((folder: any) => matchingItems.has(folder.id))
+    return allFolders.filter((folder: any) => matchingItems.has(folder.id));
   }, [searchQuery, allFiles, allFolders, currentFolderId]);
 
   const filteredFiles = searchQuery
