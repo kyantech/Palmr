@@ -143,6 +143,8 @@ export function useFileBrowser() {
             break;
           case "size": {
             // Handle both number and string sizes (for files and folders)
+            // Files have numeric size, folders have string totalSize
+            // Folders are treated as size 0 for sorting (they don't have a meaningful comparable size)
             const aSize = typeof a.size === "number" ? a.size : 0;
             const bSize = typeof b.size === "number" ? b.size : 0;
             comparison = aSize - bSize;
