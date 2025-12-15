@@ -9,12 +9,12 @@ import { StorageConfig } from "../types/storage";
  * Standard S3-compatible service domains that support virtual-hosted-style URLs.
  * When using these services with forcePathStyle=false, the AWS SDK should
  * construct the proper URL from the region, so we should NOT set an explicit endpoint.
- * 
+ *
  * Criteria for adding domains to this list:
  * - The service must be a well-known, publicly accessible S3-compatible service
  * - The service must support AWS SDK's automatic URL construction from region
  * - The service must use standard S3 virtual-hosted-style URL format
- * 
+ *
  * Examples of services that should NOT be in this list:
  * - Self-hosted MinIO, Garage, or other S3-compatible servers
  * - Services that require custom endpoint configuration
