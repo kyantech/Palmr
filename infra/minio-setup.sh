@@ -58,12 +58,14 @@ if [ "$(id -u)" = "0" ]; then
     chown -R $TARGET_UID:$TARGET_GID /home/palmr 2>/dev/null || true
 fi
 
-# Run mc commands as target user
+# Run mc commands as target user with explicit config location
 run_as_target() {
     if [ "$(id -u)" = "0" ]; then
-        su-exec $TARGET_UID:$TARGET_GID "$@"
+        su-exec $TARGET_UID:$TARGET_GID \
+            env HOME="/home/palmr" MC_CONFIG_DIR="/home/palmr/.mc" \
+            "$@"
     else
-        "$@"
+        HOME="/home/palmr" MC_CONFIG_DIR="/home/palmr/.mc" "$@"
     fi
 }
 
