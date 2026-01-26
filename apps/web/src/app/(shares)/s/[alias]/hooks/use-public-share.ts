@@ -147,10 +147,14 @@ export function usePublicShare() {
 
         const shareFolderIds = new Set(allFolders.map((f) => f.id));
 
+        // Find root folders in the shared context
+        // Root is either folders with no parent OR folders whose parent is not in the share
         const folders = allFolders.filter((folder: any) => {
           if (folderId === null) {
+            // Show folders at the root of the share (no parent or parent not in share)
             return !folder.parentId || !shareFolderIds.has(folder.parentId);
           } else {
+            // Show folders that are direct children of the current folder
             return folder.parentId === folderId;
           }
         });
@@ -542,7 +546,8 @@ export function usePublicShare() {
       setCurrentFolderId(resolvedFolderId);
       loadFolderContents(resolvedFolderId);
     }
-  }, [share, loadFolderContents, urlFolderSlug, getFolderIdFromPathSlug]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [share, urlFolderSlug]);
 
   return {
     // Original functionality

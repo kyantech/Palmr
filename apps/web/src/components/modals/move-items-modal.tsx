@@ -136,19 +136,19 @@ export function MoveItemsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] w-full">
+      <DialogContent className="max-w-2xl max-h-[85vh] w-full flex flex-col">
         <DialogHeader>
           <DialogTitle>{title || t("moveItems.title", { count: itemCount })}</DialogTitle>
           <DialogDescription>{description || t("moveItems.description", { count: itemCount })}</DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4 flex-1 min-h-0 w-full overflow-hidden">
+        <div className="flex flex-col gap-4 flex-1 min-h-0 overflow-y-auto">
           {/* Items being moved */}
           <div className="text-sm">
             <div className="font-medium mb-2">{t("moveItems.itemsToMove")}</div>
-            <div className="max-h-20 overflow-y-auto text-muted-foreground">
+            <div className="max-h-20 overflow-y-auto text-muted-foreground border rounded-md p-2">
               {itemsToMove?.folders.map((folder) => (
-                <div key={folder.id} className="flex items-center gap-2 truncate">
+                <div key={folder.id} className="flex items-center gap-2 truncate py-1">
                   <IconFolder className="h-4 w-4 text-primary flex-shrink-0" />
                   <span className="truncate">{folder.name}</span>
                 </div>
@@ -156,7 +156,7 @@ export function MoveItemsModal({
               {itemsToMove?.files.map((file) => {
                 const { icon: FileIcon, color } = getFileIcon(file.name);
                 return (
-                  <div key={file.id} className="flex items-center gap-2 truncate">
+                  <div key={file.id} className="flex items-center gap-2 truncate py-1">
                     <FileIcon className={`h-4 w-4 ${color} flex-shrink-0`} />
                     <span className="truncate">{file.name}</span>
                   </div>
@@ -181,54 +181,55 @@ export function MoveItemsModal({
           {/* Destination Selection */}
           <div className="space-y-2">
             <Label>{t("folderActions.selectDestination")}</Label>
-            <div className="text-sm text-muted-foreground mb-2">
+            <div className="text-sm text-muted-foreground">
               {selectedItems.length > 0 && selectedItems[0] !== "root" ? (
                 <span>
-                  {t("moveItems.movingTo")} {selectedFolder}
+                  {t("moveItems.movingTo")} <strong>{selectedFolder}</strong>
                 </span>
               ) : (
                 <span>
-                  {t("moveItems.movingTo")} {t("folderActions.rootFolder")}
+                  {t("moveItems.movingTo")} <strong>{t("folderActions.rootFolder")}</strong>
                 </span>
               )}
             </div>
           </div>
 
           {/* Folder Tree */}
-          <div className="flex-1 min-h-0 w-full overflow-hidden">
+          <div className="flex-1 min-h-[200px] max-h-[350px] border rounded-md overflow-hidden">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="text-sm text-muted-foreground">{t("common.loadingSimple")}</div>
               </div>
             ) : (
-              <FileTree
-                files={[]}
-                folders={foldersWithRoot.map((folder: TreeFolder) => ({
-                  id: folder.id,
-                  name: folder.name,
-                  type: "folder" as const,
-                  parentId: folder.parentId || null,
-                  description: "",
-                  userId: "",
-                  createdAt: "",
-                  updatedAt: "",
-                  totalSize: folder.totalSize,
-                }))}
-                selectedItems={selectedItems}
-                onSelectionChange={handleSelectionChange}
-                showFiles={false}
-                showFolders={true}
-                maxHeight="300px"
-                singleSelection={true}
-                useCheckboxAsRadio={true}
-                searchQuery={searchQuery}
-                autoExpandToItem={firstItemToMove?.id || null}
-              />
+              <div className="h-full overflow-y-auto">
+                <FileTree
+                  files={[]}
+                  folders={foldersWithRoot.map((folder: TreeFolder) => ({
+                    id: folder.id,
+                    name: folder.name,
+                    type: "folder" as const,
+                    parentId: folder.parentId || null,
+                    description: "",
+                    userId: "",
+                    createdAt: "",
+                    updatedAt: "",
+                    totalSize: folder.totalSize,
+                  }))}
+                  selectedItems={selectedItems}
+                  onSelectionChange={handleSelectionChange}
+                  showFiles={false}
+                  showFolders={true}
+                  singleSelection={true}
+                  useCheckboxAsRadio={true}
+                  searchQuery={searchQuery}
+                  autoExpandToItem={firstItemToMove?.id || null}
+                />
+              </div>
             )}
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="mt-4">
           <Button variant="outline" onClick={handleClose} disabled={isMoving}>
             {t("common.cancel")}
           </Button>

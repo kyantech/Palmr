@@ -51,7 +51,7 @@ export class AuthProvidersController {
     // Handle multiple protocols in x-forwarded-proto (e.g., "https, https" from multiple proxies)
     const forwardedProto = request.headers["x-forwarded-proto"] as string;
     const protocol = forwardedProto ? forwardedProto.split(",")[0].trim() : request.protocol;
-    
+
     return {
       protocol,
       host: (request.headers["x-forwarded-host"] as string) || (request.headers.host as string),

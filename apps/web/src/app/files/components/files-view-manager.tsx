@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { IconLayoutGrid, IconSearch, IconTable } from "@tabler/icons-react";
+import { IconLayoutGrid, IconSearch, IconSortAscending, IconSortDescending, IconTable } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 import { FilesGridSkeleton, FilesTableSkeleton } from "@/components/skeletons";
@@ -7,6 +7,7 @@ import { FilesGrid } from "@/components/tables/files-grid";
 import { FilesTable } from "@/components/tables/files-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface File {
   id: string;
@@ -71,6 +72,10 @@ interface FilesViewManagerProps {
   setClearSelectionCallback?: (callback: () => void) => void;
   onUpdateFolderName?: (folderId: string, newName: string) => void;
   onUpdateFolderDescription?: (folderId: string, newDescription: string) => void;
+  sortBy?: "name" | "date" | "size";
+  sortOrder?: "asc" | "desc";
+  onSortByChange?: (sortBy: "name" | "date" | "size") => void;
+  onSortOrderChange?: (sortOrder: "asc" | "desc") => void;
 }
 
 export type ViewMode = "table" | "grid";
@@ -111,6 +116,10 @@ export function FilesViewManager({
   setClearSelectionCallback,
   onUpdateFolderName,
   onUpdateFolderDescription,
+  sortBy = "name",
+  sortOrder = "asc",
+  onSortByChange,
+  onSortOrderChange,
 }: FilesViewManagerProps) {
   const t = useTranslations();
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -173,7 +182,7 @@ export function FilesViewManager({
       <div className="flex items-center justify-between">
         <div className="flex-1 min-w-0">{breadcrumbs}</div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <div className="relative">
             <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -183,6 +192,34 @@ export function FilesViewManager({
               onChange={(e) => onSearch(e.target.value)}
               className="max-w-sm pl-10"
             />
+          </div>
+
+          {/* Sort Controls */}
+          <div className="flex items-center gap-2">
+            <Select value={sortBy} onValueChange={onSortByChange}>
+              <SelectTrigger size="sm" className="w-[130px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="name">{t("files.sort.name")}</SelectItem>
+                <SelectItem value="date">{t("files.sort.date")}</SelectItem>
+                <SelectItem value="size">{t("files.sort.size")}</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 px-3"
+              onClick={() => onSortOrderChange?.(sortOrder === "asc" ? "desc" : "asc")}
+              title={sortOrder === "asc" ? t("files.sort.ascending") : t("files.sort.descending")}
+            >
+              {sortOrder === "asc" ? (
+                <IconSortAscending className="h-4 w-4" />
+              ) : (
+                <IconSortDescending className="h-4 w-4" />
+              )}
+            </Button>
           </div>
 
           <div className="flex items-center border rounded-lg p-1">

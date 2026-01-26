@@ -74,6 +74,10 @@ export default function FilesPage() {
     modals,
     allFiles,
     allFolders,
+    sortBy,
+    sortOrder,
+    setSortBy,
+    setSortOrder,
   } = useFileBrowser();
 
   const handleMoveFile = (file: any) => {
@@ -208,6 +212,10 @@ export default function FilesPage() {
                   isLoading={isLoading}
                   onCreateFolder={() => fileManager.setCreateFolderModalOpen(true)}
                   onUpload={modals.onOpenUploadModal}
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSortByChange={setSortBy}
+                  onSortOrderChange={setSortOrder}
                   breadcrumbs={
                     <Breadcrumb>
                       <BreadcrumbList>
