@@ -33,6 +33,7 @@ workspace = true
 [dev-dependencies]
 http-body-util = "0.1"
 insta = "1"
+proptest = { version = "1", default-features = false, features = ["std"] }
 rstest = "0.27"
 thiserror = "2"
 tokio = { version = "1", features = ["macros", "rt"] }
