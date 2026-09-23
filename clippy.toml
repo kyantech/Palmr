@@ -1,0 +1,9 @@
+allow-unwrap-in-tests = true
+allow-expect-in-tests = true
+
+disallowed-methods = [
+    { path = "std::time::SystemTime::now", reason = "obtain time from the injected Clock; only SystemClock reads the wall clock (TEST_STRATEGY §10.4)" },
+    { path = "axum::body::to_bytes", reason = "buffers a whole body in memory; stream bytes instead (ADR 0008 §7)" },
+    { path = "tokio::fs::read", reason = "reads a whole file into memory; stream with a bounded buffer (ADR 0008 §7)" },
+    { path = "std::fs::read", reason = "reads a whole file into memory; stream with a bounded buffer (ADR 0008 §7)" },
+]

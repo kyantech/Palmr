@@ -8,3 +8,12 @@ edition = "2021"
 rust-version = "1.97.1"
 license = "AGPL-3.0-only"
 publish = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+all = { level = "deny", priority = -1 }
+dbg_macro = "deny"
+unwrap_used = "warn"
+expect_used = "warn"
