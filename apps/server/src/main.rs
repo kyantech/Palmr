@@ -12,6 +12,15 @@ mod config;
     )
 )]
 mod domain;
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        unused_imports,
+        reason = "telemetry is installed by the startup pipeline (ARCHITECTURE §8.1 step 2) wired in by M02-T09"
+    )
+)]
+mod infra;
 
 use clap::Parser;
 

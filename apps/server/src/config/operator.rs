@@ -11,6 +11,7 @@ use url::Url;
 
 use super::validate::{self, ConfigError};
 use crate::domain::secret::Secret;
+pub use crate::infra::telemetry::LogFormat;
 
 pub const STARTUP_BASE_URL_DEFAULTED: &str = "STARTUP_BASE_URL_DEFAULTED";
 
@@ -209,12 +210,6 @@ impl PublicBaseUrl {
 pub enum TrustProxy {
     Off,
     AllowList(Vec<IpNet>),
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum LogFormat {
-    Json,
-    Pretty,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -474,8 +469,8 @@ pub(super) mod tests {
         assert_eq!(s3.public_endpoint, None);
         assert_eq!(s3.region, "us-east-1");
         assert_eq!(s3.bucket, "palmr");
-        assert_eq!(s3.access_key.expose(), ACCESS_KEY);
-        assert_eq!(s3.secret_key.expose(), SECRET_KEY);
+        assert_eq!(s3.access_key.expose_secret(), ACCESS_KEY);
+        assert_eq!(s3.secret_key.expose_secret(), SECRET_KEY);
         assert!(s3.force_path_style);
         assert_eq!(s3.ca_file, None);
         assert_eq!(s3.tls_verification, S3TlsVerification::Enabled);
