@@ -25,9 +25,9 @@ use super::data_dir::{
     STARTUP_DATA_DIR_NOT_WRITABLE, STARTUP_UPLOADS_STORAGE_CROSS_DEVICE,
 };
 use super::{
-    application_router, bind, edge_router, log_config_warnings, log_startup_completed,
-    prepare_data, stop_accepting, warn_cross_device, BindError, Drain, FutureShutdownStep,
-    FutureStartupStep, Readiness, Server, ShutdownSignal, ShutdownSignals, StartupError,
+    bind, composed_router, edge_router, log_config_warnings, log_startup_completed, prepare_data,
+    stop_accepting, warn_cross_device, BindError, Drain, FutureShutdownStep, FutureStartupStep,
+    Readiness, Server, ShutdownSignal, ShutdownSignals, StartupError, EX_FAILURE,
     STARTUP_BIND_FAILED,
 };
 use crate::app::auth_class::AuthClass;
@@ -39,6 +39,10 @@ use crate::domain::clock::TestClock;
 use crate::infra::crypto::instance_key::{
     InstanceKeyError, INSTANCE_KEY_FILE, STARTUP_INSTANCE_KEY_INVALID,
 };
+use crate::infra::http::shell::tests::{base_hrefs, meta, scan, VITE_INDEX};
+use crate::infra::http::shell::ShellInitError;
+use crate::infra::http::static_assets::dist_directory::DistDirectory;
+use crate::infra::http::static_assets::StaticAssets;
 use crate::infra::telemetry::{build_dispatch, write_startup_failure};
 
 const ACCESS_KEY: &str = "AKIA-lifecycle-access-sentinel";
@@ -360,8 +364,13 @@ fn unit_bind_permission_denied_has_hint() {
 
 #[tokio::test]
 async fn it_startup_listener_serves_application_stack() {
+    let dist = TempDir::new().unwrap();
+    std::fs::write(dist.path().join("index.html"), VITE_INDEX).unwrap();
+    let config = config(&[("PALMR_BASE_URL", "https://files.example.test/palmr")]);
+    let assets =
+        StaticAssets::from_source(DistDirectory::at(dist.path()), &config.base_url).unwrap();
     let readiness = Readiness::new();
-    let router = application_router(&config(&[]), &readiness).unwrap();
+    let router = composed_router(&config, &readiness, assets).unwrap();
     let listener = bind(loopback()).await.unwrap();
     let server = Server::start(listener, router, &readiness).unwrap();
     assert!(readiness.is_ready());
@@ -381,9 +390,54 @@ async fn it_startup_listener_serves_application_stack() {
         assert_eq!(body["version"], VERSION, "{path}");
     }
 
+    let (head, body) = get_with(
+        server.address(),
+        "/workspaces",
+        "Accept: text/html\r\nX-Forwarded-Host: attacker.test\r\n",
+    )
+    .await;
+    assert!(head.starts_with("http/1.1 200"), "{head}");
+    assert!(head.contains("cache-control: no-cache"), "{head}");
+    let csp = head
+        .lines()
+        .find_map(|line| line.strip_prefix("content-security-policy: "))
+        .unwrap();
+    let nonce = csp
+        .split_once("script-src 'self' 'nonce-")
+        .and_then(|(_, rest)| rest.split_once('\''))
+        .map(|(nonce, _)| nonce)
+        .unwrap();
+    assert!(
+        csp.contains(&format!("style-src 'self' 'nonce-{nonce}'")),
+        "{csp}"
+    );
+    let nodes = scan(&body);
+    assert_eq!(meta(&nodes, "name", "csp-nonce"), [nonce]);
+    assert_eq!(base_hrefs(&nodes), ["/palmr/"]);
+
     assert_eq!(
         server.shutdown(Duration::from_secs(10)).await,
         Drain::Completed
+    );
+}
+
+#[test]
+fn it_startup_invalid_shell_fails_before_listening() {
+    let empty = TempDir::new().unwrap();
+    let config = config(&[]);
+    let error = StaticAssets::from_source(DistDirectory::at(empty.path()), &config.base_url)
+        .map(|_| ())
+        .map_err(StartupError::from)
+        .unwrap_err();
+    assert!(matches!(
+        error,
+        StartupError::Shell(ShellInitError::MissingIndex)
+    ));
+    assert_eq!(error.code(), None);
+    assert_eq!(error.exit_code(), EX_FAILURE);
+    assert_eq!(
+        error.to_string(),
+        "internal startup failure: the built SPA has no index.html"
     );
 }
 

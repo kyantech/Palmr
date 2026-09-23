@@ -6,5 +6,6 @@ pub mod panic;
 pub mod path;
 pub mod proxy;
 pub mod request_id;
+pub mod shell;
 pub mod static_assets;
 pub mod trace;

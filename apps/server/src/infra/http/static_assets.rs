@@ -10,10 +10,14 @@ use http::header::{
     ACCEPT, ALLOW, CACHE_CONTROL, CONTENT_LENGTH, CONTENT_TYPE, ETAG, IF_NONE_MATCH,
 };
 use http::{HeaderMap, HeaderValue, Method, StatusCode};
+use sha2::{Digest, Sha256};
 
 use super::encoding::response_compression;
 use super::error::ApiError;
+use super::headers::CspNonce;
 use super::request_id::{tag_error, RequestId};
+use super::shell::{ShellInitError, ShellMetadata, ShellRenderer};
+use crate::config::PublicBaseUrl;
 use crate::domain::error_code::ErrorCode;
 
 const INDEX_HTML: &str = "index.html";
@@ -43,6 +47,10 @@ impl AssetKey {
 
     fn as_str(&self) -> &str {
         &self.0
+    }
+
+    fn is_index(&self) -> bool {
+        self.0 == INDEX_HTML
     }
 
     fn is_hashed(&self) -> bool {
@@ -166,7 +174,7 @@ mod embedded {
 }
 
 #[cfg(any(feature = "dev-assets", test))]
-mod dist_directory {
+pub(crate) mod dist_directory {
     use std::fs::File;
     use std::io::{self, Read};
     use std::path::{Path, PathBuf};
@@ -247,17 +255,29 @@ mod dist_directory {
 #[derive(Clone)]
 pub struct StaticAssets {
     source: Arc<dyn AssetSource>,
+    shell: Arc<ShellRenderer>,
+    metadata: Arc<ShellMetadata>,
 }
 
 impl StaticAssets {
-    pub fn built() -> Self {
-        Self::from_source(BuiltDist::built())
+    pub fn built(base_url: &PublicBaseUrl) -> Result<Self, ShellInitError> {
+        Self::from_source(BuiltDist::built(), base_url)
     }
 
-    pub fn from_source(source: impl AssetSource) -> Self {
-        Self {
+    pub fn from_source(
+        source: impl AssetSource,
+        base_url: &PublicBaseUrl,
+    ) -> Result<Self, ShellInitError> {
+        let index = source
+            .load(&AssetKey::index())
+            .map_err(ShellInitError::UnreadableIndex)?
+            .ok_or(ShellInitError::MissingIndex)?;
+        let shell = ShellRenderer::new(&index.bytes, base_url)?;
+        Ok(Self {
             source: Arc::new(source),
-        }
+            shell: Arc::new(shell),
+            metadata: Arc::new(ShellMetadata::fresh_install()),
+        })
     }
 
     pub fn fallback(self) -> MethodRouter {
@@ -274,6 +294,7 @@ impl StaticAssets {
             Ok(Resolution::Asset { key, asset }) => {
                 respond_with_asset(request.method(), request.headers(), &key, asset)
             }
+            Ok(Resolution::Shell) => self.respond_with_shell(request),
             Ok(Resolution::NotFound) => {
                 tag_error(ApiError::new(ErrorCode::NotFound), request_id.as_ref()).into_response()
             }
@@ -300,6 +321,13 @@ impl StaticAssets {
         }
         let readable = matches!(*request.method(), Method::GET | Method::HEAD);
         if let Some(key) = AssetKey::from_request_path(path) {
+            if key.is_index() {
+                return Ok(if readable {
+                    Resolution::Shell
+                } else {
+                    Resolution::MethodNotAllowed
+                });
+            }
             if let Some(asset) = self.source.load(&key)? {
                 return Ok(if readable {
                     Resolution::Asset { key, asset }
@@ -308,19 +336,54 @@ impl StaticAssets {
                 });
             }
         }
-        if !readable || !accepts_html(request.headers()) {
-            return Ok(Resolution::NotFound);
-        }
-        let key = AssetKey::index();
-        Ok(match self.source.load(&key)? {
-            Some(asset) => Resolution::Asset { key, asset },
-            None => Resolution::NotFound,
+        Ok(if readable && accepts_html(request.headers()) {
+            Resolution::Shell
+        } else {
+            Resolution::NotFound
         })
+    }
+
+    // The body embeds this response's CSP nonce, so If-None-Match is ignored:
+    // a 304 would revive a cached shell whose nonce no longer matches the
+    // policy header sent with it.
+    fn respond_with_shell(&self, request: &Request) -> Response {
+        let request_id = RequestId::of(request);
+        let Some(nonce) = request.extensions().get::<CspNonce>() else {
+            tracing::error!("the SPA shell was requested without a CSP nonce");
+            return tag_error(ApiError::internal(), request_id.as_ref()).into_response();
+        };
+        let html = match self.shell.render_default(&self.metadata, nonce) {
+            Ok(html) => Bytes::from(html),
+            Err(error) => {
+                tracing::error!(error = %error, "the SPA shell could not be rendered");
+                return tag_error(ApiError::internal(), request_id.as_ref()).into_response();
+            }
+        };
+        let digest: [u8; 32] = Sha256::digest(&html).into();
+        let shell = Asset::new(html, digest);
+        let length = HeaderValue::from(shell.bytes.len());
+        let body = if request.method() == Method::HEAD {
+            Body::empty()
+        } else {
+            Body::from(shell.bytes)
+        };
+        (
+            StatusCode::OK,
+            [
+                (CONTENT_TYPE, AssetKey::index().content_type()),
+                (CONTENT_LENGTH, length),
+                (CACHE_CONTROL, REVALIDATE),
+                (ETAG, shell.etag),
+            ],
+            body,
+        )
+            .into_response()
     }
 }
 
 enum Resolution {
     Asset { key: AssetKey, asset: Asset },
+    Shell,
     NotFound,
     MethodNotAllowed,
 }

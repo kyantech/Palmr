@@ -1,14 +1,16 @@
 use std::convert::Infallible;
 use std::fs;
+use std::net::SocketAddr;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use axum::body::{Body, Bytes};
-use axum::extract::Request;
+use axum::extract::{ConnectInfo, Request};
 use axum::response::Response;
 use http::header::{
     ACCEPT, ACCEPT_ENCODING, ALLOW, CACHE_CONTROL, CONTENT_ENCODING, CONTENT_LENGTH,
-    CONTENT_SECURITY_POLICY, CONTENT_TYPE, ETAG, IF_NONE_MATCH, VARY,
+    CONTENT_SECURITY_POLICY, CONTENT_TYPE, ETAG, FORWARDED, HOST, IF_NONE_MATCH, ORIGIN, REFERER,
+    VARY,
 };
 use http::{HeaderMap, HeaderName, HeaderValue, Method, StatusCode};
 use http_body_util::{BodyExt, Limited};
@@ -25,17 +27,20 @@ use crate::app::health::Health;
 use crate::app::lifecycle::Readiness;
 use crate::app::router::{application_routes, serve_unmatched, with_middleware, HttpEdge};
 use crate::app::state::AppState;
-use crate::config::{ConfigWarning, EnvironmentSource, OperatorConfig, TrustProxy};
+use crate::config::{ConfigWarning, EnvironmentSource, OperatorConfig};
 use crate::domain::clock::TestClock;
 use crate::infra::http::headers::SecurityHeaders;
 use crate::infra::http::proxy::TrustedProxies;
+use crate::infra::http::shell::tests::{base_hrefs, meta, scan, titles, Node};
+use crate::infra::http::shell::ShellInitError;
 
 const X_REQUEST_ID: HeaderName = HeaderName::from_static("x-request-id");
 const BROWSER_NAVIGATION: &str =
     "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8";
 const BODY_CAP: usize = 1024 * 1024;
 
-const INDEX: &str = "<!doctype html><html><head><title>Palmr</title>\
+const INDEX: &str = "<!doctype html><html><head><meta charset=\"UTF-8\" />\
+    <base href=\"/\" /><title>Palmr</title><!--palmr:head-->\
     <script type=\"module\" crossorigin src=\"./assets/index-C0iiOcF1.js\"></script>\
     <link rel=\"stylesheet\" crossorigin href=\"./assets/index-B5BXDqMa.css\"></head>\
     <body><div id=\"root\"></div></body></html>";
@@ -105,24 +110,27 @@ fn empty_dist() -> Dist {
 fn app(
     dist: &Dist,
 ) -> impl Service<Request, Response = Response, Error = Infallible, Future: Send> + Clone {
+    app_with(dist, &[])
+}
+
+fn app_with(
+    dist: &Dist,
+    vars: &[(&str, &str)],
+) -> impl Service<Request, Response = Response, Error = Infallible, Future: Send> + Clone {
+    let config = OperatorConfig::load(&EnvironmentSource::from_vars(vars.iter().copied()))
+        .unwrap()
+        .config;
     let clock = Arc::new(TestClock::new(datetime!(2026-09-23 12:00 UTC)));
     let readiness = Readiness::new();
     readiness.set_for_test(true);
     let routes = application_routes().build().unwrap().router;
-    let router = serve_unmatched(
-        routes,
-        StaticAssets::from_source(DistDirectory::at(&dist.root)),
-    )
-    .with_state(AppState::new(clock.clone(), Health::new(readiness)));
-    let config = OperatorConfig::load(&EnvironmentSource::from_vars(std::iter::empty::<(
-        &str,
-        &str,
-    )>()))
-    .unwrap()
-    .config;
+    let assets =
+        StaticAssets::from_source(DistDirectory::at(&dist.root), &config.base_url).unwrap();
+    let router = serve_unmatched(routes, assets)
+        .with_state(AppState::new(clock.clone(), Health::new(readiness)));
     let edge = HttpEdge::new(
         clock,
-        TrustedProxies::new(&TrustProxy::Off),
+        TrustedProxies::new(&config.trust_proxy),
         SecurityHeaders::new(&config),
     );
     with_middleware(router, &edge)
@@ -149,7 +157,14 @@ impl Fetched {
 }
 
 async fn send(dist: &Dist, request: Request) -> Fetched {
-    let response = app(dist).oneshot(request).await.unwrap();
+    send_to(app(dist), request).await
+}
+
+async fn send_to(
+    app: impl Service<Request, Response = Response, Error = Infallible>,
+    request: Request,
+) -> Fetched {
+    let response = app.oneshot(request).await.unwrap();
     let (parts, body) = response.into_parts();
     let body = Limited::new(body, BODY_CAP)
         .collect()
@@ -218,11 +233,51 @@ fn assert_shell(fetched: &Fetched, context: &str) {
         "{context}"
     );
     assert_eq!(fetched.header(CACHE_CONTROL), "no-cache", "{context}");
-    assert_eq!(
+    assert_ne!(
         fetched.header(ETAG),
         weak_sha256(INDEX.as_bytes()),
         "{context}"
     );
+    if !fetched.body.is_empty() {
+        assert!(is_rendered_shell(&fetched.body), "{context}");
+        assert_eq!(
+            fetched.header(ETAG),
+            weak_sha256(&fetched.body),
+            "{context}"
+        );
+        assert_eq!(
+            fetched.header(CONTENT_LENGTH),
+            fetched.body.len().to_string(),
+            "{context}"
+        );
+    }
+}
+
+fn is_rendered_shell(body: &[u8]) -> bool {
+    let html = std::str::from_utf8(body).unwrap();
+    let nodes = scan(html);
+    !html.contains("<!--palmr:head-->")
+        && meta(&nodes, "name", "csp-nonce").len() == 1
+        && base_hrefs(&nodes).len() == 1
+        && titles(&nodes).len() == 1
+        && html.contains(
+            "<script type=\"module\" crossorigin src=\"./assets/index-C0iiOcF1.js\"></script>",
+        )
+        && html.contains("<div id=\"root\"></div>")
+}
+
+fn csp_nonces(csp: &str, directive: &str) -> Vec<String> {
+    csp.split(';')
+        .map(str::trim)
+        .filter(|entry| entry.split_whitespace().next() == Some(directive))
+        .flat_map(|entry| entry.split_whitespace().skip(1))
+        .filter_map(|source| source.strip_prefix("'nonce-")?.strip_suffix('\''))
+        .map(str::to_owned)
+        .collect()
+}
+
+fn shell_nodes(fetched: &Fetched) -> Vec<Node> {
+    scan(std::str::from_utf8(&fetched.body).unwrap())
 }
 
 fn assert_global_headers(fetched: &Fetched, context: &str) {
@@ -254,14 +309,14 @@ async fn it_spa_fallback_only_for_html_get() {
     ] {
         let fetched = navigate(&dist, Method::GET, path).await;
         assert_shell(&fetched, path);
-        assert_eq!(fetched.body, INDEX.as_bytes(), "{path}");
-        assert_eq!(fetched.header(CONTENT_LENGTH), INDEX.len().to_string());
+        assert!(!fetched.body.is_empty(), "{path}");
     }
 
+    let get = navigate(&dist, Method::GET, "/workspaces").await;
     let head = navigate(&dist, Method::HEAD, "/workspaces").await;
     assert_shell(&head, "HEAD /workspaces");
     assert!(head.body.is_empty());
-    assert_eq!(head.header(CONTENT_LENGTH), INDEX.len().to_string());
+    assert_eq!(head.header(CONTENT_LENGTH), get.body.len().to_string());
 
     for method in [
         Method::POST,
@@ -452,23 +507,30 @@ async fn it_index_html_no_cache() {
 
     let direct = send(&dist, request(Method::GET, "/index.html", Some("*/*"))).await;
     assert_shell(&direct, "GET /index.html Accept */*");
-
-    let mut conditional = request(Method::GET, "/overview", Some(BROWSER_NAVIGATION));
-    conditional.headers_mut().insert(
-        IF_NONE_MATCH,
-        HeaderValue::from_str(&format!("\"unrelated\", {}", weak_sha256(INDEX.as_bytes())))
-            .unwrap(),
+    let posted = send(&dist, request(Method::POST, "/index.html", None)).await;
+    assert_json_error(
+        &posted,
+        StatusCode::METHOD_NOT_ALLOWED,
+        "METHOD_NOT_ALLOWED",
+        "POST /index.html",
     );
-    let not_modified = send(&dist, conditional).await;
-    assert_eq!(not_modified.status, StatusCode::NOT_MODIFIED);
-    assert!(not_modified.body.is_empty());
-    assert_eq!(not_modified.header(CACHE_CONTROL), "no-cache");
 
-    let mut stale = request(Method::GET, "/overview", Some(BROWSER_NAVIGATION));
-    stale
-        .headers_mut()
-        .insert(IF_NONE_MATCH, HeaderValue::from_static("W/\"stale\""));
-    assert_shell(&send(&dist, stale).await, "stale validator");
+    let previous = navigate(&dist, Method::GET, "/overview").await;
+    for validator in [
+        weak_sha256(INDEX.as_bytes()),
+        format!("\"unrelated\", {}", weak_sha256(INDEX.as_bytes())),
+        previous.header(ETAG).to_owned(),
+        "*".to_owned(),
+        "W/\"stale\"".to_owned(),
+    ] {
+        let mut conditional = request(Method::GET, "/overview", Some(BROWSER_NAVIGATION));
+        conditional
+            .headers_mut()
+            .insert(IF_NONE_MATCH, HeaderValue::from_str(&validator).unwrap());
+        let fetched = send(&dist, conditional).await;
+        assert_shell(&fetched, &validator);
+        assert_ne!(fetched.header(ETAG), previous.header(ETAG), "{validator}");
+    }
 
     let favicon = send(&dist, request(Method::GET, "/favicon.ico", None)).await;
     assert_eq!(favicon.status, StatusCode::OK);
@@ -508,7 +570,7 @@ async fn it_static_paths_cannot_escape_the_build_root() {
         assert_json_error(&fetched, StatusCode::NOT_FOUND, "NOT_FOUND", path);
         let html = navigate(&dist, Method::GET, path).await;
         assert!(
-            html.status == StatusCode::NOT_FOUND || html.body == INDEX.as_bytes(),
+            html.status == StatusCode::NOT_FOUND || is_rendered_shell(&html.body),
             "{path}"
         );
         for body in [&fetched.body, &html.body] {
@@ -521,11 +583,179 @@ async fn it_static_paths_cannot_escape_the_build_root() {
     assert!(dist.outside.exists());
 }
 
-#[tokio::test]
-async fn it_missing_shell_is_json_not_found() {
+#[test]
+fn unit_missing_shell_fails_initialization() {
     let dist = empty_dist();
-    let fetched = navigate(&dist, Method::GET, "/workspaces").await;
-    assert_json_error(&fetched, StatusCode::NOT_FOUND, "NOT_FOUND", "no shell");
+    let config = OperatorConfig::load(&EnvironmentSource::from_vars(std::iter::empty::<(
+        &str,
+        &str,
+    )>()))
+    .unwrap()
+    .config;
+    assert!(matches!(
+        StaticAssets::from_source(DistDirectory::at(&dist.root), &config.base_url),
+        Err(ShellInitError::MissingIndex)
+    ));
+}
+
+#[tokio::test]
+async fn it_shell_csp_nonce_matches_header() {
+    let dist = built_dist();
+    let app = app(&dist);
+
+    let mut seen_nonces = Vec::new();
+    let mut seen_etags = Vec::new();
+    for path in ["/", "/workspaces", "/workspaces", "/login", "/index.html"] {
+        let fetched = send_to(
+            app.clone(),
+            request(Method::GET, path, Some(BROWSER_NAVIGATION)),
+        )
+        .await;
+        assert_shell(&fetched, path);
+        assert_global_headers(&fetched, path);
+
+        let csp = fetched.header(CONTENT_SECURITY_POLICY);
+        assert!(!csp.contains("unsafe-inline"), "{csp}");
+        let script = csp_nonces(csp, "script-src");
+        let style = csp_nonces(csp, "style-src");
+        assert_eq!(script.len(), 1, "{csp}");
+        assert_eq!(script, style, "{csp}");
+        let nonce = &script[0];
+        assert_eq!(nonce.len(), 32);
+        assert!(nonce.bytes().all(|byte| byte.is_ascii_hexdigit()));
+
+        let nodes = shell_nodes(&fetched);
+        assert_eq!(
+            meta(&nodes, "name", "csp-nonce"),
+            [nonce.as_str()],
+            "{path}"
+        );
+        let body = std::str::from_utf8(&fetched.body).unwrap();
+        assert_eq!(body.matches(nonce.as_str()).count(), 1, "{path}");
+
+        seen_nonces.push(nonce.clone());
+        seen_etags.push(fetched.header(ETAG).to_owned());
+    }
+    for seen in [&mut seen_nonces, &mut seen_etags] {
+        let count = seen.len();
+        seen.sort_unstable();
+        seen.dedup();
+        assert_eq!(seen.len(), count, "{seen:?}");
+    }
+
+    let head = send_to(
+        app.clone(),
+        request(Method::HEAD, "/workspaces", Some(BROWSER_NAVIGATION)),
+    )
+    .await;
+    assert_shell(&head, "HEAD /workspaces");
+    assert!(head.body.is_empty());
+    let head_nonces = csp_nonces(head.header(CONTENT_SECURITY_POLICY), "script-src");
+    assert_eq!(head_nonces.len(), 1);
+    assert!(!seen_nonces.contains(&head_nonces[0]));
+    assert!(!seen_etags.contains(&head.header(ETAG).to_owned()));
+
+    let mut compressed = request(Method::GET, "/workspaces", Some(BROWSER_NAVIGATION));
+    compressed
+        .headers_mut()
+        .insert(ACCEPT_ENCODING, HeaderValue::from_static("gzip"));
+    let compressed = send_to(app, compressed).await;
+    assert_eq!(compressed.status, StatusCode::OK);
+    assert_eq!(compressed.header(CACHE_CONTROL), "no-cache");
+    assert_eq!(
+        csp_nonces(compressed.header(CONTENT_SECURITY_POLICY), "style-src").len(),
+        1
+    );
+}
+
+#[tokio::test]
+async fn it_shell_base_href_from_base_url_subpath() {
+    let dist = built_dist();
+    let cases: [(&[(&str, &str)], &str); 7] = [
+        (&[], "/"),
+        (&[("PALMR_BASE_URL", "https://example.test")], "/"),
+        (&[("PALMR_BASE_URL", "https://example.test/")], "/"),
+        (
+            &[("PALMR_BASE_URL", "https://example.test/palmr")],
+            "/palmr/",
+        ),
+        (
+            &[("PALMR_BASE_URL", "https://example.test/palmr/")],
+            "/palmr/",
+        ),
+        (
+            &[
+                ("PALMR_BASE_URL", "https://example.test/palmr/"),
+                ("PALMR_TRUST_PROXY", "127.0.0.1"),
+            ],
+            "/palmr/",
+        ),
+        (
+            &[("PALMR_BASE_URL", "https://example.test/apps/palmr")],
+            "/apps/palmr/",
+        ),
+    ];
+    let hostile: [(HeaderName, &str); 9] = [
+        (HOST, "attacker.test"),
+        (ORIGIN, "https://attacker.test"),
+        (REFERER, "https://attacker.test/attacker-prefix/"),
+        (FORWARDED, "for=203.0.113.9;host=attacker.test;proto=http"),
+        (HeaderName::from_static("x-forwarded-host"), "attacker.test"),
+        (HeaderName::from_static("x-forwarded-proto"), "http"),
+        (
+            HeaderName::from_static("x-forwarded-prefix"),
+            "/attacker-prefix",
+        ),
+        (HeaderName::from_static("x-forwarded-for"), "203.0.113.9"),
+        (
+            HeaderName::from_static("x-original-url"),
+            "/attacker-prefix/",
+        ),
+    ];
+
+    for (vars, expected) in cases {
+        let app = app_with(&dist, vars);
+        for path in ["/", "/files/deep/link", "/palmr/settings"] {
+            let context = format!("{vars:?} {path}");
+            let plain = send_to(
+                app.clone(),
+                request(Method::GET, path, Some(BROWSER_NAVIGATION)),
+            )
+            .await;
+            assert_shell(&plain, &context);
+            let nodes = shell_nodes(&plain);
+            assert_eq!(base_hrefs(&nodes), [expected], "{context}");
+
+            let mut spoofed = request(Method::GET, path, Some(BROWSER_NAVIGATION));
+            for (name, value) in &hostile {
+                spoofed
+                    .headers_mut()
+                    .insert(name, HeaderValue::from_static(value));
+            }
+            spoofed
+                .extensions_mut()
+                .insert(ConnectInfo(SocketAddr::from(([127, 0, 0, 1], 40_000))));
+            let spoofed = send_to(app.clone(), spoofed).await;
+            assert_shell(&spoofed, &context);
+            let body = std::str::from_utf8(&spoofed.body).unwrap();
+            assert!(!body.contains("attacker"), "{context}: {body}");
+            assert!(!body.contains("://"), "{context}: {body}");
+            let spoofed_nodes = shell_nodes(&spoofed);
+            assert_eq!(base_hrefs(&spoofed_nodes), [expected], "{context}");
+
+            let first_url = spoofed_nodes
+                .iter()
+                .position(|node| matches!(node, Node::Open { attributes, .. } if attributes.iter().any(|(name, _)| name == "src" || name == "href")))
+                .unwrap();
+            assert!(matches!(&spoofed_nodes[first_url], Node::Open { name, .. } if name == "base"));
+            assert_eq!(titles(&spoofed_nodes), ["Palmr"], "{context}");
+            assert_eq!(
+                meta(&spoofed_nodes, "name", "description"),
+                ["Self-hosted file transfer"]
+            );
+            assert_eq!(meta(&spoofed_nodes, "property", "og:site_name"), ["Palmr"]);
+        }
+    }
 }
 
 #[rstest]
