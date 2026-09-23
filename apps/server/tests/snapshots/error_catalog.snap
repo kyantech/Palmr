@@ -1,0 +1,95 @@
+---
+source: apps/server/src/domain/error_code.rs
+---
+[
+  {
+    "code": "BATCH_TOO_LARGE",
+    "status": 422,
+    "retryable": false
+  },
+  {
+    "code": "CSRF_TOKEN_INVALID",
+    "status": 403,
+    "retryable": false
+  },
+  {
+    "code": "CSRF_TOKEN_MISSING",
+    "status": 403,
+    "retryable": false
+  },
+  {
+    "code": "CURSOR_INVALID",
+    "status": 400,
+    "retryable": false
+  },
+  {
+    "code": "DATABASE_BUSY",
+    "status": 503,
+    "retryable": true
+  },
+  {
+    "code": "FEATURE_UNAVAILABLE_SMTP",
+    "status": 409,
+    "retryable": false
+  },
+  {
+    "code": "FORBIDDEN",
+    "status": 403,
+    "retryable": false
+  },
+  {
+    "code": "IDEMPOTENCY_KEY_CONFLICT",
+    "status": 409,
+    "retryable": false
+  },
+  {
+    "code": "IDEMPOTENCY_REQUEST_IN_PROGRESS",
+    "status": 409,
+    "retryable": true
+  },
+  {
+    "code": "INTERNAL_ERROR",
+    "status": 500,
+    "retryable": true
+  },
+  {
+    "code": "METHOD_NOT_ALLOWED",
+    "status": 405,
+    "retryable": false
+  },
+  {
+    "code": "NOT_FOUND",
+    "status": 404,
+    "retryable": false
+  },
+  {
+    "code": "ORIGIN_NOT_ALLOWED",
+    "status": 403,
+    "retryable": false
+  },
+  {
+    "code": "RATE_LIMITED",
+    "status": 429,
+    "retryable": true
+  },
+  {
+    "code": "SERVICE_UNAVAILABLE",
+    "status": 503,
+    "retryable": true
+  },
+  {
+    "code": "SETUP_ALREADY_COMPLETED",
+    "status": 409,
+    "retryable": false
+  },
+  {
+    "code": "UNSUPPORTED_MEDIA_TYPE",
+    "status": 415,
+    "retryable": false
+  },
+  {
+    "code": "VALIDATION_ERROR",
+    "status": 422,
+    "retryable": false
+  }
+]

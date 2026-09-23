@@ -11,18 +11,26 @@ name = "palmr"
 path = "src/main.rs"
 
 [dependencies]
+anyhow = "1"
+axum = { version = "0.8", default-features = false }
 clap = { version = "4", features = ["derive"] }
 figment = { version = "0.10", default-features = false }
+http = "1"
 ipnet = "2"
+serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 time = { version = "0.3", default-features = false, features = ["std", "formatting", "parsing", "macros"] }
 tracing = { version = "0.1", default-features = false, features = ["std"] }
 tracing-subscriber = { version = "0.3", default-features = false, features = ["ansi", "env-filter", "fmt", "std"] }
 url = "2"
+utoipa = "5"
 uuid = { version = "1", default-features = false, features = ["std", "v7"] }
 
 [lints]
 workspace = true
 
 [dev-dependencies]
+http-body-util = "0.1"
+insta = "1"
 rstest = "0.27"
+thiserror = "2"
