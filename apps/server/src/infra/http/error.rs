@@ -10,7 +10,7 @@ use crate::domain::error_code::ErrorCode;
 
 pub const MAX_DETAIL_ENTRIES: usize = 8;
 
-const JSON_CONTENT_TYPE: &str = "application/json; charset=utf-8";
+pub(crate) const JSON_CONTENT_TYPE: &str = "application/json; charset=utf-8";
 
 // Keys and text values are `&'static str` so runtime strings — source error
 // messages, user input, paths, credentials — cannot reach `details`.

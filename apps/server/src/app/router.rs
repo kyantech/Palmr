@@ -16,6 +16,7 @@ use utoipa::openapi::OpenApi;
 use utoipa_axum::router::{OpenApiRouter, UtoipaMethodRouter};
 
 use super::auth_class::AuthClass;
+use super::health;
 use super::state::AppState;
 use crate::domain::clock::Clock;
 use crate::infra::http::encoding::{
@@ -27,7 +28,7 @@ use crate::infra::http::panic::catch_panic;
 use crate::infra::http::path::normalize_path;
 use crate::infra::http::proxy::{resolve_client, TrustedProxies};
 use crate::infra::http::request_id::{assign_request_id, RequestIdSource};
-use crate::infra::http::trace::{record_route, trace_request};
+use crate::infra::http::trace::{record_route, trace_request, RequestLog};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum RateLimitClass {
@@ -249,6 +250,7 @@ pub struct RoutePolicy {
     rate_limit: RateLimitClass,
     transport: Transport,
     security: SecurityPolicy,
+    request_log: RequestLog,
 }
 
 impl RoutePolicy {
@@ -258,11 +260,17 @@ impl RoutePolicy {
             rate_limit,
             transport,
             security: SecurityPolicy::Default,
+            request_log: RequestLog::Standard,
         }
     }
 
     pub const fn with_security(mut self, security: SecurityPolicy) -> Self {
         self.security = security;
+        self
+    }
+
+    pub const fn with_request_log(mut self, request_log: RequestLog) -> Self {
+        self.request_log = request_log;
         self
     }
 
@@ -280,6 +288,10 @@ impl RoutePolicy {
 
     pub const fn security(&self) -> SecurityPolicy {
         self.security
+    }
+
+    pub const fn request_log(&self) -> RequestLog {
+        self.request_log
     }
 }
 
@@ -474,7 +486,9 @@ where
         }
 
         if errors.is_empty() {
-            let handler = policy.security.apply(layers.apply(handler));
+            let handler = policy
+                .request_log
+                .apply(policy.security.apply(layers.apply(handler)));
             self.router = self.router.routes((schemas, paths, handler));
             self.entries
                 .extend(declared.into_iter().map(|entry| (entry.key(), entry)));
@@ -524,7 +538,7 @@ where
 }
 
 pub fn application_routes() -> Routes<AppState> {
-    Routes::new()
+    Routes::new().merge(health::routes())
 }
 
 #[derive(Clone)]
@@ -630,6 +644,7 @@ mod tests {
     };
     use crate::app::auth_class::AuthClass;
     use crate::infra::http::limits::{BodyLimit, ControlPlaneLimits, CONTROL_PLANE_BODY_LIMIT};
+    use crate::infra::http::trace::RequestLog;
 
     #[utoipa::path(get, path = "/test/items", responses((status = 200)))]
     async fn list_items() -> StatusCode {
@@ -1006,6 +1021,20 @@ mod tests {
         );
         assert_eq!(transport.deadline(), Deadline::ControlPlane);
         assert!(!transport.is_byte_path());
+    }
+
+    #[test]
+    fn unit_request_log_is_standard_unless_declared() {
+        let policy = RoutePolicy::new(
+            AuthClass::Public,
+            RateLimitClass::Read,
+            Transport::ControlPlane,
+        );
+        assert_eq!(policy.request_log(), RequestLog::Standard);
+        assert_eq!(
+            policy.with_request_log(RequestLog::Polled).request_log(),
+            RequestLog::Polled
+        );
     }
 
     #[test]

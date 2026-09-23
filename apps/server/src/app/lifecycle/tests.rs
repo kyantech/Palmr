@@ -6,13 +6,16 @@ use std::sync::{Arc, Mutex, PoisonError};
 use std::task::Poll;
 use std::time::{Duration, Instant};
 
+use axum::extract::{Request, State};
+use axum::middleware::{from_fn_with_state, Next};
+use axum::response::Response;
 use axum::Extension;
 use serde_json::{Map, Value};
 use tempfile::TempDir;
 use time::macros::datetime;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
-use tokio::sync::{oneshot, Notify};
+use tokio::sync::{mpsc, oneshot, Notify, Semaphore};
 use tracing_subscriber::filter::EnvFilter;
 use tracing_subscriber::fmt::MakeWriter;
 use utoipa_axum::routes;
@@ -28,7 +31,9 @@ use super::{
     STARTUP_BIND_FAILED,
 };
 use crate::app::auth_class::AuthClass;
-use crate::app::router::{RateLimitClass, RoutePolicy, Routes, Transport};
+use crate::app::health::{Health, VERSION};
+use crate::app::router::{application_routes, RateLimitClass, RoutePolicy, Routes, Transport};
+use crate::app::state::AppState;
 use crate::config::{EnvironmentSource, LogFormat, OperatorConfig};
 use crate::domain::clock::TestClock;
 use crate::infra::crypto::instance_key::{
@@ -116,11 +121,17 @@ fn loopback() -> SocketAddr {
 }
 
 async fn get(address: SocketAddr, path: &str) -> (String, String) {
+    get_with(address, path, "").await
+}
+
+async fn get_with(address: SocketAddr, path: &str, extra_headers: &str) -> (String, String) {
     let mut stream = TcpStream::connect(address).await.unwrap();
     stream
         .write_all(
-            format!("GET {path} HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n")
-                .as_bytes(),
+            format!(
+                "GET {path} HTTP/1.1\r\nHost: localhost\r\n{extra_headers}Connection: close\r\n\r\n"
+            )
+            .as_bytes(),
         )
         .await
         .unwrap();
@@ -350,7 +361,7 @@ fn unit_bind_permission_denied_has_hint() {
 #[tokio::test]
 async fn it_startup_listener_serves_application_stack() {
     let readiness = Readiness::new();
-    let router = application_router(&config(&[])).unwrap();
+    let router = application_router(&config(&[]), &readiness).unwrap();
     let listener = bind(loopback()).await.unwrap();
     let server = Server::start(listener, router, &readiness).unwrap();
     assert!(readiness.is_ready());
@@ -362,14 +373,107 @@ async fn it_startup_listener_serves_application_stack() {
     assert!(head.contains("x-request-id:"), "{head}");
 
     for path in ["/health", "/health/live", "/health/ready"] {
-        let (head, _) = get(server.address(), path).await;
-        assert!(head.starts_with("http/1.1 404"), "{path}: {head}");
+        let (head, body) = get(server.address(), path).await;
+        assert!(head.starts_with("http/1.1 200"), "{path}: {head}");
+        assert!(head.contains("content-security-policy:"), "{path}: {head}");
+        assert!(head.contains("x-request-id:"), "{path}: {head}");
+        let body: Value = serde_json::from_str(&body).unwrap();
+        assert_eq!(body["version"], VERSION, "{path}");
     }
 
     assert_eq!(
         server.shutdown(Duration::from_secs(10)).await,
         Drain::Completed
     );
+}
+
+const HOLD_HEADER: &str = "x-test-hold";
+
+#[derive(Clone)]
+struct Gate {
+    entered: mpsc::UnboundedSender<()>,
+    release: Arc<Semaphore>,
+}
+
+async fn hold_marked_requests(State(gate): State<Gate>, request: Request, next: Next) -> Response {
+    if request.headers().contains_key(HOLD_HEADER) {
+        let _ = gate.entered.send(());
+        gate.release.acquire().await.unwrap().forget();
+    }
+    next.run(request).await
+}
+
+#[tokio::test]
+async fn it_health_ready_false_during_shutdown() {
+    let clock = Arc::new(TestClock::new(datetime!(2026-09-23 12:00 UTC)));
+    let readiness = Readiness::new();
+    let (entered_tx, mut entered) = mpsc::unbounded_channel();
+    let release = Arc::new(Semaphore::new(0));
+    let routes = application_routes()
+        .build()
+        .unwrap()
+        .router
+        .with_state(AppState::new(clock.clone(), Health::new(readiness.clone())))
+        .layer(from_fn_with_state(
+            Gate {
+                entered: entered_tx,
+                release: Arc::clone(&release),
+            },
+            hold_marked_requests,
+        ));
+    let router = edge_router(routes, &config(&[]), clock);
+    let listener = bind(loopback()).await.unwrap();
+    let server = Server::start(listener, router, &readiness).unwrap();
+    let address = server.address();
+
+    let (head, body) = get(address, "/health/ready").await;
+    assert!(head.starts_with("http/1.1 200"), "{head}");
+    assert_eq!(
+        serde_json::from_str::<Value>(&body).unwrap(),
+        serde_json::json!({ "status": "ready", "version": VERSION })
+    );
+
+    let held_paths = ["/health/ready", "/health", "/health/live"];
+    let held: Vec<_> = held_paths
+        .iter()
+        .map(|path| tokio::spawn(get_with(address, path, "x-test-hold: 1\r\n")))
+        .collect();
+    for _ in held_paths {
+        entered.recv().await.unwrap();
+    }
+    assert!(readiness.is_ready());
+
+    let draining = tokio::spawn(server.shutdown(Duration::from_secs(10)));
+    while readiness.is_ready() {
+        tokio::task::yield_now().await;
+    }
+    assert!(!draining.is_finished());
+    release.add_permits(held_paths.len());
+
+    let mut responses = Vec::new();
+    for request in held {
+        let (head, body) = request.await.unwrap();
+        responses.push((head, serde_json::from_str::<Value>(&body).unwrap()));
+    }
+    let [(ready_head, ready), (summary_head, summary), (live_head, live)] =
+        <[_; 3]>::try_from(responses).unwrap();
+    assert!(ready_head.starts_with("http/1.1 503"), "{ready_head}");
+    assert_eq!(
+        ready,
+        serde_json::json!({ "status": "not_ready", "version": VERSION })
+    );
+    assert!(summary_head.starts_with("http/1.1 503"), "{summary_head}");
+    assert_eq!(summary["status"], "not_ready");
+    assert_eq!(summary["live"], true);
+    assert_eq!(summary["ready"], false);
+    assert!(live_head.starts_with("http/1.1 200"), "{live_head}");
+    assert_eq!(
+        live,
+        serde_json::json!({ "status": "ok", "version": VERSION })
+    );
+
+    assert_eq!(draining.await.unwrap(), Drain::Completed);
+    assert!(TcpStream::connect(address).await.is_err());
 }
 
 #[tokio::test]

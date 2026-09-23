@@ -18,6 +18,7 @@ use tokio::task::JoinHandle;
 use self::data_dir::{
     apply_process_umask, CrossDevice, DataDir, DataDirError, STARTUP_UPLOADS_STORAGE_CROSS_DEVICE,
 };
+use super::health::Health;
 use super::router::{application_routes, with_middleware, HttpEdge, RouteBuildError};
 use super::state::AppState;
 use crate::config::{
@@ -248,10 +249,6 @@ impl Readiness {
         Self::default()
     }
 
-    #[cfg_attr(
-        not(test),
-        expect(dead_code, reason = "read by the readiness endpoint")
-    )]
     pub fn is_ready(&self) -> bool {
         self.0.load(Ordering::SeqCst)
     }
@@ -262,6 +259,11 @@ impl Readiness {
 
     fn mark_not_ready(&self) {
         self.0.store(false, Ordering::SeqCst);
+    }
+
+    #[cfg(test)]
+    pub(crate) fn set_for_test(&self, ready: bool) {
+        self.0.store(ready, Ordering::SeqCst);
     }
 }
 
@@ -453,20 +455,26 @@ fn prepare_data(root: &Path) -> Result<(DataDir, InstanceKey), StartupError> {
 }
 
 async fn listen(config: &OperatorConfig, readiness: &Readiness) -> Result<Server, StartupError> {
-    let router = application_router(config)?;
+    let router = application_router(config, readiness)?;
     let address = SocketAddr::new(config.host, config.port);
     let listener = bind(address).await?;
     Server::start(listener, router, readiness)
         .map_err(|source| StartupError::Bind(BindError { address, source }))
 }
 
-fn application_router(config: &OperatorConfig) -> Result<axum::Router, StartupError> {
+fn application_router(
+    config: &OperatorConfig,
+    readiness: &Readiness,
+) -> Result<axum::Router, StartupError> {
     let clock: Arc<dyn Clock> = Arc::new(SystemClock);
     let routes = application_routes()
         .build()
         .map_err(StartupError::Router)?
         .router
-        .with_state(AppState::new(Arc::clone(&clock)));
+        .with_state(AppState::new(
+            Arc::clone(&clock),
+            Health::new(readiness.clone()),
+        ));
     Ok(edge_router(routes, config, clock))
 }
 
