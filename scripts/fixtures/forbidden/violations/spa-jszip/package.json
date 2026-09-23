@@ -1,0 +1,6 @@
+{
+  "name": "web",
+  "dependencies": {
+    "jszip": "^3.10.1"
+  }
+}

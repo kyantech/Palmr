@@ -1,0 +1,10 @@
+{
+  "name": "web",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "antd": "^6.6.5",
+    "react": "^19.3.0"
+  }
+}

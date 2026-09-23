@@ -1,0 +1,6 @@
+{
+  "name": "web",
+  "scripts": {
+    "start": "node --expose-gc server.js"
+  }
+}
