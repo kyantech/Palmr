@@ -23,6 +23,7 @@ mod config;
     )
 )]
 mod domain;
+mod features;
 #[cfg_attr(
     not(test),
     expect(

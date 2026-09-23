@@ -1,5 +1,6 @@
 pub mod encoding;
 pub mod error;
+pub mod etag;
 pub mod headers;
 pub mod limits;
 pub mod panic;

@@ -1,0 +1,4 @@
+GET /health public
+GET /health/live public
+GET /health/ready public
+GET /manifest.webmanifest public

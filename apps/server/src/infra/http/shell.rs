@@ -16,7 +16,7 @@ const HEAD_OPEN: &str = "<head>";
 const HEAD_CLOSE: &str = "</head>";
 const URL_ATTRIBUTES: [&str; 3] = ["href", "src", "srcset"];
 
-const FRESH_INSTALL_APP_NAME: &str = "Palmr";
+pub(crate) const FRESH_INSTALL_APP_NAME: &str = "Palmr";
 const FRESH_INSTALL_APP_DESCRIPTION: &str = "Self-hosted file transfer";
 const PROBE_NONCE: &str = "00000000000000000000000000000000";
 

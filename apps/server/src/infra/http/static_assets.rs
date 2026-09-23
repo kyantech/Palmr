@@ -1,4 +1,3 @@
-use std::fmt::Write;
 use std::io;
 use std::sync::Arc;
 
@@ -6,14 +5,13 @@ use axum::body::{Body, Bytes};
 use axum::extract::Request;
 use axum::response::{IntoResponse, Response};
 use axum::routing::{any, MethodRouter};
-use http::header::{
-    ACCEPT, ALLOW, CACHE_CONTROL, CONTENT_LENGTH, CONTENT_TYPE, ETAG, IF_NONE_MATCH,
-};
+use http::header::{ACCEPT, ALLOW, CACHE_CONTROL, CONTENT_LENGTH, CONTENT_TYPE, ETAG};
 use http::{HeaderMap, HeaderValue, Method, StatusCode};
 use sha2::{Digest, Sha256};
 
 use super::encoding::response_compression;
 use super::error::ApiError;
+use super::etag::{matches_validator, weak_etag_from_sha256};
 use super::headers::CspNonce;
 use super::request_id::{tag_error, RequestId};
 use super::shell::{ShellInitError, ShellMetadata, ShellRenderer};
@@ -103,18 +101,11 @@ pub struct Asset {
 }
 
 impl Asset {
-    // Weak because response compression re-encodes the body without touching
-    // this header, so one validator names both the identity and the encoded
-    // representation; weak comparison is what If-None-Match uses anyway.
     fn new(bytes: Bytes, sha256: [u8; 32]) -> Self {
-        let mut tag = String::with_capacity(68);
-        tag.push_str("W/\"");
-        for byte in sha256 {
-            let _ = write!(tag, "{byte:02x}");
+        Self {
+            bytes,
+            etag: weak_etag_from_sha256(sha256),
         }
-        tag.push('"');
-        let etag = HeaderValue::try_from(tag).unwrap_or(HeaderValue::from_static("W/\"\""));
-        Self { bytes, etag }
     }
 }
 
@@ -417,24 +408,6 @@ fn is_zero_quality(parameter: &str) -> bool {
     name.trim().eq_ignore_ascii_case("q")
         && value.starts_with('0')
         && value.bytes().all(|byte| matches!(byte, b'0' | b'.'))
-}
-
-fn matches_validator(headers: &HeaderMap, etag: &HeaderValue) -> bool {
-    let Ok(etag) = etag.to_str() else {
-        return false;
-    };
-    let current = opaque_tag(etag);
-    headers
-        .get_all(IF_NONE_MATCH)
-        .iter()
-        .filter_map(|value| value.to_str().ok())
-        .flat_map(|value| value.split(','))
-        .map(str::trim)
-        .any(|candidate| candidate == "*" || opaque_tag(candidate) == current)
-}
-
-fn opaque_tag(tag: &str) -> &str {
-    tag.strip_prefix("W/").unwrap_or(tag)
 }
 
 fn respond_with_asset(

@@ -20,6 +20,7 @@ use super::health;
 use super::state::AppState;
 use crate::domain::clock::Clock;
 use crate::domain::error_code::ErrorCode;
+use crate::features::branding;
 use crate::infra::http::encoding::{
     reject_undecodable_body, request_decompression, response_compression,
 };
@@ -541,7 +542,9 @@ where
 }
 
 pub fn application_routes() -> Routes<AppState> {
-    Routes::new().merge(health::routes())
+    Routes::new()
+        .merge(health::routes())
+        .merge(branding::routes::routes())
 }
 
 // Call only after every route is merged: axum attaches the 405 fallback to
