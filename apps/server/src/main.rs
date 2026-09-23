@@ -1,23 +1,25 @@
+#[cfg(not(unix))]
+compile_error!("Palmr runs on Unix-like operating systems only");
+
 #[cfg_attr(
     not(test),
     expect(
         dead_code,
-        reason = "the router is assembled once the startup pipeline is wired in"
+        reason = "route policy primitives are consumed as feature routes are registered"
     )
 )]
 mod app;
 #[expect(
     dead_code,
     unused_imports,
-    reason = "OperatorConfig is consumed once the startup pipeline is wired in"
+    reason = "configuration fields are consumed by later startup steps"
 )]
 mod config;
 #[cfg_attr(
     not(test),
     expect(
         dead_code,
-        unused_imports,
-        reason = "domain primitives are consumed once the startup pipeline is wired in"
+        reason = "domain primitives are consumed by feature modules"
     )
 )]
 mod domain;
@@ -26,25 +28,74 @@ mod domain;
     expect(
         dead_code,
         unused_imports,
-        reason = "telemetry is installed once the startup pipeline is wired in"
+        reason = "infrastructure primitives are consumed by feature modules"
     )
 )]
 mod infra;
 
-use clap::Parser;
+use std::io;
+use std::process::ExitCode;
+
+use clap::{Parser, Subcommand};
+
+use app::lifecycle::{self, ShutdownSignals};
+use config::EnvironmentSource;
+use infra::telemetry::write_startup_failure;
 
 /// Palmr — self-hosted file sharing.
 #[derive(Debug, Parser)]
 #[command(name = "palmr", version)]
-struct Cli {}
+struct Cli {
+    #[command(subcommand)]
+    command: Option<Command>,
+}
 
-fn main() {
-    Cli::parse();
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Subcommand)]
+enum Command {
+    /// Run the Palmr server (the default when no command is given).
+    #[default]
+    Serve,
+}
+
+fn main() -> ExitCode {
+    match Cli::parse().command.unwrap_or_default() {
+        Command::Serve => serve(),
+    }
+}
+
+fn serve() -> ExitCode {
+    let runtime = match tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+    {
+        Ok(runtime) => runtime,
+        Err(error) => return bootstrap_failed("the async runtime could not be started", &error),
+    };
+    runtime.block_on(async {
+        let signals = match ShutdownSignals::install() {
+            Ok(signals) => signals,
+            Err(error) => {
+                return bootstrap_failed(
+                    "the shutdown signal handlers could not be installed",
+                    &error,
+                )
+            }
+        };
+        lifecycle::run(&EnvironmentSource::from_process(), signals).await
+    })
+}
+
+fn bootstrap_failed(context: &str, error: &io::Error) -> ExitCode {
+    let _ = write_startup_failure(
+        &mut io::stderr().lock(),
+        &format_args!("{context}: {error}"),
+    );
+    ExitCode::FAILURE
 }
 
 #[cfg(test)]
 mod tests {
-    use super::Cli;
+    use super::{Cli, Command};
     use clap::{error::ErrorKind, CommandFactory, Parser};
 
     #[test]
@@ -58,5 +109,27 @@ mod tests {
             err.render().to_string(),
             format!("palmr {}\n", env!("CARGO_PKG_VERSION"))
         );
+    }
+
+    #[test]
+    fn unit_cli_serve_is_the_default_command() {
+        let bare = Cli::try_parse_from(["palmr"]).unwrap();
+        assert_eq!(bare.command, None);
+        assert_eq!(bare.command.unwrap_or_default(), Command::Serve);
+
+        let explicit = Cli::try_parse_from(["palmr", "serve"]).unwrap();
+        assert_eq!(explicit.command, Some(Command::Serve));
+    }
+
+    #[test]
+    fn unit_cli_has_no_other_commands() {
+        let names: Vec<String> = Cli::command()
+            .get_subcommands()
+            .map(|command| command.get_name().to_owned())
+            .collect();
+        assert_eq!(names, ["serve"]);
+
+        let err = Cli::try_parse_from(["palmr", "admin"]).unwrap_err();
+        assert_eq!(err.kind(), ErrorKind::InvalidSubcommand);
     }
 }
