@@ -24,6 +24,7 @@ tracing = { version = "0.1", default-features = false, features = ["std"] }
 tracing-subscriber = { version = "0.3", default-features = false, features = ["ansi", "env-filter", "fmt", "std"] }
 url = "2"
 utoipa = "5"
+utoipa-axum = "0.2"
 uuid = { version = "1", default-features = false, features = ["std", "v7"] }
 
 [lints]
@@ -34,3 +35,5 @@ http-body-util = "0.1"
 insta = "1"
 rstest = "0.27"
 thiserror = "2"
+tokio = { version = "1", features = ["macros", "rt"] }
+tower = { version = "0.5", features = ["util"] }

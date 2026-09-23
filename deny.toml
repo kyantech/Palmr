@@ -4,7 +4,10 @@ all-features = true
 [advisories]
 version = 2
 yanked = "deny"
-ignore = []
+unused-ignored-advisory = "deny"
+ignore = [
+    { id = "RUSTSEC-2024-0436", reason = "Transitive via utoipa-axum 0.2.x; informational unmaintained advisory with no patched paste release; remove when the accepted utoipa stack no longer depends on paste" },
+]
 
 [licenses]
 version = 2

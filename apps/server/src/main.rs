@@ -1,7 +1,15 @@
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "the router is assembled once the startup pipeline is wired in"
+    )
+)]
+mod app;
 #[expect(
     dead_code,
     unused_imports,
-    reason = "OperatorConfig is consumed by the startup pipeline (ARCHITECTURE §8.1) wired in by later M02 tasks"
+    reason = "OperatorConfig is consumed once the startup pipeline is wired in"
 )]
 mod config;
 #[cfg_attr(
@@ -18,7 +26,7 @@ mod domain;
     expect(
         dead_code,
         unused_imports,
-        reason = "telemetry is installed by the startup pipeline (ARCHITECTURE §8.1 step 2) wired in by M02-T09"
+        reason = "telemetry is installed once the startup pipeline is wired in"
     )
 )]
 mod infra;
