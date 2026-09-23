@@ -1,3 +1,18 @@
+#[expect(
+    dead_code,
+    unused_imports,
+    reason = "OperatorConfig is consumed by the startup pipeline (ARCHITECTURE §8.1) wired in by later M02 tasks"
+)]
+mod config;
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "Secret is consumed through OperatorConfig until the startup pipeline is wired in"
+    )
+)]
+mod domain;
+
 use clap::Parser;
 
 /// Palmr — self-hosted file sharing.

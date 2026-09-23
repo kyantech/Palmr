@@ -12,6 +12,12 @@ path = "src/main.rs"
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
+figment = { version = "0.10", default-features = false }
+ipnet = "2"
+url = "2"
 
 [lints]
 workspace = true
+
+[dev-dependencies]
+rstest = "0.27"
