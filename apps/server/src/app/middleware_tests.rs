@@ -8,7 +8,8 @@ use axum::extract::{ConnectInfo, Request};
 use axum::response::{IntoResponse, Response};
 use axum::Extension;
 use http::header::{
-    HeaderName, ACCEPT_ENCODING, CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_TYPE, ORIGIN,
+    HeaderName, ACCEPT_ENCODING, CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_SECURITY_POLICY,
+    CONTENT_TYPE, ORIGIN,
 };
 use http::{Method, StatusCode};
 use http_body_util::{BodyExt, Limited};
@@ -24,11 +25,12 @@ use uuid::Uuid;
 
 use super::auth_class::AuthClass;
 use super::router::{
-    with_middleware, BytePath, Deadline, HttpEdge, RateLimitClass, RequestBody, ResponseEncoding,
-    RoutePolicy, Routes, Transport,
+    application_routes, with_middleware, BytePath, Deadline, HttpEdge, RateLimitClass, RequestBody,
+    ResponseEncoding, RouteError, RoutePolicy, Routes, Transport,
 };
-use crate::config::{LogFormat, TrustProxy};
+use crate::config::{EnvironmentSource, LogFormat, OperatorConfig, TrustProxy};
 use crate::domain::clock::TestClock;
+use crate::infra::http::headers::{CspNonce, SecurityHeaders, SecurityPolicy};
 use crate::infra::http::limits::{BodyLimit, ControlPlaneLimits};
 use crate::infra::http::proxy::{ResolvedClient, TrustedProxies};
 use crate::infra::http::request_id::RequestId;
@@ -44,6 +46,12 @@ const RESPONSE_READ_CAP: usize = 8 * 1024 * 1024;
 const CONTROL_PLANE: RoutePolicy = RoutePolicy::new(
     AuthClass::Public,
     RateLimitClass::Read,
+    Transport::ControlPlane,
+);
+
+const PUBLIC_READ: RoutePolicy = RoutePolicy::new(
+    AuthClass::Public,
+    RateLimitClass::PublicRead,
     Transport::ControlPlane,
 );
 
@@ -147,6 +155,31 @@ async fn object_bytes() -> Response {
         .into_response()
 }
 
+#[utoipa::path(get, path = "/test/nonce", responses((status = 200)))]
+async fn shell_nonce(Extension(nonce): Extension<CspNonce>) -> Response {
+    json_response(&json!({ "nonce": nonce.as_str() }))
+}
+
+#[utoipa::path(get, path = "/e/{token}", params(("token" = String, Path)), responses((status = 200)))]
+async fn embed_viewer() -> Response {
+    object_bytes().await
+}
+
+#[utoipa::path(get, path = "/api/v1/public/embeds/{token}", params(("token" = String, Path)), responses((status = 200)))]
+async fn embed_metadata() -> Response {
+    json_response(&json!({ "contentType": "image/png" }))
+}
+
+#[utoipa::path(get, path = "/api/v1/public/shares/{alias}", params(("alias" = String, Path)), responses((status = 200)))]
+async fn public_share() -> Response {
+    json_response(&json!({ "alias": "share" }))
+}
+
+#[utoipa::path(get, path = "/test/embed-lookalike", responses((status = 200)))]
+async fn embed_lookalike() -> Response {
+    json_response(&json!({}))
+}
+
 fn test_routes(limits: ControlPlaneLimits) -> Routes<()> {
     Routes::with_limits(limits)
         .route(CONTROL_PLANE, routes!(echo))
@@ -157,13 +190,35 @@ fn test_routes(limits: ControlPlaneLimits) -> Routes<()> {
         .route(UPLOAD, routes!(stream_body))
         .route(DOWNLOAD, routes!(slow_download))
         .route(DOWNLOAD, routes!(object_bytes))
+        .route(CONTROL_PLANE, routes!(shell_nonce))
+        .route(
+            DOWNLOAD.with_security(SecurityPolicy::Embed),
+            routes!(embed_viewer),
+        )
+        .route(
+            PUBLIC_READ.with_security(SecurityPolicy::Embed),
+            routes!(embed_metadata),
+        )
+        .route(PUBLIC_READ, routes!(public_share))
+        .route(PUBLIC_READ, routes!(embed_lookalike))
 }
 
-fn edge() -> HttpEdge {
+fn operator_config(vars: &[(&str, &str)]) -> OperatorConfig {
+    OperatorConfig::load(&EnvironmentSource::from_vars(vars.iter().copied()))
+        .unwrap()
+        .config
+}
+
+fn edge_with(security: SecurityHeaders) -> HttpEdge {
     HttpEdge::new(
         Arc::new(TestClock::new(datetime!(2026-09-23 12:00 UTC))),
         TrustedProxies::new(&TrustProxy::AllowList(vec!["10.0.0.0/8".parse().unwrap()])),
+        security,
     )
+}
+
+fn edge() -> HttpEdge {
+    edge_with(SecurityHeaders::new(&operator_config(&[])))
 }
 
 fn app_with(
@@ -691,43 +746,308 @@ async fn it_path_is_normalized_before_routing() {
     assert_eq!(response.status(), StatusCode::NOT_FOUND);
 }
 
+const EVIL_ORIGIN: &str = "https://evil.example";
+const PALMR_HEADERS: [&str; 6] = [
+    "content-security-policy",
+    "x-content-type-options",
+    "referrer-policy",
+    "cross-origin-resource-policy",
+    "cross-origin-opener-policy",
+    "permissions-policy",
+];
+
+fn canonical_csp(nonce: &str) -> String {
+    format!(
+        "default-src 'self'; script-src 'self' 'nonce-{nonce}'; style-src 'self' 'nonce-{nonce}'; \
+         img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self'; \
+         object-src 'self'; frame-src 'self'; form-action 'self'; base-uri 'self'; \
+         frame-ancestors 'none'"
+    )
+}
+
+fn csp(response: &Response) -> &str {
+    response.headers()[CONTENT_SECURITY_POLICY]
+        .to_str()
+        .unwrap()
+}
+
+fn directive<'a>(policy: &'a str, name: &str) -> &'a str {
+    policy
+        .split("; ")
+        .find(|directive| directive.split(' ').next() == Some(name))
+        .unwrap_or_else(|| panic!("{name} missing from {policy}"))
+}
+
+fn csp_nonce(response: &Response) -> String {
+    let policy = csp(response);
+    let nonce = directive(policy, "script-src")
+        .strip_prefix("script-src 'self' 'nonce-")
+        .and_then(|rest| rest.strip_suffix('\''))
+        .unwrap_or_else(|| panic!("no nonce in {policy}"))
+        .to_owned();
+    assert_eq!(
+        directive(policy, "style-src"),
+        format!("style-src 'self' 'nonce-{nonce}'")
+    );
+    nonce
+}
+
+fn assert_strict_security_headers(response: &Response) {
+    let headers = response.headers();
+    for name in PALMR_HEADERS {
+        assert_eq!(headers.get_all(name).iter().count(), 1, "{name}");
+    }
+    assert_eq!(headers["x-content-type-options"], "nosniff");
+    assert_eq!(
+        headers["referrer-policy"],
+        "strict-origin-when-cross-origin"
+    );
+    assert_eq!(headers["cross-origin-resource-policy"], "same-origin");
+    assert_eq!(headers["cross-origin-opener-policy"], "same-origin");
+    assert_eq!(
+        headers["permissions-policy"],
+        "camera=(), microphone=(), geolocation=(), payment=()"
+    );
+    let nonce = csp_nonce(response);
+    assert_eq!(csp(response), canonical_csp(&nonce));
+    assert!(!csp(response).contains("'unsafe-inline'"));
+}
+
 #[tokio::test]
-async fn it_no_cors_or_security_headers_are_emitted() {
+async fn it_security_headers_present() {
+    let oversized = vec![b'a'; TWO_MIB + 1];
+    let outcomes = [
+        (get("/test/echo"), StatusCode::OK),
+        (
+            request(Method::GET, "/test/large", UNTRUSTED_PEER)
+                .header(ACCEPT_ENCODING, "gzip")
+                .body(Body::empty())
+                .unwrap(),
+            StatusCode::OK,
+        ),
+        (get("/test/object"), StatusCode::OK),
+        (get("/test/missing"), StatusCode::NOT_FOUND),
+        (
+            request(Method::DELETE, "/test/echo", UNTRUSTED_PEER)
+                .body(Body::empty())
+                .unwrap(),
+            StatusCode::METHOD_NOT_ALLOWED,
+        ),
+        (
+            request(Method::POST, "/test/body", UNTRUSTED_PEER)
+                .header(CONTENT_LENGTH, oversized.len())
+                .body(Body::from(oversized))
+                .unwrap(),
+            StatusCode::PAYLOAD_TOO_LARGE,
+        ),
+        (get("/test/panic"), StatusCode::INTERNAL_SERVER_ERROR),
+    ];
+    for (request, status) in outcomes {
+        let uri = request.uri().clone();
+        let response = send(request).await;
+        assert_eq!(response.status(), status, "{uri}");
+        assert_strict_security_headers(&response);
+    }
+}
+
+#[tokio::test(start_paused = true)]
+async fn it_security_headers_present_on_deadline_failure() {
+    let response = send(get("/test/slow/31")).await;
+    assert_eq!(response.status(), StatusCode::REQUEST_TIMEOUT);
+    assert_strict_security_headers(&response);
+}
+
+#[tokio::test]
+async fn it_csp_nonce_changes_per_response() {
+    let mut seen = std::collections::BTreeSet::new();
+    for _ in 0..8 {
+        let response = send(
+            request(Method::GET, "/test/nonce", TRUSTED_PROXY)
+                .header(X_REQUEST_ID, "same-request-id")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await;
+        assert_eq!(header_request_id(&response), "same-request-id");
+        let nonce = csp_nonce(&response);
+        assert!(!nonce.contains("same-request-id"));
+        assert_eq!(json_body(response).await["nonce"], nonce.as_str());
+        assert!(seen.insert(nonce));
+    }
+}
+
+#[tokio::test]
+async fn it_s3_public_origin_in_data_plane_directives() {
+    let security = SecurityHeaders::new(&operator_config(&[
+        ("PALMR_STORAGE_PROVIDER", "s3"),
+        ("PALMR_S3_ENDPOINT", "http://minio:9000"),
+        ("PALMR_S3_PUBLIC_ENDPOINT", "https://files.example.com:9443"),
+        ("PALMR_S3_REGION", "us-east-1"),
+        ("PALMR_S3_BUCKET", "palmr"),
+        ("PALMR_S3_ACCESS_KEY", "AKIAEXAMPLEACCESS"),
+        ("PALMR_S3_SECRET_KEY", "example-secret-key-value"),
+    ]));
+    let app = with_middleware(
+        test_routes(ControlPlaneLimits::default())
+            .build()
+            .unwrap()
+            .router,
+        &edge_with(security),
+    );
+    let response = app
+        .oneshot(
+            request(Method::GET, "/test/echo", UNTRUSTED_PEER)
+                .header("host", "attacker.example")
+                .header("x-forwarded-host", "attacker.example")
+                .header("forwarded", "host=attacker.example")
+                .header(ORIGIN, EVIL_ORIGIN)
+                .header("referer", "https://attacker.example/page")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let policy = csp(&response);
+    let origin = "https://files.example.com:9443";
+    assert_eq!(
+        directive(policy, "connect-src"),
+        format!("connect-src 'self' {origin}")
+    );
+    assert_eq!(
+        directive(policy, "img-src"),
+        format!("img-src 'self' data: blob: {origin}")
+    );
+    assert_eq!(
+        directive(policy, "media-src"),
+        format!("media-src 'self' blob: {origin}")
+    );
+    assert_eq!(policy.matches(origin).count(), 3);
+    assert!(!policy.contains("minio"));
+    assert!(!policy.contains("attacker"));
+    assert!(!policy.contains("evil"));
+}
+
+#[tokio::test]
+async fn it_no_route_relaxes_frame_ancestors_except_embeds() {
+    let production = application_routes().build().unwrap().inventory;
+    assert_eq!(
+        production
+            .entries()
+            .iter()
+            .filter(|entry| entry.policy().security() == SecurityPolicy::Embed)
+            .count(),
+        0
+    );
+    for entry in production.entries() {
+        assert!(entry.policy().security().permits_path(entry.path()));
+    }
+
+    let inventory = test_routes(ControlPlaneLimits::default())
+        .build()
+        .unwrap()
+        .inventory;
+    let embeds: Vec<&str> = inventory
+        .entries()
+        .iter()
+        .filter(|entry| entry.policy().security() == SecurityPolicy::Embed)
+        .map(|entry| entry.path())
+        .collect();
+    assert_eq!(embeds, ["/api/v1/public/embeds/{token}", "/e/{token}"]);
+
+    for (uri, relaxed) in [
+        ("/e/AbC", true),
+        ("/api/v1/public/embeds/AbC", true),
+        ("/api/v1/public/shares/abc", false),
+        ("/test/embed-lookalike", false),
+        ("/test/echo", false),
+        ("/e/AbC/extra", false),
+        ("/e", false),
+        ("/api/v1/public/embeds", false),
+    ] {
+        let response = send(get(uri)).await;
+        let nonce = csp_nonce(&response);
+        let headers = response.headers();
+        if relaxed {
+            assert_eq!(response.status(), StatusCode::OK, "{uri}");
+            assert_eq!(
+                csp(&response),
+                canonical_csp(&nonce).replace("frame-ancestors 'none'", "frame-ancestors *"),
+                "{uri}"
+            );
+            assert_eq!(headers["cross-origin-resource-policy"], "cross-origin");
+        } else {
+            assert_strict_security_headers(&response);
+        }
+        assert_eq!(headers["cross-origin-opener-policy"], "same-origin");
+    }
+
+    let error = Routes::<()>::new()
+        .route(
+            PUBLIC_READ.with_security(SecurityPolicy::Embed),
+            routes!(public_share),
+        )
+        .build()
+        .err()
+        .unwrap();
+    assert_eq!(
+        error.errors(),
+        [RouteError::EmbedPolicyOutsideEmbedRoutes {
+            method: Method::GET,
+            path: "/api/v1/public/shares/{alias}".to_owned(),
+        }]
+    );
+}
+
+#[tokio::test]
+async fn it_cors_not_origin_reflecting() {
     let preflight = send(
         request(Method::OPTIONS, "/test/echo", UNTRUSTED_PEER)
-            .header(ORIGIN, "https://evil.test")
+            .header(ORIGIN, EVIL_ORIGIN)
             .header("access-control-request-method", "GET")
+            .header("access-control-request-headers", "x-csrf-token")
             .body(Body::empty())
             .unwrap(),
     )
     .await;
     let simple = send(
         request(Method::GET, "/test/echo", UNTRUSTED_PEER)
-            .header(ORIGIN, "https://evil.test")
+            .header(ORIGIN, EVIL_ORIGIN)
+            .body(Body::empty())
+            .unwrap(),
+    )
+    .await;
+    let credentialed = send(
+        request(Method::POST, "/test/body", UNTRUSTED_PEER)
+            .header(ORIGIN, "null")
+            .header("cookie", "palmr_session=value")
+            .body(Body::from("{}"))
+            .unwrap(),
+    )
+    .await;
+    let embed = send(
+        request(Method::GET, "/e/AbC", UNTRUSTED_PEER)
+            .header(ORIGIN, EVIL_ORIGIN)
+            .body(Body::empty())
+            .unwrap(),
+    )
+    .await;
+    let missing = send(
+        request(Method::GET, "/test/missing", UNTRUSTED_PEER)
+            .header(ORIGIN, EVIL_ORIGIN)
             .body(Body::empty())
             .unwrap(),
     )
     .await;
 
-    for response in [&preflight, &simple] {
-        for (name, _) in response.headers() {
-            let name = name.as_str();
-            assert!(!name.starts_with("access-control-"), "{name}");
-            assert!(
-                ![
-                    "content-security-policy",
-                    "x-content-type-options",
-                    "referrer-policy",
-                    "cross-origin-resource-policy",
-                    "cross-origin-opener-policy",
-                    "permissions-policy",
-                    "x-frame-options",
-                    "strict-transport-security",
-                ]
-                .contains(&name),
-                "{name}"
-            );
+    for response in [&preflight, &simple, &credentialed, &embed, &missing] {
+        for (name, value) in response.headers() {
+            assert!(!name.as_str().starts_with("access-control-"), "{name}");
+            let value = value.to_str().unwrap();
+            assert!(!value.contains("evil.example"), "{name}: {value}");
         }
+    }
+    for response in [&preflight, &simple, &credentialed, &missing] {
+        assert_strict_security_headers(response);
     }
 }
 
@@ -841,4 +1161,92 @@ async fn it_request_span_records_route_template_and_error_code() {
 
     let (_, lines) = traced(get("/test/slow/0")).await;
     assert_eq!(completion(&lines)["route"], "/test/slow/{seconds}");
+}
+
+fn warnings_while(build: impl FnOnce()) -> Vec<Value> {
+    let capture = Capture::default();
+    let dispatch = build_dispatch(
+        EnvFilter::new("info"),
+        LogFormat::Json,
+        capture.clone(),
+        (),
+        false,
+    );
+    tracing::dispatcher::with_default(&dispatch, build);
+    capture
+        .lines()
+        .into_iter()
+        .filter(|line| line["level"] == "WARN")
+        .collect()
+}
+
+#[rstest::rstest]
+#[case::http_public_under_https_base(
+    "https://palmr.example.com",
+    Some("http://files.example.com:9000"),
+    Some("http://files.example.com:9000")
+)]
+#[case::http_fallback_endpoint_under_https_base(
+    "https://palmr.example.com",
+    None,
+    Some("http://minio:9000")
+)]
+#[case::https_public_under_https_base(
+    "https://palmr.example.com",
+    Some("https://files.example.com"),
+    None
+)]
+#[case::http_public_under_http_base(
+    "http://palmr.example.com",
+    Some("http://files.example.com:9000"),
+    None
+)]
+fn it_s3_http_public_endpoint_under_https_base_warns(
+    #[case] base_url: &str,
+    #[case] public_endpoint: Option<&str>,
+    #[case] warned_origin: Option<&str>,
+) {
+    let mut vars = vec![
+        ("PALMR_BASE_URL", base_url),
+        ("PALMR_STORAGE_PROVIDER", "s3"),
+        ("PALMR_S3_ENDPOINT", "http://minio:9000"),
+        ("PALMR_S3_REGION", "us-east-1"),
+        ("PALMR_S3_BUCKET", "palmr"),
+        ("PALMR_S3_ACCESS_KEY", "AKIAEXAMPLEACCESS"),
+        ("PALMR_S3_SECRET_KEY", "example-secret-key-value"),
+    ];
+    vars.extend(public_endpoint.map(|endpoint| ("PALMR_S3_PUBLIC_ENDPOINT", endpoint)));
+    let config = operator_config(&vars);
+    let warnings = warnings_while(|| {
+        SecurityHeaders::new(&config);
+    });
+
+    match warned_origin {
+        Some(origin) => {
+            assert_eq!(warnings.len(), 1, "{warnings:?}");
+            assert_eq!(warnings[0]["s3_public_origin"], origin);
+        }
+        None => assert!(warnings.is_empty(), "{warnings:?}"),
+    }
+    let output = serde_json::to_string(&warnings).unwrap();
+    for secret in ["AKIAEXAMPLEACCESS", "example-secret-key-value"] {
+        assert!(!output.contains(secret));
+    }
+}
+
+#[test]
+fn it_local_storage_never_warns_about_s3() {
+    let config = operator_config(&[("PALMR_BASE_URL", "https://palmr.example.com")]);
+    assert!(warnings_while(|| {
+        SecurityHeaders::new(&config);
+    })
+    .is_empty());
+}
+
+#[tokio::test]
+async fn it_csp_nonce_is_never_logged() {
+    let (response, lines) = traced(get("/test/nonce")).await;
+    let nonce = csp_nonce(&response);
+    assert!(!lines.is_empty());
+    assert!(!serde_json::to_string(&lines).unwrap().contains(&nonce));
 }

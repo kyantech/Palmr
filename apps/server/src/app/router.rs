@@ -21,6 +21,7 @@ use crate::domain::clock::Clock;
 use crate::infra::http::encoding::{
     reject_undecodable_body, request_decompression, response_compression,
 };
+use crate::infra::http::headers::{apply_security_headers, SecurityHeaders, SecurityPolicy};
 use crate::infra::http::limits::{enforce_deadline, limit_body, BodyLimit, ControlPlaneLimits};
 use crate::infra::http::panic::catch_panic;
 use crate::infra::http::path::normalize_path;
@@ -247,6 +248,7 @@ pub struct RoutePolicy {
     auth: AuthClass,
     rate_limit: RateLimitClass,
     transport: Transport,
+    security: SecurityPolicy,
 }
 
 impl RoutePolicy {
@@ -255,7 +257,13 @@ impl RoutePolicy {
             auth,
             rate_limit,
             transport,
+            security: SecurityPolicy::Default,
         }
+    }
+
+    pub const fn with_security(mut self, security: SecurityPolicy) -> Self {
+        self.security = security;
+        self
     }
 
     pub const fn auth(&self) -> AuthClass {
@@ -268,6 +276,10 @@ impl RoutePolicy {
 
     pub const fn transport(&self) -> Transport {
         self.transport
+    }
+
+    pub const fn security(&self) -> SecurityPolicy {
+        self.security
     }
 }
 
@@ -320,6 +332,7 @@ pub enum RouteError {
     InvalidPath { path: String },
     Duplicate { method: Method, path: String },
     BytePathWithoutOptOut { method: Method, path: String },
+    EmbedPolicyOutsideEmbedRoutes { method: Method, path: String },
 }
 
 impl fmt::Display for RouteError {
@@ -333,6 +346,10 @@ impl fmt::Display for RouteError {
             Self::BytePathWithoutOptOut { method, path } => write!(
                 f,
                 "{method} {path} is a byte path but declares no request-body, compression or timeout opt-out"
+            ),
+            Self::EmbedPolicyOutsideEmbedRoutes { method, path } => write!(
+                f,
+                "{method} {path} declares the embed security policy outside the embed routes"
             ),
         }
     }
@@ -432,6 +449,12 @@ where
                         path: entry.path.clone(),
                     });
                 }
+                if !policy.security.permits_path(&entry.path) {
+                    errors.push(RouteError::EmbedPolicyOutsideEmbedRoutes {
+                        method: entry.method.clone(),
+                        path: entry.path.clone(),
+                    });
+                }
                 if self.entries.contains_key(&entry.key())
                     || declared
                         .iter()
@@ -451,7 +474,8 @@ where
         }
 
         if errors.is_empty() {
-            self.router = self.router.routes((schemas, paths, layers.apply(handler)));
+            let handler = policy.security.apply(layers.apply(handler));
+            self.router = self.router.routes((schemas, paths, handler));
             self.entries
                 .extend(declared.into_iter().map(|entry| (entry.key(), entry)));
         } else {
@@ -507,21 +531,23 @@ pub fn application_routes() -> Routes<AppState> {
 pub struct HttpEdge {
     clock: Arc<dyn Clock>,
     proxies: Arc<TrustedProxies>,
+    security: Arc<SecurityHeaders>,
 }
 
 impl HttpEdge {
-    pub fn new(clock: Arc<dyn Clock>, proxies: TrustedProxies) -> Self {
+    pub fn new(clock: Arc<dyn Clock>, proxies: TrustedProxies, security: SecurityHeaders) -> Self {
         Self {
             clock,
             proxies: Arc::new(proxies),
+            security: Arc::new(security),
         }
     }
 }
 
 // Path normalization must wrap the router from outside, because axum matches
-// the route before any `Router::layer` middleware runs. Security headers are
-// inserted between client resolution and panic catch; CORS is deliberately
-// absent because the SPA is served same-origin.
+// the route before any `Router::layer` middleware runs. Security headers sit
+// outside panic catch so every response, including a caught panic, carries
+// them. CORS is deliberately absent because the SPA is served same-origin.
 pub fn with_middleware(
     router: axum::Router,
     edge: &HttpEdge,
@@ -537,6 +563,10 @@ pub fn with_middleware(
         .layer(from_fn_with_state(
             Arc::clone(&edge.proxies),
             resolve_client,
+        ))
+        .layer(from_fn_with_state(
+            Arc::clone(&edge.security),
+            apply_security_headers,
         ))
         .layer(from_fn(catch_panic))
         .layer(from_fn(normalize_path))

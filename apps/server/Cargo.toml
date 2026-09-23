@@ -16,6 +16,7 @@ axum = { version = "0.8", default-features = false, features = ["matched-path", 
 clap = { version = "4", features = ["derive"] }
 figment = { version = "0.10", default-features = false }
 http = "1"
+getrandom = "0.4"
 http-body-util = "0.1"
 ipnet = "2"
 serde = { version = "1", features = ["derive"] }
