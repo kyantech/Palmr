@@ -164,7 +164,8 @@ impl From<ApiError> for ApiErrorBody {
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         let status = self.status();
-        match serde_json::to_vec(&ApiErrorBody::from(self)) {
+        let code = self.code;
+        let mut response = match serde_json::to_vec(&ApiErrorBody::from(self)) {
             Ok(body) => (
                 status,
                 [(CONTENT_TYPE, HeaderValue::from_static(JSON_CONTENT_TYPE))],
@@ -172,7 +173,9 @@ impl IntoResponse for ApiError {
             )
                 .into_response(),
             Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-        }
+        };
+        response.extensions_mut().insert(code);
+        response
     }
 }
 
@@ -376,6 +379,15 @@ mod tests {
         assert_eq!(details["k0"], "replaced");
         assert!(!details.contains_key("k8") && !details.contains_key("k10"));
         assert_eq!(DetailValue::from(true), DetailValue::Bool(true));
+    }
+
+    #[test]
+    fn unit_error_response_carries_code_extension() {
+        let response = ApiError::new(ErrorCode::RequestTimeout).into_response();
+        assert_eq!(
+            response.extensions().get::<ErrorCode>(),
+            Some(&ErrorCode::RequestTimeout)
+        );
     }
 
     #[test]

@@ -78,7 +78,7 @@ fn parse_filter(directives: &str) -> Result<EnvFilter, TelemetryInitError> {
         .map_err(TelemetryInitError::InvalidFilter)
 }
 
-fn build_dispatch<W, T>(
+pub(crate) fn build_dispatch<W, T>(
     filter: EnvFilter,
     format: LogFormat,
     make_writer: W,

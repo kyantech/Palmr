@@ -1,8 +1,15 @@
 use std::borrow::Cow;
-use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
+use std::sync::Arc;
 
+use axum::extract::{ConnectInfo, Request, State};
+use axum::middleware::Next;
+use axum::response::Response;
 use http::header::{HeaderMap, HeaderName, FORWARDED};
+use http::Extensions;
 use ipnet::IpNet;
+use tracing::field::display;
+use tracing::Span;
 
 use crate::config::TrustProxy;
 
@@ -119,6 +126,25 @@ impl TrustedProxies {
         }
         Walk::AllTrusted
     }
+}
+
+pub fn socket_peer(extensions: &Extensions) -> Option<IpAddr> {
+    extensions
+        .get::<ConnectInfo<SocketAddr>>()
+        .map(|ConnectInfo(addr)| addr.ip())
+}
+
+pub async fn resolve_client(
+    State(proxies): State<Arc<TrustedProxies>>,
+    mut request: Request,
+    next: Next,
+) -> Response {
+    if let Some(peer) = socket_peer(request.extensions()) {
+        let client = proxies.resolve(peer, request.headers());
+        Span::current().record("client_ip", display(client.ip()));
+        request.extensions_mut().insert(client);
+    }
+    next.run(request).await
 }
 
 enum Walk {

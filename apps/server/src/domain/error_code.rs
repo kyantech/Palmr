@@ -52,6 +52,10 @@ error_catalog! {
         "The action is not permitted";
     UnsupportedMediaType = "UNSUPPORTED_MEDIA_TYPE", UNSUPPORTED_MEDIA_TYPE, retryable: false,
         "The request content type is not supported";
+    RequestBodyTooLarge = "REQUEST_BODY_TOO_LARGE", PAYLOAD_TOO_LARGE, retryable: false,
+        "The request body is too large";
+    RequestTimeout = "REQUEST_TIMEOUT", REQUEST_TIMEOUT, retryable: false,
+        "The request exceeded the server deadline";
     InternalError = "INTERNAL_ERROR", INTERNAL_SERVER_ERROR, retryable: true,
         "An internal error occurred";
     ServiceUnavailable = "SERVICE_UNAVAILABLE", SERVICE_UNAVAILABLE, retryable: true,
@@ -191,5 +195,22 @@ mod tests {
         );
         assert!(!ErrorCode::IdempotencyKeyConflict.retryable());
         assert!(ErrorCode::IdempotencyRequestInProgress.retryable());
+    }
+
+    #[test]
+    fn unit_middleware_error_codes_match_catalog() {
+        assert_eq!(
+            ErrorCode::RequestBodyTooLarge.as_str(),
+            "REQUEST_BODY_TOO_LARGE"
+        );
+        assert_eq!(ErrorCode::RequestBodyTooLarge.status().as_u16(), 413);
+        assert!(!ErrorCode::RequestBodyTooLarge.retryable());
+
+        assert_eq!(ErrorCode::RequestTimeout.as_str(), "REQUEST_TIMEOUT");
+        assert_eq!(ErrorCode::RequestTimeout.status().as_u16(), 408);
+        assert!(!ErrorCode::RequestTimeout.retryable());
+
+        assert_eq!(ErrorCode::InternalError.status().as_u16(), 500);
+        assert!(ErrorCode::InternalError.retryable());
     }
 }

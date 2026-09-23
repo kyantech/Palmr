@@ -1,14 +1,32 @@
 use std::collections::BTreeMap;
+use std::convert::Infallible;
 use std::fmt;
 use std::num::NonZeroU64;
+use std::sync::Arc;
+use std::time::Duration;
 
+use axum::extract::Request;
+use axum::middleware::{from_fn, from_fn_with_state};
+use axum::response::Response;
+use axum::routing::MethodRouter;
 use http::Method;
+use tower::{Service, ServiceBuilder};
 use utoipa::openapi::path::{Operation, PathItem};
 use utoipa::openapi::OpenApi;
 use utoipa_axum::router::{OpenApiRouter, UtoipaMethodRouter};
 
 use super::auth_class::AuthClass;
 use super::state::AppState;
+use crate::domain::clock::Clock;
+use crate::infra::http::encoding::{
+    reject_undecodable_body, request_decompression, response_compression,
+};
+use crate::infra::http::limits::{enforce_deadline, limit_body, BodyLimit, ControlPlaneLimits};
+use crate::infra::http::panic::catch_panic;
+use crate::infra::http::path::normalize_path;
+use crate::infra::http::proxy::{resolve_client, TrustedProxies};
+use crate::infra::http::request_id::{assign_request_id, RequestIdSource};
+use crate::infra::http::trace::{record_route, trace_request};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum RateLimitClass {
@@ -160,6 +178,71 @@ impl Transport {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TransportLayers {
+    deadline: Option<Duration>,
+    body_limit: Option<BodyLimit>,
+    compress_response: bool,
+    decompress_request: bool,
+}
+
+impl TransportLayers {
+    pub fn for_transport(transport: Transport, limits: ControlPlaneLimits) -> Self {
+        let bounded_body = matches!(transport.request_body(), RequestBody::GlobalLimit);
+        Self {
+            deadline: matches!(transport.deadline(), Deadline::ControlPlane)
+                .then_some(limits.deadline),
+            body_limit: bounded_body.then_some(limits.body),
+            compress_response: matches!(
+                transport.response_encoding(),
+                ResponseEncoding::Compressible
+            ),
+            decompress_request: bounded_body,
+        }
+    }
+
+    pub const fn deadline(&self) -> Option<Duration> {
+        self.deadline
+    }
+
+    pub const fn body_limit(&self) -> Option<BodyLimit> {
+        self.body_limit
+    }
+
+    pub const fn compresses_response(&self) -> bool {
+        self.compress_response
+    }
+
+    pub const fn decompresses_request(&self) -> bool {
+        self.decompress_request
+    }
+
+    // `route_layer` wraps outward, so layers are added innermost first: the
+    // resulting order is route recording, deadline, body limit, compression,
+    // decompression.
+    fn apply<S>(self, mut handler: MethodRouter<S>) -> MethodRouter<S>
+    where
+        S: Clone + Send + Sync + 'static,
+    {
+        if let (true, Some(limit)) = (self.decompress_request, self.body_limit) {
+            handler = handler
+                .route_layer(from_fn_with_state(limit, limit_body))
+                .route_layer(request_decompression())
+                .route_layer(from_fn(reject_undecodable_body));
+        }
+        if self.compress_response {
+            handler = handler.route_layer(response_compression());
+        }
+        if let Some(limit) = self.body_limit {
+            handler = handler.route_layer(from_fn_with_state(limit, limit_body));
+        }
+        if let Some(deadline) = self.deadline {
+            handler = handler.route_layer(from_fn_with_state(deadline, enforce_deadline));
+        }
+        handler.route_layer(from_fn(record_route))
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RoutePolicy {
     auth: AuthClass,
     rate_limit: RateLimitClass,
@@ -193,9 +276,14 @@ pub struct RouteEntry {
     path: String,
     method: Method,
     policy: RoutePolicy,
+    layers: TransportLayers,
 }
 
 impl RouteEntry {
+    pub const fn layers(&self) -> TransportLayers {
+        self.layers
+    }
+
     pub fn path(&self) -> &str {
         &self.path
     }
@@ -290,6 +378,7 @@ pub struct Routes<S = AppState> {
     router: OpenApiRouter<S>,
     entries: BTreeMap<RouteKey, RouteEntry>,
     errors: Vec<RouteError>,
+    limits: ControlPlaneLimits,
 }
 
 impl<S> Default for Routes<S>
@@ -306,15 +395,21 @@ where
     S: Clone + Send + Sync + 'static,
 {
     pub fn new() -> Self {
+        Self::with_limits(ControlPlaneLimits::default())
+    }
+
+    pub fn with_limits(limits: ControlPlaneLimits) -> Self {
         Self {
             router: OpenApiRouter::new(),
             entries: BTreeMap::new(),
             errors: Vec::new(),
+            limits,
         }
     }
 
     pub fn route(mut self, policy: RoutePolicy, method_router: UtoipaMethodRouter<S>) -> Self {
-        let (_, paths, _) = &method_router;
+        let (schemas, paths, handler) = method_router;
+        let layers = TransportLayers::for_transport(policy.transport, self.limits);
         let mut declared = Vec::new();
         let mut errors = Vec::new();
 
@@ -328,6 +423,7 @@ where
                     path: path.clone(),
                     method,
                     policy,
+                    layers,
                 };
                 if matches!(policy.transport, Transport::BytePath(path) if !path.declares_opt_out())
                 {
@@ -355,7 +451,7 @@ where
         }
 
         if errors.is_empty() {
-            self.router = self.router.routes(method_router);
+            self.router = self.router.routes((schemas, paths, layers.apply(handler)));
             self.entries
                 .extend(declared.into_iter().map(|entry| (entry.key(), entry)));
         } else {
@@ -407,6 +503,46 @@ pub fn application_routes() -> Routes<AppState> {
     Routes::new()
 }
 
+#[derive(Clone)]
+pub struct HttpEdge {
+    clock: Arc<dyn Clock>,
+    proxies: Arc<TrustedProxies>,
+}
+
+impl HttpEdge {
+    pub fn new(clock: Arc<dyn Clock>, proxies: TrustedProxies) -> Self {
+        Self {
+            clock,
+            proxies: Arc::new(proxies),
+        }
+    }
+}
+
+// Path normalization must wrap the router from outside, because axum matches
+// the route before any `Router::layer` middleware runs. Security headers are
+// inserted between client resolution and panic catch; CORS is deliberately
+// absent because the SPA is served same-origin.
+pub fn with_middleware(
+    router: axum::Router,
+    edge: &HttpEdge,
+) -> impl Service<Request, Response = Response, Error = Infallible, Future: Send + 'static>
+       + Clone
+       + Send
+       + Sync
+       + 'static {
+    let request_ids = RequestIdSource::new(Arc::clone(&edge.proxies), Arc::clone(&edge.clock));
+    ServiceBuilder::new()
+        .layer(from_fn_with_state(request_ids, assign_request_id))
+        .layer(from_fn_with_state(Arc::clone(&edge.clock), trace_request))
+        .layer(from_fn_with_state(
+            Arc::clone(&edge.proxies),
+            resolve_client,
+        ))
+        .layer(from_fn(catch_panic))
+        .layer(from_fn(normalize_path))
+        .service(router)
+}
+
 impl RouteEntry {
     fn key(&self) -> RouteKey {
         (self.path.clone(), method_rank(&self.method))
@@ -448,9 +584,11 @@ fn method_rank(method: &Method) -> u8 {
 mod tests {
     use std::collections::BTreeSet;
     use std::num::NonZeroU64;
+    use std::time::Duration;
 
     use axum::body::Body;
     use http::{Method, Request, StatusCode};
+    use rstest::rstest;
     use tower::ServiceExt;
     use utoipa::openapi::path::Paths;
     use utoipa_axum::routes;
@@ -458,8 +596,10 @@ mod tests {
     use super::{
         application_routes, operation_methods, BytePath, Deadline, RateLimitClass, RequestBody,
         ResponseEncoding, RouteError, RouteInventory, RoutePolicy, Routes, Transport,
+        TransportLayers,
     };
     use crate::app::auth_class::AuthClass;
+    use crate::infra::http::limits::{BodyLimit, ControlPlaneLimits, CONTROL_PLANE_BODY_LIMIT};
 
     #[utoipa::path(get, path = "/test/items", responses((status = 200)))]
     async fn list_items() -> StatusCode {
@@ -567,13 +707,32 @@ mod tests {
 
     fn assert_every_byte_route_declares_its_opt_outs(inventory: &RouteInventory) {
         for entry in inventory.entries() {
-            if let Transport::BytePath(path) = entry.policy().transport() {
+            let route = format!("{} {}", entry.method(), entry.path());
+            let transport = entry.policy().transport();
+            let layers = entry.layers();
+            if let Transport::BytePath(path) = transport {
                 assert!(
                     path.declares_opt_out(),
-                    "{} {} is a byte path without opt-outs",
-                    entry.method(),
-                    entry.path()
+                    "{route} is a byte path without opt-outs"
                 );
+            }
+            if transport.response_encoding() == ResponseEncoding::Identity {
+                assert!(!layers.compresses_response(), "{route} is compressed");
+            }
+            if transport.deadline() == Deadline::IdleOnly {
+                assert_eq!(
+                    layers.deadline(),
+                    None,
+                    "{route} has a control-plane deadline"
+                );
+            }
+            if transport.request_body() != RequestBody::GlobalLimit {
+                assert_eq!(
+                    layers.body_limit(),
+                    None,
+                    "{route} has the global body limit"
+                );
+                assert!(!layers.decompresses_request(), "{route} decodes its body");
             }
         }
     }
@@ -590,6 +749,112 @@ mod tests {
             &application_routes().build().unwrap().inventory,
         );
         assert_every_byte_route_declares_its_opt_outs(&sample_inventory());
+        assert_every_byte_route_declares_its_opt_outs(
+            &Routes::<()>::new()
+                .route(
+                    RoutePolicy::new(
+                        AuthClass::Admin,
+                        RateLimitClass::AdminWrite,
+                        Transport::BytePath(BytePath::new(
+                            RequestBody::Capped {
+                                max_bytes: NonZeroU64::new(5 * 1024 * 1024).unwrap(),
+                            },
+                            ResponseEncoding::Compressible,
+                            Deadline::ControlPlane,
+                        )),
+                    ),
+                    routes!(create_item),
+                )
+                .build()
+                .unwrap()
+                .inventory,
+        );
+    }
+
+    #[rstest]
+    #[case::control_plane(Transport::ControlPlane, true, true, true)]
+    #[case::download(
+        Transport::BytePath(BytePath::new(
+            RequestBody::GlobalLimit,
+            ResponseEncoding::Identity,
+            Deadline::IdleOnly
+        )),
+        false,
+        true,
+        false
+    )]
+    #[case::upload(
+        Transport::BytePath(BytePath::new(
+            RequestBody::Streamed,
+            ResponseEncoding::Identity,
+            Deadline::IdleOnly
+        )),
+        false,
+        false,
+        false
+    )]
+    #[case::capped_upload(
+        Transport::BytePath(BytePath::new(
+            RequestBody::Capped { max_bytes: NonZeroU64::new(5 * 1024 * 1024).unwrap() },
+            ResponseEncoding::Compressible,
+            Deadline::ControlPlane,
+        )),
+        true,
+        false,
+        true
+    )]
+    fn unit_transport_layers_follow_policy(
+        #[case] transport: Transport,
+        #[case] deadline: bool,
+        #[case] global_body_limit: bool,
+        #[case] compresses: bool,
+    ) {
+        let limits = ControlPlaneLimits::default();
+        let layers = TransportLayers::for_transport(transport, limits);
+        assert_eq!(
+            layers.deadline(),
+            deadline.then_some(Duration::from_secs(30))
+        );
+        assert_eq!(
+            layers.body_limit(),
+            global_body_limit.then_some(CONTROL_PLANE_BODY_LIMIT)
+        );
+        assert_eq!(layers.decompresses_request(), global_body_limit);
+        assert_eq!(layers.compresses_response(), compresses);
+    }
+
+    #[test]
+    fn unit_control_plane_limits_default() {
+        let limits = ControlPlaneLimits::default();
+        assert_eq!(limits.deadline, Duration::from_secs(30));
+        assert_eq!(limits.body.max_bytes(), 2 * 1024 * 1024);
+    }
+
+    #[test]
+    fn unit_inventory_records_applied_layers() {
+        let limits = ControlPlaneLimits {
+            deadline: Duration::from_secs(5),
+            body: BodyLimit::new(64),
+        };
+        let inventory = Routes::<()>::with_limits(limits)
+            .route(PUBLIC_READ, routes!(list_items))
+            .route(UPLOAD, routes!(upload_chunk))
+            .build()
+            .unwrap()
+            .inventory;
+
+        let list = inventory.get(&Method::GET, "/test/items").unwrap();
+        assert_eq!(
+            list.layers(),
+            TransportLayers::for_transport(Transport::ControlPlane, limits)
+        );
+        assert_eq!(list.layers().deadline(), Some(Duration::from_secs(5)));
+        assert_eq!(list.layers().body_limit(), Some(BodyLimit::new(64)));
+
+        let upload = inventory.get(&Method::PATCH, "/test/uploads/{id}").unwrap();
+        assert_eq!(upload.layers().deadline(), None);
+        assert_eq!(upload.layers().body_limit(), None);
+        assert!(!upload.layers().compresses_response());
     }
 
     #[test]

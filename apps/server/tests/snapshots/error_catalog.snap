@@ -73,6 +73,16 @@ source: apps/server/src/domain/error_code.rs
     "retryable": true
   },
   {
+    "code": "REQUEST_BODY_TOO_LARGE",
+    "status": 413,
+    "retryable": false
+  },
+  {
+    "code": "REQUEST_TIMEOUT",
+    "status": 408,
+    "retryable": false
+  },
+  {
     "code": "SERVICE_UNAVAILABLE",
     "status": 503,
     "retryable": true
