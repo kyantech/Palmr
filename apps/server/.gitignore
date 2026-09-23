@@ -1,7 +1,0 @@
-node_modules
-.env
-dist/*
-uploads/*
-temp-uploads/*
-prisma/*.db
-tsconfig.tsbuildinfo

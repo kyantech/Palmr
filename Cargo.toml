@@ -1,0 +1,10 @@
+[workspace]
+resolver = "3"
+members = ["apps/server"]
+
+[workspace.package]
+version = "4.0.0-dev"
+edition = "2021"
+rust-version = "1.97.1"
+license = "AGPL-3.0-only"
+publish = false
