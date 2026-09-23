@@ -1,0 +1,68 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  transfers-100gb:
+    name: 100 GB+ transfers
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "100 GB+ transfer suite is not implemented yet" && exit 1
+
+  bounded-rss-sweep:
+    name: Bounded-RSS sweep
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Bounded-RSS sweep is not implemented yet" && exit 1
+
+  endurance:
+    name: Endurance
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Endurance suite is not implemented yet" && exit 1
+
+  provider-matrix:
+    name: Provider matrix
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Provider matrix is not implemented yet" && exit 1
+
+  proxy-browser:
+    name: Proxy/browser
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Proxy/browser matrices on the release image are not implemented yet" && exit 1
+
+  security-dependency-review:
+    name: Security/dependency review
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Security/dependency review is not implemented yet" && exit 1
+
+  release-gates:
+    name: Release gates
+    if: false
+    needs:
+      - transfers-100gb
+      - bounded-rss-sweep
+      - endurance
+      - provider-matrix
+      - proxy-browser
+      - security-dependency-review
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Release gate evidence mapping is not implemented yet" && exit 1

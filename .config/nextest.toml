@@ -1,0 +1,14 @@
+[profile.default]
+slow-timeout = { period = "30s" }
+
+[profile.ci]
+failure-output = "immediate-final"
+slow-timeout = { period = "30s", terminate-after = 4 }
+
+[profile.ci.junit]
+path = "junit.xml"
+
+[profile.stress]
+test-threads = 1
+slow-timeout = { period = "1h" }
+fail-fast = false

@@ -1,0 +1,72 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  full-regression:
+    name: Full regression
+    if: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - run: echo "Full regression suite is not implemented yet" && exit 1
+
+  browser-matrix:
+    name: Browser matrix
+    if: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - run: echo "Browser matrix is not implemented yet" && exit 1
+
+  proxy-matrix:
+    name: Proxy matrix
+    if: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - run: echo "Proxy matrix is not implemented yet" && exit 1
+
+  storage-matrix:
+    name: Storage matrix
+    if: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - run: echo "Storage matrix is not implemented yet" && exit 1
+
+  stress:
+    name: Stress
+    if: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - run: echo "Stress suite is not implemented yet" && exit 1
+
+  chaos:
+    name: Chaos
+    if: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - run: echo "Chaos suite is not implemented yet" && exit 1
+
+  container:
+    name: Container
+    if: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - run: echo "Container suite is not implemented yet" && exit 1
