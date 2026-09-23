@@ -15,9 +15,11 @@ clap = { version = "4", features = ["derive"] }
 figment = { version = "0.10", default-features = false }
 ipnet = "2"
 serde_json = "1"
+time = { version = "0.3", default-features = false, features = ["std", "formatting", "parsing", "macros"] }
 tracing = { version = "0.1", default-features = false, features = ["std"] }
 tracing-subscriber = { version = "0.3", default-features = false, features = ["ansi", "env-filter", "fmt", "std"] }
 url = "2"
+uuid = { version = "1", default-features = false, features = ["std", "v7"] }
 
 [lints]
 workspace = true

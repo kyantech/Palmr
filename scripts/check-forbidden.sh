@@ -88,6 +88,7 @@ rule byte-owning-cascade sql-statement insensitive "" "" \
   "ADR 0018; DATABASE_SCHEMA §5.14, §7"
 
 ALLOWLIST=(
+  "wall-clock apps/server/src/domain/clock/system.rs SystemClock is the only production reader of the OS wall clock"
   "spa-response-blob apps/web/eslint.config.js the M01-T04 ESLint rule message that names the banned response.blob() call"
   "spa-jszip apps/web/src/test/lint-fixtures/transfer-engine/ImportsJsZip.ts M01-T04 ESLint fixture proving the transfer-engine JSZip import ban"
   "spa-response-blob apps/web/src/test/lint-fixtures/transfer-engine/ReadsWholeBody.ts M01-T04 ESLint fixture proving the transfer-engine response.blob() ban"

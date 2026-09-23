@@ -8,7 +8,8 @@ mod config;
     not(test),
     expect(
         dead_code,
-        reason = "Secret is consumed through OperatorConfig until the startup pipeline is wired in"
+        unused_imports,
+        reason = "domain primitives are consumed once the startup pipeline is wired in"
     )
 )]
 mod domain;
