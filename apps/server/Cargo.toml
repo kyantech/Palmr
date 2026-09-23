@@ -19,9 +19,12 @@ http = "1"
 getrandom = "0.4"
 http-body-util = "0.1"
 ipnet = "2"
+mime_guess = { version = "2", default-features = false }
+rust-embed = { version = "8", features = ["debug-embed"] }
 rustix = { version = "1", features = ["fs", "process"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+sha2 = { version = "0.11", optional = true }
 time = { version = "0.3", default-features = false, features = ["std", "formatting", "parsing", "macros"] }
 tokio = { version = "1", default-features = false, features = ["macros", "net", "rt-multi-thread", "signal", "sync", "time"] }
 tower = { version = "0.5", default-features = false, features = ["util"] }
@@ -33,6 +36,9 @@ utoipa = "5"
 utoipa-axum = "0.2"
 uuid = { version = "1", default-features = false, features = ["std", "v7"] }
 
+[features]
+dev-assets = ["dep:sha2"]
+
 [lints]
 workspace = true
 
@@ -40,6 +46,7 @@ workspace = true
 insta = "1"
 proptest = { version = "1", default-features = false, features = ["std"] }
 rstest = "0.27"
+sha2 = "0.11"
 tempfile = "3"
 thiserror = "2"
 tokio = { version = "1", features = ["io-util", "macros", "rt", "test-util"] }

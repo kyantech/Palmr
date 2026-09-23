@@ -7,7 +7,7 @@ use std::time::Duration;
 
 use axum::extract::Request;
 use axum::middleware::{from_fn, from_fn_with_state};
-use axum::response::Response;
+use axum::response::{IntoResponse, Response};
 use axum::routing::MethodRouter;
 use http::Method;
 use tower::{Service, ServiceBuilder};
@@ -19,15 +19,18 @@ use super::auth_class::AuthClass;
 use super::health;
 use super::state::AppState;
 use crate::domain::clock::Clock;
+use crate::domain::error_code::ErrorCode;
 use crate::infra::http::encoding::{
     reject_undecodable_body, request_decompression, response_compression,
 };
+use crate::infra::http::error::ApiError;
 use crate::infra::http::headers::{apply_security_headers, SecurityHeaders, SecurityPolicy};
 use crate::infra::http::limits::{enforce_deadline, limit_body, BodyLimit, ControlPlaneLimits};
 use crate::infra::http::panic::catch_panic;
 use crate::infra::http::path::normalize_path;
 use crate::infra::http::proxy::{resolve_client, TrustedProxies};
-use crate::infra::http::request_id::{assign_request_id, RequestIdSource};
+use crate::infra::http::request_id::{assign_request_id, tag_error, RequestId, RequestIdSource};
+use crate::infra::http::static_assets::StaticAssets;
 use crate::infra::http::trace::{record_route, trace_request, RequestLog};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -539,6 +542,26 @@ where
 
 pub fn application_routes() -> Routes<AppState> {
     Routes::new().merge(health::routes())
+}
+
+// Call only after every route is merged: axum attaches the 405 fallback to
+// the method routers that exist at this point, and later ones would keep
+// axum's empty-bodied 405.
+pub fn serve_unmatched<S>(router: axum::Router<S>, assets: StaticAssets) -> axum::Router<S>
+where
+    S: Clone + Send + Sync + 'static,
+{
+    router
+        .method_not_allowed_fallback(method_not_allowed)
+        .fallback_service(assets.fallback())
+}
+
+async fn method_not_allowed(request: Request) -> Response {
+    tag_error(
+        ApiError::new(ErrorCode::MethodNotAllowed),
+        RequestId::of(&request).as_ref(),
+    )
+    .into_response()
 }
 
 #[derive(Clone)]

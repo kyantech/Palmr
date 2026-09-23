@@ -19,7 +19,9 @@ use self::data_dir::{
     apply_process_umask, CrossDevice, DataDir, DataDirError, STARTUP_UPLOADS_STORAGE_CROSS_DEVICE,
 };
 use super::health::Health;
-use super::router::{application_routes, with_middleware, HttpEdge, RouteBuildError};
+use super::router::{
+    application_routes, serve_unmatched, with_middleware, HttpEdge, RouteBuildError,
+};
 use super::state::AppState;
 use crate::config::{
     ConfigError, ConfigWarning, EnvironmentSource, LoadedConfig, OperatorConfig, StorageConfig,
@@ -29,6 +31,7 @@ use crate::domain::clock::{Clock, SystemClock};
 use crate::infra::crypto::instance_key::{InstanceKey, InstanceKeyError, KeyOrigin};
 use crate::infra::http::headers::SecurityHeaders;
 use crate::infra::http::proxy::TrustedProxies;
+use crate::infra::http::static_assets::StaticAssets;
 use crate::infra::telemetry::{self, write_startup_failure, TelemetryInitError};
 
 pub const STARTUP_BIND_FAILED: &str = "STARTUP_BIND_FAILED";
@@ -470,11 +473,11 @@ fn application_router(
     let routes = application_routes()
         .build()
         .map_err(StartupError::Router)?
-        .router
-        .with_state(AppState::new(
-            Arc::clone(&clock),
-            Health::new(readiness.clone()),
-        ));
+        .router;
+    let routes = serve_unmatched(routes, StaticAssets::built()).with_state(AppState::new(
+        Arc::clone(&clock),
+        Health::new(readiness.clone()),
+    ));
     Ok(edge_router(routes, config, clock))
 }
 
