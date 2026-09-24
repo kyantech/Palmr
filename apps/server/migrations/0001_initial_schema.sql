@@ -845,3 +845,185 @@ CREATE UNIQUE INDEX ux_embed_grants_public_id ON embed_grants(public_id);
 CREATE INDEX        ix_embed_grants_file      ON embed_grants(file_id);
 CREATE INDEX        ix_embed_grants_owner     ON embed_grants(owner_id, created_at DESC);
 CREATE INDEX        ix_embed_grants_expiry    ON embed_grants(expires_at) WHERE expires_at IS NOT NULL;
+
+CREATE TABLE reverse_shares (
+    id                     TEXT    NOT NULL PRIMARY KEY,
+    owner_id               TEXT    NOT NULL,
+    public_id              TEXT    NOT NULL CHECK (length(public_id) BETWEEN 16 AND 32),
+    alias                  TEXT    NOT NULL CHECK (length(alias) BETWEEN 3 AND 64
+                                                   AND alias NOT GLOB '*[^a-z0-9_-]*'),
+    name                   TEXT    NULL CHECK (name IS NULL OR length(name) <= 255),
+    description            TEXT    NULL CHECK (description IS NULL OR length(description) <= 2000),
+    password_hash          TEXT    NULL,
+    is_active              INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0,1)),
+    suspended_at           TEXT    NULL,
+    suspended_reason       TEXT    NULL CHECK (suspended_reason IS NULL OR
+                                               suspended_reason IN ('owner_deactivated','admin_action','deleting')),
+    expires_at             TEXT    NULL,
+    max_files              INTEGER NULL CHECK (max_files IS NULL OR max_files > 0),
+    max_file_size_bytes    INTEGER NULL CHECK (max_file_size_bytes IS NULL OR max_file_size_bytes > 0),
+    allowed_extensions     TEXT    NULL CHECK (allowed_extensions IS NULL OR
+                                               (json_valid(allowed_extensions)
+                                                AND json_type(allowed_extensions) = 'array'
+                                                AND length(allowed_extensions) <= 2048)),
+    name_field             TEXT    NOT NULL DEFAULT 'optional' CHECK (name_field  IN ('hidden','optional','required')),
+    email_field            TEXT    NOT NULL DEFAULT 'optional' CHECK (email_field IN ('hidden','optional','required')),
+    description_field      TEXT    NOT NULL DEFAULT 'optional' CHECK (description_field IN ('hidden','optional','required')),
+    layout                 TEXT    NOT NULL DEFAULT 'standard' CHECK (layout IN ('standard','hero')),
+    hero_background_kind   TEXT    NOT NULL DEFAULT 'brand'
+                                   CHECK (hero_background_kind IN ('brand','gradient','image')),
+    hero_gradient_preset   TEXT    NULL CHECK (hero_gradient_preset IS NULL OR length(hero_gradient_preset) <= 40),
+    hero_asset_id          TEXT    NULL,
+    notify_owner           INTEGER NOT NULL DEFAULT 1 CHECK (notify_owner IN (0,1)),
+    received_retention_days INTEGER NULL CHECK (received_retention_days IS NULL OR received_retention_days > 0),
+    file_count             INTEGER NOT NULL DEFAULT 0 CHECK (file_count >= 0),
+    total_bytes            INTEGER NOT NULL DEFAULT 0 CHECK (total_bytes >= 0),
+    created_at             TEXT    NOT NULL,
+    updated_at             TEXT    NOT NULL,
+
+    CHECK ( (suspended_at IS NULL AND suspended_reason IS NULL)
+         OR (suspended_at IS NOT NULL AND suspended_reason IS NOT NULL) ),
+    CHECK ( hero_background_kind <> 'image'    OR hero_asset_id IS NOT NULL ),
+    CHECK ( hero_background_kind <> 'gradient' OR hero_gradient_preset IS NOT NULL ),
+
+    FOREIGN KEY (owner_id)      REFERENCES users(id)                 ON DELETE RESTRICT,
+    FOREIGN KEY (hero_asset_id) REFERENCES reverse_share_assets(id)  ON DELETE SET NULL
+);
+
+CREATE UNIQUE INDEX ux_reverse_shares_alias     ON reverse_shares(alias);
+CREATE UNIQUE INDEX ux_reverse_shares_public_id ON reverse_shares(public_id);
+CREATE INDEX        ix_reverse_shares_owner     ON reverse_shares(owner_id, created_at DESC);
+CREATE INDEX        ix_reverse_shares_expiry    ON reverse_shares(expires_at) WHERE expires_at IS NOT NULL;
+
+CREATE TABLE reverse_share_upload_sessions (
+    id                     TEXT    NOT NULL PRIMARY KEY,
+    reverse_share_id       TEXT    NOT NULL,
+    token_hash             TEXT    NOT NULL CHECK (length(token_hash) = 64),
+    state                  TEXT    NOT NULL DEFAULT 'active'
+                                   CHECK (state IN ('active','completed','canceled','expired','invalidated')),
+    uploader_name          TEXT    NULL CHECK (uploader_name  IS NULL OR length(uploader_name)  <= 100),
+    uploader_email         TEXT    NULL CHECK (uploader_email IS NULL OR length(uploader_email) <= 254),
+    uploader_email_normalized TEXT NULL,
+    submission_description TEXT NULL CHECK (submission_description IS NULL OR length(submission_description) <= 2000),
+    locale                 TEXT    NOT NULL DEFAULT 'en-US' CHECK (locale IN (
+                               'ar-SA','de-DE','el-GR','en-US','es-ES','fa-IR','fr-FR','he-IL','hi-IN',
+                               'id-ID','it-IT','ja-JP','ko-KR','nl-NL','pl-PL','pt-BR','ru-RU','sv-SE',
+                               'th-TH','tr-TR','uk-UA','vi-VN','zh-CN')),
+    send_confirmation      INTEGER NOT NULL DEFAULT 0 CHECK (send_confirmation IN (0,1)),
+    password_verified_at   TEXT    NULL,
+    files_uploaded         INTEGER NOT NULL DEFAULT 0 CHECK (files_uploaded >= 0),
+    bytes_uploaded         INTEGER NOT NULL DEFAULT 0 CHECK (bytes_uploaded >= 0),
+    created_at             TEXT    NOT NULL,
+    expires_at             TEXT    NOT NULL,
+    last_activity_at       TEXT    NOT NULL,
+    completed_at           TEXT    NULL,
+    ip                     TEXT    NULL CHECK (ip IS NULL OR length(ip) <= 45),
+    user_agent             TEXT    NULL CHECK (user_agent IS NULL OR length(user_agent) <= 512),
+
+    CHECK ( (uploader_email IS NULL AND uploader_email_normalized IS NULL)
+         OR (uploader_email IS NOT NULL AND uploader_email_normalized IS NOT NULL) ),
+
+    FOREIGN KEY (reverse_share_id) REFERENCES reverse_shares(id) ON DELETE RESTRICT
+);
+
+CREATE UNIQUE INDEX ux_rs_upload_sessions_token  ON reverse_share_upload_sessions(token_hash);
+CREATE INDEX        ix_rs_upload_sessions_share  ON reverse_share_upload_sessions(reverse_share_id, created_at DESC);
+CREATE INDEX        ix_rs_upload_sessions_expiry ON reverse_share_upload_sessions(expires_at) WHERE state = 'active';
+CREATE INDEX        ix_rs_upload_sessions_batch
+    ON reverse_share_upload_sessions(reverse_share_id, uploader_email_normalized) WHERE state IN ('active','completed');
+
+CREATE TABLE reverse_share_assets (
+    id                TEXT    NOT NULL PRIMARY KEY,
+    reverse_share_id  TEXT    NOT NULL,
+    kind              TEXT    NOT NULL DEFAULT 'hero_background' CHECK (kind = 'hero_background'),
+    storage_object_id TEXT    NOT NULL,
+    mime_type         TEXT    NOT NULL CHECK (mime_type = 'image/webp'),
+    size_bytes        INTEGER NOT NULL CHECK (size_bytes > 0),
+    width             INTEGER NOT NULL CHECK (width  BETWEEN 1 AND 8192),
+    height            INTEGER NOT NULL CHECK (height BETWEEN 1 AND 8192),
+    created_at        TEXT    NOT NULL,
+    created_by        TEXT    NULL,
+
+    FOREIGN KEY (reverse_share_id)  REFERENCES reverse_shares(id)  ON DELETE RESTRICT,
+    FOREIGN KEY (storage_object_id) REFERENCES storage_objects(id) ON DELETE RESTRICT,
+    FOREIGN KEY (created_by)        REFERENCES users(id)           ON DELETE SET NULL
+);
+
+CREATE UNIQUE INDEX ux_rs_assets_storage_object ON reverse_share_assets(storage_object_id);
+CREATE INDEX        ix_rs_assets_share          ON reverse_share_assets(reverse_share_id, created_at DESC);
+
+CREATE TABLE received_files (
+    id                 TEXT    NOT NULL PRIMARY KEY,
+    owner_id           TEXT    NOT NULL,
+    reverse_share_id   TEXT    NOT NULL,
+    upload_session_id  TEXT    NULL,
+    storage_object_id  TEXT    NOT NULL,
+    name               TEXT    NOT NULL CHECK (length(name) BETWEEN 1 AND 255
+                                               AND name NOT LIKE '%/%' AND name NOT IN ('.','..')),
+    name_normalized    TEXT    NOT NULL,
+    extension          TEXT    NOT NULL DEFAULT '' CHECK (length(extension) <= 32),
+    description        TEXT    NULL CHECK (description IS NULL OR length(description) <= 2000),
+    size_bytes         INTEGER NOT NULL CHECK (size_bytes >= 0),
+    mime_type          TEXT    NOT NULL DEFAULT 'application/octet-stream' CHECK (length(mime_type) <= 255),
+    mime_source        TEXT    NOT NULL DEFAULT 'fallback'
+                               CHECK (mime_source IN ('sniffed','extension','client_hint','fallback')),
+    uploader_name      TEXT    NULL CHECK (uploader_name  IS NULL OR length(uploader_name)  <= 100),
+    uploader_email     TEXT    NULL CHECK (uploader_email IS NULL OR length(uploader_email) <= 254),
+    uploader_ip        TEXT    NULL CHECK (uploader_ip IS NULL OR length(uploader_ip) <= 45),
+    received_at        TEXT    NOT NULL,
+    updated_at         TEXT    NOT NULL,
+    expires_at         TEXT    NULL,
+
+    FOREIGN KEY (owner_id)          REFERENCES users(id)                          ON DELETE RESTRICT,
+    FOREIGN KEY (reverse_share_id)  REFERENCES reverse_shares(id)                 ON DELETE RESTRICT,
+    FOREIGN KEY (upload_session_id) REFERENCES reverse_share_upload_sessions(id)  ON DELETE SET NULL,
+    FOREIGN KEY (storage_object_id) REFERENCES storage_objects(id)                ON DELETE RESTRICT
+);
+
+CREATE UNIQUE INDEX ux_received_files_name    ON received_files(reverse_share_id, name_normalized);
+CREATE UNIQUE INDEX ux_received_storage_object ON received_files(storage_object_id);
+CREATE INDEX        ix_received_owner         ON received_files(owner_id, received_at DESC);
+CREATE INDEX        ix_received_share         ON received_files(reverse_share_id, received_at DESC);
+CREATE INDEX        ix_received_expiry        ON received_files(expires_at) WHERE expires_at IS NOT NULL;
+CREATE INDEX        ix_received_owner_size    ON received_files(owner_id, size_bytes DESC);
+
+CREATE VIRTUAL TABLE received_files_fts USING fts5(
+    name,
+    description,
+    content       = 'received_files',
+    content_rowid = 'rowid',
+    tokenize      = 'unicode61 remove_diacritics 2',
+    prefix        = '2 3 4'
+);
+
+CREATE TRIGGER received_files_fts_ai AFTER INSERT ON received_files BEGIN
+    INSERT INTO received_files_fts(rowid, name, description) VALUES (new.rowid, new.name, new.description);
+END;
+CREATE TRIGGER received_files_fts_ad AFTER DELETE ON received_files BEGIN
+    INSERT INTO received_files_fts(received_files_fts, rowid, name, description) VALUES ('delete', old.rowid, old.name, old.description);
+END;
+CREATE TRIGGER received_files_fts_au AFTER UPDATE OF name, description ON received_files BEGIN
+    INSERT INTO received_files_fts(received_files_fts, rowid, name, description) VALUES ('delete', old.rowid, old.name, old.description);
+    INSERT INTO received_files_fts(rowid, name, description) VALUES (new.rowid, new.name, new.description);
+END;
+
+CREATE TABLE branding_assets (
+    id                TEXT    NOT NULL PRIMARY KEY,
+    kind              TEXT    NOT NULL CHECK (kind IN (
+                          'logo','favicon','login_background','email_logo','og_default_image')),
+    storage_object_id TEXT    NOT NULL,
+    mime_type         TEXT    NOT NULL CHECK (mime_type IN ('image/webp','image/png')),
+    size_bytes        INTEGER NOT NULL CHECK (size_bytes > 0),
+    width             INTEGER NULL CHECK (width  IS NULL OR width  BETWEEN 1 AND 8192),
+    height            INTEGER NULL CHECK (height IS NULL OR height BETWEEN 1 AND 8192),
+    is_current        INTEGER NOT NULL DEFAULT 0 CHECK (is_current IN (0,1)),
+    created_at        TEXT    NOT NULL,
+    created_by        TEXT    NULL,
+
+    FOREIGN KEY (storage_object_id) REFERENCES storage_objects(id) ON DELETE RESTRICT,
+    FOREIGN KEY (created_by)        REFERENCES users(id)           ON DELETE SET NULL
+);
+
+CREATE UNIQUE INDEX ux_branding_assets_storage_object ON branding_assets(storage_object_id);
+CREATE UNIQUE INDEX ux_branding_assets_current        ON branding_assets(kind) WHERE is_current = 1;
+CREATE INDEX        ix_branding_assets_kind           ON branding_assets(kind, created_at DESC);
