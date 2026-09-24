@@ -7,6 +7,7 @@ use super::CryptoError;
 
 pub const DIGEST_HEX_LEN: usize = 64;
 pub const MAC_LEN: usize = 32;
+pub const MIN_TRUNCATED_MAC_LEN: usize = 16;
 
 const LOWER_HEX: &[u8; 16] = b"0123456789abcdef";
 
@@ -68,6 +69,15 @@ impl KeyRing {
         mac.verify_slice(tag).is_ok()
     }
 
+    pub fn verify_truncated_mac(&self, purpose: MacPurpose, message: &[u8], tag: &[u8]) -> bool {
+        if !(MIN_TRUNCATED_MAC_LEN..=MAC_LEN).contains(&tag.len()) {
+            return false;
+        }
+        let mut mac = self.hmac(purpose);
+        mac.update(message);
+        mac.verify_truncated_left(tag).is_ok()
+    }
+
     fn hmac(&self, purpose: MacPurpose) -> Hmac<Sha256> {
         match Hmac::<Sha256>::new_from_slice(self.mac_key(purpose).expose_secret()) {
             Ok(mac) => mac,
@@ -80,7 +90,9 @@ impl KeyRing {
 mod tests {
     use rstest::rstest;
 
-    use super::{sha256_hex, verify_sha256, TokenDigest, DIGEST_HEX_LEN, MAC_LEN};
+    use super::{
+        sha256_hex, verify_sha256, TokenDigest, DIGEST_HEX_LEN, MAC_LEN, MIN_TRUNCATED_MAC_LEN,
+    };
     use crate::infra::crypto::hkdf::{KeyRing, MacPurpose};
     use crate::infra::crypto::instance_key::INSTANCE_KEY_LEN;
     use crate::infra::crypto::token::Token;
@@ -198,5 +210,33 @@ mod tests {
             MESSAGE,
             &[tag.as_slice(), &[0]].concat()
         ));
+    }
+
+    #[test]
+    fn unit_hmac_truncated_verify_requires_minimum_prefix() {
+        let ring = KeyRing::from_root(&[0x33; INSTANCE_KEY_LEN]);
+        let tag = ring.mac(MacPurpose::Cursor, MESSAGE);
+        let prefix = &tag[..MIN_TRUNCATED_MAC_LEN];
+
+        assert!(ring.verify_truncated_mac(MacPurpose::Cursor, MESSAGE, prefix));
+        assert!(ring.verify_truncated_mac(MacPurpose::Cursor, MESSAGE, &tag));
+        assert!(!ring.verify_truncated_mac(MacPurpose::ArchiveTicket, MESSAGE, prefix));
+        assert!(!ring.verify_truncated_mac(MacPurpose::Cursor, b"sort=name&id=43", prefix));
+        assert!(!ring.verify_truncated_mac(
+            MacPurpose::Cursor,
+            MESSAGE,
+            &tag[..MIN_TRUNCATED_MAC_LEN - 1]
+        ));
+        assert!(!ring.verify_truncated_mac(MacPurpose::Cursor, MESSAGE, &[]));
+        assert!(!ring.verify_truncated_mac(
+            MacPurpose::Cursor,
+            MESSAGE,
+            &tag[1..=MIN_TRUNCATED_MAC_LEN]
+        ));
+
+        let mut altered = [0_u8; MIN_TRUNCATED_MAC_LEN];
+        altered.copy_from_slice(prefix);
+        altered[0] ^= 0x80;
+        assert!(!ring.verify_truncated_mac(MacPurpose::Cursor, MESSAGE, &altered));
     }
 }

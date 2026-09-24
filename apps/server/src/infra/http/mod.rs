@@ -3,6 +3,9 @@ pub mod error;
 pub mod etag;
 pub mod headers;
 pub mod limits;
+pub mod pagination;
+#[cfg(test)]
+mod pagination_tests;
 pub mod panic;
 pub mod path;
 pub mod proxy;
