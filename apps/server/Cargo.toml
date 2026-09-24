@@ -32,6 +32,7 @@ tower = { version = "0.5", default-features = false, features = ["util"] }
 tower-http = { version = "0.6", default-features = false, features = ["catch-panic", "compression-br", "compression-gzip", "decompression-br", "decompression-gzip"] }
 tracing = { version = "0.1", default-features = false, features = ["std"] }
 tracing-subscriber = { version = "0.3", default-features = false, features = ["ansi", "env-filter", "fmt", "std"] }
+unicode-normalization = "0.1"
 unicode-segmentation = "1"
 url = "2"
 utoipa = "5"

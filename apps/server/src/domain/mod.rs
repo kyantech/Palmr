@@ -1,5 +1,12 @@
+pub mod alias;
+pub mod bytes;
 pub mod clock;
+pub mod email;
 pub mod error_code;
 pub mod id;
+pub mod locale;
+pub mod normalize;
+pub mod role;
 pub mod secret;
 pub mod time;
+pub mod username;
