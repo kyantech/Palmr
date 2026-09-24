@@ -703,3 +703,145 @@ CREATE TRIGGER files_fts_au AFTER UPDATE OF name, description ON files BEGIN
     INSERT INTO files_fts(files_fts, rowid, name, description) VALUES ('delete', old.rowid, old.name, old.description);
     INSERT INTO files_fts(rowid, name, description) VALUES (new.rowid, new.name, new.description);
 END;
+
+CREATE TABLE shares (
+    id               TEXT    NOT NULL PRIMARY KEY,
+    owner_id         TEXT    NOT NULL,
+    public_id        TEXT    NOT NULL CHECK (length(public_id) BETWEEN 16 AND 32),
+    alias            TEXT    NOT NULL CHECK (length(alias) BETWEEN 3 AND 64
+                                             AND alias NOT GLOB '*[^a-z0-9_-]*'),
+    name             TEXT    NULL CHECK (name IS NULL OR length(name) <= 255),
+    description      TEXT    NULL CHECK (description IS NULL OR length(description) <= 2000),
+    password_hash    TEXT    NULL,
+    expires_at       TEXT    NULL,
+    max_views        INTEGER NULL CHECK (max_views IS NULL OR max_views > 0),
+    max_downloads    INTEGER NULL CHECK (max_downloads IS NULL OR max_downloads > 0),
+    view_count       INTEGER NOT NULL DEFAULT 0 CHECK (view_count >= 0),
+    download_count   INTEGER NOT NULL DEFAULT 0 CHECK (download_count >= 0),
+    is_active        INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0,1)),
+    suspended_at     TEXT    NULL,
+    suspended_reason TEXT    NULL CHECK (suspended_reason IS NULL OR
+                                         suspended_reason IN ('owner_deactivated','admin_action','deleting')),
+    notify_recipients INTEGER NOT NULL DEFAULT 1 CHECK (notify_recipients IN (0,1)),
+    show_owner       INTEGER NOT NULL DEFAULT 0 CHECK (show_owner IN (0,1)),
+    created_at       TEXT    NOT NULL,
+    updated_at       TEXT    NOT NULL,
+    last_accessed_at TEXT    NULL,
+
+    CHECK ( (suspended_at IS NULL AND suspended_reason IS NULL)
+         OR (suspended_at IS NOT NULL AND suspended_reason IS NOT NULL) ),
+
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE RESTRICT
+);
+
+CREATE UNIQUE INDEX ux_shares_alias     ON shares(alias);
+CREATE UNIQUE INDEX ux_shares_public_id ON shares(public_id);
+CREATE INDEX        ix_shares_owner     ON shares(owner_id, created_at DESC);
+CREATE INDEX        ix_shares_expiry    ON shares(expires_at) WHERE expires_at IS NOT NULL;
+CREATE INDEX        ix_shares_owner_active ON shares(owner_id) WHERE is_active = 1 AND suspended_at IS NULL;
+
+CREATE TABLE share_items (
+    id        TEXT NOT NULL PRIMARY KEY,
+    share_id  TEXT NOT NULL,
+    item_type TEXT NOT NULL CHECK (item_type IN ('file','folder')),
+    file_id   TEXT NULL,
+    folder_id TEXT NULL,
+    added_at  TEXT NOT NULL,
+
+    CHECK ( (item_type = 'file'   AND file_id IS NOT NULL AND folder_id IS NULL)
+         OR (item_type = 'folder' AND folder_id IS NOT NULL AND file_id IS NULL) ),
+
+    FOREIGN KEY (share_id)  REFERENCES shares(id)  ON DELETE CASCADE,
+    FOREIGN KEY (file_id)   REFERENCES files(id)   ON DELETE CASCADE,
+    FOREIGN KEY (folder_id) REFERENCES folders(id) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX ux_share_items_file   ON share_items(share_id, file_id)   WHERE file_id   IS NOT NULL;
+CREATE UNIQUE INDEX ux_share_items_folder ON share_items(share_id, folder_id) WHERE folder_id IS NOT NULL;
+CREATE INDEX        ix_share_items_share  ON share_items(share_id);
+CREATE INDEX        ix_share_items_file_rev   ON share_items(file_id)   WHERE file_id   IS NOT NULL;
+CREATE INDEX        ix_share_items_folder_rev ON share_items(folder_id) WHERE folder_id IS NOT NULL;
+
+CREATE TABLE share_recipients (
+    id                 TEXT    NOT NULL PRIMARY KEY,
+    share_id           TEXT    NOT NULL,
+    email              TEXT    NOT NULL CHECK (length(email) BETWEEN 3 AND 254),
+    email_normalized   TEXT    NOT NULL,
+    added_at           TEXT    NOT NULL,
+    last_notified_at   TEXT    NULL,
+    notify_count       INTEGER NOT NULL DEFAULT 0 CHECK (notify_count >= 0),
+    last_notify_state  TEXT    NULL CHECK (last_notify_state IS NULL OR
+                                           last_notify_state IN ('pending','sent','failed','skipped_no_smtp')),
+
+    FOREIGN KEY (share_id) REFERENCES shares(id) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX ux_share_recipients_email ON share_recipients(share_id, email_normalized);
+CREATE INDEX        ix_share_recipients_share ON share_recipients(share_id, added_at);
+
+CREATE TABLE share_grants (
+    id           TEXT NOT NULL PRIMARY KEY,
+    share_id     TEXT NOT NULL,
+    token_hash   TEXT NOT NULL CHECK (length(token_hash) = 64),
+    created_at   TEXT NOT NULL,
+    expires_at   TEXT NOT NULL,
+    last_used_at TEXT NULL,
+    revoked_at   TEXT NULL,
+    ip           TEXT NULL CHECK (ip IS NULL OR length(ip) <= 45),
+    user_agent   TEXT NULL CHECK (user_agent IS NULL OR length(user_agent) <= 512),
+
+    FOREIGN KEY (share_id) REFERENCES shares(id) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX ux_share_grants_token  ON share_grants(token_hash);
+CREATE INDEX        ix_share_grants_share  ON share_grants(share_id, expires_at);
+CREATE INDEX        ix_share_grants_expiry ON share_grants(expires_at);
+
+CREATE TABLE share_access_events (
+    id           TEXT    NOT NULL PRIMARY KEY,
+    share_id     TEXT    NOT NULL,
+    at           TEXT    NOT NULL,
+    kind         TEXT    NOT NULL CHECK (kind IN (
+                     'view','password_ok','password_fail','preview','range',
+                     'download_single','download_selected','download_all','presign_issued')),
+    counted_as   TEXT    NOT NULL CHECK (counted_as IN ('view','download','none')),
+    grant_id     TEXT    NULL,
+    file_id      TEXT    NULL,
+    item_count   INTEGER NULL CHECK (item_count IS NULL OR item_count >= 0),
+    bytes_authorized INTEGER NULL CHECK (bytes_authorized IS NULL OR bytes_authorized >= 0),
+    ip           TEXT    NULL CHECK (ip IS NULL OR length(ip) <= 45),
+    user_agent   TEXT    NULL CHECK (user_agent IS NULL OR length(user_agent) <= 512),
+    request_id   TEXT    NULL CHECK (request_id IS NULL OR length(request_id) <= 64),
+
+    FOREIGN KEY (share_id) REFERENCES shares(id)       ON DELETE CASCADE,
+    FOREIGN KEY (grant_id) REFERENCES share_grants(id) ON DELETE SET NULL,
+    FOREIGN KEY (file_id)  REFERENCES files(id)        ON DELETE SET NULL
+);
+
+CREATE INDEX ix_share_access_events_share ON share_access_events(share_id, at DESC);
+CREATE INDEX ix_share_access_events_at    ON share_access_events(at);
+CREATE INDEX ix_share_access_events_dedup
+    ON share_access_events(share_id, grant_id, at DESC) WHERE counted_as = 'view';
+
+CREATE TABLE embed_grants (
+    id               TEXT    NOT NULL PRIMARY KEY,
+    file_id          TEXT    NOT NULL,
+    owner_id         TEXT    NOT NULL,
+    public_id        TEXT    NOT NULL CHECK (length(public_id) BETWEEN 16 AND 32),
+    token_hash       TEXT    NOT NULL CHECK (length(token_hash) = 64),
+    label            TEXT    NULL CHECK (label IS NULL OR length(label) <= 100),
+    created_at       TEXT    NOT NULL,
+    expires_at       TEXT    NULL,
+    revoked_at       TEXT    NULL,
+    last_accessed_at TEXT    NULL,
+    access_count     INTEGER NOT NULL DEFAULT 0 CHECK (access_count >= 0),
+
+    FOREIGN KEY (file_id)  REFERENCES files(id) ON DELETE CASCADE,
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE RESTRICT
+);
+
+CREATE UNIQUE INDEX ux_embed_grants_token     ON embed_grants(token_hash);
+CREATE UNIQUE INDEX ux_embed_grants_public_id ON embed_grants(public_id);
+CREATE INDEX        ix_embed_grants_file      ON embed_grants(file_id);
+CREATE INDEX        ix_embed_grants_owner     ON embed_grants(owner_id, created_at DESC);
+CREATE INDEX        ix_embed_grants_expiry    ON embed_grants(expires_at) WHERE expires_at IS NOT NULL;
