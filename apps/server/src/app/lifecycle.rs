@@ -11,6 +11,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
+use sqlx::migrate::Migrator;
 use tokio::net::TcpListener;
 use tokio::signal::unix::{signal, Signal, SignalKind};
 use tokio::sync::oneshot;
@@ -32,7 +33,7 @@ use crate::config::{
 };
 use crate::domain::clock::{Clock, SystemClock};
 use crate::infra::crypto::instance_key::{InstanceKey, InstanceKeyError, KeyOrigin};
-use crate::infra::db::DbOpenError;
+use crate::infra::db::{DbOpenError, MigrationError, MIGRATOR};
 use crate::infra::http::headers::SecurityHeaders;
 use crate::infra::http::proxy::TrustedProxies;
 use crate::infra::http::shell::ShellInitError;
@@ -46,7 +47,6 @@ const EX_FAILURE: u8 = 1;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FutureStartupStep {
-    Migrations,
     Settings,
     Storage,
     Reconcile,
@@ -54,8 +54,7 @@ pub enum FutureStartupStep {
 }
 
 impl FutureStartupStep {
-    pub const IN_ORDER: [Self; 5] = [
-        Self::Migrations,
+    pub const IN_ORDER: [Self; 4] = [
         Self::Settings,
         Self::Storage,
         Self::Reconcile,
@@ -64,7 +63,6 @@ impl FutureStartupStep {
 
     pub const fn as_str(self) -> &'static str {
         match self {
-            Self::Migrations => "migrations",
             Self::Settings => "settings",
             Self::Storage => "storage",
             Self::Reconcile => "reconcile",
@@ -95,6 +93,7 @@ pub enum StartupError {
     DataDir(DataDirError),
     InstanceKey(InstanceKeyError),
     Database(DbOpenError),
+    Migration(MigrationError),
     Bind(BindError),
     Router(RouteBuildError),
     Shell(ShellInitError),
@@ -109,6 +108,7 @@ impl StartupError {
             Self::DataDir(error) => Some(error.code()),
             Self::InstanceKey(error) => Some(error.code()),
             Self::Database(error) => Some(error.code()),
+            Self::Migration(error) => Some(error.code()),
             Self::Bind(error) => Some(error.code()),
             Self::Router(_) | Self::Shell(_) | Self::ApiDocs(_) => None,
         }
@@ -116,7 +116,9 @@ impl StartupError {
 
     pub const fn exit_code(&self) -> u8 {
         match self {
-            Self::DataDir(_) | Self::InstanceKey(_) | Self::Database(_) => EX_CONFIG,
+            Self::DataDir(_) | Self::InstanceKey(_) | Self::Database(_) | Self::Migration(_) => {
+                EX_CONFIG
+            }
             Self::Config(_)
             | Self::Tracing(_)
             | Self::Bind(_)
@@ -151,6 +153,12 @@ impl StartupError {
                 pool = error.pool().map(|pool| pool.as_str()),
                 "{self}"
             ),
+            Self::Migration(error) => tracing::error!(
+                startup_error = error.code(),
+                path = %error.path.display(),
+                migration_version = error.version(),
+                "{self}"
+            ),
             Self::Bind(error) => tracing::error!(
                 startup_error = error.code(),
                 address = %error.address,
@@ -175,6 +183,7 @@ impl fmt::Display for StartupError {
             Self::DataDir(error) => error.fmt(f),
             Self::InstanceKey(error) => error.fmt(f),
             Self::Database(error) => error.fmt(f),
+            Self::Migration(error) => error.fmt(f),
             Self::Bind(error) => error.fmt(f),
             Self::Router(error) => write!(f, "internal startup failure: {error}"),
             Self::Shell(error) => write!(f, "internal startup failure: {error}"),
@@ -212,6 +221,12 @@ impl From<InstanceKeyError> for StartupError {
 impl From<DbOpenError> for StartupError {
     fn from(error: DbOpenError) -> Self {
         Self::Database(error)
+    }
+}
+
+impl From<MigrationError> for StartupError {
+    fn from(error: MigrationError) -> Self {
+        Self::Migration(error)
     }
 }
 
@@ -338,7 +353,15 @@ impl Application {
         config: &OperatorConfig,
         clock: Arc<dyn Clock>,
     ) -> Result<Self, StartupError> {
-        let initialized = initialize(config, clock).await?;
+        Self::bind_with(config, clock, &MIGRATOR).await
+    }
+
+    async fn bind_with(
+        config: &OperatorConfig,
+        clock: Arc<dyn Clock>,
+        migrator: &Migrator,
+    ) -> Result<Self, StartupError> {
+        let initialized = initialize(config, clock, migrator).await?;
         let address = SocketAddr::new(config.host, config.port);
         match bind(address).await {
             Ok(listener) => Self::from_listener(listener, initialized).await,
@@ -351,7 +374,7 @@ impl Application {
         config: &OperatorConfig,
         clock: Arc<dyn Clock>,
     ) -> Result<Self, StartupError> {
-        let initialized = initialize(config, clock).await?;
+        let initialized = initialize(config, clock, &MIGRATOR).await?;
         Self::from_listener(listener, initialized).await
     }
 
@@ -575,11 +598,16 @@ fn prepare_data(root: &Path) -> Result<(DataDir, InstanceKey), StartupError> {
 async fn initialize(
     config: &OperatorConfig,
     clock: Arc<dyn Clock>,
+    migrator: &Migrator,
 ) -> Result<InitializedApplication, StartupError> {
     let (data_dir, instance_key) = tokio::task::block_in_place(|| prepare_data(&config.data_dir))?;
     let readiness = Readiness::new();
     let health = Health::new(readiness.clone());
     let database = Database::open(config, data_dir.root(), &health).await?;
+    if let Err(error) = database.migrate(migrator, &health).await {
+        log_database_closed(&database.close().await);
+        return Err(error.into());
+    }
     for step in FutureStartupStep::IN_ORDER {
         tracing::debug!(
             step = step.as_str(),
@@ -717,5 +745,7 @@ fn log_startup_completed(address: SocketAddr, config: &OperatorConfig, elapsed: 
     );
 }
 
+#[cfg(test)]
+mod migration_tests;
 #[cfg(test)]
 mod tests;

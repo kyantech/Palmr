@@ -778,10 +778,7 @@ fn unit_future_lifecycle_steps_are_reserved_in_order() {
         .iter()
         .map(|step| step.as_str())
         .collect();
-    assert_eq!(
-        startup,
-        ["migrations", "settings", "storage", "reconcile", "workers"]
-    );
+    assert_eq!(startup, ["settings", "storage", "reconcile", "workers"]);
 
     let shutdown: Vec<&str> = FutureShutdownStep::IN_ORDER
         .iter()

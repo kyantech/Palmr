@@ -4,9 +4,11 @@ use std::time::Duration;
 use tokio::task::JoinHandle;
 use tokio::time::{interval_at, Instant, MissedTickBehavior};
 
-use crate::app::health::{DatabaseState, Health};
+use sqlx::migrate::Migrator;
+
+use crate::app::health::{DatabaseState, Health, MigrationState};
 use crate::config::{OperatorConfig, SqliteSynchronous};
-use crate::infra::db::{DbOpenError, DbPools, DbShutdown, WriterCheck};
+use crate::infra::db::{DbOpenError, DbPools, DbShutdown, MigrationError, WriterCheck};
 
 pub const WRITER_CHECK_INTERVAL: Duration = Duration::from_secs(5);
 pub const WRITER_CHECK_TIMEOUT: Duration = Duration::from_secs(2);
@@ -32,6 +34,22 @@ impl Database {
         publish_writer_state(&pools, health).await;
         let monitor = tokio::spawn(monitor_writer(pools.clone(), health.clone()));
         Ok(Self { pools, monitor })
+    }
+
+    pub async fn migrate(
+        &self,
+        migrator: &Migrator,
+        health: &Health,
+    ) -> Result<(), MigrationError> {
+        health.checks().set_migrations(MigrationState::Pending);
+        let status = self.pools.migrate(migrator).await?;
+        health.checks().set_migrations(MigrationState::Current);
+        tracing::info!(
+            applied = status.applied,
+            schema_version = status.version,
+            "database migrations current"
+        );
+        Ok(())
     }
 
     pub async fn close(self) -> DbShutdown {

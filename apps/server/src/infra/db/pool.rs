@@ -31,6 +31,7 @@ impl PoolRole {
 
 #[derive(Debug, Clone)]
 pub struct DbPools {
+    path: PathBuf,
     write: SqlitePool,
     read: ReadPool,
 }
@@ -78,6 +79,7 @@ impl DbPools {
         };
 
         let pools = Self {
+            path: path.clone(),
             write,
             read: ReadPool::new(read),
         };
@@ -86,6 +88,10 @@ impl DbPools {
             return Err(failed(DbOpenCause::Fts5Unavailable(source)));
         }
         Ok(pools)
+    }
+
+    pub fn path(&self) -> &Path {
+        &self.path
     }
 
     pub(super) const fn writer(&self) -> &SqlitePool {

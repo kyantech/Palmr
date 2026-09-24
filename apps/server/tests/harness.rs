@@ -25,6 +25,7 @@ async fn it_harness_boots_and_serves_health() -> anyhow::Result<()> {
     assert_eq!(ready.status(), reqwest::StatusCode::OK);
     let body: serde_json::Value = serde_json::from_str(&ready.text().await?)?;
     assert_eq!(body["database"], "ok");
+    assert_eq!(body["migrations"], "current");
 
     assert_eq!(application.shutdown().await, Drain::Completed);
     Ok(())
