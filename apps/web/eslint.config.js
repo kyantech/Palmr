@@ -64,7 +64,7 @@ const restrictedPathZones = SOURCE_ROOTS.flatMap((root) => [
 ]);
 
 export default defineConfig([
-  globalIgnores(["dist", LINT_FIXTURES]),
+  globalIgnores(["dist", LINT_FIXTURES, "src/shared/api/schema.d.ts"]),
 
   {
     files: ["**/*.{js,ts,tsx}"],

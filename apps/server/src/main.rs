@@ -56,11 +56,39 @@ enum Command {
     /// Run the Palmr server (the default when no command is given).
     #[default]
     Serve,
+    /// Write this build's OpenAPI document to standard output.
+    #[cfg(feature = "openapi-export")]
+    #[command(hide = true)]
+    Openapi,
 }
 
 fn main() -> ExitCode {
     match Cli::parse().command.unwrap_or_default() {
         Command::Serve => serve(),
+        #[cfg(feature = "openapi-export")]
+        Command::Openapi => export_openapi(),
+    }
+}
+
+#[cfg(feature = "openapi-export")]
+fn export_openapi() -> ExitCode {
+    use std::io::Write;
+
+    let written = app::openapi::export_document()
+        .map_err(|error| error.to_string())
+        .and_then(|document| {
+            let mut stdout = io::stdout().lock();
+            stdout
+                .write_all(&document)
+                .and_then(|()| stdout.flush())
+                .map_err(|error| error.to_string())
+        });
+    match written {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(error) => {
+            let _ = writeln!(io::stderr().lock(), "palmr: {error}");
+            ExitCode::FAILURE
+        }
     }
 }
 
@@ -128,9 +156,34 @@ mod tests {
             .get_subcommands()
             .map(|command| command.get_name().to_owned())
             .collect();
-        assert_eq!(names, ["serve"]);
+        let expected: &[&str] = if cfg!(feature = "openapi-export") {
+            &["serve", "openapi"]
+        } else {
+            &["serve"]
+        };
+        assert_eq!(names, expected);
 
         let err = Cli::try_parse_from(["palmr", "admin"]).unwrap_err();
         assert_eq!(err.kind(), ErrorKind::InvalidSubcommand);
+    }
+
+    #[cfg(not(feature = "openapi-export"))]
+    #[test]
+    fn unit_cli_default_build_has_no_openapi_export() {
+        let err = Cli::try_parse_from(["palmr", "openapi"]).unwrap_err();
+        assert_eq!(err.kind(), ErrorKind::InvalidSubcommand);
+    }
+
+    #[cfg(feature = "openapi-export")]
+    #[test]
+    fn unit_cli_openapi_export_is_hidden() {
+        let parsed = Cli::try_parse_from(["palmr", "openapi"]).unwrap();
+        assert_eq!(parsed.command, Some(Command::Openapi));
+
+        let export = Cli::command()
+            .get_subcommands()
+            .find(|command| command.get_name() == "openapi")
+            .map(clap::Command::is_hide_set);
+        assert_eq!(export, Some(true));
     }
 }

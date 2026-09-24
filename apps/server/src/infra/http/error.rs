@@ -14,7 +14,7 @@ pub(crate) const JSON_CONTENT_TYPE: &str = "application/json; charset=utf-8";
 
 // Keys and text values are `&'static str` so runtime strings — source error
 // messages, user input, paths, credentials — cannot reach `details`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, ToSchema)]
 #[serde(untagged)]
 pub enum DetailValue {
     Bool(bool),
@@ -144,7 +144,7 @@ pub struct ApiErrorPayload {
     /// Equals the `X-Request-Id` response header.
     request_id: String,
     /// Code-specific machine-readable fields; always an object, possibly empty.
-    #[schema(value_type = Object)]
+    #[schema(value_type = BTreeMap<String, DetailValue>)]
     details: ErrorDetails,
 }
 
@@ -426,6 +426,18 @@ mod tests {
         assert_eq!(payload["properties"]["message"]["type"], "string");
         assert_eq!(payload["properties"]["requestId"]["type"], "string");
         assert_eq!(payload["properties"]["details"]["type"], "object");
+        assert_eq!(
+            payload["properties"]["details"]["additionalProperties"]["$ref"],
+            "#/components/schemas/DetailValue"
+        );
+        assert_eq!(
+            schemas["DetailValue"]["oneOf"],
+            json!([
+                { "type": "boolean" },
+                { "type": "integer", "format": "int64" },
+                { "type": "string" },
+            ])
+        );
 
         let mut codes: Vec<&str> = schemas["ErrorCode"]["enum"]
             .as_array()

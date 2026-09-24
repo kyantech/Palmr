@@ -42,6 +42,7 @@ jobs:
           tool: cargo-deny@0.20.2
       - run: cargo fmt --check
       - run: cargo clippy --all-targets --locked -- -D warnings
+      - run: cargo clippy --all-targets --locked --features openapi-export -- -D warnings
       - run: cargo deny --locked check
 
   rust-test:
@@ -73,7 +74,14 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
+      - run: rustup toolchain install
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
       - run: pnpm install --frozen-lockfile
+      - name: Generated API types are current
+        run: |
+          pnpm api:generate
+          git diff --exit-code -- apps/web/src/shared/api/schema.d.ts
+          test -z "$(git status --porcelain -- apps/web/src/shared/api/schema.d.ts)"
       - run: pnpm --filter web check:structure
       - run: pnpm --filter web format:check
       - run: pnpm --filter web lint

@@ -18,7 +18,9 @@ use utoipa_scalar::Scalar;
 
 use super::auth_class::AuthClass;
 use super::health::VERSION;
-use super::router::{RateLimitClass, RoutePolicy, Routes, Transport};
+use super::router::{
+    application_routes, RateLimitClass, RouteBuildError, RoutePolicy, Routes, Transport,
+};
 use super::state::AppState;
 use crate::config::PublicBaseUrl;
 use crate::infra::http::error::{ApiError, ApiErrorBody, JSON_CONTENT_TYPE};
@@ -256,6 +258,39 @@ fn envelope_schemas() -> Vec<(String, RefOr<Schema>)> {
     schemas
 }
 
+pub fn render_document(openapi: OpenApi) -> Result<Vec<u8>, ApiDocsError> {
+    serde_json::to_vec(&describe(openapi)).map_err(ApiDocsError::Serialize)
+}
+
+pub fn export_document() -> Result<Vec<u8>, ExportError> {
+    let assembled = application_routes().build().map_err(ExportError::Router)?;
+    render_document(assembled.openapi).map_err(ExportError::Docs)
+}
+
+#[derive(Debug)]
+pub enum ExportError {
+    Router(RouteBuildError),
+    Docs(ApiDocsError),
+}
+
+impl fmt::Display for ExportError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Router(error) => error.fmt(f),
+            Self::Docs(error) => error.fmt(f),
+        }
+    }
+}
+
+impl std::error::Error for ExportError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::Router(error) => Some(error),
+            Self::Docs(error) => Some(error),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub enum ApiDocsError {
     Serialize(serde_json::Error),
@@ -291,7 +326,7 @@ struct Rendered {
 
 impl ApiDocs {
     pub fn new(openapi: OpenApi, base_url: &PublicBaseUrl) -> Result<Self, ApiDocsError> {
-        let document = serde_json::to_vec(&describe(openapi)).map_err(ApiDocsError::Serialize)?;
+        let document = render_document(openapi)?;
         let etag = weak_etag(&document);
         Ok(Self(Arc::new(Rendered {
             document: Bytes::from(document),

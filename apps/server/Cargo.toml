@@ -41,6 +41,7 @@ uuid = { version = "1", default-features = false, features = ["std", "v7"] }
 
 [features]
 dev-assets = []
+openapi-export = []
 
 [lints]
 workspace = true

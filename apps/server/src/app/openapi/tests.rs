@@ -21,8 +21,8 @@ use utoipa::openapi::OpenApi;
 use utoipa_axum::routes;
 
 use super::{
-    ApiDocs, Credential, DOCS_PATH, OPENAPI_PATH, SCALAR_RUNTIME, SCALAR_RUNTIME_PATH,
-    SCALAR_RUNTIME_SHA256,
+    export_document, ApiDocs, Credential, DOCS_PATH, OPENAPI_PATH, SCALAR_RUNTIME,
+    SCALAR_RUNTIME_PATH, SCALAR_RUNTIME_SHA256,
 };
 use crate::app::auth_class::AuthClass;
 use crate::app::health::{Health, VERSION};
@@ -431,6 +431,27 @@ fn unit_openapi_document_is_deterministic() {
     assert_eq!(first.document(), second.document());
     assert_eq!(first.etag(), second.etag());
     assert_eq!(first.etag(), weak_etag(first.document()));
+}
+
+#[tokio::test]
+async fn it_openapi_export_is_the_served_document() {
+    let dist = built_dist();
+    let served = send(app(&dist, &[]), get(OPENAPI_PATH, &[])).await;
+    assert_eq!(served.status, StatusCode::OK);
+
+    let exported = export_document().unwrap();
+    assert_eq!(served.body, exported);
+    assert_eq!(export_document().unwrap(), exported);
+
+    let under_sub_path = send(
+        app(
+            &dist,
+            &[("PALMR_BASE_URL", "https://files.example.com/palmr")],
+        ),
+        get(OPENAPI_PATH, &[]),
+    )
+    .await;
+    assert_eq!(under_sub_path.body, exported);
 }
 
 #[utoipa::path(get, path = "/test/extra", responses((status = 200)))]
