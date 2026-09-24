@@ -125,10 +125,10 @@ async fn it_sqlite_runtime_defaults() {
     let pools = open(root.path(), &defaults).await;
     assert!(root.path().join(DATABASE_FILE).is_file());
     assert_eq!(pools.writer().options().get_max_connections(), 1);
-    assert_eq!(pools.reader().options().get_max_connections(), 4);
+    assert_eq!(pools.reader().executor().options().get_max_connections(), 4);
 
     let mut writers = hold_every_connection(pools.writer()).await;
-    let mut readers = hold_every_connection(pools.reader()).await;
+    let mut readers = hold_every_connection(pools.reader().executor()).await;
     assert_eq!((writers.len(), readers.len()), (1, 4));
     for connection in writers.iter_mut().chain(readers.iter_mut()) {
         assert_eq!(
@@ -146,10 +146,10 @@ async fn it_sqlite_runtime_defaults() {
     ]);
     let pools = open(root.path(), &explicit).await;
     assert_eq!(pools.writer().options().get_max_connections(), 1);
-    assert_eq!(pools.reader().options().get_max_connections(), 7);
+    assert_eq!(pools.reader().executor().options().get_max_connections(), 7);
 
     let mut writers = hold_every_connection(pools.writer()).await;
-    let mut readers = hold_every_connection(pools.reader()).await;
+    let mut readers = hold_every_connection(pools.reader().executor()).await;
     assert_eq!((writers.len(), readers.len()), (1, 7));
     for connection in writers.iter_mut().chain(readers.iter_mut()) {
         assert_eq!(
@@ -175,7 +175,7 @@ async fn it_foreign_keys_on_every_connection() {
 
     for _generation in 0..2 {
         let mut writers = hold_every_connection(pools.writer()).await;
-        let mut readers = hold_every_connection(pools.reader()).await;
+        let mut readers = hold_every_connection(pools.reader().executor()).await;
         assert_eq!((writers.len(), readers.len()), (1, 3));
         for connection in &mut writers {
             assert_foreign_keys_enforced_in_main_schema(connection).await;
@@ -185,7 +185,10 @@ async fn it_foreign_keys_on_every_connection() {
         }
         replace_every_connection(writers).await;
         replace_every_connection(readers).await;
-        assert_eq!((pools.writer().size(), pools.reader().size()), (0, 0));
+        assert_eq!(
+            (pools.writer().size(), pools.reader().executor().size()),
+            (0, 0)
+        );
     }
 
     let mut writer = pools.writer().acquire().await.unwrap();
@@ -211,12 +214,12 @@ async fn it_fts5_available() {
     let pools = open(root.path(), &config(&[])).await;
 
     let source_id: String = sqlx::query_scalar("SELECT fts5_source_id()")
-        .fetch_one(pools.reader())
+        .fetch_one(pools.reader().executor())
         .await
         .unwrap();
     assert!(!source_id.trim().is_empty());
 
-    let mut connection = pools.reader().acquire().await.unwrap();
+    let mut connection = pools.reader().executor().acquire().await.unwrap();
     sqlx::raw_sql(
         "CREATE VIRTUAL TABLE temp.search_probe USING fts5(
              name,
@@ -247,7 +250,7 @@ async fn it_fts5_available() {
     drop(connection);
 
     let main_schema_objects: i64 = sqlx::query_scalar("SELECT count(*) FROM main.sqlite_master")
-        .fetch_one(pools.reader())
+        .fetch_one(pools.reader().executor())
         .await
         .unwrap();
     assert_eq!(main_schema_objects, 0);
@@ -274,7 +277,7 @@ async fn it_shutdown_checkpoints_wal() {
             .unwrap();
     }
     let visible: i64 = sqlx::query_scalar("SELECT count(*) FROM wal_activity")
-        .fetch_one(pools.reader())
+        .fetch_one(pools.reader().executor())
         .await
         .unwrap();
     assert_eq!(visible, ROWS);
@@ -292,7 +295,7 @@ async fn it_shutdown_checkpoints_wal() {
     assert!(wal_before > 0);
 
     let writer = pools.writer().clone();
-    let reader = pools.reader().clone();
+    let reader = pools.reader().executor().clone();
     let shutdown = pools.shutdown().await;
     let checkpoint = shutdown.checkpoint.unwrap();
 

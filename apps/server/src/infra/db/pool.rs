@@ -6,6 +6,7 @@ use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use sqlx::SqlitePool;
 
 use super::pragmas::{connect_options, verify_connection};
+use super::tx::ReadPool;
 use crate::config::SqliteSynchronous;
 
 pub const STARTUP_DB_OPEN_FAILED: &str = "STARTUP_DB_OPEN_FAILED";
@@ -31,7 +32,7 @@ impl PoolRole {
 #[derive(Debug, Clone)]
 pub struct DbPools {
     write: SqlitePool,
-    read: SqlitePool,
+    read: ReadPool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -76,7 +77,10 @@ impl DbPools {
             }
         };
 
-        let pools = Self { write, read };
+        let pools = Self {
+            write,
+            read: ReadPool::new(read),
+        };
         if let Err(source) = pools.assert_fts5().await {
             pools.close().await;
             return Err(failed(DbOpenCause::Fts5Unavailable(source)));
@@ -84,11 +88,11 @@ impl DbPools {
         Ok(pools)
     }
 
-    pub const fn writer(&self) -> &SqlitePool {
+    pub(super) const fn writer(&self) -> &SqlitePool {
         &self.write
     }
 
-    pub const fn reader(&self) -> &SqlitePool {
+    pub const fn reader(&self) -> &ReadPool {
         &self.read
     }
 
@@ -126,7 +130,7 @@ impl DbPools {
     }
 
     async fn close(&self) {
-        self.read.close().await;
+        self.read.executor().close().await;
         self.write.close().await;
     }
 }
