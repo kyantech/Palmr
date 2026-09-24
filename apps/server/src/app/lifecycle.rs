@@ -23,6 +23,7 @@ use self::data_dir::{
 use self::database::{log_database_closed, Database};
 use super::health::Health;
 use super::openapi::{ApiDocs, ApiDocsError};
+use super::reconcile::{ReconcileContext, ReconcileRegistry, ReconcileReport};
 use super::router::{
     application_routes, serve_unmatched, with_middleware, HttpEdge, RouteBuildError,
 };
@@ -54,17 +55,15 @@ const EX_FAILURE: u8 = 1;
 pub enum FutureStartupStep {
     Settings,
     Storage,
-    Reconcile,
 }
 
 impl FutureStartupStep {
-    pub const IN_ORDER: [Self; 3] = [Self::Settings, Self::Storage, Self::Reconcile];
+    pub const IN_ORDER: [Self; 2] = [Self::Settings, Self::Storage];
 
     pub const fn as_str(self) -> &'static str {
         match self {
             Self::Settings => "settings",
             Self::Storage => "storage",
-            Self::Reconcile => "reconcile",
         }
     }
 }
@@ -631,6 +630,14 @@ async fn initialize(
             "startup step reserved for a later release"
         );
     }
+    let report = ReconcileRegistry::production()
+        .run(&ReconcileContext::new(
+            database.pools().clone(),
+            Arc::clone(&clock),
+            instance.instance_id(),
+        ))
+        .await;
+    log_reconciliation(&report);
     let jobs = start_jobs(config, &database, &clock, &instance);
     let router = match StaticAssets::built(&config.base_url)
         .map_err(StartupError::from)
@@ -674,6 +681,23 @@ fn start_jobs(
         config.job_workers,
         timing,
     )
+}
+
+fn log_reconciliation(report: &ReconcileReport) {
+    if report.failed() == 0 {
+        tracing::debug!(
+            steps = report.steps(),
+            requeued = report.requeued(),
+            "startup reconciliation completed"
+        );
+    } else {
+        tracing::warn!(
+            steps = report.steps(),
+            failed = report.failed(),
+            requeued = report.requeued(),
+            "startup reconciliation completed with failures"
+        );
+    }
 }
 
 fn log_jobs_stopped(drain: JobsDrain) {

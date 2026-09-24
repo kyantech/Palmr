@@ -6,7 +6,7 @@ use crate::app::lifecycle::data_dir::{apply_process_umask, DataDir};
 use crate::app::lifecycle::StartupError;
 use crate::config::OperatorConfig;
 use crate::domain::clock::Clock;
-use crate::infra::db::{InstanceLock, InstanceLockError, DATABASE_FILE};
+use crate::infra::db::{InstanceId, InstanceLock, InstanceLockError, DATABASE_FILE};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Access {
@@ -16,6 +16,7 @@ pub enum Access {
 
 pub struct DataAccess {
     root: PathBuf,
+    instance: InstanceId,
     lock: Option<InstanceLock>,
 }
 
@@ -32,6 +33,7 @@ impl DataAccess {
         {
             return Ok(Self {
                 root: config.data_dir.clone(),
+                instance: InstanceId::generate(clock),
                 lock: None,
             });
         }
@@ -40,6 +42,7 @@ impl DataAccess {
         match InstanceLock::acquire(data_dir.root(), clock) {
             Ok((lock, _)) => Ok(Self {
                 root: data_dir.root().to_path_buf(),
+                instance: lock.instance_id(),
                 lock: Some(lock),
             }),
             Err(source @ InstanceLockError::InUse { .. }) => Err(CliError::DataDirInUse {
@@ -48,6 +51,10 @@ impl DataAccess {
             }),
             Err(error) => Err(StartupError::from(error).into()),
         }
+    }
+
+    pub const fn instance_id(&self) -> InstanceId {
+        self.instance
     }
 
     pub fn root(&self) -> &Path {

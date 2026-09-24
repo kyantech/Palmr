@@ -1,6 +1,8 @@
 pub mod backoff;
 pub mod claim;
+pub mod cli;
 pub mod kinds;
+pub mod recurring;
 pub mod runtime;
 
 use std::fmt;
@@ -216,6 +218,7 @@ impl fmt::Debug for ClaimedJob {
 pub enum JobsError {
     Db(DbError),
     Time(InvalidTimestamp),
+    Dedup(InvalidDedupKey),
     CorruptRow(&'static str),
 }
 
@@ -224,6 +227,7 @@ impl JobsError {
         match self {
             Self::Db(error) => error.kind().as_str(),
             Self::Time(_) => "time_out_of_range",
+            Self::Dedup(_) => "invalid_dedup_key",
             Self::CorruptRow(_) => "corrupt_row",
         }
     }
@@ -234,6 +238,7 @@ impl fmt::Display for JobsError {
         match self {
             Self::Db(error) => write!(f, "job queue database operation failed: {error}"),
             Self::Time(error) => write!(f, "job queue time is out of range: {error}"),
+            Self::Dedup(error) => write!(f, "job dedup key is invalid: {error}"),
             Self::CorruptRow(column) => write!(f, "jobs row has an invalid {column}"),
         }
     }
@@ -256,6 +261,12 @@ impl From<sqlx::Error> for JobsError {
 impl From<InvalidTimestamp> for JobsError {
     fn from(error: InvalidTimestamp) -> Self {
         Self::Time(error)
+    }
+}
+
+impl From<InvalidDedupKey> for JobsError {
+    fn from(error: InvalidDedupKey) -> Self {
+        Self::Dedup(error)
     }
 }
 

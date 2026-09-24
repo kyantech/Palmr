@@ -2,6 +2,8 @@ use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
 
+use crate::infra::jobs::cli::JobsCommand;
+
 /// Palmr — self-hosted file sharing.
 #[derive(Debug, Parser)]
 #[command(name = "palmr", version)]
@@ -23,6 +25,11 @@ pub enum Command {
     Db {
         #[command(subcommand)]
         command: DbCommand,
+    },
+    /// Advance durable background work.
+    Jobs {
+        #[command(subcommand)]
+        command: JobsCommand,
     },
     /// Write this build's OpenAPI document to standard output.
     #[cfg(feature = "openapi-export")]
@@ -62,6 +69,8 @@ mod tests {
     use std::path::PathBuf;
 
     use super::{Cli, Command, DbCommand};
+    use crate::infra::jobs::cli::JobsCommand;
+    use crate::infra::jobs::JobKind;
     use clap::{error::ErrorKind, CommandFactory, Parser};
 
     fn subcommand_names(command: &clap::Command) -> Vec<String> {
@@ -98,9 +107,9 @@ mod tests {
     fn unit_cli_has_no_other_commands() {
         let root = Cli::command();
         let expected: &[&str] = if cfg!(feature = "openapi-export") {
-            &["serve", "migrate", "db", "openapi"]
+            &["serve", "migrate", "db", "jobs", "openapi"]
         } else {
-            &["serve", "migrate", "db"]
+            &["serve", "migrate", "db", "jobs"]
         };
         assert_eq!(subcommand_names(&root), expected);
 
@@ -109,16 +118,45 @@ mod tests {
             .expect("db command is registered");
         assert_eq!(subcommand_names(db), ["check", "backup"]);
 
+        let jobs = root
+            .find_subcommand("jobs")
+            .expect("jobs command is registered");
+        assert_eq!(subcommand_names(jobs), ["run-once"]);
+
         for unknown in [
             &["palmr", "admin"][..],
             &["palmr", "user"],
             &["palmr", "storage"],
-            &["palmr", "jobs"],
             &["palmr", "db", "restore"],
         ] {
             let err = Cli::try_parse_from(unknown).unwrap_err();
             assert_eq!(err.kind(), ErrorKind::InvalidSubcommand, "{unknown:?}");
         }
+        assert!(Cli::try_parse_from(["palmr", "jobs"]).is_err());
+    }
+
+    #[test]
+    fn unit_cli_jobs_run_once_parses() {
+        let run =
+            Cli::try_parse_from(["palmr", "jobs", "run-once", "--kind", "tokens.prune"]).unwrap();
+        assert_eq!(
+            run.command,
+            Some(Command::Jobs {
+                command: JobsCommand::RunOnce {
+                    kind: JobKind::TokensPrune
+                }
+            })
+        );
+
+        let err = Cli::try_parse_from(["palmr", "jobs", "run-once"]).unwrap_err();
+        assert_eq!(err.kind(), ErrorKind::MissingRequiredArgument);
+
+        let err = Cli::try_parse_from(["palmr", "jobs", "run-once", "--kind", "run"]).unwrap_err();
+        assert_eq!(err.kind(), ErrorKind::ValueValidation);
+
+        let err =
+            Cli::try_parse_from(["palmr", "jobs", "run-once", "--kind", "EMAIL.SEND"]).unwrap_err();
+        assert_eq!(err.kind(), ErrorKind::ValueValidation);
     }
 
     #[test]

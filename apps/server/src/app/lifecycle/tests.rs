@@ -777,5 +777,5 @@ fn unit_future_lifecycle_steps_are_reserved_in_order() {
         .iter()
         .map(|step| step.as_str())
         .collect();
-    assert_eq!(startup, ["settings", "storage", "reconcile"]);
+    assert_eq!(startup, ["settings", "storage"]);
 }

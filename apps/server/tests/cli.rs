@@ -258,6 +258,9 @@ async fn it_cli_mutating_refuses_while_server_holds_lock() -> Result<()> {
 
     assert_refused_in_use(&root.palmr(&["migrate"])?);
 
+    let jobs = root.palmr(&["jobs", "run-once", "--kind", "tokens.prune"])?;
+    assert_refused_in_use(&jobs);
+
     let backup = root.palmr(&["db", "backup", "--out", root.out_text()?])?;
     assert_refused_in_use(&backup);
     assert!(text(&backup.stderr).contains("--allow-concurrent"));
@@ -283,6 +286,28 @@ async fn it_cli_mutating_refuses_while_server_holds_lock() -> Result<()> {
     let released = root.palmr(&["db", "check"])?;
     assert_success(&released);
     assert_eq!(text(&released.stdout), "ok\n");
+    Ok(())
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn it_cli_jobs_run_once_is_noop_on_empty_queue() -> Result<()> {
+    let root = DataRoot::new("palmr-cli-jobs-")?;
+    assert_success(&root.palmr(&["migrate"])?);
+
+    let first = root.palmr(&["jobs", "run-once", "--kind", "tokens.prune"])?;
+    assert_success(&first);
+    assert_eq!(
+        text(&first.stdout),
+        "jobs run-once: executed 0 job(s) of kind tokens.prune\n"
+    );
+    assert!(first.stderr.is_empty(), "{first:?}");
+
+    let second = root.palmr(&["jobs", "run-once", "--kind", "tokens.prune"])?;
+    assert_success(&second);
+    assert_eq!(text(&second.stdout), text(&first.stdout));
+
+    let unknown = root.palmr(&["jobs", "run-once", "--kind", "run"])?;
+    assert_eq!(unknown.status.code(), Some(2), "{unknown:?}");
     Ok(())
 }
 

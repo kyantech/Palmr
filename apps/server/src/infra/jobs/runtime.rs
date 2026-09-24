@@ -251,14 +251,34 @@ impl Dispatcher {
         proceed: impl Fn() -> bool,
     ) -> Result<Option<Outcome>, JobsError> {
         let inner = &self.0;
-        if !has_runnable(&inner.pools, inner.clock.as_ref(), &inner.kinds).await? {
+        self.run_next_in(claimant, &inner.kinds, proceed).await
+    }
+
+    pub async fn run_next_kind(
+        &self,
+        claimant: &Claimant,
+        kind: JobKind,
+        proceed: impl Fn() -> bool,
+    ) -> Result<Option<Outcome>, JobsError> {
+        self.run_next_in(claimant, std::slice::from_ref(&kind), proceed)
+            .await
+    }
+
+    async fn run_next_in(
+        &self,
+        claimant: &Claimant,
+        kinds: &[JobKind],
+        proceed: impl Fn() -> bool,
+    ) -> Result<Option<Outcome>, JobsError> {
+        let inner = &self.0;
+        if !has_runnable(&inner.pools, inner.clock.as_ref(), kinds).await? {
             return Ok(None);
         }
         let claimed = claim(
             &inner.pools,
             inner.clock.as_ref(),
             claimant,
-            &inner.kinds,
+            kinds,
             1,
             proceed,
         )

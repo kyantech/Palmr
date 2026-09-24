@@ -4,6 +4,7 @@ use std::path::PathBuf;
 
 use crate::app::lifecycle::StartupError;
 use crate::infra::db::InstanceLockError;
+use crate::infra::jobs::JobsError;
 
 pub const CLI_DATABASE_NOT_FOUND: &str = "CLI_DATABASE_NOT_FOUND";
 pub const CLI_DB_INTEGRITY_FAILED: &str = "CLI_DB_INTEGRITY_FAILED";
@@ -11,6 +12,7 @@ pub const CLI_DB_CHECK_FAILED: &str = "CLI_DB_CHECK_FAILED";
 pub const CLI_BACKUP_DESTINATION_INVALID: &str = "CLI_BACKUP_DESTINATION_INVALID";
 pub const CLI_BACKUP_EXISTS: &str = "CLI_BACKUP_EXISTS";
 pub const CLI_BACKUP_FAILED: &str = "CLI_BACKUP_FAILED";
+pub const CLI_JOBS_FAILED: &str = "CLI_JOBS_FAILED";
 
 const EX_FAILURE: u8 = 1;
 const EX_DATAERR: u8 = 65;
@@ -82,6 +84,9 @@ pub enum CliError {
         path: PathBuf,
         source: BackupFailure,
     },
+    Jobs {
+        source: JobsError,
+    },
 }
 
 impl CliError {
@@ -92,7 +97,10 @@ impl CliError {
             Self::DatabaseNotFound { .. } => EX_NOINPUT,
             Self::IntegrityFailed { .. } => EX_DATAERR,
             Self::BackupDestination { .. } | Self::BackupExists { .. } => EX_CANTCREAT,
-            Self::Runtime(_) | Self::CheckFailed { .. } | Self::BackupFailed { .. } => EX_FAILURE,
+            Self::Jobs { .. }
+            | Self::Runtime(_)
+            | Self::CheckFailed { .. }
+            | Self::BackupFailed { .. } => EX_FAILURE,
         }
     }
 }
@@ -143,6 +151,7 @@ impl fmt::Display for CliError {
                 "{CLI_BACKUP_FAILED}: the database backup to {} failed: {source}. No backup file was left behind",
                 path.display()
             ),
+            Self::Jobs { source } => write!(f, "{CLI_JOBS_FAILED}: {source}"),
         }
     }
 }

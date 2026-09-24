@@ -19,7 +19,9 @@ use super::claim::{
     bounded_error, claim, enqueue, prune_succeeded, renew, settle_success, sweep_expired_leases,
     Enqueued, Settled, SUCCEEDED_RETENTION,
 };
+use super::cli::run_once;
 use super::kinds::{JobKind, Priority, DEFAULT_LEASE};
+use super::recurring::Recurring;
 use super::runtime::{
     Dispatcher, FailureClass, Idempotency, JobAudit, JobAuditEvent, JobRuntime, JobsDrain, Outcome,
     Registry, RuntimeTiming,
@@ -152,6 +154,36 @@ impl Harness {
             audit,
             RuntimeTiming::DEFAULT.lease_renewal,
         )
+    }
+
+    async fn reopen_pools(&mut self) {
+        self.pools = DbPools::open(self._root.path(), 4, SqliteSynchronous::Full)
+            .await
+            .unwrap();
+    }
+
+    async fn schedule_recurring(&self, recurring: &Recurring, payload: &JobPayload) -> Enqueued {
+        self.pools
+            .write_tx(&self.clock, "test.schedule_recurring", async |tx| {
+                recurring.schedule(tx, &self.clock, payload).await
+            })
+            .await
+            .unwrap()
+    }
+
+    async fn schedule_recurring_successor(
+        &self,
+        recurring: &Recurring,
+        payload: &JobPayload,
+    ) -> Enqueued {
+        self.pools
+            .write_tx(
+                &self.clock,
+                "test.schedule_recurring_successor",
+                async |tx| recurring.schedule_successor(tx, &self.clock, payload).await,
+            )
+            .await
+            .unwrap()
     }
 }
 
@@ -813,4 +845,198 @@ async fn it_jobs_prune_succeeded_after_retention() {
     assert_eq!(harness.count("state = 'failed'").await, 1);
     assert_eq!(harness.row(live[0]).await.state, "claimed");
     assert_eq!(ids.len(), 4);
+}
+
+fn execution_counter(
+    calls: &Arc<AtomicU32>,
+) -> impl Fn(ClaimedJob) -> std::future::Ready<anyhow::Result<()>> + Send + Sync + 'static {
+    let calls = Arc::clone(calls);
+    move |_job: ClaimedJob| {
+        calls.fetch_add(1, Ordering::SeqCst);
+        std::future::ready(Ok(()))
+    }
+}
+
+fn recurring_registry(
+    pools: &DbPools,
+    clock: &TestClock,
+    recurring: Recurring,
+    payload: &JobPayload,
+    calls: &Arc<AtomicU32>,
+) -> Registry {
+    let pools = pools.clone();
+    let clock = clock.clone();
+    let payload = payload.clone();
+    let calls = Arc::clone(calls);
+    Registry::default().register(recurring.kind(), idempotency(), move |_job: ClaimedJob| {
+        let pools = pools.clone();
+        let clock = clock.clone();
+        let payload = payload.clone();
+        calls.fetch_add(1, Ordering::SeqCst);
+        async move {
+            pools
+                .write_tx(&clock, "test.recurring_successor", async |tx| {
+                    recurring.schedule_successor(tx, &clock, &payload).await
+                })
+                .await?;
+            Ok(())
+        }
+    })
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn it_jobs_run_once_is_idempotent() {
+    let harness = Harness::open().await;
+    let target = JobKind::EmailSend;
+    let other = JobKind::SessionsPrune;
+
+    let target_ids = harness.enqueue_many(target, 5).await;
+    let other_ids = harness.enqueue_many(other, 2).await;
+    let Enqueued::Inserted(future_id) = harness
+        .enqueue(
+            &NewJob::new(target, JobPayload::empty())
+                .run_at(Timestamp::try_from(START + Duration::from_secs(600)).unwrap()),
+        )
+        .await
+    else {
+        panic!("unkeyed enqueue inserts");
+    };
+
+    let calls = Arc::new(AtomicU32::new(0));
+    let registry = Registry::default().register(target, idempotency(), execution_counter(&calls));
+    let dispatcher = harness.dispatcher(registry, Jitter::from_fn(|| 0), JobAudit::detached());
+    let worker = claimant(&harness.clock, 0);
+
+    let first = run_once(&dispatcher, &worker, target).await.unwrap();
+    assert_eq!(first.kind, target);
+    assert_eq!(first.executed, 5);
+    assert_eq!(calls.load(Ordering::SeqCst), 5);
+    for id in &target_ids {
+        assert_eq!(harness.row(*id).await.state, "succeeded");
+    }
+    for id in &other_ids {
+        assert_eq!(harness.row(*id).await.state, "pending");
+    }
+    assert_eq!(harness.row(future_id).await.state, "pending");
+
+    let second = run_once(&dispatcher, &worker, target).await.unwrap();
+    assert_eq!(second.executed, 0);
+    assert_eq!(calls.load(Ordering::SeqCst), 5);
+    for id in &other_ids {
+        assert_eq!(harness.row(*id).await.state, "pending");
+    }
+
+    harness.clock.advance(Duration::from_secs(599));
+    assert_eq!(
+        run_once(&dispatcher, &worker, target)
+            .await
+            .unwrap()
+            .executed,
+        0
+    );
+    assert_eq!(harness.row(future_id).await.state, "pending");
+
+    harness.clock.advance(Duration::from_secs(1));
+    assert_eq!(
+        run_once(&dispatcher, &worker, target)
+            .await
+            .unwrap()
+            .executed,
+        1
+    );
+    assert_eq!(harness.row(future_id).await.state, "succeeded");
+    assert_eq!(calls.load(Ordering::SeqCst), 6);
+
+    for id in &other_ids {
+        assert_eq!(harness.row(*id).await.state, "pending");
+    }
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn it_recurring_job_single_chain_after_restart() {
+    let mut harness = Harness::open().await;
+    let kind = JobKind::TokensPrune;
+    let recurring = Recurring::new(kind, Duration::from_secs(3_600)).unwrap();
+    let payload = JobPayload::empty();
+    let calls = Arc::new(AtomicU32::new(0));
+
+    let Enqueued::Inserted(current_id) = harness.schedule_recurring(&recurring, &payload).await
+    else {
+        panic!("the first bucket schedules a fresh chain");
+    };
+    let now = Timestamp::try_from(harness.clock.now()).unwrap();
+    let current = recurring.bucket(now).unwrap();
+    let successor = recurring.successor_bucket(now).unwrap();
+    assert!(current.start() <= now);
+    assert!(successor.start() > now);
+
+    let first = harness.dispatcher(
+        recurring_registry(&harness.pools, &harness.clock, recurring, &payload, &calls),
+        Jitter::from_fn(|| 0),
+        JobAudit::detached(),
+    );
+    let worker = claimant(&harness.clock, 0);
+    assert_eq!(run_once(&first, &worker, kind).await.unwrap().executed, 1);
+    assert_eq!(harness.row(current_id).await.state, "succeeded");
+
+    let successor_key = recurring.dedup_key(successor).unwrap();
+    assert_eq!(
+        successor_key.as_str(),
+        format!("{kind}:{}", successor.start().get().unix_timestamp())
+    );
+    assert_eq!(
+        harness
+            .count(&format!("dedup_key = '{}'", successor_key.as_str()))
+            .await,
+        1
+    );
+    let (state, run_at, attempts): (String, String, i64) =
+        sqlx::query_as("SELECT state, run_at, attempts FROM jobs WHERE dedup_key = ?1")
+            .bind(successor_key.as_str())
+            .fetch_one(harness.pools.reader().executor())
+            .await
+            .unwrap();
+    assert_eq!(state, "pending");
+    assert_eq!(run_at, successor.start().to_string());
+    assert_eq!(attempts, 0);
+
+    harness.reopen_pools().await;
+    let second = harness.dispatcher(
+        recurring_registry(&harness.pools, &harness.clock, recurring, &payload, &calls),
+        Jitter::from_fn(|| 0),
+        JobAudit::detached(),
+    );
+
+    assert_eq!(
+        harness
+            .schedule_recurring_successor(&recurring, &payload)
+            .await,
+        Enqueued::Deduplicated
+    );
+    assert_eq!(
+        harness.schedule_recurring(&recurring, &payload).await,
+        Enqueued::Deduplicated
+    );
+    assert_eq!(calls.load(Ordering::SeqCst), 1);
+    assert_eq!(
+        harness
+            .count(&format!("dedup_key = '{}'", successor_key.as_str()))
+            .await,
+        1
+    );
+    assert_eq!(
+        harness
+            .count(&format!(
+                "dedup_key = '{}'",
+                recurring.dedup_key(current).unwrap().as_str()
+            ))
+            .await,
+        1
+    );
+    assert_eq!(harness.count("kind = 'tokens.prune'").await, 2);
+
+    harness.clock.advance(Duration::from_secs(3_600));
+    assert_eq!(run_once(&second, &worker, kind).await.unwrap().executed, 1);
+    assert_eq!(calls.load(Ordering::SeqCst), 2);
+    assert_eq!(harness.count("kind = 'tokens.prune'").await, 3);
 }

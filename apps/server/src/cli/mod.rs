@@ -1,12 +1,14 @@
 mod args;
 mod db;
 mod error;
+mod jobs;
 mod migrate;
 mod ownership;
 mod serve;
 
 use std::io::{self, Write};
 use std::process::ExitCode;
+use std::sync::Arc;
 
 use clap::Parser;
 
@@ -15,6 +17,7 @@ use self::error::CliError;
 use crate::app::lifecycle::StartupError;
 use crate::config::{EnvironmentSource, OperatorConfig};
 use crate::domain::clock::{Clock, SystemClock};
+use crate::infra::jobs::cli::JobsCommand;
 use crate::infra::telemetry::write_startup_failure;
 
 pub fn main() -> ExitCode {
@@ -26,6 +29,7 @@ pub fn execute(command: Command) -> ExitCode {
         Command::Serve => serve::serve(),
         Command::Migrate => operate(Operation::Migrate),
         Command::Db { command } => operate(Operation::Db(command)),
+        Command::Jobs { command } => operate(Operation::Jobs(command)),
         #[cfg(feature = "openapi-export")]
         Command::Openapi => serve::export_openapi(),
     }
@@ -34,6 +38,7 @@ pub fn execute(command: Command) -> ExitCode {
 enum Operation {
     Migrate,
     Db(DbCommand),
+    Jobs(JobsCommand),
 }
 
 fn operate(operation: Operation) -> ExitCode {
@@ -44,7 +49,7 @@ fn operate(operation: Operation) -> ExitCode {
                 .enable_all()
                 .build()
                 .map_err(CliError::Runtime)?
-                .block_on(run(operation, &loaded.config, &SystemClock))
+                .block_on(run(operation, &loaded.config, Arc::new(SystemClock)))
         });
     match outcome {
         Ok(()) => ExitCode::SUCCESS,
@@ -59,11 +64,11 @@ fn operate(operation: Operation) -> ExitCode {
 async fn run(
     operation: Operation,
     config: &OperatorConfig,
-    clock: &dyn Clock,
+    clock: Arc<dyn Clock>,
 ) -> Result<(), CliError> {
     match operation {
         Operation::Migrate => {
-            let status = migrate::migrate(config, clock).await?;
+            let status = migrate::migrate(config, clock.as_ref()).await?;
             let version = status
                 .version
                 .map_or_else(|| "none".to_owned(), |version| version.to_string());
@@ -74,18 +79,26 @@ async fn run(
             Ok(())
         }
         Operation::Db(DbCommand::Check { allow_concurrent }) => {
-            db::check(config, allow_concurrent, clock).await
+            db::check(config, allow_concurrent, clock.as_ref()).await
         }
         Operation::Db(DbCommand::Backup {
             out,
             allow_concurrent,
         }) => {
-            let path = db::backup(config, &out, allow_concurrent, clock).await?;
+            let path = db::backup(config, &out, allow_concurrent, clock.as_ref()).await?;
             report(&path.display());
             let _ = writeln!(
                 io::stderr().lock(),
                 "The database file alone is not a complete backup: keep instance.key and the storage root (or the S3 bucket) with it."
             );
+            Ok(())
+        }
+        Operation::Jobs(JobsCommand::RunOnce { kind }) => {
+            let outcome = jobs::run_once_command(config, kind, clock).await?;
+            report(&format_args!(
+                "jobs run-once: executed {} job(s) of kind {}",
+                outcome.executed, outcome.kind
+            ));
             Ok(())
         }
     }

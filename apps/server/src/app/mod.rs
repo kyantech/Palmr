@@ -2,6 +2,7 @@ pub mod auth_class;
 pub mod health;
 pub mod lifecycle;
 pub mod openapi;
+pub mod reconcile;
 pub mod router;
 pub mod state;
 
