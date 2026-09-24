@@ -1,6 +1,7 @@
 mod application;
 mod process;
 mod rng;
+pub mod schema;
 mod service;
 
 pub use application::TestApplication;

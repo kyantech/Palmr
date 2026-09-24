@@ -92,6 +92,7 @@ ALLOWLIST=(
   "spa-response-blob apps/web/eslint.config.js the M01-T04 ESLint rule message that names the banned response.blob() call"
   "spa-jszip apps/web/src/test/lint-fixtures/transfer-engine/ImportsJsZip.ts M01-T04 ESLint fixture proving the transfer-engine JSZip import ban"
   "spa-response-blob apps/web/src/test/lint-fixtures/transfer-engine/ReadsWholeBody.ts M01-T04 ESLint fixture proving the transfer-engine response.blob() ban"
+  "collate-nocase apps/server/tests/it_schema_rules.rs M05-T01 scratch-schema fixtures proving the SQLite-aware NOCASE gate rejects each spelling"
   "timeout-by-file-size apps/server/vendor/scalar-api-reference-1.71.0/standalone.js vendored, digest-pinned Scalar API reference runtime; its minified editor code is not a Palmr transfer path"
 )
 
