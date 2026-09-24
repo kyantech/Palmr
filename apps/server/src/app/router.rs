@@ -27,6 +27,7 @@ use crate::infra::http::encoding::{
 };
 use crate::infra::http::error::ApiError;
 use crate::infra::http::headers::{apply_security_headers, SecurityHeaders, SecurityPolicy};
+use crate::infra::http::idempotency::IdempotencyRoute;
 use crate::infra::http::limits::{enforce_deadline, limit_body, BodyLimit, ControlPlaneLimits};
 use crate::infra::http::panic::catch_panic;
 use crate::infra::http::path::normalize_path;
@@ -36,7 +37,11 @@ use crate::infra::http::static_assets::StaticAssets;
 use crate::infra::http::trace::{record_route, trace_request, RequestLog};
 use crate::infra::ratelimit::{self, RateLimiter};
 
+pub use crate::infra::http::idempotency::IdempotencyMode;
 pub use crate::infra::ratelimit::RateLimitClass;
+
+const IDEMPOTENT_ROUTE_PREFIX: &str = "/api/v1/";
+const MAX_ROUTE_TEMPLATE_LEN: usize = 256;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RequestBody {
@@ -194,6 +199,7 @@ pub struct RoutePolicy {
     transport: Transport,
     security: SecurityPolicy,
     request_log: RequestLog,
+    idempotency: IdempotencyMode,
 }
 
 impl RoutePolicy {
@@ -204,6 +210,7 @@ impl RoutePolicy {
             transport,
             security: SecurityPolicy::Default,
             request_log: RequestLog::Standard,
+            idempotency: IdempotencyMode::None,
         }
     }
 
@@ -214,6 +221,11 @@ impl RoutePolicy {
 
     pub const fn with_request_log(mut self, request_log: RequestLog) -> Self {
         self.request_log = request_log;
+        self
+    }
+
+    pub const fn with_idempotency(mut self, idempotency: IdempotencyMode) -> Self {
+        self.idempotency = idempotency;
         self
     }
 
@@ -235,6 +247,10 @@ impl RoutePolicy {
 
     pub const fn request_log(&self) -> RequestLog {
         self.request_log
+    }
+
+    pub const fn idempotency(&self) -> IdempotencyMode {
+        self.idempotency
     }
 }
 
@@ -289,6 +305,7 @@ pub enum RouteError {
     BytePathWithoutOptOut { method: Method, path: String },
     EmbedPolicyOutsideEmbedRoutes { method: Method, path: String },
     AuthClassTagDeclared { method: Method, path: String },
+    IdempotencyNotApplicable { method: Method, path: String },
 }
 
 impl fmt::Display for RouteError {
@@ -310,6 +327,10 @@ impl fmt::Display for RouteError {
             Self::AuthClassTagDeclared { method, path } => write!(
                 f,
                 "{method} {path} names an auth class in its OpenAPI tags; the class comes from its route policy"
+            ),
+            Self::IdempotencyNotApplicable { method, path } => write!(
+                f,
+                "{method} {path} declares Idempotency-Key support but is not a deadline-bound /api/v1 write"
             ),
         }
     }
@@ -415,6 +436,14 @@ where
                         path: entry.path.clone(),
                     });
                 }
+                if policy.idempotency.is_declared()
+                    && !idempotency_applicable(&entry.method, &entry.path, layers.deadline())
+                {
+                    errors.push(RouteError::IdempotencyNotApplicable {
+                        method: entry.method.clone(),
+                        path: entry.path.clone(),
+                    });
+                }
                 if !policy.security.permits_path(&entry.path) {
                     errors.push(RouteError::EmbedPolicyOutsideEmbedRoutes {
                         method: entry.method.clone(),
@@ -440,11 +469,17 @@ where
         }
 
         if errors.is_empty() {
-            let handler = policy.request_log.apply(
+            let mut handler = policy.request_log.apply(
                 policy
                     .security
                     .apply(layers.apply(handler, policy.rate_limit)),
             );
+            if let Some(route) = layers
+                .deadline()
+                .and_then(|lease| IdempotencyRoute::new(policy.idempotency, lease))
+            {
+                handler = handler.route_layer(Extension(route));
+            }
             self.router = self.router.routes((schemas, paths, handler));
             self.entries
                 .extend(declared.into_iter().map(|entry| (entry.key(), entry)));
@@ -578,6 +613,15 @@ impl RouteEntry {
     }
 }
 
+fn idempotency_applicable(method: &Method, path: &str, deadline: Option<Duration>) -> bool {
+    matches!(
+        *method,
+        Method::POST | Method::PUT | Method::PATCH | Method::DELETE
+    ) && path.starts_with(IDEMPOTENT_ROUTE_PREFIX)
+        && path.len() <= MAX_ROUTE_TEMPLATE_LEN
+        && deadline.is_some()
+}
+
 fn method_rank(method: &Method) -> u8 {
     match *method {
         Method::GET => 0,
@@ -611,15 +655,16 @@ mod tests {
     use utoipa_axum::routes;
 
     use super::{
-        application_routes, with_middleware, BytePath, Deadline, HttpEdge, RateLimitClass,
-        RequestBody, ResponseEncoding, RouteError, RouteInventory, RoutePolicy, Routes, Transport,
-        TransportLayers,
+        application_routes, with_middleware, BytePath, Deadline, HttpEdge, IdempotencyMode,
+        RateLimitClass, RequestBody, ResponseEncoding, RouteError, RouteInventory, RoutePolicy,
+        Routes, Transport, TransportLayers,
     };
     use crate::app::auth_class::AuthClass;
     use crate::app::openapi::{declared_auth_classes, operations, ApiDocs};
     use crate::config::{EnvironmentSource, OperatorConfig};
     use crate::domain::clock::TestClock;
     use crate::infra::http::headers::SecurityHeaders;
+    use crate::infra::http::idempotency::supported_mode;
     use crate::infra::http::limits::{BodyLimit, ControlPlaneLimits, CONTROL_PLANE_BODY_LIMIT};
     use crate::infra::http::proxy::TrustedProxies;
     use crate::infra::http::trace::RequestLog;
@@ -652,6 +697,26 @@ mod tests {
     #[utoipa::path(get, path = "test/relative", responses((status = 200)))]
     async fn relative_path() -> StatusCode {
         StatusCode::OK
+    }
+
+    #[utoipa::path(post, path = "/api/v1/test/writes", responses((status = 201)))]
+    async fn api_write() -> StatusCode {
+        StatusCode::CREATED
+    }
+
+    #[utoipa::path(get, path = "/api/v1/test/writes", responses((status = 200)))]
+    async fn api_read() -> StatusCode {
+        StatusCode::OK
+    }
+
+    #[utoipa::path(post, path = "/api/v1/shares", responses((status = 201)))]
+    async fn catalogue_share() -> StatusCode {
+        StatusCode::CREATED
+    }
+
+    #[utoipa::path(post, path = "/api/v1/admin/users", responses((status = 201)))]
+    async fn catalogue_user() -> StatusCode {
+        StatusCode::CREATED
     }
 
     const PUBLIC_READ: RoutePolicy = RoutePolicy::new(
@@ -774,6 +839,26 @@ mod tests {
         );
     }
 
+    fn idempotency_catalogue_violations(inventory: &RouteInventory) -> Vec<String> {
+        inventory
+            .entries()
+            .iter()
+            .filter_map(|entry| {
+                let declared = entry.policy().idempotency();
+                let documented = supported_mode(entry.method(), entry.path());
+                (declared != documented).then(|| {
+                    format!(
+                        "{} {} declares {} but the catalogue says {}",
+                        entry.method(),
+                        entry.path(),
+                        declared.as_str(),
+                        documented.as_str()
+                    )
+                })
+            })
+            .collect()
+    }
+
     fn default_config() -> OperatorConfig {
         OperatorConfig::load(&EnvironmentSource::from_vars(std::iter::empty::<(
             &str,
@@ -833,6 +918,105 @@ mod tests {
     fn svc_every_route_declares_one_auth_class() {
         assert_every_route_declares_one_auth_class(application_routes());
         assert_every_route_declares_one_auth_class(sample_routes());
+    }
+
+    #[test]
+    fn svc_idempotency_routes_match_catalogue() {
+        assert_eq!(
+            idempotency_catalogue_violations(&application_routes().build().unwrap().inventory),
+            Vec::<String>::new()
+        );
+        assert_eq!(
+            idempotency_catalogue_violations(&sample_inventory()),
+            Vec::<String>::new()
+        );
+
+        const WRITE: RoutePolicy = RoutePolicy::new(
+            AuthClass::Authenticated,
+            RateLimitClass::Write,
+            Transport::ControlPlane,
+        );
+        let drifted = Routes::<()>::new()
+            .route(
+                WRITE.with_idempotency(IdempotencyMode::Sealed),
+                routes!(catalogue_share),
+            )
+            .route(WRITE, routes!(catalogue_user))
+            .route(
+                WRITE.with_idempotency(IdempotencyMode::Plaintext),
+                routes!(api_write),
+            )
+            .build()
+            .unwrap()
+            .inventory;
+        assert_eq!(
+            idempotency_catalogue_violations(&drifted),
+            [
+                "POST /api/v1/admin/users declares none but the catalogue says plaintext",
+                "POST /api/v1/shares declares sealed but the catalogue says plaintext",
+                "POST /api/v1/test/writes declares plaintext but the catalogue says none",
+            ]
+        );
+    }
+
+    #[test]
+    fn unit_idempotency_declaration_requires_deadline_bound_api_write() {
+        const WRITE: RoutePolicy = RoutePolicy::new(
+            AuthClass::Authenticated,
+            RateLimitClass::Write,
+            Transport::ControlPlane,
+        );
+        assert_eq!(WRITE.idempotency(), IdempotencyMode::None);
+
+        let declared = WRITE.with_idempotency(IdempotencyMode::Plaintext);
+        let inventory = Routes::<()>::new()
+            .route(declared, routes!(api_write))
+            .build()
+            .unwrap()
+            .inventory;
+        assert_eq!(
+            inventory
+                .get(&Method::POST, "/api/v1/test/writes")
+                .unwrap()
+                .policy()
+                .idempotency(),
+            IdempotencyMode::Plaintext
+        );
+
+        let idle = RoutePolicy::new(
+            AuthClass::Authenticated,
+            RateLimitClass::TransferData,
+            Transport::BytePath(BytePath::new(
+                RequestBody::Streamed,
+                ResponseEncoding::Identity,
+                Deadline::IdleOnly,
+            )),
+        )
+        .with_idempotency(IdempotencyMode::Sealed);
+        let error = Routes::<()>::new()
+            .route(declared, routes!(api_read))
+            .route(declared, routes!(create_item))
+            .route(idle, routes!(api_write))
+            .build()
+            .err()
+            .unwrap();
+        assert_eq!(
+            error.errors(),
+            [
+                RouteError::IdempotencyNotApplicable {
+                    method: Method::GET,
+                    path: "/api/v1/test/writes".to_owned(),
+                },
+                RouteError::IdempotencyNotApplicable {
+                    method: Method::POST,
+                    path: "/test/items".to_owned(),
+                },
+                RouteError::IdempotencyNotApplicable {
+                    method: Method::POST,
+                    path: "/api/v1/test/writes".to_owned(),
+                },
+            ]
+        );
     }
 
     #[test]

@@ -2,6 +2,9 @@ pub mod encoding;
 pub mod error;
 pub mod etag;
 pub mod headers;
+pub mod idempotency;
+#[cfg(test)]
+mod idempotency_tests;
 pub mod limits;
 pub mod pagination;
 #[cfg(test)]

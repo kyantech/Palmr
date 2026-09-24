@@ -46,7 +46,7 @@ use crate::infra::http::proxy::TrustedProxies;
 use crate::infra::http::shell::ShellInitError;
 use crate::infra::http::static_assets::StaticAssets;
 use crate::infra::jobs::{
-    Dispatcher, Jitter, JobAudit, JobRuntime, JobsDrain, Registry, RuntimeTiming,
+    prune_tokens, Dispatcher, Jitter, JobAudit, JobRuntime, JobsDrain, Registry, RuntimeTiming,
 };
 use crate::infra::telemetry::{self, write_startup_failure, TelemetryInitError};
 
@@ -716,6 +716,7 @@ fn start_jobs(
         Arc::new(SmtpTransport),
     );
     let registry = email::register_jobs(registry, email);
+    let registry = prune_tokens::register_jobs(registry, pools.clone(), Arc::clone(clock));
     let dispatcher = Dispatcher::new(
         pools,
         Arc::clone(clock),

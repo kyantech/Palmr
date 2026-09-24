@@ -43,13 +43,20 @@ impl ConstantTimeEq for TokenDigest {
 }
 
 pub fn sha256_hex(bytes: &[u8]) -> TokenDigest {
-    let digest = Sha256::digest(bytes);
-    let mut hex = String::with_capacity(DIGEST_HEX_LEN);
-    for byte in digest {
+    TokenDigest(lower_hex(&Sha256::digest(bytes)))
+}
+
+pub fn mac_hex(ring: &KeyRing, purpose: MacPurpose, message: &[u8]) -> TokenDigest {
+    TokenDigest(lower_hex(&ring.mac(purpose, message)))
+}
+
+fn lower_hex(bytes: &[u8]) -> String {
+    let mut hex = String::with_capacity(bytes.len() * 2);
+    for &byte in bytes {
         hex.push(char::from(LOWER_HEX[usize::from(byte >> 4)]));
         hex.push(char::from(LOWER_HEX[usize::from(byte & 0x0f)]));
     }
-    TokenDigest(hex)
+    hex
 }
 
 pub fn verify_sha256(raw: &[u8], stored: &TokenDigest) -> bool {

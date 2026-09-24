@@ -2,6 +2,7 @@ pub mod backoff;
 pub mod claim;
 pub mod cli;
 pub mod kinds;
+pub mod prune_tokens;
 pub mod recurring;
 pub mod runtime;
 
