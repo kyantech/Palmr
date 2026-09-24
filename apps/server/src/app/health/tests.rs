@@ -21,6 +21,7 @@ use super::{
 };
 use crate::app::auth_class::AuthClass;
 use crate::app::lifecycle::Readiness;
+use crate::app::openapi::ApiDocs;
 use crate::app::router::{
     application_routes, with_middleware, HttpEdge, RateLimitClass, Transport,
 };
@@ -78,11 +79,11 @@ fn app_with(
     config: &OperatorConfig,
 ) -> impl Service<Request, Response = Response, Error = Infallible, Future: Send> + Clone {
     let clock = Arc::new(TestClock::new(datetime!(2026-09-23 12:00 UTC)));
-    let router = routes()
-        .build()
-        .unwrap()
+    let assembled = routes().build().unwrap();
+    let docs = ApiDocs::new(assembled.openapi, &config.base_url).unwrap();
+    let router = assembled
         .router
-        .with_state(AppState::new(clock.clone(), health.clone()));
+        .with_state(AppState::new(clock.clone(), health.clone(), docs));
     let edge = HttpEdge::new(
         clock,
         TrustedProxies::new(&TrustProxy::Off),
@@ -632,8 +633,13 @@ fn unit_health_openapi_declares_typed_responses() {
         .filter(|path| path.starts_with("/health"))
         .count();
     assert_eq!(operations, PATHS.len());
-    assert!(doc["paths"].get("/openapi.json").is_none());
-    assert!(doc["paths"].get("/docs").is_none());
+    for path in PATHS {
+        assert_eq!(
+            doc["paths"][path]["get"]["tags"],
+            json!(["health", "public"]),
+            "{path}"
+        );
+    }
 }
 
 #[derive(Clone, Default)]

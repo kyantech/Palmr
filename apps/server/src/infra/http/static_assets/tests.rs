@@ -25,6 +25,7 @@ use super::dist_directory::DistDirectory;
 use super::{accepts_html, is_non_spa_path, Asset, AssetKey, AssetSource, StaticAssets};
 use crate::app::health::Health;
 use crate::app::lifecycle::Readiness;
+use crate::app::openapi::ApiDocs;
 use crate::app::router::{application_routes, serve_unmatched, with_middleware, HttpEdge};
 use crate::app::state::AppState;
 use crate::config::{ConfigWarning, EnvironmentSource, OperatorConfig};
@@ -123,11 +124,15 @@ fn app_with(
     let clock = Arc::new(TestClock::new(datetime!(2026-09-23 12:00 UTC)));
     let readiness = Readiness::new();
     readiness.set_for_test(true);
-    let routes = application_routes().build().unwrap().router;
+    let assembled = application_routes().build().unwrap();
+    let docs = ApiDocs::new(assembled.openapi, &config.base_url).unwrap();
     let assets =
         StaticAssets::from_source(DistDirectory::at(&dist.root), &config.base_url).unwrap();
-    let router = serve_unmatched(routes, assets)
-        .with_state(AppState::new(clock.clone(), Health::new(readiness)));
+    let router = serve_unmatched(assembled.router, assets).with_state(AppState::new(
+        clock.clone(),
+        Health::new(readiness),
+        docs,
+    ));
     let edge = HttpEdge::new(
         clock,
         TrustedProxies::new(&config.trust_proxy),
@@ -387,9 +392,9 @@ async fn it_api_unknown_path_json_404() {
 async fn it_reserved_namespaces_never_fall_back() {
     let dist = built_dist();
     for path in [
-        "/openapi.json",
-        "/docs",
-        "/docs/scalar.js",
+        "/openapi.json/extra",
+        "/docs/unknown",
+        "/docs/scalar.js/extra",
         "/health/unknown",
         "/health/live/extra",
         "/e",
@@ -398,6 +403,32 @@ async fn it_reserved_namespaces_never_fall_back() {
     ] {
         let fetched = navigate(&dist, Method::GET, path).await;
         assert_json_error(&fetched, StatusCode::NOT_FOUND, "NOT_FOUND", path);
+    }
+}
+
+#[tokio::test]
+async fn it_api_reference_routes_win_over_static_fallback() {
+    let dist = built_dist();
+    for (method, path, content_type) in [
+        (
+            Method::GET,
+            "/openapi.json",
+            "application/json; charset=utf-8",
+        ),
+        (Method::GET, "/docs", "text/html; charset=utf-8"),
+        (
+            Method::HEAD,
+            "/docs/scalar.js",
+            "text/javascript; charset=utf-8",
+        ),
+    ] {
+        let fetched = navigate(&dist, method, path).await;
+        assert_eq!(fetched.status, StatusCode::OK, "{path}");
+        assert_eq!(fetched.header(CONTENT_TYPE), content_type, "{path}");
+        assert!(
+            !String::from_utf8_lossy(&fetched.body).contains("<div id=\"root\">"),
+            "{path}"
+        );
     }
 }
 

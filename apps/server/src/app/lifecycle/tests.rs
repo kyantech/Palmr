@@ -32,6 +32,7 @@ use super::{
 };
 use crate::app::auth_class::AuthClass;
 use crate::app::health::{Health, VERSION};
+use crate::app::openapi::ApiDocs;
 use crate::app::router::{application_routes, RateLimitClass, RoutePolicy, Routes, Transport};
 use crate::app::state::AppState;
 use crate::config::{EnvironmentSource, LogFormat, OperatorConfig};
@@ -463,11 +464,15 @@ async fn it_health_ready_false_during_shutdown() {
     let readiness = Readiness::new();
     let (entered_tx, mut entered) = mpsc::unbounded_channel();
     let release = Arc::new(Semaphore::new(0));
-    let routes = application_routes()
-        .build()
-        .unwrap()
+    let assembled = application_routes().build().unwrap();
+    let docs = ApiDocs::new(assembled.openapi, &config(&[]).base_url).unwrap();
+    let routes = assembled
         .router
-        .with_state(AppState::new(clock.clone(), Health::new(readiness.clone())))
+        .with_state(AppState::new(
+            clock.clone(),
+            Health::new(readiness.clone()),
+            docs,
+        ))
         .layer(from_fn_with_state(
             Gate {
                 entered: entered_tx,

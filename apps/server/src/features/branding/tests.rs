@@ -29,6 +29,7 @@ use super::service::render_manifest;
 use crate::app::auth_class::AuthClass;
 use crate::app::health::Health;
 use crate::app::lifecycle::Readiness;
+use crate::app::openapi::ApiDocs;
 use crate::app::router::{
     application_routes, serve_unmatched, with_middleware, HttpEdge, RateLimitClass, Transport,
 };
@@ -307,11 +308,15 @@ fn app(
     let clock = Arc::new(TestClock::new(datetime!(2026-09-23 12:00 UTC)));
     let readiness = Readiness::new();
     readiness.set_for_test(true);
-    let routes = application_routes().build().unwrap().router;
+    let assembled = application_routes().build().unwrap();
+    let docs = ApiDocs::new(assembled.openapi, &config.base_url).unwrap();
     let assets =
         StaticAssets::from_source(DistDirectory::at(&dist.root), &config.base_url).unwrap();
-    let router = serve_unmatched(routes, assets)
-        .with_state(AppState::new(clock.clone(), Health::new(readiness)));
+    let router = serve_unmatched(assembled.router, assets).with_state(AppState::new(
+        clock.clone(),
+        Health::new(readiness),
+        docs,
+    ));
     let edge = HttpEdge::new(
         clock,
         TrustedProxies::new(&config.trust_proxy),

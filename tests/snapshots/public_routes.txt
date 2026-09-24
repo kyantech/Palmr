@@ -1,4 +1,7 @@
+GET /docs public
+GET /docs/scalar.js public
 GET /health public
 GET /health/live public
 GET /health/ready public
 GET /manifest.webmanifest public
+GET /openapi.json public

@@ -19,6 +19,7 @@ use self::data_dir::{
     apply_process_umask, CrossDevice, DataDir, DataDirError, STARTUP_UPLOADS_STORAGE_CROSS_DEVICE,
 };
 use super::health::Health;
+use super::openapi::{ApiDocs, ApiDocsError};
 use super::router::{
     application_routes, serve_unmatched, with_middleware, HttpEdge, RouteBuildError,
 };
@@ -98,6 +99,7 @@ pub enum StartupError {
     Bind(BindError),
     Router(RouteBuildError),
     Shell(ShellInitError),
+    ApiDocs(ApiDocsError),
 }
 
 impl StartupError {
@@ -108,7 +110,7 @@ impl StartupError {
             Self::DataDir(error) => Some(error.code()),
             Self::InstanceKey(error) => Some(error.code()),
             Self::Bind(error) => Some(error.code()),
-            Self::Router(_) | Self::Shell(_) => None,
+            Self::Router(_) | Self::Shell(_) | Self::ApiDocs(_) => None,
         }
     }
 
@@ -119,7 +121,8 @@ impl StartupError {
             | Self::Tracing(_)
             | Self::Bind(_)
             | Self::Router(_)
-            | Self::Shell(_) => EX_FAILURE,
+            | Self::Shell(_)
+            | Self::ApiDocs(_) => EX_FAILURE,
         }
     }
 
@@ -147,7 +150,11 @@ impl StartupError {
                 address = %error.address,
                 "{self}"
             ),
-            Self::Config(_) | Self::Tracing(_) | Self::Router(_) | Self::Shell(_) => {
+            Self::Config(_)
+            | Self::Tracing(_)
+            | Self::Router(_)
+            | Self::Shell(_)
+            | Self::ApiDocs(_) => {
                 tracing::error!(startup_error = self.code(), "{self}");
             }
         }
@@ -164,6 +171,7 @@ impl fmt::Display for StartupError {
             Self::Bind(error) => error.fmt(f),
             Self::Router(error) => write!(f, "internal startup failure: {error}"),
             Self::Shell(error) => write!(f, "internal startup failure: {error}"),
+            Self::ApiDocs(error) => write!(f, "internal startup failure: {error}"),
         }
     }
 }
@@ -492,13 +500,13 @@ fn composed_router(
     assets: StaticAssets,
 ) -> Result<axum::Router, StartupError> {
     let clock: Arc<dyn Clock> = Arc::new(SystemClock);
-    let routes = application_routes()
-        .build()
-        .map_err(StartupError::Router)?
-        .router;
-    let routes = serve_unmatched(routes, assets).with_state(AppState::new(
+    let assembled = application_routes().build().map_err(StartupError::Router)?;
+    let api_docs =
+        ApiDocs::new(assembled.openapi, &config.base_url).map_err(StartupError::ApiDocs)?;
+    let routes = serve_unmatched(assembled.router, assets).with_state(AppState::new(
         Arc::clone(&clock),
         Health::new(readiness.clone()),
+        api_docs,
     ));
     Ok(edge_router(routes, config, clock))
 }

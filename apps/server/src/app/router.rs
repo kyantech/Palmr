@@ -11,12 +11,12 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::MethodRouter;
 use http::Method;
 use tower::{Service, ServiceBuilder};
-use utoipa::openapi::path::{Operation, PathItem};
 use utoipa::openapi::OpenApi;
 use utoipa_axum::router::{OpenApiRouter, UtoipaMethodRouter};
 
 use super::auth_class::AuthClass;
 use super::health;
+use super::openapi::{self, declare_route_policy, operations_mut};
 use super::state::AppState;
 use crate::domain::clock::Clock;
 use crate::domain::error_code::ErrorCode;
@@ -349,6 +349,7 @@ pub enum RouteError {
     Duplicate { method: Method, path: String },
     BytePathWithoutOptOut { method: Method, path: String },
     EmbedPolicyOutsideEmbedRoutes { method: Method, path: String },
+    AuthClassTagDeclared { method: Method, path: String },
 }
 
 impl fmt::Display for RouteError {
@@ -366,6 +367,10 @@ impl fmt::Display for RouteError {
             Self::EmbedPolicyOutsideEmbedRoutes { method, path } => write!(
                 f,
                 "{method} {path} declares the embed security policy outside the embed routes"
+            ),
+            Self::AuthClassTagDeclared { method, path } => write!(
+                f,
+                "{method} {path} names an auth class in its OpenAPI tags; the class comes from its route policy"
             ),
         }
     }
@@ -441,17 +446,23 @@ where
     }
 
     pub fn route(mut self, policy: RoutePolicy, method_router: UtoipaMethodRouter<S>) -> Self {
-        let (schemas, paths, handler) = method_router;
+        let (schemas, mut paths, handler) = method_router;
         let layers = TransportLayers::for_transport(policy.transport, self.limits);
         let mut declared = Vec::new();
         let mut errors = Vec::new();
 
-        for (path, item) in &paths.paths {
+        for (path, item) in &mut paths.paths {
             if !path.starts_with('/') {
                 errors.push(RouteError::InvalidPath { path: path.clone() });
                 continue;
             }
-            for method in operation_methods(item) {
+            for (method, operation) in operations_mut(item) {
+                if declare_route_policy(operation, policy.auth, &method).is_err() {
+                    errors.push(RouteError::AuthClassTagDeclared {
+                        method: method.clone(),
+                        path: path.clone(),
+                    });
+                }
                 let entry = RouteEntry {
                     path: path.clone(),
                     method,
@@ -545,6 +556,7 @@ pub fn application_routes() -> Routes<AppState> {
     Routes::new()
         .merge(health::routes())
         .merge(branding::routes::routes())
+        .merge(openapi::routes())
 }
 
 // Call only after every route is merged: axum attaches the 405 fallback to
@@ -619,23 +631,6 @@ impl RouteEntry {
     }
 }
 
-fn operation_methods(item: &PathItem) -> Vec<Method> {
-    let operations: [(&Option<Operation>, Method); 8] = [
-        (&item.get, Method::GET),
-        (&item.head, Method::HEAD),
-        (&item.post, Method::POST),
-        (&item.put, Method::PUT),
-        (&item.patch, Method::PATCH),
-        (&item.delete, Method::DELETE),
-        (&item.options, Method::OPTIONS),
-        (&item.trace, Method::TRACE),
-    ];
-    operations
-        .into_iter()
-        .filter_map(|(operation, method)| operation.as_ref().map(|_| method))
-        .collect()
-}
-
 fn method_rank(method: &Method) -> u8 {
     match *method {
         Method::GET => 0,
@@ -660,15 +655,17 @@ mod tests {
     use http::{Method, Request, StatusCode};
     use rstest::rstest;
     use tower::ServiceExt;
-    use utoipa::openapi::path::Paths;
+    use utoipa::openapi::path::{Operation, Paths};
+    use utoipa::openapi::OpenApi;
     use utoipa_axum::routes;
 
     use super::{
-        application_routes, operation_methods, BytePath, Deadline, RateLimitClass, RequestBody,
-        ResponseEncoding, RouteError, RouteInventory, RoutePolicy, Routes, Transport,
-        TransportLayers,
+        application_routes, BytePath, Deadline, RateLimitClass, RequestBody, ResponseEncoding,
+        RouteError, RouteInventory, RoutePolicy, Routes, Transport, TransportLayers,
     };
     use crate::app::auth_class::AuthClass;
+    use crate::app::openapi::{declared_auth_classes, operations, ApiDocs};
+    use crate::config::{EnvironmentSource, OperatorConfig};
     use crate::infra::http::limits::{BodyLimit, ControlPlaneLimits, CONTROL_PLANE_BODY_LIMIT};
     use crate::infra::http::trace::RequestLog;
 
@@ -690,6 +687,11 @@ mod tests {
     #[utoipa::path(patch, path = "/test/uploads/{id}", params(("id" = String, Path)), responses((status = 204)))]
     async fn upload_chunk() -> StatusCode {
         StatusCode::NO_CONTENT
+    }
+
+    #[utoipa::path(get, path = "/test/self-classified", tag = "admin", responses((status = 200)))]
+    async fn self_classified() -> StatusCode {
+        StatusCode::OK
     }
 
     #[utoipa::path(get, path = "test/relative", responses((status = 200)))]
@@ -748,11 +750,37 @@ mod tests {
             .paths
             .iter()
             .flat_map(|(path, item)| {
-                operation_methods(item)
-                    .into_iter()
-                    .map(move |method| (path.clone(), method))
+                operations(item).map(move |(method, _)| (path.clone(), method))
             })
             .collect()
+    }
+
+    fn auth_class_violations(openapi: &OpenApi, inventory: &RouteInventory) -> Vec<String> {
+        let mut violations = Vec::new();
+        for (path, item) in &openapi.paths.paths {
+            for (method, operation) in operations(item) {
+                let declared = declared_auth_classes(operation);
+                match inventory.get(&method, path) {
+                    None => violations.push(format!("{method} {path} is not a registered route")),
+                    Some(entry) if declared != [entry.policy().auth()] => violations.push(format!(
+                        "{method} {path} declares {declared:?} but is registered as {}",
+                        entry.policy().auth()
+                    )),
+                    Some(_) => {}
+                }
+            }
+        }
+        let documented = openapi_operations(openapi);
+        for entry in inventory.entries() {
+            if !documented.contains(&(entry.path().to_owned(), entry.method().clone())) {
+                violations.push(format!(
+                    "{} {} is missing from the OpenAPI document",
+                    entry.method(),
+                    entry.path()
+                ));
+            }
+        }
+        violations
     }
 
     fn assert_every_route_declares_one_auth_class<S>(routes: Routes<S>)
@@ -774,6 +802,44 @@ mod tests {
             assert!(AuthClass::ALL.contains(&entry.policy().auth()));
             assert!(RateLimitClass::ALL.contains(&entry.policy().rate_limit()));
         }
+        assert_eq!(
+            auth_class_violations(&assembled.openapi, &assembled.inventory),
+            Vec::<String>::new()
+        );
+
+        let served: OpenApi = serde_json::from_slice(
+            ApiDocs::new(assembled.openapi, &default_config().base_url)
+                .unwrap()
+                .document(),
+        )
+        .unwrap();
+        assert_eq!(
+            auth_class_violations(&served, &assembled.inventory),
+            Vec::<String>::new()
+        );
+    }
+
+    fn default_config() -> OperatorConfig {
+        OperatorConfig::load(&EnvironmentSource::from_vars(std::iter::empty::<(
+            &str,
+            &str,
+        )>()))
+        .unwrap()
+        .config
+    }
+
+    fn application_document() -> (OpenApi, RouteInventory) {
+        let assembled = application_routes().build().unwrap();
+        (assembled.openapi, assembled.inventory)
+    }
+
+    fn operation_mut<'a>(openapi: &'a mut OpenApi, path: &str) -> &'a mut Operation {
+        openapi
+            .paths
+            .paths
+            .get_mut(path)
+            .and_then(|item| item.get.as_mut())
+            .unwrap()
     }
 
     fn assert_every_byte_route_declares_its_opt_outs(inventory: &RouteInventory) {
@@ -812,6 +878,92 @@ mod tests {
     fn svc_every_route_declares_one_auth_class() {
         assert_every_route_declares_one_auth_class(application_routes());
         assert_every_route_declares_one_auth_class(sample_routes());
+    }
+
+    #[test]
+    fn unit_auth_class_gate_rejects_missing_class() {
+        let (mut openapi, inventory) = application_document();
+        operation_mut(&mut openapi, "/health/live")
+            .tags
+            .as_mut()
+            .unwrap()
+            .retain(|tag| tag != "public");
+        assert_eq!(
+            auth_class_violations(&openapi, &inventory),
+            ["GET /health/live declares [] but is registered as public"]
+        );
+    }
+
+    #[test]
+    fn unit_auth_class_gate_rejects_second_class() {
+        let (mut openapi, inventory) = application_document();
+        operation_mut(&mut openapi, "/openapi.json")
+            .tags
+            .as_mut()
+            .unwrap()
+            .push("admin".to_owned());
+        assert_eq!(
+            auth_class_violations(&openapi, &inventory),
+            ["GET /openapi.json declares [Public, Admin] but is registered as public"]
+        );
+    }
+
+    #[test]
+    fn unit_auth_class_gate_rejects_class_that_disagrees_with_policy() {
+        let (mut openapi, inventory) = application_document();
+        operation_mut(&mut openapi, "/docs").tags = Some(vec!["authenticated".to_owned()]);
+        assert_eq!(
+            auth_class_violations(&openapi, &inventory),
+            ["GET /docs declares [Authenticated] but is registered as public"]
+        );
+    }
+
+    #[test]
+    fn unit_auth_class_gate_rejects_unregistered_and_undocumented_operations() {
+        let (mut openapi, inventory) = application_document();
+        let item = openapi.paths.paths.remove("/health").unwrap();
+        openapi
+            .paths
+            .paths
+            .insert("/health/unregistered".to_owned(), item);
+        assert_eq!(
+            auth_class_violations(&openapi, &inventory),
+            [
+                "GET /health/unregistered is not a registered route",
+                "GET /health is missing from the OpenAPI document",
+            ]
+        );
+    }
+
+    #[test]
+    fn unit_handler_declared_auth_class_tag_fails_build() {
+        let error = Routes::<()>::new()
+            .route(PUBLIC_READ, routes!(self_classified))
+            .build()
+            .err()
+            .unwrap();
+        assert_eq!(
+            error.errors(),
+            [RouteError::AuthClassTagDeclared {
+                method: Method::GET,
+                path: "/test/self-classified".to_owned(),
+            }]
+        );
+    }
+
+    #[test]
+    fn unit_route_policy_tags_every_operation_with_its_class() {
+        let assembled = sample_routes().build().unwrap();
+        for (path, item) in &assembled.openapi.paths.paths {
+            for (method, operation) in operations(item) {
+                let entry = assembled.inventory.get(&method, path).unwrap();
+                let tags = operation.tags.clone().unwrap_or_default();
+                assert_eq!(
+                    tags.last().map(String::as_str),
+                    Some(entry.policy().auth().as_str())
+                );
+            }
+        }
     }
 
     #[test]
