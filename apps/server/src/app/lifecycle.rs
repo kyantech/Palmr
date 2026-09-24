@@ -29,7 +29,7 @@ use super::router::{
 };
 use super::state::AppState;
 use crate::config::{
-    ConfigError, ConfigWarning, EnvironmentSource, LoadedConfig, OperatorConfig, StorageConfig,
+    ConfigError, ConfigWarning, EnvironmentSource, LoadedConfig, OperatorConfig,
     STARTUP_BASE_URL_DEFAULTED,
 };
 use crate::domain::clock::{Clock, SystemClock};
@@ -49,6 +49,7 @@ use crate::infra::jobs::{
     prune_tokens, Dispatcher, Jitter, JobAudit, JobRuntime, JobsDrain, Registry, RuntimeTiming,
 };
 use crate::infra::telemetry::{self, write_startup_failure, TelemetryInitError};
+use crate::storage;
 
 pub const STARTUP_BIND_FAILED: &str = "STARTUP_BIND_FAILED";
 
@@ -900,18 +901,11 @@ fn log_config_warnings(warnings: &[ConfigWarning]) {
     }
 }
 
-const fn storage_provider(config: &OperatorConfig) -> &'static str {
-    match config.storage {
-        StorageConfig::Local => "local",
-        StorageConfig::S3(_) => "s3",
-    }
-}
-
 fn log_startup_completed(address: SocketAddr, config: &OperatorConfig, elapsed: Duration) {
     tracing::info!(
         version = env!("CARGO_PKG_VERSION"),
         bound_address = %address,
-        storage_provider = storage_provider(config),
+        storage_provider = %storage::configured_provider(&config.storage),
         duration_ms = u64::try_from(elapsed.as_millis()).unwrap_or(u64::MAX),
         "startup.completed"
     );

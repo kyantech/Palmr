@@ -13,6 +13,7 @@ path = "src/main.rs"
 [dependencies]
 anyhow = "1"
 argon2 = { version = "0.5", default-features = false, features = ["alloc", "password-hash"] }
+async-trait = "0.1"
 axum = { version = "0.8", default-features = false, features = ["http1", "matched-path", "tokio"] }
 base64ct = { version = "1", features = ["alloc"] }
 chacha20poly1305 = { version = "0.10", default-features = false, features = ["alloc"] }

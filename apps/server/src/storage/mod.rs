@@ -1,8 +1,19 @@
 pub mod caps;
 pub mod error;
+pub mod health;
 pub mod key;
+pub mod provider;
 
 use std::fmt;
+
+use crate::config::StorageConfig;
+
+pub const fn configured_provider(config: &StorageConfig) -> ProviderKind {
+    match config {
+        StorageConfig::Local => ProviderKind::Local,
+        StorageConfig::S3(_) => ProviderKind::S3,
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ProviderKind {

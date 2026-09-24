@@ -41,6 +41,62 @@ impl StorageCapabilities {
         max_parts: 10_000,
         requires_checksum_headers: false,
     };
+
+    pub const fn upload_data_plane(&self) -> UploadDataPlane {
+        if self.supports_multipart {
+            UploadDataPlane::Multipart
+        } else {
+            UploadDataPlane::Tus
+        }
+    }
+
+    pub const fn part_upload(&self) -> PartUpload {
+        if self.requires_checksum_headers {
+            PartUpload::ServerProxied
+        } else {
+            PartUpload::BrowserDirect
+        }
+    }
+
+    pub const fn download_data_plane(&self) -> DownloadDataPlane {
+        if self.supports_presigned_get {
+            DownloadDataPlane::PresignedRedirect
+        } else {
+            DownloadDataPlane::Streamed
+        }
+    }
+
+    pub const fn copy_strategy(&self) -> CopyStrategy {
+        if self.supports_server_side_copy {
+            CopyStrategy::ServerSide
+        } else {
+            CopyStrategy::Unsupported
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum UploadDataPlane {
+    Multipart,
+    Tus,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PartUpload {
+    BrowserDirect,
+    ServerProxied,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DownloadDataPlane {
+    PresignedRedirect,
+    Streamed,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CopyStrategy {
+    ServerSide,
+    Unsupported,
 }
 
 #[cfg(test)]

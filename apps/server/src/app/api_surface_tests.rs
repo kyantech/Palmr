@@ -28,6 +28,26 @@ const FORBIDDEN_STORAGE_INPUTS: [&str; 6] = [
 
 const FORBIDDEN_NAMESPACES: [&str; 2] = ["/s3", "/api/v1/storage"];
 
+const STORAGE_CAPABILITY_SEGMENTS: [&str; 3] = ["s3", "multipart", "presign"];
+
+const TRANSFER_ITEM_SCOPE: [&str; 4] = ["sessions", "{sid}", "files", "{itemId}"];
+
+const CAPABILITY_CLASSES: [AuthClass; 3] = [
+    AuthClass::Authenticated,
+    AuthClass::AuthenticatedRecentAuth,
+    AuthClass::PublicGrant,
+];
+
+const ADMIN_STORAGE_NAMESPACE: &str = "/api/v1/admin/storage";
+
+const ADMIN_STORAGE_ROUTES: [&str; 3] = [
+    "/api/v1/admin/storage",
+    "/api/v1/admin/storage/self-test",
+    "/api/v1/admin/storage/cors-template",
+];
+
+const HTTP_SURFACE_TOKENS: [&str; 5] = ["axum", "utoipa", "Router", "routes!", "IntoResponse"];
+
 fn public_route_snapshot(inventory: &RouteInventory) -> String {
     inventory
         .entries()
@@ -394,6 +414,33 @@ fn storage_primitive_violations(inventory: &RouteInventory, document: &Value) ->
                 ));
             }
         }
+        let segments: Vec<&str> = entry.path().split('/').collect();
+        if let Some(index) = segments.iter().position(|segment| {
+            STORAGE_CAPABILITY_SEGMENTS
+                .iter()
+                .any(|capability| segment.eq_ignore_ascii_case(capability))
+        }) {
+            let scoped = segments[index] == "s3"
+                && index >= TRANSFER_ITEM_SCOPE.len()
+                && segments[index - TRANSFER_ITEM_SCOPE.len()..index] == TRANSFER_ITEM_SCOPE;
+            if !scoped {
+                violations.push(format!(
+                    "{route} exposes a storage capability outside a transfer item"
+                ));
+            }
+            if !CAPABILITY_CLASSES.contains(&entry.policy().auth()) {
+                violations.push(format!(
+                    "{route} exposes a storage capability without an authorizing grant"
+                ));
+            }
+        }
+        if in_namespace(entry.path(), ADMIN_STORAGE_NAMESPACE)
+            && !ADMIN_STORAGE_ROUTES.contains(&entry.path())
+        {
+            violations.push(format!(
+                "{route} is an undocumented admin storage primitive"
+            ));
+        }
         for variable in template_variables(entry.path()) {
             if FORBIDDEN_STORAGE_INPUTS.contains(&variable) {
                 violations.push(format!("{route} addresses storage by {variable:?}"));
@@ -433,6 +480,107 @@ fn regression_R032_no_unauthenticated_storage_primitives() {
     for path in ungranted {
         assert!(!path.to_ascii_lowercase().contains("presign"), "{path}");
     }
+
+    let (planted, planted_document) = inventory_and_document(
+        Routes::new()
+            .route(
+                policy(AuthClass::Authenticated),
+                routes!(transfer_item_multipart),
+            )
+            .route(policy(AuthClass::Public), routes!(ungranted_item_presign))
+            .route(
+                policy(AuthClass::Authenticated),
+                routes!(unscoped_multipart_create),
+            )
+            .route(policy(AuthClass::Admin), routes!(admin_storage_object))
+            .route(policy(AuthClass::Admin), routes!(admin_storage_self_test)),
+    );
+    assert_eq!(
+        storage_primitive_violations(&planted, &planted_document),
+        [
+            "DELETE /api/v1/admin/storage/objects/{objectId} (admin) is an undocumented admin storage primitive",
+            "POST /api/v1/public/transfers/sessions/{sid}/files/{itemId}/s3/multipart/presign (public) exposes a storage capability without an authorizing grant",
+            "POST /api/v1/uploads/multipart (authenticated) exposes a storage capability outside a transfer item",
+        ]
+    );
+
+    let storage_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src/storage");
+    for (name, source) in [
+        ("mod.rs", include_str!("../storage/mod.rs")),
+        ("provider.rs", include_str!("../storage/provider.rs")),
+        ("caps.rs", include_str!("../storage/caps.rs")),
+        ("key.rs", include_str!("../storage/key.rs")),
+        ("error.rs", include_str!("../storage/error.rs")),
+        ("health.rs", include_str!("../storage/health.rs")),
+    ] {
+        assert!(storage_dir.join(name).is_file(), "{name}");
+        let production = source.split("#[cfg(test)]").next().unwrap();
+        for token in HTTP_SURFACE_TOKENS {
+            assert!(!production.contains(token), "storage/{name} names {token}");
+        }
+    }
+
+    let provider = include_str!("../storage/provider.rs")
+        .split("#[cfg(test)]")
+        .next()
+        .unwrap();
+    assert!(provider.contains("\n\npub struct GrantContext {\n    _sealed: (),\n}\n"));
+    assert!(!provider.contains("impl GrantContext"));
+    assert!(!provider.contains("for GrantContext {\n    fn default"));
+    assert_eq!(provider.matches("for GrantContext").count(), 1);
+    assert!(provider.contains("impl fmt::Debug for GrantContext"));
+    let presign_methods: Vec<&str> = provider
+        .split("async fn presign_")
+        .skip(1)
+        .map(|signature| signature.split(';').next().unwrap())
+        .collect();
+    assert_eq!(presign_methods.len(), 2);
+    for signature in presign_methods {
+        assert!(
+            signature.contains("authorized: &GrantContext,"),
+            "{signature}"
+        );
+    }
+}
+
+#[utoipa::path(
+    post,
+    path = "/api/v1/transfers/sessions/{sid}/files/{itemId}/s3/multipart",
+    params(("sid" = String, Path), ("itemId" = String, Path)),
+    responses((status = 201))
+)]
+async fn transfer_item_multipart() -> http::StatusCode {
+    http::StatusCode::CREATED
+}
+
+#[utoipa::path(
+    post,
+    path = "/api/v1/public/transfers/sessions/{sid}/files/{itemId}/s3/multipart/presign",
+    params(("sid" = String, Path), ("itemId" = String, Path)),
+    responses((status = 200))
+)]
+async fn ungranted_item_presign() -> http::StatusCode {
+    http::StatusCode::OK
+}
+
+#[utoipa::path(post, path = "/api/v1/uploads/multipart", responses((status = 201)))]
+async fn unscoped_multipart_create() -> http::StatusCode {
+    http::StatusCode::CREATED
+}
+
+#[utoipa::path(
+    delete,
+    path = "/api/v1/admin/storage/objects/{objectId}",
+    params(("objectId" = String, Path)),
+    responses((status = 204))
+)]
+async fn admin_storage_object() -> http::StatusCode {
+    http::StatusCode::NO_CONTENT
+}
+
+#[utoipa::path(post, path = "/api/v1/admin/storage/self-test", responses((status = 200)))]
+async fn admin_storage_self_test() -> http::StatusCode {
+    http::StatusCode::OK
 }
 
 #[utoipa::path(put, path = "/s3/{key}", params(("key" = String, Path)), responses((status = 200)))]
@@ -472,10 +620,14 @@ fn unit_storage_primitive_gate_detects_v3_shapes() {
     assert_eq!(
         storage_primitive_violations(&inventory, &document),
         [
+            "GET /api/v1/public/uploads/presign (public) exposes a storage capability outside a transfer item",
+            "GET /api/v1/public/uploads/presign (public) exposes a storage capability without an authorizing grant",
             "GET /api/v1/public/uploads/presign (public) accepts storage input \"objectName\"",
             "GET /api/v1/public/uploads/presign (public) accepts storage input \"bucket\"",
             "GET /api/v1/storage/objects (public+grant) is a generic storage primitive under /api/v1/storage",
             "PUT /s3/{key} (public) is a generic storage primitive under /s3",
+            "PUT /s3/{key} (public) exposes a storage capability outside a transfer item",
+            "PUT /s3/{key} (public) exposes a storage capability without an authorizing grant",
             "PUT /s3/{key} (public) addresses storage by \"key\"",
             "PUT /s3/{key} (public) accepts storage input \"key\"",
         ]
