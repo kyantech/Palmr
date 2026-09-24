@@ -25,11 +25,21 @@ jobs:
 
   browser-matrix:
     name: Browser matrix
-    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - run: echo "Browser matrix is not implemented yet" && exit 1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @palmr/e2e exec playwright install --with-deps chromium firefox webkit
+      - run: PALMR_CONTAINER_REQUIRED=1 ./tests/container/smoke.sh
+      - run: pnpm --filter @palmr/e2e test:container --grep e2e_shell_loads
 
   proxy-matrix:
     name: Proxy matrix

@@ -1,5 +1,6 @@
 packages:
   - apps/web
+  - tests/e2e
 allowBuilds:
   msw: false
   unrs-resolver: false

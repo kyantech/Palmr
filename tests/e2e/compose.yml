@@ -1,0 +1,13 @@
+services:
+  palmr:
+    image: ${PALMR_CONTAINER_IMAGE:-palmr-container-smoke:local}
+    pull_policy: never
+    environment:
+      PALMR_BASE_URL: ${PALMR_E2E_BASE_URL:-http://127.0.0.1:5487}
+    ports:
+      - "127.0.0.1:${PALMR_E2E_PORT:-5487}:5487"
+    volumes:
+      - palmr-data:/data
+
+volumes:
+  palmr-data:

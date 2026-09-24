@@ -371,7 +371,13 @@ async fn it_startup_listener_serves_application_stack() {
     let assets =
         StaticAssets::from_source(DistDirectory::at(dist.path()), &config.base_url).unwrap();
     let readiness = Readiness::new();
-    let router = composed_router(&config, &readiness, assets).unwrap();
+    let router = composed_router(
+        &config,
+        &readiness,
+        assets,
+        Arc::new(TestClock::new(datetime!(2026-09-23 12:00 UTC))),
+    )
+    .unwrap();
     let listener = bind(loopback()).await.unwrap();
     let server = Server::start(listener, router, &readiness).unwrap();
     assert!(readiness.is_ready());

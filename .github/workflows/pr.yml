@@ -88,6 +88,10 @@ jobs:
       - run: pnpm --filter web typecheck
       - run: pnpm --filter web test
       - run: pnpm --filter web build
+      - run: pnpm --filter @palmr/e2e format:check
+      - run: pnpm --filter @palmr/e2e lint
+      - run: pnpm --filter @palmr/e2e typecheck
+      - run: pnpm --filter @palmr/e2e test:list
 
   container:
     name: Container smoke
@@ -105,8 +109,10 @@ jobs:
       - run: rustup toolchain install
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @palmr/e2e exec playwright install --with-deps chromium
       - run: pnpm build:release
       - name: Record release binary size
         run: |
           echo "Release binary size (bytes): $(stat -c %s target/release/palmr)" | tee -a "$GITHUB_STEP_SUMMARY"
       - run: PALMR_CONTAINER_REQUIRED=1 ./tests/container/smoke.sh
+      - run: pnpm --filter @palmr/e2e test:container --project=Chromium --grep e2e_shell_loads

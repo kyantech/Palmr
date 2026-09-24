@@ -312,6 +312,76 @@ pub struct Server {
     stop: oneshot::Sender<()>,
 }
 
+pub struct Application {
+    server: Server,
+    readiness: Readiness,
+    _data_dir: DataDir,
+    _instance_key: InstanceKey,
+}
+
+impl Application {
+    pub async fn bind(
+        config: &OperatorConfig,
+        clock: Arc<dyn Clock>,
+    ) -> Result<Self, StartupError> {
+        let initialized = initialize(config, clock)?;
+        let address = SocketAddr::new(config.host, config.port);
+        let listener = bind(address).await?;
+        Self::from_listener(listener, initialized)
+    }
+
+    pub fn start(
+        listener: TcpListener,
+        config: &OperatorConfig,
+        clock: Arc<dyn Clock>,
+    ) -> Result<Self, StartupError> {
+        let initialized = initialize(config, clock)?;
+        Self::from_listener(listener, initialized)
+    }
+
+    fn from_listener(
+        listener: TcpListener,
+        initialized: InitializedApplication,
+    ) -> Result<Self, StartupError> {
+        let address = listener.local_addr().map_err(|source| {
+            StartupError::Bind(BindError {
+                address: SocketAddr::from(([127, 0, 0, 1], 0)),
+                source,
+            })
+        })?;
+        let server = Server::start(listener, initialized.router, &initialized.readiness)
+            .map_err(|source| StartupError::Bind(BindError { address, source }))?;
+        Ok(Self {
+            server,
+            readiness: initialized.readiness,
+            _data_dir: initialized.data_dir,
+            _instance_key: initialized.instance_key,
+        })
+    }
+
+    pub const fn address(&self) -> SocketAddr {
+        self.server.address()
+    }
+
+    pub async fn shutdown(self, grace: Duration) -> Drain {
+        let Self {
+            server,
+            readiness: _,
+            _data_dir: data_dir,
+            _instance_key: instance_key,
+        } = self;
+        let _resources = (data_dir, instance_key);
+        server.shutdown(grace).await
+    }
+}
+
+struct InitializedApplication {
+    router: axum::Router,
+    readiness: Readiness,
+    data_dir: DataDir,
+    instance_key: InstanceKey,
+}
+
 impl Server {
     pub fn start(
         listener: TcpListener,
@@ -406,35 +476,20 @@ pub async fn run(source: &EnvironmentSource, mut signals: ShutdownSignals) -> Ex
     }
     log_config_warnings(&warnings);
 
-    let (_data_dir, _instance_key) =
-        match tokio::task::block_in_place(|| prepare_data(&config.data_dir)) {
-            Ok(prepared) => prepared,
-            Err(error) => return startup_failed(&error, Diagnostics::Logged),
-        };
-
-    for step in FutureStartupStep::IN_ORDER {
-        tracing::debug!(
-            step = step.as_str(),
-            "startup step reserved for a later release"
-        );
-    }
-
-    let readiness = Readiness::new();
-    let server = match listen(&config, &readiness).await {
-        Ok(server) => server,
+    let mut application = match Application::bind(&config, Arc::new(clock)).await {
+        Ok(application) => application,
         Err(error) => return startup_failed(&error, Diagnostics::Logged),
     };
     log_startup_completed(
-        server.address(),
+        application.address(),
         &config,
         clock.monotonic().saturating_duration_since(started),
     );
 
-    let mut server = server;
     let signal = tokio::select! {
         signal = signals.recv() => signal,
-        ended = &mut server.task => {
-            readiness.mark_not_ready();
+        ended = &mut application.server.task => {
+            application.readiness.mark_not_ready();
             tracing::error!(outcome = ?ended.map(|result| result.map_err(|error| error.kind())), "the HTTP server stopped unexpectedly");
             flush_diagnostics();
             return ExitCode::from(EX_FAILURE);
@@ -446,7 +501,7 @@ pub async fn run(source: &EnvironmentSource, mut signals: ShutdownSignals) -> Ex
         "shutdown.started"
     );
 
-    let drain = server.shutdown(config.shutdown_grace).await;
+    let drain = application.shutdown(config.shutdown_grace).await;
     for step in FutureShutdownStep::IN_ORDER {
         tracing::debug!(
             step = step.as_str(),
@@ -478,28 +533,42 @@ fn prepare_data(root: &Path) -> Result<(DataDir, InstanceKey), StartupError> {
     Ok((data_dir, key))
 }
 
-async fn listen(config: &OperatorConfig, readiness: &Readiness) -> Result<Server, StartupError> {
-    let router = application_router(config, readiness)?;
-    let address = SocketAddr::new(config.host, config.port);
-    let listener = bind(address).await?;
-    Server::start(listener, router, readiness)
-        .map_err(|source| StartupError::Bind(BindError { address, source }))
+fn initialize(
+    config: &OperatorConfig,
+    clock: Arc<dyn Clock>,
+) -> Result<InitializedApplication, StartupError> {
+    let (data_dir, instance_key) = tokio::task::block_in_place(|| prepare_data(&config.data_dir))?;
+    for step in FutureStartupStep::IN_ORDER {
+        tracing::debug!(
+            step = step.as_str(),
+            "startup step reserved for a later release"
+        );
+    }
+    let readiness = Readiness::new();
+    let router = application_router(config, &readiness, clock)?;
+    Ok(InitializedApplication {
+        router,
+        readiness,
+        data_dir,
+        instance_key,
+    })
 }
 
-fn application_router(
+pub fn application_router(
     config: &OperatorConfig,
     readiness: &Readiness,
+    clock: Arc<dyn Clock>,
 ) -> Result<axum::Router, StartupError> {
     let assets = StaticAssets::built(&config.base_url)?;
-    composed_router(config, readiness, assets)
+    composed_router(config, readiness, assets, clock)
 }
 
 fn composed_router(
     config: &OperatorConfig,
     readiness: &Readiness,
     assets: StaticAssets,
+    clock: Arc<dyn Clock>,
 ) -> Result<axum::Router, StartupError> {
-    let clock: Arc<dyn Clock> = Arc::new(SystemClock);
     let assembled = application_routes().build().map_err(StartupError::Router)?;
     let api_docs =
         ApiDocs::new(assembled.openapi, &config.base_url).map_err(StartupError::ApiDocs)?;

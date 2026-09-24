@@ -5,7 +5,6 @@ use std::time::Instant;
 use time::OffsetDateTime;
 
 pub use system::SystemClock;
-#[cfg(test)]
 pub use test_clock::TestClock;
 
 pub trait Clock: Send + Sync + 'static {
@@ -15,7 +14,6 @@ pub trait Clock: Send + Sync + 'static {
     fn monotonic(&self) -> Instant;
 }
 
-#[cfg(test)]
 mod test_clock {
     use std::{
         future::Future,

@@ -1,47 +1,9 @@
-#[cfg(not(unix))]
-compile_error!("Palmr runs on Unix-like operating systems only");
-
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "route policy primitives are consumed as feature routes are registered"
-    )
-)]
-mod app;
-#[expect(
-    dead_code,
-    unused_imports,
-    reason = "configuration fields are consumed by later startup steps"
-)]
-mod config;
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "domain primitives are consumed by feature modules"
-    )
-)]
-mod domain;
-mod features;
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        unused_imports,
-        reason = "infrastructure primitives are consumed by feature modules"
-    )
-)]
-mod infra;
-
 use std::io;
 use std::process::ExitCode;
 
 use clap::{Parser, Subcommand};
-
-use app::lifecycle::{self, ShutdownSignals};
-use config::EnvironmentSource;
-use infra::telemetry::write_startup_failure;
+use palmr_server::lifecycle::{self, ShutdownSignals};
+use palmr_server::{write_startup_failure, EnvironmentSource};
 
 /// Palmr — self-hosted file sharing.
 #[derive(Debug, Parser)]
@@ -74,7 +36,7 @@ fn main() -> ExitCode {
 fn export_openapi() -> ExitCode {
     use std::io::Write;
 
-    let written = app::openapi::export_document()
+    let written = palmr_server::openapi::export_document()
         .map_err(|error| error.to_string())
         .and_then(|document| {
             let mut stdout = io::stdout().lock();
