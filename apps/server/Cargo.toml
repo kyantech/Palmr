@@ -38,6 +38,7 @@ utoipa = "5"
 utoipa-axum = "0.2"
 utoipa-scalar = { version = "0.3", default-features = false }
 uuid = { version = "1", default-features = false, features = ["std", "v7"] }
+sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio", "sqlite"] }
 
 [features]
 dev-assets = []

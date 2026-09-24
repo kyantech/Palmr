@@ -1,4 +1,5 @@
 mod data_dir;
+mod database;
 
 use std::fmt;
 use std::future::IntoFuture;
@@ -18,6 +19,7 @@ use tokio::task::JoinHandle;
 use self::data_dir::{
     apply_process_umask, CrossDevice, DataDir, DataDirError, STARTUP_UPLOADS_STORAGE_CROSS_DEVICE,
 };
+use self::database::{log_database_closed, Database};
 use super::health::Health;
 use super::openapi::{ApiDocs, ApiDocsError};
 use super::router::{
@@ -30,6 +32,7 @@ use crate::config::{
 };
 use crate::domain::clock::{Clock, SystemClock};
 use crate::infra::crypto::instance_key::{InstanceKey, InstanceKeyError, KeyOrigin};
+use crate::infra::db::DbOpenError;
 use crate::infra::http::headers::SecurityHeaders;
 use crate::infra::http::proxy::TrustedProxies;
 use crate::infra::http::shell::ShellInitError;
@@ -43,7 +46,6 @@ const EX_FAILURE: u8 = 1;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FutureStartupStep {
-    Database,
     Migrations,
     Settings,
     Storage,
@@ -52,8 +54,7 @@ pub enum FutureStartupStep {
 }
 
 impl FutureStartupStep {
-    pub const IN_ORDER: [Self; 6] = [
-        Self::Database,
+    pub const IN_ORDER: [Self; 5] = [
         Self::Migrations,
         Self::Settings,
         Self::Storage,
@@ -63,7 +64,6 @@ impl FutureStartupStep {
 
     pub const fn as_str(self) -> &'static str {
         match self {
-            Self::Database => "database",
             Self::Migrations => "migrations",
             Self::Settings => "settings",
             Self::Storage => "storage",
@@ -76,16 +76,14 @@ impl FutureStartupStep {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FutureShutdownStep {
     StopWorkers,
-    CloseDatabase,
 }
 
 impl FutureShutdownStep {
-    pub const IN_ORDER: [Self; 2] = [Self::StopWorkers, Self::CloseDatabase];
+    pub const IN_ORDER: [Self; 1] = [Self::StopWorkers];
 
     pub const fn as_str(self) -> &'static str {
         match self {
             Self::StopWorkers => "stop_workers",
-            Self::CloseDatabase => "close_database",
         }
     }
 }
@@ -96,6 +94,7 @@ pub enum StartupError {
     Tracing(TelemetryInitError),
     DataDir(DataDirError),
     InstanceKey(InstanceKeyError),
+    Database(DbOpenError),
     Bind(BindError),
     Router(RouteBuildError),
     Shell(ShellInitError),
@@ -109,6 +108,7 @@ impl StartupError {
             Self::Tracing(error) => Some(error.code()),
             Self::DataDir(error) => Some(error.code()),
             Self::InstanceKey(error) => Some(error.code()),
+            Self::Database(error) => Some(error.code()),
             Self::Bind(error) => Some(error.code()),
             Self::Router(_) | Self::Shell(_) | Self::ApiDocs(_) => None,
         }
@@ -116,7 +116,7 @@ impl StartupError {
 
     pub const fn exit_code(&self) -> u8 {
         match self {
-            Self::DataDir(_) | Self::InstanceKey(_) => EX_CONFIG,
+            Self::DataDir(_) | Self::InstanceKey(_) | Self::Database(_) => EX_CONFIG,
             Self::Config(_)
             | Self::Tracing(_)
             | Self::Bind(_)
@@ -145,6 +145,12 @@ impl StartupError {
                 path = %error.path().display(),
                 "{self}"
             ),
+            Self::Database(error) => tracing::error!(
+                startup_error = error.code(),
+                path = %error.path.display(),
+                pool = error.pool().map(|pool| pool.as_str()),
+                "{self}"
+            ),
             Self::Bind(error) => tracing::error!(
                 startup_error = error.code(),
                 address = %error.address,
@@ -168,6 +174,7 @@ impl fmt::Display for StartupError {
             Self::Tracing(error) => error.fmt(f),
             Self::DataDir(error) => error.fmt(f),
             Self::InstanceKey(error) => error.fmt(f),
+            Self::Database(error) => error.fmt(f),
             Self::Bind(error) => error.fmt(f),
             Self::Router(error) => write!(f, "internal startup failure: {error}"),
             Self::Shell(error) => write!(f, "internal startup failure: {error}"),
@@ -199,6 +206,12 @@ impl From<DataDirError> for StartupError {
 impl From<InstanceKeyError> for StartupError {
     fn from(error: InstanceKeyError) -> Self {
         Self::InstanceKey(error)
+    }
+}
+
+impl From<DbOpenError> for StartupError {
+    fn from(error: DbOpenError) -> Self {
+        Self::Database(error)
     }
 }
 
@@ -315,6 +328,7 @@ pub struct Server {
 pub struct Application {
     server: Server,
     readiness: Readiness,
+    database: Database,
     _data_dir: DataDir,
     _instance_key: InstanceKey,
 }
@@ -324,36 +338,49 @@ impl Application {
         config: &OperatorConfig,
         clock: Arc<dyn Clock>,
     ) -> Result<Self, StartupError> {
-        let initialized = initialize(config, clock)?;
+        let initialized = initialize(config, clock).await?;
         let address = SocketAddr::new(config.host, config.port);
-        let listener = bind(address).await?;
-        Self::from_listener(listener, initialized)
+        match bind(address).await {
+            Ok(listener) => Self::from_listener(listener, initialized).await,
+            Err(error) => Err(initialized.abandon(error.into()).await),
+        }
     }
 
-    pub fn start(
+    pub async fn start(
         listener: TcpListener,
         config: &OperatorConfig,
         clock: Arc<dyn Clock>,
     ) -> Result<Self, StartupError> {
-        let initialized = initialize(config, clock)?;
-        Self::from_listener(listener, initialized)
+        let initialized = initialize(config, clock).await?;
+        Self::from_listener(listener, initialized).await
     }
 
-    fn from_listener(
+    async fn from_listener(
         listener: TcpListener,
         initialized: InitializedApplication,
     ) -> Result<Self, StartupError> {
-        let address = listener.local_addr().map_err(|source| {
-            StartupError::Bind(BindError {
-                address: SocketAddr::from(([127, 0, 0, 1], 0)),
-                source,
-            })
-        })?;
-        let server = Server::start(listener, initialized.router, &initialized.readiness)
-            .map_err(|source| StartupError::Bind(BindError { address, source }))?;
+        let address = match listener.local_addr() {
+            Ok(address) => address,
+            Err(source) => {
+                let error = StartupError::Bind(BindError {
+                    address: SocketAddr::from(([127, 0, 0, 1], 0)),
+                    source,
+                });
+                return Err(initialized.abandon(error).await);
+            }
+        };
+        let server =
+            match Server::start(listener, initialized.router.clone(), &initialized.readiness) {
+                Ok(server) => server,
+                Err(source) => {
+                    let error = StartupError::Bind(BindError { address, source });
+                    return Err(initialized.abandon(error).await);
+                }
+            };
         Ok(Self {
             server,
             readiness: initialized.readiness,
+            database: initialized.database,
             _data_dir: initialized.data_dir,
             _instance_key: initialized.instance_key,
         })
@@ -367,19 +394,36 @@ impl Application {
         let Self {
             server,
             readiness: _,
+            database,
             _data_dir: data_dir,
             _instance_key: instance_key,
         } = self;
-        let _resources = (data_dir, instance_key);
-        server.shutdown(grace).await
+        let drain = server.shutdown(grace).await;
+        for step in FutureShutdownStep::IN_ORDER {
+            tracing::debug!(
+                step = step.as_str(),
+                "shutdown step reserved for a later release"
+            );
+        }
+        log_database_closed(&database.close().await);
+        drop((data_dir, instance_key));
+        drain
     }
 }
 
 struct InitializedApplication {
     router: axum::Router,
     readiness: Readiness,
+    database: Database,
     data_dir: DataDir,
     instance_key: InstanceKey,
+}
+
+impl InitializedApplication {
+    async fn abandon(self, error: StartupError) -> StartupError {
+        log_database_closed(&self.database.close().await);
+        error
+    }
 }
 
 impl Server {
@@ -491,6 +535,7 @@ pub async fn run(source: &EnvironmentSource, mut signals: ShutdownSignals) -> Ex
         ended = &mut application.server.task => {
             application.readiness.mark_not_ready();
             tracing::error!(outcome = ?ended.map(|result| result.map_err(|error| error.kind())), "the HTTP server stopped unexpectedly");
+            log_database_closed(&application.database.close().await);
             flush_diagnostics();
             return ExitCode::from(EX_FAILURE);
         }
@@ -502,12 +547,6 @@ pub async fn run(source: &EnvironmentSource, mut signals: ShutdownSignals) -> Ex
     );
 
     let drain = application.shutdown(config.shutdown_grace).await;
-    for step in FutureShutdownStep::IN_ORDER {
-        tracing::debug!(
-            step = step.as_str(),
-            "shutdown step reserved for a later release"
-        );
-    }
     tracing::info!(drain = drain.as_str(), "shutdown.completed");
     flush_diagnostics();
     ExitCode::SUCCESS
@@ -533,22 +572,34 @@ fn prepare_data(root: &Path) -> Result<(DataDir, InstanceKey), StartupError> {
     Ok((data_dir, key))
 }
 
-fn initialize(
+async fn initialize(
     config: &OperatorConfig,
     clock: Arc<dyn Clock>,
 ) -> Result<InitializedApplication, StartupError> {
     let (data_dir, instance_key) = tokio::task::block_in_place(|| prepare_data(&config.data_dir))?;
+    let readiness = Readiness::new();
+    let health = Health::new(readiness.clone());
+    let database = Database::open(config, data_dir.root(), &health).await?;
     for step in FutureStartupStep::IN_ORDER {
         tracing::debug!(
             step = step.as_str(),
             "startup step reserved for a later release"
         );
     }
-    let readiness = Readiness::new();
-    let router = application_router(config, &readiness, clock)?;
+    let router = match StaticAssets::built(&config.base_url)
+        .map_err(StartupError::from)
+        .and_then(|assets| composed_router(config, health, assets, clock))
+    {
+        Ok(router) => router,
+        Err(error) => {
+            log_database_closed(&database.close().await);
+            return Err(error);
+        }
+    };
     Ok(InitializedApplication {
         router,
         readiness,
+        database,
         data_dir,
         instance_key,
     })
@@ -560,12 +611,12 @@ pub fn application_router(
     clock: Arc<dyn Clock>,
 ) -> Result<axum::Router, StartupError> {
     let assets = StaticAssets::built(&config.base_url)?;
-    composed_router(config, readiness, assets, clock)
+    composed_router(config, Health::new(readiness.clone()), assets, clock)
 }
 
 fn composed_router(
     config: &OperatorConfig,
-    readiness: &Readiness,
+    health: Health,
     assets: StaticAssets,
     clock: Arc<dyn Clock>,
 ) -> Result<axum::Router, StartupError> {
@@ -574,7 +625,7 @@ fn composed_router(
         ApiDocs::new(assembled.openapi, &config.base_url).map_err(StartupError::ApiDocs)?;
     let routes = serve_unmatched(assembled.router, assets).with_state(AppState::new(
         Arc::clone(&clock),
-        Health::new(readiness.clone()),
+        health,
         api_docs,
     ));
     Ok(edge_router(routes, config, clock))

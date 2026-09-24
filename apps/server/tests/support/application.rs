@@ -55,6 +55,7 @@ impl TestApplication {
         let clock = TestClock::new(datetime!(2026-01-01 00:00 UTC));
         let injected_clock: Arc<dyn Clock> = Arc::new(clock.clone());
         let application = Application::start(listener, &config, injected_clock)
+            .await
             .with_context(|| format!("start application for {test_name}"))?;
         let cookies = Arc::new(Jar::default());
         let client = Client::builder()

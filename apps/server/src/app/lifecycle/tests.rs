@@ -373,7 +373,7 @@ async fn it_startup_listener_serves_application_stack() {
     let readiness = Readiness::new();
     let router = composed_router(
         &config,
-        &readiness,
+        Health::new(readiness.clone()),
         assets,
         Arc::new(TestClock::new(datetime!(2026-09-23 12:00 UTC))),
     )
@@ -780,19 +780,12 @@ fn unit_future_lifecycle_steps_are_reserved_in_order() {
         .collect();
     assert_eq!(
         startup,
-        [
-            "database",
-            "migrations",
-            "settings",
-            "storage",
-            "reconcile",
-            "workers"
-        ]
+        ["migrations", "settings", "storage", "reconcile", "workers"]
     );
 
     let shutdown: Vec<&str> = FutureShutdownStep::IN_ORDER
         .iter()
         .map(|step| step.as_str())
         .collect();
-    assert_eq!(shutdown, ["stop_workers", "close_database"]);
+    assert_eq!(shutdown, ["stop_workers"]);
 }
