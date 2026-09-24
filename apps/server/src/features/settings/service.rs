@@ -65,6 +65,10 @@ impl SettingsService {
         self.handle.clone()
     }
 
+    pub fn keys(&self) -> Arc<KeyRing> {
+        Arc::clone(&self.keys)
+    }
+
     pub fn current(&self) -> Arc<AppSettings> {
         self.handle.load()
     }

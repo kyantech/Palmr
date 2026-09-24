@@ -6,6 +6,11 @@ pub mod audit;
 pub mod branding;
 #[allow(
     dead_code,
+    reason = "the transport trait, producers and template seams are consumed as features request mail"
+)]
+pub mod email;
+#[allow(
+    dead_code,
     reason = "typed settings, the default registry and the write primitive are consumed as admin settings routes and features are wired"
 )]
 pub mod settings;

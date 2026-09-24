@@ -6,6 +6,7 @@ use crate::app::lifecycle::StartupError;
 use crate::config::OperatorConfig;
 use crate::domain::clock::Clock;
 use crate::features::audit;
+use crate::features::email::{self, EmailService, SmtpTransport};
 use crate::features::settings::SettingsService;
 use crate::infra::crypto::instance_key::InstanceKey;
 use crate::infra::db::DbPools;
@@ -55,6 +56,15 @@ async fn execute(
         Arc::clone(&clock),
         settings.handle(),
     );
+    let email = EmailService::new(
+        pools.clone(),
+        Arc::clone(&clock),
+        settings.keys(),
+        settings.handle(),
+        config.base_url.clone(),
+        Arc::new(SmtpTransport),
+    );
+    let registry = email::register_jobs(registry, email);
     let dispatcher = Dispatcher::new(
         pools.clone(),
         Arc::clone(&clock),

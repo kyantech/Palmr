@@ -1,0 +1,9 @@
+{% if recipient_name %}{% include "frag." ~ locale ~ ".common.greeting" %}
+
+{% endif %}{% include "frag." ~ locale ~ ".email_verification.body" %}
+
+{% include "frag." ~ locale ~ ".email_verification.action" %}: {{ action_url }}
+
+{% include "frag." ~ locale ~ ".email_verification.expiry" %}
+
+{% include "frag." ~ locale ~ ".common.footer" %}

@@ -1,0 +1,8 @@
+{% extends "layout.html.j2" %}
+{% block subject %}{% include "frag." ~ locale ~ ".share_recipient_notify.subject" %}{% endblock %}
+{% block content %}
+<p>{% if recipient_name %}{% include "frag." ~ locale ~ ".common.greeting" %}{% endif %}</p>
+<p>{% include "frag." ~ locale ~ ".share_recipient_notify.body" %}</p>
+<p>{% if file_names %}{% include "frag." ~ locale ~ ".share_recipient_notify.files" %}{% endif %}</p>
+<p><a href="{{ action_url }}">{% include "frag." ~ locale ~ ".share_recipient_notify.action" %}</a></p>
+{% endblock %}

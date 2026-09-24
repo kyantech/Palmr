@@ -34,7 +34,9 @@ use crate::config::{
 };
 use crate::domain::clock::{Clock, SystemClock};
 use crate::features::audit;
+use crate::features::email::{self, EmailService, SmtpTransport};
 use crate::features::settings::{SettingsError, SettingsHandle, SettingsService};
+use crate::infra::crypto::hkdf::KeyRing;
 use crate::infra::crypto::instance_key::{InstanceKey, InstanceKeyError, KeyOrigin};
 use crate::infra::db::{
     DbOpenError, InstanceLock, InstanceLockError, LockOrigin, MigrationError, MIGRATOR,
@@ -646,6 +648,7 @@ async fn initialize(
         }
     };
     tracing::debug!("settings snapshot loaded");
+    let email_keys = settings.keys();
     for step in FutureStartupStep::IN_ORDER {
         tracing::debug!(
             step = step.as_str(),
@@ -661,7 +664,7 @@ async fn initialize(
         .await;
     log_reconciliation(&report);
     let settings = settings.handle();
-    let jobs = start_jobs(config, &database, &clock, &instance, &settings);
+    let jobs = start_jobs(config, &database, &clock, &instance, &settings, &email_keys);
     let router = match StaticAssets::built(&config.base_url)
         .map_err(StartupError::from)
         .and_then(|assets| composed_router(config, health, assets, clock, settings))
@@ -689,6 +692,7 @@ fn start_jobs(
     clock: &Arc<dyn Clock>,
     instance: &InstanceLock,
     settings: &SettingsHandle,
+    keys: &Arc<KeyRing>,
 ) -> JobRuntime {
     let timing = RuntimeTiming::DEFAULT;
     let pools = database.pools().clone();
@@ -703,6 +707,15 @@ fn start_jobs(
         Arc::clone(clock),
         settings.clone(),
     );
+    let email = EmailService::new(
+        pools.clone(),
+        Arc::clone(clock),
+        Arc::clone(keys),
+        settings.clone(),
+        config.base_url.clone(),
+        Arc::new(SmtpTransport),
+    );
+    let registry = email::register_jobs(registry, email);
     let dispatcher = Dispatcher::new(
         pools,
         Arc::clone(clock),

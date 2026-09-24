@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="{{ locale }}" dir="{{ text_direction }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block subject %}{% endblock %}</title>
+  </head>
+  <body>
+    {% if logo_url %}<p><img src="{{ logo_url }}" alt="{{ app_name }}" width="160"></p>{% endif %}
+    {% block content %}{% endblock %}
+    <hr>
+    <p>{% include "frag." ~ locale ~ ".common.footer" %}</p>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+{% extends "layout.html.j2" %}
+{% block subject %}{% include "frag." ~ locale ~ ".security_notification.subject" %}{% endblock %}
+{% block content %}
+<p>{% if recipient_name %}{% include "frag." ~ locale ~ ".common.greeting" %}{% endif %}</p>
+<p>{% include "frag." ~ locale ~ ".security_notification.event." ~ event %}</p>
+<p><a href="{{ action_url }}">{% include "frag." ~ locale ~ ".security_notification.action" %}</a></p>
+{% endblock %}

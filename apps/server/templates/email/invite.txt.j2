@@ -1,0 +1,9 @@
+{% if recipient_name %}{% include "frag." ~ locale ~ ".common.greeting" %}
+
+{% endif %}{% include "frag." ~ locale ~ ".invite.body" %}
+
+{% include "frag." ~ locale ~ ".invite.action" %}: {{ action_url }}
+
+{% include "frag." ~ locale ~ ".invite.expiry" %}
+
+{% include "frag." ~ locale ~ ".common.footer" %}

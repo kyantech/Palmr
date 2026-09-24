@@ -1,0 +1,9 @@
+{% if recipient_name %}{% include "frag." ~ locale ~ ".common.greeting" %}
+
+{% endif %}{% include "frag." ~ locale ~ ".reverse_share_owner_notify.body" %}
+
+{% if file_names %}{% include "frag." ~ locale ~ ".reverse_share_owner_notify.files" %}
+
+{% endif %}{% include "frag." ~ locale ~ ".reverse_share_owner_notify.action" %}: {{ action_url }}
+
+{% include "frag." ~ locale ~ ".common.footer" %}

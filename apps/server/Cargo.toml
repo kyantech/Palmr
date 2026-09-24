@@ -25,7 +25,7 @@ getrandom = "0.4"
 http-body-util = "0.1"
 ipnet = "2"
 mime_guess = { version = "2", default-features = false }
-minijinja = { version = "2.24", default-features = false }
+minijinja = { version = "2.24", default-features = false, features = ["multi_template"] }
 rust-embed = { version = "8", features = ["debug-embed"] }
 rustix = { version = "1", features = ["fs", "process"] }
 serde = { version = "1", features = ["derive"] }
@@ -49,6 +49,7 @@ uuid = { version = "1", default-features = false, features = ["std", "v7"] }
 zeroize = "1"
 sqlx = { version = "0.8", default-features = false, features = ["macros", "migrate", "runtime-tokio", "sqlite"] }
 arc-swap = "1"
+lettre = { version = "0.11", default-features = false, features = ["builder", "smtp-transport", "tokio1-rustls-tls", "hostname"] }
 
 [features]
 dev-assets = []
@@ -63,7 +64,9 @@ proptest = { version = "1", default-features = false, features = ["std"] }
 rand = { version = "0.9", default-features = false, features = ["std_rng"] }
 reqwest = { version = "0.12", default-features = false, features = ["cookies"] }
 rstest = "0.27"
+rustls = { version = "0.23", default-features = false, features = ["std", "ring", "tls12"] }
 similar = "2"
 tempfile = "3"
 thiserror = "2"
+tl = "0.7"
 tokio = { version = "1", features = ["io-util", "macros", "rt", "test-util"] }

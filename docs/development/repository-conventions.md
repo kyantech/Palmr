@@ -69,3 +69,8 @@ When an operation mixes I/O and state, use three steps: a short transaction that
 
 - Services match constraint variants on purpose. For example, a duplicate name retries with the next keep-both candidate, and each attempt runs in its own write transaction. Any constraint failure a service does not handle is a bug and reaches clients as `INTERNAL_ERROR`.
 - Never retry `SQLITE_BUSY` in a loop. Palmr writers cannot cause it, because they queue for the single write connection. It only occurs when an external process holds the lock past the 5 s busy timeout. Return `DATABASE_BUSY` and let the client retry.
+
+## Shared e-mail translations
+
+The `emails` namespace is shared between the SPA and the transactional e-mail subsystem (FRONTEND_ARCHITECTURE §12.8). Its canonical source is `apps/web/src/app/i18n/locales/<locale>/emails.json`; there is no second copy. The Rust e-mail renderer embeds the 23 files at build time with `include_str!` from `apps/server/src/features/email/render.rs`, which is why the container's Rust build stage copies `apps/web/src/app/i18n`. Every locale file must carry the same key set as `en-US`, asserted by `unit_email_locale_key_parity`.
+

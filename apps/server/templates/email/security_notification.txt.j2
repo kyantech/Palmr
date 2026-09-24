@@ -1,0 +1,7 @@
+{% if recipient_name %}{% include "frag." ~ locale ~ ".common.greeting" %}
+
+{% endif %}{% include "frag." ~ locale ~ ".security_notification.event." ~ event %}
+
+{% include "frag." ~ locale ~ ".security_notification.action" %}: {{ action_url }}
+
+{% include "frag." ~ locale ~ ".common.footer" %}
