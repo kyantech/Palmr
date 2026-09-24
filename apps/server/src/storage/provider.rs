@@ -72,8 +72,26 @@ pub struct ListPage {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Capacity {
+    pub total_bytes: u64,
+    pub available_bytes: u64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CapacityReport {
+    Available(Capacity),
+    Unavailable,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct LocalStorageDescriptor {
+    pub capacity: CapacityReport,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct StorageDescriptor {
     pub provider: ProviderKind,
+    pub local: Option<LocalStorageDescriptor>,
 }
 
 #[derive(Clone, PartialEq, Eq)]

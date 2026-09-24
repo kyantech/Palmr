@@ -13,10 +13,10 @@ use tokio::io::AsyncReadExt;
 use url::Url;
 
 use super::{
-    ETag, GrantContext, ListCursor, ListEntry, ListPage, MultipartHandle, MultipartStorage,
-    MultipartUploadPage, ObjectBody, ObjectStat, PartPlanEntry, PendingMultipart, PresignStorage,
-    PresignedRequest, PutHint, StorageDescriptor, StorageProvider, UploadedPart,
-    MAX_LIST_PAGE_SIZE,
+    CapacityReport, ETag, GrantContext, ListCursor, ListEntry, ListPage, LocalStorageDescriptor,
+    MultipartHandle, MultipartStorage, MultipartUploadPage, ObjectBody, ObjectStat, PartPlanEntry,
+    PendingMultipart, PresignStorage, PresignedRequest, PutHint, StorageDescriptor,
+    StorageProvider, UploadedPart, MAX_LIST_PAGE_SIZE,
 };
 use crate::config::{EnvironmentSource, OperatorConfig, StorageConfig};
 use crate::storage::caps::{
@@ -111,6 +111,7 @@ impl StorageProvider for S3Shaped {
     fn describe(&self) -> StorageDescriptor {
         StorageDescriptor {
             provider: ProviderKind::S3,
+            local: None,
         }
     }
 
@@ -314,6 +315,9 @@ impl StorageProvider for LocalShaped {
     fn describe(&self) -> StorageDescriptor {
         StorageDescriptor {
             provider: ProviderKind::Local,
+            local: Some(LocalStorageDescriptor {
+                capacity: CapacityReport::Unavailable,
+            }),
         }
     }
 

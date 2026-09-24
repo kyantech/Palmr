@@ -1,10 +1,10 @@
 use std::collections::BTreeMap;
 use std::fs::{self, File};
 use std::io::{self, Cursor, Read};
-use std::os::fd::BorrowedFd;
+use std::os::fd::{AsFd, BorrowedFd};
 use std::os::unix::fs::{symlink, MetadataExt, PermissionsExt};
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, Once};
 
 use proptest::prelude::*;
@@ -15,11 +15,15 @@ use uuid::Uuid;
 
 use super::paths::{ObjectLocation, Root};
 use super::{
-    FinalizeRoute, Finalized, FsOps, LocalProvider, StagingWriter, Step, SystemOps, UploadId,
-    DIRECTORY_MODE, FILE_MODE,
+    is_low_space, CloneStep, CopyRangeStep, FinalizeRoute, Finalized, FsOps, LocalProvider,
+    StagingWriter, Step, SystemOps, UploadId, DIRECTORY_MODE, FILE_MODE,
 };
 use crate::storage::error::StorageError;
 use crate::storage::key::{BrandingKind, KeyNamespace, ObjectKey};
+use crate::storage::provider::{Capacity, CapacityReport, ObjectBody};
+use crate::storage::ProviderKind;
+
+const COPY_BUFFER: u32 = 65_536;
 
 const BUFFER: u32 = 262_144;
 const SMALL_BUFFER: u32 = 4_096;
@@ -38,6 +42,21 @@ struct Written {
     ino: u64,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+enum CloneMode {
+    #[default]
+    System,
+    ForceUnsupported,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+enum CopyRangeMode {
+    #[default]
+    System,
+    ForceUnsupported,
+    Cap(usize),
+}
+
 type Observer = Box<dyn Fn(Step) + Send>;
 
 #[derive(Default)]
@@ -47,6 +66,13 @@ struct Recorder {
     exdev: AtomicBool,
     writes: Mutex<Vec<Written>>,
     observer: Mutex<Option<Observer>>,
+    statvfs_fault: Mutex<Option<Errno>>,
+    statvfs_targets: Mutex<Vec<u64>>,
+    clone_mode: Mutex<CloneMode>,
+    clone_calls: AtomicUsize,
+    copy_range_mode: Mutex<CopyRangeMode>,
+    copy_range_calls: AtomicUsize,
+    seeks: Mutex<Vec<u64>>,
 }
 
 impl Recorder {
@@ -56,6 +82,38 @@ impl Recorder {
 
     fn observe(&self, observer: impl Fn(Step) + Send + 'static) {
         *self.observer.lock().unwrap() = Some(Box::new(observer));
+    }
+
+    fn force_reflink_unsupported(&self) {
+        *self.clone_mode.lock().unwrap() = CloneMode::ForceUnsupported;
+    }
+
+    fn force_copy_range_unsupported(&self) {
+        *self.copy_range_mode.lock().unwrap() = CopyRangeMode::ForceUnsupported;
+    }
+
+    fn cap_copy_range(&self, cap: usize) {
+        *self.copy_range_mode.lock().unwrap() = CopyRangeMode::Cap(cap);
+    }
+
+    fn fail_statvfs(&self, errno: Errno) {
+        *self.statvfs_fault.lock().unwrap() = Some(errno);
+    }
+
+    fn statvfs_targets(&self) -> Vec<u64> {
+        self.statvfs_targets.lock().unwrap().clone()
+    }
+
+    fn clone_calls(&self) -> usize {
+        self.clone_calls.load(Ordering::SeqCst)
+    }
+
+    fn copy_range_calls(&self) -> usize {
+        self.copy_range_calls.load(Ordering::SeqCst)
+    }
+
+    fn seeks(&self) -> Vec<u64> {
+        self.seeks.lock().unwrap().clone()
     }
 
     fn steps(&self) -> Vec<Step> {
@@ -151,6 +209,71 @@ impl FsOps for Recording {
     fn remove_dir(&self, dir: BorrowedFd<'_>, name: &str, step: Step) -> io::Result<()> {
         self.0.run(step, || SystemOps.remove_dir(dir, name, step))
     }
+
+    fn seek(&self, file: &File, pos: u64) -> io::Result<u64> {
+        self.0.seeks.lock().unwrap().push(pos);
+        SystemOps.seek(file, pos)
+    }
+
+    fn filesystem_stats(&self, dir: BorrowedFd<'_>) -> io::Result<Capacity> {
+        let stat = rustix::fs::fstat(dir).map_err(io::Error::from)?;
+        self.0.statvfs_targets.lock().unwrap().push(stat.st_ino);
+        if let Some(errno) = *self.0.statvfs_fault.lock().unwrap() {
+            return Err(io::Error::from(errno));
+        }
+        SystemOps.filesystem_stats(dir)
+    }
+
+    fn try_reflink(&self, dst: &File, src: &File) -> io::Result<CloneStep> {
+        self.0.clone_calls.fetch_add(1, Ordering::SeqCst);
+        match *self.0.clone_mode.lock().unwrap() {
+            CloneMode::ForceUnsupported => Ok(CloneStep::Unsupported),
+            CloneMode::System => SystemOps.try_reflink(dst, src),
+        }
+    }
+
+    fn copy_range_step(
+        &self,
+        src: &File,
+        src_offset: u64,
+        dst: &File,
+        dst_offset: u64,
+        len: usize,
+    ) -> io::Result<CopyRangeStep> {
+        self.0.copy_range_calls.fetch_add(1, Ordering::SeqCst);
+        match *self.0.copy_range_mode.lock().unwrap() {
+            CopyRangeMode::ForceUnsupported => Ok(CopyRangeStep::Unsupported),
+            CopyRangeMode::System => {
+                SystemOps.copy_range_step(src, src_offset, dst, dst_offset, len)
+            }
+            CopyRangeMode::Cap(cap) => {
+                let request = len.min(cap);
+                if request == 0 {
+                    return Ok(CopyRangeStep::Copied(0));
+                }
+                let mut buffer = vec![0_u8; request];
+                let read = rustix::io::pread(src.as_fd(), &mut buffer[..], src_offset)
+                    .map_err(io::Error::from)?;
+                if read == 0 {
+                    return Ok(CopyRangeStep::Copied(0));
+                }
+                let mut written = 0;
+                while written < read {
+                    let wrote = rustix::io::pwrite(
+                        dst.as_fd(),
+                        &buffer[written..read],
+                        dst_offset + written as u64,
+                    )
+                    .map_err(io::Error::from)?;
+                    if wrote == 0 {
+                        return Err(io::Error::other("the copy range test seam stalled"));
+                    }
+                    written += wrote;
+                }
+                Ok(CopyRangeStep::Copied(read))
+            }
+        }
+    }
 }
 
 struct Fixture {
@@ -205,6 +328,11 @@ impl Fixture {
             .with_file_name(format!(".tmp-{}", id.as_str()))
     }
 
+    fn copy_temp_path(&self, key: &ObjectKey) -> PathBuf {
+        let oid = key.as_str().rsplit('/').next().unwrap();
+        self.final_path(key).with_file_name(format!(".tmp-{oid}"))
+    }
+
     fn stage(&self, bytes: &[u8]) -> UploadId {
         let id = upload_id();
         let mut writer = self.provider.create_staging(&id).unwrap();
@@ -233,6 +361,28 @@ fn upload_id() -> UploadId {
 
 fn objects_key() -> ObjectKey {
     ObjectKey::allocate(KeyNamespace::Objects)
+}
+
+fn place(fixture: &Fixture, bytes: &[u8]) -> ObjectKey {
+    let id = fixture.stage(bytes);
+    let key = objects_key();
+    fixture.provider.finalize_staged(&id, &key).unwrap();
+    key
+}
+
+async fn read_all(body: ObjectBody) -> Vec<u8> {
+    let mut reader = body;
+    let mut collected = Vec::new();
+    let mut buffer = vec![0_u8; 8_192];
+    loop {
+        let read = tokio::io::AsyncReadExt::read(&mut reader, &mut buffer)
+            .await
+            .unwrap();
+        if read == 0 {
+            return collected;
+        }
+        collected.extend_from_slice(&buffer[..read]);
+    }
 }
 
 fn pattern(len: usize, seed: u64) -> Vec<u8> {
@@ -994,7 +1144,7 @@ fn unit_local_primitives_stay_in_scope() {
         "Database",
         "chown",
         "read_to_end",
-        "fs::copy",
+        "fs::copy(",
         "with_capacity(",
         "set_permissions",
         "fchmod",
@@ -1015,4 +1165,416 @@ fn unit_local_primitives_stay_in_scope() {
     assert_eq!(root.matches("canonicalize").count(), 1);
     assert_eq!(root.matches("data_dir.join(name)").count(), 1);
     assert_eq!(root.matches(".join(").count(), 1);
+}
+
+#[tokio::test]
+async fn it_storage_contract_local() {
+    let fixture = Fixture::new();
+
+    let descriptor = fixture.provider.describe();
+    assert_eq!(descriptor.provider, ProviderKind::Local);
+    assert!(matches!(
+        descriptor.local,
+        Some(local) if matches!(local.capacity, CapacityReport::Available(_))
+    ));
+
+    let zero = place(&fixture, b"");
+    let zero_stat = fixture.provider.stat(&zero).unwrap();
+    assert_eq!(zero_stat.size, 0);
+    assert!(zero_stat.etag.is_none());
+
+    let bytes = pattern(300_000, 1234);
+    let key = place(&fixture, &bytes);
+    let size = bytes.len() as u64;
+    let stat = fixture.provider.stat(&key).unwrap();
+    assert_eq!(stat.size, size);
+    assert!(stat.etag.is_none());
+    assert!(stat.modified_at.year() >= 2020);
+
+    assert!(fixture.provider.exists(&zero).unwrap());
+    assert!(fixture.provider.exists(&key).unwrap());
+    let missing = objects_key();
+    assert!(!fixture.provider.exists(&missing).unwrap());
+    assert!(matches!(
+        fixture.provider.stat(&missing).err().unwrap(),
+        StorageError::NotFound
+    ));
+
+    let (read_stat, read_body) = fixture.provider.open_read(&key).unwrap();
+    assert_eq!(read_stat.size, size);
+    assert_eq!(read_all(read_body).await, bytes);
+
+    let (zero_read_stat, zero_body) = fixture.provider.open_read(&zero).unwrap();
+    assert_eq!(zero_read_stat.size, 0);
+    assert!(read_all(zero_body).await.is_empty());
+
+    assert!(matches!(
+        fixture.provider.open_range(&zero, 0, 1).err().unwrap(),
+        StorageError::RangeNotSatisfiable { size: 0 }
+    ));
+    assert!(matches!(
+        fixture.provider.open_range(&key, size, 1).err().unwrap(),
+        StorageError::RangeNotSatisfiable { size: reported } if reported == size
+    ));
+
+    let start = 1_234u64;
+    let (range_stat, range_body) = fixture.provider.open_range(&key, start, 4_096).unwrap();
+    assert_eq!(range_stat.size, size);
+    assert!(range_stat.etag.is_none());
+    assert_eq!(
+        read_all(range_body).await,
+        bytes[start as usize..(start + 4_096) as usize]
+    );
+
+    let clamp_start = size - 100;
+    let (_, clamp_body) = fixture
+        .provider
+        .open_range(&key, clamp_start, 1_000_000)
+        .unwrap();
+    assert_eq!(read_all(clamp_body).await, bytes[(size - 100) as usize..]);
+
+    let (_, zero_len_body) = fixture.provider.open_range(&key, start, 0).unwrap();
+    assert!(read_all(zero_len_body).await.is_empty());
+
+    let dst = objects_key();
+    let copy_stat = fixture.provider.copy(&key, &dst).unwrap();
+    assert_eq!(copy_stat.size, size);
+    assert!(copy_stat.etag.is_none());
+    let (_, copy_body) = fixture.provider.open_read(&dst).unwrap();
+    assert_eq!(read_all(copy_body).await, bytes);
+
+    assert!(fixture.provider.delete(&key).unwrap());
+    assert!(!fixture.provider.exists(&key).unwrap());
+    let (_, survivor_body) = fixture.provider.open_read(&dst).unwrap();
+    assert_eq!(read_all(survivor_body).await, bytes);
+
+    assert!(fixture.provider.delete(&dst).unwrap());
+    assert!(!fixture.provider.delete(&dst).unwrap());
+
+    let mut keys: Vec<String> = Vec::new();
+    for _ in 0..11 {
+        keys.push(place(&fixture, b"listed").as_str().to_owned());
+    }
+    keys.push(zero.as_str().to_owned());
+    keys.sort();
+
+    let mut collected = Vec::new();
+    let mut cursor = None;
+    loop {
+        let page = fixture.provider.list_page("objects/", cursor, 5).unwrap();
+        assert!(page.entries.len() <= 5);
+        for entry in &page.entries {
+            assert_eq!(ObjectKey::parse(&entry.key).unwrap().as_str(), entry.key);
+            collected.push(entry.key.clone());
+        }
+        match page.next {
+            Some(next) => cursor = Some(next),
+            None => break,
+        }
+    }
+    assert_eq!(collected, keys);
+}
+
+#[tokio::test]
+async fn it_local_range_does_not_discard_prefix() {
+    let fixture = Fixture::with_buffer(COPY_BUFFER);
+    let bytes = pattern(180_000, 21);
+    let key = place(&fixture, &bytes);
+    let start = 120_000u64;
+
+    let (stat, body) = fixture.provider.open_range(&key, start, 10_000).unwrap();
+
+    assert_eq!(stat.size, bytes.len() as u64);
+    assert_eq!(
+        read_all(body).await,
+        bytes[start as usize..(start as usize + 10_000)]
+    );
+    assert_eq!(fixture.recorder.seeks(), vec![start]);
+}
+
+#[test]
+fn it_local_copy_bounded_fallback() {
+    let fixture = Fixture::with_buffer(COPY_BUFFER);
+    fixture.recorder.force_reflink_unsupported();
+    fixture.recorder.force_copy_range_unsupported();
+    let bytes = pattern(2 * 1024 * 1024 + 321, 65);
+    let key = place(&fixture, &bytes);
+    let dst = objects_key();
+    let final_path = fixture.final_path(&dst);
+    let source_path = fixture.final_path(&key);
+
+    let observed_final = Arc::new(AtomicBool::new(false));
+    {
+        let final_path = final_path.clone();
+        let observed_final = Arc::clone(&observed_final);
+        fixture.recorder.observe(move |step| {
+            if matches!(step, Step::WriteTemp | Step::SyncTemp | Step::RenameTemp)
+                && exists(&final_path)
+            {
+                observed_final.store(true, Ordering::SeqCst);
+            }
+        });
+    }
+
+    let stat = fixture.provider.copy(&key, &dst).unwrap();
+
+    assert_eq!(stat.size, bytes.len() as u64);
+    assert!(stat.etag.is_none());
+    assert_eq!(file_digest(&final_path), digest(&bytes));
+    assert!(!observed_final.load(Ordering::SeqCst));
+    assert!(fixture.recorder.clone_calls() >= 1);
+    assert!(fixture.recorder.copy_range_calls() >= 1);
+
+    let buffer = usize::try_from(COPY_BUFFER).unwrap();
+    let writes = fixture.recorder.writes();
+    assert!(!writes.is_empty());
+    assert!(writes.iter().all(|written| written.len <= buffer));
+    assert_eq!(writes.len(), bytes.len().div_ceil(buffer));
+    assert!(!exists(&fixture.copy_temp_path(&dst)));
+    assert_eq!(file_digest(&source_path), digest(&bytes));
+
+    let failure = Fixture::with_buffer(COPY_BUFFER);
+    failure.recorder.force_reflink_unsupported();
+    failure.recorder.force_copy_range_unsupported();
+    let bytes = pattern(1_500_000, 12);
+    let key = place(&failure, &bytes);
+    let dst = objects_key();
+    failure.recorder.fail(Step::WriteTemp, 3, Errno::NOSPC);
+
+    let error = failure.provider.copy(&key, &dst).unwrap_err();
+
+    assert!(matches!(error, StorageError::QuotaOnDevice), "{error:?}");
+    assert!(!exists(&failure.final_path(&dst)));
+    assert!(!exists(&failure.copy_temp_path(&dst)));
+    assert_eq!(file_digest(&failure.final_path(&key)), digest(&bytes));
+}
+
+#[test]
+fn it_local_copy_file_range_short_copy_loop() {
+    let fixture = Fixture::with_buffer(COPY_BUFFER);
+    fixture.recorder.force_reflink_unsupported();
+    fixture.recorder.cap_copy_range(4_096);
+    let bytes = pattern(1_000_007, 9);
+    let key = place(&fixture, &bytes);
+    let dst = objects_key();
+
+    let stat = fixture.provider.copy(&key, &dst).unwrap();
+
+    assert_eq!(stat.size, bytes.len() as u64);
+    assert_eq!(file_digest(&fixture.final_path(&dst)), digest(&bytes));
+    assert!(fixture.recorder.writes().is_empty());
+    assert_eq!(fixture.recorder.clone_calls(), 1);
+    assert_eq!(
+        fixture.recorder.copy_range_calls(),
+        bytes.len().div_ceil(4_096)
+    );
+}
+
+#[test]
+fn it_local_delete_notfound_is_success() {
+    let fixture = Fixture::new();
+    let bytes = pattern(2_048, 4);
+    let key = place(&fixture, &bytes);
+    let final_path = fixture.final_path(&key);
+    let leaf_dir = final_path.parent().unwrap().to_path_buf();
+
+    assert!(fixture.provider.delete(&key).unwrap());
+    assert!(!exists(&final_path));
+    assert!(leaf_dir.is_dir());
+    assert!(leaf_dir.parent().unwrap().is_dir());
+    assert!(!fixture.provider.delete(&key).unwrap());
+
+    let never_placed = objects_key();
+    assert!(!fixture.provider.delete(&never_placed).unwrap());
+}
+
+#[test]
+fn unit_local_list_page_clamped_to_max() {
+    let fixture = Fixture::new();
+    for _ in 0..1_005 {
+        let _ = place(&fixture, b"x");
+    }
+
+    let first = fixture
+        .provider
+        .list_page("objects/", None, u32::MAX)
+        .unwrap();
+    assert_eq!(first.entries.len(), 1_000);
+    let cursor = first.next.expect("a full page must carry a cursor");
+
+    let second = fixture
+        .provider
+        .list_page("objects/", Some(cursor), u32::MAX)
+        .unwrap();
+    assert_eq!(second.entries.len(), 5);
+    assert!(second.next.is_none());
+}
+
+#[test]
+fn unit_local_list_skips_malformed_entries() {
+    let fixture = Fixture::new();
+    let key = place(&fixture, b"valid-object");
+    let final_path = fixture.final_path(&key);
+    let leaf = final_path.parent().unwrap().to_path_buf();
+    let oid = key.as_str().rsplit('/').next().unwrap().to_owned();
+    let shard = oid[..4].to_owned();
+    let ab = &shard[..2];
+    let cd = &shard[2..4];
+
+    let planted = format!("{shard}{}", "f".repeat(28));
+    fs::write(leaf.join(&planted), b"planted").unwrap();
+    fs::write(leaf.join("notanoid"), b"x").unwrap();
+    fs::write(leaf.join(oid.to_ascii_uppercase()), b"x").unwrap();
+    fs::write(leaf.join(".tmp-deadbeef"), b"x").unwrap();
+    fs::write(leaf.join(format!("{shard}{}", "0".repeat(30))), b"x").unwrap();
+    fs::write(leaf.join(format!("{}{}", "0".repeat(4), &oid[4..])), b"x").unwrap();
+    fs::create_dir(leaf.join(format!("{shard}{}", "e".repeat(28)))).unwrap();
+    let symlinked = format!("{shard}{}", "b".repeat(28));
+    symlink(final_path.file_name().unwrap(), leaf.join(&symlinked)).unwrap();
+    fs::write(fixture.data.join("storage/objects/stray"), b"x").unwrap();
+
+    let page = fixture
+        .provider
+        .list_page("objects/", None, u32::MAX)
+        .unwrap();
+    let emitted: Vec<String> = page.entries.iter().map(|entry| entry.key.clone()).collect();
+
+    assert_eq!(emitted.len(), 2, "{emitted:?}");
+    assert!(emitted.contains(&key.as_str().to_owned()));
+    assert!(emitted.contains(&format!("objects/{ab}/{cd}/{planted}")));
+    for entry in &emitted {
+        assert!(ObjectKey::parse(entry).is_ok());
+    }
+}
+
+#[test]
+fn unit_local_copy_destination_collision_is_not_overwritten() {
+    let fixture = Fixture::new();
+    let key = place(&fixture, b"source-bytes");
+    let dst = objects_key();
+    let final_path = fixture.final_path(&dst);
+    fs::create_dir_all(final_path.parent().unwrap()).unwrap();
+    fs::write(&final_path, b"existing-object").unwrap();
+
+    let error = fixture.provider.copy(&key, &dst).unwrap_err();
+
+    assert!(matches!(error, StorageError::AlreadyExists), "{error:?}");
+    assert_eq!(file_digest(&final_path), digest(b"existing-object"));
+    assert!(!exists(&fixture.copy_temp_path(&dst)));
+    assert_eq!(
+        file_digest(&fixture.final_path(&key)),
+        digest(b"source-bytes")
+    );
+}
+
+#[test]
+fn unit_local_reflink_capability_is_cached_once_per_root() {
+    let fixture = Fixture::with_buffer(COPY_BUFFER);
+    fixture.recorder.force_reflink_unsupported();
+    fixture.recorder.force_copy_range_unsupported();
+    let key = place(&fixture, b"cache-me");
+    let first = objects_key();
+    let second = objects_key();
+
+    fixture.provider.copy(&key, &first).unwrap();
+    fixture.provider.copy(&key, &second).unwrap();
+
+    assert_eq!(fixture.recorder.clone_calls(), 1);
+    assert_eq!(fixture.recorder.copy_range_calls(), 2);
+}
+
+#[test]
+fn regression_65_disk_space_detection() {
+    let fixture = Fixture::new();
+
+    let report = fixture.provider.capacity();
+    let CapacityReport::Available(capacity) = report else {
+        panic!("a local root must report capacity when statvfs succeeds");
+    };
+    assert!(capacity.total_bytes > 0);
+    assert!(capacity.available_bytes <= capacity.total_bytes);
+
+    let objects_ino = fs::metadata(fixture.data.join("storage/objects"))
+        .unwrap()
+        .ino();
+    let data_ino = fs::metadata(&fixture.data).unwrap().ino();
+    assert_ne!(objects_ino, data_ino);
+    let targets = fixture.recorder.statvfs_targets();
+    assert!(!targets.is_empty());
+    assert!(targets.iter().all(|ino| *ino == objects_ino));
+    assert!(targets.iter().all(|ino| *ino != data_ino));
+
+    fixture.recorder.fail_statvfs(Errno::INVAL);
+    assert_eq!(fixture.provider.capacity(), CapacityReport::Unavailable);
+    assert!(!matches!(
+        fixture.provider.capacity(),
+        CapacityReport::Available(_)
+    ));
+
+    let floor = 1024 * 1024 * 1024;
+    assert!(is_low_space(&Capacity {
+        total_bytes: 2 * floor,
+        available_bytes: floor - 1,
+    }));
+    assert!(!is_low_space(&Capacity {
+        total_bytes: 2 * floor,
+        available_bytes: floor,
+    }));
+
+    let huge = 1_000 * floor;
+    let threshold = huge / 50;
+    assert!(threshold > floor);
+    assert!(is_low_space(&Capacity {
+        total_bytes: huge,
+        available_bytes: threshold - 1,
+    }));
+    assert!(!is_low_space(&Capacity {
+        total_bytes: huge,
+        available_bytes: threshold,
+    }));
+
+    let bytes = pattern(100_000, 5);
+    let key = place(&fixture, &bytes);
+    let dst = objects_key();
+    assert_eq!(
+        fixture.provider.copy(&key, &dst).unwrap().size,
+        bytes.len() as u64
+    );
+
+    let source = include_str!("capacity.rs");
+    for token in [
+        "QuotaOnDevice",
+        "StorageFull",
+        "used_bytes",
+        "quota",
+        "users.",
+        "Command::new",
+    ] {
+        assert!(!source.contains(token), "capacity.rs contains {token}");
+    }
+}
+
+#[test]
+fn unit_local_no_whole_object_read_paths() {
+    let sources = [
+        ("read.rs", include_str!("read.rs")),
+        ("copy.rs", include_str!("copy.rs")),
+        ("delete.rs", include_str!("delete.rs")),
+        ("list.rs", include_str!("list.rs")),
+        ("capacity.rs", include_str!("capacity.rs")),
+    ];
+    let forbidden = [
+        "read_to_end",
+        "read_to_string",
+        "fs::read",
+        "fs::read_dir",
+        "Command::new",
+        "list_all",
+        "Vec::from_iter",
+    ];
+    for (file, source) in sources {
+        for token in forbidden {
+            assert!(!source.contains(token), "{file} contains {token}");
+        }
+    }
 }

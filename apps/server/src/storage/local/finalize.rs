@@ -1,16 +1,17 @@
 use std::fs::File;
 use std::io::{self, Read};
 use std::os::fd::{AsFd, BorrowedFd};
-use std::os::unix::fs::MetadataExt;
 
-use rustix::fs::{AtFlags, FileType, Mode, OFlags};
+use rustix::fs::{Mode, OFlags};
 use rustix::io::Errno;
-use time::OffsetDateTime;
 
 use super::paths::{
     ensure_leaf_dir, open_dir, open_regular, ObjectLocation, UploadId, STAGING_BLOB,
 };
-use super::{best_effort, classify, sync_directory, LocalProvider, Step, FILE_MODE};
+use super::{
+    best_effort, confirm_placed, measure, refuse_existing, sync_directory, Destination,
+    LocalProvider, Step, FILE_MODE,
+};
 use crate::storage::error::StorageError;
 use crate::storage::key::ObjectKey;
 use crate::storage::provider::ObjectStat;
@@ -25,11 +26,6 @@ pub enum FinalizeRoute {
 pub struct Finalized {
     pub stat: ObjectStat,
     pub route: FinalizeRoute,
-}
-
-struct Destination<'a> {
-    leaf_dir: BorrowedFd<'a>,
-    name: &'a str,
 }
 
 impl LocalProvider {
@@ -137,7 +133,11 @@ impl LocalProvider {
         })
     }
 
-    fn create_temp(&self, leaf_dir: BorrowedFd<'_>, temp_name: &str) -> Result<File, StorageError> {
+    pub(super) fn create_temp(
+        &self,
+        leaf_dir: BorrowedFd<'_>,
+        temp_name: &str,
+    ) -> Result<File, StorageError> {
         let create = || {
             open_regular(
                 leaf_dir,
@@ -183,55 +183,4 @@ impl LocalProvider {
             )))
         }
     }
-}
-
-fn refuse_existing(destination: &Destination<'_>) -> Result<(), StorageError> {
-    match rustix::fs::statat(
-        destination.leaf_dir,
-        destination.name,
-        AtFlags::SYMLINK_NOFOLLOW,
-    ) {
-        Err(Errno::NOENT) => Ok(()),
-        Err(errno) => Err(classify(errno, destination.name)),
-        Ok(stat) if FileType::from_raw_mode(stat.st_mode) == FileType::Symlink => {
-            Err(classify(Errno::LOOP, destination.name))
-        }
-        Ok(_) => {
-            tracing::error!(
-                storage_error = "already_exists",
-                "finalization target already holds an object; final objects are never overwritten"
-            );
-            Err(StorageError::AlreadyExists)
-        }
-    }
-}
-
-fn confirm_placed(placed: &File, destination: &Destination<'_>) -> Result<(), StorageError> {
-    let expected = rustix::fs::fstat(placed).map_err(|errno| classify(errno, destination.name))?;
-    let found = rustix::fs::statat(
-        destination.leaf_dir,
-        destination.name,
-        AtFlags::SYMLINK_NOFOLLOW,
-    )
-    .map_err(|errno| classify(errno, destination.name))?;
-    if found.st_dev == expected.st_dev && found.st_ino == expected.st_ino {
-        Ok(())
-    } else {
-        tracing::error!(
-            storage_error = "placement_mismatch",
-            "the entry at the finalization target is not the file that was placed"
-        );
-        Err(StorageError::PermissionDenied)
-    }
-}
-
-fn measure(file: &File) -> Result<ObjectStat, StorageError> {
-    let metadata = file.metadata()?;
-    let nanos = i128::from(metadata.mtime()) * 1_000_000_000 + i128::from(metadata.mtime_nsec());
-    Ok(ObjectStat {
-        size: metadata.len(),
-        modified_at: OffsetDateTime::from_unix_timestamp_nanos(nanos)
-            .unwrap_or(OffsetDateTime::UNIX_EPOCH),
-        etag: None,
-    })
 }

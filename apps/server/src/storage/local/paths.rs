@@ -112,6 +112,22 @@ pub(super) fn open_dir(parent: BorrowedFd<'_>, name: &str) -> Result<OwnedFd, St
     .map_err(|errno| classify(errno, name))
 }
 
+pub(super) fn open_leaf_dir(
+    root: BorrowedFd<'_>,
+    location: &ObjectLocation<'_>,
+) -> Result<OwnedFd, StorageError> {
+    let mut current: Option<OwnedFd> = None;
+    for name in location.dirs() {
+        let parent = current.as_ref().map_or(root, AsFd::as_fd);
+        current = Some(open_dir(parent, name)?);
+    }
+    current.ok_or(StorageError::InvalidKey)
+}
+
+pub(super) fn temp_name(leaf: &str) -> String {
+    format!("{TEMP_PREFIX}{leaf}")
+}
+
 pub(super) fn ensure_dir(
     ops: &dyn FsOps,
     parent: BorrowedFd<'_>,
