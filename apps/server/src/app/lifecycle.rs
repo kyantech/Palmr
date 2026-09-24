@@ -33,7 +33,9 @@ use crate::config::{
 };
 use crate::domain::clock::{Clock, SystemClock};
 use crate::infra::crypto::instance_key::{InstanceKey, InstanceKeyError, KeyOrigin};
-use crate::infra::db::{DbOpenError, MigrationError, MIGRATOR};
+use crate::infra::db::{
+    DbOpenError, InstanceLock, InstanceLockError, LockOrigin, MigrationError, MIGRATOR,
+};
 use crate::infra::http::headers::SecurityHeaders;
 use crate::infra::http::proxy::TrustedProxies;
 use crate::infra::http::shell::ShellInitError;
@@ -93,6 +95,7 @@ pub enum StartupError {
     DataDir(DataDirError),
     InstanceKey(InstanceKeyError),
     Database(DbOpenError),
+    InstanceLock(InstanceLockError),
     Migration(MigrationError),
     Bind(BindError),
     Router(RouteBuildError),
@@ -108,6 +111,7 @@ impl StartupError {
             Self::DataDir(error) => Some(error.code()),
             Self::InstanceKey(error) => Some(error.code()),
             Self::Database(error) => Some(error.code()),
+            Self::InstanceLock(error) => Some(error.code()),
             Self::Migration(error) => Some(error.code()),
             Self::Bind(error) => Some(error.code()),
             Self::Router(_) | Self::Shell(_) | Self::ApiDocs(_) => None,
@@ -116,9 +120,11 @@ impl StartupError {
 
     pub const fn exit_code(&self) -> u8 {
         match self {
-            Self::DataDir(_) | Self::InstanceKey(_) | Self::Database(_) | Self::Migration(_) => {
-                EX_CONFIG
-            }
+            Self::DataDir(_)
+            | Self::InstanceKey(_)
+            | Self::Database(_)
+            | Self::InstanceLock(_)
+            | Self::Migration(_) => EX_CONFIG,
             Self::Config(_)
             | Self::Tracing(_)
             | Self::Bind(_)
@@ -153,6 +159,11 @@ impl StartupError {
                 pool = error.pool().map(|pool| pool.as_str()),
                 "{self}"
             ),
+            Self::InstanceLock(error) => tracing::error!(
+                startup_error = error.code(),
+                path = %error.path().display(),
+                "{self}"
+            ),
             Self::Migration(error) => tracing::error!(
                 startup_error = error.code(),
                 path = %error.path.display(),
@@ -183,6 +194,7 @@ impl fmt::Display for StartupError {
             Self::DataDir(error) => error.fmt(f),
             Self::InstanceKey(error) => error.fmt(f),
             Self::Database(error) => error.fmt(f),
+            Self::InstanceLock(error) => error.fmt(f),
             Self::Migration(error) => error.fmt(f),
             Self::Bind(error) => error.fmt(f),
             Self::Router(error) => write!(f, "internal startup failure: {error}"),
@@ -221,6 +233,12 @@ impl From<InstanceKeyError> for StartupError {
 impl From<DbOpenError> for StartupError {
     fn from(error: DbOpenError) -> Self {
         Self::Database(error)
+    }
+}
+
+impl From<InstanceLockError> for StartupError {
+    fn from(error: InstanceLockError) -> Self {
+        Self::InstanceLock(error)
     }
 }
 
@@ -344,6 +362,7 @@ pub struct Application {
     server: Server,
     readiness: Readiness,
     database: Database,
+    instance: InstanceLock,
     _data_dir: DataDir,
     _instance_key: InstanceKey,
 }
@@ -404,6 +423,7 @@ impl Application {
             server,
             readiness: initialized.readiness,
             database: initialized.database,
+            instance: initialized.instance,
             _data_dir: initialized.data_dir,
             _instance_key: initialized.instance_key,
         })
@@ -418,6 +438,7 @@ impl Application {
             server,
             readiness: _,
             database,
+            instance,
             _data_dir: data_dir,
             _instance_key: instance_key,
         } = self;
@@ -429,6 +450,7 @@ impl Application {
             );
         }
         log_database_closed(&database.close().await);
+        release_instance_lock(instance);
         drop((data_dir, instance_key));
         drain
     }
@@ -438,14 +460,14 @@ struct InitializedApplication {
     router: axum::Router,
     readiness: Readiness,
     database: Database,
+    instance: InstanceLock,
     data_dir: DataDir,
     instance_key: InstanceKey,
 }
 
 impl InitializedApplication {
     async fn abandon(self, error: StartupError) -> StartupError {
-        log_database_closed(&self.database.close().await);
-        error
+        abandon_startup(self.database, self.instance, error).await
     }
 }
 
@@ -559,6 +581,7 @@ pub async fn run(source: &EnvironmentSource, mut signals: ShutdownSignals) -> Ex
             application.readiness.mark_not_ready();
             tracing::error!(outcome = ?ended.map(|result| result.map_err(|error| error.kind())), "the HTTP server stopped unexpectedly");
             log_database_closed(&application.database.close().await);
+            release_instance_lock(application.instance);
             flush_diagnostics();
             return ExitCode::from(EX_FAILURE);
         }
@@ -604,9 +627,20 @@ async fn initialize(
     let readiness = Readiness::new();
     let health = Health::new(readiness.clone());
     let database = Database::open(config, data_dir.root(), &health).await?;
+    let instance = match tokio::task::block_in_place(|| {
+        InstanceLock::acquire(data_dir.root(), clock.as_ref())
+    }) {
+        Ok((instance, origin)) => {
+            log_instance_lock_acquired(&instance, origin);
+            instance
+        }
+        Err(error) => {
+            log_database_closed(&database.close().await);
+            return Err(error.into());
+        }
+    };
     if let Err(error) = database.migrate(migrator, &health).await {
-        log_database_closed(&database.close().await);
-        return Err(error.into());
+        return Err(abandon_startup(database, instance, error.into()).await);
     }
     for step in FutureStartupStep::IN_ORDER {
         tracing::debug!(
@@ -619,18 +653,51 @@ async fn initialize(
         .and_then(|assets| composed_router(config, health, assets, clock))
     {
         Ok(router) => router,
-        Err(error) => {
-            log_database_closed(&database.close().await);
-            return Err(error);
-        }
+        Err(error) => return Err(abandon_startup(database, instance, error).await),
     };
     Ok(InitializedApplication {
         router,
         readiness,
         database,
+        instance,
         data_dir,
         instance_key,
     })
+}
+
+async fn abandon_startup(
+    database: Database,
+    instance: InstanceLock,
+    error: StartupError,
+) -> StartupError {
+    log_database_closed(&database.close().await);
+    release_instance_lock(instance);
+    error
+}
+
+fn log_instance_lock_acquired(instance: &InstanceLock, origin: LockOrigin) {
+    match origin {
+        LockOrigin::Fresh => tracing::debug!(
+            path = %instance.path().display(),
+            instance_id = %instance.instance_id(),
+            "instance_lock.acquired"
+        ),
+        LockOrigin::Reclaimed { previous } => tracing::warn!(
+            path = %instance.path().display(),
+            instance_id = %instance.instance_id(),
+            previous_instance_id = previous.map(|previous| previous.to_string()),
+            "instance_lock.reclaimed"
+        ),
+    }
+}
+
+fn release_instance_lock(instance: InstanceLock) {
+    if let Err(error) = instance.release() {
+        tracing::warn!(
+            error = %error,
+            "the single-instance lock file could not be cleared on shutdown; the lock itself is released and the next start reclaims the file"
+        );
+    }
 }
 
 pub fn application_router(
