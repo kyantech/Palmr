@@ -141,7 +141,7 @@ impl DbPools {
     }
 }
 
-async fn connect(
+pub(super) async fn connect(
     role: PoolRole,
     max_connections: u32,
     options: SqliteConnectOptions,

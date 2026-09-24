@@ -9,6 +9,7 @@ compile_error!("Palmr runs on Unix-like operating systems only");
     )
 )]
 mod app;
+pub mod cli;
 #[expect(
     dead_code,
     unused_imports,

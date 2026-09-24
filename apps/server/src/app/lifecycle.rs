@@ -1,4 +1,4 @@
-mod data_dir;
+pub(crate) mod data_dir;
 mod database;
 
 use std::fmt;
