@@ -231,3 +231,296 @@ CREATE TABLE idempotency_records (
 CREATE UNIQUE INDEX ux_idempotency_scope
     ON idempotency_records(scope_kind, scope_id, http_method, route_template, key_hash);
 CREATE INDEX        ix_idempotency_expiry ON idempotency_records(expires_at);
+
+CREATE TABLE users (
+    id                        TEXT    NOT NULL PRIMARY KEY,
+    email                     TEXT    NOT NULL CHECK (length(email) BETWEEN 3 AND 254),
+    email_normalized          TEXT    NOT NULL,
+    email_verified_at         TEXT    NULL,
+    pending_email             TEXT    NULL CHECK (pending_email IS NULL OR length(pending_email) BETWEEN 3 AND 254),
+    pending_email_normalized  TEXT    NULL,
+    username                  TEXT    NOT NULL CHECK (length(username) BETWEEN 3 AND 64),
+    username_normalized       TEXT    NOT NULL,
+    first_name                TEXT    NOT NULL DEFAULT '' CHECK (length(first_name) <= 100),
+    last_name                 TEXT    NOT NULL DEFAULT '' CHECK (length(last_name)  <= 100),
+    password_hash             TEXT    NULL,
+    password_updated_at       TEXT    NULL,
+    must_change_password      INTEGER NOT NULL DEFAULT 0 CHECK (must_change_password IN (0,1)),
+    role                      TEXT    NOT NULL DEFAULT 'user' CHECK (role IN ('admin','user')),
+    is_active                 INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0,1)),
+    deactivated_at            TEXT    NULL,
+    deactivated_by            TEXT    NULL,
+    totp_enabled              INTEGER NOT NULL DEFAULT 0 CHECK (totp_enabled IN (0,1)),
+    quota_override_mode       TEXT    NOT NULL DEFAULT 'inherit'
+                                      CHECK (quota_override_mode IN ('inherit','unlimited','bytes')),
+    quota_bytes               INTEGER NULL CHECK (quota_bytes IS NULL OR quota_bytes >= 0),
+    used_bytes                INTEGER NOT NULL DEFAULT 0 CHECK (used_bytes >= 0),
+    avatar_storage_object_id  TEXT    NULL,
+    last_login_at             TEXT    NULL,
+    created_at                TEXT    NOT NULL,
+    updated_at                TEXT    NOT NULL,
+    created_by                TEXT    NULL,
+
+    CHECK ( (quota_override_mode = 'bytes' AND quota_bytes IS NOT NULL)
+         OR (quota_override_mode <> 'bytes' AND quota_bytes IS NULL) ),
+    CHECK ( (pending_email IS NULL     AND pending_email_normalized IS NULL)
+         OR (pending_email IS NOT NULL AND pending_email_normalized IS NOT NULL) ),
+    CHECK ( (is_active = 1 AND deactivated_at IS NULL)
+         OR (is_active = 0 AND deactivated_at IS NOT NULL) ),
+
+    FOREIGN KEY (avatar_storage_object_id) REFERENCES storage_objects(id) ON DELETE RESTRICT,
+    FOREIGN KEY (created_by)               REFERENCES users(id)           ON DELETE SET NULL,
+    FOREIGN KEY (deactivated_by)           REFERENCES users(id)           ON DELETE SET NULL
+);
+
+CREATE UNIQUE INDEX ux_users_email_normalized    ON users(email_normalized);
+CREATE UNIQUE INDEX ux_users_username_normalized ON users(username_normalized);
+CREATE UNIQUE INDEX ux_users_pending_email_normalized
+    ON users(pending_email_normalized) WHERE pending_email_normalized IS NOT NULL;
+CREATE INDEX        ix_users_active_admins ON users(id) WHERE role = 'admin' AND is_active = 1;
+CREATE INDEX        ix_users_created_at    ON users(created_at DESC);
+CREATE INDEX        ix_users_used_bytes    ON users(used_bytes DESC);
+CREATE INDEX        ix_users_avatar_object ON users(avatar_storage_object_id) WHERE avatar_storage_object_id IS NOT NULL;
+
+CREATE TABLE user_preferences (
+    user_id         TEXT NOT NULL PRIMARY KEY,
+    locale          TEXT NOT NULL DEFAULT 'en-US' CHECK (locale IN (
+                        'ar-SA','de-DE','el-GR','en-US','es-ES','fa-IR','fr-FR','he-IL','hi-IN',
+                        'id-ID','it-IT','ja-JP','ko-KR','nl-NL','pl-PL','pt-BR','ru-RU','sv-SE',
+                        'th-TH','tr-TR','uk-UA','vi-VN','zh-CN')),
+    theme           TEXT NOT NULL DEFAULT 'system' CHECK (theme IN ('light','dark','system')),
+    accent          TEXT NOT NULL DEFAULT 'default'
+                         CHECK (accent IN ('default','blue','violet','emerald','amber','rose','slate')),
+    files_view_mode TEXT NOT NULL DEFAULT 'table' CHECK (files_view_mode IN ('table','grid')),
+    files_sort_key  TEXT NOT NULL DEFAULT 'name'
+                         CHECK (files_sort_key IN ('name','size','created_at','updated_at','type')),
+    files_sort_dir  TEXT NOT NULL DEFAULT 'asc' CHECK (files_sort_dir IN ('asc','desc')),
+    created_at      TEXT NOT NULL,
+    updated_at      TEXT NOT NULL,
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE sessions (
+    id                  TEXT    NOT NULL PRIMARY KEY,
+    user_id             TEXT    NOT NULL,
+    token_hash          TEXT    NOT NULL CHECK (length(token_hash) = 64),
+    csrf_token_hash     TEXT    NOT NULL CHECK (length(csrf_token_hash) = 64),
+    state               TEXT    NOT NULL DEFAULT 'active'
+                                CHECK (state IN ('mfa_pending','active','revoked','expired')),
+    auth_method         TEXT    NOT NULL
+                                CHECK (auth_method IN ('password','password_totp','password_backup_code',
+                                                       'password_trusted_device','external','invite','reset')),
+    mfa_token_hash      TEXT    NULL CHECK (mfa_token_hash IS NULL OR length(mfa_token_hash) = 64),
+    mfa_expires_at      TEXT    NULL,
+    mfa_attempts        INTEGER NOT NULL DEFAULT 0 CHECK (mfa_attempts >= 0),
+    trusted_device_id   TEXT    NULL,
+    identity_link_id    TEXT    NULL,
+    created_at          TEXT    NOT NULL,
+    last_seen_at        TEXT    NOT NULL,
+    last_auth_at        TEXT    NOT NULL,
+    idle_expires_at     TEXT    NOT NULL,
+    absolute_expires_at TEXT    NOT NULL,
+    revoked_at          TEXT    NULL,
+    revoked_reason      TEXT    NULL CHECK (revoked_reason IS NULL OR revoked_reason IN (
+                                    'logout','user_request','admin_request','password_changed',
+                                    'password_reset','role_changed','deactivated','deleted',
+                                    'mfa_abandoned','rotated','policy_changed','trusted_device_revoked')),
+    ip                  TEXT    NULL CHECK (ip IS NULL OR length(ip) <= 45),
+    user_agent          TEXT    NULL CHECK (user_agent IS NULL OR length(user_agent) <= 512),
+
+    CHECK ( (state = 'mfa_pending' AND mfa_token_hash IS NOT NULL AND mfa_expires_at IS NOT NULL)
+         OR (state <> 'mfa_pending' AND mfa_token_hash IS NULL) ),
+    CHECK ( (state = 'revoked' AND revoked_at IS NOT NULL AND revoked_reason IS NOT NULL)
+         OR (state <> 'revoked' AND revoked_at IS NULL) ),
+
+    FOREIGN KEY (user_id)           REFERENCES users(id)            ON DELETE CASCADE,
+    FOREIGN KEY (trusted_device_id) REFERENCES trusted_devices(id)  ON DELETE SET NULL,
+    FOREIGN KEY (identity_link_id)  REFERENCES identity_links(id)   ON DELETE SET NULL
+);
+
+CREATE UNIQUE INDEX ux_sessions_token_hash ON sessions(token_hash);
+CREATE UNIQUE INDEX ux_sessions_mfa_token_hash ON sessions(mfa_token_hash) WHERE mfa_token_hash IS NOT NULL;
+CREATE INDEX        ix_sessions_user_active   ON sessions(user_id, created_at DESC) WHERE state = 'active';
+CREATE INDEX        ix_sessions_absolute_exp  ON sessions(absolute_expires_at) WHERE state IN ('active','mfa_pending');
+CREATE INDEX        ix_sessions_idle_exp      ON sessions(idle_expires_at)     WHERE state = 'active';
+CREATE INDEX        ix_sessions_prune         ON sessions(absolute_expires_at) WHERE state IN ('revoked','expired');
+
+CREATE TABLE trusted_devices (
+    id           TEXT NOT NULL PRIMARY KEY,
+    user_id      TEXT NOT NULL,
+    token_hash   TEXT NOT NULL CHECK (length(token_hash) = 64),
+    label        TEXT NULL CHECK (label IS NULL OR length(label) <= 100),
+    created_at   TEXT NOT NULL,
+    last_used_at TEXT NULL,
+    expires_at   TEXT NOT NULL,
+    revoked_at   TEXT NULL,
+    ip           TEXT NULL CHECK (ip IS NULL OR length(ip) <= 45),
+    user_agent   TEXT NULL CHECK (user_agent IS NULL OR length(user_agent) <= 512),
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX ux_trusted_devices_token_hash ON trusted_devices(token_hash);
+CREATE INDEX        ix_trusted_devices_user       ON trusted_devices(user_id, created_at DESC);
+CREATE INDEX        ix_trusted_devices_expiry     ON trusted_devices(expires_at) WHERE revoked_at IS NULL;
+
+CREATE TABLE totp_secrets (
+    user_id           TEXT    NOT NULL PRIMARY KEY,
+    secret_ciphertext BLOB    NOT NULL,
+    secret_nonce      BLOB    NOT NULL CHECK (length(secret_nonce) = 24),
+    key_version       INTEGER NOT NULL DEFAULT 1 CHECK (key_version >= 1),
+    algorithm         TEXT    NOT NULL DEFAULT 'sha1'   CHECK (algorithm IN ('sha1','sha256','sha512')),
+    digits            INTEGER NOT NULL DEFAULT 6        CHECK (digits IN (6,8)),
+    period_seconds    INTEGER NOT NULL DEFAULT 30       CHECK (period_seconds BETWEEN 15 AND 120),
+    state             TEXT    NOT NULL DEFAULT 'pending' CHECK (state IN ('pending','active')),
+    last_used_step    INTEGER NULL CHECK (last_used_step IS NULL OR last_used_step >= 0),
+    confirmed_at      TEXT    NULL,
+    created_at        TEXT    NOT NULL,
+    updated_at        TEXT    NOT NULL,
+
+    CHECK ( (state = 'active' AND confirmed_at IS NOT NULL)
+         OR (state = 'pending' AND confirmed_at IS NULL) ),
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE totp_backup_codes (
+    id         TEXT NOT NULL PRIMARY KEY,
+    user_id    TEXT NOT NULL,
+    batch_id   TEXT NOT NULL,
+    code_hash  TEXT NOT NULL CHECK (length(code_hash) = 64),
+    created_at TEXT NOT NULL,
+    used_at    TEXT NULL,
+    used_ip    TEXT NULL CHECK (used_ip IS NULL OR length(used_ip) <= 45),
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX ux_totp_backup_codes_user_code ON totp_backup_codes(user_id, code_hash);
+CREATE INDEX        ix_totp_backup_codes_unused    ON totp_backup_codes(user_id) WHERE used_at IS NULL;
+
+CREATE TABLE password_reset_tokens (
+    id             TEXT NOT NULL PRIMARY KEY,
+    user_id        TEXT NOT NULL,
+    token_hash     TEXT NOT NULL CHECK (length(token_hash) = 64),
+    created_at     TEXT NOT NULL,
+    expires_at     TEXT NOT NULL,
+    used_at        TEXT NULL,
+    invalidated_at TEXT NULL,
+    requested_ip   TEXT NULL CHECK (requested_ip IS NULL OR length(requested_ip) <= 45),
+
+    CHECK (used_at IS NULL OR invalidated_at IS NULL),
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX ux_password_reset_token_hash ON password_reset_tokens(token_hash);
+CREATE INDEX        ix_password_reset_live       ON password_reset_tokens(user_id)
+    WHERE used_at IS NULL AND invalidated_at IS NULL;
+CREATE INDEX        ix_password_reset_expiry     ON password_reset_tokens(expires_at);
+
+CREATE TABLE email_verifications (
+    id               TEXT NOT NULL PRIMARY KEY,
+    user_id          TEXT NOT NULL,
+    purpose          TEXT NOT NULL CHECK (purpose IN ('email_change','invite_email','initial_admin')),
+    email            TEXT NOT NULL CHECK (length(email) BETWEEN 3 AND 254),
+    email_normalized TEXT NOT NULL,
+    token_hash       TEXT NOT NULL CHECK (length(token_hash) = 64),
+    created_at       TEXT NOT NULL,
+    expires_at       TEXT NOT NULL,
+    consumed_at      TEXT NULL,
+    invalidated_at   TEXT NULL,
+    requested_by     TEXT NULL,
+
+    CHECK (consumed_at IS NULL OR invalidated_at IS NULL),
+
+    FOREIGN KEY (user_id)      REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (requested_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE UNIQUE INDEX ux_email_verifications_token_hash ON email_verifications(token_hash);
+CREATE UNIQUE INDEX ux_email_verifications_live
+    ON email_verifications(user_id, purpose) WHERE consumed_at IS NULL AND invalidated_at IS NULL;
+CREATE INDEX        ix_email_verifications_expiry ON email_verifications(expires_at);
+
+CREATE TABLE invites (
+    id               TEXT NOT NULL PRIMARY KEY,
+    token_hash       TEXT NOT NULL CHECK (length(token_hash) = 64),
+    email            TEXT NULL CHECK (email IS NULL OR length(email) BETWEEN 3 AND 254),
+    email_normalized TEXT NULL,
+    role             TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('admin','user')),
+    state            TEXT NOT NULL DEFAULT 'pending'
+                          CHECK (state IN ('pending','accepted','revoked','expired')),
+    created_by       TEXT NOT NULL,
+    created_at       TEXT NOT NULL,
+    expires_at       TEXT NOT NULL,
+    accepted_at      TEXT NULL,
+    accepted_user_id TEXT NULL,
+    revoked_at       TEXT NULL,
+    revoked_by       TEXT NULL,
+    token_ciphertext BLOB NULL,
+    token_nonce      BLOB NULL CHECK (token_nonce IS NULL OR length(token_nonce) = 24),
+    key_version      INTEGER NULL CHECK (key_version IS NULL OR key_version >= 1),
+
+    CHECK ( (token_ciphertext IS NULL AND token_nonce IS NULL AND key_version IS NULL)
+         OR (token_ciphertext IS NOT NULL AND token_nonce IS NOT NULL AND key_version IS NOT NULL) ),
+    CHECK ( state = 'pending' OR token_ciphertext IS NULL ),
+    CHECK ( (email IS NULL AND email_normalized IS NULL)
+         OR (email IS NOT NULL AND email_normalized IS NOT NULL) ),
+    CHECK ( (state = 'accepted' AND accepted_at IS NOT NULL AND accepted_user_id IS NOT NULL)
+         OR (state <> 'accepted' AND accepted_at IS NULL AND accepted_user_id IS NULL) ),
+    CHECK ( (state = 'revoked' AND revoked_at IS NOT NULL)
+         OR (state <> 'revoked' AND revoked_at IS NULL) ),
+
+    FOREIGN KEY (created_by)       REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (accepted_user_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (revoked_by)       REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE UNIQUE INDEX ux_invites_token_hash ON invites(token_hash);
+CREATE UNIQUE INDEX ux_invites_pending_email
+    ON invites(email_normalized) WHERE state = 'pending' AND email_normalized IS NOT NULL;
+CREATE INDEX        ix_invites_state_created ON invites(state, created_at DESC);
+CREATE INDEX        ix_invites_expiry        ON invites(expires_at) WHERE state = 'pending';
+
+CREATE TABLE login_attempts (
+    id                    TEXT NOT NULL PRIMARY KEY,
+    at                    TEXT NOT NULL,
+    identifier_normalized TEXT NOT NULL CHECK (length(identifier_normalized) <= 254),
+    user_id               TEXT NULL,
+    provider_id           TEXT NULL,
+    method                TEXT NOT NULL CHECK (method IN ('password','totp','backup_code','trusted_device','external')),
+    result                TEXT NOT NULL CHECK (result IN (
+                              'success','bad_credentials','unknown_identifier','inactive','locked_out',
+                              'totp_required','totp_failed','password_auth_disabled','rate_limited',
+                              'must_change_password','provider_denied')),
+    ip                    TEXT NULL CHECK (ip IS NULL OR length(ip) <= 45),
+    user_agent            TEXT NULL CHECK (user_agent IS NULL OR length(user_agent) <= 512),
+    request_id            TEXT NULL CHECK (request_id IS NULL OR length(request_id) <= 64),
+
+    FOREIGN KEY (user_id)     REFERENCES users(id)              ON DELETE CASCADE,
+    FOREIGN KEY (provider_id) REFERENCES identity_providers(id) ON DELETE SET NULL
+);
+
+CREATE INDEX ix_login_attempts_identifier ON login_attempts(identifier_normalized, at DESC);
+CREATE INDEX ix_login_attempts_ip         ON login_attempts(ip, at DESC) WHERE ip IS NOT NULL;
+CREATE INDEX ix_login_attempts_at         ON login_attempts(at);
+CREATE INDEX ix_login_attempts_user       ON login_attempts(user_id, at DESC) WHERE user_id IS NOT NULL;
+
+CREATE TABLE account_lockouts (
+    user_id        TEXT    NOT NULL PRIMARY KEY,
+    failed_count   INTEGER NOT NULL DEFAULT 0 CHECK (failed_count >= 0),
+    first_failed_at TEXT   NULL,
+    last_failed_at TEXT    NULL,
+    locked_until   TEXT    NULL,
+    lock_count     INTEGER NOT NULL DEFAULT 0 CHECK (lock_count >= 0),
+    cleared_at     TEXT    NULL,
+    cleared_by     TEXT    NULL,
+    updated_at     TEXT    NOT NULL,
+
+    FOREIGN KEY (user_id)    REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (cleared_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE INDEX ix_account_lockouts_locked ON account_lockouts(locked_until) WHERE locked_until IS NOT NULL;
