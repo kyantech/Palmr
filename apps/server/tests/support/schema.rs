@@ -177,6 +177,59 @@ impl Schema {
     }
 }
 
+pub fn canonical_schema(schema: &Schema) -> String {
+    let mut objects: Vec<&SchemaObject> = schema.objects.iter().collect();
+    objects.sort_by(|left, right| {
+        kind_rank(&left.kind)
+            .cmp(&kind_rank(&right.kind))
+            .then_with(|| left.name.cmp(&right.name))
+    });
+
+    let mut out = String::new();
+    for (position, object) in objects.iter().enumerate() {
+        if position > 0 {
+            out.push('\n');
+        }
+        out.push_str("-- ");
+        out.push_str(&object.kind);
+        out.push(' ');
+        out.push_str(&object.name);
+        out.push('\n');
+        out.push_str(&canonical_statement(&object.sql));
+        out.push_str(";\n");
+    }
+    out
+}
+
+pub fn schema_diff(expected: &str, actual: &str) -> String {
+    similar::TextDiff::from_lines(expected, actual)
+        .unified_diff()
+        .context_radius(3)
+        .header("committed snapshot", "migrated schema")
+        .to_string()
+}
+
+fn kind_rank(kind: &str) -> u8 {
+    match kind {
+        "table" => 0,
+        "index" => 1,
+        "trigger" => 2,
+        _ => 3,
+    }
+}
+
+fn canonical_statement(sql: &str) -> String {
+    let normalized = sql.replace("\r\n", "\n").replace('\r', "\n");
+    let mut lines: Vec<&str> = normalized.lines().map(str::trim_end).collect();
+    while lines.first().is_some_and(|line| line.is_empty()) {
+        lines.remove(0);
+    }
+    while lines.last().is_some_and(|line| line.is_empty()) {
+        lines.pop();
+    }
+    lines.join("\n")
+}
+
 pub async fn migrated_schema(test_name: &str) -> Result<Schema> {
     let application = TestApplication::start(test_name).await?;
     let schema = read_migrated(&application.data_dir().join(DATABASE_FILE)).await;

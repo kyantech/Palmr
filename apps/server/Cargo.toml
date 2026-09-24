@@ -54,6 +54,7 @@ proptest = { version = "1", default-features = false, features = ["std"] }
 rand = { version = "0.9", default-features = false, features = ["std_rng"] }
 reqwest = { version = "0.12", default-features = false, features = ["cookies"] }
 rstest = "0.27"
+similar = "2"
 tempfile = "3"
 thiserror = "2"
 tokio = { version = "1", features = ["io-util", "macros", "rt", "test-util"] }
