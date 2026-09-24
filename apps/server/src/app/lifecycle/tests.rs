@@ -375,6 +375,7 @@ async fn it_startup_listener_serves_application_stack() {
         Health::new(readiness.clone()),
         assets,
         Arc::new(TestClock::new(datetime!(2026-09-23 12:00 UTC))),
+        crate::features::settings::SettingsHandle::documented_defaults(),
     )
     .unwrap();
     let listener = bind(loopback()).await.unwrap();
@@ -477,6 +478,7 @@ async fn it_health_ready_false_during_shutdown() {
             clock.clone(),
             Health::new(readiness.clone()),
             docs,
+            crate::features::settings::SettingsHandle::documented_defaults(),
         ))
         .layer(from_fn_with_state(
             Gate {
@@ -777,5 +779,5 @@ fn unit_future_lifecycle_steps_are_reserved_in_order() {
         .iter()
         .map(|step| step.as_str())
         .collect();
-    assert_eq!(startup, ["settings", "storage"]);
+    assert_eq!(startup, ["storage"]);
 }

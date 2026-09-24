@@ -316,6 +316,7 @@ fn app(
         clock.clone(),
         Health::new(readiness),
         docs,
+        crate::features::settings::SettingsHandle::documented_defaults(),
     ));
     let edge = HttpEdge::new(
         clock,

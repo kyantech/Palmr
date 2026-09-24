@@ -34,6 +34,7 @@ use crate::config::{
 };
 use crate::domain::clock::{Clock, SystemClock};
 use crate::features::audit;
+use crate::features::settings::{SettingsError, SettingsHandle, SettingsService};
 use crate::infra::crypto::instance_key::{InstanceKey, InstanceKeyError, KeyOrigin};
 use crate::infra::db::{
     DbOpenError, InstanceLock, InstanceLockError, LockOrigin, MigrationError, MIGRATOR,
@@ -54,16 +55,14 @@ const EX_FAILURE: u8 = 1;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FutureStartupStep {
-    Settings,
     Storage,
 }
 
 impl FutureStartupStep {
-    pub const IN_ORDER: [Self; 2] = [Self::Settings, Self::Storage];
+    pub const IN_ORDER: [Self; 1] = [Self::Storage];
 
     pub const fn as_str(self) -> &'static str {
         match self {
-            Self::Settings => "settings",
             Self::Storage => "storage",
         }
     }
@@ -78,6 +77,7 @@ pub enum StartupError {
     Database(DbOpenError),
     InstanceLock(InstanceLockError),
     Migration(MigrationError),
+    Settings(SettingsError),
     Bind(BindError),
     Router(RouteBuildError),
     Shell(ShellInitError),
@@ -94,6 +94,7 @@ impl StartupError {
             Self::Database(error) => Some(error.code()),
             Self::InstanceLock(error) => Some(error.code()),
             Self::Migration(error) => Some(error.code()),
+            Self::Settings(error) => Some(error.code()),
             Self::Bind(error) => Some(error.code()),
             Self::Router(_) | Self::Shell(_) | Self::ApiDocs(_) => None,
         }
@@ -105,7 +106,8 @@ impl StartupError {
             | Self::InstanceKey(_)
             | Self::Database(_)
             | Self::InstanceLock(_)
-            | Self::Migration(_) => EX_CONFIG,
+            | Self::Migration(_)
+            | Self::Settings(_) => EX_CONFIG,
             Self::Config(_)
             | Self::Tracing(_)
             | Self::Bind(_)
@@ -151,6 +153,9 @@ impl StartupError {
                 migration_version = error.version(),
                 "{self}"
             ),
+            Self::Settings(error) => {
+                tracing::error!(startup_error = error.code(), kind = error.kind(), "{self}")
+            }
             Self::Bind(error) => tracing::error!(
                 startup_error = error.code(),
                 address = %error.address,
@@ -177,6 +182,7 @@ impl fmt::Display for StartupError {
             Self::Database(error) => error.fmt(f),
             Self::InstanceLock(error) => error.fmt(f),
             Self::Migration(error) => error.fmt(f),
+            Self::Settings(error) => error.fmt(f),
             Self::Bind(error) => error.fmt(f),
             Self::Router(error) => write!(f, "internal startup failure: {error}"),
             Self::Shell(error) => write!(f, "internal startup failure: {error}"),
@@ -226,6 +232,12 @@ impl From<InstanceLockError> for StartupError {
 impl From<MigrationError> for StartupError {
     fn from(error: MigrationError) -> Self {
         Self::Migration(error)
+    }
+}
+
+impl From<SettingsError> for StartupError {
+    fn from(error: SettingsError) -> Self {
+        Self::Settings(error)
     }
 }
 
@@ -625,6 +637,15 @@ async fn initialize(
     if let Err(error) = database.migrate(migrator, &health).await {
         return Err(abandon_startup(database, instance, error.into()).await);
     }
+    let settings = match SettingsService::load(database.pools(), Arc::clone(&clock), &instance_key)
+        .await
+    {
+        Ok(settings) => settings,
+        Err(error) => {
+            return Err(abandon_startup(database, instance, StartupError::Settings(error)).await)
+        }
+    };
+    tracing::debug!("settings snapshot loaded");
     for step in FutureStartupStep::IN_ORDER {
         tracing::debug!(
             step = step.as_str(),
@@ -639,10 +660,11 @@ async fn initialize(
         ))
         .await;
     log_reconciliation(&report);
-    let jobs = start_jobs(config, &database, &clock, &instance);
+    let settings = settings.handle();
+    let jobs = start_jobs(config, &database, &clock, &instance, &settings);
     let router = match StaticAssets::built(&config.base_url)
         .map_err(StartupError::from)
-        .and_then(|assets| composed_router(config, health, assets, clock))
+        .and_then(|assets| composed_router(config, health, assets, clock, settings))
     {
         Ok(router) => router,
         Err(error) => {
@@ -666,6 +688,7 @@ fn start_jobs(
     database: &Database,
     clock: &Arc<dyn Clock>,
     instance: &InstanceLock,
+    settings: &SettingsHandle,
 ) -> JobRuntime {
     let timing = RuntimeTiming::DEFAULT;
     let pools = database.pools().clone();
@@ -674,7 +697,12 @@ fn start_jobs(
         pools.clone(),
         Arc::clone(clock),
     );
-    let registry = audit::register_jobs(Registry::production(), pools.clone(), Arc::clone(clock));
+    let registry = audit::register_jobs(
+        Registry::production(),
+        pools.clone(),
+        Arc::clone(clock),
+        settings.clone(),
+    );
     let dispatcher = Dispatcher::new(
         pools,
         Arc::clone(clock),
@@ -761,7 +789,13 @@ pub fn application_router(
     clock: Arc<dyn Clock>,
 ) -> Result<axum::Router, StartupError> {
     let assets = StaticAssets::built(&config.base_url)?;
-    composed_router(config, Health::new(readiness.clone()), assets, clock)
+    composed_router(
+        config,
+        Health::new(readiness.clone()),
+        assets,
+        clock,
+        SettingsHandle::documented_defaults(),
+    )
 }
 
 fn composed_router(
@@ -769,6 +803,7 @@ fn composed_router(
     health: Health,
     assets: StaticAssets,
     clock: Arc<dyn Clock>,
+    settings: SettingsHandle,
 ) -> Result<axum::Router, StartupError> {
     let assembled = application_routes().build().map_err(StartupError::Router)?;
     let api_docs =
@@ -777,6 +812,7 @@ fn composed_router(
         Arc::clone(&clock),
         health,
         api_docs,
+        settings,
     ));
     Ok(edge_router(routes, config, clock))
 }

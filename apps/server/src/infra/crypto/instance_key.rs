@@ -46,10 +46,6 @@ impl InstanceKey {
         }
     }
 
-    #[cfg_attr(
-        not(test),
-        expect(dead_code, reason = "consumed once secret subkeys are derived")
-    )]
     pub const fn expose_secret(&self) -> &[u8; INSTANCE_KEY_LEN] {
         &self.0
     }

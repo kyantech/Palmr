@@ -3,20 +3,28 @@ use std::sync::Arc;
 use super::health::Health;
 use super::openapi::ApiDocs;
 use crate::domain::clock::Clock;
+use crate::features::settings::SettingsHandle;
 
 #[derive(Clone)]
 pub struct AppState {
     clock: Arc<dyn Clock>,
     health: Health,
     api_docs: ApiDocs,
+    settings: SettingsHandle,
 }
 
 impl AppState {
-    pub fn new(clock: Arc<dyn Clock>, health: Health, api_docs: ApiDocs) -> Self {
+    pub fn new(
+        clock: Arc<dyn Clock>,
+        health: Health,
+        api_docs: ApiDocs,
+        settings: SettingsHandle,
+    ) -> Self {
         Self {
             clock,
             health,
             api_docs,
+            settings,
         }
     }
 
@@ -30,6 +38,10 @@ impl AppState {
 
     pub const fn api_docs(&self) -> &ApiDocs {
         &self.api_docs
+    }
+
+    pub const fn settings(&self) -> &SettingsHandle {
+        &self.settings
     }
 }
 
@@ -46,6 +58,7 @@ mod tests {
     use crate::app::router::application_routes;
     use crate::config::{EnvironmentSource, OperatorConfig};
     use crate::domain::clock::TestClock;
+    use crate::features::settings::SettingsHandle;
 
     #[test]
     fn unit_app_state_clones_share_services() {
@@ -61,7 +74,12 @@ mod tests {
             &config.base_url,
         )
         .unwrap();
-        let state = AppState::new(Arc::new(clock), Health::new(Readiness::new()), docs);
+        let state = AppState::new(
+            Arc::new(clock),
+            Health::new(Readiness::new()),
+            docs,
+            SettingsHandle::documented_defaults(),
+        );
         let cloned = state.clone();
 
         assert!(Arc::ptr_eq(&state.clock, &cloned.clock));

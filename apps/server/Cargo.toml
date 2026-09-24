@@ -48,6 +48,7 @@ utoipa-scalar = { version = "0.3", default-features = false }
 uuid = { version = "1", default-features = false, features = ["std", "v7"] }
 zeroize = "1"
 sqlx = { version = "0.8", default-features = false, features = ["macros", "migrate", "runtime-tokio", "sqlite"] }
+arc-swap = "1"
 
 [features]
 dev-assets = []

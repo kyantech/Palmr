@@ -13,6 +13,7 @@ use super::model::{
 use super::repo;
 use crate::domain::clock::Clock;
 use crate::domain::time::Timestamp;
+use crate::features::settings::SettingsHandle;
 use crate::infra::db::{DbPools, WriteTx};
 use crate::infra::jobs::claim::MAX_ROWS_PER_TX;
 use crate::infra::jobs::recurring::Recurring;
@@ -225,10 +226,20 @@ pub async fn sweep_expired(
 struct RetentionContext {
     pools: DbPools,
     clock: Arc<dyn Clock>,
+    settings: SettingsHandle,
 }
 
-pub fn register_jobs(registry: Registry, pools: DbPools, clock: Arc<dyn Clock>) -> Registry {
-    let context = RetentionContext { pools, clock };
+pub fn register_jobs(
+    registry: Registry,
+    pools: DbPools,
+    clock: Arc<dyn Clock>,
+    settings: SettingsHandle,
+) -> Registry {
+    let context = RetentionContext {
+        pools,
+        clock,
+        settings,
+    };
     registry.register(
         JobKind::AuditRetentionSweep,
         Idempotency::key("audit.retention_sweep date bucket"),
@@ -240,7 +251,11 @@ pub fn register_jobs(registry: Registry, pools: DbPools, clock: Arc<dyn Clock>) 
 }
 
 async fn retention_sweep(_job: ClaimedJob, context: RetentionContext) -> anyhow::Result<()> {
-    let retention_days = repo::retention_days(&context.pools).await?;
+    let configured = context.settings.load().audit.audit_retention_days;
+    let retention_days = configured.clamp(
+        repo::MIN_AUDIT_RETENTION_DAYS,
+        repo::MAX_AUDIT_RETENTION_DAYS,
+    );
     let deleted = sweep_expired(&context.pools, context.clock.as_ref(), retention_days).await?;
     tracing::info!(deleted, retention_days, "audit retention sweep finished");
     let recurring = Recurring::new(JobKind::AuditRetentionSweep, AUDIT_RETENTION_PERIOD)
@@ -288,6 +303,8 @@ mod tests {
     use crate::config::SqliteSynchronous;
     use crate::domain::clock::{Clock, TestClock};
     use crate::domain::id::Id;
+    use crate::features::settings::SettingsService;
+    use crate::infra::crypto::instance_key::InstanceKey;
     use crate::infra::db::{DbPools, InstanceId, MIGRATOR};
     use crate::infra::jobs::backoff::Jitter;
     use crate::infra::jobs::claim::enqueue;
@@ -311,7 +328,7 @@ mod tests {
     );
 
     struct Harness {
-        _root: TempDir,
+        root: TempDir,
         pools: DbPools,
         clock: TestClock,
     }
@@ -324,7 +341,7 @@ mod tests {
                 .unwrap();
             pools.migrate(&MIGRATOR).await.unwrap();
             Self {
-                _root: root,
+                root,
                 pools,
                 clock: TestClock::new(START),
             }
@@ -332,6 +349,14 @@ mod tests {
 
         fn shared_clock(&self) -> Arc<dyn Clock> {
             Arc::new(self.clock.clone())
+        }
+
+        async fn settings(&self) -> SettingsHandle {
+            let (key, _) = InstanceKey::load_or_create(self.root.path()).unwrap();
+            SettingsService::load(&self.pools, self.shared_clock(), &key)
+                .await
+                .unwrap()
+                .handle()
         }
 
         fn dispatcher(&self, registry: Registry) -> Dispatcher {
@@ -645,6 +670,7 @@ mod tests {
             Registry::production(),
             harness.pools.clone(),
             harness.shared_clock(),
+            harness.settings().await,
         );
         let dispatcher = harness.dispatcher(registry);
         let worker = claimant(&harness.clock, 0);

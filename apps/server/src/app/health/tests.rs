@@ -81,9 +81,12 @@ fn app_with(
     let clock = Arc::new(TestClock::new(datetime!(2026-09-23 12:00 UTC)));
     let assembled = routes().build().unwrap();
     let docs = ApiDocs::new(assembled.openapi, &config.base_url).unwrap();
-    let router = assembled
-        .router
-        .with_state(AppState::new(clock.clone(), health.clone(), docs));
+    let router = assembled.router.with_state(AppState::new(
+        clock.clone(),
+        health.clone(),
+        docs,
+        crate::features::settings::SettingsHandle::documented_defaults(),
+    ));
     let edge = HttpEdge::new(
         clock,
         TrustedProxies::new(&TrustProxy::Off),

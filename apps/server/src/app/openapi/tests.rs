@@ -88,6 +88,7 @@ fn app(
         clock.clone(),
         Health::new(readiness),
         docs,
+        crate::features::settings::SettingsHandle::documented_defaults(),
     ));
     let edge = HttpEdge::new(
         clock,
@@ -375,10 +376,12 @@ async fn svc_docs_without_nonce_returns_the_error_envelope() {
     let assembled = application_routes().build().unwrap();
     let docs = ApiDocs::new(assembled.openapi, &config.base_url).unwrap();
     let clock = Arc::new(TestClock::new(datetime!(2026-09-23 12:00 UTC)));
-    let router =
-        assembled
-            .router
-            .with_state(AppState::new(clock, Health::new(Readiness::new()), docs));
+    let router = assembled.router.with_state(AppState::new(
+        clock,
+        Health::new(Readiness::new()),
+        docs,
+        crate::features::settings::SettingsHandle::documented_defaults(),
+    ));
 
     let fetched = send(router, get(DOCS_PATH, &[])).await;
     assert_eq!(fetched.status, StatusCode::INTERNAL_SERVER_ERROR);

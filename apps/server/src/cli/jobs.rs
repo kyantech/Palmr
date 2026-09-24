@@ -6,6 +6,8 @@ use crate::app::lifecycle::StartupError;
 use crate::config::OperatorConfig;
 use crate::domain::clock::Clock;
 use crate::features::audit;
+use crate::features::settings::SettingsService;
+use crate::infra::crypto::instance_key::InstanceKey;
 use crate::infra::db::DbPools;
 use crate::infra::jobs::cli::{run_once, RunOnceReport};
 use crate::infra::jobs::{
@@ -42,7 +44,17 @@ async fn execute(
         pools.clone(),
         Arc::clone(&clock),
     );
-    let registry = audit::register_jobs(Registry::production(), pools.clone(), Arc::clone(&clock));
+    let (instance_key, _) =
+        InstanceKey::load_or_create(access.root()).map_err(StartupError::from)?;
+    let settings = SettingsService::load(&pools, Arc::clone(&clock), &instance_key)
+        .await
+        .map_err(StartupError::from)?;
+    let registry = audit::register_jobs(
+        Registry::production(),
+        pools.clone(),
+        Arc::clone(&clock),
+        settings.handle(),
+    );
     let dispatcher = Dispatcher::new(
         pools.clone(),
         Arc::clone(&clock),
