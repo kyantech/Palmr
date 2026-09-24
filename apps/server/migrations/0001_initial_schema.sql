@@ -626,3 +626,80 @@ CREATE TABLE oauth_auth_requests (
 
 CREATE UNIQUE INDEX ux_oauth_auth_requests_state ON oauth_auth_requests(state_hash);
 CREATE INDEX        ix_oauth_auth_requests_expiry ON oauth_auth_requests(expires_at) WHERE consumed_at IS NULL;
+
+CREATE TABLE folders (
+    id              TEXT    NOT NULL PRIMARY KEY,
+    owner_id        TEXT    NOT NULL,
+    parent_id       TEXT    NULL,
+    name            TEXT    NOT NULL CHECK (length(name) BETWEEN 1 AND 255
+                                            AND name NOT LIKE '%/%'
+                                            AND name NOT IN ('.','..')),
+    name_normalized TEXT    NOT NULL CHECK (length(name_normalized) BETWEEN 1 AND 255),
+    description     TEXT    NULL CHECK (description IS NULL OR length(description) <= 2000),
+    depth           INTEGER NOT NULL CHECK (depth BETWEEN 0 AND 64),
+    created_at      TEXT    NOT NULL,
+    updated_at      TEXT    NOT NULL,
+
+    FOREIGN KEY (owner_id)  REFERENCES users(id)   ON DELETE RESTRICT,
+    FOREIGN KEY (parent_id) REFERENCES folders(id) ON DELETE RESTRICT
+);
+
+CREATE UNIQUE INDEX ux_folders_sibling_name
+    ON folders(owner_id, parent_id, name_normalized) WHERE parent_id IS NOT NULL;
+CREATE UNIQUE INDEX ux_folders_root_name
+    ON folders(owner_id, name_normalized)            WHERE parent_id IS NULL;
+CREATE INDEX        ix_folders_parent   ON folders(parent_id) WHERE parent_id IS NOT NULL;
+CREATE INDEX        ix_folders_owner    ON folders(owner_id, name_normalized);
+
+CREATE TABLE files (
+    id                 TEXT    NOT NULL PRIMARY KEY,
+    owner_id           TEXT    NOT NULL,
+    folder_id          TEXT    NULL,
+    storage_object_id  TEXT    NOT NULL,
+    name               TEXT    NOT NULL CHECK (length(name) BETWEEN 1 AND 255
+                                               AND name NOT LIKE '%/%'
+                                               AND name NOT IN ('.','..')),
+    name_normalized    TEXT    NOT NULL CHECK (length(name_normalized) BETWEEN 1 AND 255),
+    extension          TEXT    NOT NULL DEFAULT '' CHECK (length(extension) <= 32),
+    description        TEXT    NULL CHECK (description IS NULL OR length(description) <= 2000),
+    size_bytes         INTEGER NOT NULL CHECK (size_bytes >= 0),
+    mime_type          TEXT    NOT NULL DEFAULT 'application/octet-stream' CHECK (length(mime_type) <= 255),
+    mime_source        TEXT    NOT NULL DEFAULT 'fallback'
+                               CHECK (mime_source IN ('sniffed','extension','client_hint','fallback')),
+    created_at         TEXT    NOT NULL,
+    updated_at         TEXT    NOT NULL,
+
+    FOREIGN KEY (owner_id)          REFERENCES users(id)           ON DELETE RESTRICT,
+    FOREIGN KEY (folder_id)         REFERENCES folders(id)         ON DELETE RESTRICT,
+    FOREIGN KEY (storage_object_id) REFERENCES storage_objects(id) ON DELETE RESTRICT
+);
+
+CREATE UNIQUE INDEX ux_files_sibling_name
+    ON files(owner_id, folder_id, name_normalized) WHERE folder_id IS NOT NULL;
+CREATE UNIQUE INDEX ux_files_root_name
+    ON files(owner_id, name_normalized)             WHERE folder_id IS NULL;
+CREATE UNIQUE INDEX ux_files_storage_object ON files(storage_object_id);
+CREATE INDEX        ix_files_folder         ON files(folder_id) WHERE folder_id IS NOT NULL;
+CREATE INDEX        ix_files_owner_created  ON files(owner_id, created_at DESC);
+CREATE INDEX        ix_files_owner_updated  ON files(owner_id, updated_at DESC);
+CREATE INDEX        ix_files_owner_size     ON files(owner_id, size_bytes DESC);
+
+CREATE VIRTUAL TABLE files_fts USING fts5(
+    name,
+    description,
+    content       = 'files',
+    content_rowid = 'rowid',
+    tokenize      = 'unicode61 remove_diacritics 2',
+    prefix        = '2 3 4'
+);
+
+CREATE TRIGGER files_fts_ai AFTER INSERT ON files BEGIN
+    INSERT INTO files_fts(rowid, name, description) VALUES (new.rowid, new.name, new.description);
+END;
+CREATE TRIGGER files_fts_ad AFTER DELETE ON files BEGIN
+    INSERT INTO files_fts(files_fts, rowid, name, description) VALUES ('delete', old.rowid, old.name, old.description);
+END;
+CREATE TRIGGER files_fts_au AFTER UPDATE OF name, description ON files BEGIN
+    INSERT INTO files_fts(files_fts, rowid, name, description) VALUES ('delete', old.rowid, old.name, old.description);
+    INSERT INTO files_fts(rowid, name, description) VALUES (new.rowid, new.name, new.description);
+END;
