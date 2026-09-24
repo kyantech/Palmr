@@ -34,6 +34,14 @@ mod features;
     )
 )]
 mod infra;
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "storage primitives are consumed by the storage providers"
+    )
+)]
+mod storage;
 
 pub use app::{lifecycle, openapi};
 pub use config::{EnvironmentSource, OperatorConfig};

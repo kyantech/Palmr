@@ -82,6 +82,16 @@ error_catalog! {
         "Setup has already been completed";
     DatabaseBusy = "DATABASE_BUSY", SERVICE_UNAVAILABLE, retryable: true,
         "The database is temporarily busy";
+    FileNotFound = "FILE_NOT_FOUND", NOT_FOUND, retryable: false,
+        "The file was not found";
+    RangeNotSatisfiable = "RANGE_NOT_SATISFIABLE", RANGE_NOT_SATISFIABLE, retryable: false,
+        "The requested range is not satisfiable";
+    StorageUnavailable = "STORAGE_UNAVAILABLE", SERVICE_UNAVAILABLE, retryable: true,
+        "The storage backend is temporarily unavailable";
+    StorageFull = "STORAGE_FULL", INSUFFICIENT_STORAGE, retryable: true,
+        "The storage device is out of space";
+    StorageProviderMismatch = "STORAGE_PROVIDER_MISMATCH", INTERNAL_SERVER_ERROR, retryable: false,
+        "The stored object belongs to a different storage provider";
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -186,6 +196,8 @@ mod tests {
                 "INTERNAL_ERROR",
                 "RATE_LIMITED",
                 "SERVICE_UNAVAILABLE",
+                "STORAGE_FULL",
+                "STORAGE_UNAVAILABLE",
             ])
         );
 

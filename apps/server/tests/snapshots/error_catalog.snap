@@ -33,6 +33,11 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "FILE_NOT_FOUND",
+    "status": 404,
+    "retryable": false
+  },
+  {
     "code": "FORBIDDEN",
     "status": 403,
     "retryable": false
@@ -68,6 +73,11 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "RANGE_NOT_SATISFIABLE",
+    "status": 416,
+    "retryable": false
+  },
+  {
     "code": "RATE_LIMITED",
     "status": 429,
     "retryable": true
@@ -91,6 +101,21 @@ source: apps/server/src/domain/error_code.rs
     "code": "SETUP_ALREADY_COMPLETED",
     "status": 409,
     "retryable": false
+  },
+  {
+    "code": "STORAGE_FULL",
+    "status": 507,
+    "retryable": true
+  },
+  {
+    "code": "STORAGE_PROVIDER_MISMATCH",
+    "status": 500,
+    "retryable": false
+  },
+  {
+    "code": "STORAGE_UNAVAILABLE",
+    "status": 503,
+    "retryable": true
   },
   {
     "code": "UNSUPPORTED_MEDIA_TYPE",

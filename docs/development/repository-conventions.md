@@ -70,6 +70,28 @@ When an operation mixes I/O and state, use three steps: a short transaction that
 - Services match constraint variants on purpose. For example, a duplicate name retries with the next keep-both candidate, and each attempt runs in its own write transaction. Any constraint failure a service does not handle is a bug and reaches clients as `INTERNAL_ERROR`.
 - Never retry `SQLITE_BUSY` in a loop. Palmr writers cannot cause it, because they queue for the single write connection. It only occurs when an external process holds the lock past the 5 s busy timeout. Return `DATABASE_BUSY` and let the client retry.
 
+## Storage keys and errors
+
+`ObjectKey` is the only type a storage operation accepts as physical identity. It has two constructors:
+
+- `ObjectKey::allocate(KeyNamespace)` generates a fresh UUIDv7 `oid`, independent of every row id, and renders `objects/<oid[0:2]>/<oid[2:4]>/<oid>` or `branding/<kind>/<oid>`. It takes no string.
+- `ObjectKey::parse(&str)` accepts only the two grammars, checks that the fan-out segments equal the start of the `oid`, and never normalizes its input. Use it only for strings Palmr stored or a provider listed, never for request input.
+
+`_palmr/probe/`, `thumbnails/`, `runtime/cache/` and `uploads/` are not object keys. `ObjectKey` has no `From`, `FromStr`, `Deref`, `Deserialize` or `ToSchema` implementation, so no request DTO can carry one. Tests in `storage/key.rs` fail the build if one is added.
+
+`StorageError` classifies `std::io::Error` by `ErrorKind`, never by message text. `ENOENT` becomes `NotFound`, `EACCES`/`EPERM` become `PermissionDenied`, and `ENOSPC`/`EDQUOT` become `QuotaOnDevice`.
+
+| Variant | Public mapping when unhandled | Retried by a job |
+|---|---|---|
+| `NotFound` | `FILE_NOT_FOUND`, 404. Delete paths wrap the result in `not_found_is_deleted` and treat it as success. | no |
+| `RangeNotSatisfiable { size }` | `RANGE_NOT_SATISFIABLE`, 416. The handler sets `Content-Range: bytes */<size>`. | no |
+| `AlreadyExists`, `InvalidKey`, `Config` | `INTERNAL_ERROR`, 500, logged at `ERROR` with only the variant name | no |
+| `QuotaOnDevice` | `STORAGE_FULL`, 507. This is the device, not the account quota (`QUOTA_EXCEEDED`). | yes |
+| `PermissionDenied`, `ProviderUnavailable`, `Io`, `S3` | `STORAGE_UNAVAILABLE`, 503 | yes |
+| `ProviderMismatch` | `STORAGE_PROVIDER_MISMATCH`, 500. Never reported as a 404. | no |
+
+The "Retried by a job" column is separate from the `retryable` flag on the error code. For example, `INTERNAL_ERROR` is retryable for an HTTP client, but a job never retries `InvalidKey`, because an invalid key is a defect.
+
 ## Shared e-mail translations
 
 The `emails` namespace is shared between the SPA and the transactional e-mail subsystem (FRONTEND_ARCHITECTURE §12.8). Its canonical source is `apps/web/src/app/i18n/locales/<locale>/emails.json`; there is no second copy. The Rust e-mail renderer embeds the 23 files at build time with `include_str!` from `apps/server/src/features/email/render.rs`, which is why the container's Rust build stage copies `apps/web/src/app/i18n`. Every locale file must carry the same key set as `en-US`, asserted by `unit_email_locale_key_parity`.
