@@ -38,6 +38,7 @@ mod infra;
     not(test),
     expect(
         dead_code,
+        unused_imports,
         reason = "storage primitives are consumed by the storage providers"
     )
 )]
