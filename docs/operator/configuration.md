@@ -58,3 +58,11 @@ These conditions start normally but are reported as warnings:
 | an unrecognized `PALMR_*` variable | the variable is ignored; check it for typos |
 
 `PALMR_TRUST_PROXY` has no trust-all mode: `all`, `*`, `0.0.0.0/0` and `::/0` are rejected. `PALMR_UID` and `PALMR_GID` do not exist; run the container with Docker's `user:` instead.
+
+## Background jobs
+
+`PALMR_JOB_WORKERS` sets how many background jobs run at the same time. The number of queued jobs never changes it. Jobs are rows in the `jobs` table of `palmr.db`, so queued work survives restarts and is included in backups.
+
+- A job that fails is retried later: 30 seconds after the first failure, doubling after each further failure up to 6 hours, with ±20 % random spread. A job that runs out of attempts is marked `dead`, logged at `ERROR` as `job.dead_lettered`, and is never retried automatically.
+- On `SIGTERM`/`SIGINT` Palmr stops starting new jobs first. Jobs already running get up to `PALMR_SHUTDOWN_GRACE_SECS` to finish. A job still running when the grace period ends stays claimed, and the next start runs it again once its 5-minute lease expires. The same happens after a crash or `SIGKILL`.
+- To inspect jobs that failed permanently: `SELECT id, kind, attempts, last_error, updated_at FROM jobs WHERE state = 'dead';`. `last_error` holds an error code and the job id only, never the handler's own error text.

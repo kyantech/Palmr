@@ -7,7 +7,7 @@ mod snapshot;
 mod tx;
 
 pub use error::{DbError, DbErrorKind};
-pub use instance_lock::{InstanceLock, InstanceLockError, LockOrigin};
+pub use instance_lock::{InstanceId, InstanceLock, InstanceLockError, LockOrigin};
 pub use migrate::{
     MigrationError, MigrationStatus, DB_SCHEMA_AHEAD_OF_BINARY, MIGRATOR,
     STARTUP_MIGRATION_CHECKSUM_MISMATCH, STARTUP_MIGRATION_FAILED,

@@ -26,9 +26,8 @@ use super::data_dir::{
 };
 use super::{
     bind, composed_router, edge_router, log_config_warnings, log_startup_completed, prepare_data,
-    stop_accepting, warn_cross_device, BindError, Drain, FutureShutdownStep, FutureStartupStep,
-    Readiness, Server, ShutdownSignal, ShutdownSignals, StartupError, EX_FAILURE,
-    STARTUP_BIND_FAILED,
+    stop_accepting, warn_cross_device, BindError, Drain, FutureStartupStep, Readiness, Server,
+    ShutdownSignal, ShutdownSignals, StartupError, EX_FAILURE, STARTUP_BIND_FAILED,
 };
 use crate::app::auth_class::AuthClass;
 use crate::app::health::{Health, VERSION};
@@ -778,11 +777,5 @@ fn unit_future_lifecycle_steps_are_reserved_in_order() {
         .iter()
         .map(|step| step.as_str())
         .collect();
-    assert_eq!(startup, ["settings", "storage", "reconcile", "workers"]);
-
-    let shutdown: Vec<&str> = FutureShutdownStep::IN_ORDER
-        .iter()
-        .map(|step| step.as_str())
-        .collect();
-    assert_eq!(shutdown, ["stop_workers"]);
+    assert_eq!(startup, ["settings", "storage", "reconcile"]);
 }

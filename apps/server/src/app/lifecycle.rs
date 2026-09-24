@@ -40,6 +40,9 @@ use crate::infra::http::headers::SecurityHeaders;
 use crate::infra::http::proxy::TrustedProxies;
 use crate::infra::http::shell::ShellInitError;
 use crate::infra::http::static_assets::StaticAssets;
+use crate::infra::jobs::{
+    Dispatcher, Jitter, JobAudit, JobRuntime, JobsDrain, Registry, RuntimeTiming,
+};
 use crate::infra::telemetry::{self, write_startup_failure, TelemetryInitError};
 
 pub const STARTUP_BIND_FAILED: &str = "STARTUP_BIND_FAILED";
@@ -52,38 +55,16 @@ pub enum FutureStartupStep {
     Settings,
     Storage,
     Reconcile,
-    Workers,
 }
 
 impl FutureStartupStep {
-    pub const IN_ORDER: [Self; 4] = [
-        Self::Settings,
-        Self::Storage,
-        Self::Reconcile,
-        Self::Workers,
-    ];
+    pub const IN_ORDER: [Self; 3] = [Self::Settings, Self::Storage, Self::Reconcile];
 
     pub const fn as_str(self) -> &'static str {
         match self {
             Self::Settings => "settings",
             Self::Storage => "storage",
             Self::Reconcile => "reconcile",
-            Self::Workers => "workers",
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum FutureShutdownStep {
-    StopWorkers,
-}
-
-impl FutureShutdownStep {
-    pub const IN_ORDER: [Self; 1] = [Self::StopWorkers];
-
-    pub const fn as_str(self) -> &'static str {
-        match self {
-            Self::StopWorkers => "stop_workers",
         }
     }
 }
@@ -361,6 +342,7 @@ pub struct Server {
 pub struct Application {
     server: Server,
     readiness: Readiness,
+    jobs: JobRuntime,
     database: Database,
     instance: InstanceLock,
     _data_dir: DataDir,
@@ -422,6 +404,7 @@ impl Application {
         Ok(Self {
             server,
             readiness: initialized.readiness,
+            jobs: initialized.jobs,
             database: initialized.database,
             instance: initialized.instance,
             _data_dir: initialized.data_dir,
@@ -437,18 +420,15 @@ impl Application {
         let Self {
             server,
             readiness: _,
+            jobs,
             database,
             instance,
             _data_dir: data_dir,
             _instance_key: instance_key,
         } = self;
-        let drain = server.shutdown(grace).await;
-        for step in FutureShutdownStep::IN_ORDER {
-            tracing::debug!(
-                step = step.as_str(),
-                "shutdown step reserved for a later release"
-            );
-        }
+        jobs.stop_claiming();
+        let (drain, jobs_drain) = tokio::join!(server.shutdown(grace), jobs.shutdown(grace));
+        log_jobs_stopped(jobs_drain);
         log_database_closed(&database.close().await);
         release_instance_lock(instance);
         drop((data_dir, instance_key));
@@ -459,6 +439,7 @@ impl Application {
 struct InitializedApplication {
     router: axum::Router,
     readiness: Readiness,
+    jobs: JobRuntime,
     database: Database,
     instance: InstanceLock,
     data_dir: DataDir,
@@ -467,6 +448,7 @@ struct InitializedApplication {
 
 impl InitializedApplication {
     async fn abandon(self, error: StartupError) -> StartupError {
+        log_jobs_stopped(self.jobs.shutdown(Duration::ZERO).await);
         abandon_startup(self.database, self.instance, error).await
     }
 }
@@ -580,6 +562,7 @@ pub async fn run(source: &EnvironmentSource, mut signals: ShutdownSignals) -> Ex
         ended = &mut application.server.task => {
             application.readiness.mark_not_ready();
             tracing::error!(outcome = ?ended.map(|result| result.map_err(|error| error.kind())), "the HTTP server stopped unexpectedly");
+            log_jobs_stopped(application.jobs.shutdown(config.shutdown_grace).await);
             log_database_closed(&application.database.close().await);
             release_instance_lock(application.instance);
             flush_diagnostics();
@@ -648,21 +631,60 @@ async fn initialize(
             "startup step reserved for a later release"
         );
     }
+    let jobs = start_jobs(config, &database, &clock, &instance);
     let router = match StaticAssets::built(&config.base_url)
         .map_err(StartupError::from)
         .and_then(|assets| composed_router(config, health, assets, clock))
     {
         Ok(router) => router,
-        Err(error) => return Err(abandon_startup(database, instance, error).await),
+        Err(error) => {
+            log_jobs_stopped(jobs.shutdown(Duration::ZERO).await);
+            return Err(abandon_startup(database, instance, error).await);
+        }
     };
     Ok(InitializedApplication {
         router,
         readiness,
+        jobs,
         database,
         instance,
         data_dir,
         instance_key,
     })
+}
+
+fn start_jobs(
+    config: &OperatorConfig,
+    database: &Database,
+    clock: &Arc<dyn Clock>,
+    instance: &InstanceLock,
+) -> JobRuntime {
+    let timing = RuntimeTiming::DEFAULT;
+    let dispatcher = Dispatcher::new(
+        database.pools().clone(),
+        Arc::clone(clock),
+        Registry::production(),
+        Jitter::os(),
+        JobAudit::detached(),
+        timing.lease_renewal,
+    );
+    JobRuntime::start(
+        &dispatcher,
+        instance.instance_id(),
+        config.job_workers,
+        timing,
+    )
+}
+
+fn log_jobs_stopped(drain: JobsDrain) {
+    match drain {
+        JobsDrain::Completed => tracing::debug!(drain = drain.as_str(), "job workers stopped"),
+        JobsDrain::GraceElapsed { interrupted } => tracing::warn!(
+            drain = drain.as_str(),
+            interrupted,
+            "job workers were stopped before their jobs finished; their leases lapse and the next start runs them again"
+        ),
+    }
 }
 
 async fn abandon_startup(

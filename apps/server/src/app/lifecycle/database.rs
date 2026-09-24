@@ -52,6 +52,10 @@ impl Database {
         Ok(())
     }
 
+    pub const fn pools(&self) -> &DbPools {
+        &self.pools
+    }
+
     pub async fn close(self) -> DbShutdown {
         self.monitor.abort();
         let _ = self.monitor.await;
