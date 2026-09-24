@@ -1027,3 +1027,223 @@ CREATE TABLE branding_assets (
 CREATE UNIQUE INDEX ux_branding_assets_storage_object ON branding_assets(storage_object_id);
 CREATE UNIQUE INDEX ux_branding_assets_current        ON branding_assets(kind) WHERE is_current = 1;
 CREATE INDEX        ix_branding_assets_kind           ON branding_assets(kind, created_at DESC);
+
+CREATE TABLE transfer_sessions (
+    id                               TEXT    NOT NULL PRIMARY KEY,
+    context                          TEXT    NOT NULL CHECK (context IN ('my_files','reverse_share')),
+    user_id                          TEXT    NULL,
+    reverse_share_upload_session_id  TEXT    NULL,
+    provider                         TEXT    NOT NULL CHECK (provider IN ('local','s3')),
+    state                            TEXT    NOT NULL DEFAULT 'created' CHECK (state IN (
+                                         'created','uploading','finalizing','completed',
+                                         'failed','canceled','expired')),
+    target_folder_id                 TEXT    NULL,
+    declared_file_count              INTEGER NOT NULL DEFAULT 0 CHECK (declared_file_count >= 0),
+    declared_bytes                   INTEGER NOT NULL DEFAULT 0 CHECK (declared_bytes >= 0),
+    completed_file_count             INTEGER NOT NULL DEFAULT 0 CHECK (completed_file_count >= 0),
+    completed_bytes                  INTEGER NOT NULL DEFAULT 0 CHECK (completed_bytes >= 0),
+    client_id                        TEXT    NULL CHECK (client_id IS NULL OR length(client_id) <= 64),
+    cancel_requested                 INTEGER NOT NULL DEFAULT 0 CHECK (cancel_requested IN (0,1)),
+    error_code                       TEXT    NULL CHECK (error_code IS NULL OR length(error_code) <= 64),
+    error_request_id                 TEXT    NULL CHECK (error_request_id IS NULL OR length(error_request_id) <= 128),
+    created_at                       TEXT    NOT NULL,
+    updated_at                       TEXT    NOT NULL,
+    expires_at                       TEXT    NOT NULL,
+    completed_at                     TEXT    NULL,
+
+    CHECK ( (context = 'my_files'      AND user_id IS NOT NULL AND reverse_share_upload_session_id IS NULL)
+         OR (context = 'reverse_share' AND user_id IS NULL     AND reverse_share_upload_session_id IS NOT NULL) ),
+    CHECK ( context = 'my_files' OR target_folder_id IS NULL ),
+
+    FOREIGN KEY (user_id)         REFERENCES users(id)   ON DELETE CASCADE,
+    FOREIGN KEY (target_folder_id) REFERENCES folders(id) ON DELETE RESTRICT,
+    FOREIGN KEY (reverse_share_upload_session_id)
+        REFERENCES reverse_share_upload_sessions(id) ON DELETE RESTRICT
+);
+
+CREATE INDEX ix_transfer_sessions_user   ON transfer_sessions(user_id, created_at DESC) WHERE user_id IS NOT NULL;
+CREATE INDEX ix_transfer_sessions_live   ON transfer_sessions(user_id, updated_at DESC)
+    WHERE state IN ('created','uploading','finalizing');
+CREATE INDEX ix_transfer_sessions_expiry ON transfer_sessions(expires_at)
+    WHERE state IN ('created','uploading','finalizing');
+CREATE INDEX ix_transfer_sessions_rs     ON transfer_sessions(reverse_share_upload_session_id)
+    WHERE reverse_share_upload_session_id IS NOT NULL;
+
+CREATE TABLE transfer_session_files (
+    id                        TEXT    NOT NULL PRIMARY KEY,
+    transfer_session_id       TEXT    NOT NULL,
+    ordinal                   INTEGER NOT NULL CHECK (ordinal >= 0),
+    client_file_key           TEXT    NOT NULL CHECK (length(client_file_key) BETWEEN 1 AND 128),
+    display_name              TEXT    NOT NULL CHECK (length(display_name) BETWEEN 1 AND 255
+                                                      AND display_name NOT LIKE '%/%'),
+    relative_path             TEXT    NOT NULL DEFAULT '' CHECK (
+                                          length(relative_path) <= 1024
+                                          AND relative_path NOT LIKE '%..%'
+                                          AND relative_path NOT GLOB '/*'),
+    declared_size_bytes       INTEGER NULL CHECK (declared_size_bytes IS NULL OR declared_size_bytes >= 0),
+    reserved_bytes            INTEGER NOT NULL DEFAULT 0 CHECK (reserved_bytes >= 0),
+    upload_kind               TEXT    NOT NULL CHECK (upload_kind IN ('tus','s3_multipart','s3_single')),
+    state                     TEXT    NOT NULL DEFAULT 'pending' CHECK (state IN (
+                                          'pending','uploading','finalizing','completed',
+                                          'failed','canceled','expired','skipped')),
+    finalize_stage            TEXT    NOT NULL DEFAULT 'none'
+                                      CHECK (finalize_stage IN ('none','placing','committed')),
+    final_object_id           TEXT    NOT NULL CHECK (length(final_object_id) = 36),
+    final_object_key          TEXT    NOT NULL CHECK (
+                                          length(final_object_key) = 46
+                                          AND final_object_key GLOB 'objects/[0-9a-f][0-9a-f]/[0-9a-f][0-9a-f]/[0-9a-f]*'
+                                          AND substr(final_object_key, -32) NOT GLOB '*[^0-9a-f]*'),
+    attempts                  INTEGER NOT NULL DEFAULT 0 CHECK (attempts >= 0),
+    resulting_file_id         TEXT    NULL,
+    resulting_received_file_id TEXT   NULL,
+    error_code                TEXT    NULL CHECK (error_code IS NULL OR length(error_code) <= 64),
+    error_request_id          TEXT    NULL CHECK (error_request_id IS NULL OR length(error_request_id) <= 128),
+    created_at                TEXT    NOT NULL,
+    updated_at                TEXT    NOT NULL,
+    completed_at              TEXT    NULL,
+
+    CHECK ( resulting_file_id IS NULL OR resulting_received_file_id IS NULL ),
+    CHECK ( (state = 'completed' AND finalize_stage = 'committed')
+         OR (state <> 'completed' AND finalize_stage <> 'committed') ),
+
+    FOREIGN KEY (transfer_session_id)        REFERENCES transfer_sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (resulting_file_id)          REFERENCES files(id)             ON DELETE SET NULL,
+    FOREIGN KEY (resulting_received_file_id) REFERENCES received_files(id)    ON DELETE SET NULL
+);
+
+CREATE UNIQUE INDEX ux_tsf_session_client_key ON transfer_session_files(transfer_session_id, client_file_key);
+CREATE INDEX        ix_tsf_session_ordinal    ON transfer_session_files(transfer_session_id, ordinal);
+CREATE INDEX        ix_tsf_live               ON transfer_session_files(transfer_session_id)
+    WHERE state IN ('pending','uploading','finalizing');
+CREATE UNIQUE INDEX ux_tsf_final_object_id    ON transfer_session_files(final_object_id);
+CREATE UNIQUE INDEX ux_tsf_final_object_key   ON transfer_session_files(final_object_key);
+CREATE INDEX        ix_tsf_finalizing         ON transfer_session_files(updated_at)
+    WHERE state = 'finalizing';
+
+CREATE TABLE tus_uploads (
+    id                              TEXT    NOT NULL PRIMARY KEY,
+    transfer_session_file_id        TEXT    NOT NULL,
+    owner_user_id                   TEXT    NULL,
+    reverse_share_upload_session_id TEXT    NULL,
+    upload_length                   INTEGER NULL CHECK (upload_length IS NULL OR upload_length >= 0),
+    upload_defer_length             INTEGER NOT NULL DEFAULT 0 CHECK (upload_defer_length IN (0,1)),
+    upload_offset                   INTEGER NOT NULL DEFAULT 0 CHECK (upload_offset >= 0),
+    staging_path                    TEXT    NOT NULL CHECK (staging_path GLOB 'uploads/*/blob'),
+    metadata_json                   TEXT    NOT NULL DEFAULT '{}' CHECK (json_valid(metadata_json)
+                                                                         AND length(metadata_json) <= 4096),
+    checksum_algo                   TEXT    NULL CHECK (checksum_algo IS NULL OR checksum_algo = 'sha256'),
+    client_checksum                 TEXT    NULL CHECK (client_checksum IS NULL OR length(client_checksum) = 64),
+    state                           TEXT    NOT NULL DEFAULT 'created' CHECK (state IN (
+                                        'created','in_progress','completed','terminated','expired')),
+    locked_by                       TEXT    NULL CHECK (locked_by IS NULL OR length(locked_by) <= 64),
+    lock_expires_at                 TEXT    NULL,
+    created_at                      TEXT    NOT NULL,
+    updated_at                      TEXT    NOT NULL,
+    last_patch_at                   TEXT    NULL,
+    expires_at                      TEXT    NOT NULL,
+    completed_at                    TEXT    NULL,
+
+    CHECK ( (upload_defer_length = 1 AND upload_length IS NULL)
+         OR (upload_defer_length = 0 AND upload_length IS NOT NULL) ),
+    CHECK ( upload_length IS NULL OR upload_offset <= upload_length ),
+    CHECK ( (locked_by IS NULL AND lock_expires_at IS NULL)
+         OR (locked_by IS NOT NULL AND lock_expires_at IS NOT NULL) ),
+    CHECK ( (owner_user_id IS NOT NULL AND reverse_share_upload_session_id IS NULL)
+         OR (owner_user_id IS NULL     AND reverse_share_upload_session_id IS NOT NULL) ),
+
+    FOREIGN KEY (transfer_session_file_id) REFERENCES transfer_session_files(id) ON DELETE RESTRICT,
+    FOREIGN KEY (owner_user_id)            REFERENCES users(id)                  ON DELETE CASCADE,
+    FOREIGN KEY (reverse_share_upload_session_id)
+        REFERENCES reverse_share_upload_sessions(id) ON DELETE RESTRICT
+);
+
+CREATE UNIQUE INDEX ux_tus_uploads_tsf     ON tus_uploads(transfer_session_file_id);
+CREATE INDEX        ix_tus_uploads_expiry  ON tus_uploads(expires_at) WHERE state IN ('created','in_progress');
+CREATE INDEX        ix_tus_uploads_locks   ON tus_uploads(lock_expires_at) WHERE locked_by IS NOT NULL;
+CREATE INDEX        ix_tus_uploads_owner   ON tus_uploads(owner_user_id, created_at DESC) WHERE owner_user_id IS NOT NULL;
+
+CREATE TABLE s3_multipart_uploads (
+    id                              TEXT    NOT NULL PRIMARY KEY,
+    transfer_session_file_id        TEXT    NOT NULL,
+    s3_upload_id                    TEXT    NOT NULL CHECK (length(s3_upload_id) BETWEEN 1 AND 1024),
+    bucket                          TEXT    NOT NULL CHECK (length(bucket) BETWEEN 1 AND 255),
+    object_key                      TEXT    NOT NULL CHECK (
+                                        length(object_key) = 46
+                                        AND object_key GLOB 'objects/[0-9a-f][0-9a-f]/[0-9a-f][0-9a-f]/[0-9a-f]*'
+                                        AND substr(object_key, -32) NOT GLOB '*[^0-9a-f]*'),
+    owner_user_id                   TEXT    NULL,
+    reverse_share_upload_session_id TEXT    NULL,
+    total_size_bytes                INTEGER NULL CHECK (total_size_bytes IS NULL OR total_size_bytes >= 0),
+    part_size_bytes                 INTEGER NOT NULL CHECK (part_size_bytes >= 5242880),
+    part_count                      INTEGER NOT NULL CHECK (part_count BETWEEN 1 AND 10000),
+    state                           TEXT    NOT NULL DEFAULT 'created' CHECK (state IN (
+                                        'created','in_progress','completing','completed','aborted','abandoned')),
+    final_etag                      TEXT    NULL CHECK (final_etag IS NULL OR length(final_etag) <= 128),
+    created_at                      TEXT    NOT NULL,
+    updated_at                      TEXT    NOT NULL,
+    expires_at                      TEXT    NOT NULL,
+    completed_at                    TEXT    NULL,
+    last_reconciled_at              TEXT    NULL,
+
+    CHECK ( (owner_user_id IS NOT NULL AND reverse_share_upload_session_id IS NULL)
+         OR (owner_user_id IS NULL     AND reverse_share_upload_session_id IS NOT NULL) ),
+
+    FOREIGN KEY (transfer_session_file_id) REFERENCES transfer_session_files(id) ON DELETE RESTRICT,
+    FOREIGN KEY (owner_user_id)            REFERENCES users(id)                  ON DELETE CASCADE,
+    FOREIGN KEY (reverse_share_upload_session_id)
+        REFERENCES reverse_share_upload_sessions(id) ON DELETE RESTRICT
+);
+
+CREATE UNIQUE INDEX ux_s3mp_tsf       ON s3_multipart_uploads(transfer_session_file_id);
+CREATE UNIQUE INDEX ux_s3mp_object    ON s3_multipart_uploads(object_key);
+CREATE UNIQUE INDEX ux_s3mp_provider  ON s3_multipart_uploads(bucket, object_key, s3_upload_id);
+CREATE INDEX        ix_s3mp_expiry    ON s3_multipart_uploads(expires_at) WHERE state IN ('created','in_progress');
+CREATE INDEX        ix_s3mp_reconcile ON s3_multipart_uploads(last_reconciled_at) WHERE state = 'in_progress';
+
+CREATE TABLE s3_multipart_parts (
+    s3_multipart_upload_id TEXT    NOT NULL,
+    part_number            INTEGER NOT NULL CHECK (part_number BETWEEN 1 AND 10000),
+    size_bytes             INTEGER NOT NULL CHECK (size_bytes > 0),
+    etag                   TEXT    NULL CHECK (etag IS NULL OR length(etag) <= 128),
+    state                  TEXT    NOT NULL DEFAULT 'planned' CHECK (state IN (
+                               'planned','signed','uploaded','verified','failed')),
+    attempts               INTEGER NOT NULL DEFAULT 0 CHECK (attempts >= 0),
+    signed_at              TEXT    NULL,
+    signed_expires_at      TEXT    NULL,
+    uploaded_at            TEXT    NULL,
+
+    CHECK ( state NOT IN ('uploaded','verified') OR etag IS NOT NULL ),
+
+    PRIMARY KEY (s3_multipart_upload_id, part_number),
+    FOREIGN KEY (s3_multipart_upload_id) REFERENCES s3_multipart_uploads(id) ON DELETE CASCADE
+) WITHOUT ROWID;
+
+CREATE INDEX ix_s3mp_parts_outstanding
+    ON s3_multipart_parts(s3_multipart_upload_id, part_number) WHERE state <> 'uploaded';
+
+CREATE TABLE quota_reservations (
+    id                  TEXT    NOT NULL PRIMARY KEY,
+    user_id             TEXT    NOT NULL,
+    transfer_session_id TEXT    NOT NULL,
+    context             TEXT    NOT NULL CHECK (context IN ('my_files','reverse_share')),
+    reserved_bytes      INTEGER NOT NULL CHECK (reserved_bytes >= 0),
+    committed_bytes     INTEGER NULL CHECK (committed_bytes IS NULL OR committed_bytes >= 0),
+    state               TEXT    NOT NULL DEFAULT 'held' CHECK (state IN ('held','committed','released')),
+    created_at          TEXT    NOT NULL,
+    expires_at          TEXT    NOT NULL,
+    settled_at          TEXT    NULL,
+    release_reason      TEXT    NULL CHECK (release_reason IS NULL OR release_reason IN (
+                            'canceled','failed','expired','superseded','quota_exceeded','reaped')),
+
+    CHECK ( (state = 'held'      AND settled_at IS NULL AND committed_bytes IS NULL)
+         OR (state = 'committed' AND settled_at IS NOT NULL AND committed_bytes IS NOT NULL)
+         OR (state = 'released'  AND settled_at IS NOT NULL AND release_reason IS NOT NULL) ),
+
+    FOREIGN KEY (user_id)             REFERENCES users(id)             ON DELETE CASCADE,
+    FOREIGN KEY (transfer_session_id) REFERENCES transfer_sessions(id) ON DELETE RESTRICT
+);
+
+CREATE UNIQUE INDEX ux_quota_res_session_held ON quota_reservations(transfer_session_id) WHERE state = 'held';
+CREATE INDEX        ix_quota_res_user_held    ON quota_reservations(user_id) WHERE state = 'held';
+CREATE INDEX        ix_quota_res_expiry       ON quota_reservations(expires_at) WHERE state = 'held';
+CREATE INDEX        ix_quota_res_session      ON quota_reservations(transfer_session_id);
