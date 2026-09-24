@@ -524,3 +524,105 @@ CREATE TABLE account_lockouts (
 );
 
 CREATE INDEX ix_account_lockouts_locked ON account_lockouts(locked_until) WHERE locked_until IS NOT NULL;
+
+CREATE TABLE identity_providers (
+    id                      TEXT    NOT NULL PRIMARY KEY,
+    key                     TEXT    NOT NULL CHECK (length(key) BETWEEN 2 AND 40
+                                                    AND key NOT GLOB '*[^a-z0-9_-]*'),
+    display_name            TEXT    NOT NULL CHECK (length(display_name) BETWEEN 1 AND 64),
+    kind                    TEXT    NOT NULL CHECK (kind IN ('oidc','oauth2')),
+    preset                  TEXT    NULL CHECK (preset IS NULL OR preset IN (
+                                        'google','github','discord','auth0','kinde','zitadel',
+                                        'authentik','frontegg','pocket_id','generic')),
+    issuer                  TEXT    NULL CHECK (issuer IS NULL OR length(issuer) <= 512),
+    discovery_url           TEXT    NULL CHECK (discovery_url IS NULL OR length(discovery_url) <= 512),
+    authorization_endpoint  TEXT    NULL CHECK (authorization_endpoint IS NULL OR length(authorization_endpoint) <= 512),
+    token_endpoint          TEXT    NULL CHECK (token_endpoint  IS NULL OR length(token_endpoint)  <= 512),
+    userinfo_endpoint       TEXT    NULL CHECK (userinfo_endpoint IS NULL OR length(userinfo_endpoint) <= 512),
+    jwks_uri                TEXT    NULL CHECK (jwks_uri IS NULL OR length(jwks_uri) <= 512),
+    scopes                  TEXT    NOT NULL DEFAULT 'openid profile email' CHECK (length(scopes) <= 512),
+    client_id               TEXT    NOT NULL CHECK (length(client_id) BETWEEN 1 AND 512),
+    client_secret_ciphertext BLOB   NULL,
+    client_secret_nonce     BLOB    NULL CHECK (client_secret_nonce IS NULL OR length(client_secret_nonce) = 24),
+    key_version             INTEGER NOT NULL DEFAULT 1 CHECK (key_version >= 1),
+    token_auth_method       TEXT    NOT NULL DEFAULT 'client_secret_post'
+                                    CHECK (token_auth_method IN ('client_secret_basic','client_secret_post','none')),
+    claim_subject           TEXT    NOT NULL DEFAULT 'sub'            CHECK (length(claim_subject) <= 64),
+    claim_email             TEXT    NOT NULL DEFAULT 'email'          CHECK (length(claim_email) <= 64),
+    claim_email_verified    TEXT    NOT NULL DEFAULT 'email_verified' CHECK (length(claim_email_verified) <= 64),
+    claim_username          TEXT    NOT NULL DEFAULT 'preferred_username' CHECK (length(claim_username) <= 64),
+    claim_name              TEXT    NOT NULL DEFAULT 'name'           CHECK (length(claim_name) <= 64),
+    claim_avatar            TEXT    NOT NULL DEFAULT 'picture'        CHECK (length(claim_avatar) <= 64),
+    is_enabled              INTEGER NOT NULL DEFAULT 0 CHECK (is_enabled IN (0,1)),
+    auto_provision          INTEGER NOT NULL DEFAULT 0 CHECK (auto_provision IN (0,1)),
+    sort_order              INTEGER NOT NULL DEFAULT 0,
+    validated_at            TEXT    NULL,
+    validation_error        TEXT    NULL CHECK (validation_error IS NULL OR length(validation_error) <= 512),
+    created_at              TEXT    NOT NULL,
+    updated_at              TEXT    NOT NULL,
+    updated_by              TEXT    NULL,
+
+    CHECK ( (client_secret_ciphertext IS NULL     AND client_secret_nonce IS NULL)
+         OR (client_secret_ciphertext IS NOT NULL AND client_secret_nonce IS NOT NULL) ),
+    CHECK ( kind = 'oidc' OR (authorization_endpoint IS NOT NULL AND token_endpoint IS NOT NULL) ),
+
+    FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE UNIQUE INDEX ux_identity_providers_key ON identity_providers(key);
+CREATE INDEX        ix_identity_providers_enabled ON identity_providers(sort_order, key) WHERE is_enabled = 1;
+
+CREATE TABLE identity_links (
+    id                     TEXT    NOT NULL PRIMARY KEY,
+    user_id                TEXT    NOT NULL,
+    provider_id            TEXT    NOT NULL,
+    subject                TEXT    NOT NULL CHECK (length(subject) BETWEEN 1 AND 255),
+    email_at_link          TEXT    NULL CHECK (email_at_link IS NULL OR length(email_at_link) <= 254),
+    email_verified_at_link INTEGER NOT NULL DEFAULT 0 CHECK (email_verified_at_link IN (0,1)),
+    link_method            TEXT    NOT NULL CHECK (link_method IN ('auto_verified_email','manual','auto_provision')),
+    state                  TEXT    NOT NULL DEFAULT 'active' CHECK (state IN ('active','suspended')),
+    created_at             TEXT    NOT NULL,
+    last_login_at          TEXT    NULL,
+    suspended_at           TEXT    NULL,
+    avatar_fetched_at      TEXT    NULL,
+
+    CHECK ( (state = 'suspended' AND suspended_at IS NOT NULL)
+         OR (state = 'active'    AND suspended_at IS NULL) ),
+
+    FOREIGN KEY (user_id)     REFERENCES users(id)              ON DELETE CASCADE,
+    FOREIGN KEY (provider_id) REFERENCES identity_providers(id) ON DELETE RESTRICT
+);
+
+CREATE UNIQUE INDEX ux_identity_links_provider_subject ON identity_links(provider_id, subject);
+CREATE UNIQUE INDEX ux_identity_links_user_provider    ON identity_links(user_id, provider_id);
+CREATE INDEX        ix_identity_links_user             ON identity_links(user_id);
+
+CREATE TABLE oauth_auth_requests (
+    id                        TEXT    NOT NULL PRIMARY KEY,
+    provider_id               TEXT    NOT NULL,
+    state_hash                TEXT    NOT NULL CHECK (length(state_hash) = 64),
+    binding_cookie_hash       TEXT    NOT NULL CHECK (length(binding_cookie_hash) = 64),
+    pkce_verifier_ciphertext  BLOB    NOT NULL,
+    pkce_verifier_nonce       BLOB    NOT NULL CHECK (length(pkce_verifier_nonce) = 24),
+    key_version               INTEGER NOT NULL DEFAULT 1 CHECK (key_version >= 1),
+    nonce                     TEXT    NOT NULL CHECK (length(nonce) BETWEEN 16 AND 128),
+    redirect_uri              TEXT    NOT NULL CHECK (length(redirect_uri) <= 512),
+    post_auth_path            TEXT    NULL CHECK (post_auth_path IS NULL OR
+                                        (post_auth_path GLOB '/*' AND post_auth_path NOT GLOB '//*'
+                                         AND post_auth_path NOT LIKE '%..%' AND length(post_auth_path) <= 256)),
+    purpose                   TEXT    NOT NULL CHECK (purpose IN ('login','link','recent_auth')),
+    link_user_id              TEXT    NULL,
+    created_at                TEXT    NOT NULL,
+    expires_at                TEXT    NOT NULL,
+    consumed_at               TEXT    NULL,
+    ip                        TEXT    NULL CHECK (ip IS NULL OR length(ip) <= 45),
+
+    CHECK ( (purpose = 'login' AND link_user_id IS NULL)
+         OR (purpose <> 'login' AND link_user_id IS NOT NULL) ),
+
+    FOREIGN KEY (provider_id)  REFERENCES identity_providers(id) ON DELETE CASCADE,
+    FOREIGN KEY (link_user_id) REFERENCES users(id)              ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX ux_oauth_auth_requests_state ON oauth_auth_requests(state_hash);
+CREATE INDEX        ix_oauth_auth_requests_expiry ON oauth_auth_requests(expires_at) WHERE consumed_at IS NULL;
