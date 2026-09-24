@@ -33,6 +33,7 @@ use crate::config::{
     STARTUP_BASE_URL_DEFAULTED,
 };
 use crate::domain::clock::{Clock, SystemClock};
+use crate::features::audit;
 use crate::infra::crypto::instance_key::{InstanceKey, InstanceKeyError, KeyOrigin};
 use crate::infra::db::{
     DbOpenError, InstanceLock, InstanceLockError, LockOrigin, MigrationError, MIGRATOR,
@@ -667,19 +668,27 @@ fn start_jobs(
     instance: &InstanceLock,
 ) -> JobRuntime {
     let timing = RuntimeTiming::DEFAULT;
-    let dispatcher = Dispatcher::new(
-        database.pools().clone(),
+    let pools = database.pools().clone();
+    let (audit_service, audit_drain) = audit::channel(
+        audit::AUDIT_CHANNEL_CAPACITY,
+        pools.clone(),
         Arc::clone(clock),
-        Registry::production(),
+    );
+    let registry = audit::register_jobs(Registry::production(), pools.clone(), Arc::clone(clock));
+    let dispatcher = Dispatcher::new(
+        pools,
+        Arc::clone(clock),
+        registry,
         Jitter::os(),
-        JobAudit::detached(),
+        JobAudit::new(Arc::new(audit_service)),
         timing.lease_renewal,
     );
-    JobRuntime::start(
+    JobRuntime::start_with_drains(
         &dispatcher,
         instance.instance_id(),
         config.job_workers,
         timing,
+        vec![audit_drain.into_background()],
     )
 }
 

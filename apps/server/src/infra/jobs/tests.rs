@@ -23,8 +23,8 @@ use super::cli::run_once;
 use super::kinds::{JobKind, Priority, DEFAULT_LEASE};
 use super::recurring::Recurring;
 use super::runtime::{
-    Dispatcher, FailureClass, Idempotency, JobAudit, JobAuditEvent, JobRuntime, JobsDrain, Outcome,
-    Registry, RuntimeTiming,
+    Dispatcher, FailureClass, Idempotency, JobAudit, JobAuditEvent, JobAuditSink, JobRuntime,
+    JobsDrain, Outcome, Registry, RuntimeTiming,
 };
 use super::{
     Claimant, ClaimedJob, DedupKey, JobId, JobPayload, JobsError, NewJob, MAX_LAST_ERROR_BYTES,
@@ -578,6 +578,15 @@ fn seeded(test_name: &str) -> rand::rngs::StdRng {
     rand::rngs::StdRng::from_seed(Sha256::digest(test_name.as_bytes()).into())
 }
 
+#[derive(Default)]
+struct CapturedAudit(Mutex<Vec<JobAuditEvent>>);
+
+impl JobAuditSink for CapturedAudit {
+    fn record(&self, event: JobAuditEvent) {
+        self.0.lock().unwrap().push(event);
+    }
+}
+
 #[tokio::test]
 async fn it_jobs_dead_letter_audited() {
     let harness = Harness::open().await;
@@ -593,8 +602,12 @@ async fn it_jobs_dead_letter_audited() {
             }
         }
     });
-    let (audit, mut audited) = JobAudit::channel(8);
-    let dispatcher = harness.dispatcher(registry, Jitter::from_fn(|| 0), audit);
+    let captured = Arc::new(CapturedAudit::default());
+    let dispatcher = harness.dispatcher(
+        registry,
+        Jitter::from_fn(|| 0),
+        JobAudit::new(captured.clone()),
+    );
     let Enqueued::Inserted(id) = harness
         .enqueue(&NewJob::new(
             JobKind::TokensPrune,
@@ -662,7 +675,9 @@ async fn it_jobs_dead_letter_audited() {
     assert!(!last_error.contains(ERROR_MARKER));
     assert!(!last_error.contains(PAYLOAD_MARKER));
 
-    let event = audited.try_recv().unwrap();
+    let events = captured.0.lock().unwrap();
+    assert_eq!(events.len(), 1);
+    let event = events[0];
     assert_eq!(
         event,
         JobAuditEvent::DeadLettered {
@@ -673,7 +688,6 @@ async fn it_jobs_dead_letter_audited() {
         }
     );
     assert_eq!(event.action(), "JOB_DEAD_LETTERED");
-    assert!(audited.try_recv().is_err());
 
     let text = output.text();
     assert!(!text.contains(ERROR_MARKER));

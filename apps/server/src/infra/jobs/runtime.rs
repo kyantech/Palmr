@@ -5,7 +5,6 @@ use std::pin::Pin;
 use std::sync::Arc;
 use std::time::Duration;
 
-use tokio::sync::mpsc::{self, error::TrySendError};
 use tokio::task::{JoinError, JoinHandle};
 use tokio::time::{interval_at, Instant, MissedTickBehavior};
 use tokio_util::sync::CancellationToken;
@@ -129,33 +128,27 @@ impl JobAuditEvent {
     }
 }
 
-#[derive(Debug, Clone, Default)]
-pub struct JobAudit(Option<mpsc::Sender<JobAuditEvent>>);
+/// The single dead-letter audit path. Implemented by the asynchronous audit
+/// service, which owns the bounded channel and its drop accounting.
+pub trait JobAuditSink: Send + Sync + 'static {
+    fn record(&self, event: JobAuditEvent);
+}
+
+#[derive(Clone, Default)]
+pub struct JobAudit(Option<Arc<dyn JobAuditSink>>);
 
 impl JobAudit {
     pub const fn detached() -> Self {
         Self(None)
     }
 
-    pub fn channel(capacity: usize) -> (Self, mpsc::Receiver<JobAuditEvent>) {
-        let (sender, receiver) = mpsc::channel(capacity);
-        (Self(Some(sender)), receiver)
+    pub fn new(sink: Arc<dyn JobAuditSink>) -> Self {
+        Self(Some(sink))
     }
 
     fn emit(&self, event: JobAuditEvent) {
-        let Some(sender) = &self.0 else {
-            return;
-        };
-        match sender.try_send(event) {
-            Ok(()) => {}
-            Err(TrySendError::Full(event)) => tracing::warn!(
-                action = event.action(),
-                "job audit event dropped because the audit channel is full"
-            ),
-            Err(TrySendError::Closed(event)) => tracing::warn!(
-                action = event.action(),
-                "job audit event dropped because the audit channel is closed"
-            ),
+        if let Some(sink) = &self.0 {
+            sink.record(event);
         }
     }
 }
@@ -409,6 +402,27 @@ impl JobsDrain {
     }
 }
 
+pub type DrainFuture = Pin<Box<dyn Future<Output = ()> + Send>>;
+
+/// A background task owned by the job runtime's lifecycle: it starts with the
+/// workers and stops on the same cancellation token, so shutdown drains it.
+pub struct BackgroundDrain {
+    name: &'static str,
+    start: Box<dyn FnOnce(CancellationToken) -> DrainFuture + Send>,
+}
+
+impl BackgroundDrain {
+    pub fn new(
+        name: &'static str,
+        start: impl FnOnce(CancellationToken) -> DrainFuture + Send + 'static,
+    ) -> Self {
+        Self {
+            name,
+            start: Box::new(start),
+        }
+    }
+}
+
 pub struct JobRuntime {
     cancel: CancellationToken,
     tasks: Vec<JoinHandle<()>>,
@@ -420,6 +434,16 @@ impl JobRuntime {
         instance: InstanceId,
         workers: u16,
         timing: RuntimeTiming,
+    ) -> Self {
+        Self::start_with_drains(dispatcher, instance, workers, timing, Vec::new())
+    }
+
+    pub fn start_with_drains(
+        dispatcher: &Dispatcher,
+        instance: InstanceId,
+        workers: u16,
+        timing: RuntimeTiming,
+        drains: Vec<BackgroundDrain>,
     ) -> Self {
         let cancel = CancellationToken::new();
         let mut tasks: Vec<JoinHandle<()>> = (0..workers)
@@ -437,6 +461,16 @@ impl JobRuntime {
             cancel.clone(),
             timing.lease_sweep,
         )));
+        for drain in drains {
+            let name = drain.name;
+            let cancel = cancel.clone();
+            tasks.push(tokio::spawn(async move {
+                tracing::debug!(drain = name, "job runtime background task started");
+                let future = (drain.start)(cancel);
+                future.await;
+                tracing::debug!(drain = name, "job runtime background task stopped");
+            }));
+        }
         tracing::info!(
             workers,
             handlers = dispatcher.0.kinds.len(),
