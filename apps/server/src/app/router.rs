@@ -9,6 +9,7 @@ use axum::extract::Request;
 use axum::middleware::{from_fn, from_fn_with_state};
 use axum::response::{IntoResponse, Response};
 use axum::routing::MethodRouter;
+use axum::Extension;
 use http::Method;
 use tower::{Service, ServiceBuilder};
 use utoipa::openapi::OpenApi;
@@ -33,71 +34,9 @@ use crate::infra::http::proxy::{resolve_client, TrustedProxies};
 use crate::infra::http::request_id::{assign_request_id, tag_error, RequestId, RequestIdSource};
 use crate::infra::http::static_assets::StaticAssets;
 use crate::infra::http::trace::{record_route, trace_request, RequestLog};
+use crate::infra::ratelimit::{self, RateLimiter};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum RateLimitClass {
-    None,
-    Read,
-    Write,
-    AdminWrite,
-    AuthLogin,
-    AuthTotp,
-    AuthReset,
-    AuthToken,
-    PublicRead,
-    PublicPassword,
-    PublicSession,
-    TransferControl,
-    TransferData,
-    EmailTest,
-    ProviderTest,
-}
-
-impl RateLimitClass {
-    pub const ALL: [Self; 15] = [
-        Self::None,
-        Self::Read,
-        Self::Write,
-        Self::AdminWrite,
-        Self::AuthLogin,
-        Self::AuthTotp,
-        Self::AuthReset,
-        Self::AuthToken,
-        Self::PublicRead,
-        Self::PublicPassword,
-        Self::PublicSession,
-        Self::TransferControl,
-        Self::TransferData,
-        Self::EmailTest,
-        Self::ProviderTest,
-    ];
-
-    pub const fn as_str(self) -> &'static str {
-        match self {
-            Self::None => "rl.none",
-            Self::Read => "rl.read",
-            Self::Write => "rl.write",
-            Self::AdminWrite => "rl.admin.write",
-            Self::AuthLogin => "rl.auth.login",
-            Self::AuthTotp => "rl.auth.totp",
-            Self::AuthReset => "rl.auth.reset",
-            Self::AuthToken => "rl.auth.token",
-            Self::PublicRead => "rl.public.read",
-            Self::PublicPassword => "rl.public.password",
-            Self::PublicSession => "rl.public.session",
-            Self::TransferControl => "rl.transfer.control",
-            Self::TransferData => "rl.transfer.data",
-            Self::EmailTest => "rl.email.test",
-            Self::ProviderTest => "rl.provider.test",
-        }
-    }
-}
-
-impl fmt::Display for RateLimitClass {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(self.as_str())
-    }
-}
+pub use crate::infra::ratelimit::RateLimitClass;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RequestBody {
@@ -223,9 +162,9 @@ impl TransportLayers {
     }
 
     // `route_layer` wraps outward, so layers are added innermost first: the
-    // resulting order is route recording, deadline, body limit, compression,
-    // decompression.
-    fn apply<S>(self, mut handler: MethodRouter<S>) -> MethodRouter<S>
+    // resulting order is route recording, rate limit, deadline, body limit,
+    // compression, decompression.
+    fn apply<S>(self, mut handler: MethodRouter<S>, rate_limit: RateLimitClass) -> MethodRouter<S>
     where
         S: Clone + Send + Sync + 'static,
     {
@@ -244,7 +183,7 @@ impl TransportLayers {
         if let Some(deadline) = self.deadline {
             handler = handler.route_layer(from_fn_with_state(deadline, enforce_deadline));
         }
-        handler.route_layer(from_fn(record_route))
+        ratelimit::layer::apply(rate_limit, handler).route_layer(from_fn(record_route))
     }
 }
 
@@ -501,9 +440,11 @@ where
         }
 
         if errors.is_empty() {
-            let handler = policy
-                .request_log
-                .apply(policy.security.apply(layers.apply(handler)));
+            let handler = policy.request_log.apply(
+                policy
+                    .security
+                    .apply(layers.apply(handler, policy.rate_limit)),
+            );
             self.router = self.router.routes((schemas, paths, handler));
             self.entries
                 .extend(declared.into_iter().map(|entry| (entry.key(), entry)));
@@ -584,15 +525,21 @@ pub struct HttpEdge {
     clock: Arc<dyn Clock>,
     proxies: Arc<TrustedProxies>,
     security: Arc<SecurityHeaders>,
+    rate_limits: Arc<RateLimiter>,
 }
 
 impl HttpEdge {
     pub fn new(clock: Arc<dyn Clock>, proxies: TrustedProxies, security: SecurityHeaders) -> Self {
         Self {
+            rate_limits: Arc::new(RateLimiter::new(Arc::clone(&clock))),
             clock,
             proxies: Arc::new(proxies),
             security: Arc::new(security),
         }
+    }
+
+    pub fn rate_limits(&self) -> &Arc<RateLimiter> {
+        &self.rate_limits
     }
 }
 
@@ -622,7 +569,7 @@ pub fn with_middleware(
         ))
         .layer(from_fn(catch_panic))
         .layer(from_fn(normalize_path))
-        .service(router)
+        .service(router.layer(Extension(Arc::clone(&edge.rate_limits))))
 }
 
 impl RouteEntry {
@@ -648,25 +595,33 @@ fn method_rank(method: &Method) -> u8 {
 #[cfg(test)]
 mod tests {
     use std::collections::BTreeSet;
+    use std::net::SocketAddr;
     use std::num::NonZeroU64;
+    use std::sync::Arc;
     use std::time::Duration;
 
     use axum::body::Body;
+    use axum::extract::ConnectInfo;
     use http::{Method, Request, StatusCode};
     use rstest::rstest;
+    use time::macros::datetime;
     use tower::ServiceExt;
     use utoipa::openapi::path::{Operation, Paths};
     use utoipa::openapi::OpenApi;
     use utoipa_axum::routes;
 
     use super::{
-        application_routes, BytePath, Deadline, RateLimitClass, RequestBody, ResponseEncoding,
-        RouteError, RouteInventory, RoutePolicy, Routes, Transport, TransportLayers,
+        application_routes, with_middleware, BytePath, Deadline, HttpEdge, RateLimitClass,
+        RequestBody, ResponseEncoding, RouteError, RouteInventory, RoutePolicy, Routes, Transport,
+        TransportLayers,
     };
     use crate::app::auth_class::AuthClass;
     use crate::app::openapi::{declared_auth_classes, operations, ApiDocs};
     use crate::config::{EnvironmentSource, OperatorConfig};
+    use crate::domain::clock::TestClock;
+    use crate::infra::http::headers::SecurityHeaders;
     use crate::infra::http::limits::{BodyLimit, ControlPlaneLimits, CONTROL_PLANE_BODY_LIMIT};
+    use crate::infra::http::proxy::TrustedProxies;
     use crate::infra::http::trace::RequestLog;
 
     #[utoipa::path(get, path = "/test/items", responses((status = 200)))]
@@ -1377,17 +1332,34 @@ mod tests {
 
     #[tokio::test]
     async fn svc_registered_route_is_served() {
-        let router = sample_routes().build().unwrap().router;
+        let config = default_config();
+        let edge = HttpEdge::new(
+            Arc::new(TestClock::new(datetime!(2026-09-24 09:00 UTC))),
+            TrustedProxies::new(&config.trust_proxy),
+            SecurityHeaders::new(&config),
+        );
+        let router = with_middleware(sample_routes().build().unwrap().router, &edge);
+        let peer = ConnectInfo(SocketAddr::from(([198, 51, 100, 7], 40_000)));
 
         let created = router
             .clone()
-            .oneshot(Request::post("/test/items").body(Body::empty()).unwrap())
+            .oneshot(
+                Request::post("/test/items")
+                    .extension(peer)
+                    .body(Body::empty())
+                    .unwrap(),
+            )
             .await
             .unwrap();
         assert_eq!(created.status(), StatusCode::CREATED);
 
         let unregistered = router
-            .oneshot(Request::delete("/test/items").body(Body::empty()).unwrap())
+            .oneshot(
+                Request::delete("/test/items")
+                    .extension(peer)
+                    .body(Body::empty())
+                    .unwrap(),
+            )
             .await
             .unwrap();
         assert_eq!(unregistered.status(), StatusCode::METHOD_NOT_ALLOWED);

@@ -50,6 +50,7 @@ zeroize = "1"
 sqlx = { version = "0.8", default-features = false, features = ["macros", "migrate", "runtime-tokio", "sqlite"] }
 arc-swap = "1"
 lettre = { version = "0.11", default-features = false, features = ["builder", "smtp-transport", "tokio1-rustls-tls", "hostname"] }
+governor = { version = "0.8", default-features = false, features = ["std"] }
 
 [features]
 dev-assets = []
