@@ -142,6 +142,10 @@ pub fn all_sessions_revoked(
     ActionSpec::new(AuditAction::AllSessionsRevoked, metadata)
 }
 
+pub fn setup_completed() -> ActionSpec {
+    ActionSpec::new(AuditAction::SetupCompleted, Metadata::json(&[]))
+}
+
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct OrphanSweepCounts {
     pub outcome: &'static str,

@@ -5,6 +5,7 @@ use arc_swap::ArcSwap;
 use super::error::SettingsError;
 use super::model::{self, AppSettings, ValueType};
 use super::repo::SettingRow;
+use crate::domain::locale::LocaleCode;
 use crate::domain::secret::Secret;
 use crate::infra::crypto::aead::SealedSecret;
 use crate::infra::crypto::hkdf::{KeyRing, SealPurpose};
@@ -40,6 +41,13 @@ pub(crate) fn setting_aad(key: &str) -> Vec<u8> {
     aad.push(0);
     aad.extend_from_slice(key.as_bytes());
     aad
+}
+
+pub fn suggest_setup_locale(settings: &mut AppSettings, rows: &[SettingRow], locale: LocaleCode) {
+    let persisted = rows.iter().any(|row| row.key == "default_locale");
+    if !settings.setup_completed() && !persisted {
+        settings.general.default_locale = locale;
+    }
 }
 
 pub fn build(rows: &[SettingRow], keys: &KeyRing) -> Result<AppSettings, SettingsError> {

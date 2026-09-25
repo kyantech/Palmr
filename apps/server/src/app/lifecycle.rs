@@ -35,6 +35,7 @@ use crate::config::{
     STARTUP_BASE_URL_DEFAULTED,
 };
 use crate::domain::clock::{Clock, SystemClock};
+use crate::domain::locale::LocaleCode;
 use crate::features::audit;
 use crate::features::auth::sessions::SessionService;
 use crate::features::branding::BrandingService;
@@ -42,6 +43,7 @@ use crate::features::email::{self, EmailService, SmtpTransport};
 use crate::features::settings::{
     EffectiveSettingsService, OperatorPolicy, SettingsError, SettingsHandle, SettingsService,
 };
+use crate::features::setup::SetupService;
 use crate::infra::crypto::hkdf::KeyRing;
 use crate::infra::crypto::instance_key::{InstanceKey, InstanceKeyError, KeyOrigin};
 use crate::infra::db::{
@@ -720,8 +722,13 @@ async fn initialize(
     if let Err(error) = database.migrate(migrator, &health).await {
         return Err(abandon_startup(database, instance, error.into()).await);
     }
-    let settings = match SettingsService::load(database.pools(), Arc::clone(&clock), &instance_key)
-        .await
+    let settings = match SettingsService::load_with_setup_locale(
+        database.pools(),
+        Arc::clone(&clock),
+        &instance_key,
+        setup_locale(config),
+    )
+    .await
     {
         Ok(settings) => settings,
         Err(error) => {
@@ -750,15 +757,23 @@ async fn initialize(
         ))
         .await;
     log_reconciliation(&report);
-    let settings = settings.handle();
+    let settings_service = settings;
+    let settings = settings_service.handle();
+    let sessions = SessionService::new(
+        database.pools().clone(),
+        Arc::clone(&clock),
+        settings.clone(),
+        Arc::clone(&email_keys),
+        &config.base_url,
+    );
     let services = RequestServices {
-        sessions: SessionService::new(
+        setup: SetupService::new(
             database.pools().clone(),
             Arc::clone(&clock),
-            settings.clone(),
-            Arc::clone(&email_keys),
-            &config.base_url,
+            settings_service,
+            sessions.clone(),
         ),
+        sessions,
         branding,
         effective_settings: EffectiveSettingsService::new(
             database.pools().reader().clone(),
@@ -972,7 +987,22 @@ pub fn application_router(
     )
 }
 
+pub(crate) fn setup_locale(config: &OperatorConfig) -> Option<LocaleCode> {
+    let requested = config.setup_default_language.as_deref()?;
+    match requested.parse() {
+        Ok(locale) => Some(locale),
+        Err(_) => {
+            tracing::warn!(
+                variable = "PALMR_DEFAULT_LANGUAGE",
+                "the suggested setup locale is not a supported locale and is ignored"
+            );
+            None
+        }
+    }
+}
+
 struct RequestServices {
+    setup: SetupService,
     sessions: SessionService,
     branding: BrandingService,
     effective_settings: EffectiveSettingsService,
@@ -999,6 +1029,7 @@ fn composed_router(
     ));
     let routes = match services {
         Some(services) => routes
+            .layer(axum::Extension(services.setup))
             .layer(axum::Extension(services.sessions))
             .layer(axum::Extension(services.branding))
             .layer(axum::Extension(services.effective_settings)),

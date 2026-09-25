@@ -263,6 +263,7 @@ pub enum AuditAction {
     StorageOrphanDetected,
     SessionRevoked,
     AllSessionsRevoked,
+    SetupCompleted,
 }
 
 impl AuditAction {
@@ -272,6 +273,7 @@ impl AuditAction {
         Self::StorageOrphanDetected,
         Self::SessionRevoked,
         Self::AllSessionsRevoked,
+        Self::SetupCompleted,
     ];
 
     pub const fn as_str(self) -> &'static str {
@@ -281,15 +283,17 @@ impl AuditAction {
             Self::StorageOrphanDetected => "STORAGE_ORPHAN_DETECTED",
             Self::SessionRevoked => "SESSION_REVOKED",
             Self::AllSessionsRevoked => "ALL_SESSIONS_REVOKED",
+            Self::SetupCompleted => "SETUP_COMPLETED",
         }
     }
 
     pub const fn write_path(self) -> WritePath {
         match self {
             Self::JobDeadLettered | Self::StorageOrphanDetected => WritePath::Enqueued,
-            Self::SettingChanged | Self::SessionRevoked | Self::AllSessionsRevoked => {
-                WritePath::InTransaction
-            }
+            Self::SettingChanged
+            | Self::SessionRevoked
+            | Self::AllSessionsRevoked
+            | Self::SetupCompleted => WritePath::InTransaction,
         }
     }
 }

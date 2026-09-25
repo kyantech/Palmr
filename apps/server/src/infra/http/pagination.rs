@@ -32,7 +32,7 @@ pub const SORT_PARAM: &str = "sort";
 pub const SEARCH_PARAM: &str = "q";
 
 pub fn invalid_param(name: &'static str) -> ApiError {
-    ApiError::new(ErrorCode::ValidationError).with_detail("field", name)
+    ApiError::validation([name])
 }
 
 const fn cursor_invalid() -> ApiError {

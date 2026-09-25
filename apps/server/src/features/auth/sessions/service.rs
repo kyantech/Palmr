@@ -32,8 +32,8 @@ use crate::infra::http::proxy::ResolvedClient;
 use super::error::SessionError;
 use super::model::{
     AuthMethod, AuthenticatedPrincipal, MintedSession, NewSession, PreparedSessionCredentials,
-    ResolvedSession, RevokedReason, SessionId, SessionItem, SessionRecord, SessionRestriction,
-    SessionState,
+    ResolvedSession, RevokedReason, SessionClient, SessionId, SessionItem, SessionRecord,
+    SessionRestriction, SessionState,
 };
 use super::repo;
 
@@ -83,6 +83,10 @@ impl SessionService {
         auth_method: super::model::AuthMethod,
         request: &Request,
     ) -> NewSession {
+        Self::client(request).session(user_id, auth_method)
+    }
+
+    pub fn client(request: &Request) -> SessionClient {
         let ip_address = request
             .extensions()
             .get::<ResolvedClient>()
@@ -93,9 +97,7 @@ impl SessionService {
             .get(USER_AGENT)
             .and_then(|value| value.to_str().ok())
             .map(ToOwned::to_owned);
-        NewSession {
-            user_id,
-            auth_method,
+        SessionClient {
             ip_address,
             user_agent,
         }
@@ -116,8 +118,20 @@ impl SessionService {
     }
 
     pub async fn mint(&self, new: NewSession) -> Result<MintedSession, SessionError> {
-        let session_token = Token::mint()?;
-        let csrf_token = Token::mint()?;
+        let credentials = self.prepare_credentials()?;
+        self.pools
+            .write_tx(self.clock.as_ref(), "sessions.mint", async |tx| {
+                self.mint_in_tx(tx, new, &credentials).await
+            })
+            .await
+    }
+
+    pub async fn mint_in_tx(
+        &self,
+        tx: &mut WriteTx<'_>,
+        new: NewSession,
+        credentials: &PreparedSessionCredentials,
+    ) -> Result<MintedSession, SessionError> {
         let now = Timestamp::try_from(self.clock.now())?;
         let policy = self.policy();
         let absolute_expires_at = Timestamp::try_from(now.get() + policy.absolute)?;
@@ -126,8 +140,8 @@ impl SessionService {
         let record = SessionRecord {
             id: SessionId::generate(self.clock.as_ref()),
             user_id: new.user_id,
-            token_hash: session_token.digest(),
-            csrf_token_hash: csrf_token.digest(),
+            token_hash: credentials.token_hash.clone(),
+            csrf_token_hash: credentials.csrf_token_hash.clone(),
             state: SessionState::Active,
             auth_method: new.auth_method,
             created_at: now,
@@ -138,18 +152,13 @@ impl SessionService {
             ip_address: bound(new.ip_address, 45),
             user_agent: bound(new.user_agent, 512),
         };
-        self.pools
-            .write_tx(self.clock.as_ref(), "sessions.mint", async |tx| {
-                repo::insert_active(tx, &record).await
-            })
-            .await?;
-        Ok(MintedSession {
-            id: record.id,
-            session_token: session_token.encode(),
-            csrf_token: csrf_token.encode(),
+        repo::insert_active(tx, &record).await?;
+        Ok(minted(
+            record.id,
+            credentials,
             idle_expires_at,
             absolute_expires_at,
-        })
+        ))
     }
 
     pub async fn rotate(&self, id: SessionId) -> Result<MintedSession, SessionError> {

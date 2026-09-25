@@ -3,6 +3,7 @@ use sqlx::Row;
 
 use crate::domain::bytes::ByteSize;
 use crate::domain::clock::Clock;
+use crate::domain::locale::LocaleCode;
 use crate::domain::role::Role;
 use crate::domain::secret::Secret;
 use crate::domain::time::Timestamp;
@@ -41,6 +42,10 @@ const EMAIL_NORMALIZED_EXISTS: &str =
     "SELECT EXISTS(SELECT 1 FROM users WHERE email_normalized = ?1)";
 const USERNAME_NORMALIZED_EXISTS: &str =
     "SELECT EXISTS(SELECT 1 FROM users WHERE username_normalized = ?1)";
+
+const INSERT_PREFERENCES: &str =
+    "INSERT INTO user_preferences (user_id, locale, created_at, updated_at)
+    VALUES (?1, ?2, ?3, ?3)";
 
 const SELECT_PASSWORD_HASH: &str = "SELECT password_hash FROM users WHERE id = ?1";
 
@@ -151,6 +156,22 @@ pub async fn insert(
         Err(error @ DbError::UniqueViolation(_)) => Err(identity_conflict(tx, new, error).await),
         Err(error) => Err(error.into()),
     }
+}
+
+pub async fn insert_preferences(
+    tx: &mut WriteTx<'_>,
+    clock: &dyn Clock,
+    id: UserId,
+    locale: LocaleCode,
+) -> Result<(), UserError> {
+    let now = Timestamp::try_from(clock.now())?;
+    sqlx::query(INSERT_PREFERENCES)
+        .bind(id.to_string())
+        .bind(locale.as_str())
+        .bind(now.to_string())
+        .execute(tx.executor())
+        .await?;
+    Ok(())
 }
 
 async fn identity_conflict(tx: &mut WriteTx<'_>, new: &NewUser, error: DbError) -> UserError {

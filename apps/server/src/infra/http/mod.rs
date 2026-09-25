@@ -8,6 +8,7 @@ pub mod headers;
 pub mod idempotency;
 #[cfg(test)]
 mod idempotency_tests;
+pub mod json;
 pub mod limits;
 pub mod pagination;
 #[cfg(test)]

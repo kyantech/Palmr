@@ -179,11 +179,11 @@ test("unit_apiFetch_parses_error_envelope", async () => {
       code: "VALIDATION_ERROR",
       message: "The request is invalid",
       requestId: "019a0000-0000-7000-8000-000000000001",
-      details: { field: "name", maxLength: 255, retryable: false },
+      details: { fields: ["name", "email"], maxLength: 255, retryable: false },
     },
   };
   const response = json(rawBody, {
-    status: 400,
+    status: 422,
     headers: { "X-Request-Id": "019a0000-0000-7000-8000-000000000001" },
   });
   stubFetch(() => response);
@@ -193,9 +193,9 @@ test("unit_apiFetch_parses_error_envelope", async () => {
   expect(error).toBeInstanceOf(Error);
   expect(error.name).toBe("ApiError");
   expect(error.code).toBe("VALIDATION_ERROR");
-  expect(error.status).toBe(400);
+  expect(error.status).toBe(422);
   expect(error.requestId).toBe("019a0000-0000-7000-8000-000000000001");
-  expect(error.details).toEqual({ field: "name", maxLength: 255, retryable: false });
+  expect(error.details).toEqual({ fields: ["name", "email"], maxLength: 255, retryable: false });
   expect(error.request).toEqual({ method: "POST", path: "/items" });
   expect(Object.keys(error).sort()).toEqual([
     "code",
@@ -495,7 +495,7 @@ describe("error classification", () => {
     expect(error.code).toBe("SOME_FUTURE_CODE");
   });
 
-  test("non-scalar detail values are dropped", async () => {
+  test("detail values outside the schema are dropped", async () => {
     stubFetch(() =>
       json(
         {
@@ -503,7 +503,13 @@ describe("error classification", () => {
             code: "VALIDATION_ERROR",
             message: "m",
             requestId: "r",
-            details: { kept: 1, nested: { a: 1 }, list: [1] },
+            details: {
+              kept: 1,
+              fields: ["name"],
+              nested: { a: 1 },
+              list: [1],
+              mixed: ["a", 1],
+            },
           },
         },
         { status: 400 },
@@ -512,7 +518,7 @@ describe("error classification", () => {
 
     const error = await rejection(fixtureFetch("get", "/items"));
 
-    expect(error.details).toEqual({ kept: 1 });
+    expect(error.details).toEqual({ kept: 1, fields: ["name"] });
   });
 
   test("an aborted request is CLIENT_ABORTED", async () => {

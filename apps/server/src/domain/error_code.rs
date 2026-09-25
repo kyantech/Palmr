@@ -44,6 +44,8 @@ macro_rules! error_catalog {
 error_catalog! {
     ValidationError = "VALIDATION_ERROR", UNPROCESSABLE_ENTITY, retryable: false,
         "The request failed validation";
+    InvalidJson = "INVALID_JSON", BAD_REQUEST, retryable: false,
+        "Invalid JSON request body";
     NotFound = "NOT_FOUND", NOT_FOUND, retryable: false,
         "The requested resource was not found";
     MethodNotAllowed = "METHOD_NOT_ALLOWED", METHOD_NOT_ALLOWED, retryable: false,
@@ -90,6 +92,12 @@ error_catalog! {
         "Two-factor authentication enrollment is required";
     SessionNotFound = "SESSION_NOT_FOUND", NOT_FOUND, retryable: false,
         "The session was not found";
+    PasswordPolicyViolation = "PASSWORD_POLICY_VIOLATION", UNPROCESSABLE_ENTITY, retryable: false,
+        "The password does not meet the password policy";
+    UserEmailTaken = "USER_EMAIL_TAKEN", CONFLICT, retryable: false,
+        "The e-mail address is already in use";
+    UserUsernameTaken = "USER_USERNAME_TAKEN", CONFLICT, retryable: false,
+        "The username is already in use";
     DatabaseBusy = "DATABASE_BUSY", SERVICE_UNAVAILABLE, retryable: true,
         "The database is temporarily busy";
     FileNotFound = "FILE_NOT_FOUND", NOT_FOUND, retryable: false,

@@ -56,7 +56,7 @@ fn row_id(clock: &TestClock) -> Id<Row> {
 fn assert_validation(error: &ApiError, field: &str) {
     assert_eq!(error.code(), ErrorCode::ValidationError);
     let details = serde_json::to_value(error.details()).unwrap();
-    assert_eq!(details, json!({ "field": field }));
+    assert_eq!(details, json!({ "fields": [field] }));
 }
 
 fn assert_cursor_invalid(result: Result<CursorKey, ApiError>) {

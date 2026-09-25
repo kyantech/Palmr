@@ -246,13 +246,19 @@ function toDetails(value: unknown): ErrorDetails {
   if (!isRecord(value)) {
     return {};
   }
-  const details: Record<string, boolean | number | string> = {};
+  const details: Record<string, boolean | number | string | string[]> = {};
   for (const [key, entry] of Object.entries(value)) {
     if (typeof entry === "boolean" || typeof entry === "number" || typeof entry === "string") {
       details[key] = entry;
+    } else if (isStringList(entry)) {
+      details[key] = [...entry];
     }
   }
   return details;
+}
+
+function isStringList(value: unknown): value is readonly string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === "string");
 }
 
 function proxyErrorCode(status: number): ClientErrorCode {

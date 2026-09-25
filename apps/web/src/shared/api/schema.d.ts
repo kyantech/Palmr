@@ -84,6 +84,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/setup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["complete_setup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/setup/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["setup_status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/docs": {
         parameters: {
             query?: never;
@@ -238,7 +270,7 @@ export interface components {
         };
         /** @enum {string} */
         DatabaseHealthStatus: "ok";
-        DetailValue: boolean | number | string;
+        DetailValue: boolean | number | string | string[];
         EffectiveSettings: {
             aliasPattern: string;
             /** Format: int32 */
@@ -264,7 +296,7 @@ export interface components {
             twoFactorRequired: boolean;
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "SESSION_NOT_FOUND" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "BRANDING_ASSET_UNKNOWN";
+        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "SESSION_NOT_FOUND" | "PASSWORD_POLICY_VIOLATION" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "BRANDING_ASSET_UNKNOWN";
         HealthLive: {
             status: components["schemas"]["HealthLiveStatus"];
             version: string;
@@ -340,6 +372,35 @@ export interface components {
         };
         /** @enum {string} */
         SessionOrigin: "password" | "external";
+        SetupRequest: {
+            /** @example Palmr */
+            appName: string;
+            email: string;
+            firstName: string;
+            lastName: string;
+            /** @example en-US */
+            locale: string;
+            /** Format: password */
+            password: string;
+            username: string;
+        };
+        SetupResponse: {
+            mustChangePassword: boolean;
+            user: components["schemas"]["SetupUser"];
+        };
+        SetupStatus: {
+            /** Format: int32 */
+            passwordMinLength?: number;
+            setupCompleted: boolean;
+        };
+        SetupUser: {
+            email: string;
+            id: string;
+            isActive: boolean;
+            /** @example admin */
+            role: string;
+            username: string;
+        };
         /** @enum {string} */
         StorageHealthStatus: "ok" | "degraded" | "down";
         WebAppManifest: {
@@ -575,6 +636,86 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    complete_setup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetupRequest"];
+            };
+        };
+        responses: {
+            /** @description The first Admin was created and signed in; `palmr_session` and `palmr_csrf` are set. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetupResponse"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Setup is already complete, or the identity is taken. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request failed validation or the password policy. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    setup_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Whether first-run setup is complete, and the account password policy while it is not. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetupStatus"];
                 };
             };
         };

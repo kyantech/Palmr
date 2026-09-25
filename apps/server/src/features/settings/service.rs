@@ -5,6 +5,7 @@ use super::model::{self, AppSettings, ValueType};
 use super::repo;
 use super::snapshot::{self, setting_aad, SettingsHandle};
 use crate::domain::clock::Clock;
+use crate::domain::locale::LocaleCode;
 use crate::domain::time::Timestamp;
 use crate::infra::crypto::hkdf::{KeyRing, SealPurpose};
 use crate::infra::crypto::instance_key::InstanceKey;
@@ -37,6 +38,7 @@ pub struct SettingsService {
     clock: Arc<dyn Clock>,
     keys: Arc<KeyRing>,
     handle: SettingsHandle,
+    setup_locale: Option<LocaleCode>,
 }
 
 impl std::fmt::Debug for SettingsService {
@@ -51,11 +53,21 @@ impl SettingsService {
         clock: Arc<dyn Clock>,
         instance_key: &InstanceKey,
     ) -> Result<Self, SettingsError> {
+        Self::load_with_setup_locale(pools, clock, instance_key, None).await
+    }
+
+    pub async fn load_with_setup_locale(
+        pools: &DbPools,
+        clock: Arc<dyn Clock>,
+        instance_key: &InstanceKey,
+        setup_locale: Option<LocaleCode>,
+    ) -> Result<Self, SettingsError> {
         let service = Self {
             pools: pools.clone(),
             clock,
             keys: Arc::new(KeyRing::new(instance_key)),
             handle: SettingsHandle::new(AppSettings::defaults()),
+            setup_locale,
         };
         service.reload().await?;
         Ok(service)
@@ -75,7 +87,10 @@ impl SettingsService {
 
     pub async fn reload(&self) -> Result<(), SettingsError> {
         let rows = repo::load_all(self.pools.reader()).await?;
-        let settings = snapshot::build(&rows, &self.keys)?;
+        let mut settings = snapshot::build(&rows, &self.keys)?;
+        if let Some(locale) = self.setup_locale {
+            snapshot::suggest_setup_locale(&mut settings, &rows, locale);
+        }
         self.handle.store(settings);
         Ok(())
     }

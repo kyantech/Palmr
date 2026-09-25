@@ -10,16 +10,19 @@ use crate::domain::error_code::ErrorCode;
 
 pub const MAX_DETAIL_ENTRIES: usize = 8;
 
+pub const VALIDATION_FIELDS: &str = "fields";
+
 pub(crate) const JSON_CONTENT_TYPE: &str = "application/json; charset=utf-8";
 
 // Keys and text values are `&'static str` so runtime strings — source error
 // messages, user input, paths, credentials — cannot reach `details`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, ToSchema)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 #[serde(untagged)]
 pub enum DetailValue {
     Bool(bool),
     Integer(i64),
     Text(&'static str),
+    TextList(Vec<&'static str>),
 }
 
 impl From<bool> for DetailValue {
@@ -82,6 +85,24 @@ impl ApiError {
         Self::new(ErrorCode::InternalError)
     }
 
+    pub fn validation(fields: impl IntoIterator<Item = &'static str>) -> Self {
+        let mut unique: Vec<&'static str> = Vec::new();
+        for field in fields {
+            if !unique.contains(&field) {
+                unique.push(field);
+            }
+        }
+        let mut error = Self::new(ErrorCode::ValidationError);
+        error
+            .details
+            .insert(VALIDATION_FIELDS, DetailValue::TextList(unique));
+        error
+    }
+
+    pub const fn invalid_json() -> Self {
+        Self::new(ErrorCode::InvalidJson)
+    }
+
     #[must_use]
     pub const fn with_message(mut self, message: &'static str) -> Self {
         self.message = message;
@@ -90,6 +111,10 @@ impl ApiError {
 
     #[must_use]
     pub fn with_detail(mut self, key: &'static str, value: impl Into<DetailValue>) -> Self {
+        debug_assert!(
+            self.code != ErrorCode::ValidationError,
+            "VALIDATION_ERROR details are built only by ApiError::validation"
+        );
         self.details.insert(key, value.into());
         self
     }
@@ -366,7 +391,7 @@ mod tests {
             "k0", "k1", "k2", "k3", "k4", "k5", "k6", "k7", "k8", "k9", "k10",
         ];
 
-        let mut error = ApiError::new(ErrorCode::ValidationError);
+        let mut error = ApiError::new(ErrorCode::BatchTooLarge);
         for (index, key) in KEYS.into_iter().enumerate() {
             error = error.with_detail(key, i64::try_from(index).unwrap());
         }
@@ -379,6 +404,67 @@ mod tests {
         assert_eq!(details["k0"], "replaced");
         assert!(!details.contains_key("k8") && !details.contains_key("k10"));
         assert_eq!(DetailValue::from(true), DetailValue::Bool(true));
+    }
+
+    #[test]
+    fn unit_validation_error_details_are_a_fields_array() {
+        let (status, _, body) = render(ApiError::validation(["locale"]));
+        assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
+        assert_eq!(body["error"]["code"], "VALIDATION_ERROR");
+        assert_eq!(body["error"]["details"], json!({ "fields": ["locale"] }));
+
+        let (_, _, body) = render(ApiError::validation(["username", "email", "username"]));
+        assert_eq!(
+            body["error"]["details"],
+            json!({ "fields": ["username", "email"] })
+        );
+
+        let (status, _, body) = render(ApiError::invalid_json());
+        assert_eq!(status, StatusCode::BAD_REQUEST);
+        assert_eq!(body["error"]["code"], "INVALID_JSON");
+        assert_eq!(body["error"]["message"], "Invalid JSON request body");
+        assert_eq!(body["error"]["details"], json!({}));
+    }
+
+    const SOURCE_SCAN_CAP: u64 = 1024 * 1024;
+
+    #[test]
+    fn regression_validation_error_built_only_through_fields_helper() {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
+        let mut pending = vec![root.clone()];
+        let mut offenders = Vec::new();
+        while let Some(directory) = pending.pop() {
+            for entry in std::fs::read_dir(&directory).unwrap() {
+                let path = entry.unwrap().path();
+                if path.is_dir() {
+                    pending.push(path);
+                    continue;
+                }
+                let name = path.file_name().unwrap().to_string_lossy().into_owned();
+                let is_test = name == "tests.rs" || name.ends_with("_tests.rs");
+                if path.extension().is_none_or(|ext| ext != "rs")
+                    || is_test
+                    || path.ends_with("infra/http/error.rs")
+                {
+                    continue;
+                }
+                let mut source = String::new();
+                std::io::Read::read_to_string(
+                    &mut std::io::Read::take(std::fs::File::open(&path).unwrap(), SOURCE_SCAN_CAP),
+                    &mut source,
+                )
+                .unwrap();
+                let production = source
+                    .split_once("#[cfg(test)]\nmod tests")
+                    .map_or(source.as_str(), |(before, _)| before);
+                if production.contains("ErrorCode::ValidationError")
+                    || production.contains("with_detail(\"field\"")
+                {
+                    offenders.push(path.strip_prefix(&root).unwrap().display().to_string());
+                }
+            }
+        }
+        assert!(offenders.is_empty(), "{offenders:?}");
     }
 
     #[test]
@@ -436,6 +522,7 @@ mod tests {
                 { "type": "boolean" },
                 { "type": "integer", "format": "int64" },
                 { "type": "string" },
+                { "type": "array", "items": { "type": "string" } },
             ])
         );
 

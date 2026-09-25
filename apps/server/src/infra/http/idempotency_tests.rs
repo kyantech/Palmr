@@ -1017,7 +1017,7 @@ async fn it_idempotency_key_bounds_and_scope_isolation() {
         assert_eq!(rejected.code(), "VALIDATION_ERROR");
         assert_eq!(
             rejected.body["error"]["details"],
-            json!({ "field": "Idempotency-Key" })
+            json!({ "fields": ["Idempotency-Key"] })
         );
         assert!(!rejected.text.contains(&key));
     }

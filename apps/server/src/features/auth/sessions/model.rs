@@ -130,6 +130,23 @@ pub struct NewSession {
     pub user_agent: Option<String>,
 }
 
+#[derive(Debug, Clone, Default)]
+pub struct SessionClient {
+    pub ip_address: Option<String>,
+    pub user_agent: Option<String>,
+}
+
+impl SessionClient {
+    pub fn session(self, user_id: UserId, auth_method: AuthMethod) -> NewSession {
+        NewSession {
+            user_id,
+            auth_method,
+            ip_address: self.ip_address,
+            user_agent: self.user_agent,
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct MintedSession {
     pub id: SessionId,
