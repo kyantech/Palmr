@@ -462,7 +462,7 @@ fn unit_presign_client_cannot_execute() {
 
     let clients = clients(&[]);
     assert!(!std::ptr::eq(
-        clients.public_signer().raw_client(),
+        clients.public_signer().signing_client(),
         clients.internal_client().client()
     ));
 }

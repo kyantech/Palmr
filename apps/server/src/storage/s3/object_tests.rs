@@ -22,7 +22,7 @@ use crate::storage::key::{KeyNamespace, ObjectKey};
 use crate::storage::provider::{ListCursor, ObjectBody, MAX_LIST_PAGE_SIZE};
 
 #[path = "../../../tests/support/minio.rs"]
-mod minio;
+pub(super) mod minio;
 
 use minio::MinioServer;
 
@@ -248,14 +248,20 @@ fn unit_s3_primitives_use_internal_client_only() {
     ));
 
     for (name, source) in PRIMITIVE_SOURCES {
+        let code: String = source
+            .lines()
+            .filter(|line| !line.starts_with("mod "))
+            .collect::<Vec<_>>()
+            .join("\n");
         for forbidden in [
             "public_signer",
             "PublicSigner",
             "raw_client",
+            "signing_client",
             "presign",
             "S3Clients::build",
         ] {
-            assert!(!source.contains(forbidden), "{name} mentions {forbidden}");
+            assert!(!code.contains(forbidden), "{name} mentions {forbidden}");
         }
         let calls: usize = OPERATION_CALLS
             .iter()

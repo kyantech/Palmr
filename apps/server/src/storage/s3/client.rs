@@ -129,8 +129,7 @@ impl PublicSigner {
         &self.endpoint
     }
 
-    #[cfg(test)]
-    pub(crate) fn raw_client(&self) -> &aws_sdk_s3::Client {
+    pub(super) fn signing_client(&self) -> &aws_sdk_s3::Client {
         &self.client
     }
 
@@ -234,6 +233,12 @@ impl S3Clients {
 
     pub(crate) fn base_config(&self) -> &Config {
         &self.base
+    }
+
+    #[cfg(test)]
+    pub(crate) fn with_internal_client(mut self, client: aws_sdk_s3::Client) -> Self {
+        self.internal.client = client;
+        self
     }
 }
 

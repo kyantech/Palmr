@@ -2,26 +2,32 @@ pub mod client;
 pub mod config;
 mod copy;
 mod list;
+mod multipart;
 mod object;
 pub mod plan;
+mod presign;
 pub mod profile;
 pub mod tls;
 
 use std::error::Error;
 use std::fmt;
+use std::sync::Arc;
 
 use aws_sdk_s3::error::{ProvideErrorMetadata, SdkError};
 use aws_smithy_runtime_api::client::orchestrator::HttpResponse;
 
 use self::client::S3Clients;
 use self::object::SourceBodyError;
+use self::profile::ProfileLimits;
 use super::error::{Retryable, StorageError};
+use crate::domain::clock::{Clock, SystemClock};
 
 const MAX_ERROR_CODE_LEN: usize = 64;
 
 pub struct S3Provider {
     clients: S3Clients,
     buffer_bytes: usize,
+    clock: Arc<dyn Clock>,
 }
 
 impl S3Provider {
@@ -35,7 +41,15 @@ impl S3Provider {
         Ok(Self {
             clients,
             buffer_bytes,
+            clock: Arc::new(SystemClock),
         })
+    }
+
+    #[cfg(test)]
+    #[must_use]
+    pub(crate) fn with_clock(mut self, clock: Arc<dyn Clock>) -> Self {
+        self.clock = clock;
+        self
     }
 
     fn internal(&self) -> &aws_sdk_s3::Client {
@@ -45,6 +59,10 @@ impl S3Provider {
     fn bucket(&self) -> &str {
         self.clients.shared().bucket()
     }
+
+    fn limits(&self) -> ProfileLimits {
+        self.clients.shared().profile().limits()
+    }
 }
 
 impl fmt::Debug for S3Provider {
@@ -52,7 +70,7 @@ impl fmt::Debug for S3Provider {
         f.debug_struct("S3Provider")
             .field("clients", &self.clients)
             .field("buffer_bytes", &self.buffer_bytes)
-            .finish()
+            .finish_non_exhaustive()
     }
 }
 
@@ -64,6 +82,13 @@ pub(crate) enum Operation {
     DeleteObject,
     CopyObject,
     ListObjectsV2,
+    CreateMultipartUpload,
+    UploadPart,
+    UploadPartCopy,
+    ListParts,
+    CompleteMultipartUpload,
+    AbortMultipartUpload,
+    ListMultipartUploads,
 }
 
 impl Operation {
@@ -75,6 +100,13 @@ impl Operation {
             Self::DeleteObject => "DeleteObject",
             Self::CopyObject => "CopyObject",
             Self::ListObjectsV2 => "ListObjectsV2",
+            Self::CreateMultipartUpload => "CreateMultipartUpload",
+            Self::UploadPart => "UploadPart",
+            Self::UploadPartCopy => "UploadPartCopy",
+            Self::ListParts => "ListParts",
+            Self::CompleteMultipartUpload => "CompleteMultipartUpload",
+            Self::AbortMultipartUpload => "AbortMultipartUpload",
+            Self::ListMultipartUploads => "ListMultipartUploads",
         }
     }
 }
@@ -171,7 +203,9 @@ pub(crate) fn classify_failure(operation: Operation, failure: Failure) -> Storag
             (_, Some("NoSuchBucket")) => {
                 StorageError::S3(Box::new(S3Failure::new(operation, failure)))
             }
-            (_, Some("NoSuchKey" | "NotFound")) | (404, None) => StorageError::NotFound,
+            (_, Some("NoSuchKey" | "NoSuchUpload" | "NotFound")) | (404, None) => {
+                StorageError::NotFound
+            }
             (
                 _,
                 Some(
@@ -242,3 +276,9 @@ mod object_tests;
 
 #[cfg(test)]
 mod plan_tests;
+
+#[cfg(test)]
+mod multipart_tests;
+
+#[cfg(test)]
+mod presign_tests;

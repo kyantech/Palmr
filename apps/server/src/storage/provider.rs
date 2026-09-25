@@ -45,8 +45,14 @@ pub struct PutHint {
     pub content_type: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct ListCursor(String);
+
+impl fmt::Debug for ListCursor {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("ListCursor(<opaque>)")
+    }
+}
 
 impl ListCursor {
     pub fn new(token: impl Into<String>) -> Self {
