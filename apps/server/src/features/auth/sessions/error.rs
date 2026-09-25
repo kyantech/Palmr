@@ -15,6 +15,8 @@ pub enum SessionError {
     RecentAuthRequired { method: &'static str },
     PasswordChangeRequired,
     TotpEnrollmentRequired,
+    CsrfMissing,
+    CsrfInvalid,
     NotFound,
     RepositoryInvariant { column: &'static str },
     Audit(AuditError),
@@ -32,6 +34,8 @@ impl SessionError {
             Self::RecentAuthRequired { .. } => "session_recent_auth_required",
             Self::PasswordChangeRequired => "session_password_change_required",
             Self::TotpEnrollmentRequired => "session_totp_enrollment_required",
+            Self::CsrfMissing => "session_csrf_missing",
+            Self::CsrfInvalid => "session_csrf_invalid",
             Self::NotFound => "session_not_found",
             Self::RepositoryInvariant { .. } => "session_repository_invariant",
             Self::Audit(error) => error.kind(),
@@ -51,6 +55,8 @@ impl SessionError {
             }
             Self::PasswordChangeRequired => ApiError::new(ErrorCode::AuthPasswordChangeRequired),
             Self::TotpEnrollmentRequired => ApiError::new(ErrorCode::Auth2faEnrollmentRequired),
+            Self::CsrfMissing => ApiError::new(ErrorCode::CsrfTokenMissing),
+            Self::CsrfInvalid => ApiError::new(ErrorCode::CsrfTokenInvalid),
             Self::NotFound => ApiError::new(ErrorCode::SessionNotFound),
             Self::RepositoryInvariant { .. }
             | Self::Audit(_)
@@ -76,6 +82,8 @@ impl fmt::Display for SessionError {
             Self::TotpEnrollmentRequired => {
                 f.write_str("the session is restricted until TOTP is enrolled")
             }
+            Self::CsrfMissing => f.write_str("the state change carries no CSRF proof"),
+            Self::CsrfInvalid => f.write_str("the CSRF token is not the one bound to the session"),
             Self::NotFound => f.write_str("the session does not exist"),
             Self::RepositoryInvariant { column } => {
                 write!(f, "the sessions row holds an invalid value in {column}")

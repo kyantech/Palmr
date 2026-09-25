@@ -44,6 +44,7 @@ use crate::infra::crypto::instance_key::{InstanceKey, InstanceKeyError, KeyOrigi
 use crate::infra::db::{
     DbOpenError, InstanceLock, InstanceLockError, LockOrigin, MigrationError, MIGRATOR,
 };
+use crate::infra::http::csrf::CsrfGuard;
 use crate::infra::http::headers::SecurityHeaders;
 use crate::infra::http::proxy::TrustedProxies;
 use crate::infra::http::shell::ShellInitError;
@@ -991,6 +992,7 @@ fn edge_router(
         clock,
         TrustedProxies::new(&config.trust_proxy),
         SecurityHeaders::new(config),
+        CsrfGuard::new(&config.base_url),
     );
     axum::Router::new().fallback_service(with_middleware(routes, &edge))
 }

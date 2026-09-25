@@ -28,6 +28,7 @@ use crate::app::router::{
 use crate::app::state::AppState;
 use crate::config::{EnvironmentSource, LogFormat, OperatorConfig, TrustProxy};
 use crate::domain::clock::TestClock;
+use crate::infra::http::csrf::CsrfGuard;
 use crate::infra::http::headers::{SecurityHeaders, SecurityPolicy};
 use crate::infra::http::proxy::TrustedProxies;
 use crate::infra::http::trace::RequestLog;
@@ -104,6 +105,7 @@ fn app_with_storage(
         clock,
         TrustedProxies::new(&TrustProxy::Off),
         SecurityHeaders::new(config),
+        CsrfGuard::new(&config.base_url),
     );
     with_middleware(router, &edge)
 }

@@ -240,16 +240,25 @@ impl SessionService {
     pub async fn authenticate_headers(
         &self,
         headers: &HeaderMap,
+        csrf: Option<&TokenDigest>,
     ) -> Result<AuthenticatedPrincipal, SessionError> {
         let raw = cookies::read(headers, SESSION_COOKIE)
             .map_err(|_| SessionError::AuthRequired)?
             .ok_or(SessionError::AuthRequired)?;
-        self.authenticate(&Secret::new(raw)).await
+        self.authenticate_bound(&Secret::new(raw), csrf).await
     }
 
     pub async fn authenticate(
         &self,
         raw: &Secret<String>,
+    ) -> Result<AuthenticatedPrincipal, SessionError> {
+        self.authenticate_bound(raw, None).await
+    }
+
+    pub async fn authenticate_bound(
+        &self,
+        raw: &Secret<String>,
+        csrf: Option<&TokenDigest>,
     ) -> Result<AuthenticatedPrincipal, SessionError> {
         let token = Token::decode(raw.expose_secret()).map_err(|_| SessionError::AuthRequired)?;
         let presented = token.digest();
@@ -267,6 +276,9 @@ impl SessionService {
         if now >= resolved.session.idle_expires_at || now >= resolved.session.absolute_expires_at {
             self.mark_expired(resolved.session.id).await?;
             return Err(SessionError::AuthRequired);
+        }
+        if csrf.is_some_and(|presented| !presented.verify(&resolved.session.csrf_token_hash)) {
+            return Err(SessionError::CsrfInvalid);
         }
 
         let policy = self.policy();

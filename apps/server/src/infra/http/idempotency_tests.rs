@@ -24,6 +24,7 @@ use tracing_subscriber::filter::EnvFilter;
 use tracing_subscriber::fmt::MakeWriter;
 use utoipa_axum::routes;
 
+use super::csrf::{with_test_csrf, CsrfGuard};
 use super::error::ApiError;
 use super::headers::SecurityHeaders;
 use super::idempotency::{
@@ -316,6 +317,7 @@ impl Harness {
             shared,
             TrustedProxies::new(&config.trust_proxy),
             SecurityHeaders::new(&config),
+            CsrfGuard::new(&config.base_url),
         );
         Self {
             root,
@@ -436,7 +438,7 @@ impl<'a> Call<'a> {
     }
 
     fn request(&self) -> Request {
-        let mut builder = Request::post(self.path)
+        let mut builder = with_test_csrf(Request::post(self.path))
             .header(CONTENT_TYPE, "application/json")
             .header(self.scope.0, self.scope.1)
             .extension(ConnectInfo(SocketAddr::from(([198, 51, 100, 7], 40_000))));

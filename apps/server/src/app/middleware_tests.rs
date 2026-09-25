@@ -30,6 +30,7 @@ use super::router::{
 };
 use crate::config::{EnvironmentSource, LogFormat, OperatorConfig, TrustProxy};
 use crate::domain::clock::TestClock;
+use crate::infra::http::csrf::{with_test_csrf, CsrfGuard, RequestContent};
 use crate::infra::http::headers::{CspNonce, SecurityHeaders, SecurityPolicy};
 use crate::infra::http::limits::{BodyLimit, ControlPlaneLimits};
 use crate::infra::http::proxy::{ResolvedClient, TrustedProxies};
@@ -42,6 +43,7 @@ const UNTRUSTED_PEER: &str = "203.0.113.9";
 const PANIC_SENTINEL: &str = "palmr-panic-sentinel /srv/palmr/src/secret.rs:42";
 const TWO_MIB: usize = 2 * 1024 * 1024;
 const RESPONSE_READ_CAP: usize = 8 * 1024 * 1024;
+const OFFSET_OCTET_STREAM: &str = "application/offset+octet-stream";
 
 const CONTROL_PLANE: RoutePolicy = RoutePolicy::new(
     AuthClass::Public,
@@ -73,7 +75,8 @@ const UPLOAD: RoutePolicy = RoutePolicy::new(
         ResponseEncoding::Identity,
         Deadline::IdleOnly,
     )),
-);
+)
+.with_request_content(RequestContent::OffsetOctetStream);
 
 fn json_response(value: &Value) -> Response {
     ([(CONTENT_TYPE, "application/json")], value.to_string()).into_response()
@@ -214,6 +217,7 @@ fn edge_with(security: SecurityHeaders) -> HttpEdge {
         Arc::new(TestClock::new(datetime!(2026-09-23 12:00 UTC))),
         TrustedProxies::new(&TrustProxy::AllowList(vec!["10.0.0.0/8".parse().unwrap()])),
         security,
+        CsrfGuard::new(&operator_config(&[]).base_url),
     )
 }
 
@@ -529,6 +533,7 @@ async fn it_body_under_limit_passes() {
     for size in [0, 1024 * 1024, TWO_MIB] {
         let response = send(
             request(Method::POST, "/test/body", UNTRUSTED_PEER)
+                .header(CONTENT_TYPE, "application/json")
                 .header(CONTENT_LENGTH, size)
                 .body(Body::from(vec![b'a'; size]))
                 .unwrap(),
@@ -566,7 +571,8 @@ async fn it_body_limit_follows_configured_limit() {
 async fn it_streamed_byte_route_bypasses_global_body_limit() {
     let size = TWO_MIB * 2;
     let response = send(
-        request(Method::PATCH, "/test/stream", UNTRUSTED_PEER)
+        with_test_csrf(request(Method::PATCH, "/test/stream", UNTRUSTED_PEER))
+            .header(CONTENT_TYPE, OFFSET_OCTET_STREAM)
             .header(CONTENT_LENGTH, size)
             .body(Body::from(vec![b'a'; size]))
             .unwrap(),
@@ -635,7 +641,8 @@ async fn it_undecodable_request_encoding_uses_envelope() {
 async fn it_streamed_byte_route_body_is_not_decoded() {
     let encoded = gzip(br#"{"a":1}"#.to_vec()).await;
     let response = send(
-        request(Method::PATCH, "/test/stream", UNTRUSTED_PEER)
+        with_test_csrf(request(Method::PATCH, "/test/stream", UNTRUSTED_PEER))
+            .header(CONTENT_TYPE, OFFSET_OCTET_STREAM)
             .header(CONTENT_ENCODING, "gzip")
             .body(Body::from(encoded.clone()))
             .unwrap(),
@@ -1049,6 +1056,98 @@ async fn it_cors_not_origin_reflecting() {
     for response in [&preflight, &simple, &credentialed, &missing] {
         assert_strict_security_headers(response);
     }
+}
+
+fn assert_not_origin_reflecting(response: &Response) {
+    for (name, value) in response.headers() {
+        assert!(!name.as_str().starts_with("access-control-"), "{name}");
+        let value = value.to_str().unwrap();
+        assert!(!value.contains("evil.example"), "{name}: {value}");
+    }
+}
+
+#[tokio::test]
+#[allow(non_snake_case, reason = "the accepted regression identifier is R-050")]
+async fn regression_R050_cors_not_origin_reflecting_and_csrf() {
+    let token = "AwsTGyMrMztDS1NbY2tze4OLk5ujq7O7w8vT2-Pr8_s";
+    let victim_cookies = format!("palmr_session=victim; palmr_csrf={token}");
+    let upload = |origin: Option<&str>| {
+        let builder = request(Method::PATCH, "/test/stream", UNTRUSTED_PEER)
+            .header("cookie", victim_cookies.as_str())
+            .header(CONTENT_TYPE, OFFSET_OCTET_STREAM)
+            .header(CONTENT_LENGTH, 4);
+        match origin {
+            Some(origin) => builder.header(ORIGIN, origin),
+            None => builder,
+        }
+    };
+
+    let preflight = send(
+        request(Method::OPTIONS, "/test/stream", UNTRUSTED_PEER)
+            .header(ORIGIN, EVIL_ORIGIN)
+            .header("access-control-request-method", "PATCH")
+            .header("access-control-request-headers", "x-palmr-csrf")
+            .body(Body::empty())
+            .unwrap(),
+    )
+    .await;
+    assert_not_origin_reflecting(&preflight);
+    assert_ne!(preflight.status(), StatusCode::OK);
+
+    let cross_site = send(upload(Some(EVIL_ORIGIN)).body(Body::from("abcd")).unwrap()).await;
+    assert_not_origin_reflecting(&cross_site);
+    assert_error_envelope(cross_site, StatusCode::FORBIDDEN, "ORIGIN_NOT_ALLOWED").await;
+
+    let originless = send(upload(None).body(Body::from("abcd")).unwrap()).await;
+    assert_not_origin_reflecting(&originless);
+    assert_error_envelope(originless, StatusCode::FORBIDDEN, "CSRF_TOKEN_MISSING").await;
+
+    let wrong_header = send(
+        upload(Some("http://localhost:5487"))
+            .header(
+                "x-palmr-csrf",
+                "AwsTGyMrMztDS1NbY2tze4OLk5ujq7O7w8vT2-Pr8_t",
+            )
+            .body(Body::from("abcd"))
+            .unwrap(),
+    )
+    .await;
+    assert_error_envelope(wrong_header, StatusCode::FORBIDDEN, "CSRF_TOKEN_INVALID").await;
+
+    for simple_type in [
+        "application/x-www-form-urlencoded",
+        "text/plain",
+        "multipart/form-data; boundary=x",
+    ] {
+        let simple = send(
+            request(Method::POST, "/test/body", UNTRUSTED_PEER)
+                .header(ORIGIN, EVIL_ORIGIN)
+                .header("cookie", victim_cookies.as_str())
+                .header(CONTENT_TYPE, simple_type)
+                .header(CONTENT_LENGTH, 7)
+                .body(Body::from("a=1&b=2"))
+                .unwrap(),
+        )
+        .await;
+        assert_not_origin_reflecting(&simple);
+        assert_error_envelope(
+            simple,
+            StatusCode::UNSUPPORTED_MEDIA_TYPE,
+            "UNSUPPORTED_MEDIA_TYPE",
+        )
+        .await;
+    }
+
+    let same_origin = send(
+        upload(Some("http://localhost:5487"))
+            .header("x-palmr-csrf", token)
+            .body(Body::from("abcd"))
+            .unwrap(),
+    )
+    .await;
+    assert_not_origin_reflecting(&same_origin);
+    assert_eq!(same_origin.status(), StatusCode::OK);
+    assert_eq!(json_body(same_origin).await["received"], 4);
 }
 
 #[derive(Clone, Default)]

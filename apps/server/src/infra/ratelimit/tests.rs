@@ -34,6 +34,7 @@ use crate::app::router::{
 use crate::config::{EnvironmentSource, LogFormat, OperatorConfig, TrustProxy};
 use crate::domain::clock::{Clock, TestClock};
 use crate::domain::error_code::ErrorCode;
+use crate::infra::http::csrf::{with_test_csrf, CsrfGuard};
 use crate::infra::http::headers::SecurityHeaders;
 use crate::infra::http::proxy::TrustedProxies;
 use crate::infra::telemetry::build_dispatch;
@@ -245,6 +246,7 @@ fn harness(
         Arc::new(clock.clone()),
         TrustedProxies::new(&TrustProxy::AllowList(vec!["10.0.0.0/8".parse().unwrap()])),
         SecurityHeaders::new(&config),
+        CsrfGuard::new(&config.base_url),
     );
     let verifier = Verifier::default();
     let router = test_routes()
@@ -426,7 +428,11 @@ async fn svc_rate_limit_class_enforced() {
     assert_eq!(app.limiter.tracked_keys(RateLimitClass::None), 0);
 
     exhaust(&app, 1_000, || {
-        empty(request(Method::PATCH, "/test/rl/data", CLIENT_A))
+        empty(with_test_csrf(request(
+            Method::PATCH,
+            "/test/rl/data",
+            CLIENT_A,
+        )))
     })
     .await;
     assert_eq!(app.limiter.tracked_keys(RateLimitClass::TransferData), 0);

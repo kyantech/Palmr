@@ -23,6 +23,7 @@ use crate::domain::clock::Clock;
 use crate::domain::error_code::ErrorCode;
 use crate::features::auth;
 use crate::features::branding;
+use crate::infra::http::csrf::{self, AnonymousCsrf, CsrfGuard, RequestContent, RequestGate};
 use crate::infra::http::encoding::{
     reject_undecodable_body, request_decompression, response_compression,
 };
@@ -202,6 +203,8 @@ pub struct RoutePolicy {
     security: SecurityPolicy,
     request_log: RequestLog,
     idempotency: IdempotencyMode,
+    request_content: RequestContent,
+    anonymous_csrf: AnonymousCsrf,
 }
 
 impl RoutePolicy {
@@ -213,6 +216,8 @@ impl RoutePolicy {
             security: SecurityPolicy::Default,
             request_log: RequestLog::Standard,
             idempotency: IdempotencyMode::None,
+            request_content: RequestContent::Json,
+            anonymous_csrf: AnonymousCsrf::None,
         }
     }
 
@@ -228,6 +233,16 @@ impl RoutePolicy {
 
     pub const fn with_idempotency(mut self, idempotency: IdempotencyMode) -> Self {
         self.idempotency = idempotency;
+        self
+    }
+
+    pub const fn with_request_content(mut self, request_content: RequestContent) -> Self {
+        self.request_content = request_content;
+        self
+    }
+
+    pub const fn with_anonymous_csrf(mut self) -> Self {
+        self.anonymous_csrf = AnonymousCsrf::Issue;
         self
     }
 
@@ -253,6 +268,18 @@ impl RoutePolicy {
 
     pub const fn idempotency(&self) -> IdempotencyMode {
         self.idempotency
+    }
+
+    pub const fn request_content(&self) -> RequestContent {
+        self.request_content
+    }
+
+    pub const fn anonymous_csrf(&self) -> AnonymousCsrf {
+        self.anonymous_csrf
+    }
+
+    pub const fn request_gate(&self) -> RequestGate {
+        RequestGate::new(self.auth, self.request_content, self.anonymous_csrf)
     }
 }
 
@@ -308,6 +335,7 @@ pub enum RouteError {
     EmbedPolicyOutsideEmbedRoutes { method: Method, path: String },
     AuthClassTagDeclared { method: Method, path: String },
     IdempotencyNotApplicable { method: Method, path: String },
+    AnonymousCsrfOutsidePublicSurface { method: Method, path: String },
 }
 
 impl fmt::Display for RouteError {
@@ -333,6 +361,10 @@ impl fmt::Display for RouteError {
             Self::IdempotencyNotApplicable { method, path } => write!(
                 f,
                 "{method} {path} declares Idempotency-Key support but is not a deadline-bound /api/v1 write"
+            ),
+            Self::AnonymousCsrfOutsidePublicSurface { method, path } => write!(
+                f,
+                "{method} {path} issues an anonymous CSRF cookie but is not a public, public+grant or setup route"
             ),
         }
     }
@@ -446,6 +478,12 @@ where
                         path: entry.path.clone(),
                     });
                 }
+                if !policy.anonymous_csrf.permitted_for(policy.auth) {
+                    errors.push(RouteError::AnonymousCsrfOutsidePublicSurface {
+                        method: entry.method.clone(),
+                        path: entry.path.clone(),
+                    });
+                }
                 if !policy.security.permits_path(&entry.path) {
                     errors.push(RouteError::EmbedPolicyOutsideEmbedRoutes {
                         method: entry.method.clone(),
@@ -471,7 +509,10 @@ where
         }
 
         if errors.is_empty() {
-            let handler = extractors::apply(policy.auth, handler);
+            let handler = csrf::apply(
+                policy.request_gate(),
+                extractors::apply(policy.auth, handler),
+            );
             let mut handler = policy.request_log.apply(
                 policy
                     .security
@@ -565,15 +606,22 @@ pub struct HttpEdge {
     proxies: Arc<TrustedProxies>,
     security: Arc<SecurityHeaders>,
     rate_limits: Arc<RateLimiter>,
+    csrf: Arc<CsrfGuard>,
 }
 
 impl HttpEdge {
-    pub fn new(clock: Arc<dyn Clock>, proxies: TrustedProxies, security: SecurityHeaders) -> Self {
+    pub fn new(
+        clock: Arc<dyn Clock>,
+        proxies: TrustedProxies,
+        security: SecurityHeaders,
+        csrf: CsrfGuard,
+    ) -> Self {
         Self {
             rate_limits: Arc::new(RateLimiter::new(Arc::clone(&clock))),
             clock,
             proxies: Arc::new(proxies),
             security: Arc::new(security),
+            csrf: Arc::new(csrf),
         }
     }
 
@@ -608,7 +656,11 @@ pub fn with_middleware(
         ))
         .layer(from_fn(catch_panic))
         .layer(from_fn(normalize_path))
-        .service(router.layer(Extension(Arc::clone(&edge.rate_limits))))
+        .service(
+            router
+                .layer(Extension(Arc::clone(&edge.rate_limits)))
+                .layer(Extension(Arc::clone(&edge.csrf))),
+        )
 }
 
 impl RouteEntry {
@@ -667,6 +719,7 @@ mod tests {
     use crate::app::openapi::{declared_auth_classes, operations, ApiDocs};
     use crate::config::{EnvironmentSource, OperatorConfig};
     use crate::domain::clock::TestClock;
+    use crate::infra::http::csrf::{is_state_changing, with_test_csrf, CsrfAuthority, CsrfGuard};
     use crate::infra::http::headers::SecurityHeaders;
     use crate::infra::http::idempotency::supported_mode;
     use crate::infra::http::limits::{BodyLimit, ControlPlaneLimits, CONTROL_PLANE_BODY_LIMIT};
@@ -1525,6 +1578,7 @@ mod tests {
             Arc::new(TestClock::new(datetime!(2026-09-24 09:00 UTC))),
             TrustedProxies::new(&config.trust_proxy),
             SecurityHeaders::new(&config),
+            CsrfGuard::new(&config.base_url),
         );
         let router = with_middleware(sample_routes().build().unwrap().router, &edge);
         let peer = ConnectInfo(SocketAddr::from(([198, 51, 100, 7], 40_000)));
@@ -1544,7 +1598,7 @@ mod tests {
         let protected = router
             .clone()
             .oneshot(
-                Request::post("/test/items")
+                with_test_csrf(Request::post("/test/items"))
                     .extension(peer)
                     .body(Body::empty())
                     .unwrap(),
@@ -1563,5 +1617,28 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(unregistered.status(), StatusCode::METHOD_NOT_ALLOWED);
+    }
+
+    #[test]
+    fn unit_application_writes_are_csrf_gated_by_route_class() {
+        let inventory = application_routes().build().unwrap().inventory;
+        let mut cookie_writes = 0;
+        for entry in inventory.entries() {
+            let policy = entry.policy();
+            let route = format!("{} {}", entry.method(), entry.path());
+            let authority = policy.request_gate().authority();
+            let anonymous = matches!(policy.auth(), AuthClass::Public | AuthClass::Setup);
+            assert_eq!(authority == CsrfAuthority::None, anonymous, "{route}");
+            assert!(
+                policy.anonymous_csrf().permitted_for(policy.auth()),
+                "{route}"
+            );
+            if is_state_changing(entry.method()) && authority == CsrfAuthority::Cookie {
+                cookie_writes += 1;
+            }
+        }
+        assert!(cookie_writes > 0);
+        assert_eq!(UPLOAD.request_gate().authority(), CsrfAuthority::Cookie);
+        assert_eq!(DOWNLOAD.request_gate().authority(), CsrfAuthority::Cookie);
     }
 }

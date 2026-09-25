@@ -14,7 +14,7 @@ use time::macros::datetime;
 use tower::ServiceExt;
 use utoipa_axum::routes;
 
-use super::model::{AuthMethod, NewSession, RevokedReason, SessionRestriction};
+use super::model::{AuthMethod, MintedSession, NewSession, RevokedReason, SessionRestriction};
 use super::prune::{prune_step, PruneStep};
 use super::SessionService;
 use crate::app::auth_class::AuthClass;
@@ -22,7 +22,8 @@ use crate::app::health::Health;
 use crate::app::lifecycle::Readiness;
 use crate::app::openapi::ApiDocs;
 use crate::app::router::{
-    with_middleware, HttpEdge, RateLimitClass, RoutePolicy, Routes, Transport,
+    with_middleware, BytePath, Deadline, HttpEdge, RateLimitClass, RequestBody, ResponseEncoding,
+    RoutePolicy, Routes, Transport,
 };
 use crate::app::state::{AppState, StorageRuntime};
 use crate::config::{EnvironmentSource, OperatorConfig, SqliteSynchronous};
@@ -41,6 +42,7 @@ use crate::infra::crypto::hkdf::KeyRing;
 use crate::infra::crypto::instance_key::InstanceKey;
 use crate::infra::crypto::token::Token;
 use crate::infra::db::{DbPools, MIGRATOR};
+use crate::infra::http::csrf::{CsrfGuard, RequestContent, CSRF_HEADER};
 use crate::infra::http::extractors::{
     enforce_restriction, restriction_allows, Admin, AdminRecentAuth, Authenticated,
     AuthenticatedRecentAuth,
@@ -161,6 +163,15 @@ impl Harness {
 
 fn token_cookie(token: &Secret<String>) -> HeaderValue {
     HeaderValue::from_str(&format!("palmr_session={}", token.expose_secret())).unwrap()
+}
+
+fn session_cookies(session: &MintedSession) -> HeaderValue {
+    HeaderValue::from_str(&format!(
+        "palmr_session={}; palmr_csrf={}",
+        session.session_token.expose_secret(),
+        session.csrf_token.expose_secret()
+    ))
+    .unwrap()
 }
 
 async fn response_json(response: Response) -> Value {
@@ -746,9 +757,9 @@ async fn restricted_code(
         + Clone,
     method: Method,
     path: &str,
-    token: &Secret<String>,
+    session: &MintedSession,
 ) -> (StatusCode, Option<String>) {
-    let response = call_sessions(service, method, path, token).await;
+    let response = call_sessions(service, method, path, session).await;
     let status = response.status();
     if status == StatusCode::NO_CONTENT {
         return (status, None);
@@ -847,26 +858,14 @@ async fn svc_restricted_session_allowlist() {
     let stubs = app_service(&harness, allowlist_routes());
     for (method, path) in SHARED_ALLOWLIST.iter().chain(&PASSWORD_ONLY) {
         assert_eq!(
-            restricted_code(
-                stubs.clone(),
-                method.clone(),
-                path,
-                &password_session.session_token
-            )
-            .await,
+            restricted_code(stubs.clone(), method.clone(), path, &password_session).await,
             (StatusCode::NO_CONTENT, None),
             "{method} {path}"
         );
     }
     for (method, path) in SHARED_ALLOWLIST.iter().chain(&TOTP_ONLY) {
         assert_eq!(
-            restricted_code(
-                stubs.clone(),
-                method.clone(),
-                path,
-                &totp_session.session_token
-            )
-            .await,
+            restricted_code(stubs.clone(), method.clone(), path, &totp_session).await,
             (StatusCode::NO_CONTENT, None),
             "{method} {path}"
         );
@@ -877,13 +876,7 @@ async fn svc_restricted_session_allowlist() {
     ];
     for (method, path) in password_denied.iter().chain(&TOTP_ONLY) {
         assert_eq!(
-            restricted_code(
-                stubs.clone(),
-                method.clone(),
-                path,
-                &password_session.session_token
-            )
-            .await,
+            restricted_code(stubs.clone(), method.clone(), path, &password_session).await,
             (
                 StatusCode::FORBIDDEN,
                 Some("AUTH_PASSWORD_CHANGE_REQUIRED".to_owned())
@@ -893,13 +886,7 @@ async fn svc_restricted_session_allowlist() {
     }
     for (method, path) in password_denied.iter().chain(&PASSWORD_ONLY) {
         assert_eq!(
-            restricted_code(
-                stubs.clone(),
-                method.clone(),
-                path,
-                &totp_session.session_token
-            )
-            .await,
+            restricted_code(stubs.clone(), method.clone(), path, &totp_session).await,
             (
                 StatusCode::FORBIDDEN,
                 Some("AUTH_2FA_ENROLLMENT_REQUIRED".to_owned())
@@ -932,11 +919,8 @@ async fn svc_restricted_session_allowlist() {
             entry.path()
         ));
         for (token, code) in [
-            (
-                &password_session.session_token,
-                "AUTH_PASSWORD_CHANGE_REQUIRED",
-            ),
-            (&totp_session.session_token, "AUTH_2FA_ENROLLMENT_REQUIRED"),
+            (&password_session, "AUTH_PASSWORD_CHANGE_REQUIRED"),
+            (&totp_session, "AUTH_2FA_ENROLLMENT_REQUIRED"),
         ] {
             assert_eq!(
                 restricted_code(application.clone(), entry.method().clone(), &path, token).await,
@@ -986,6 +970,7 @@ fn app_service(
         Arc::new(harness.clock.clone()),
         TrustedProxies::new(&harness.config.trust_proxy),
         SecurityHeaders::new(&harness.config),
+        CsrfGuard::new(&harness.config.base_url),
     );
     with_middleware(router, &edge)
 }
@@ -995,14 +980,20 @@ async fn call_sessions(
         + Clone,
     method: Method,
     uri: &str,
-    token: &Secret<String>,
+    session: &MintedSession,
 ) -> Response {
     let mut request = Request::builder()
         .method(method)
         .uri(uri)
         .body(Body::empty())
         .unwrap();
-    request.headers_mut().insert(COOKIE, token_cookie(token));
+    request
+        .headers_mut()
+        .insert(COOKIE, session_cookies(session));
+    request.headers_mut().insert(
+        CSRF_HEADER,
+        HeaderValue::from_str(session.csrf_token.expose_secret()).unwrap(),
+    );
     request.extensions_mut().insert(ConnectInfo(
         "127.0.0.1:32100".parse::<SocketAddr>().unwrap(),
     ));
@@ -1041,7 +1032,7 @@ async fn it_sessions_list_and_revoke() {
         sessions_service(&harness),
         Method::GET,
         "/api/v1/sessions",
-        &current.session_token,
+        &current,
     )
     .await;
     assert_eq!(response.status(), StatusCode::OK);
@@ -1119,7 +1110,7 @@ async fn it_sessions_list_and_revoke() {
             sessions_service(&harness),
             Method::DELETE,
             &missing,
-            &current.session_token,
+            &current,
         )
         .await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND, "{missing}");
@@ -1139,7 +1130,7 @@ async fn it_sessions_list_and_revoke() {
             sessions_service(&harness),
             Method::DELETE,
             &format!("/api/v1/sessions/{}", other.id),
-            &current.session_token,
+            &current,
         )
         .await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
@@ -1162,7 +1153,7 @@ async fn it_sessions_list_and_revoke() {
         sessions_service(&harness),
         Method::DELETE,
         "/api/v1/sessions",
-        &current.session_token,
+        &current,
     )
     .await;
     assert_eq!(response.status(), StatusCode::FORBIDDEN);
@@ -1185,7 +1176,7 @@ async fn it_sessions_list_and_revoke() {
         sessions_service(&harness),
         Method::DELETE,
         "/api/v1/sessions?includeCurrent=maybe",
-        &current.session_token,
+        &current,
     )
     .await;
     assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
@@ -1194,7 +1185,7 @@ async fn it_sessions_list_and_revoke() {
         sessions_service(&harness),
         Method::DELETE,
         "/api/v1/sessions",
-        &current.session_token,
+        &current,
     )
     .await;
     assert_eq!(response.status(), StatusCode::NO_CONTENT);
@@ -1219,7 +1210,7 @@ async fn it_sessions_list_and_revoke() {
         sessions_service(&harness),
         Method::DELETE,
         "/api/v1/sessions?includeCurrent=true",
-        &replacement.session_token,
+        &replacement,
     )
     .await;
     assert_eq!(response.status(), StatusCode::NO_CONTENT);
@@ -1236,7 +1227,7 @@ async fn it_sessions_list_and_revoke() {
         sessions_service(&harness),
         Method::DELETE,
         &format!("/api/v1/sessions/{}", last.id),
-        &last.session_token,
+        &last,
     )
     .await;
     assert_eq!(response.status(), StatusCode::NO_CONTENT);
@@ -1367,5 +1358,246 @@ fn unit_revocation_reason_vocabulary_matches_schema() {
             "policy_changed",
             "trusted_device_revoked",
         ]
+    );
+}
+
+#[utoipa::path(post, path = "/test/csrf/authenticated", responses((status = 204)))]
+async fn csrf_write(Authenticated(_): Authenticated) -> StatusCode {
+    StatusCode::NO_CONTENT
+}
+
+#[utoipa::path(patch, path = "/test/csrf/uploads/{id}", params(("id" = String, Path)), responses((status = 204)))]
+async fn csrf_upload(Authenticated(_): Authenticated) -> StatusCode {
+    StatusCode::NO_CONTENT
+}
+
+fn csrf_routes() -> Routes<AppState> {
+    let upload = RoutePolicy::new(
+        AuthClass::Authenticated,
+        RateLimitClass::None,
+        Transport::BytePath(BytePath::new(
+            RequestBody::Streamed,
+            ResponseEncoding::Identity,
+            Deadline::IdleOnly,
+        )),
+    )
+    .with_request_content(RequestContent::OffsetOctetStream);
+    Routes::new()
+        .route(
+            RoutePolicy::new(
+                AuthClass::Authenticated,
+                RateLimitClass::None,
+                Transport::ControlPlane,
+            ),
+            routes!(csrf_write),
+        )
+        .route(upload, routes!(csrf_upload))
+        .merge(super::routes::routes())
+}
+
+async fn csrf_call(
+    service: impl tower::Service<Request, Response = Response, Error = std::convert::Infallible, Future: Send>
+        + Clone,
+    method: Method,
+    uri: String,
+    session: Option<&str>,
+    csrf: (Option<&str>, Option<&str>),
+) -> (StatusCode, Option<String>) {
+    let mut cookies = Vec::new();
+    if let Some(session) = session {
+        cookies.push(format!("palmr_session={session}"));
+    }
+    if let Some(cookie) = csrf.0 {
+        cookies.push(format!("palmr_csrf={cookie}"));
+    }
+    let mut builder = Request::builder()
+        .method(method)
+        .uri(uri)
+        .extension(ConnectInfo(
+            "127.0.0.1:32100".parse::<SocketAddr>().unwrap(),
+        ));
+    if !cookies.is_empty() {
+        builder = builder.header(COOKIE, cookies.join("; "));
+    }
+    if let Some(header) = csrf.1 {
+        builder = builder.header(CSRF_HEADER, header);
+    }
+    let response = service
+        .oneshot(builder.body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+    let status = response.status();
+    if status.is_success() {
+        return (status, None);
+    }
+    let code = response_json(response).await["error"]["code"]
+        .as_str()
+        .map(ToOwned::to_owned);
+    (status, code)
+}
+
+fn rejected(status: StatusCode, code: &str) -> (StatusCode, Option<String>) {
+    (status, Some(code.to_owned()))
+}
+
+#[tokio::test]
+async fn svc_csrf_precedence_over_auth() {
+    let harness = Harness::open().await;
+    let owner = harness.user("csrf-owner", Role::User, false).await;
+    let foreign = harness.user("csrf-foreign", Role::User, false).await;
+    let session = harness.mint(owner).await;
+    let sibling = harness.mint(owner).await;
+    let foreign_session = harness.mint(foreign).await;
+    let service = app_service(&harness, csrf_routes());
+    let write = "/test/csrf/authenticated";
+    let token = session.session_token.expose_secret().as_str();
+    let own = session.csrf_token.expose_secret().as_str();
+    let fresh = Token::mint().unwrap().encode();
+    let fresh = fresh.expose_secret().as_str();
+    let other = Token::mint().unwrap().encode();
+    let other = other.expose_secret().as_str();
+    let missing = rejected(StatusCode::FORBIDDEN, "CSRF_TOKEN_MISSING");
+    let invalid = rejected(StatusCode::FORBIDDEN, "CSRF_TOKEN_INVALID");
+    let auth_required = rejected(StatusCode::UNAUTHORIZED, "AUTH_REQUIRED");
+    let call = |method: Method, uri: &str, session, csrf| {
+        csrf_call(service.clone(), method, uri.to_owned(), session, csrf)
+    };
+
+    assert_eq!(call(Method::POST, write, None, (None, None)).await, missing);
+    assert_eq!(
+        call(Method::POST, write, Some("forged"), (None, None)).await,
+        missing
+    );
+    assert_eq!(
+        call(Method::POST, write, None, (Some(fresh), Some(other))).await,
+        invalid
+    );
+    assert_eq!(
+        call(
+            Method::POST,
+            write,
+            Some("forged"),
+            (Some(fresh), Some(other))
+        )
+        .await,
+        invalid
+    );
+    assert_eq!(
+        call(Method::POST, write, None, (Some(fresh), Some(fresh))).await,
+        auth_required
+    );
+    assert_eq!(
+        call(
+            Method::POST,
+            write,
+            Some("forged"),
+            (Some(fresh), Some(fresh))
+        )
+        .await,
+        auth_required
+    );
+
+    assert_eq!(
+        call(Method::POST, write, Some(token), (None, None)).await,
+        missing
+    );
+    assert_eq!(
+        call(Method::POST, write, Some(token), (Some(own), None)).await,
+        missing
+    );
+    assert_eq!(
+        call(Method::POST, write, Some(token), (Some(own), Some(other))).await,
+        invalid
+    );
+    for borrowed in [&sibling, &foreign_session] {
+        let borrowed = borrowed.csrf_token.expose_secret().as_str();
+        assert_eq!(
+            call(
+                Method::POST,
+                write,
+                Some(token),
+                (Some(borrowed), Some(borrowed))
+            )
+            .await,
+            invalid
+        );
+    }
+    assert_eq!(
+        call(Method::POST, write, Some(token), (Some(fresh), Some(fresh))).await,
+        invalid
+    );
+    assert_eq!(
+        call(Method::POST, write, Some(token), (Some(own), Some(own))).await,
+        (StatusCode::NO_CONTENT, None)
+    );
+
+    let upload = "/test/csrf/uploads/0192f3a1";
+    assert_eq!(
+        call(Method::PATCH, upload, Some(token), (None, None)).await,
+        missing
+    );
+    assert_eq!(
+        call(
+            Method::PATCH,
+            upload,
+            Some(token),
+            (Some(fresh), Some(fresh))
+        )
+        .await,
+        invalid
+    );
+    assert_eq!(
+        call(Method::PATCH, upload, Some(token), (Some(own), Some(own))).await,
+        (StatusCode::NO_CONTENT, None)
+    );
+
+    assert_eq!(
+        call(Method::GET, "/api/v1/sessions", Some(token), (None, None)).await,
+        (StatusCode::OK, None)
+    );
+    let revoke_sibling = &format!("/api/v1/sessions/{}", sibling.id);
+    assert_eq!(
+        call(Method::DELETE, revoke_sibling, Some(token), (None, None)).await,
+        missing
+    );
+    let sibling_csrf = sibling.csrf_token.expose_secret().as_str();
+    assert_eq!(
+        call(
+            Method::DELETE,
+            revoke_sibling,
+            Some(token),
+            (Some(sibling_csrf), Some(sibling_csrf))
+        )
+        .await,
+        invalid
+    );
+    assert_eq!(harness.state(sibling.id).await.as_deref(), Some("active"));
+
+    let rotated = harness.service.rotate(session.id).await.unwrap();
+    let rotated_token = rotated.session_token.expose_secret().as_str();
+    let rotated_csrf = rotated.csrf_token.expose_secret().as_str();
+    assert_eq!(
+        call(
+            Method::POST,
+            write,
+            Some(rotated_token),
+            (Some(own), Some(own))
+        )
+        .await,
+        invalid
+    );
+    assert_eq!(
+        call(
+            Method::POST,
+            write,
+            Some(rotated_token),
+            (Some(rotated_csrf), Some(rotated_csrf))
+        )
+        .await,
+        (StatusCode::NO_CONTENT, None)
+    );
+    assert_eq!(
+        call(Method::POST, write, Some(token), (Some(own), Some(own))).await,
+        auth_required
     );
 }

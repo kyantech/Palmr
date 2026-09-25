@@ -50,6 +50,21 @@ impl CookiePolicy {
         append_cookie(headers, SESSION_COOKIE, "", true, self.secure, Some(0))?;
         append_cookie(headers, CSRF_COOKIE, "", false, self.secure, Some(0))
     }
+
+    pub fn append_anonymous_csrf(
+        self,
+        headers: &mut HeaderMap,
+        csrf: &Secret<String>,
+    ) -> Result<(), CookieError> {
+        append_cookie(
+            headers,
+            CSRF_COOKIE,
+            csrf.expose_secret(),
+            false,
+            self.secure,
+            None,
+        )
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -87,6 +102,16 @@ pub fn read(headers: &HeaderMap, name: &str) -> Result<Option<String>, CookieErr
         }
     }
     Ok(found)
+}
+
+pub fn sets(headers: &HeaderMap, name: &str) -> bool {
+    headers.get_all(SET_COOKIE).iter().any(|value| {
+        value
+            .as_bytes()
+            .split(|byte| *byte == b'=')
+            .next()
+            .is_some_and(|candidate| candidate == name.as_bytes())
+    })
 }
 
 pub fn append_header_value(headers: &mut HeaderMap, value: HeaderValue) {

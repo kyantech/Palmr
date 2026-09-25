@@ -10,6 +10,7 @@ use crate::features::auth::sessions::{
     AuthenticatedPrincipal, SessionError, SessionRestriction, SessionService,
 };
 
+use super::csrf::{is_state_changing, CsrfProof};
 use super::error::ApiError;
 use super::idempotency::IdempotencyScope;
 use super::request_id::{tag_error, RequestId};
@@ -37,7 +38,18 @@ async fn enforce_auth_class(
     let Some(service) = request.extensions().get::<SessionService>().cloned() else {
         return tagged(SessionError::AuthRequired, request_id.as_ref());
     };
-    let principal = match service.authenticate_headers(request.headers()).await {
+    let proof = if is_state_changing(request.method()) {
+        match request.extensions().get::<CsrfProof>() {
+            Some(proof) => Some(proof.digest().clone()),
+            None => return tagged(SessionError::CsrfMissing, request_id.as_ref()),
+        }
+    } else {
+        None
+    };
+    let principal = match service
+        .authenticate_headers(request.headers(), proof.as_ref())
+        .await
+    {
         Ok(principal) => principal,
         Err(error) => return tagged(error, request_id.as_ref()),
     };

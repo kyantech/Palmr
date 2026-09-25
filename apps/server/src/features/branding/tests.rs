@@ -36,6 +36,7 @@ use crate::app::router::{
 use crate::app::state::AppState;
 use crate::config::{EnvironmentSource, OperatorConfig};
 use crate::domain::clock::TestClock;
+use crate::infra::http::csrf::CsrfGuard;
 use crate::infra::http::etag::weak_etag;
 use crate::infra::http::headers::{SecurityHeaders, SecurityPolicy};
 use crate::infra::http::proxy::TrustedProxies;
@@ -323,6 +324,7 @@ fn app(
         clock,
         TrustedProxies::new(&config.trust_proxy),
         SecurityHeaders::new(&config),
+        CsrfGuard::new(&config.base_url),
     );
     with_middleware(router, &edge)
 }

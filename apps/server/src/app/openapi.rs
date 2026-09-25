@@ -23,6 +23,7 @@ use super::router::{
 };
 use super::state::AppState;
 use crate::config::PublicBaseUrl;
+use crate::infra::http::csrf::is_state_changing;
 use crate::infra::http::error::{ApiError, ApiErrorBody, JSON_CONTENT_TYPE};
 use crate::infra::http::etag::{matches_validator, weak_etag, weak_etag_from_sha256};
 use crate::infra::http::headers::CspNonce;
@@ -188,13 +189,6 @@ fn session_requirement(auth: AuthClass, method: &Method) -> Option<SecurityRequi
 }
 
 const NO_SCOPES: [&str; 0] = [];
-
-fn is_state_changing(method: &Method) -> bool {
-    matches!(
-        *method,
-        Method::POST | Method::PUT | Method::PATCH | Method::DELETE
-    )
-}
 
 pub fn operations(item: &PathItem) -> impl Iterator<Item = (Method, &Operation)> {
     [
