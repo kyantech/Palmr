@@ -85,8 +85,26 @@ impl fmt::Debug for Registry {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct NonRetryable(&'static str);
+
+impl NonRetryable {
+    pub const fn new(code: &'static str) -> Self {
+        Self(code)
+    }
+}
+
+impl fmt::Display for NonRetryable {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.0)
+    }
+}
+
+impl std::error::Error for NonRetryable {}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FailureClass {
     HandlerFailed,
+    HandlerRejected,
     HandlerPanicked,
     NoHandler,
 }
@@ -95,9 +113,14 @@ impl FailureClass {
     pub const fn code(self) -> &'static str {
         match self {
             Self::HandlerFailed => "JOB_HANDLER_FAILED",
+            Self::HandlerRejected => "JOB_HANDLER_REJECTED",
             Self::HandlerPanicked => "JOB_HANDLER_PANICKED",
             Self::NoHandler => "JOB_NO_HANDLER",
         }
+    }
+
+    const fn retryable(self) -> bool {
+        !matches!(self, Self::HandlerRejected)
     }
 
     fn last_error(self, job: &ClaimedJob) -> String {
@@ -286,6 +309,7 @@ impl Dispatcher {
         let failure = match self.0.registry.handlers.get(&job.kind()) {
             Some(handler) => match self.supervise(handler, &job).await {
                 Ok(Ok(())) => None,
+                Ok(Err(error)) if error.is::<NonRetryable>() => Some(FailureClass::HandlerRejected),
                 Ok(Err(_)) => Some(FailureClass::HandlerFailed),
                 Err(error) if error.is_panic() => Some(FailureClass::HandlerPanicked),
                 Err(_) => return Ok(Outcome::Interrupted),
@@ -353,6 +377,7 @@ impl Dispatcher {
             job,
             &failure.last_error(job),
             self.0.jitter.sample(),
+            failure.retryable(),
         )
         .await?;
         match settled {

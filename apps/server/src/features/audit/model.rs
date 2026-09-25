@@ -190,6 +190,7 @@ impl Target {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AuditCode {
     HandlerFailed,
+    HandlerRejected,
     HandlerPanicked,
     NoHandler,
 }
@@ -198,6 +199,7 @@ impl AuditCode {
     pub const fn as_str(self) -> &'static str {
         match self {
             Self::HandlerFailed => "JOB_HANDLER_FAILED",
+            Self::HandlerRejected => "JOB_HANDLER_REJECTED",
             Self::HandlerPanicked => "JOB_HANDLER_PANICKED",
             Self::NoHandler => "JOB_NO_HANDLER",
         }
@@ -208,6 +210,7 @@ impl From<FailureClass> for AuditCode {
     fn from(failure: FailureClass) -> Self {
         match failure {
             FailureClass::HandlerFailed => Self::HandlerFailed,
+            FailureClass::HandlerRejected => Self::HandlerRejected,
             FailureClass::HandlerPanicked => Self::HandlerPanicked,
             FailureClass::NoHandler => Self::NoHandler,
         }
@@ -257,21 +260,27 @@ impl WritePath {
 pub enum AuditAction {
     JobDeadLettered,
     SettingChanged,
+    StorageOrphanDetected,
 }
 
 impl AuditAction {
-    pub const ALL: &'static [Self] = &[Self::JobDeadLettered, Self::SettingChanged];
+    pub const ALL: &'static [Self] = &[
+        Self::JobDeadLettered,
+        Self::SettingChanged,
+        Self::StorageOrphanDetected,
+    ];
 
     pub const fn as_str(self) -> &'static str {
         match self {
             Self::JobDeadLettered => "JOB_DEAD_LETTERED",
             Self::SettingChanged => "SETTING_CHANGED",
+            Self::StorageOrphanDetected => "STORAGE_ORPHAN_DETECTED",
         }
     }
 
     pub const fn write_path(self) -> WritePath {
         match self {
-            Self::JobDeadLettered => WritePath::Enqueued,
+            Self::JobDeadLettered | Self::StorageOrphanDetected => WritePath::Enqueued,
             Self::SettingChanged => WritePath::InTransaction,
         }
     }

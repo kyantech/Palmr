@@ -120,3 +120,37 @@ pub fn job_dead_lettered(
     ]);
     ActionSpec::new(AuditAction::JobDeadLettered, metadata)
 }
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct OrphanSweepCounts {
+    pub outcome: &'static str,
+    pub reap_enabled: bool,
+    pub listed: u64,
+    pub unparseable: u64,
+    pub unparseable_bytes: u64,
+    pub candidates: u64,
+    pub candidate_bytes: u64,
+    pub too_young: u64,
+    pub live_transfer: u64,
+    pub reaped: u64,
+    pub reaped_bytes: u64,
+    pub stale_tombstones: u64,
+}
+
+pub fn storage_orphan_detected(counts: &OrphanSweepCounts) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("outcome", Value::from(counts.outcome)),
+        ("reap_enabled", Value::from(counts.reap_enabled)),
+        ("listed", Value::from(counts.listed)),
+        ("unparseable", Value::from(counts.unparseable)),
+        ("unparseable_bytes", Value::from(counts.unparseable_bytes)),
+        ("candidates", Value::from(counts.candidates)),
+        ("candidate_bytes", Value::from(counts.candidate_bytes)),
+        ("too_young", Value::from(counts.too_young)),
+        ("live_transfer", Value::from(counts.live_transfer)),
+        ("reaped", Value::from(counts.reaped)),
+        ("reaped_bytes", Value::from(counts.reaped_bytes)),
+        ("stale_tombstones", Value::from(counts.stale_tombstones)),
+    ]);
+    ActionSpec::new(AuditAction::StorageOrphanDetected, metadata)
+}

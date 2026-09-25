@@ -15,7 +15,7 @@ pub use self::backoff::Jitter;
 pub use self::kinds::{JobKind, Priority};
 pub use self::runtime::{
     BackgroundDrain, Dispatcher, FailureClass, Idempotency, JobAudit, JobAuditEvent, JobAuditSink,
-    JobRuntime, JobsDrain, Registry, RuntimeTiming,
+    JobRuntime, JobsDrain, NonRetryable, Registry, RuntimeTiming,
 };
 use crate::domain::id::Id;
 use crate::domain::time::{InvalidTimestamp, Timestamp};

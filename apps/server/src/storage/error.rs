@@ -88,7 +88,7 @@ impl StorageError {
         )
     }
 
-    const fn kind(&self) -> &'static str {
+    pub(crate) const fn kind(&self) -> &'static str {
         match self {
             Self::NotFound => "not_found",
             Self::RangeNotSatisfiable { .. } => "range_not_satisfiable",

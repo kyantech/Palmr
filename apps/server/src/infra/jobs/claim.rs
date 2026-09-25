@@ -242,9 +242,10 @@ pub async fn settle_failure(
     job: &ClaimedJob,
     last_error: &str,
     jitter_sample: u32,
+    retryable: bool,
 ) -> Result<Settled, JobsError> {
     let attempts = job.attempts.saturating_add(1);
-    let (state, run_at, settled) = if attempts >= job.max_attempts {
+    let (state, run_at, settled) = if !retryable || attempts >= job.max_attempts {
         ("dead", None, Settled::Dead { attempts })
     } else {
         let run_at = after(clock, retry_delay(job.attempts, jitter_sample))?;

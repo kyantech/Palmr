@@ -15,6 +15,8 @@ use crate::infra::jobs::prune_tokens;
 use crate::infra::jobs::{
     Claimant, Dispatcher, Jitter, JobAudit, JobKind, Registry, RuntimeTiming,
 };
+use crate::storage;
+use crate::storage::lifecycle::{self as storage_lifecycle, thumbnails::ThumbnailCache};
 
 pub async fn run_once_command(
     config: &OperatorConfig,
@@ -67,6 +69,26 @@ async fn execute(
     );
     let registry = email::register_jobs(registry, email);
     let registry = prune_tokens::register_jobs(registry, pools.clone(), Arc::clone(&clock));
+    let registry = if matches!(
+        kind,
+        JobKind::StorageDeleteBlob | JobKind::StorageOrphanSweep
+    ) {
+        let provider =
+            storage::build_provider(config, Arc::clone(&clock)).map_err(StartupError::from)?;
+        storage_lifecycle::register_jobs(
+            registry,
+            storage_lifecycle::LifecycleContext::new(
+                pools.clone(),
+                Arc::clone(&clock),
+                provider,
+                ThumbnailCache::under(access.root()),
+                audit_service.clone(),
+                config.storage_orphan_reap,
+            ),
+        )
+    } else {
+        registry
+    };
     let dispatcher = Dispatcher::new(
         pools.clone(),
         Arc::clone(&clock),

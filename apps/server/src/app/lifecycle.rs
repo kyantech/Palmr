@@ -53,6 +53,7 @@ use crate::infra::jobs::{
 use crate::infra::telemetry::{self, write_startup_failure, TelemetryInitError};
 use crate::storage;
 use crate::storage::health::{Schedule, StorageMonitor, HEALTH_CHECK_PERIOD};
+use crate::storage::lifecycle::{self as storage_lifecycle, thumbnails::ThumbnailCache};
 use crate::storage::provider::StorageProvider;
 use crate::storage::s3::config::STORAGE_CONFIG_INVALID;
 use crate::storage::ProviderBuildError;
@@ -733,6 +734,7 @@ async fn initialize(
         .startup(Some(database.pools().reader().clone()))
         .await;
     let storage_health = StorageHealthTask::start(&monitor, schedule);
+    let provider = Arc::clone(&storage);
     let storage = StorageRuntime::new(storage, monitor.status());
     let report = ReconcileRegistry::production()
         .run(&ReconcileContext::new(
@@ -743,7 +745,15 @@ async fn initialize(
         .await;
     log_reconciliation(&report);
     let settings = settings.handle();
-    let jobs = start_jobs(config, &database, &clock, &instance, &settings, &email_keys);
+    let jobs = start_jobs(
+        config,
+        &database,
+        &clock,
+        &instance,
+        &settings,
+        &email_keys,
+        provider,
+    );
     let router = match StaticAssets::built(&config.base_url)
         .map_err(StartupError::from)
         .and_then(|assets| composed_router(config, health, assets, clock, settings, storage))
@@ -791,6 +801,7 @@ fn start_jobs(
     instance: &InstanceLock,
     settings: &SettingsHandle,
     keys: &Arc<KeyRing>,
+    provider: Arc<dyn StorageProvider>,
 ) -> JobRuntime {
     let timing = RuntimeTiming::DEFAULT;
     let pools = database.pools().clone();
@@ -815,6 +826,17 @@ fn start_jobs(
     );
     let registry = email::register_jobs(registry, email);
     let registry = prune_tokens::register_jobs(registry, pools.clone(), Arc::clone(clock));
+    let registry = storage_lifecycle::register_jobs(
+        registry,
+        storage_lifecycle::LifecycleContext::new(
+            pools.clone(),
+            Arc::clone(clock),
+            provider,
+            ThumbnailCache::under(&config.data_dir),
+            audit_service.clone(),
+            config.storage_orphan_reap,
+        ),
+    );
     let dispatcher = Dispatcher::new(
         pools,
         Arc::clone(clock),

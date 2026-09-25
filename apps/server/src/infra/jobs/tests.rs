@@ -24,7 +24,7 @@ use super::kinds::{JobKind, Priority, DEFAULT_LEASE};
 use super::recurring::Recurring;
 use super::runtime::{
     Dispatcher, FailureClass, Idempotency, JobAudit, JobAuditEvent, JobAuditSink, JobRuntime,
-    JobsDrain, Outcome, Registry, RuntimeTiming,
+    JobsDrain, NonRetryable, Outcome, Registry, RuntimeTiming,
 };
 use super::{
     Claimant, ClaimedJob, DedupKey, JobId, JobPayload, JobsError, NewJob, MAX_LAST_ERROR_BYTES,
@@ -585,6 +585,57 @@ impl JobAuditSink for CapturedAudit {
     fn record(&self, event: JobAuditEvent) {
         self.0.lock().unwrap().push(event);
     }
+}
+
+#[tokio::test]
+async fn it_jobs_non_retryable_dead_letters_once() {
+    let harness = Harness::open().await;
+    let calls = Arc::new(AtomicU32::new(0));
+    let registry = Registry::default().register(JobKind::StorageDeleteBlob, idempotency(), {
+        let calls = Arc::clone(&calls);
+        move |_job: ClaimedJob| {
+            calls.fetch_add(1, Ordering::SeqCst);
+            async move { Err(NonRetryable::new("FIXTURE_CORRUPT_ROW").into()) }
+        }
+    });
+    let captured = Arc::new(CapturedAudit::default());
+    let dispatcher = harness.dispatcher(
+        registry,
+        Jitter::from_fn(|| 0),
+        JobAudit::new(captured.clone()),
+    );
+    let Enqueued::Inserted(id) = harness
+        .enqueue(&NewJob::new(
+            JobKind::StorageDeleteBlob,
+            JobPayload::empty(),
+        ))
+        .await
+    else {
+        panic!("unkeyed enqueue inserts");
+    };
+    let worker = claimant(&harness.clock, 0);
+
+    let dead = dispatcher.run_next(&worker, || true).await.unwrap();
+    assert_eq!(dead, Some(Outcome::DeadLettered { attempts: 1 }));
+    harness.clock.advance(RETRY_CAP * 4);
+    assert_eq!(dispatcher.run_next(&worker, || true).await.unwrap(), None);
+    assert_eq!(calls.load(Ordering::SeqCst), 1);
+
+    let row = harness.row(id).await;
+    assert_eq!((row.state.as_str(), row.attempts), ("dead", 1));
+    assert_eq!(
+        row.last_error.as_deref(),
+        Some(format!("JOB_HANDLER_REJECTED job_id={id} attempt=1").as_str())
+    );
+    assert_eq!(
+        *captured.0.lock().unwrap(),
+        [JobAuditEvent::DeadLettered {
+            job_id: id,
+            kind: JobKind::StorageDeleteBlob,
+            attempts: 1,
+            failure: FailureClass::HandlerRejected,
+        }]
+    );
 }
 
 #[tokio::test]
