@@ -1,6 +1,8 @@
+pub mod cookies;
 pub mod encoding;
 pub mod error;
 pub mod etag;
+pub mod extractors;
 pub mod headers;
 pub mod idempotency;
 #[cfg(test)]

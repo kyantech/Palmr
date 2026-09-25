@@ -159,7 +159,7 @@ async fn provider_test() -> StatusCode {
 fn test_routes() -> Routes<()> {
     Routes::new()
         .route(
-            policy(AuthClass::Authenticated, RateLimitClass::Read),
+            policy(AuthClass::Public, RateLimitClass::Read),
             routes!(read),
         )
         .route(
@@ -196,7 +196,7 @@ fn test_routes() -> Routes<()> {
         )
         .route(
             RoutePolicy::new(
-                AuthClass::Authenticated,
+                AuthClass::PublicGrant,
                 RateLimitClass::TransferData,
                 Transport::BytePath(BytePath::new(
                     RequestBody::Streamed,
@@ -207,11 +207,11 @@ fn test_routes() -> Routes<()> {
             routes!(data_frame),
         )
         .route(
-            policy(AuthClass::Admin, RateLimitClass::EmailTest),
+            policy(AuthClass::Public, RateLimitClass::EmailTest),
             routes!(smtp_test),
         )
         .route(
-            policy(AuthClass::Admin, RateLimitClass::ProviderTest),
+            policy(AuthClass::Public, RateLimitClass::ProviderTest),
             routes!(provider_test),
         )
 }

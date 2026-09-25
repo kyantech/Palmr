@@ -21,11 +21,13 @@ use super::openapi::{self, declare_route_policy, operations_mut};
 use super::state::AppState;
 use crate::domain::clock::Clock;
 use crate::domain::error_code::ErrorCode;
+use crate::features::auth;
 use crate::features::branding;
 use crate::infra::http::encoding::{
     reject_undecodable_body, request_decompression, response_compression,
 };
 use crate::infra::http::error::ApiError;
+use crate::infra::http::extractors;
 use crate::infra::http::headers::{apply_security_headers, SecurityHeaders, SecurityPolicy};
 use crate::infra::http::idempotency::IdempotencyRoute;
 use crate::infra::http::limits::{enforce_deadline, limit_body, BodyLimit, ControlPlaneLimits};
@@ -469,6 +471,7 @@ where
         }
 
         if errors.is_empty() {
+            let handler = extractors::apply(policy.auth, handler);
             let mut handler = policy.request_log.apply(
                 policy
                     .security
@@ -531,6 +534,7 @@ where
 pub fn application_routes() -> Routes<AppState> {
     Routes::new()
         .merge(health::routes())
+        .merge(auth::sessions::routes::routes())
         .merge(branding::routes::routes())
         .merge(openapi::routes())
 }
@@ -1525,7 +1529,19 @@ mod tests {
         let router = with_middleware(sample_routes().build().unwrap().router, &edge);
         let peer = ConnectInfo(SocketAddr::from(([198, 51, 100, 7], 40_000)));
 
-        let created = router
+        let served = router
+            .clone()
+            .oneshot(
+                Request::get("/test/items/0192f3a1/content")
+                    .extension(peer)
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(served.status(), StatusCode::OK);
+
+        let protected = router
             .clone()
             .oneshot(
                 Request::post("/test/items")
@@ -1535,11 +1551,11 @@ mod tests {
             )
             .await
             .unwrap();
-        assert_eq!(created.status(), StatusCode::CREATED);
+        assert_eq!(protected.status(), StatusCode::UNAUTHORIZED);
 
         let unregistered = router
             .oneshot(
-                Request::delete("/test/items")
+                Request::delete("/test/items/0192f3a1/content")
                     .extension(peer)
                     .body(Body::empty())
                     .unwrap(),

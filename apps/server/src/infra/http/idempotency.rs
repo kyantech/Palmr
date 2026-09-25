@@ -5,13 +5,14 @@ use std::time::Duration;
 
 use axum::extract::{FromRequestParts, MatchedPath};
 use axum::response::{IntoResponse, Response};
-use http::header::{CONTENT_TYPE, LOCATION, RETRY_AFTER, SET_COOKIE};
+use http::header::{CONTENT_TYPE, LOCATION, RETRY_AFTER};
 use http::request::Parts;
 use http::{HeaderName, HeaderValue, Method, StatusCode};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use zeroize::Zeroizing;
 
+use super::cookies;
 use super::error::{ApiError, JSON_CONTENT_TYPE};
 use super::pagination::invalid_param;
 use super::request_id::{tag_error, RequestId};
@@ -527,7 +528,7 @@ impl IntoResponse for ReplayEnvelope {
             response.headers_mut().insert(LOCATION, location);
         }
         if let Some(cookie) = self.grant_cookie {
-            response.headers_mut().append(SET_COOKIE, cookie);
+            cookies::append_header_value(response.headers_mut(), cookie);
         }
         response
     }

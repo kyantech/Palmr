@@ -6,6 +6,7 @@ use crate::app::lifecycle::StartupError;
 use crate::config::OperatorConfig;
 use crate::domain::clock::Clock;
 use crate::features::audit;
+use crate::features::auth;
 use crate::features::email::{self, EmailService, SmtpTransport};
 use crate::features::settings::SettingsService;
 use crate::infra::crypto::instance_key::InstanceKey;
@@ -68,6 +69,7 @@ async fn execute(
         Arc::new(SmtpTransport),
     );
     let registry = email::register_jobs(registry, email);
+    let registry = auth::sessions::register_jobs(registry, pools.clone(), Arc::clone(&clock));
     let registry = prune_tokens::register_jobs(registry, pools.clone(), Arc::clone(&clock));
     let registry = if matches!(
         kind,

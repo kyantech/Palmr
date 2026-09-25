@@ -68,7 +68,7 @@ enum TestPrincipal {}
 enum TestEffect {}
 
 const PLAINTEXT: RoutePolicy = RoutePolicy::new(
-    AuthClass::Authenticated,
+    AuthClass::Public,
     RateLimitClass::None,
     Transport::ControlPlane,
 )
@@ -82,7 +82,7 @@ const SEALED: RoutePolicy = RoutePolicy::new(
 .with_idempotency(IdempotencyMode::Sealed);
 
 const UNDECLARED: RoutePolicy = RoutePolicy::new(
-    AuthClass::Authenticated,
+    AuthClass::Public,
     RateLimitClass::None,
     Transport::ControlPlane,
 );

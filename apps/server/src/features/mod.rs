@@ -3,6 +3,14 @@
     reason = "audit vocabulary and per-action builders are consumed as features add actions"
 )]
 pub mod audit;
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "session mint/rotation and transaction-safe revocation primitives are consumed by later authentication and account-security tasks"
+    )
+)]
+pub mod auth;
 pub mod branding;
 #[allow(
     dead_code,

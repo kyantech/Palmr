@@ -3,6 +3,26 @@ source: apps/server/src/domain/error_code.rs
 ---
 [
   {
+    "code": "AUTH_2FA_ENROLLMENT_REQUIRED",
+    "status": 403,
+    "retryable": false
+  },
+  {
+    "code": "AUTH_PASSWORD_CHANGE_REQUIRED",
+    "status": 403,
+    "retryable": false
+  },
+  {
+    "code": "AUTH_RECENT_AUTH_REQUIRED",
+    "status": 403,
+    "retryable": false
+  },
+  {
+    "code": "AUTH_REQUIRED",
+    "status": 401,
+    "retryable": false
+  },
+  {
     "code": "BATCH_TOO_LARGE",
     "status": 422,
     "retryable": false
@@ -96,6 +116,11 @@ source: apps/server/src/domain/error_code.rs
     "code": "SERVICE_UNAVAILABLE",
     "status": 503,
     "retryable": true
+  },
+  {
+    "code": "SESSION_NOT_FOUND",
+    "status": 404,
+    "retryable": false
   },
   {
     "code": "SETUP_ALREADY_COMPLETED",

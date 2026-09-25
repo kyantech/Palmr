@@ -1,3 +1,5 @@
+use std::fmt;
+
 use hmac::{Hmac, KeyInit, Mac};
 use sha2::{Digest, Sha256};
 use subtle::{Choice, ConstantTimeEq};
@@ -11,8 +13,14 @@ pub const MIN_TRUNCATED_MAC_LEN: usize = 16;
 
 const LOWER_HEX: &[u8; 16] = b"0123456789abcdef";
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct TokenDigest(String);
+
+impl fmt::Debug for TokenDigest {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("TokenDigest(<redacted>)")
+    }
+}
 
 impl TokenDigest {
     pub fn parse(stored: &str) -> Result<Self, CryptoError> {

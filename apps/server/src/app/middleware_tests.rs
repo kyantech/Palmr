@@ -66,7 +66,7 @@ const DOWNLOAD: RoutePolicy = RoutePolicy::new(
 );
 
 const UPLOAD: RoutePolicy = RoutePolicy::new(
-    AuthClass::Authenticated,
+    AuthClass::PublicGrant,
     RateLimitClass::TransferData,
     Transport::BytePath(BytePath::new(
         RequestBody::Streamed,

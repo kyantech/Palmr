@@ -121,6 +121,27 @@ pub fn job_dead_lettered(
     ActionSpec::new(AuditAction::JobDeadLettered, metadata)
 }
 
+pub fn session_revoked(reason: &'static str, current: bool) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("reason", Value::from(reason)),
+        ("current", Value::from(current)),
+    ]);
+    ActionSpec::new(AuditAction::SessionRevoked, metadata)
+}
+
+pub fn all_sessions_revoked(
+    reason: &'static str,
+    include_current: bool,
+    revoked: u64,
+) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("reason", Value::from(reason)),
+        ("include_current", Value::from(include_current)),
+        ("revoked", Value::from(revoked)),
+    ]);
+    ActionSpec::new(AuditAction::AllSessionsRevoked, metadata)
+}
+
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct OrphanSweepCounts {
     pub outcome: &'static str,

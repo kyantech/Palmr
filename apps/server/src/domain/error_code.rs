@@ -80,6 +80,16 @@ error_catalog! {
         "This action requires e-mail delivery to be configured";
     SetupAlreadyCompleted = "SETUP_ALREADY_COMPLETED", CONFLICT, retryable: false,
         "Setup has already been completed";
+    AuthRequired = "AUTH_REQUIRED", UNAUTHORIZED, retryable: false,
+        "Authentication is required";
+    AuthRecentAuthRequired = "AUTH_RECENT_AUTH_REQUIRED", FORBIDDEN, retryable: false,
+        "Recent authentication is required";
+    AuthPasswordChangeRequired = "AUTH_PASSWORD_CHANGE_REQUIRED", FORBIDDEN, retryable: false,
+        "A password change is required";
+    Auth2faEnrollmentRequired = "AUTH_2FA_ENROLLMENT_REQUIRED", FORBIDDEN, retryable: false,
+        "Two-factor authentication enrollment is required";
+    SessionNotFound = "SESSION_NOT_FOUND", NOT_FOUND, retryable: false,
+        "The session was not found";
     DatabaseBusy = "DATABASE_BUSY", SERVICE_UNAVAILABLE, retryable: true,
         "The database is temporarily busy";
     FileNotFound = "FILE_NOT_FOUND", NOT_FOUND, retryable: false,
@@ -162,7 +172,10 @@ mod tests {
                 "{wire} uses the client namespace"
             );
             assert!(!wire.starts_with('_') && !wire.ends_with('_') && !wire.contains("__"));
-            assert!(wire.bytes().all(|b| b.is_ascii_uppercase() || b == b'_'));
+            assert!(wire.as_bytes()[0].is_ascii_uppercase());
+            assert!(wire
+                .bytes()
+                .all(|b| b.is_ascii_uppercase() || b.is_ascii_digit() || b == b'_'));
             assert_eq!(serde_json::to_value(code).unwrap(), wire);
             assert!(!code.default_message().is_empty());
         }

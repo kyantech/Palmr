@@ -4,6 +4,38 @@
  */
 
 export interface paths {
+    "/api/v1/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_sessions"];
+        put?: never;
+        post?: never;
+        delete: operations["revoke_sessions"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sessions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["revoke_session"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/docs": {
         parameters: {
             query?: never;
@@ -139,7 +171,7 @@ export interface components {
         DatabaseHealthStatus: "ok";
         DetailValue: boolean | number | string;
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH";
+        ErrorCode: "VALIDATION_ERROR" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "SESSION_NOT_FOUND" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH";
         HealthLive: {
             status: components["schemas"]["HealthLiveStatus"];
             version: string;
@@ -182,6 +214,39 @@ export interface components {
         };
         /** @enum {string} */
         MigrationHealthStatus: "current";
+        Page_SessionItem: {
+            items: {
+                absoluteExpiresAt: string;
+                createdAt: string;
+                expiresAt: string;
+                id: string;
+                ipAddress: string | null;
+                isCurrent: boolean;
+                lastSeenAt: string;
+                origin: components["schemas"]["SessionOrigin"];
+                userAgent: string | null;
+            }[];
+            /** @description Opaque cursor for the next page; `null` on the last page. */
+            nextCursor: string | null;
+            /**
+             * Format: int64
+             * @description Matching items overall; `null` where counting would require a scan.
+             */
+            totalCount: number | null;
+        };
+        SessionItem: {
+            absoluteExpiresAt: string;
+            createdAt: string;
+            expiresAt: string;
+            id: string;
+            ipAddress: string | null;
+            isCurrent: boolean;
+            lastSeenAt: string;
+            origin: components["schemas"]["SessionOrigin"];
+            userAgent: string | null;
+        };
+        /** @enum {string} */
+        SessionOrigin: "password" | "external";
         /** @enum {string} */
         StorageHealthStatus: "ok" | "degraded" | "down";
         WebAppManifest: {
@@ -200,6 +265,138 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    list_sessions: {
+        parameters: {
+            query?: {
+                /** @description Opaque pagination cursor. */
+                cursor?: string;
+                /** @description Page size. */
+                limit?: number;
+                /** @description Sort: lastSeenAt:asc|desc */
+                sort?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The caller's active sessions. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_SessionItem"];
+                };
+            };
+            /** @description Invalid cursor or query. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    revoke_sessions: {
+        parameters: {
+            query?: {
+                /** @description Also revoke the current session. */
+                includeCurrent?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sessions revoked. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Recent authentication required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Invalid query. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    revoke_session: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Session UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Session revoked. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Unknown or foreign session. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
     docs: {
         parameters: {
             query?: never;

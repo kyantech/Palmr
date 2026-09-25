@@ -377,6 +377,7 @@ async fn it_startup_listener_serves_application_stack() {
         Arc::new(TestClock::new(datetime!(2026-09-23 12:00 UTC))),
         crate::features::settings::SettingsHandle::documented_defaults(),
         crate::app::state::StorageRuntime::for_test(),
+        None,
     )
     .unwrap();
     let listener = bind(loopback()).await.unwrap();

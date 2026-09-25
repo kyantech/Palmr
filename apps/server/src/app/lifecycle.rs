@@ -36,6 +36,7 @@ use crate::config::{
 };
 use crate::domain::clock::{Clock, SystemClock};
 use crate::features::audit;
+use crate::features::auth::sessions::SessionService;
 use crate::features::email::{self, EmailService, SmtpTransport};
 use crate::features::settings::{SettingsError, SettingsHandle, SettingsService};
 use crate::infra::crypto::hkdf::KeyRing;
@@ -745,6 +746,13 @@ async fn initialize(
         .await;
     log_reconciliation(&report);
     let settings = settings.handle();
+    let sessions = SessionService::new(
+        database.pools().clone(),
+        Arc::clone(&clock),
+        settings.clone(),
+        Arc::clone(&email_keys),
+        &config.base_url,
+    );
     let jobs = start_jobs(
         config,
         &database,
@@ -756,8 +764,17 @@ async fn initialize(
     );
     let router = match StaticAssets::built(&config.base_url)
         .map_err(StartupError::from)
-        .and_then(|assets| composed_router(config, health, assets, clock, settings, storage))
-    {
+        .and_then(|assets| {
+            composed_router(
+                config,
+                health,
+                assets,
+                clock,
+                settings,
+                storage,
+                Some(sessions),
+            )
+        }) {
         Ok(router) => router,
         Err(error) => {
             storage_health.stop().await;
@@ -825,6 +842,8 @@ fn start_jobs(
         Arc::new(SmtpTransport),
     );
     let registry = email::register_jobs(registry, email);
+    let registry =
+        crate::features::auth::sessions::register_jobs(registry, pools.clone(), Arc::clone(clock));
     let registry = prune_tokens::register_jobs(registry, pools.clone(), Arc::clone(clock));
     let registry = storage_lifecycle::register_jobs(
         registry,
@@ -933,6 +952,7 @@ pub fn application_router(
         clock,
         SettingsHandle::documented_defaults(),
         StorageRuntime::new(storage, status),
+        None,
     )
 }
 
@@ -943,6 +963,7 @@ fn composed_router(
     clock: Arc<dyn Clock>,
     settings: SettingsHandle,
     storage: StorageRuntime,
+    sessions: Option<SessionService>,
 ) -> Result<axum::Router, StartupError> {
     let assembled = application_routes().build().map_err(StartupError::Router)?;
     let api_docs =
@@ -954,6 +975,10 @@ fn composed_router(
         settings,
         storage,
     ));
+    let routes = match sessions {
+        Some(sessions) => routes.layer(axum::Extension(sessions)),
+        None => routes,
+    };
     Ok(edge_router(routes, config, clock))
 }
 
