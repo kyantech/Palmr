@@ -78,6 +78,18 @@ fn app_with(
     health: &Health,
     config: &OperatorConfig,
 ) -> impl Service<Request, Response = Response, Error = Infallible, Future: Send> + Clone {
+    app_with_storage(
+        health,
+        config,
+        crate::app::state::StorageRuntime::for_test(),
+    )
+}
+
+fn app_with_storage(
+    health: &Health,
+    config: &OperatorConfig,
+    storage: crate::app::state::StorageRuntime,
+) -> impl Service<Request, Response = Response, Error = Infallible, Future: Send> + Clone {
     let clock = Arc::new(TestClock::new(datetime!(2026-09-23 12:00 UTC)));
     let assembled = routes().build().unwrap();
     let docs = ApiDocs::new(assembled.openapi, &config.base_url).unwrap();
@@ -86,6 +98,7 @@ fn app_with(
         health.clone(),
         docs,
         crate::features::settings::SettingsHandle::documented_defaults(),
+        storage,
     ));
     let edge = HttpEdge::new(
         clock,
@@ -725,4 +738,172 @@ async fn it_health_polling_logs_at_debug() {
     assert!(completion_levels(&health, "info", "/health/live")
         .await
         .is_empty());
+}
+
+struct CountingStorage(std::sync::atomic::AtomicUsize);
+
+impl CountingStorage {
+    fn touch(&self) -> crate::storage::error::StorageError {
+        self.0.fetch_add(1, Ordering::SeqCst);
+        crate::storage::error::StorageError::NotFound
+    }
+}
+
+#[async_trait::async_trait]
+impl crate::storage::provider::StorageProvider for CountingStorage {
+    fn caps(&self) -> &crate::storage::caps::StorageCapabilities {
+        self.touch();
+        &crate::storage::caps::StorageCapabilities::S3_DEFAULT
+    }
+
+    fn describe(&self) -> crate::storage::provider::StorageDescriptor {
+        self.touch();
+        crate::storage::test_runtime().0.describe()
+    }
+
+    async fn put_stream(
+        &self,
+        _key: &crate::storage::key::ObjectKey,
+        _body: crate::storage::provider::ObjectBody,
+        _hint: crate::storage::provider::PutHint,
+    ) -> Result<crate::storage::provider::ObjectStat, crate::storage::error::StorageError> {
+        Err(self.touch())
+    }
+
+    async fn open_read(
+        &self,
+        _key: &crate::storage::key::ObjectKey,
+    ) -> Result<
+        (
+            crate::storage::provider::ObjectStat,
+            crate::storage::provider::ObjectBody,
+        ),
+        crate::storage::error::StorageError,
+    > {
+        Err(self.touch())
+    }
+
+    async fn open_range(
+        &self,
+        _key: &crate::storage::key::ObjectKey,
+        _start: u64,
+        _len: u64,
+    ) -> Result<
+        (
+            crate::storage::provider::ObjectStat,
+            crate::storage::provider::ObjectBody,
+        ),
+        crate::storage::error::StorageError,
+    > {
+        Err(self.touch())
+    }
+
+    async fn stat(
+        &self,
+        _key: &crate::storage::key::ObjectKey,
+    ) -> Result<crate::storage::provider::ObjectStat, crate::storage::error::StorageError> {
+        Err(self.touch())
+    }
+
+    async fn delete(
+        &self,
+        _key: &crate::storage::key::ObjectKey,
+    ) -> Result<bool, crate::storage::error::StorageError> {
+        Err(self.touch())
+    }
+
+    async fn exists(
+        &self,
+        _key: &crate::storage::key::ObjectKey,
+    ) -> Result<bool, crate::storage::error::StorageError> {
+        Err(self.touch())
+    }
+
+    async fn copy(
+        &self,
+        _src: &crate::storage::key::ObjectKey,
+        _dst: &crate::storage::key::ObjectKey,
+    ) -> Result<crate::storage::provider::ObjectStat, crate::storage::error::StorageError> {
+        Err(self.touch())
+    }
+
+    async fn list_page(
+        &self,
+        _prefix: &str,
+        _cursor: Option<crate::storage::provider::ListCursor>,
+        _page_size: u32,
+    ) -> Result<crate::storage::provider::ListPage, crate::storage::error::StorageError> {
+        Err(self.touch())
+    }
+
+    async fn self_test(
+        &self,
+        depth: crate::storage::health::ProbeDepth,
+    ) -> crate::storage::health::SelfTestReport {
+        self.touch();
+        crate::storage::test_runtime().0.self_test(depth).await
+    }
+}
+
+#[tokio::test]
+async fn it_health_endpoints_perform_no_storage_io() {
+    let counting = Arc::new(CountingStorage(std::sync::atomic::AtomicUsize::new(0)));
+    let (_, status) = crate::storage::test_runtime();
+    let provider: Arc<dyn crate::storage::provider::StorageProvider> = counting.clone();
+    let storage = crate::app::state::StorageRuntime::new(provider, status);
+    let config = operator_config(&[]);
+    for storage_state in [
+        StorageState::Ok,
+        StorageState::Degraded,
+        StorageState::Down,
+        StorageState::Unreachable,
+    ] {
+        let (_, health) = ready_health();
+        health.checks().set_storage(storage_state);
+        for path in PATHS {
+            for _ in 0..3 {
+                let request = Request::builder()
+                    .method(Method::GET)
+                    .uri(path)
+                    .body(Body::empty())
+                    .unwrap();
+                let response = app_with_storage(&health, &config, storage.clone())
+                    .oneshot(request)
+                    .await
+                    .unwrap();
+                assert_ne!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+            }
+        }
+    }
+    assert_eq!(counting.0.load(Ordering::SeqCst), 0);
+}
+
+#[test]
+fn unit_storage_signal_maps_to_closed_state() {
+    use crate::storage::health::{HealthSignal, StorageHealth};
+    let cases = [
+        (StorageHealth::Ok, false, StorageState::Ok, None),
+        (StorageHealth::Degraded, false, StorageState::Degraded, None),
+        (StorageHealth::Degraded, true, StorageState::Degraded, None),
+        (
+            StorageHealth::Down,
+            true,
+            StorageState::Unreachable,
+            Some(HealthReason::StorageUnreachable),
+        ),
+        (
+            StorageHealth::Down,
+            false,
+            StorageState::Down,
+            Some(HealthReason::StorageDown),
+        ),
+    ];
+    for (health, unreachable, state, reason) in cases {
+        let mapped = StorageState::from_signal(HealthSignal {
+            health,
+            unreachable,
+        });
+        assert_eq!(mapped, state);
+        assert_eq!(mapped.failure(), reason);
+    }
 }

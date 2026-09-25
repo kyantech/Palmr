@@ -317,6 +317,7 @@ fn app(
         Health::new(readiness),
         docs,
         crate::features::settings::SettingsHandle::documented_defaults(),
+        crate::app::state::StorageRuntime::for_test(),
     ));
     let edge = HttpEdge::new(
         clock,

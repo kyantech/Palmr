@@ -7,7 +7,7 @@ use super::profile::ProfileLimits;
 use super::{Operation, S3Provider};
 use crate::storage::caps::StorageCapabilities;
 use crate::storage::error::StorageError;
-use crate::storage::health::SelfTestReport;
+use crate::storage::health::{ProbeDepth, SelfTestReport};
 use crate::storage::key::ObjectKey;
 use crate::storage::provider::{
     ListCursor, ListPage, MultipartStorage, ObjectBody, ObjectStat, PresignStorage, PutHint,
@@ -29,6 +29,24 @@ pub const fn capabilities(limits: &ProfileLimits) -> StorageCapabilities {
     }
 }
 
+impl S3Provider {
+    pub(super) fn effective_caps(&self) -> &StorageCapabilities {
+        self.verified_caps.get().unwrap_or(&self.caps)
+    }
+
+    pub(super) fn relax_checksum_requirement(&self) -> bool {
+        if !self.caps.requires_checksum_headers {
+            return false;
+        }
+        let relaxed = StorageCapabilities {
+            requires_checksum_headers: false,
+            supports_presigned_put: true,
+            ..self.caps
+        };
+        self.verified_caps.set(relaxed).is_ok()
+    }
+}
+
 fn measured(expected: u64, stat: ObjectStat) -> Result<ObjectStat, StorageError> {
     if stat.size == expected {
         Ok(stat)
@@ -43,7 +61,7 @@ fn measured(expected: u64, stat: ObjectStat) -> Result<ObjectStat, StorageError>
 #[async_trait]
 impl StorageProvider for S3Provider {
     fn caps(&self) -> &StorageCapabilities {
-        &self.caps
+        self.effective_caps()
     }
 
     fn describe(&self) -> StorageDescriptor {
@@ -122,15 +140,15 @@ impl StorageProvider for S3Provider {
         self.list_objects_page(prefix, cursor, page_size).await
     }
 
-    async fn self_test(&self) -> Result<SelfTestReport, StorageError> {
-        Ok(SelfTestReport { passed: false })
+    async fn self_test(&self, depth: ProbeDepth) -> SelfTestReport {
+        self.run_self_test(depth).await
     }
 
     fn as_multipart(&self) -> Option<&dyn MultipartStorage> {
-        self.caps.supports_multipart.then_some(self)
+        self.effective_caps().supports_multipart.then_some(self)
     }
 
     fn as_presign(&self) -> Option<&dyn PresignStorage> {
-        self.caps.supports_presigned_get.then_some(self)
+        self.effective_caps().supports_presigned_get.then_some(self)
     }
 }

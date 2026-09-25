@@ -12,12 +12,14 @@ use super::object::{malformed, SizedBody};
 use super::profile::ProfileLimits;
 use super::{classify, classify_failure, Failure, Operation, S3Provider};
 use crate::storage::error::{not_found_is_deleted, StorageError};
+use crate::storage::health::ProbeKey;
 use crate::storage::key::ObjectKey;
 use crate::storage::provider::{
     ETag, ListCursor, MultipartHandle, MultipartStorage, MultipartUploadPage, ObjectBody,
     ObjectStat, PartPlanEntry, PendingMultipart, PresignedRequest, PutHint, UploadedPart,
     MAX_LIST_PAGE_SIZE,
 };
+use crate::storage::stored_key::StoredKey;
 
 const CURSOR_SEPARATOR: char = '\n';
 
@@ -28,29 +30,7 @@ impl MultipartStorage for S3Provider {
         key: &ObjectKey,
         hint: PutHint,
     ) -> Result<MultipartHandle, StorageError> {
-        const OP: Operation = Operation::CreateMultipartUpload;
-        if hint
-            .declared_len
-            .is_some_and(|len| len > self.limits().max_object)
-        {
-            return Err(invalid(
-                OP,
-                "the declared length exceeds the provider object ceiling",
-            ));
-        }
-        let output = self
-            .internal()
-            .create_multipart_upload()
-            .bucket(self.bucket())
-            .key(key.as_str())
-            .set_content_type(hint.content_type)
-            .send()
-            .await
-            .map_err(|error| classify(OP, error))?;
-        let upload_id = output
-            .upload_id()
-            .filter(|id| !id.is_empty())
-            .ok_or_else(|| malformed(OP, "the response carries no upload id"))?;
+        let upload_id = self.create_upload(key, hint).await?;
         Ok(MultipartHandle::new(key.clone(), upload_id))
     }
 
@@ -119,28 +99,8 @@ impl MultipartStorage for S3Provider {
         len: u64,
         body: ObjectBody,
     ) -> Result<UploadedPart, StorageError> {
-        const OP: Operation = Operation::UploadPart;
-        let limits = self.limits();
-        let number = provider_part_number(OP, part_number, &limits)?;
-        let content_length = provider_part_len(OP, len, &limits)?;
-        let sized = SizedBody::new(body, len, self.buffer_bytes);
-        let output = self
-            .internal()
-            .upload_part()
-            .bucket(self.bucket())
-            .key(handle.key().as_str())
-            .upload_id(handle.upload_id())
-            .part_number(number)
-            .content_length(content_length)
-            .body(ByteStream::new(SdkBody::from_body_1_x(sized)))
-            .send()
+        self.upload_part_body(UploadTarget::of(handle), part_number, len, body)
             .await
-            .map_err(|error| classify(OP, error))?;
-        Ok(UploadedPart {
-            part_number,
-            etag: required_etag(OP, output.e_tag())?,
-            size: len,
-        })
     }
 
     async fn upload_part_copy(
@@ -181,34 +141,11 @@ impl MultipartStorage for S3Provider {
         handle: &MultipartHandle,
         parts: &[UploadedPart],
     ) -> Result<ObjectStat, StorageError> {
-        const OP: Operation = Operation::CompleteMultipartUpload;
-        let manifest = completion_manifest(parts, &self.limits())?;
-        let output = self
-            .internal()
-            .complete_multipart_upload()
-            .bucket(self.bucket())
-            .key(handle.key().as_str())
-            .upload_id(handle.upload_id())
-            .multipart_upload(manifest)
-            .send()
-            .await
-            .map_err(|error| classify(OP, error))?;
-        required_etag(OP, output.e_tag())?;
-        self.head_object(handle.key()).await
+        self.complete_upload(UploadTarget::of(handle), parts).await
     }
 
     async fn abort_multipart(&self, handle: &MultipartHandle) -> Result<(), StorageError> {
-        let outcome = self
-            .internal()
-            .abort_multipart_upload()
-            .bucket(self.bucket())
-            .key(handle.key().as_str())
-            .upload_id(handle.upload_id())
-            .send()
-            .await
-            .map(|_| ())
-            .map_err(|error| classify(Operation::AbortMultipartUpload, error));
-        not_found_is_deleted(outcome)
+        self.abort_upload(UploadTarget::of(handle)).await
     }
 
     async fn list_multipart_uploads(
@@ -264,6 +201,132 @@ impl MultipartStorage for S3Provider {
             _ => None,
         };
         Ok(MultipartUploadPage { uploads, next })
+    }
+}
+
+#[derive(Clone, Copy)]
+pub(super) struct UploadTarget<'a> {
+    key: &'a dyn StoredKey,
+    upload_id: &'a str,
+}
+
+impl<'a> UploadTarget<'a> {
+    pub(super) fn of(handle: &'a MultipartHandle) -> Self {
+        Self {
+            key: handle.key(),
+            upload_id: handle.upload_id(),
+        }
+    }
+
+    pub(super) fn probe(key: &'a ProbeKey, upload_id: &'a str) -> Self {
+        Self { key, upload_id }
+    }
+
+    pub(super) fn key(&self) -> &'a dyn StoredKey {
+        self.key
+    }
+
+    pub(super) const fn upload_id(&self) -> &'a str {
+        self.upload_id
+    }
+}
+
+impl S3Provider {
+    pub(super) async fn create_upload(
+        &self,
+        key: &(impl StoredKey + ?Sized),
+        hint: PutHint,
+    ) -> Result<String, StorageError> {
+        const OP: Operation = Operation::CreateMultipartUpload;
+        if hint
+            .declared_len
+            .is_some_and(|len| len > self.limits().max_object)
+        {
+            return Err(invalid(
+                OP,
+                "the declared length exceeds the provider object ceiling",
+            ));
+        }
+        let output = self
+            .internal()
+            .create_multipart_upload()
+            .bucket(self.bucket())
+            .key(key.stored_key())
+            .set_content_type(hint.content_type)
+            .send()
+            .await
+            .map_err(|error| classify(OP, error))?;
+        output
+            .upload_id()
+            .filter(|id| !id.is_empty())
+            .map(str::to_owned)
+            .ok_or_else(|| malformed(OP, "the response carries no upload id"))
+    }
+
+    pub(super) async fn upload_part_body(
+        &self,
+        target: UploadTarget<'_>,
+        part_number: u32,
+        len: u64,
+        body: ObjectBody,
+    ) -> Result<UploadedPart, StorageError> {
+        const OP: Operation = Operation::UploadPart;
+        let limits = self.limits();
+        let number = provider_part_number(OP, part_number, &limits)?;
+        let content_length = provider_part_len(OP, len, &limits)?;
+        let sized = SizedBody::new(body, len, self.buffer_bytes);
+        let output = self
+            .internal()
+            .upload_part()
+            .bucket(self.bucket())
+            .key(target.key().stored_key())
+            .upload_id(target.upload_id())
+            .part_number(number)
+            .content_length(content_length)
+            .body(ByteStream::new(SdkBody::from_body_1_x(sized)))
+            .send()
+            .await
+            .map_err(|error| classify(OP, error))?;
+        Ok(UploadedPart {
+            part_number,
+            etag: required_etag(OP, output.e_tag())?,
+            size: len,
+        })
+    }
+
+    pub(super) async fn complete_upload(
+        &self,
+        target: UploadTarget<'_>,
+        parts: &[UploadedPart],
+    ) -> Result<ObjectStat, StorageError> {
+        const OP: Operation = Operation::CompleteMultipartUpload;
+        let manifest = completion_manifest(parts, &self.limits())?;
+        let output = self
+            .internal()
+            .complete_multipart_upload()
+            .bucket(self.bucket())
+            .key(target.key().stored_key())
+            .upload_id(target.upload_id())
+            .multipart_upload(manifest)
+            .send()
+            .await
+            .map_err(|error| classify(OP, error))?;
+        required_etag(OP, output.e_tag())?;
+        self.head_object(target.key()).await
+    }
+
+    pub(super) async fn abort_upload(&self, target: UploadTarget<'_>) -> Result<(), StorageError> {
+        let outcome = self
+            .internal()
+            .abort_multipart_upload()
+            .bucket(self.bucket())
+            .key(target.key().stored_key())
+            .upload_id(target.upload_id())
+            .send()
+            .await
+            .map(|_| ())
+            .map_err(|error| classify(Operation::AbortMultipartUpload, error));
+        not_found_is_deleted(outcome)
     }
 }
 

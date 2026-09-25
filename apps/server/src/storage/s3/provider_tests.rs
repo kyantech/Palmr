@@ -29,6 +29,7 @@ use super::object_tests::minio::MinioServer;
 use super::plan::{plan_parts, FileTooLargeReason, PartPlan, PartPlanError};
 use super::profile::{ProfileLimits, ProviderProfile, GIB, MIB, TIB};
 use super::provider::capabilities;
+use super::tests::test_base_url;
 use super::{Failure, Operation, S3Failure, S3Provider};
 use crate::config::{S3Config, S3Profile, S3TlsVerification, StorageConfig};
 use crate::domain::secret::Secret;
@@ -278,7 +279,7 @@ impl Scripted {
             .retry_config(RetryConfig::disabled())
             .build();
         let clients = clients.with_internal_client(aws_sdk_s3::Client::from_conf(transport));
-        S3Provider::new(clients, BUFFER_BYTES).unwrap()
+        S3Provider::new(clients, BUFFER_BYTES, &test_base_url()).unwrap()
     }
 
     fn provider(&self) -> S3Provider {
@@ -523,7 +524,8 @@ async fn unit_copy_threshold_5gib_boundary() {
             ))))
             .unwrap()
             .unwrap(),
-            BUFFER_BYTES
+            BUFFER_BYTES,
+            &test_base_url()
         )
         .unwrap()
         .single_copy_max,
@@ -915,8 +917,6 @@ async fn unit_s3_capabilities_follow_profile() {
                 local: None,
             }
         );
-        let report = provider.self_test().await.unwrap();
-        assert!(!report.passed);
         assert!(fake.calls().is_empty());
     }
 
@@ -1079,6 +1079,7 @@ async fn storage_contract(server: &MinioServer, force_path_style: bool) {
     let concrete = S3Provider::new(
         minio_clients(server, &bucket, force_path_style),
         BUFFER_BYTES,
+        &test_base_url(),
     )
     .unwrap();
     let provider: Arc<dyn StorageProvider> = Arc::new(concrete);
@@ -1230,6 +1231,7 @@ async fn storage_contract(server: &MinioServer, force_path_style: bool) {
         S3Provider::new(
             minio_clients(server, &bucket, force_path_style),
             BUFFER_BYTES,
+            &test_base_url(),
         )
         .unwrap()
         .with_single_copy_max(MIB),
@@ -1413,7 +1415,7 @@ async fn copy_orchestration(server: &MinioServer, force_path_style: bool) {
         .http_client(SharedHttpClient::new(tap.clone()))
         .build();
     let clients = clients.with_internal_client(aws_sdk_s3::Client::from_conf(config));
-    let s3 = S3Provider::new(clients, BUFFER_BYTES)
+    let s3 = S3Provider::new(clients, BUFFER_BYTES, &test_base_url())
         .unwrap()
         .with_single_copy_max(MIB);
 

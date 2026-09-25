@@ -23,7 +23,7 @@ use crate::storage::caps::{
     CopyStrategy, DownloadDataPlane, PartUpload, StorageCapabilities, UploadDataPlane,
 };
 use crate::storage::error::StorageError;
-use crate::storage::health::SelfTestReport;
+use crate::storage::health::{ProbeDepth, SelfTestReport, SelfTestResult};
 use crate::storage::key::{KeyNamespace, ObjectKey};
 use crate::storage::ProviderKind;
 
@@ -38,12 +38,14 @@ const BRANCH_FIELDS: [&str; 4] = [
     "supports_server_side_copy",
 ];
 
-const PROVIDER_BRANCH_TOKENS: [&str; 5] = [
+const PROVIDER_BRANCH_TOKENS: [&str; 7] = [
     "ProviderKind",
     "StorageConfig::",
     "PALMR_STORAGE_PROVIDER",
     "supports_presigned_put",
     "S3_DEFAULT",
+    "LocalProvider",
+    "S3Provider",
 ];
 
 const PROVIDER_CONFIG_READERS: [(&str, &str); 1] = [(
@@ -180,8 +182,15 @@ impl StorageProvider for S3Shaped {
         Ok(ListPage { entries, next })
     }
 
-    async fn self_test(&self) -> Result<SelfTestReport, StorageError> {
-        Ok(SelfTestReport { passed: true })
+    async fn self_test(&self, depth: ProbeDepth) -> SelfTestReport {
+        SelfTestReport {
+            ran_at: at(),
+            depth,
+            provider: ProviderKind::S3,
+            duration: Duration::ZERO,
+            checks: Vec::new(),
+            facts: Vec::new(),
+        }
     }
 
     fn as_multipart(&self) -> Option<&dyn MultipartStorage> {
@@ -369,8 +378,8 @@ impl StorageProvider for LocalShaped {
         self.0.list_page(prefix, cursor, page_size).await
     }
 
-    async fn self_test(&self) -> Result<SelfTestReport, StorageError> {
-        self.0.self_test().await
+    async fn self_test(&self, depth: ProbeDepth) -> SelfTestReport {
+        self.0.self_test(depth).await
     }
 }
 
@@ -695,7 +704,10 @@ async fn exercise_core_contract(provider: &dyn StorageProvider) {
         .unwrap();
     assert!(last.next.is_none());
 
-    assert!(provider.self_test().await.unwrap().passed);
+    assert_eq!(
+        provider.self_test(ProbeDepth::Light).await.result(),
+        SelfTestResult::Passed
+    );
 }
 
 async fn exercise_capability_contract(provider: &dyn StorageProvider) {

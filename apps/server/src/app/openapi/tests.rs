@@ -89,6 +89,7 @@ fn app(
         Health::new(readiness),
         docs,
         crate::features::settings::SettingsHandle::documented_defaults(),
+        crate::app::state::StorageRuntime::for_test(),
     ));
     let edge = HttpEdge::new(
         clock,
@@ -381,6 +382,7 @@ async fn svc_docs_without_nonce_returns_the_error_envelope() {
         Health::new(Readiness::new()),
         docs,
         crate::features::settings::SettingsHandle::documented_defaults(),
+        crate::app::state::StorageRuntime::for_test(),
     ));
 
     let fetched = send(router, get(DOCS_PATH, &[])).await;

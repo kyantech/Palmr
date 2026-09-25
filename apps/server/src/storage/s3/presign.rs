@@ -4,9 +4,10 @@ use async_trait::async_trait;
 use aws_sdk_s3::presigning::{PresignedRequest as SignedByProvider, PresigningConfig};
 use http::{HeaderMap, HeaderValue, Method};
 use time::OffsetDateTime;
-use url::Url;
+use url::{Origin, Url};
 
-use super::multipart::{invalid, provider_part_len, provider_part_number};
+use super::client::S3Clients;
+use super::multipart::{invalid, provider_part_len, provider_part_number, UploadTarget};
 use super::object::malformed;
 use super::{classify, Operation, S3Provider};
 use crate::storage::error::StorageError;
@@ -14,6 +15,7 @@ use crate::storage::key::ObjectKey;
 use crate::storage::provider::{
     GrantContext, MultipartHandle, PartPlanEntry, PresignStorage, PresignedRequest,
 };
+use crate::storage::stored_key::StoredKey;
 
 pub const MAX_PART_URLS_PER_CALL: usize = 16;
 pub const MAX_PART_URL_TTL: Duration = Duration::from_secs(15 * 60);
@@ -59,14 +61,25 @@ impl S3Provider {
         ttl: Duration,
         now: OffsetDateTime,
     ) -> Result<Vec<PresignedRequest>, StorageError> {
-        const OP: Operation = Operation::UploadPart;
-        let limits = self.limits();
-        if limits.requires_part_checksums {
+        if self.effective_caps().requires_checksum_headers {
             return Err(invalid(
-                OP,
+                Operation::UploadPart,
                 "the provider profile requires server-proxied parts",
             ));
         }
+        self.sign_parts(UploadTarget::of(handle), parts, ttl, now)
+            .await
+    }
+
+    pub(super) async fn sign_parts(
+        &self,
+        target: UploadTarget<'_>,
+        parts: &[PartPlanEntry],
+        ttl: Duration,
+        now: OffsetDateTime,
+    ) -> Result<Vec<PresignedRequest>, StorageError> {
+        const OP: Operation = Operation::UploadPart;
+        let limits = self.limits();
         if parts.len() > MAX_PART_URLS_PER_CALL {
             return Err(invalid(
                 OP,
@@ -82,8 +95,8 @@ impl S3Provider {
             let request = signer
                 .upload_part()
                 .bucket(self.bucket())
-                .key(handle.key().as_str())
-                .upload_id(handle.upload_id())
+                .key(target.key().stored_key())
+                .upload_id(target.upload_id())
                 .part_number(number)
                 .presigned(window.config(OP)?)
                 .await
@@ -95,7 +108,7 @@ impl S3Provider {
 
     pub(super) async fn sign_get(
         &self,
-        key: &ObjectKey,
+        key: &(impl StoredKey + ?Sized),
         ttl: Duration,
         disposition: &HeaderValue,
         content_type: &str,
@@ -117,7 +130,7 @@ impl S3Provider {
             .signing_client()
             .get_object()
             .bucket(self.bucket())
-            .key(key.as_str())
+            .key(key.stored_key())
             .response_content_disposition(disposition)
             .response_content_type(content_type)
             .presigned(window.config(OP)?)
@@ -244,4 +257,23 @@ impl SigningWindow {
 
 fn pinnable(value: &str) -> bool {
     !value.is_empty() && value.bytes().all(|byte| (b' '..=b'~').contains(&byte))
+}
+
+pub(super) fn signed_origin(clients: &S3Clients) -> Origin {
+    let endpoint = clients.public_signer().endpoint();
+    let shared = clients.shared();
+    if shared.force_path_style() {
+        return endpoint.origin();
+    }
+    let mut bucket_host = endpoint.clone();
+    match endpoint.host_str() {
+        Some(host)
+            if bucket_host
+                .set_host(Some(&format!("{}.{host}", shared.bucket())))
+                .is_ok() =>
+        {
+            bucket_host.origin()
+        }
+        _ => endpoint.origin(),
+    }
 }

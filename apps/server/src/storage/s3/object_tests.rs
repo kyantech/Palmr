@@ -14,6 +14,7 @@ use super::client::S3Clients;
 use super::copy::copy_source;
 use super::list::max_keys;
 use super::object::{ContentRange, RequestedRange, SizedBody, SourceBodyError};
+use super::tests::test_base_url;
 use super::{classify_failure, Failure, Operation, S3Provider};
 use crate::config::{S3Config, S3Profile, S3TlsVerification, StorageConfig};
 use crate::domain::secret::Secret;
@@ -361,7 +362,7 @@ fn provider_for(
     let clients = S3Clients::build(&StorageConfig::S3(Box::new(config)))
         .unwrap()
         .unwrap();
-    S3Provider::new(clients, BUFFER_BYTES).unwrap()
+    S3Provider::new(clients, BUFFER_BYTES, &test_base_url()).unwrap()
 }
 
 fn provider(server: &MinioServer, bucket: &str, force_path_style: bool) -> S3Provider {

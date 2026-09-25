@@ -16,18 +16,20 @@ use tokio::net::TcpListener;
 use tokio::signal::unix::{signal, Signal, SignalKind};
 use tokio::sync::oneshot;
 use tokio::task::JoinHandle;
+use tokio_util::sync::CancellationToken;
 
+use self::data_dir::STARTUP_DATA_DIR_NOT_WRITABLE;
 use self::data_dir::{
     apply_process_umask, CrossDevice, DataDir, DataDirError, STARTUP_UPLOADS_STORAGE_CROSS_DEVICE,
 };
 use self::database::{log_database_closed, Database};
-use super::health::Health;
+use super::health::{Health, StorageState};
 use super::openapi::{ApiDocs, ApiDocsError};
 use super::reconcile::{ReconcileContext, ReconcileRegistry, ReconcileReport};
 use super::router::{
     application_routes, serve_unmatched, with_middleware, HttpEdge, RouteBuildError,
 };
-use super::state::AppState;
+use super::state::{AppState, StorageRuntime};
 use crate::config::{
     ConfigError, ConfigWarning, EnvironmentSource, LoadedConfig, OperatorConfig,
     STARTUP_BASE_URL_DEFAULTED,
@@ -50,26 +52,15 @@ use crate::infra::jobs::{
 };
 use crate::infra::telemetry::{self, write_startup_failure, TelemetryInitError};
 use crate::storage;
+use crate::storage::health::{Schedule, StorageMonitor, HEALTH_CHECK_PERIOD};
+use crate::storage::provider::StorageProvider;
+use crate::storage::s3::config::STORAGE_CONFIG_INVALID;
+use crate::storage::ProviderBuildError;
 
 pub const STARTUP_BIND_FAILED: &str = "STARTUP_BIND_FAILED";
 
 const EX_CONFIG: u8 = 78;
 const EX_FAILURE: u8 = 1;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum FutureStartupStep {
-    Storage,
-}
-
-impl FutureStartupStep {
-    pub const IN_ORDER: [Self; 1] = [Self::Storage];
-
-    pub const fn as_str(self) -> &'static str {
-        match self {
-            Self::Storage => "storage",
-        }
-    }
-}
 
 #[derive(Debug)]
 pub enum StartupError {
@@ -81,6 +72,7 @@ pub enum StartupError {
     InstanceLock(InstanceLockError),
     Migration(MigrationError),
     Settings(SettingsError),
+    Storage(ProviderBuildError),
     Bind(BindError),
     Router(RouteBuildError),
     Shell(ShellInitError),
@@ -98,6 +90,7 @@ impl StartupError {
             Self::InstanceLock(error) => Some(error.code()),
             Self::Migration(error) => Some(error.code()),
             Self::Settings(error) => Some(error.code()),
+            Self::Storage(error) => Some(storage_build_code(error)),
             Self::Bind(error) => Some(error.code()),
             Self::Router(_) | Self::Shell(_) | Self::ApiDocs(_) => None,
         }
@@ -110,7 +103,8 @@ impl StartupError {
             | Self::Database(_)
             | Self::InstanceLock(_)
             | Self::Migration(_)
-            | Self::Settings(_) => EX_CONFIG,
+            | Self::Settings(_)
+            | Self::Storage(_) => EX_CONFIG,
             Self::Config(_)
             | Self::Tracing(_)
             | Self::Bind(_)
@@ -159,6 +153,11 @@ impl StartupError {
             Self::Settings(error) => {
                 tracing::error!(startup_error = error.code(), kind = error.kind(), "{self}")
             }
+            Self::Storage(error) => tracing::error!(
+                startup_error = storage_build_code(error),
+                provider = error.provider().as_str(),
+                "{self}"
+            ),
             Self::Bind(error) => tracing::error!(
                 startup_error = error.code(),
                 address = %error.address,
@@ -186,6 +185,12 @@ impl fmt::Display for StartupError {
             Self::InstanceLock(error) => error.fmt(f),
             Self::Migration(error) => error.fmt(f),
             Self::Settings(error) => error.fmt(f),
+            Self::Storage(error) => match error {
+                ProviderBuildError::S3Setup(_) => error.fmt(f),
+                ProviderBuildError::LocalRoot(_) | ProviderBuildError::S3Build(_) => {
+                    write!(f, "{}: {error}", storage_build_code(error))
+                }
+            },
             Self::Bind(error) => error.fmt(f),
             Self::Router(error) => write!(f, "internal startup failure: {error}"),
             Self::Shell(error) => write!(f, "internal startup failure: {error}"),
@@ -241,6 +246,20 @@ impl From<MigrationError> for StartupError {
 impl From<SettingsError> for StartupError {
     fn from(error: SettingsError) -> Self {
         Self::Settings(error)
+    }
+}
+
+impl From<ProviderBuildError> for StartupError {
+    fn from(error: ProviderBuildError) -> Self {
+        Self::Storage(error)
+    }
+}
+
+const fn storage_build_code(error: &ProviderBuildError) -> &'static str {
+    match error {
+        ProviderBuildError::LocalRoot(_) => STARTUP_DATA_DIR_NOT_WRITABLE,
+        ProviderBuildError::S3Setup(error) => error.code(),
+        ProviderBuildError::S3Build(_) => STORAGE_CONFIG_INVALID,
     }
 }
 
@@ -357,6 +376,7 @@ pub struct Server {
 pub struct Application {
     server: Server,
     readiness: Readiness,
+    storage_health: StorageHealthTask,
     jobs: JobRuntime,
     database: Database,
     instance: InstanceLock,
@@ -377,7 +397,7 @@ impl Application {
         clock: Arc<dyn Clock>,
         migrator: &Migrator,
     ) -> Result<Self, StartupError> {
-        let initialized = initialize(config, clock, migrator).await?;
+        let initialized = initialize(config, clock, migrator, production_schedule()).await?;
         let address = SocketAddr::new(config.host, config.port);
         match bind(address).await {
             Ok(listener) => Self::from_listener(listener, initialized).await,
@@ -390,7 +410,18 @@ impl Application {
         config: &OperatorConfig,
         clock: Arc<dyn Clock>,
     ) -> Result<Self, StartupError> {
-        let initialized = initialize(config, clock, &MIGRATOR).await?;
+        let initialized = initialize(config, clock, &MIGRATOR, production_schedule()).await?;
+        Self::from_listener(listener, initialized).await
+    }
+
+    #[cfg(test)]
+    pub(crate) async fn start_with_schedule(
+        listener: TcpListener,
+        config: &OperatorConfig,
+        clock: Arc<dyn Clock>,
+        schedule: Schedule,
+    ) -> Result<Self, StartupError> {
+        let initialized = initialize(config, clock, &MIGRATOR, schedule).await?;
         Self::from_listener(listener, initialized).await
     }
 
@@ -419,6 +450,7 @@ impl Application {
         Ok(Self {
             server,
             readiness: initialized.readiness,
+            storage_health: initialized.storage_health,
             jobs: initialized.jobs,
             database: initialized.database,
             instance: initialized.instance,
@@ -435,6 +467,7 @@ impl Application {
         let Self {
             server,
             readiness: _,
+            storage_health,
             jobs,
             database,
             instance,
@@ -442,7 +475,11 @@ impl Application {
             _instance_key: instance_key,
         } = self;
         jobs.stop_claiming();
-        let (drain, jobs_drain) = tokio::join!(server.shutdown(grace), jobs.shutdown(grace));
+        let (drain, jobs_drain, ()) = tokio::join!(
+            server.shutdown(grace),
+            jobs.shutdown(grace),
+            storage_health.stop()
+        );
         log_jobs_stopped(jobs_drain);
         log_database_closed(&database.close().await);
         release_instance_lock(instance);
@@ -454,6 +491,7 @@ impl Application {
 struct InitializedApplication {
     router: axum::Router,
     readiness: Readiness,
+    storage_health: StorageHealthTask,
     jobs: JobRuntime,
     database: Database,
     instance: InstanceLock,
@@ -463,9 +501,43 @@ struct InitializedApplication {
 
 impl InitializedApplication {
     async fn abandon(self, error: StartupError) -> StartupError {
+        self.storage_health.stop().await;
         log_jobs_stopped(self.jobs.shutdown(Duration::ZERO).await);
         abandon_startup(self.database, self.instance, error).await
     }
+}
+
+pub(crate) struct StorageHealthTask {
+    cancel: CancellationToken,
+    task: Option<JoinHandle<()>>,
+}
+
+impl StorageHealthTask {
+    fn start(monitor: &Arc<StorageMonitor>, schedule: Schedule) -> Self {
+        let cancel = CancellationToken::new();
+        let task = monitor.spawn(schedule, cancel.clone());
+        Self {
+            cancel,
+            task: Some(task),
+        }
+    }
+
+    async fn stop(mut self) {
+        self.cancel.cancel();
+        if let Some(task) = self.task.take() {
+            let _ = task.await;
+        }
+    }
+}
+
+impl Drop for StorageHealthTask {
+    fn drop(&mut self) {
+        self.cancel.cancel();
+    }
+}
+
+const fn production_schedule() -> Schedule {
+    Schedule::Every(HEALTH_CHECK_PERIOD)
 }
 
 impl Server {
@@ -577,6 +649,7 @@ pub async fn run(source: &EnvironmentSource, mut signals: ShutdownSignals) -> Ex
         ended = &mut application.server.task => {
             application.readiness.mark_not_ready();
             tracing::error!(outcome = ?ended.map(|result| result.map_err(|error| error.kind())), "the HTTP server stopped unexpectedly");
+            application.storage_health.stop().await;
             log_jobs_stopped(application.jobs.shutdown(config.shutdown_grace).await);
             log_database_closed(&application.database.close().await);
             release_instance_lock(application.instance);
@@ -620,6 +693,7 @@ async fn initialize(
     config: &OperatorConfig,
     clock: Arc<dyn Clock>,
     migrator: &Migrator,
+    schedule: Schedule,
 ) -> Result<InitializedApplication, StartupError> {
     let (data_dir, instance_key) = tokio::task::block_in_place(|| prepare_data(&config.data_dir))?;
     let readiness = Readiness::new();
@@ -650,12 +724,16 @@ async fn initialize(
     };
     tracing::debug!("settings snapshot loaded");
     let email_keys = settings.keys();
-    for step in FutureStartupStep::IN_ORDER {
-        tracing::debug!(
-            step = step.as_str(),
-            "startup step reserved for a later release"
-        );
-    }
+    let storage = match storage::build_provider(config, Arc::clone(&clock)) {
+        Ok(storage) => storage,
+        Err(error) => return Err(abandon_startup(database, instance, error.into()).await),
+    };
+    let monitor = storage_monitor(&storage, &clock, &health);
+    monitor
+        .startup(Some(database.pools().reader().clone()))
+        .await;
+    let storage_health = StorageHealthTask::start(&monitor, schedule);
+    let storage = StorageRuntime::new(storage, monitor.status());
     let report = ReconcileRegistry::production()
         .run(&ReconcileContext::new(
             database.pools().clone(),
@@ -668,10 +746,11 @@ async fn initialize(
     let jobs = start_jobs(config, &database, &clock, &instance, &settings, &email_keys);
     let router = match StaticAssets::built(&config.base_url)
         .map_err(StartupError::from)
-        .and_then(|assets| composed_router(config, health, assets, clock, settings))
+        .and_then(|assets| composed_router(config, health, assets, clock, settings, storage))
     {
         Ok(router) => router,
         Err(error) => {
+            storage_health.stop().await;
             log_jobs_stopped(jobs.shutdown(Duration::ZERO).await);
             return Err(abandon_startup(database, instance, error).await);
         }
@@ -679,12 +758,30 @@ async fn initialize(
     Ok(InitializedApplication {
         router,
         readiness,
+        storage_health,
         jobs,
         database,
         instance,
         data_dir,
         instance_key,
     })
+}
+
+fn storage_monitor(
+    storage: &Arc<dyn StorageProvider>,
+    clock: &Arc<dyn Clock>,
+    health: &Health,
+) -> Arc<StorageMonitor> {
+    let health = health.clone();
+    Arc::new(StorageMonitor::new(
+        Arc::clone(storage),
+        Arc::clone(clock),
+        Arc::new(move |signal| {
+            health
+                .checks()
+                .set_storage(StorageState::from_signal(signal));
+        }),
+    ))
 }
 
 fn start_jobs(
@@ -804,12 +901,16 @@ pub fn application_router(
     clock: Arc<dyn Clock>,
 ) -> Result<axum::Router, StartupError> {
     let assets = StaticAssets::built(&config.base_url)?;
+    let health = Health::new(readiness.clone());
+    let storage = storage::build_provider(config, Arc::clone(&clock))?;
+    let status = storage_monitor(&storage, &clock, &health).status();
     composed_router(
         config,
-        Health::new(readiness.clone()),
+        health,
         assets,
         clock,
         SettingsHandle::documented_defaults(),
+        StorageRuntime::new(storage, status),
     )
 }
 
@@ -819,6 +920,7 @@ fn composed_router(
     assets: StaticAssets,
     clock: Arc<dyn Clock>,
     settings: SettingsHandle,
+    storage: StorageRuntime,
 ) -> Result<axum::Router, StartupError> {
     let assembled = application_routes().build().map_err(StartupError::Router)?;
     let api_docs =
@@ -828,6 +930,7 @@ fn composed_router(
         health,
         api_docs,
         settings,
+        storage,
     ));
     Ok(edge_router(routes, config, clock))
 }
@@ -913,5 +1016,7 @@ fn log_startup_completed(address: SocketAddr, config: &OperatorConfig, elapsed: 
 
 #[cfg(test)]
 mod migration_tests;
+#[cfg(test)]
+mod storage_tests;
 #[cfg(test)]
 mod tests;

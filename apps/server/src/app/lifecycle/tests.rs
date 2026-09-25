@@ -26,8 +26,8 @@ use super::data_dir::{
 };
 use super::{
     bind, composed_router, edge_router, log_config_warnings, log_startup_completed, prepare_data,
-    stop_accepting, warn_cross_device, BindError, Drain, FutureStartupStep, Readiness, Server,
-    ShutdownSignal, ShutdownSignals, StartupError, EX_FAILURE, STARTUP_BIND_FAILED,
+    stop_accepting, warn_cross_device, BindError, Drain, Readiness, Server, ShutdownSignal,
+    ShutdownSignals, StartupError, EX_FAILURE, STARTUP_BIND_FAILED,
 };
 use crate::app::auth_class::AuthClass;
 use crate::app::health::{Health, VERSION};
@@ -376,6 +376,7 @@ async fn it_startup_listener_serves_application_stack() {
         assets,
         Arc::new(TestClock::new(datetime!(2026-09-23 12:00 UTC))),
         crate::features::settings::SettingsHandle::documented_defaults(),
+        crate::app::state::StorageRuntime::for_test(),
     )
     .unwrap();
     let listener = bind(loopback()).await.unwrap();
@@ -479,6 +480,7 @@ async fn it_health_ready_false_during_shutdown() {
             Health::new(readiness.clone()),
             docs,
             crate::features::settings::SettingsHandle::documented_defaults(),
+            crate::app::state::StorageRuntime::for_test(),
         ))
         .layer(from_fn_with_state(
             Gate {
@@ -771,13 +773,4 @@ fn unit_startup_error_codes_and_exit_codes() {
     assert!(router_error
         .to_string()
         .starts_with("internal startup failure: "));
-}
-
-#[test]
-fn unit_future_lifecycle_steps_are_reserved_in_order() {
-    let startup: Vec<&str> = FutureStartupStep::IN_ORDER
-        .iter()
-        .map(|step| step.as_str())
-        .collect();
-    assert_eq!(startup, ["storage"]);
 }

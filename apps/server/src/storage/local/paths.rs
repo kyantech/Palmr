@@ -4,9 +4,11 @@ use std::os::fd::{AsFd, BorrowedFd, OwnedFd};
 
 use rustix::fs::{Mode, OFlags};
 use rustix::io::Errno;
+use uuid::Uuid;
 
 use super::{classify, sync_directory, FsOps, Step, DIRECTORY_MODE};
 use crate::storage::error::StorageError;
+use crate::storage::health::{ProbeKey, PROBE_DIRS};
 use crate::storage::key::{InvalidKey, KeyNamespace, ObjectKey};
 
 const BRANDING_PREFIX: &str = "branding/";
@@ -37,6 +39,10 @@ impl UploadId {
 
     pub fn as_str(&self) -> &str {
         &self.0
+    }
+
+    pub(super) fn generate() -> Self {
+        Self(Uuid::now_v7().simple().to_string())
     }
 
     pub(super) fn temp_name(&self) -> String {
@@ -94,6 +100,19 @@ impl<'k> ObjectLocation<'k> {
             dirs,
             depth,
             leaf,
+        }
+    }
+
+    pub fn probe(key: &'k ProbeKey) -> Self {
+        let mut dirs = [""; MAX_KEY_DEPTH];
+        for (slot, segment) in dirs.iter_mut().zip(PROBE_DIRS) {
+            *slot = segment;
+        }
+        Self {
+            root: Root::Storage,
+            dirs,
+            depth: PROBE_DIRS.len(),
+            leaf: key.oid(),
         }
     }
 

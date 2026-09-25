@@ -15,18 +15,21 @@ use tokio_util::io::ReaderStream;
 
 use super::{classify, classify_failure, is_range_not_satisfiable, Failure, Operation, S3Provider};
 use crate::storage::error::StorageError;
-use crate::storage::key::ObjectKey;
 use crate::storage::provider::{ETag, ObjectBody, ObjectStat};
+use crate::storage::stored_key::StoredKey;
 
 const MAX_RANGE_END: u64 = i64::MAX.unsigned_abs();
 
 impl S3Provider {
-    pub(crate) async fn head_object(&self, key: &ObjectKey) -> Result<ObjectStat, StorageError> {
+    pub(crate) async fn head_object(
+        &self,
+        key: &(impl StoredKey + ?Sized),
+    ) -> Result<ObjectStat, StorageError> {
         let output = self
             .internal()
             .head_object()
             .bucket(self.bucket())
-            .key(key.as_str())
+            .key(key.stored_key())
             .send()
             .await
             .map_err(|error| classify(Operation::HeadObject, error))?;
@@ -39,7 +42,10 @@ impl S3Provider {
         )
     }
 
-    pub(crate) async fn object_exists(&self, key: &ObjectKey) -> Result<bool, StorageError> {
+    pub(crate) async fn object_exists(
+        &self,
+        key: &(impl StoredKey + ?Sized),
+    ) -> Result<bool, StorageError> {
         match self.head_object(key).await {
             Ok(_) => Ok(true),
             Err(StorageError::NotFound) => Ok(false),
@@ -49,13 +55,13 @@ impl S3Provider {
 
     pub(crate) async fn get_object(
         &self,
-        key: &ObjectKey,
+        key: &(impl StoredKey + ?Sized),
     ) -> Result<(ObjectStat, ObjectBody), StorageError> {
         let output = self
             .internal()
             .get_object()
             .bucket(self.bucket())
-            .key(key.as_str())
+            .key(key.stored_key())
             .send()
             .await
             .map_err(|error| classify(Operation::GetObject, error))?;
@@ -71,7 +77,7 @@ impl S3Provider {
 
     pub(crate) async fn get_object_range(
         &self,
-        key: &ObjectKey,
+        key: &(impl StoredKey + ?Sized),
         start: u64,
         len: u64,
     ) -> Result<(ObjectStat, ObjectBody), StorageError> {
@@ -90,7 +96,7 @@ impl S3Provider {
             .internal()
             .get_object()
             .bucket(self.bucket())
-            .key(key.as_str())
+            .key(key.stored_key())
             .range(requested.header())
             .send()
             .await
@@ -135,7 +141,7 @@ impl S3Provider {
 
     pub(crate) async fn put_object_single(
         &self,
-        key: &ObjectKey,
+        key: &(impl StoredKey + ?Sized),
         body: ObjectBody,
         len: u64,
         content_type: Option<&str>,
@@ -150,7 +156,7 @@ impl S3Provider {
         self.internal()
             .put_object()
             .bucket(self.bucket())
-            .key(key.as_str())
+            .key(key.stored_key())
             .content_length(content_length)
             .set_content_type(content_type.map(str::to_owned))
             .body(ByteStream::new(SdkBody::from_body_1_x(sized)))
@@ -160,12 +166,15 @@ impl S3Provider {
         self.head_object(key).await
     }
 
-    pub(crate) async fn delete_object(&self, key: &ObjectKey) -> Result<(), StorageError> {
+    pub(crate) async fn delete_object(
+        &self,
+        key: &(impl StoredKey + ?Sized),
+    ) -> Result<(), StorageError> {
         match self
             .internal()
             .delete_object()
             .bucket(self.bucket())
-            .key(key.as_str())
+            .key(key.stored_key())
             .send()
             .await
             .map_err(|error| classify(Operation::DeleteObject, error))

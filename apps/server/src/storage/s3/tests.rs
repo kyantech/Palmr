@@ -60,6 +60,10 @@ const PRODUCTION_SOURCES: [&str; 5] = [
     include_str!("tls.rs"),
 ];
 
+pub(super) fn test_base_url() -> Url {
+    Url::parse("https://palmr.example.test").unwrap()
+}
+
 fn vars(extra: &[(&str, &str)]) -> Vec<(String, String)> {
     let mut vars: Vec<(String, String)> = BASE
         .iter()

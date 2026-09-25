@@ -7,20 +7,24 @@ mod multipart;
 mod object;
 pub mod plan;
 mod presign;
+mod probe_http;
 pub mod profile;
 mod provider;
+mod selftest;
 pub mod tls;
 
 use std::error::Error;
 use std::fmt;
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 
 use aws_sdk_s3::error::{ProvideErrorMetadata, SdkError};
 use aws_smithy_runtime_api::client::orchestrator::HttpResponse;
+use url::Url;
 
 use self::client::S3Clients;
 use self::copy::SINGLE_COPY_MAX;
 use self::object::SourceBodyError;
+use self::probe_http::PublicProbe;
 use self::profile::ProfileLimits;
 use self::provider::capabilities;
 use super::caps::StorageCapabilities;
@@ -33,13 +37,20 @@ pub struct S3Provider {
     clients: S3Clients,
     limits: ProfileLimits,
     caps: StorageCapabilities,
+    verified_caps: OnceLock<StorageCapabilities>,
     single_copy_max: u64,
     buffer_bytes: usize,
     clock: Arc<dyn Clock>,
+    browser_origin: String,
+    public_probe: PublicProbe,
 }
 
 impl S3Provider {
-    pub fn new(clients: S3Clients, buffer_bytes: u32) -> Result<Self, StorageError> {
+    pub fn new(
+        clients: S3Clients,
+        buffer_bytes: u32,
+        base_url: &Url,
+    ) -> Result<Self, StorageError> {
         let buffer_bytes = usize::try_from(buffer_bytes)
             .ok()
             .filter(|bytes| *bytes > 0)
@@ -47,19 +58,22 @@ impl S3Provider {
                 StorageError::Config("the upload buffer must hold at least one byte".to_owned())
             })?;
         let limits = clients.shared().profile().limits();
+        let public_probe = PublicProbe::new(&clients);
         Ok(Self {
             clients,
             limits,
             caps: capabilities(&limits),
+            verified_caps: OnceLock::new(),
             single_copy_max: SINGLE_COPY_MAX,
             buffer_bytes,
             clock: Arc::new(SystemClock),
+            browser_origin: base_url.origin().ascii_serialization(),
+            public_probe,
         })
     }
 
-    #[cfg(test)]
     #[must_use]
-    pub(crate) fn with_clock(mut self, clock: Arc<dyn Clock>) -> Self {
+    pub fn with_clock(mut self, clock: Arc<dyn Clock>) -> Self {
         self.clock = clock;
         self
     }
@@ -69,6 +83,7 @@ impl S3Provider {
     pub(crate) fn with_limits(mut self, limits: ProfileLimits) -> Self {
         self.limits = limits;
         self.caps = capabilities(&limits);
+        self.verified_caps = OnceLock::new();
         self
     }
 
@@ -103,6 +118,7 @@ impl fmt::Debug for S3Provider {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Operation {
+    HeadBucket,
     HeadObject,
     GetObject,
     PutObject,
@@ -121,6 +137,7 @@ pub(crate) enum Operation {
 impl Operation {
     const fn as_str(self) -> &'static str {
         match self {
+            Self::HeadBucket => "HeadBucket",
             Self::HeadObject => "HeadObject",
             Self::GetObject => "GetObject",
             Self::PutObject => "PutObject",
@@ -277,6 +294,20 @@ where
     }
 }
 
+pub(crate) fn service_code(error: &StorageError) -> Option<&str> {
+    let failure = match error {
+        StorageError::S3(source) => source.downcast_ref::<S3Failure>(),
+        StorageError::ProviderUnavailable(retryable) => {
+            Error::source(retryable).and_then(|source| source.downcast_ref::<S3Failure>())
+        }
+        _ => None,
+    }?;
+    match &failure.failure {
+        Failure::Service { code, .. } => code.as_deref(),
+        _ => None,
+    }
+}
+
 fn source_body_error(error: &(dyn Error + 'static)) -> Option<std::io::Error> {
     let mut current = Some(error);
     while let Some(error) = current {
@@ -312,3 +343,9 @@ mod presign_tests;
 
 #[cfg(test)]
 mod provider_tests;
+
+#[cfg(test)]
+pub(crate) mod fake_server;
+
+#[cfg(test)]
+mod selftest_tests;

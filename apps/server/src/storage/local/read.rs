@@ -17,22 +17,15 @@ const READ_CHUNK_BYTES: usize = 256 * 1024;
 
 impl LocalProvider {
     pub fn stat(&self, key: &ObjectKey) -> Result<ObjectStat, StorageError> {
-        let location = ObjectLocation::of(key);
-        let leaf_dir = self.leaf_dir(&location)?;
-        stat_regular(leaf_dir.as_fd(), location.leaf)
+        self.stat_at(&ObjectLocation::of(key))
     }
 
     pub fn exists(&self, key: &ObjectKey) -> Result<bool, StorageError> {
-        match self.stat(key) {
-            Ok(_) => Ok(true),
-            Err(StorageError::NotFound) => Ok(false),
-            Err(error) => Err(error),
-        }
+        self.exists_at(&ObjectLocation::of(key))
     }
 
     pub fn open_read(&self, key: &ObjectKey) -> Result<(ObjectStat, ObjectBody), StorageError> {
-        let (stat, file) = self.open_file(key)?;
-        Ok((stat, body(file, None)))
+        self.open_read_at(&ObjectLocation::of(key))
     }
 
     pub fn open_range(
@@ -41,7 +34,40 @@ impl LocalProvider {
         start: u64,
         len: u64,
     ) -> Result<(ObjectStat, ObjectBody), StorageError> {
-        let (stat, file) = self.open_file(key)?;
+        self.open_range_at(&ObjectLocation::of(key), start, len)
+    }
+
+    pub(super) fn stat_at(
+        &self,
+        location: &ObjectLocation<'_>,
+    ) -> Result<ObjectStat, StorageError> {
+        let leaf_dir = self.leaf_dir(location)?;
+        stat_regular(leaf_dir.as_fd(), location.leaf)
+    }
+
+    pub(super) fn exists_at(&self, location: &ObjectLocation<'_>) -> Result<bool, StorageError> {
+        match self.stat_at(location) {
+            Ok(_) => Ok(true),
+            Err(StorageError::NotFound) => Ok(false),
+            Err(error) => Err(error),
+        }
+    }
+
+    pub(super) fn open_read_at(
+        &self,
+        location: &ObjectLocation<'_>,
+    ) -> Result<(ObjectStat, ObjectBody), StorageError> {
+        let (stat, file) = self.open_file_at(location)?;
+        Ok((stat, body(file, None)))
+    }
+
+    pub(super) fn open_range_at(
+        &self,
+        location: &ObjectLocation<'_>,
+        start: u64,
+        len: u64,
+    ) -> Result<(ObjectStat, ObjectBody), StorageError> {
+        let (stat, file) = self.open_file_at(location)?;
         if start >= stat.size {
             return Err(StorageError::RangeNotSatisfiable { size: stat.size });
         }
@@ -51,8 +77,14 @@ impl LocalProvider {
     }
 
     pub(super) fn open_file(&self, key: &ObjectKey) -> Result<(ObjectStat, File), StorageError> {
-        let location = ObjectLocation::of(key);
-        let leaf_dir = self.leaf_dir(&location)?;
+        self.open_file_at(&ObjectLocation::of(key))
+    }
+
+    fn open_file_at(
+        &self,
+        location: &ObjectLocation<'_>,
+    ) -> Result<(ObjectStat, File), StorageError> {
+        let leaf_dir = self.leaf_dir(location)?;
         let file = open_regular(
             leaf_dir.as_fd(),
             location.leaf,
@@ -64,7 +96,7 @@ impl LocalProvider {
     }
 }
 
-fn stat_regular(dir: BorrowedFd<'_>, name: &str) -> Result<ObjectStat, StorageError> {
+pub(super) fn stat_regular(dir: BorrowedFd<'_>, name: &str) -> Result<ObjectStat, StorageError> {
     let stat = match rustix::fs::statat(dir, name, AtFlags::SYMLINK_NOFOLLOW) {
         Ok(stat) => stat,
         Err(Errno::NOENT) => return Err(StorageError::NotFound),

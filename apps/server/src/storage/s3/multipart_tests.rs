@@ -22,6 +22,7 @@ use super::client::S3Clients;
 use super::multipart::{completion_manifest, copy_source_range, decode_cursor, encode_cursor};
 use super::presign_tests::{payload, sha256};
 use super::profile::{ProfileLimits, GIB, MIB};
+use super::tests::test_base_url;
 use super::{Failure, Operation, S3Failure, S3Provider};
 use crate::config::{S3Config, S3Profile, S3TlsVerification, StorageConfig};
 use crate::domain::secret::Secret;
@@ -168,7 +169,7 @@ impl FakeS3 {
             .retry_config(RetryConfig::disabled())
             .build();
         let clients = clients.with_internal_client(aws_sdk_s3::Client::from_conf(transport));
-        S3Provider::new(clients, BUFFER_BYTES).unwrap()
+        S3Provider::new(clients, BUFFER_BYTES, &test_base_url()).unwrap()
     }
 }
 
@@ -532,6 +533,7 @@ async fn it_abort_nosuchupload_is_success() {
         .unwrap()
         .unwrap(),
         BUFFER_BYTES,
+        &test_base_url(),
     )
     .unwrap();
     match unreachable.abort_multipart(&handle()).await {
@@ -1095,7 +1097,7 @@ async fn unit_server_side_calls_use_internal_client() {
         multipart.matches(".internal()").count(),
         "every multipart call starts at self.internal()"
     );
-    assert!(multipart.contains("self.head_object(handle.key()).await"));
+    assert!(multipart.contains("self.head_object(target.key()).await"));
     assert!(multipart.contains(".max_parts(provider_page())"));
     assert!(multipart.contains(".max_uploads(provider_page())"));
 }
@@ -1117,7 +1119,7 @@ fn minio_provider(server: &MinioServer, bucket: &str, force_path_style: bool) ->
     let clients = S3Clients::build(&StorageConfig::S3(Box::new(config)))
         .unwrap()
         .unwrap();
-    S3Provider::new(clients, BUFFER_BYTES).unwrap()
+    S3Provider::new(clients, BUFFER_BYTES, &test_base_url()).unwrap()
 }
 
 fn reader(bytes: &[u8]) -> ObjectBody {

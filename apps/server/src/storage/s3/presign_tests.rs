@@ -12,6 +12,7 @@ use url::Url;
 use super::client::S3Clients;
 use super::presign::{MAX_GET_URL_TTL, MAX_PART_URLS_PER_CALL, MAX_PART_URL_TTL};
 use super::profile::{ProviderProfile, GIB, MIB};
+use super::tests::test_base_url;
 use super::{Failure, Operation, S3Failure, S3Provider};
 use crate::config::{EnvironmentSource, OperatorConfig};
 use crate::domain::clock::TestClock;
@@ -61,7 +62,7 @@ fn env_provider(pairs: &[(&str, &str)]) -> S3Provider {
         .config
         .storage;
     let clients = S3Clients::build(&storage).unwrap().unwrap();
-    S3Provider::new(clients, BUFFER_BYTES).unwrap()
+    S3Provider::new(clients, BUFFER_BYTES, &test_base_url()).unwrap()
 }
 
 fn split_provider(profile: &str, force_path_style: &str) -> S3Provider {
@@ -753,7 +754,7 @@ async fn regression_381_provider_checksum_rejection() {
     assert!(ProviderProfile::R2.limits().requires_part_checksums);
 
     let presign = include_str!("presign.rs");
-    assert!(presign.contains("if limits.requires_part_checksums {"));
+    assert!(presign.contains("if self.effective_caps().requires_checksum_headers {"));
     for inference in [
         "XAmzContentChecksumMismatch",
         "BadDigest",

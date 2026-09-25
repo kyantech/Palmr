@@ -34,6 +34,14 @@ impl LocalProvider {
         upload_id: &UploadId,
         final_key: &ObjectKey,
     ) -> Result<Finalized, StorageError> {
+        self.finalize_at(upload_id, &ObjectLocation::of(final_key))
+    }
+
+    pub(super) fn finalize_at(
+        &self,
+        upload_id: &UploadId,
+        location: &ObjectLocation<'_>,
+    ) -> Result<Finalized, StorageError> {
         let staging_dir = open_dir(self.uploads.as_fd(), upload_id.as_str())?;
         let staging = open_regular(
             staging_dir.as_fd(),
@@ -45,8 +53,7 @@ impl LocalProvider {
             .fsync(staging.as_fd(), Step::SyncStaging)
             .map_err(StorageError::from)?;
 
-        let location = ObjectLocation::of(final_key);
-        let leaf_dir = ensure_leaf_dir(self.ops.as_ref(), self.root(location.root), &location)?;
+        let leaf_dir = ensure_leaf_dir(self.ops.as_ref(), self.root(location.root), location)?;
         let destination = Destination {
             leaf_dir: leaf_dir.as_fd(),
             name: location.leaf,

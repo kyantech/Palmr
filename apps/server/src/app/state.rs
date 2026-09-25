@@ -4,6 +4,26 @@ use super::health::Health;
 use super::openapi::ApiDocs;
 use crate::domain::clock::Clock;
 use crate::features::settings::SettingsHandle;
+use crate::storage::health::StorageStatus;
+use crate::storage::provider::StorageProvider;
+
+#[derive(Clone)]
+pub struct StorageRuntime {
+    provider: Arc<dyn StorageProvider>,
+    status: StorageStatus,
+}
+
+impl StorageRuntime {
+    pub fn new(provider: Arc<dyn StorageProvider>, status: StorageStatus) -> Self {
+        Self { provider, status }
+    }
+
+    #[cfg(test)]
+    pub(crate) fn for_test() -> Self {
+        let (provider, status) = crate::storage::test_runtime();
+        Self::new(provider, status)
+    }
+}
 
 #[derive(Clone)]
 pub struct AppState {
@@ -11,6 +31,8 @@ pub struct AppState {
     health: Health,
     api_docs: ApiDocs,
     settings: SettingsHandle,
+    storage: Arc<dyn StorageProvider>,
+    storage_status: StorageStatus,
 }
 
 impl AppState {
@@ -19,12 +41,15 @@ impl AppState {
         health: Health,
         api_docs: ApiDocs,
         settings: SettingsHandle,
+        storage: StorageRuntime,
     ) -> Self {
         Self {
             clock,
             health,
             api_docs,
             settings,
+            storage: storage.provider,
+            storage_status: storage.status,
         }
     }
 
@@ -43,6 +68,14 @@ impl AppState {
     pub const fn settings(&self) -> &SettingsHandle {
         &self.settings
     }
+
+    pub fn storage(&self) -> &Arc<dyn StorageProvider> {
+        &self.storage
+    }
+
+    pub const fn storage_status(&self) -> &StorageStatus {
+        &self.storage_status
+    }
 }
 
 #[cfg(test)]
@@ -51,7 +84,7 @@ mod tests {
 
     use time::macros::datetime;
 
-    use super::AppState;
+    use super::{AppState, StorageRuntime};
     use crate::app::health::{Health, StorageState};
     use crate::app::lifecycle::Readiness;
     use crate::app::openapi::ApiDocs;
@@ -79,6 +112,7 @@ mod tests {
             Health::new(Readiness::new()),
             docs,
             SettingsHandle::documented_defaults(),
+            StorageRuntime::for_test(),
         );
         let cloned = state.clone();
 

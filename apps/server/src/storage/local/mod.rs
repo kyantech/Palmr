@@ -4,6 +4,8 @@ mod delete;
 mod finalize;
 mod list;
 mod paths;
+mod probe;
+mod provider;
 mod read;
 mod write;
 
@@ -13,6 +15,7 @@ use std::os::fd::{AsFd, BorrowedFd, OwnedFd};
 use std::os::unix::fs::MetadataExt;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
+use std::sync::Arc;
 
 use rustix::fs::{AtFlags, FileType, Mode, OFlags, RawMode};
 use rustix::io::Errno;
@@ -25,6 +28,7 @@ use self::paths::{open_dir, open_leaf_dir, ObjectLocation, Root};
 pub use self::write::StagingWriter;
 use super::error::StorageError;
 use super::provider::{Capacity, ObjectStat};
+use crate::domain::clock::{Clock, SystemClock};
 
 const STORAGE_DIR: &str = "storage";
 const OBJECTS_DIR: &str = "objects";
@@ -272,6 +276,9 @@ pub struct LocalProvider {
     buffer_bytes: usize,
     reflink: AtomicU8,
     ops: Box<dyn FsOps>,
+    clock: Arc<dyn Clock>,
+    #[cfg(test)]
+    _owned_root: Option<tempfile::TempDir>,
 }
 
 impl LocalProvider {
@@ -300,7 +307,16 @@ impl LocalProvider {
             buffer_bytes,
             reflink: AtomicU8::new(REFLINK_UNKNOWN),
             ops,
+            clock: Arc::new(SystemClock),
+            #[cfg(test)]
+            _owned_root: None,
         })
+    }
+
+    #[must_use]
+    pub fn with_clock(mut self, clock: Arc<dyn Clock>) -> Self {
+        self.clock = clock;
+        self
     }
 
     fn root(&self, root: Root) -> BorrowedFd<'_> {
@@ -351,6 +367,15 @@ fn classify(errno: Errno, entry: &str) -> StorageError {
         return StorageError::PermissionDenied;
     }
     StorageError::from(io::Error::from(errno))
+}
+
+fn blocking<T>(work: impl FnOnce() -> T) -> T {
+    match tokio::runtime::Handle::try_current() {
+        Ok(runtime) if runtime.runtime_flavor() == tokio::runtime::RuntimeFlavor::MultiThread => {
+            tokio::task::block_in_place(work)
+        }
+        _ => work(),
+    }
 }
 
 fn sync_directory(ops: &dyn FsOps, dir: BorrowedFd<'_>, step: Step) -> Result<(), StorageError> {
@@ -441,10 +466,12 @@ fn measure(file: &File) -> Result<ObjectStat, StorageError> {
     })
 }
 
-fn modified_at(seconds: i64, nanos: i64) -> OffsetDateTime {
-    let nanos = i128::from(seconds) * 1_000_000_000 + i128::from(nanos);
+fn modified_at(seconds: i64, nanos: impl Into<i128>) -> OffsetDateTime {
+    let nanos = i128::from(seconds) * 1_000_000_000 + nanos.into();
     OffsetDateTime::from_unix_timestamp_nanos(nanos).unwrap_or(OffsetDateTime::UNIX_EPOCH)
 }
 
+#[cfg(test)]
+mod probe_tests;
 #[cfg(test)]
 mod tests;

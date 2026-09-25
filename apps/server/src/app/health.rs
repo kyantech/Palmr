@@ -16,6 +16,7 @@ use super::router::{RateLimitClass, RoutePolicy, Routes, Transport};
 use super::state::AppState;
 use crate::infra::http::error::JSON_CONTENT_TYPE;
 use crate::infra::http::trace::RequestLog;
+use crate::storage::health::{HealthSignal, StorageHealth};
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -101,6 +102,15 @@ pub enum StorageState {
 }
 
 impl StorageState {
+    pub const fn from_signal(signal: HealthSignal) -> Self {
+        match (signal.health, signal.unreachable) {
+            (StorageHealth::Ok, _) => Self::Ok,
+            (StorageHealth::Degraded, _) => Self::Degraded,
+            (StorageHealth::Down, true) => Self::Unreachable,
+            (StorageHealth::Down, false) => Self::Down,
+        }
+    }
+
     const fn failure(self) -> Option<HealthReason> {
         match self {
             Self::Ok | Self::Degraded => None,

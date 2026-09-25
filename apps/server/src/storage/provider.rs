@@ -11,7 +11,7 @@ use url::Url;
 
 use super::caps::StorageCapabilities;
 use super::error::StorageError;
-use super::health::SelfTestReport;
+use super::health::{ProbeDepth, SelfTestReport};
 use super::key::ObjectKey;
 use super::ProviderKind;
 
@@ -253,7 +253,7 @@ pub trait StorageProvider: Send + Sync + 'static {
         page_size: u32,
     ) -> Result<ListPage, StorageError>;
 
-    async fn self_test(&self) -> Result<SelfTestReport, StorageError>;
+    async fn self_test(&self, depth: ProbeDepth) -> SelfTestReport;
 
     fn as_multipart(&self) -> Option<&dyn MultipartStorage> {
         None
