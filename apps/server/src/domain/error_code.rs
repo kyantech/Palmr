@@ -104,6 +104,8 @@ error_catalog! {
         "The stored object belongs to a different storage provider";
     StorageSizeMismatch = "STORAGE_SIZE_MISMATCH", INTERNAL_SERVER_ERROR, retryable: false,
         "The stored object size does not match the expected size";
+    BrandingAssetUnknown = "BRANDING_ASSET_UNKNOWN", NOT_FOUND, retryable: false,
+        "The branding asset was not found";
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]

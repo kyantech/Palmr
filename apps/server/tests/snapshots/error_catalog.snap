@@ -28,6 +28,11 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "BRANDING_ASSET_UNKNOWN",
+    "status": 404,
+    "retryable": false
+  },
+  {
     "code": "CSRF_TOKEN_INVALID",
     "status": 403,
     "retryable": false

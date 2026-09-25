@@ -13,6 +13,7 @@ impl Alias {
     pub const MIN_LEN: usize = 3;
     pub const MAX_LEN: usize = 64;
     pub const GENERATED_LEN: usize = 10;
+    pub const PATTERN: &'static str = "^[A-Za-z0-9_-]{3,64}$";
 
     pub fn parse(input: &str) -> Result<Self, InvalidAlias> {
         let well_formed = (Self::MIN_LEN..=Self::MAX_LEN).contains(&input.len())
@@ -125,6 +126,14 @@ mod tests {
             assert_eq!(Alias::parse(input), Err(InvalidAlias), "{input:?}");
         }
         assert!(!InvalidAlias.to_string().is_empty());
+    }
+
+    #[test]
+    fn unit_alias_pattern_matches_the_parse_rule() {
+        assert_eq!(
+            Alias::PATTERN,
+            format!("^[A-Za-z0-9_-]{{{},{}}}$", Alias::MIN_LEN, Alias::MAX_LEN)
+        );
     }
 
     #[test]

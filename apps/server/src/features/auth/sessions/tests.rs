@@ -899,7 +899,7 @@ async fn svc_restricted_session_allowlist() {
         .build()
         .unwrap()
         .inventory;
-    let protected: Vec<_> = inventory
+    let (shared, protected): (Vec<_>, Vec<_>) = inventory
         .entries()
         .iter()
         .filter(|entry| {
@@ -908,8 +908,25 @@ async fn svc_restricted_session_allowlist() {
                 AuthClass::Public | AuthClass::PublicGrant | AuthClass::Setup
             )
         })
-        .collect();
+        .partition(|entry| {
+            SHARED_ALLOWLIST
+                .iter()
+                .any(|(method, path)| method == entry.method() && *path == entry.path())
+        });
     assert!(!protected.is_empty());
+    for entry in shared {
+        for restriction in [
+            SessionRestriction::MustChangePassword,
+            SessionRestriction::MustEnrollTotp,
+        ] {
+            assert!(
+                enforce_restriction(restriction, entry.method(), entry.path()).is_ok(),
+                "{} {}",
+                entry.method(),
+                entry.path()
+            );
+        }
+    }
     let application = app_service(&harness, crate::app::router::application_routes());
     for entry in protected {
         let path = concrete(entry.path(), &harness.clock);

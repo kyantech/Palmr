@@ -37,8 +37,11 @@ use crate::config::{
 use crate::domain::clock::{Clock, SystemClock};
 use crate::features::audit;
 use crate::features::auth::sessions::SessionService;
+use crate::features::branding::BrandingService;
 use crate::features::email::{self, EmailService, SmtpTransport};
-use crate::features::settings::{SettingsError, SettingsHandle, SettingsService};
+use crate::features::settings::{
+    EffectiveSettingsService, OperatorPolicy, SettingsError, SettingsHandle, SettingsService,
+};
 use crate::infra::crypto::hkdf::KeyRing;
 use crate::infra::crypto::instance_key::{InstanceKey, InstanceKeyError, KeyOrigin};
 use crate::infra::db::{
@@ -737,6 +740,7 @@ async fn initialize(
         .await;
     let storage_health = StorageHealthTask::start(&monitor, schedule);
     let provider = Arc::clone(&storage);
+    let branding = BrandingService::new(database.pools().reader().clone(), Arc::clone(&storage));
     let storage = StorageRuntime::new(storage, monitor.status());
     let report = ReconcileRegistry::production()
         .run(&ReconcileContext::new(
@@ -747,13 +751,24 @@ async fn initialize(
         .await;
     log_reconciliation(&report);
     let settings = settings.handle();
-    let sessions = SessionService::new(
-        database.pools().clone(),
-        Arc::clone(&clock),
-        settings.clone(),
-        Arc::clone(&email_keys),
-        &config.base_url,
-    );
+    let services = RequestServices {
+        sessions: SessionService::new(
+            database.pools().clone(),
+            Arc::clone(&clock),
+            settings.clone(),
+            Arc::clone(&email_keys),
+            &config.base_url,
+        ),
+        branding,
+        effective_settings: EffectiveSettingsService::new(
+            database.pools().reader().clone(),
+            settings.clone(),
+            OperatorPolicy {
+                storage_provider: storage::configured_provider(&config.storage).as_str(),
+                max_concurrent_transfers: config.max_concurrent_transfers,
+            },
+        ),
+    };
     let jobs = start_jobs(
         config,
         &database,
@@ -773,7 +788,7 @@ async fn initialize(
                 clock,
                 settings,
                 storage,
-                Some(sessions),
+                Some(services),
             )
         }) {
         Ok(router) => router,
@@ -957,6 +972,12 @@ pub fn application_router(
     )
 }
 
+struct RequestServices {
+    sessions: SessionService,
+    branding: BrandingService,
+    effective_settings: EffectiveSettingsService,
+}
+
 fn composed_router(
     config: &OperatorConfig,
     health: Health,
@@ -964,7 +985,7 @@ fn composed_router(
     clock: Arc<dyn Clock>,
     settings: SettingsHandle,
     storage: StorageRuntime,
-    sessions: Option<SessionService>,
+    services: Option<RequestServices>,
 ) -> Result<axum::Router, StartupError> {
     let assembled = application_routes().build().map_err(StartupError::Router)?;
     let api_docs =
@@ -976,8 +997,11 @@ fn composed_router(
         settings,
         storage,
     ));
-    let routes = match sessions {
-        Some(sessions) => routes.layer(axum::Extension(sessions)),
+    let routes = match services {
+        Some(services) => routes
+            .layer(axum::Extension(services.sessions))
+            .layer(axum::Extension(services.branding))
+            .layer(axum::Extension(services.effective_settings)),
         None => routes,
     };
     Ok(edge_router(routes, config, clock))

@@ -4,6 +4,38 @@
  */
 
 export interface paths {
+    "/api/v1/bootstrap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["bootstrap"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/branding/{asset}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["public_branding"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/sessions": {
         parameters: {
             query?: never;
@@ -31,6 +63,22 @@ export interface paths {
         put?: never;
         post?: never;
         delete: operations["revoke_session"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/settings/effective": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["effective_settings"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -167,11 +215,56 @@ export interface components {
             /** @description Equals the `X-Request-Id` response header. */
             requestId: string;
         };
+        Bootstrap: {
+            appDescription: string;
+            appName: string;
+            defaultLocale: string;
+            faviconUrl: string | null;
+            logoUrl: string | null;
+            passwordLoginEnabled: boolean;
+            poweredByVisible: boolean;
+            primaryColor: string;
+            providers: components["schemas"]["BootstrapProvider"][];
+            setupCompleted: boolean;
+            supportedLocales: string[];
+            version: string | null;
+        };
+        BootstrapProvider: {
+            displayName: string;
+            iconKey: string;
+            slug: string;
+            /** Format: int64 */
+            sortOrder: number;
+        };
         /** @enum {string} */
         DatabaseHealthStatus: "ok";
         DetailValue: boolean | number | string;
+        EffectiveSettings: {
+            aliasPattern: string;
+            /** Format: int32 */
+            maxConcurrentTransfers: number;
+            /** Format: int64 */
+            maxFileSizeBytes: number | null;
+            /** Format: int32 */
+            maxPublicLinkLifetimeDays: number | null;
+            /** Format: int32 */
+            passwordMinLength: number;
+            /** Format: int32 */
+            publicLinkPasswordMinLength: number;
+            /** Format: int64 */
+            quotaBytes: number | null;
+            /** Format: int32 */
+            receivedRetentionMaxDays: number | null;
+            smtpConfigured: boolean;
+            /** @example local */
+            storageProvider: string;
+            /** Format: int32 */
+            trustedDeviceDurationDays: number;
+            trustedDevicesEnabled: boolean;
+            twoFactorRequired: boolean;
+        };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "SESSION_NOT_FOUND" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH";
+        ErrorCode: "VALIDATION_ERROR" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "SESSION_NOT_FOUND" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "BRANDING_ASSET_UNKNOWN";
         HealthLive: {
             status: components["schemas"]["HealthLiveStatus"];
             version: string;
@@ -265,6 +358,66 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    bootstrap: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The instance description the SPA needs before it knows the visitor. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Bootstrap"];
+                };
+            };
+        };
+    };
+    public_branding: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description logo | favicon | login-background | og-image | email-logo */
+                asset: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The effective branding asset bytes. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": number[];
+                    "image/webp": number[];
+                };
+            };
+            /** @description The cached asset is still current. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown or disabled asset. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
     list_sessions: {
         parameters: {
             query?: {
@@ -388,6 +541,35 @@ export interface operations {
             };
             /** @description Unknown or foreign session. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    effective_settings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The read-only policy slice the SPA must respect for the caller. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EffectiveSettings"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };

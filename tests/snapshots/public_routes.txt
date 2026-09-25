@@ -1,3 +1,5 @@
+GET /api/v1/bootstrap public
+GET /api/v1/public/branding/{asset} public
 GET /docs public
 GET /docs/scalar.js public
 GET /health public

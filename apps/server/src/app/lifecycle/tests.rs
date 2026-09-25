@@ -129,11 +129,20 @@ async fn get(address: SocketAddr, path: &str) -> (String, String) {
 }
 
 async fn get_with(address: SocketAddr, path: &str, extra_headers: &str) -> (String, String) {
+    request_with(address, "GET", path, extra_headers).await
+}
+
+async fn request_with(
+    address: SocketAddr,
+    method: &str,
+    path: &str,
+    extra_headers: &str,
+) -> (String, String) {
     let mut stream = TcpStream::connect(address).await.unwrap();
     stream
         .write_all(
             format!(
-                "GET {path} HTTP/1.1\r\nHost: localhost\r\n{extra_headers}Connection: close\r\n\r\n"
+                "{method} {path} HTTP/1.1\r\nHost: localhost\r\n{extra_headers}Connection: close\r\n\r\n"
             )
             .as_bytes(),
         )
@@ -423,6 +432,62 @@ async fn it_startup_listener_serves_application_stack() {
     let nodes = scan(&body);
     assert_eq!(meta(&nodes, "name", "csp-nonce"), [nonce]);
     assert_eq!(base_hrefs(&nodes), ["/palmr/"]);
+
+    assert_eq!(
+        server.shutdown(Duration::from_secs(10)).await,
+        Drain::Completed
+    );
+}
+
+#[tokio::test]
+async fn it_startup_stack_serves_bootstrap_and_default_branding() {
+    let dist = TempDir::new().unwrap();
+    std::fs::write(dist.path().join("index.html"), VITE_INDEX).unwrap();
+    let config = config(&[("PALMR_BASE_URL", "https://files.example.test")]);
+    let assets =
+        StaticAssets::from_source(DistDirectory::at(dist.path()), &config.base_url).unwrap();
+    let readiness = Readiness::new();
+    let router = composed_router(
+        &config,
+        Health::new(readiness.clone()),
+        assets,
+        Arc::new(TestClock::new(datetime!(2026-09-25 12:00 UTC))),
+        crate::features::settings::SettingsHandle::documented_defaults(),
+        crate::app::state::StorageRuntime::for_test(),
+        None,
+    )
+    .unwrap();
+    let listener = bind(loopback()).await.unwrap();
+    let server = Server::start(listener, router, &readiness).unwrap();
+
+    let (head, body) = get(server.address(), "/api/v1/bootstrap").await;
+    assert!(head.starts_with("http/1.1 200"), "{head}");
+    assert!(head.contains("cache-control: no-store"), "{head}");
+    assert_eq!(
+        head.lines()
+            .filter(|line| line.starts_with("set-cookie: palmr_csrf="))
+            .count(),
+        1,
+        "{head}"
+    );
+    let body: Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(body["setupCompleted"], false);
+    assert_eq!(body["version"], VERSION);
+
+    let (head, _) = get(server.address(), "/api/v1/app/bootstrap").await;
+    assert!(head.starts_with("http/1.1 404"), "{head}");
+
+    let (head, body) =
+        request_with(server.address(), "HEAD", "/api/v1/public/branding/logo", "").await;
+    assert!(head.starts_with("http/1.1 200"), "{head}");
+    assert!(head.contains("content-type: image/png"), "{head}");
+    assert!(
+        head.contains("cache-control: public, max-age=300"),
+        "{head}"
+    );
+    assert!(head.contains("etag: w/\""), "{head}");
+    assert!(!head.contains("set-cookie"), "{head}");
+    assert!(body.is_empty());
 
     assert_eq!(
         server.shutdown(Duration::from_secs(10)).await,

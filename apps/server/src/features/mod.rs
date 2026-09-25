@@ -22,6 +22,7 @@ pub mod email;
     reason = "typed settings, the default registry and the write primitive are consumed as admin settings routes and features are wired"
 )]
 pub mod settings;
+pub mod setup;
 #[allow(
     dead_code,
     reason = "the user repository, password policy, last-admin guard and quota resolver are consumed as auth and admin features are wired"

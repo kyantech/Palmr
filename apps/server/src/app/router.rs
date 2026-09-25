@@ -23,6 +23,7 @@ use crate::domain::clock::Clock;
 use crate::domain::error_code::ErrorCode;
 use crate::features::auth;
 use crate::features::branding;
+use crate::features::{settings, setup};
 use crate::infra::http::csrf::{self, AnonymousCsrf, CsrfGuard, RequestContent, RequestGate};
 use crate::infra::http::encoding::{
     reject_undecodable_body, request_decompression, response_compression,
@@ -577,6 +578,8 @@ pub fn application_routes() -> Routes<AppState> {
         .merge(health::routes())
         .merge(auth::sessions::routes::routes())
         .merge(branding::routes::routes())
+        .merge(setup::routes::routes())
+        .merge(settings::routes::routes())
         .merge(openapi::routes())
 }
 
