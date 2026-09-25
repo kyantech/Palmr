@@ -89,6 +89,7 @@ When an operation mixes I/O and state, use three steps: a short transaction that
 | `QuotaOnDevice` | `STORAGE_FULL`, 507. This is the device, not the account quota (`QUOTA_EXCEEDED`). | yes |
 | `PermissionDenied`, `ProviderUnavailable`, `Io`, `S3` | `STORAGE_UNAVAILABLE`, 503 | yes |
 | `ProviderMismatch` | `STORAGE_PROVIDER_MISMATCH`, 500. Never reported as a 404. | no |
+| `SizeMismatch { expected, actual }` | `STORAGE_SIZE_MISMATCH`, 500. The provider-measured size of a finished write or copy differs from the size that was streamed or copied. The object may be visible; the caller owns tombstoning it. | no |
 
 The "Retried by a job" column is separate from the `retryable` flag on the error code. For example, `INTERNAL_ERROR` is retryable for an HTTP client, but a job never retries `InvalidKey`, because an invalid key is a defect.
 

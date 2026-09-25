@@ -2500,6 +2500,7 @@ dependencies = [
  "clap",
  "figment",
  "futures-core",
+ "futures-util",
  "getrandom 0.4.3",
  "governor",
  "hkdf 0.13.0",

@@ -41,6 +41,8 @@ pub enum StorageError {
         expected: ProviderKind,
         found: ProviderKind,
     },
+    #[error("storage object measured {actual} bytes, expected {expected}")]
+    SizeMismatch { expected: u64, actual: u64 },
     #[error("storage i/o failure")]
     Io(#[source] io::Error),
     #[error("storage provider request failed")]
@@ -58,6 +60,7 @@ impl StorageError {
                 ErrorCode::StorageUnavailable
             }
             Self::ProviderMismatch { .. } => ErrorCode::StorageProviderMismatch,
+            Self::SizeMismatch { .. } => ErrorCode::StorageSizeMismatch,
         }
     }
 
@@ -73,7 +76,8 @@ impl StorageError {
             | Self::AlreadyExists
             | Self::InvalidKey
             | Self::Config(_)
-            | Self::ProviderMismatch { .. } => false,
+            | Self::ProviderMismatch { .. }
+            | Self::SizeMismatch { .. } => false,
         }
     }
 
@@ -95,6 +99,7 @@ impl StorageError {
             Self::ProviderUnavailable(_) => "provider_unavailable",
             Self::Config(_) => "config",
             Self::ProviderMismatch { .. } => "provider_mismatch",
+            Self::SizeMismatch { .. } => "size_mismatch",
             Self::Io(_) => "io",
             Self::S3(_) => "s3",
         }
@@ -167,6 +172,10 @@ mod tests {
                 expected: ProviderKind::Local,
                 found: ProviderKind::S3,
             },
+            StorageError::SizeMismatch {
+                expected: 1_024,
+                actual: 1_023,
+            },
             StorageError::Io(io::Error::other(format!("/data/storage/{SENTINEL}"))),
             StorageError::S3(Box::new(io::Error::other(SENTINEL))),
         ]
@@ -185,6 +194,7 @@ mod tests {
             | StorageError::Io(_)
             | StorageError::S3(_) => ("STORAGE_UNAVAILABLE", 503, true),
             StorageError::ProviderMismatch { .. } => ("STORAGE_PROVIDER_MISMATCH", 500, false),
+            StorageError::SizeMismatch { .. } => ("STORAGE_SIZE_MISMATCH", 500, false),
         }
     }
 
@@ -220,6 +230,14 @@ mod tests {
         assert_ne!(mismatch.api_code(), ErrorCode::NotFound);
         assert_ne!(mismatch.api_code().status().as_u16(), 404);
         assert!(mismatch.to_string().contains("local") && mismatch.to_string().contains("s3"));
+
+        let mismatch = StorageError::SizeMismatch {
+            expected: 5_368_709_121,
+            actual: 5_368_709_120,
+        };
+        assert_eq!(mismatch.api_code().as_str(), "STORAGE_SIZE_MISMATCH");
+        assert!(!mismatch.api_code().retryable());
+        assert!(mismatch.to_string().contains("5368709121"));
 
         let full = StorageError::QuotaOnDevice.api_code();
         assert_eq!(full.as_str(), "STORAGE_FULL");

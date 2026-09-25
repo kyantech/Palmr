@@ -1,3 +1,4 @@
+mod assembly;
 pub mod client;
 pub mod config;
 mod copy;
@@ -7,6 +8,7 @@ mod object;
 pub mod plan;
 mod presign;
 pub mod profile;
+mod provider;
 pub mod tls;
 
 use std::error::Error;
@@ -17,8 +19,11 @@ use aws_sdk_s3::error::{ProvideErrorMetadata, SdkError};
 use aws_smithy_runtime_api::client::orchestrator::HttpResponse;
 
 use self::client::S3Clients;
+use self::copy::SINGLE_COPY_MAX;
 use self::object::SourceBodyError;
 use self::profile::ProfileLimits;
+use self::provider::capabilities;
+use super::caps::StorageCapabilities;
 use super::error::{Retryable, StorageError};
 use crate::domain::clock::{Clock, SystemClock};
 
@@ -26,6 +31,9 @@ const MAX_ERROR_CODE_LEN: usize = 64;
 
 pub struct S3Provider {
     clients: S3Clients,
+    limits: ProfileLimits,
+    caps: StorageCapabilities,
+    single_copy_max: u64,
     buffer_bytes: usize,
     clock: Arc<dyn Clock>,
 }
@@ -38,8 +46,12 @@ impl S3Provider {
             .ok_or_else(|| {
                 StorageError::Config("the upload buffer must hold at least one byte".to_owned())
             })?;
+        let limits = clients.shared().profile().limits();
         Ok(Self {
             clients,
+            limits,
+            caps: capabilities(&limits),
+            single_copy_max: SINGLE_COPY_MAX,
             buffer_bytes,
             clock: Arc::new(SystemClock),
         })
@@ -52,6 +64,21 @@ impl S3Provider {
         self
     }
 
+    #[cfg(test)]
+    #[must_use]
+    pub(crate) fn with_limits(mut self, limits: ProfileLimits) -> Self {
+        self.limits = limits;
+        self.caps = capabilities(&limits);
+        self
+    }
+
+    #[cfg(test)]
+    #[must_use]
+    pub(crate) const fn with_single_copy_max(mut self, single_copy_max: u64) -> Self {
+        self.single_copy_max = single_copy_max;
+        self
+    }
+
     fn internal(&self) -> &aws_sdk_s3::Client {
         self.clients.internal_client().client()
     }
@@ -60,8 +87,8 @@ impl S3Provider {
         self.clients.shared().bucket()
     }
 
-    fn limits(&self) -> ProfileLimits {
-        self.clients.shared().profile().limits()
+    const fn limits(&self) -> ProfileLimits {
+        self.limits
     }
 }
 
@@ -282,3 +309,6 @@ mod multipart_tests;
 
 #[cfg(test)]
 mod presign_tests;
+
+#[cfg(test)]
+mod provider_tests;

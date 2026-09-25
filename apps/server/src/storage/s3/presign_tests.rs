@@ -344,6 +344,8 @@ async fn unit_presign_uses_public_signer_only() {
         ("config.rs", include_str!("config.rs")),
         ("profile.rs", include_str!("profile.rs")),
         ("tls.rs", include_str!("tls.rs")),
+        ("provider.rs", include_str!("provider.rs")),
+        ("assembly.rs", include_str!("assembly.rs")),
     ] {
         assert!(!source.contains("signing_client"), "{name}");
     }

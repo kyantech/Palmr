@@ -113,6 +113,11 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "STORAGE_SIZE_MISMATCH",
+    "status": 500,
+    "retryable": false
+  },
+  {
     "code": "STORAGE_UNAVAILABLE",
     "status": 503,
     "retryable": true

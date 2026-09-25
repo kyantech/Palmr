@@ -92,6 +92,8 @@ error_catalog! {
         "The storage device is out of space";
     StorageProviderMismatch = "STORAGE_PROVIDER_MISMATCH", INTERNAL_SERVER_ERROR, retryable: false,
         "The stored object belongs to a different storage provider";
+    StorageSizeMismatch = "STORAGE_SIZE_MISMATCH", INTERNAL_SERVER_ERROR, retryable: false,
+        "The stored object size does not match the expected size";
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
