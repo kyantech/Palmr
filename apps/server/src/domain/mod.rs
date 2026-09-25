@@ -1,8 +1,10 @@
 pub mod alias;
 pub mod bytes;
 pub mod clock;
+pub mod content_disposition;
 pub mod email;
 pub mod error_code;
+pub mod http_range;
 pub mod id;
 pub mod locale;
 pub mod mime;
