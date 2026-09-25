@@ -19,12 +19,15 @@ aws-smithy-runtime-api = { version = "1", default-features = false, features = [
 aws-smithy-types = { version = "1", default-features = false, features = ["http-body-1-x"] }
 axum = { version = "0.8", default-features = false, features = ["http1", "matched-path", "tokio"] }
 base64ct = { version = "1", features = ["alloc"] }
+bytes = "1"
 chacha20poly1305 = { version = "0.10", default-features = false, features = ["alloc"] }
 clap = { version = "4", features = ["derive"] }
 figment = { version = "0.10", default-features = false }
+futures-core = { version = "0.3", default-features = false }
 hkdf = "0.13"
 hmac = "0.13"
 http = "1"
+http-body = "1"
 getrandom = "0.4"
 http-body-util = "0.1"
 hyper = { version = "1", default-features = false, features = ["client", "http1", "http2"] }
@@ -79,5 +82,6 @@ rstest = "0.27"
 rustls = { version = "0.23", default-features = false, features = ["std", "ring", "tls12"] }
 similar = "2"
 tempfile = "3"
+testcontainers = "0.28"
 tl = "0.7"
 tokio = { version = "1", features = ["io-util", "macros", "rt", "test-util"] }
