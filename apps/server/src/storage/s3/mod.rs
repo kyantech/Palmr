@@ -3,6 +3,7 @@ pub mod config;
 mod copy;
 mod list;
 mod object;
+pub mod plan;
 pub mod profile;
 pub mod tls;
 
@@ -238,3 +239,6 @@ mod tests;
 
 #[cfg(test)]
 mod object_tests;
+
+#[cfg(test)]
+mod plan_tests;
