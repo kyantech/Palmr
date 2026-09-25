@@ -142,6 +142,32 @@ pub fn all_sessions_revoked(
     ActionSpec::new(AuditAction::AllSessionsRevoked, metadata)
 }
 
+pub fn login_succeeded(method: &'static str) -> ActionSpec {
+    let metadata = Metadata::json(&[("method", Value::from(method))]);
+    ActionSpec::new(AuditAction::LoginSucceeded, metadata)
+}
+
+pub fn login_failed(method: &'static str, reason: &'static str) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("method", Value::from(method)),
+        ("reason", Value::from(reason)),
+    ]);
+    ActionSpec::new(AuditAction::LoginFailed, metadata)
+}
+
+pub fn login_locked_out(failed_count: u32, lock_count: u32, lockout_minutes: u32) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("failed_count", Value::from(failed_count)),
+        ("lock_count", Value::from(lock_count)),
+        ("lockout_minutes", Value::from(lockout_minutes)),
+    ]);
+    ActionSpec::new(AuditAction::LoginLockedOut, metadata)
+}
+
+pub fn logout() -> ActionSpec {
+    ActionSpec::new(AuditAction::Logout, Metadata::json(&[]))
+}
+
 pub fn setup_completed() -> ActionSpec {
     ActionSpec::new(AuditAction::SetupCompleted, Metadata::json(&[]))
 }

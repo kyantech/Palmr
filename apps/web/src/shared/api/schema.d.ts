@@ -4,6 +4,54 @@
  */
 
 export interface paths {
+    "/api/v1/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/bootstrap": {
         parameters: {
             query?: never;
@@ -296,7 +344,7 @@ export interface components {
             twoFactorRequired: boolean;
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "SESSION_NOT_FOUND" | "PASSWORD_POLICY_VIOLATION" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "BRANDING_ASSET_UNKNOWN";
+        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "SESSION_NOT_FOUND" | "PASSWORD_POLICY_VIOLATION" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "BRANDING_ASSET_UNKNOWN";
         HealthLive: {
             status: components["schemas"]["HealthLiveStatus"];
             version: string;
@@ -332,10 +380,75 @@ export interface components {
         };
         /** @enum {string} */
         HealthSummaryStatus: "ok" | "degraded" | "not_ready";
+        LoginRequest: {
+            /** @example ada@example.com */
+            identifier: string;
+            /** Format: password */
+            password: string;
+        };
+        LoginResponse: {
+            mfaEnrollmentRequired: boolean;
+            mustChangePassword: boolean;
+            user: components["schemas"]["LoginUser"];
+        };
+        LoginUser: {
+            /** @example /api/v1/profile/avatar */
+            avatarUrl: string | null;
+            email: string;
+            firstName: string;
+            id: string;
+            isActive: boolean;
+            lastName: string;
+            /** @example en-US */
+            locale: string;
+            /** @example admin */
+            role: string;
+            username: string;
+        };
         ManifestIcon: {
             sizes: string;
             src: string;
             type: string;
+        };
+        MeCapabilities: {
+            canChangePassword: boolean;
+            hasLocalPassword: boolean;
+            /** Format: int32 */
+            identityLinkCount: number;
+            twoFactorEnabled: boolean;
+        };
+        MeResponse: {
+            capabilities: components["schemas"]["MeCapabilities"];
+            restriction: null | components["schemas"]["RestrictionName"];
+            session: components["schemas"]["MeSession"];
+            user: components["schemas"]["MeUser"];
+        };
+        MeSession: {
+            createdAt: string;
+            expiresAt: string;
+            id: string;
+            lastSeenAt: string;
+            recentAuthUntil: string;
+        };
+        MeUser: {
+            /** @example blue */
+            accent: string;
+            /** @example /api/v1/profile/avatar */
+            avatarUrl: string | null;
+            createdAt: string;
+            email: string;
+            firstName: string;
+            id: string;
+            isActive: boolean;
+            lastName: string;
+            /** @example pt-BR */
+            locale: string;
+            pendingEmail: string | null;
+            /** @example admin */
+            role: string;
+            /** @example system */
+            theme: string;
+            username: string;
         };
         /** @enum {string} */
         MigrationHealthStatus: "current";
@@ -359,6 +472,8 @@ export interface components {
              */
             totalCount: number | null;
         };
+        /** @enum {string} */
+        RestrictionName: "must_change_password" | "mfa_enrollment_required";
         SessionItem: {
             absoluteExpiresAt: string;
             createdAt: string;
@@ -419,6 +534,140 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Signed in; `palmr_session` and `palmr_csrf` are set and any presented session is revoked. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginResponse"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The credentials did not authenticate. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Password login is disabled, or the origin is not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request failed validation. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited, or the account is locked after the password was proven. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The current session is revoked, or none remained; `palmr_session` and `palmr_csrf` are cleared. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description A presented session lacks its CSRF proof, or the origin is not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The caller's current authentication state. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeResponse"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
     bootstrap: {
         parameters: {
             query?: never;

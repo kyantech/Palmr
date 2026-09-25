@@ -164,7 +164,7 @@ fn include_current(raw_query: Option<&str>) -> Result<bool, ApiError> {
     }
 }
 
-fn client_metadata(request: &Request) -> ClientMetadata {
+pub(crate) fn client_metadata(request: &Request) -> ClientMetadata {
     let user_agent = request
         .headers()
         .get(USER_AGENT)

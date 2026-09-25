@@ -84,6 +84,12 @@ error_catalog! {
         "Setup has already been completed";
     AuthRequired = "AUTH_REQUIRED", UNAUTHORIZED, retryable: false,
         "Authentication is required";
+    AuthInvalidCredentials = "AUTH_INVALID_CREDENTIALS", UNAUTHORIZED, retryable: false,
+        "The credentials are invalid";
+    AuthLocked = "AUTH_LOCKED", TOO_MANY_REQUESTS, retryable: true,
+        "The account is temporarily locked";
+    AuthPasswordLoginDisabled = "AUTH_PASSWORD_LOGIN_DISABLED", FORBIDDEN, retryable: false,
+        "Password login is disabled";
     AuthRecentAuthRequired = "AUTH_RECENT_AUTH_REQUIRED", FORBIDDEN, retryable: false,
         "Recent authentication is required";
     AuthPasswordChangeRequired = "AUTH_PASSWORD_CHANGE_REQUIRED", FORBIDDEN, retryable: false,
@@ -216,6 +222,7 @@ mod tests {
         assert_eq!(
             retryable,
             BTreeSet::from([
+                "AUTH_LOCKED",
                 "DATABASE_BUSY",
                 "IDEMPOTENCY_REQUEST_IN_PROGRESS",
                 "INTERNAL_ERROR",

@@ -37,7 +37,9 @@ use crate::config::{
 use crate::domain::clock::{Clock, SystemClock};
 use crate::domain::locale::LocaleCode;
 use crate::features::audit;
+use crate::features::audit::service::{AuditDrain, AuditService};
 use crate::features::auth::sessions::SessionService;
+use crate::features::auth::AuthService;
 use crate::features::branding::BrandingService;
 use crate::features::email::{self, EmailService, SmtpTransport};
 use crate::features::settings::{
@@ -46,6 +48,7 @@ use crate::features::settings::{
 use crate::features::setup::SetupService;
 use crate::infra::crypto::hkdf::KeyRing;
 use crate::infra::crypto::instance_key::{InstanceKey, InstanceKeyError, KeyOrigin};
+use crate::infra::crypto::CryptoError;
 use crate::infra::db::{
     DbOpenError, InstanceLock, InstanceLockError, LockOrigin, MigrationError, MIGRATOR,
 };
@@ -85,6 +88,7 @@ pub enum StartupError {
     Router(RouteBuildError),
     Shell(ShellInitError),
     ApiDocs(ApiDocsError),
+    Credentials(CryptoError),
 }
 
 impl StartupError {
@@ -100,7 +104,7 @@ impl StartupError {
             Self::Settings(error) => Some(error.code()),
             Self::Storage(error) => Some(storage_build_code(error)),
             Self::Bind(error) => Some(error.code()),
-            Self::Router(_) | Self::Shell(_) | Self::ApiDocs(_) => None,
+            Self::Router(_) | Self::Shell(_) | Self::ApiDocs(_) | Self::Credentials(_) => None,
         }
     }
 
@@ -118,7 +122,8 @@ impl StartupError {
             | Self::Bind(_)
             | Self::Router(_)
             | Self::Shell(_)
-            | Self::ApiDocs(_) => EX_FAILURE,
+            | Self::ApiDocs(_)
+            | Self::Credentials(_) => EX_FAILURE,
         }
     }
 
@@ -175,7 +180,8 @@ impl StartupError {
             | Self::Tracing(_)
             | Self::Router(_)
             | Self::Shell(_)
-            | Self::ApiDocs(_) => {
+            | Self::ApiDocs(_)
+            | Self::Credentials(_) => {
                 tracing::error!(startup_error = self.code(), "{self}");
             }
         }
@@ -203,6 +209,7 @@ impl fmt::Display for StartupError {
             Self::Router(error) => write!(f, "internal startup failure: {error}"),
             Self::Shell(error) => write!(f, "internal startup failure: {error}"),
             Self::ApiDocs(error) => write!(f, "internal startup failure: {error}"),
+            Self::Credentials(error) => write!(f, "internal startup failure: {error}"),
         }
     }
 }
@@ -766,7 +773,30 @@ async fn initialize(
         Arc::clone(&email_keys),
         &config.base_url,
     );
+    let (audit_service, audit_drain) = audit::channel(
+        audit::AUDIT_CHANNEL_CAPACITY,
+        database.pools().clone(),
+        Arc::clone(&clock),
+    );
+    let auth = match tokio::task::block_in_place(|| {
+        AuthService::new(
+            database.pools().clone(),
+            Arc::clone(&clock),
+            settings.clone(),
+            sessions.clone(),
+            audit_service.clone(),
+        )
+    }) {
+        Ok(auth) => auth,
+        Err(error) => {
+            storage_health.stop().await;
+            return Err(
+                abandon_startup(database, instance, StartupError::Credentials(error)).await,
+            );
+        }
+    };
     let services = RequestServices {
+        auth,
         setup: SetupService::new(
             database.pools().clone(),
             Arc::clone(&clock),
@@ -792,6 +822,7 @@ async fn initialize(
         &settings,
         &email_keys,
         provider,
+        (audit_service, audit_drain),
     );
     let router = match StaticAssets::built(&config.base_url)
         .map_err(StartupError::from)
@@ -842,6 +873,10 @@ fn storage_monitor(
     ))
 }
 
+#[expect(
+    clippy::too_many_arguments,
+    reason = "the job runtime is assembled from every startup-owned dependency it drives"
+)]
 fn start_jobs(
     config: &OperatorConfig,
     database: &Database,
@@ -850,14 +885,10 @@ fn start_jobs(
     settings: &SettingsHandle,
     keys: &Arc<KeyRing>,
     provider: Arc<dyn StorageProvider>,
+    (audit_service, audit_drain): (AuditService, AuditDrain),
 ) -> JobRuntime {
     let timing = RuntimeTiming::DEFAULT;
     let pools = database.pools().clone();
-    let (audit_service, audit_drain) = audit::channel(
-        audit::AUDIT_CHANNEL_CAPACITY,
-        pools.clone(),
-        Arc::clone(clock),
-    );
     let registry = audit::register_jobs(
         Registry::production(),
         pools.clone(),
@@ -1002,6 +1033,7 @@ pub(crate) fn setup_locale(config: &OperatorConfig) -> Option<LocaleCode> {
 }
 
 struct RequestServices {
+    auth: AuthService,
     setup: SetupService,
     sessions: SessionService,
     branding: BrandingService,
@@ -1029,6 +1061,7 @@ fn composed_router(
     ));
     let routes = match services {
         Some(services) => routes
+            .layer(axum::Extension(services.auth))
             .layer(axum::Extension(services.setup))
             .layer(axum::Extension(services.sessions))
             .layer(axum::Extension(services.branding))

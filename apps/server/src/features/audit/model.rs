@@ -193,6 +193,9 @@ pub enum AuditCode {
     HandlerRejected,
     HandlerPanicked,
     NoHandler,
+    AuthInvalidCredentials,
+    AuthLocked,
+    AuthPasswordLoginDisabled,
 }
 
 impl AuditCode {
@@ -202,6 +205,9 @@ impl AuditCode {
             Self::HandlerRejected => "JOB_HANDLER_REJECTED",
             Self::HandlerPanicked => "JOB_HANDLER_PANICKED",
             Self::NoHandler => "JOB_NO_HANDLER",
+            Self::AuthInvalidCredentials => "AUTH_INVALID_CREDENTIALS",
+            Self::AuthLocked => "AUTH_LOCKED",
+            Self::AuthPasswordLoginDisabled => "AUTH_PASSWORD_LOGIN_DISABLED",
         }
     }
 }
@@ -264,6 +270,10 @@ pub enum AuditAction {
     SessionRevoked,
     AllSessionsRevoked,
     SetupCompleted,
+    LoginSucceeded,
+    LoginFailed,
+    LoginLockedOut,
+    Logout,
 }
 
 impl AuditAction {
@@ -274,6 +284,10 @@ impl AuditAction {
         Self::SessionRevoked,
         Self::AllSessionsRevoked,
         Self::SetupCompleted,
+        Self::LoginSucceeded,
+        Self::LoginFailed,
+        Self::LoginLockedOut,
+        Self::Logout,
     ];
 
     pub const fn as_str(self) -> &'static str {
@@ -284,12 +298,21 @@ impl AuditAction {
             Self::SessionRevoked => "SESSION_REVOKED",
             Self::AllSessionsRevoked => "ALL_SESSIONS_REVOKED",
             Self::SetupCompleted => "SETUP_COMPLETED",
+            Self::LoginSucceeded => "LOGIN_SUCCEEDED",
+            Self::LoginFailed => "LOGIN_FAILED",
+            Self::LoginLockedOut => "LOGIN_LOCKED_OUT",
+            Self::Logout => "LOGOUT",
         }
     }
 
     pub const fn write_path(self) -> WritePath {
         match self {
-            Self::JobDeadLettered | Self::StorageOrphanDetected => WritePath::Enqueued,
+            Self::JobDeadLettered
+            | Self::StorageOrphanDetected
+            | Self::LoginSucceeded
+            | Self::LoginFailed
+            | Self::LoginLockedOut
+            | Self::Logout => WritePath::Enqueued,
             Self::SettingChanged
             | Self::SessionRevoked
             | Self::AllSessionsRevoked

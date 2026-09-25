@@ -10,10 +10,10 @@ use http::header::{
 use http::{HeaderMap, Method};
 use url::Url;
 
-use super::cookies::{self, CookiePolicy, CSRF_COOKIE};
+use super::cookies::{self, CookiePolicy, CSRF_COOKIE, SESSION_COOKIE};
 use super::error::ApiError;
 use super::request_id::{tag_error, RequestId};
-use crate::app::auth_class::AuthClass;
+use crate::app::auth_class::{AbsentSession, AuthClass};
 use crate::config::PublicBaseUrl;
 use crate::domain::error_code::ErrorCode;
 use crate::infra::crypto::hash::TokenDigest;
@@ -87,6 +87,7 @@ pub struct RequestGate {
     authority: CsrfAuthority,
     content: RequestContent,
     anonymous_csrf: AnonymousCsrf,
+    absent_session: AbsentSession,
 }
 
 impl RequestGate {
@@ -94,11 +95,13 @@ impl RequestGate {
         class: AuthClass,
         content: RequestContent,
         anonymous_csrf: AnonymousCsrf,
+        absent_session: AbsentSession,
     ) -> Self {
         Self {
             authority: CsrfAuthority::of(class),
             content,
             anonymous_csrf,
+            absent_session,
         }
     }
 
@@ -224,6 +227,12 @@ fn check_state_change(
     }
     match gate.authority {
         CsrfAuthority::None => Ok(None),
+        CsrfAuthority::Cookie
+            if gate.absent_session == AbsentSession::AlreadySignedOut
+                && !cookies::presents(headers, SESSION_COOKIE) =>
+        {
+            Ok(None)
+        }
         CsrfAuthority::Cookie => double_submit(headers).map(Some),
     }
 }

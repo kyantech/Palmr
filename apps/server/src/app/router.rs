@@ -15,7 +15,7 @@ use tower::{Service, ServiceBuilder};
 use utoipa::openapi::OpenApi;
 use utoipa_axum::router::{OpenApiRouter, UtoipaMethodRouter};
 
-use super::auth_class::AuthClass;
+use super::auth_class::{AbsentSession, AuthClass};
 use super::health;
 use super::openapi::{self, declare_route_policy, operations_mut};
 use super::state::AppState;
@@ -206,6 +206,7 @@ pub struct RoutePolicy {
     idempotency: IdempotencyMode,
     request_content: RequestContent,
     anonymous_csrf: AnonymousCsrf,
+    absent_session: AbsentSession,
 }
 
 impl RoutePolicy {
@@ -219,6 +220,7 @@ impl RoutePolicy {
             idempotency: IdempotencyMode::None,
             request_content: RequestContent::Json,
             anonymous_csrf: AnonymousCsrf::None,
+            absent_session: AbsentSession::Reject,
         }
     }
 
@@ -244,6 +246,11 @@ impl RoutePolicy {
 
     pub const fn with_anonymous_csrf(mut self) -> Self {
         self.anonymous_csrf = AnonymousCsrf::Issue;
+        self
+    }
+
+    pub const fn with_idempotent_sign_out(mut self) -> Self {
+        self.absent_session = AbsentSession::AlreadySignedOut;
         self
     }
 
@@ -279,8 +286,17 @@ impl RoutePolicy {
         self.anonymous_csrf
     }
 
+    pub const fn absent_session(&self) -> AbsentSession {
+        self.absent_session
+    }
+
     pub const fn request_gate(&self) -> RequestGate {
-        RequestGate::new(self.auth, self.request_content, self.anonymous_csrf)
+        RequestGate::new(
+            self.auth,
+            self.request_content,
+            self.anonymous_csrf,
+            self.absent_session,
+        )
     }
 }
 
@@ -337,6 +353,7 @@ pub enum RouteError {
     AuthClassTagDeclared { method: Method, path: String },
     IdempotencyNotApplicable { method: Method, path: String },
     AnonymousCsrfOutsidePublicSurface { method: Method, path: String },
+    SignOutOutsideAuthenticatedPost { method: Method, path: String },
 }
 
 impl fmt::Display for RouteError {
@@ -366,6 +383,10 @@ impl fmt::Display for RouteError {
             Self::AnonymousCsrfOutsidePublicSurface { method, path } => write!(
                 f,
                 "{method} {path} issues an anonymous CSRF cookie but is not a public, public+grant or setup route"
+            ),
+            Self::SignOutOutsideAuthenticatedPost { method, path } => write!(
+                f,
+                "{method} {path} treats a missing session as already signed out but is not an authenticated POST"
             ),
         }
     }
@@ -485,6 +506,15 @@ where
                         path: entry.path.clone(),
                     });
                 }
+                if !policy
+                    .absent_session
+                    .permitted_for(policy.auth, &entry.method)
+                {
+                    errors.push(RouteError::SignOutOutsideAuthenticatedPost {
+                        method: entry.method.clone(),
+                        path: entry.path.clone(),
+                    });
+                }
                 if !policy.security.permits_path(&entry.path) {
                     errors.push(RouteError::EmbedPolicyOutsideEmbedRoutes {
                         method: entry.method.clone(),
@@ -512,7 +542,7 @@ where
         if errors.is_empty() {
             let handler = csrf::apply(
                 policy.request_gate(),
-                extractors::apply(policy.auth, handler),
+                extractors::apply(policy.auth, policy.absent_session, handler),
             );
             let mut handler = policy.request_log.apply(
                 policy
@@ -576,6 +606,7 @@ where
 pub fn application_routes() -> Routes<AppState> {
     Routes::new()
         .merge(health::routes())
+        .merge(auth::routes::routes())
         .merge(auth::sessions::routes::routes())
         .merge(branding::routes::routes())
         .merge(setup::routes::routes())

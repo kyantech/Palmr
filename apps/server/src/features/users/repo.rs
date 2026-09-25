@@ -30,6 +30,16 @@ const SELECT_BY_ID: &str = select_user_where!("id = ?1");
 pub(super) const SELECT_BY_EMAIL_NORMALIZED: &str = select_user_where!("email_normalized = ?1");
 pub(super) const SELECT_BY_USERNAME_NORMALIZED: &str =
     select_user_where!("username_normalized = ?1");
+const SELECT_BY_LOGIN_IDENTIFIER: &str = select_user_where!(
+    "email_normalized = ?1 OR username_normalized = ?1
+     ORDER BY email_normalized = ?1 DESC LIMIT 1"
+);
+
+const UPGRADE_PASSWORD_HASH: &str = "UPDATE users
+    SET password_hash = ?3
+    WHERE id = ?1 AND password_hash = ?2";
+
+const UPDATE_LAST_LOGIN: &str = "UPDATE users SET last_login_at = ?2 WHERE id = ?1";
 
 const INSERT: &str = "INSERT INTO users (
         id, email, email_normalized, username, username_normalized, first_name, last_name,
@@ -90,6 +100,38 @@ pub async fn find_by_username_normalized(
         .fetch_optional(reader.executor())
         .await?;
     row.map(|row| user_from(&row)).transpose()
+}
+
+pub async fn find_by_login_identifier(
+    reader: &ReadPool,
+    identifier: &NormalizedIdentifier,
+) -> Result<Option<User>, UserError> {
+    let row = sqlx::query(SELECT_BY_LOGIN_IDENTIFIER)
+        .bind(identifier.as_str())
+        .fetch_optional(reader.executor())
+        .await?;
+    row.map(|row| user_from(&row)).transpose()
+}
+
+pub async fn find_by_id_in_tx(tx: &mut WriteTx<'_>, id: UserId) -> Result<Option<User>, UserError> {
+    let row = sqlx::query(SELECT_BY_ID)
+        .bind(id.to_string())
+        .fetch_optional(tx.executor())
+        .await?;
+    row.map(|row| user_from(&row)).transpose()
+}
+
+pub async fn record_login(
+    tx: &mut WriteTx<'_>,
+    id: UserId,
+    at: Timestamp,
+) -> Result<(), UserError> {
+    let updated = sqlx::query(UPDATE_LAST_LOGIN)
+        .bind(id.to_string())
+        .bind(at.to_string())
+        .execute(tx.executor())
+        .await?;
+    affected_one(updated.rows_affected())
 }
 
 pub async fn insert(
@@ -228,6 +270,21 @@ pub async fn replace_password_hash(
         .execute(tx.executor())
         .await?;
     affected_one(updated.rows_affected())
+}
+
+pub async fn upgrade_password_hash(
+    tx: &mut WriteTx<'_>,
+    id: UserId,
+    verified: &Secret<String>,
+    upgraded: &Secret<String>,
+) -> Result<bool, UserError> {
+    let updated = sqlx::query(UPGRADE_PASSWORD_HASH)
+        .bind(id.to_string())
+        .bind(verified.expose_secret().as_str())
+        .bind(upgraded.expose_secret().as_str())
+        .execute(tx.executor())
+        .await?;
+    Ok(updated.rows_affected() == 1)
 }
 
 pub async fn set_must_change_password(

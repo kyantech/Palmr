@@ -1,5 +1,7 @@
 use std::fmt;
 
+use http::Method;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum AuthClass {
     Public,
@@ -31,6 +33,21 @@ impl AuthClass {
             Self::AuthenticatedRecentAuth => "authenticated+recent-auth",
             Self::Admin => "admin",
             Self::AdminRecentAuth => "admin+recent-auth",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AbsentSession {
+    Reject,
+    AlreadySignedOut,
+}
+
+impl AbsentSession {
+    pub fn permitted_for(self, class: AuthClass, method: &Method) -> bool {
+        match self {
+            Self::Reject => true,
+            Self::AlreadySignedOut => class == AuthClass::Authenticated && method == Method::POST,
         }
     }
 }

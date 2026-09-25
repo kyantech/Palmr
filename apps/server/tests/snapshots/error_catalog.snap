@@ -8,7 +8,22 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "AUTH_INVALID_CREDENTIALS",
+    "status": 401,
+    "retryable": false
+  },
+  {
+    "code": "AUTH_LOCKED",
+    "status": 429,
+    "retryable": true
+  },
+  {
     "code": "AUTH_PASSWORD_CHANGE_REQUIRED",
+    "status": 403,
+    "retryable": false
+  },
+  {
+    "code": "AUTH_PASSWORD_LOGIN_DISABLED",
     "status": 403,
     "retryable": false
   },

@@ -104,6 +104,10 @@ pub fn read(headers: &HeaderMap, name: &str) -> Result<Option<String>, CookieErr
     Ok(found)
 }
 
+pub fn presents(headers: &HeaderMap, name: &str) -> bool {
+    !matches!(read(headers, name), Ok(None))
+}
+
 pub fn sets(headers: &HeaderMap, name: &str) -> bool {
     headers.get_all(SET_COOKIE).iter().any(|value| {
         value

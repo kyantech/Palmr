@@ -61,6 +61,15 @@ const REVOKE_ONE: &str = "UPDATE sessions
     SET state = 'revoked', revoked_at = ?3, revoked_reason = ?4
     WHERE id = ?1 AND user_id = ?2 AND state IN ('active','mfa_pending')";
 
+const REVOKE_BY_TOKEN: &str = "UPDATE sessions
+    SET state = 'revoked', revoked_at = ?2, revoked_reason = ?3
+    WHERE token_hash = ?1 AND state IN ('active','mfa_pending')";
+
+const SELECT_SUMMARY: &str = "SELECT id, auth_method, created_at, last_seen_at, idle_expires_at,
+        absolute_expires_at, ip, user_agent
+      FROM sessions
+      WHERE id = ?1 AND user_id = ?2";
+
 const OWNED_EXISTS: &str = "SELECT EXISTS(SELECT 1 FROM sessions WHERE id = ?1 AND user_id = ?2)";
 
 const REVOKE_ALL: &str = "UPDATE sessions
@@ -227,6 +236,34 @@ pub async fn revoke_owned(
     } else {
         Err(SessionError::NotFound)
     }
+}
+
+pub async fn revoke_by_token(
+    tx: &mut WriteTx<'_>,
+    token_hash: &TokenDigest,
+    now: Timestamp,
+    reason: RevokedReason,
+) -> Result<bool, SessionError> {
+    let updated = sqlx::query(REVOKE_BY_TOKEN)
+        .bind(token_hash.as_str())
+        .bind(now.to_string())
+        .bind(reason.as_str())
+        .execute(tx.executor())
+        .await?;
+    Ok(updated.rows_affected() == 1)
+}
+
+pub async fn find_summary(
+    reader: &ReadPool,
+    user_id: UserId,
+    id: SessionId,
+) -> Result<Option<SessionSummary>, SessionError> {
+    let row = sqlx::query(SELECT_SUMMARY)
+        .bind(id.to_string())
+        .bind(user_id.to_string())
+        .fetch_optional(reader.executor())
+        .await?;
+    row.as_ref().map(summary_from).transpose()
 }
 
 pub async fn revoke_all(

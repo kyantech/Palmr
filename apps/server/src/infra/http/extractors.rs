@@ -5,32 +5,56 @@ use axum::routing::MethodRouter;
 use http::request::Parts;
 use http::Method;
 
-use crate::app::auth_class::AuthClass;
+use crate::app::auth_class::{AbsentSession, AuthClass};
 use crate::features::auth::sessions::{
     AuthenticatedPrincipal, SessionError, SessionRestriction, SessionService,
 };
 
+use super::cookies::{self, SESSION_COOKIE};
 use super::csrf::{is_state_changing, CsrfProof};
 use super::error::ApiError;
 use super::idempotency::IdempotencyScope;
 use super::request_id::{tag_error, RequestId};
 
-pub fn apply<S>(class: AuthClass, handler: MethodRouter<S>) -> MethodRouter<S>
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct AuthGate {
+    class: AuthClass,
+    absent_session: AbsentSession,
+}
+
+pub fn apply<S>(
+    class: AuthClass,
+    absent_session: AbsentSession,
+    handler: MethodRouter<S>,
+) -> MethodRouter<S>
 where
     S: Clone + Send + Sync + 'static,
 {
-    handler.route_layer(from_fn_with_state(class, enforce_auth_class))
+    handler.route_layer(from_fn_with_state(
+        AuthGate {
+            class,
+            absent_session,
+        },
+        enforce_auth_class,
+    ))
 }
 
 async fn enforce_auth_class(
-    State(class): State<AuthClass>,
+    State(gate): State<AuthGate>,
     mut request: Request,
     next: Next,
 ) -> Response {
+    let class = gate.class;
     if matches!(
         class,
         AuthClass::Public | AuthClass::PublicGrant | AuthClass::Setup
     ) {
+        return next.run(request).await;
+    }
+
+    let signed_out_satisfies = gate.absent_session == AbsentSession::AlreadySignedOut;
+    if signed_out_satisfies && !cookies::presents(request.headers(), SESSION_COOKIE) {
+        request.extensions_mut().insert(SignedOut);
         return next.run(request).await;
     }
 
@@ -51,6 +75,10 @@ async fn enforce_auth_class(
         .await
     {
         Ok(principal) => principal,
+        Err(SessionError::AuthRequired) if signed_out_satisfies => {
+            request.extensions_mut().insert(SignedOut);
+            return next.run(request).await;
+        }
         Err(error) => return tagged(error, request_id.as_ref()),
     };
     if let Err(error) = service.enforce_class(&principal, class) {
@@ -119,6 +147,32 @@ pub fn restriction_allows(restriction: SessionRestriction, method: &Method, path
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct AuthorizedClass(AuthClass);
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct SignedOut;
+
+#[derive(Debug, Clone)]
+pub enum SignOutCaller {
+    Session(AuthenticatedPrincipal),
+    SignedOut,
+}
+
+impl<S> FromRequestParts<S> for SignOutCaller
+where
+    S: Send + Sync,
+{
+    type Rejection = ApiError;
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        let principal = parts.extensions.get::<AuthenticatedPrincipal>().cloned();
+        let class = parts.extensions.get::<AuthorizedClass>().copied();
+        match (principal, class) {
+            (Some(principal), Some(_)) => Ok(Self::Session(principal)),
+            _ if parts.extensions.get::<SignedOut>().is_some() => Ok(Self::SignedOut),
+            _ => Err(tagged_api(SessionError::AuthRequired, parts)),
+        }
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct Authenticated(pub AuthenticatedPrincipal);

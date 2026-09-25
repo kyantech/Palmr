@@ -33,7 +33,7 @@ use super::error::SessionError;
 use super::model::{
     AuthMethod, AuthenticatedPrincipal, MintedSession, NewSession, PreparedSessionCredentials,
     ResolvedSession, RevokedReason, SessionClient, SessionId, SessionItem, SessionRecord,
-    SessionRestriction, SessionState,
+    SessionRestriction, SessionState, SessionSummary,
 };
 use super::repo;
 
@@ -246,6 +246,36 @@ impl SessionService {
         ))
     }
 
+    pub fn presented_token(headers: &HeaderMap) -> Option<TokenDigest> {
+        let raw = cookies::read(headers, SESSION_COOKIE).ok()??;
+        Token::decode(&raw).ok().map(|token| token.digest())
+    }
+
+    pub async fn revoke_presented_in_tx(
+        &self,
+        tx: &mut WriteTx<'_>,
+        presented: &TokenDigest,
+        reason: RevokedReason,
+    ) -> Result<bool, SessionError> {
+        let now = Timestamp::try_from(self.clock.now())?;
+        repo::revoke_by_token(tx, presented, now, reason).await
+    }
+
+    pub async fn current(
+        &self,
+        principal: &AuthenticatedPrincipal,
+    ) -> Result<SessionSummary, SessionError> {
+        repo::find_summary(self.pools.reader(), principal.user_id, principal.session_id)
+            .await?
+            .ok_or(SessionError::AuthRequired)
+    }
+
+    pub fn recent_auth_until(&self, last_auth_at: Timestamp) -> Result<Timestamp, SessionError> {
+        Ok(Timestamp::try_from(
+            last_auth_at.get() + self.policy().recent_auth,
+        )?)
+    }
+
     pub async fn authenticate_headers(
         &self,
         headers: &HeaderMap,
@@ -310,14 +340,23 @@ impl SessionService {
 
         let recent_auth = resolved.session.last_auth_at <= now
             && now.get() - resolved.session.last_auth_at.get() <= policy.recent_auth;
-        let restriction = if resolved.must_change_password {
+        let restriction =
+            self.restriction_for(resolved.must_change_password, resolved.totp_enabled);
+        Ok(principal(resolved, restriction, recent_auth))
+    }
+
+    pub fn restriction_for(
+        &self,
+        must_change_password: bool,
+        totp_enabled: bool,
+    ) -> SessionRestriction {
+        if must_change_password {
             SessionRestriction::MustChangePassword
-        } else if self.settings.load().security.two_factor_required && !resolved.totp_enabled {
+        } else if self.settings.load().security.two_factor_required && !totp_enabled {
             SessionRestriction::MustEnrollTotp
         } else {
             SessionRestriction::None
-        };
-        Ok(principal(resolved, restriction, recent_auth))
+        }
     }
 
     pub fn enforce_class(

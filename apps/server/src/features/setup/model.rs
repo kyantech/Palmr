@@ -7,6 +7,7 @@ use crate::domain::email::Email;
 use crate::domain::locale::LocaleCode;
 use crate::domain::secret::Secret;
 use crate::domain::username::Username;
+use crate::features::auth::login::password_login_enabled;
 use crate::features::branding::model::BrandingAsset;
 use crate::features::branding::service::public_url;
 use crate::features::settings::model::AppSettings;
@@ -16,8 +17,6 @@ use crate::infra::http::json::{JsonField, JsonKind, JsonRequest};
 
 pub const DEFAULT_APP_DESCRIPTION: &str = "Self-hosted file transfer";
 pub const MAX_DISPLAY_TEXT_CHARS: usize = 100;
-
-const PASSWORD_LOGIN_ENABLED: bool = true;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -64,7 +63,7 @@ impl Bootstrap {
             primary_color: branding.primary_color.clone(),
             default_locale: settings.default_locale().as_str(),
             supported_locales: LocaleCode::ALL.iter().map(|code| code.as_str()).collect(),
-            password_login_enabled: PASSWORD_LOGIN_ENABLED,
+            password_login_enabled: password_login_enabled(settings),
             providers: Vec::new(),
             powered_by_visible: settings.general.powered_by_visible,
             version: settings.general.show_version.then_some(VERSION),
