@@ -818,6 +818,37 @@ mod tests {
     }
 
     #[rstest]
+    #[case::aws_host_generic("https://s3.us-east-1.amazonaws.com", S3Profile::Generic)]
+    #[case::aws_host_minio("https://s3.us-east-1.amazonaws.com", S3Profile::Minio)]
+    #[case::minio_host_generic("http://minio:9000", S3Profile::Generic)]
+    #[case::minio_host_aws("http://minio:9000", S3Profile::Aws)]
+    fn it_storage_profile_ignores_endpoint_hostname(
+        #[case] endpoint: &'static str,
+        #[case] expected: S3Profile,
+    ) {
+        let name = match expected {
+            S3Profile::Generic => "generic",
+            S3Profile::Aws => "aws",
+            S3Profile::Minio => "minio",
+            S3Profile::R2 => "r2",
+            S3Profile::Rustfs => "rustfs",
+            S3Profile::B2 => "b2",
+            S3Profile::Gcs => "gcs",
+            S3Profile::Wasabi => "wasabi",
+            S3Profile::Garage => "garage",
+        };
+        let loaded = load_owned(with(
+            COMPLETE_S3,
+            &[("PALMR_S3_ENDPOINT", endpoint), ("PALMR_S3_PROFILE", name)],
+        ))
+        .unwrap();
+        let StorageConfig::S3(s3) = loaded.config.storage else {
+            panic!("expected S3 storage");
+        };
+        assert_eq!(s3.profile, expected);
+    }
+
+    #[rstest]
     #[case::generic("generic", S3Profile::Generic)]
     #[case::aws("aws", S3Profile::Aws)]
     #[case::minio("minio", S3Profile::Minio)]

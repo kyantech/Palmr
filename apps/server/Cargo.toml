@@ -14,6 +14,9 @@ path = "src/main.rs"
 anyhow = "1"
 argon2 = { version = "0.5", default-features = false, features = ["alloc", "password-hash"] }
 async-trait = "0.1"
+aws-sdk-s3 = { version = "1", default-features = false, features = ["behavior-version-latest", "http-1x", "rt-tokio"] }
+aws-smithy-runtime-api = { version = "1", default-features = false, features = ["client", "http-1x"] }
+aws-smithy-types = { version = "1", default-features = false, features = ["http-body-1-x"] }
 axum = { version = "0.8", default-features = false, features = ["http1", "matched-path", "tokio"] }
 base64ct = { version = "1", features = ["alloc"] }
 chacha20poly1305 = { version = "0.10", default-features = false, features = ["alloc"] }
@@ -24,11 +27,16 @@ hmac = "0.13"
 http = "1"
 getrandom = "0.4"
 http-body-util = "0.1"
+hyper = { version = "1", default-features = false, features = ["client", "http1", "http2"] }
+hyper-rustls = { version = "0.27", default-features = false, features = ["http1", "http2", "ring", "tls12"] }
+hyper-util = { version = "0.1", default-features = false, features = ["client-legacy", "http1", "http2", "tokio"] }
 ipnet = "2"
 mime_guess = { version = "2", default-features = false }
 minijinja = { version = "2.24", default-features = false, features = ["multi_template"] }
 rust-embed = { version = "8", features = ["debug-embed"] }
 rustix = { version = "1", features = ["fs", "process"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+rustls-pki-types = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.11"
@@ -48,6 +56,7 @@ utoipa = "5"
 utoipa-axum = "0.2"
 utoipa-scalar = { version = "0.3", default-features = false }
 uuid = { version = "1", default-features = false, features = ["std", "v7"] }
+webpki-roots = "1"
 zeroize = "1"
 sqlx = { version = "0.8", default-features = false, features = ["macros", "migrate", "runtime-tokio", "sqlite"] }
 arc-swap = "1"

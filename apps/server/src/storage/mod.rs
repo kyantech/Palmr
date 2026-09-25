@@ -4,6 +4,7 @@ pub mod health;
 pub mod key;
 pub mod local;
 pub mod provider;
+pub mod s3;
 
 use std::fmt;
 

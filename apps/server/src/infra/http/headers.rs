@@ -9,11 +9,12 @@ use http::header::{
     HeaderMap, HeaderName, HeaderValue, CONTENT_SECURITY_POLICY, REFERRER_POLICY,
     X_CONTENT_TYPE_OPTIONS,
 };
-use url::{Origin, Url};
+use url::Url;
 
 use super::error::ApiError;
 use super::request_id::{tag_error, RequestId};
-use crate::config::{OperatorConfig, StorageConfig};
+use crate::config::OperatorConfig;
+use crate::storage::s3::config::effective_public_endpoint;
 
 pub const CROSS_ORIGIN_RESOURCE_POLICY: HeaderName =
     HeaderName::from_static("cross-origin-resource-policy");
@@ -117,17 +118,7 @@ struct StorageOrigin(String);
 
 impl StorageOrigin {
     fn of(url: &Url) -> Option<Self> {
-        let origin @ Origin::Tuple(..) = url.origin() else {
-            return None;
-        };
-        let serialized = origin.ascii_serialization();
-        serialized
-            .bytes()
-            .all(|byte| {
-                byte.is_ascii_alphanumeric()
-                    || matches!(byte, b':' | b'/' | b'.' | b'-' | b'[' | b']')
-            })
-            .then_some(Self(serialized))
+        crate::storage::s3::config::public_origin(url).map(Self)
     }
 
     fn is_http(&self) -> bool {
@@ -142,12 +133,7 @@ pub struct SecurityHeaders {
 
 impl SecurityHeaders {
     pub fn new(config: &OperatorConfig) -> Self {
-        let storage_origin = match &config.storage {
-            StorageConfig::Local => None,
-            StorageConfig::S3(s3) => {
-                StorageOrigin::of(s3.public_endpoint.as_ref().unwrap_or(&s3.endpoint))
-            }
-        };
+        let storage_origin = effective_public_endpoint(&config.storage).and_then(StorageOrigin::of);
         if let Some(origin) = &storage_origin {
             if config.base_url.url().scheme() == "https" && origin.is_http() {
                 tracing::warn!(
