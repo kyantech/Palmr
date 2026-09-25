@@ -5,6 +5,7 @@ pub mod email;
 pub mod error_code;
 pub mod id;
 pub mod locale;
+pub mod mime;
 pub mod normalize;
 pub mod role;
 pub mod secret;

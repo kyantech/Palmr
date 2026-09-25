@@ -1,0 +1,2 @@
+Palmr sniff fixture.
+Plain UTF-8 text with no magic signature.
