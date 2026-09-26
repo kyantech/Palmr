@@ -424,7 +424,7 @@ impl AuthService {
         }))
     }
 
-    pub(super) async fn verify_off_runtime(
+    pub(crate) async fn verify_off_runtime(
         &self,
         password: Secret<String>,
         stored: Option<Secret<String>>,

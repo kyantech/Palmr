@@ -15,7 +15,7 @@ use tower::{Service, ServiceBuilder};
 use utoipa::openapi::OpenApi;
 use utoipa_axum::router::{OpenApiRouter, UtoipaMethodRouter};
 
-use super::auth_class::{AbsentSession, AuthClass};
+use super::auth_class::{AbsentSession, AuthClass, RecentAuthWaiver};
 use super::health;
 use super::openapi::{self, declare_route_policy, operations_mut};
 use super::state::AppState;
@@ -23,7 +23,7 @@ use crate::domain::clock::Clock;
 use crate::domain::error_code::ErrorCode;
 use crate::features::auth;
 use crate::features::branding;
-use crate::features::{settings, setup};
+use crate::features::{settings, setup, users};
 use crate::infra::http::csrf::{self, AnonymousCsrf, CsrfGuard, RequestContent, RequestGate};
 use crate::infra::http::encoding::{
     reject_undecodable_body, request_decompression, response_compression,
@@ -207,6 +207,7 @@ pub struct RoutePolicy {
     request_content: RequestContent,
     anonymous_csrf: AnonymousCsrf,
     absent_session: AbsentSession,
+    recent_auth_waiver: RecentAuthWaiver,
 }
 
 impl RoutePolicy {
@@ -221,6 +222,7 @@ impl RoutePolicy {
             request_content: RequestContent::Json,
             anonymous_csrf: AnonymousCsrf::None,
             absent_session: AbsentSession::Reject,
+            recent_auth_waiver: RecentAuthWaiver::None,
         }
     }
 
@@ -251,6 +253,11 @@ impl RoutePolicy {
 
     pub const fn with_idempotent_sign_out(mut self) -> Self {
         self.absent_session = AbsentSession::AlreadySignedOut;
+        self
+    }
+
+    pub const fn with_forced_password_change_waiver(mut self) -> Self {
+        self.recent_auth_waiver = RecentAuthWaiver::ForcedPasswordChange;
         self
     }
 
@@ -288,6 +295,10 @@ impl RoutePolicy {
 
     pub const fn absent_session(&self) -> AbsentSession {
         self.absent_session
+    }
+
+    pub const fn recent_auth_waiver(&self) -> RecentAuthWaiver {
+        self.recent_auth_waiver
     }
 
     pub const fn request_gate(&self) -> RequestGate {
@@ -354,6 +365,7 @@ pub enum RouteError {
     IdempotencyNotApplicable { method: Method, path: String },
     AnonymousCsrfOutsidePublicSurface { method: Method, path: String },
     SignOutOutsideAuthenticatedPost { method: Method, path: String },
+    RecentAuthWaiverOutsidePasswordChange { method: Method, path: String },
 }
 
 impl fmt::Display for RouteError {
@@ -387,6 +399,10 @@ impl fmt::Display for RouteError {
             Self::SignOutOutsideAuthenticatedPost { method, path } => write!(
                 f,
                 "{method} {path} treats a missing session as already signed out but is not an authenticated POST"
+            ),
+            Self::RecentAuthWaiverOutsidePasswordChange { method, path } => write!(
+                f,
+                "{method} {path} waives recent authentication for a forced password change but is not the authenticated+recent-auth POST /api/v1/profile/password route"
             ),
         }
     }
@@ -515,6 +531,15 @@ where
                         path: entry.path.clone(),
                     });
                 }
+                if !policy
+                    .recent_auth_waiver
+                    .permitted_for(policy.auth, &entry.method, &entry.path)
+                {
+                    errors.push(RouteError::RecentAuthWaiverOutsidePasswordChange {
+                        method: entry.method.clone(),
+                        path: entry.path.clone(),
+                    });
+                }
                 if !policy.security.permits_path(&entry.path) {
                     errors.push(RouteError::EmbedPolicyOutsideEmbedRoutes {
                         method: entry.method.clone(),
@@ -542,7 +567,12 @@ where
         if errors.is_empty() {
             let handler = csrf::apply(
                 policy.request_gate(),
-                extractors::apply(policy.auth, policy.absent_session, handler),
+                extractors::apply(
+                    policy.auth,
+                    policy.absent_session,
+                    policy.recent_auth_waiver,
+                    handler,
+                ),
             );
             let mut handler = policy.request_log.apply(
                 policy
@@ -611,6 +641,7 @@ pub fn application_routes() -> Routes<AppState> {
         .merge(branding::routes::routes())
         .merge(setup::routes::routes())
         .merge(settings::routes::routes())
+        .merge(users::routes::routes())
         .merge(openapi::routes())
 }
 

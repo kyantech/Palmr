@@ -168,6 +168,22 @@ pub fn logout() -> ActionSpec {
     ActionSpec::new(AuditAction::Logout, Metadata::json(&[]))
 }
 
+pub fn password_changed(
+    forced: bool,
+    sessions_revoked: u64,
+    trusted_devices_revoked: u64,
+) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("forced", Value::from(forced)),
+        ("sessions_revoked", Value::from(sessions_revoked)),
+        (
+            "trusted_devices_revoked",
+            Value::from(trusted_devices_revoked),
+        ),
+    ]);
+    ActionSpec::new(AuditAction::PasswordChanged, metadata)
+}
+
 pub fn setup_completed() -> ActionSpec {
     ActionSpec::new(AuditAction::SetupCompleted, Metadata::json(&[]))
 }

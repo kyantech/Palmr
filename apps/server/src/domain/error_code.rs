@@ -98,6 +98,8 @@ error_catalog! {
         "Two-factor authentication enrollment is required";
     SessionNotFound = "SESSION_NOT_FOUND", NOT_FOUND, retryable: false,
         "The session was not found";
+    PasswordCurrentInvalid = "PASSWORD_CURRENT_INVALID", FORBIDDEN, retryable: false,
+        "The current password is incorrect";
     PasswordPolicyViolation = "PASSWORD_POLICY_VIOLATION", UNPROCESSABLE_ENTITY, retryable: false,
         "The password does not meet the password policy";
     UserEmailTaken = "USER_EMAIL_TAKEN", CONFLICT, retryable: false,

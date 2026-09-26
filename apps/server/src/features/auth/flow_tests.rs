@@ -47,6 +47,7 @@ use crate::features::settings::SettingsService;
 use crate::features::setup::SetupService;
 use crate::features::users::model::{NewUser, NormalizedIdentifier, QuotaOverride, UserId};
 use crate::features::users::repo as users;
+use crate::features::users::ProfileService;
 use crate::infra::crypto::instance_key::InstanceKey;
 use crate::infra::crypto::password::{hash_password, verify_password, PasswordVerification};
 use crate::infra::crypto::token::Token;
@@ -72,6 +73,7 @@ struct Stack {
     settings: SettingsService,
     sessions: SessionService,
     auth: AuthService,
+    profile: ProfileService,
     drain: AuditDrain,
     service: BoxedService,
 }
@@ -121,9 +123,16 @@ impl Stack {
             Arc::new(clock.clone()),
             settings.handle(),
             sessions.clone(),
-            audit,
+            audit.clone(),
         )
         .unwrap();
+        let profile = ProfileService::new(
+            pools.clone(),
+            Arc::new(clock.clone()),
+            settings.handle(),
+            auth.clone(),
+            audit,
+        );
         let setup = SetupService::new(
             pools.clone(),
             Arc::new(clock.clone()),
@@ -142,6 +151,7 @@ impl Stack {
                 StorageRuntime::for_test(),
             ))
             .layer(Extension(auth.clone()))
+            .layer(Extension(profile.clone()))
             .layer(Extension(EffectiveSettingsService::new(
                 pools.reader().clone(),
                 settings.handle(),
@@ -167,6 +177,7 @@ impl Stack {
             settings,
             sessions,
             auth,
+            profile,
             drain,
             service,
         }
@@ -346,6 +357,7 @@ impl Stack {
     async fn stop(self) {
         drop(self.service);
         drop(self.auth);
+        drop(self.profile);
         drop(self.sessions);
         drop(self.settings);
         drop(self.drain);
@@ -1678,4 +1690,5 @@ async fn it_login_audit_and_attempts_never_store_secrets() {
     stack.stop().await;
 }
 
+mod profile;
 mod recent_auth;

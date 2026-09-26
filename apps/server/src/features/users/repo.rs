@@ -10,7 +10,9 @@ use crate::domain::time::Timestamp;
 use crate::infra::db::{DbError, ReadPool, WriteTx};
 
 use super::error::UserError;
-use super::model::{AdminState, NewUser, NormalizedIdentifier, QuotaOverride, User, UserId};
+use super::model::{
+    AdminState, NewUser, NormalizedIdentifier, QuotaOverride, UsageRow, User, UserId,
+};
 
 macro_rules! select_user_where {
     ($filter:literal) => {
@@ -66,6 +68,25 @@ const UPDATE_PASSWORD_HASH: &str = "UPDATE users
 const UPDATE_MUST_CHANGE_PASSWORD: &str = "UPDATE users
     SET must_change_password = ?2, updated_at = ?3
     WHERE id = ?1";
+
+const CHANGE_PASSWORD: &str = "UPDATE users
+    SET password_hash = ?3, password_updated_at = ?4, must_change_password = 0, updated_at = ?4
+    WHERE id = ?1 AND is_active = 1 AND password_hash = ?2";
+
+const UPDATE_NAMES: &str = "UPDATE users
+    SET first_name = COALESCE(?2, first_name), last_name = COALESCE(?3, last_name), updated_at = ?4
+    WHERE id = ?1 AND is_active = 1";
+
+const SELECT_USAGE: &str = "SELECT u.used_bytes, u.quota_override_mode, u.quota_bytes,
+        (SELECT COALESCE(SUM(f.size_bytes), 0) FROM files f WHERE f.owner_id = u.id)
+            AS my_files_bytes,
+        (SELECT COALESCE(SUM(r.size_bytes), 0) FROM received_files r WHERE r.owner_id = u.id)
+            AS received_bytes,
+        (SELECT COALESCE(SUM(q.reserved_bytes), 0) FROM quota_reservations q
+            WHERE q.user_id = u.id AND q.state = 'held')
+            AS reserved_bytes
+      FROM users u
+      WHERE u.id = ?1";
 
 const SELECT_ADMIN_STATE: &str = "SELECT role, is_active FROM users WHERE id = ?1";
 
@@ -301,6 +322,65 @@ pub async fn set_must_change_password(
         .execute(tx.executor())
         .await?;
     affected_one(updated.rows_affected())
+}
+
+pub async fn change_password(
+    tx: &mut WriteTx<'_>,
+    id: UserId,
+    verified: &Secret<String>,
+    replacement: &Secret<String>,
+    at: Timestamp,
+) -> Result<bool, UserError> {
+    let updated = sqlx::query(CHANGE_PASSWORD)
+        .bind(id.to_string())
+        .bind(verified.expose_secret().as_str())
+        .bind(replacement.expose_secret().as_str())
+        .bind(at.to_string())
+        .execute(tx.executor())
+        .await?;
+    Ok(updated.rows_affected() == 1)
+}
+
+pub async fn update_names(
+    tx: &mut WriteTx<'_>,
+    clock: &dyn Clock,
+    id: UserId,
+    first_name: Option<&str>,
+    last_name: Option<&str>,
+) -> Result<(), UserError> {
+    let now = Timestamp::try_from(clock.now())?;
+    let updated = sqlx::query(UPDATE_NAMES)
+        .bind(id.to_string())
+        .bind(first_name)
+        .bind(last_name)
+        .bind(now.to_string())
+        .execute(tx.executor())
+        .await?;
+    affected_one(updated.rows_affected())
+}
+
+pub async fn usage(reader: &ReadPool, id: UserId) -> Result<Option<UsageRow>, UserError> {
+    let row = sqlx::query(SELECT_USAGE)
+        .bind(id.to_string())
+        .fetch_optional(reader.executor())
+        .await?;
+    row.map(|row| {
+        let quota_mode: String = column(&row, "quota_override_mode")?;
+        let quota_bytes: Option<i64> = column(&row, "quota_bytes")?;
+        Ok(UsageRow {
+            used_bytes: bytes(&row, "used_bytes")?,
+            my_files_bytes: bytes(&row, "my_files_bytes")?,
+            received_bytes: bytes(&row, "received_bytes")?,
+            reserved_bytes: bytes(&row, "reserved_bytes")?,
+            quota: QuotaOverride::from_columns(&quota_mode, quota_bytes)
+                .map_err(|_| invariant("quota_override_mode"))?,
+        })
+    })
+    .transpose()
+}
+
+fn bytes(row: &SqliteRow, name: &'static str) -> Result<ByteSize, UserError> {
+    ByteSize::try_from(column::<i64>(row, name)?).map_err(|_| invariant(name))
 }
 
 pub(super) async fn admin_state(

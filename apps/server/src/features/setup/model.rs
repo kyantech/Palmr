@@ -11,12 +11,11 @@ use crate::features::auth::login::password_login_enabled;
 use crate::features::branding::model::BrandingAsset;
 use crate::features::branding::service::public_url;
 use crate::features::settings::model::AppSettings;
-use crate::features::users::model::User;
+use crate::features::users::model::{self as users, User};
 use crate::features::users::service::AccountPasswordPolicy;
 use crate::infra::http::json::{JsonField, JsonKind, JsonRequest};
 
 pub const DEFAULT_APP_DESCRIPTION: &str = "Self-hosted file transfer";
-pub const MAX_DISPLAY_TEXT_CHARS: usize = 100;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -181,11 +180,7 @@ fn display_text(
     field: &'static str,
     invalid: &mut Vec<&'static str>,
 ) -> Option<String> {
-    let trimmed = input.trim();
-    let length = trimmed.chars().count();
-    let valid =
-        (1..=MAX_DISPLAY_TEXT_CHARS).contains(&length) && !trimmed.chars().any(char::is_control);
-    checked(valid.then(|| trimmed.to_owned()), field, invalid)
+    checked(users::display_text(input), field, invalid)
 }
 
 fn checked<T>(

@@ -928,6 +928,35 @@ async fn svc_restricted_session_allowlist() {
         }
     }
     let application = app_service(&harness, crate::app::router::application_routes());
+    let (password_only, protected): (Vec<_>, Vec<_>) = protected.into_iter().partition(|entry| {
+        PASSWORD_ONLY
+            .iter()
+            .any(|(method, path)| method == entry.method() && *path == entry.path())
+    });
+    assert_eq!(password_only.len(), PASSWORD_ONLY.len());
+    for entry in password_only {
+        assert!(restriction_allows(
+            SessionRestriction::MustChangePassword,
+            entry.method(),
+            entry.path()
+        ));
+        assert_eq!(
+            restricted_code(
+                application.clone(),
+                entry.method().clone(),
+                entry.path(),
+                &totp_session
+            )
+            .await,
+            (
+                StatusCode::FORBIDDEN,
+                Some("AUTH_2FA_ENROLLMENT_REQUIRED".to_owned())
+            ),
+            "{} {}",
+            entry.method(),
+            entry.path()
+        );
+    }
     for entry in protected {
         let path = concrete(entry.path(), &harness.clock);
         assert!(!restriction_allows(
@@ -1617,4 +1646,99 @@ async fn svc_csrf_precedence_over_auth() {
         call(Method::POST, write, Some(token), (Some(own), Some(own))).await,
         auth_required
     );
+}
+
+#[tokio::test]
+async fn it_revocation_clears_pending_mfa_rows() {
+    let harness = Harness::open().await;
+    let user = harness.user("pending-revoke", Role::User, false).await;
+    let now = Timestamp::try_from(harness.clock.now()).unwrap();
+    let mfa_expires_at = Timestamp::try_from(now.get() + time::Duration::minutes(5)).unwrap();
+    let insert_pending = async || {
+        let id = super::model::SessionId::generate(&harness.clock);
+        let mfa_token = Token::mint().unwrap();
+        let placeholder = Token::mint().unwrap();
+        harness
+            .pools
+            .write_tx(&harness.clock, "sessions.test_pending", async |tx| {
+                sqlx::query(
+                    "INSERT INTO sessions (
+                        id, user_id, token_hash, csrf_token_hash, state, auth_method,
+                        mfa_token_hash, mfa_expires_at, created_at, last_seen_at,
+                        last_auth_at, idle_expires_at, absolute_expires_at
+                     ) VALUES (?1, ?2, ?3, ?4, 'mfa_pending', 'password', ?3, ?5,
+                               ?6, ?6, ?6, ?5, ?5)",
+                )
+                .bind(id.to_string())
+                .bind(user.to_string())
+                .bind(mfa_token.digest().as_str())
+                .bind(placeholder.digest().as_str())
+                .bind(mfa_expires_at.to_string())
+                .bind(now.to_string())
+                .execute(tx.executor())
+                .await?;
+                Ok::<(), super::SessionError>(())
+            })
+            .await
+            .unwrap();
+        (id, mfa_token)
+    };
+    let current = harness.mint(user).await;
+
+    let (one, _) = insert_pending().await;
+    let (by_token, token) = insert_pending().await;
+    let (others, _) = insert_pending().await;
+    harness
+        .pools
+        .write_tx(&harness.clock, "sessions.test_revoke", async |tx| {
+            assert!(
+                harness
+                    .service
+                    .revoke_one_in_tx(tx, user, one, RevokedReason::MfaAbandoned)
+                    .await?
+            );
+            assert!(
+                harness
+                    .service
+                    .revoke_presented_in_tx(tx, &token.digest(), RevokedReason::MfaAbandoned)
+                    .await?
+            );
+            assert_eq!(
+                harness
+                    .service
+                    .revoke_all_others_in_tx(tx, user, current.id, RevokedReason::PasswordChanged)
+                    .await?,
+                1
+            );
+            Ok::<(), super::SessionError>(())
+        })
+        .await
+        .unwrap();
+    let (last, _) = insert_pending().await;
+    let revoked_all = harness
+        .pools
+        .write_tx(&harness.clock, "sessions.test_revoke_all", async |tx| {
+            harness
+                .service
+                .revoke_all_in_tx(tx, user, RevokedReason::PasswordReset)
+                .await
+        })
+        .await
+        .unwrap();
+    assert_eq!(revoked_all, 2);
+
+    for id in [one, by_token, others, last] {
+        let (state, mfa_hash, mfa_expiry): (String, Option<String>, Option<String>) =
+            sqlx::query_as(
+                "SELECT state, mfa_token_hash, mfa_expires_at FROM sessions WHERE id = ?1",
+            )
+            .bind(id.to_string())
+            .fetch_one(harness.pools.reader().executor())
+            .await
+            .unwrap();
+        assert_eq!(
+            (state.as_str(), mfa_hash, mfa_expiry),
+            ("revoked", None, None)
+        );
+    }
 }

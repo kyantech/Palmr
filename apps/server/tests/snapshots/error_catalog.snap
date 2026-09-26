@@ -118,6 +118,11 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "PASSWORD_CURRENT_INVALID",
+    "status": 403,
+    "retryable": false
+  },
+  {
     "code": "PASSWORD_POLICY_VIOLATION",
     "status": 422,
     "retryable": false

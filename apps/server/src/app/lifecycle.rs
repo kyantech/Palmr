@@ -46,6 +46,7 @@ use crate::features::settings::{
     EffectiveSettingsService, OperatorPolicy, SettingsError, SettingsHandle, SettingsService,
 };
 use crate::features::setup::SetupService;
+use crate::features::users::ProfileService;
 use crate::infra::crypto::hkdf::KeyRing;
 use crate::infra::crypto::instance_key::{InstanceKey, InstanceKeyError, KeyOrigin};
 use crate::infra::crypto::CryptoError;
@@ -795,8 +796,16 @@ async fn initialize(
             );
         }
     };
+    let profile = ProfileService::new(
+        database.pools().clone(),
+        Arc::clone(&clock),
+        settings.clone(),
+        auth.clone(),
+        audit_service.clone(),
+    );
     let services = RequestServices {
         auth,
+        profile,
         setup: SetupService::new(
             database.pools().clone(),
             Arc::clone(&clock),
@@ -1034,6 +1043,7 @@ pub(crate) fn setup_locale(config: &OperatorConfig) -> Option<LocaleCode> {
 
 struct RequestServices {
     auth: AuthService,
+    profile: ProfileService,
     setup: SetupService,
     sessions: SessionService,
     branding: BrandingService,
@@ -1062,6 +1072,7 @@ fn composed_router(
     let routes = match services {
         Some(services) => routes
             .layer(axum::Extension(services.auth))
+            .layer(axum::Extension(services.profile))
             .layer(axum::Extension(services.setup))
             .layer(axum::Extension(services.sessions))
             .layer(axum::Extension(services.branding))

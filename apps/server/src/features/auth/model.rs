@@ -181,21 +181,27 @@ impl MeResponse {
                 recent_auth_until: recent_auth_until.to_string(),
             },
             restriction: RestrictionName::of(restriction),
-            user: MeUser {
-                avatar_url: account.avatar_url(),
-                id: account.id.to_string(),
-                first_name: account.first_name,
-                last_name: account.last_name,
-                username: account.username,
-                email: account.email,
-                pending_email: account.pending_email,
-                role: account.role.as_str(),
-                is_active: account.is_active,
-                locale: account.locale,
-                theme: account.theme,
-                accent: account.accent,
-                created_at: account.created_at.to_string(),
-            },
+            user: MeUser::from(account),
+        }
+    }
+}
+
+impl From<AccountView> for MeUser {
+    fn from(account: AccountView) -> Self {
+        Self {
+            avatar_url: account.avatar_url(),
+            id: account.id.to_string(),
+            first_name: account.first_name,
+            last_name: account.last_name,
+            username: account.username,
+            email: account.email,
+            pending_email: account.pending_email,
+            role: account.role.as_str(),
+            is_active: account.is_active,
+            locale: account.locale,
+            theme: account.theme,
+            accent: account.accent,
+            created_at: account.created_at.to_string(),
         }
     }
 }

@@ -9,6 +9,16 @@ use crate::domain::username::Username;
 
 pub type UserId = Id<User>;
 
+pub const MAX_DISPLAY_TEXT_CHARS: usize = 100;
+
+pub fn display_text(input: &str) -> Option<String> {
+    let trimmed = input.trim();
+    let length = trimmed.chars().count();
+    let valid =
+        (1..=MAX_DISPLAY_TEXT_CHARS).contains(&length) && !trimmed.chars().any(char::is_control);
+    valid.then(|| trimmed.to_owned())
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum QuotaOverride {
     Inherit,
@@ -122,4 +132,13 @@ impl AdminState {
     pub const fn is_active_admin(self) -> bool {
         self.is_active && matches!(self.role, Role::Admin)
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct UsageRow {
+    pub used_bytes: ByteSize,
+    pub my_files_bytes: ByteSize,
+    pub received_bytes: ByteSize,
+    pub reserved_bytes: ByteSize,
+    pub quota: QuotaOverride,
 }

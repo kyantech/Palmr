@@ -58,11 +58,13 @@ const UPDATE_LAST_AUTH: &str = "UPDATE sessions SET last_auth_at = ?2
       AND idle_expires_at > ?2 AND absolute_expires_at > ?2";
 
 const REVOKE_ONE: &str = "UPDATE sessions
-    SET state = 'revoked', revoked_at = ?3, revoked_reason = ?4
+    SET state = 'revoked', revoked_at = ?3, revoked_reason = ?4,
+        mfa_token_hash = NULL, mfa_expires_at = NULL
     WHERE id = ?1 AND user_id = ?2 AND state IN ('active','mfa_pending')";
 
 const REVOKE_BY_TOKEN: &str = "UPDATE sessions
-    SET state = 'revoked', revoked_at = ?2, revoked_reason = ?3
+    SET state = 'revoked', revoked_at = ?2, revoked_reason = ?3,
+        mfa_token_hash = NULL, mfa_expires_at = NULL
     WHERE token_hash = ?1 AND state IN ('active','mfa_pending')";
 
 const SELECT_SUMMARY: &str = "SELECT id, auth_method, created_at, last_seen_at, idle_expires_at,
@@ -73,11 +75,13 @@ const SELECT_SUMMARY: &str = "SELECT id, auth_method, created_at, last_seen_at, 
 const OWNED_EXISTS: &str = "SELECT EXISTS(SELECT 1 FROM sessions WHERE id = ?1 AND user_id = ?2)";
 
 const REVOKE_ALL: &str = "UPDATE sessions
-    SET state = 'revoked', revoked_at = ?2, revoked_reason = ?3
+    SET state = 'revoked', revoked_at = ?2, revoked_reason = ?3,
+        mfa_token_hash = NULL, mfa_expires_at = NULL
     WHERE user_id = ?1 AND state IN ('active','mfa_pending')";
 
 const REVOKE_OTHERS: &str = "UPDATE sessions
-    SET state = 'revoked', revoked_at = ?3, revoked_reason = ?4
+    SET state = 'revoked', revoked_at = ?3, revoked_reason = ?4,
+        mfa_token_hash = NULL, mfa_expires_at = NULL
     WHERE user_id = ?1 AND id <> ?2 AND state IN ('active','mfa_pending')";
 
 pub async fn insert_active(

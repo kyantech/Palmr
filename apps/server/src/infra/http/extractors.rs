@@ -5,7 +5,7 @@ use axum::routing::MethodRouter;
 use http::request::Parts;
 use http::Method;
 
-use crate::app::auth_class::{AbsentSession, AuthClass};
+use crate::app::auth_class::{AbsentSession, AuthClass, RecentAuthWaiver};
 use crate::features::auth::sessions::{
     AuthenticatedPrincipal, SessionError, SessionRestriction, SessionService,
 };
@@ -20,11 +20,13 @@ use super::request_id::{tag_error, RequestId};
 struct AuthGate {
     class: AuthClass,
     absent_session: AbsentSession,
+    recent_auth_waiver: RecentAuthWaiver,
 }
 
 pub fn apply<S>(
     class: AuthClass,
     absent_session: AbsentSession,
+    recent_auth_waiver: RecentAuthWaiver,
     handler: MethodRouter<S>,
 ) -> MethodRouter<S>
 where
@@ -34,6 +36,7 @@ where
         AuthGate {
             class,
             absent_session,
+            recent_auth_waiver,
         },
         enforce_auth_class,
     ))
@@ -81,7 +84,13 @@ async fn enforce_auth_class(
         }
         Err(error) => return tagged(error, request_id.as_ref()),
     };
-    if let Err(error) = service.enforce_class(&principal, class) {
+    let waived = gate.recent_auth_waiver.waives(principal.restriction);
+    let enforced = if waived {
+        AuthClass::Authenticated
+    } else {
+        class
+    };
+    if let Err(error) = service.enforce_class(&principal, enforced) {
         return tagged(error, request_id.as_ref());
     }
     if let Err(error) = enforce_restriction(
@@ -96,6 +105,9 @@ async fn enforce_auth_class(
         .insert(IdempotencyScope::user(principal.user_id));
     request.extensions_mut().insert(principal);
     request.extensions_mut().insert(AuthorizedClass(class));
+    if waived {
+        request.extensions_mut().insert(ForcedPasswordChange);
+    }
     next.run(request).await
 }
 
@@ -151,6 +163,9 @@ struct AuthorizedClass(AuthClass);
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct SignedOut;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct ForcedPasswordChange;
+
 #[derive(Debug, Clone)]
 pub enum SignOutCaller {
     Session(AuthenticatedPrincipal),
@@ -179,6 +194,9 @@ pub struct Authenticated(pub AuthenticatedPrincipal);
 
 #[derive(Debug, Clone)]
 pub struct AuthenticatedRecentAuth(pub AuthenticatedPrincipal);
+
+#[derive(Debug, Clone)]
+pub struct PasswordChangeCaller(pub AuthenticatedPrincipal);
 
 #[derive(Debug, Clone)]
 pub struct Admin(pub AuthenticatedPrincipal);
@@ -235,6 +253,36 @@ extractor!(
         method: principal.auth_method.recent_auth_hint()
     }
 );
+
+impl<S> FromRequestParts<S> for PasswordChangeCaller
+where
+    S: Send + Sync,
+{
+    type Rejection = ApiError;
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        let principal = parts
+            .extensions
+            .get::<AuthenticatedPrincipal>()
+            .cloned()
+            .ok_or_else(|| tagged_api(SessionError::AuthRequired, parts))?;
+        let class = parts.extensions.get::<AuthorizedClass>().copied();
+        let recent = principal.recent_auth
+            && class == Some(AuthorizedClass(AuthClass::AuthenticatedRecentAuth));
+        let forced = principal.restriction == SessionRestriction::MustChangePassword
+            && parts.extensions.get::<ForcedPasswordChange>().is_some();
+        if recent || forced {
+            Ok(Self(principal))
+        } else {
+            Err(tagged_api(
+                SessionError::RecentAuthRequired {
+                    method: principal.auth_method.recent_auth_hint(),
+                },
+                parts,
+            ))
+        }
+    }
+}
 
 extractor!(
     Admin,

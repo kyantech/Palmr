@@ -1,3 +1,5 @@
+use crate::domain::bytes::ByteSize;
+
 const MIB: u64 = 1024 * 1024;
 const GIB: u64 = 1024 * MIB;
 const TIB: u64 = 1024 * GIB;
@@ -41,6 +43,14 @@ impl StorageCapabilities {
         max_parts: 10_000,
         requires_checksum_headers: false,
     };
+
+    pub fn effective_max_file_size(&self, configured: Option<ByteSize>) -> Option<ByteSize> {
+        let provider = ByteSize::try_from(self.max_object_size).ok();
+        match (configured, provider) {
+            (Some(configured), Some(provider)) => Some(configured.min(provider)),
+            (configured, provider) => configured.or(provider),
+        }
+    }
 
     pub const fn upload_data_plane(&self) -> UploadDataPlane {
         if self.supports_multipart {
@@ -102,6 +112,28 @@ pub enum CopyStrategy {
 #[cfg(test)]
 mod tests {
     use super::StorageCapabilities;
+    use crate::domain::bytes::ByteSize;
+
+    #[test]
+    fn unit_effective_max_file_size_is_min_of_policy_and_provider() {
+        let bytes = |value: u64| ByteSize::try_from(value).unwrap();
+        let local = StorageCapabilities::LOCAL;
+        assert_eq!(local.effective_max_file_size(None), None);
+        assert_eq!(
+            local.effective_max_file_size(Some(bytes(10))),
+            Some(bytes(10))
+        );
+        let s3 = StorageCapabilities::S3_DEFAULT;
+        assert_eq!(
+            s3.effective_max_file_size(None),
+            Some(bytes(5_497_558_138_880))
+        );
+        assert_eq!(s3.effective_max_file_size(Some(bytes(10))), Some(bytes(10)));
+        assert_eq!(
+            s3.effective_max_file_size(Some(bytes(u64::from(u32::MAX) << 12))),
+            Some(bytes(5_497_558_138_880))
+        );
+    }
 
     #[test]
     fn unit_storage_capabilities_baseline_profiles() {

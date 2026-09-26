@@ -274,6 +274,7 @@ pub enum AuditAction {
     LoginFailed,
     LoginLockedOut,
     Logout,
+    PasswordChanged,
 }
 
 impl AuditAction {
@@ -288,6 +289,7 @@ impl AuditAction {
         Self::LoginFailed,
         Self::LoginLockedOut,
         Self::Logout,
+        Self::PasswordChanged,
     ];
 
     pub const fn as_str(self) -> &'static str {
@@ -302,6 +304,7 @@ impl AuditAction {
             Self::LoginFailed => "LOGIN_FAILED",
             Self::LoginLockedOut => "LOGIN_LOCKED_OUT",
             Self::Logout => "LOGOUT",
+            Self::PasswordChanged => "PASSWORD_CHANGED",
         }
     }
 
@@ -316,7 +319,8 @@ impl AuditAction {
             Self::SettingChanged
             | Self::SessionRevoked
             | Self::AllSessionsRevoked
-            | Self::SetupCompleted => WritePath::InTransaction,
+            | Self::SetupCompleted
+            | Self::PasswordChanged => WritePath::InTransaction,
         }
     }
 }

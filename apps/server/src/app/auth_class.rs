@@ -2,6 +2,8 @@ use std::fmt;
 
 use http::Method;
 
+use crate::features::auth::sessions::SessionRestriction;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum AuthClass {
     Public,
@@ -49,6 +51,37 @@ impl AbsentSession {
             Self::Reject => true,
             Self::AlreadySignedOut => class == AuthClass::Authenticated && method == Method::POST,
         }
+    }
+}
+
+pub const FORCED_PASSWORD_CHANGE_PATH: &str = "/api/v1/profile/password";
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RecentAuthWaiver {
+    None,
+    ForcedPasswordChange,
+}
+
+impl RecentAuthWaiver {
+    pub fn permitted_for(self, class: AuthClass, method: &Method, path: &str) -> bool {
+        match self {
+            Self::None => true,
+            Self::ForcedPasswordChange => {
+                class == AuthClass::AuthenticatedRecentAuth
+                    && method == Method::POST
+                    && path == FORCED_PASSWORD_CHANGE_PATH
+            }
+        }
+    }
+
+    pub const fn waives(self, restriction: SessionRestriction) -> bool {
+        matches!(
+            (self, restriction),
+            (
+                Self::ForcedPasswordChange,
+                SessionRestriction::MustChangePassword
+            )
+        )
     }
 }
 
