@@ -271,9 +271,7 @@ impl SessionService {
     }
 
     pub fn recent_auth_until(&self, last_auth_at: Timestamp) -> Result<Timestamp, SessionError> {
-        Ok(Timestamp::try_from(
-            last_auth_at.get() + self.policy().recent_auth,
-        )?)
+        recent_auth_until(last_auth_at, self.policy().recent_auth)
     }
 
     pub async fn authenticate_headers(
@@ -339,7 +337,7 @@ impl SessionService {
         }
 
         let recent_auth = resolved.session.last_auth_at <= now
-            && now.get() - resolved.session.last_auth_at.get() <= policy.recent_auth;
+            && now <= recent_auth_until(resolved.session.last_auth_at, policy.recent_auth)?;
         let restriction =
             self.restriction_for(resolved.must_change_password, resolved.totp_enabled);
         Ok(principal(resolved, restriction, recent_auth))
@@ -563,16 +561,22 @@ impl SessionService {
     }
 
     pub async fn mark_reauthenticated(&self, id: SessionId) -> Result<(), SessionError> {
-        let now = Timestamp::try_from(self.clock.now())?;
-        let updated = self
-            .pools
+        self.pools
             .write_tx(
                 self.clock.as_ref(),
                 "sessions.mark_reauthenticated",
-                async |tx| repo::update_last_auth(tx, id, now).await,
+                async |tx| self.mark_reauthenticated_in_tx(tx, id).await,
             )
-            .await?;
-        if updated {
+            .await
+    }
+
+    pub async fn mark_reauthenticated_in_tx(
+        &self,
+        tx: &mut WriteTx<'_>,
+        id: SessionId,
+    ) -> Result<(), SessionError> {
+        let now = Timestamp::try_from(self.clock.now())?;
+        if repo::update_last_auth(tx, id, now).await? {
             Ok(())
         } else {
             Err(SessionError::AuthRequired)
@@ -607,6 +611,10 @@ struct SessionPolicy {
     idle: Duration,
     absolute: Duration,
     recent_auth: Duration,
+}
+
+fn recent_auth_until(last_auth_at: Timestamp, window: Duration) -> Result<Timestamp, SessionError> {
+    Ok(Timestamp::try_from(last_auth_at.get() + window)?)
 }
 
 fn principal(

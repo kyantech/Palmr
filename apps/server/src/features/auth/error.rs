@@ -17,6 +17,7 @@ pub enum LoginError {
     Locked { retry_after: RetryAfter },
     PasswordLoginDisabled,
     SecondFactorUnavailable,
+    ExternalReauthUnavailable,
     RepositoryInvariant { column: &'static str },
     VerificationTask,
     User(UserError),
@@ -35,6 +36,7 @@ impl LoginError {
             Self::Locked { .. } => "login_locked",
             Self::PasswordLoginDisabled => "login_password_disabled",
             Self::SecondFactorUnavailable => "login_second_factor_unavailable",
+            Self::ExternalReauthUnavailable => "reauth_external_unavailable",
             Self::RepositoryInvariant { .. } => "login_repository_invariant",
             Self::VerificationTask => "login_verification_task_failed",
             Self::User(error) => error.kind(),
@@ -58,6 +60,7 @@ impl LoginError {
             | Self::Session(SessionError::Db(error)) => ApiError::new(error.api_code()),
             Self::Session(error) => error.api_error(),
             Self::SecondFactorUnavailable
+            | Self::ExternalReauthUnavailable
             | Self::RepositoryInvariant { .. }
             | Self::VerificationTask
             | Self::User(_)
@@ -86,6 +89,9 @@ impl fmt::Display for LoginError {
             Self::PasswordLoginDisabled => f.write_str("password login is disabled"),
             Self::SecondFactorUnavailable => f.write_str(
                 "the account requires a second factor and the second login step is not available",
+            ),
+            Self::ExternalReauthUnavailable => f.write_str(
+                "the account has no local password and external re-authentication is not available",
             ),
             Self::RepositoryInvariant { column } => {
                 write!(

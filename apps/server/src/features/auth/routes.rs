@@ -19,6 +19,7 @@ use super::error::LoginError;
 use super::lockout::AttemptClient;
 use super::login::{LoginInput, LoginRequest};
 use super::model::{LoginResponse, MeResponse};
+use super::recent_auth::{ReauthContext, ReauthenticateRequest};
 use super::service::{AuthService, LoginContext};
 
 pub const LOGIN_ROUTE: RoutePolicy = RoutePolicy::new(
@@ -34,6 +35,12 @@ pub const LOGOUT_ROUTE: RoutePolicy = RoutePolicy::new(
 )
 .with_idempotent_sign_out();
 
+pub const REAUTHENTICATE_ROUTE: RoutePolicy = RoutePolicy::new(
+    AuthClass::Authenticated,
+    RateLimitClass::AuthTotp,
+    Transport::ControlPlane,
+);
+
 pub const ME_ROUTE: RoutePolicy = RoutePolicy::new(
     AuthClass::Authenticated,
     RateLimitClass::Read,
@@ -47,6 +54,7 @@ pub fn routes() -> Routes<AppState> {
         .route(LOGIN_ROUTE, routes!(login))
         .route(LOGOUT_ROUTE, routes!(logout))
         .route(ME_ROUTE, routes!(me))
+        .route(REAUTHENTICATE_ROUTE, routes!(reauthenticate))
 }
 
 #[utoipa::path(
@@ -159,6 +167,56 @@ async fn me(
         Ok(me) => json(StatusCode::OK, &me, request_id.as_ref()),
         Err(error) => login_error(&error, request_id.as_ref()),
     }
+}
+
+#[utoipa::path(
+    post,
+    path = "/api/v1/auth/reauthenticate",
+    tag = "auth",
+    request_body(
+        content = ReauthenticateRequest,
+        content_type = "application/json",
+        description = "`password` is required for an account with a local password; `totpCode` is required when the account has TOTP enabled."
+    ),
+    responses(
+        (
+            status = 204,
+            description = "The current session's recent-authentication window is open; the session and its cookies are unchanged."
+        ),
+        (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
+        (status = 401, description = "The credentials did not authenticate, or no session is present.", body = ApiErrorBody),
+        (status = 403, description = "The CSRF proof or origin is missing or not allowed, or the session is restricted.", body = ApiErrorBody),
+        (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
+        (status = 422, description = "The request failed validation.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn reauthenticate(
+    Extension(service): Extension<AuthService>,
+    Authenticated(principal): Authenticated,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let client = SessionService::client(&request);
+    let context = ReauthContext {
+        attempt: AttemptClient {
+            ip: client.ip_address,
+            user_agent: client.user_agent,
+            request_id: request_id.as_ref().map(|id| id.as_str().to_owned()),
+        },
+        audit: client_metadata(&request),
+    };
+    let body = match json::read::<ReauthenticateRequest>(request.into_body()).await {
+        Ok(body) => body,
+        Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
+    };
+    if let Err(error) = service.reauthenticate(&principal, body, context).await {
+        return login_error(&error, request_id.as_ref());
+    }
+    let mut response = Response::new(Body::empty());
+    *response.status_mut() = StatusCode::NO_CONTENT;
+    response.headers_mut().insert(CACHE_CONTROL, NO_STORE);
+    response
 }
 
 fn login_error(error: &LoginError, request_id: Option<&RequestId>) -> Response {

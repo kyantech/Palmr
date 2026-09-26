@@ -42,6 +42,7 @@ use crate::domain::username::Username;
 use crate::features::audit;
 use crate::features::audit::service::AuditDrain;
 use crate::features::auth::sessions::SessionService;
+use crate::features::settings::effective::{EffectiveSettingsService, OperatorPolicy};
 use crate::features::settings::SettingsService;
 use crate::features::setup::SetupService;
 use crate::features::users::model::{NewUser, NormalizedIdentifier, QuotaOverride, UserId};
@@ -80,6 +81,10 @@ struct BoxedService(tower::util::BoxCloneSyncService<Request, Response, Infallib
 
 impl Stack {
     async fn start(root: &Path, clock: &TestClock) -> Self {
+        Self::start_with(root, clock, Routes::new()).await
+    }
+
+    async fn start_with(root: &Path, clock: &TestClock, extra: Routes<AppState>) -> Self {
         let config = OperatorConfig::load(&EnvironmentSource::from_vars([(
             "PALMR_BASE_URL",
             BASE_URL,
@@ -125,7 +130,7 @@ impl Stack {
             settings.clone(),
             sessions.clone(),
         );
-        let assembled = application_routes().build().unwrap();
+        let assembled = application_routes().merge(extra).build().unwrap();
         let docs = ApiDocs::new(assembled.openapi, &config.base_url).unwrap();
         let router = assembled
             .router
@@ -137,6 +142,14 @@ impl Stack {
                 StorageRuntime::for_test(),
             ))
             .layer(Extension(auth.clone()))
+            .layer(Extension(EffectiveSettingsService::new(
+                pools.reader().clone(),
+                settings.handle(),
+                OperatorPolicy {
+                    storage_provider: "local",
+                    max_concurrent_transfers: 5,
+                },
+            )))
             .layer(Extension(setup))
             .layer(Extension(sessions.clone()));
         let edge = HttpEdge::new(
@@ -1664,3 +1677,5 @@ async fn it_login_audit_and_attempts_never_store_secrets() {
     }
     stack.stop().await;
 }
+
+mod recent_auth;

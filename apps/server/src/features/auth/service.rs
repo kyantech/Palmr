@@ -13,7 +13,7 @@ use crate::features::auth::sessions::{
     SessionClient, SessionError, SessionRestriction, SessionService,
 };
 use crate::features::settings::SettingsHandle;
-use crate::features::users::model::{User, UserId};
+use crate::features::users::model::{NormalizedIdentifier, User, UserId};
 use crate::features::users::repo as users;
 use crate::infra::crypto::hash::TokenDigest;
 use crate::infra::crypto::password::hash_password;
@@ -36,9 +36,9 @@ pub const LOGOUT_TRANSACTION: &str = "auth.logout";
 
 #[derive(Clone)]
 pub struct AuthService {
-    pools: DbPools,
-    clock: Arc<dyn Clock>,
-    settings: SettingsHandle,
+    pub(super) pools: DbPools,
+    pub(super) clock: Arc<dyn Clock>,
+    pub(super) settings: SettingsHandle,
     sessions: SessionService,
     audit: AuditService,
     verifier: Arc<CredentialVerifier>,
@@ -94,7 +94,7 @@ enum LoginOutcome {
     },
 }
 
-enum FailureAudit {
+pub(super) enum FailureAudit {
     Unknown,
     Known {
         user: Box<User>,
@@ -265,8 +265,14 @@ impl AuthService {
                 if let Some(upgraded) = upgraded {
                     users::upgrade_password_hash(tx, current.id, stored, upgraded).await?;
                 }
-                self.attempt(tx, input, Some(current.id), AttemptResult::Success, context)
-                    .await?;
+                self.attempt(
+                    tx,
+                    &input.identifier,
+                    Some(current.id),
+                    AttemptResult::Success,
+                    &context.attempt,
+                )
+                .await?;
                 let account = repo::account(&mut *tx.executor(), current.id)
                     .await?
                     .ok_or(LoginError::Session(SessionError::AuthRequired))?;
@@ -289,8 +295,14 @@ impl AuthService {
                         (AttemptResult::BadCredentials, lock)
                     }
                 };
-                self.attempt(tx, input, Some(user.id), result, context)
-                    .await?;
+                self.attempt(
+                    tx,
+                    &input.identifier,
+                    Some(user.id),
+                    result,
+                    &context.attempt,
+                )
+                .await?;
                 Ok(LoginOutcome::Refused {
                     user: user.clone(),
                     refusal,
@@ -412,7 +424,7 @@ impl AuthService {
         }))
     }
 
-    async fn verify_off_runtime(
+    pub(super) async fn verify_off_runtime(
         &self,
         password: Secret<String>,
         stored: Option<Secret<String>>,
@@ -432,10 +444,10 @@ impl AuthService {
             .write_tx(self.clock.as_ref(), LOGIN_FAILURE_TRANSACTION, async |tx| {
                 self.attempt(
                     tx,
-                    input,
+                    &input.identifier,
                     None,
                     AttemptResult::PasswordAuthDisabled,
-                    context,
+                    &context.attempt,
                 )
                 .await
             })
@@ -453,63 +465,87 @@ impl AuthService {
             .pools
             .write_tx(self.clock.as_ref(), LOGIN_FAILURE_TRANSACTION, async |tx| {
                 let Some(user) = user else {
-                    self.attempt(tx, input, None, AttemptResult::UnknownIdentifier, context)
-                        .await?;
+                    self.attempt(
+                        tx,
+                        &input.identifier,
+                        None,
+                        AttemptResult::UnknownIdentifier,
+                        &context.attempt,
+                    )
+                    .await?;
                     return Ok::<_, LoginError>(FailureAudit::Unknown);
                 };
-                let now = Timestamp::try_from(self.clock.now())?;
-                let locked = lockout::state_in_tx(tx, user.id)
-                    .await?
-                    .is_some_and(|state| state.active_until(now).is_some());
-                if locked {
-                    self.attempt(tx, input, Some(user.id), AttemptResult::LockedOut, context)
-                        .await?;
-                    return Ok(FailureAudit::Known {
-                        user: Box::new(user),
-                        result: AttemptResult::LockedOut,
-                        locked_now: None,
-                    });
-                }
-                self.attempt(
-                    tx,
-                    input,
-                    Some(user.id),
-                    AttemptResult::BadCredentials,
-                    context,
-                )
-                .await?;
-                let locked_now = match lockout::record_failure(tx, user.id, now, policy).await? {
-                    FailureOutcome::LockedNow(state) => Some(state),
-                    FailureOutcome::Counted(_) => None,
-                };
-                Ok(FailureAudit::Known {
-                    user: Box::new(user),
-                    result: AttemptResult::BadCredentials,
-                    locked_now,
-                })
+                self.count_failure_in_tx(tx, user, &input.identifier, &context.attempt, policy)
+                    .await
             })
             .await?;
         self.audit_failure(audit, &input.submitted, &context.audit, policy);
         Ok(())
     }
 
-    async fn attempt(
+    pub(super) async fn count_failure_in_tx(
         &self,
         tx: &mut WriteTx<'_>,
-        input: &LoginInput,
+        user: User,
+        identifier: &NormalizedIdentifier,
+        client: &AttemptClient,
+        policy: LockoutPolicy,
+    ) -> Result<FailureAudit, LoginError> {
+        let now = Timestamp::try_from(self.clock.now())?;
+        let locked = lockout::state_in_tx(tx, user.id)
+            .await?
+            .is_some_and(|state| state.active_until(now).is_some());
+        if locked {
+            self.attempt(
+                tx,
+                identifier,
+                Some(user.id),
+                AttemptResult::LockedOut,
+                client,
+            )
+            .await?;
+            return Ok(FailureAudit::Known {
+                user: Box::new(user),
+                result: AttemptResult::LockedOut,
+                locked_now: None,
+            });
+        }
+        self.attempt(
+            tx,
+            identifier,
+            Some(user.id),
+            AttemptResult::BadCredentials,
+            client,
+        )
+        .await?;
+        let locked_now = match lockout::record_failure(tx, user.id, now, policy).await? {
+            FailureOutcome::LockedNow(state) => Some(state),
+            FailureOutcome::Counted(_) => None,
+        };
+        Ok(FailureAudit::Known {
+            user: Box::new(user),
+            result: AttemptResult::BadCredentials,
+            locked_now,
+        })
+    }
+
+    pub(super) async fn attempt(
+        &self,
+        tx: &mut WriteTx<'_>,
+        identifier: &NormalizedIdentifier,
         user_id: Option<UserId>,
         result: AttemptResult,
-        context: &LoginContext,
+        client: &AttemptClient,
     ) -> Result<(), LoginError> {
         lockout::record_attempt(
             tx,
             self.clock.as_ref(),
             &LoginAttempt {
-                identifier: &input.identifier,
+                identifier,
                 user_id,
                 method: AttemptMethod::Password,
                 result,
-                client: &context.attempt,
+                client,
             },
         )
         .await
@@ -530,7 +566,7 @@ impl AuthService {
         self.audit.record_async(event);
     }
 
-    fn audit_refused(
+    pub(super) fn audit_refused(
         &self,
         user: &User,
         result: AttemptResult,
@@ -552,7 +588,7 @@ impl AuthService {
         self.audit.record_async(event);
     }
 
-    fn audit_failure(
+    pub(super) fn audit_failure(
         &self,
         audit: FailureAudit,
         submitted: &str,
