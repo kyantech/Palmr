@@ -88,6 +88,11 @@ const SELECT_USAGE: &str = "SELECT u.used_bytes, u.quota_override_mode, u.quota_
       FROM users u
       WHERE u.id = ?1";
 
+const RECOVER_ADMIN: &str = "UPDATE users
+    SET role = 'admin', is_active = 1, deactivated_at = NULL, deactivated_by = NULL,
+        updated_at = ?2
+    WHERE id = ?1 AND (role <> 'admin' OR is_active = 0)";
+
 const SELECT_ADMIN_STATE: &str = "SELECT role, is_active FROM users WHERE id = ?1";
 
 pub(super) const COUNT_ACTIVE_ADMINS: &str =
@@ -335,6 +340,19 @@ pub async fn change_password(
         .bind(id.to_string())
         .bind(verified.expose_secret().as_str())
         .bind(replacement.expose_secret().as_str())
+        .bind(at.to_string())
+        .execute(tx.executor())
+        .await?;
+    Ok(updated.rows_affected() == 1)
+}
+
+pub async fn recover_admin(
+    tx: &mut WriteTx<'_>,
+    id: UserId,
+    at: Timestamp,
+) -> Result<bool, UserError> {
+    let updated = sqlx::query(RECOVER_ADMIN)
+        .bind(id.to_string())
         .bind(at.to_string())
         .execute(tx.executor())
         .await?;

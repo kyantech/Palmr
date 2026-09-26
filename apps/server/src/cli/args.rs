@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
 
+use crate::features::users::model::UserId;
 use crate::infra::jobs::cli::JobsCommand;
 
 /// Palmr — self-hosted file sharing.
@@ -30,6 +31,16 @@ pub enum Command {
     Jobs {
         #[command(subcommand)]
         command: JobsCommand,
+    },
+    /// Recover administrator access to this instance.
+    Admin {
+        #[command(subcommand)]
+        command: AdminCommand,
+    },
+    /// Recover a user account.
+    User {
+        #[command(subcommand)]
+        command: UserCommand,
     },
     /// Write this build's OpenAPI document to standard output.
     #[cfg(feature = "openapi-export")]
@@ -64,11 +75,42 @@ pub enum DbCommand {
     },
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Subcommand)]
+pub enum AdminCommand {
+    /// Make an existing account an active Admin and clear its login blockers.
+    ///
+    /// Promotes the account to Admin, reactivates it, clears its lockout and
+    /// re-enables password login for the instance. The account is selected by
+    /// user id, then e-mail, then username. Refuses to run while a Palmr server
+    /// is using the data directory.
+    Recover {
+        /// User id, e-mail address or username of the account to recover.
+        #[arg(value_name = "USER")]
+        user: String,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Subcommand)]
+pub enum UserCommand {
+    /// Replace an account's password with a temporary one and print it once.
+    ///
+    /// The user must change the temporary password at the next login. Every
+    /// session and trusted device of the account is revoked and its lockout is
+    /// cleared. Refuses to run while a Palmr server is using the data
+    /// directory.
+    ResetPassword {
+        /// User id of the account.
+        #[arg(value_name = "ID")]
+        id: UserId,
+    },
+}
+
 #[cfg(test)]
 mod tests {
     use std::path::PathBuf;
 
-    use super::{Cli, Command, DbCommand};
+    use super::{AdminCommand, Cli, Command, DbCommand, UserCommand};
+    use crate::features::users::model::UserId;
     use crate::infra::jobs::cli::JobsCommand;
     use crate::infra::jobs::JobKind;
     use clap::{error::ErrorKind, CommandFactory, Parser};
@@ -107,9 +149,9 @@ mod tests {
     fn unit_cli_has_no_other_commands() {
         let root = Cli::command();
         let expected: &[&str] = if cfg!(feature = "openapi-export") {
-            &["serve", "migrate", "db", "jobs", "openapi"]
+            &["serve", "migrate", "db", "jobs", "admin", "user", "openapi"]
         } else {
-            &["serve", "migrate", "db", "jobs"]
+            &["serve", "migrate", "db", "jobs", "admin", "user"]
         };
         assert_eq!(subcommand_names(&root), expected);
 
@@ -123,16 +165,87 @@ mod tests {
             .expect("jobs command is registered");
         assert_eq!(subcommand_names(jobs), ["run-once"]);
 
+        let admin = root
+            .find_subcommand("admin")
+            .expect("admin command is registered");
+        assert_eq!(subcommand_names(admin), ["recover"]);
+
+        let user = root
+            .find_subcommand("user")
+            .expect("user command is registered");
+        assert_eq!(subcommand_names(user), ["reset-password"]);
+
         for unknown in [
-            &["palmr", "admin"][..],
-            &["palmr", "user"],
-            &["palmr", "storage"],
+            &["palmr", "storage"][..],
             &["palmr", "db", "restore"],
+            &["palmr", "admin", "reset-password", "ada"],
+            &["palmr", "admin", "promote", "ada"],
+            &["palmr", "admin", "unlock", "ada"],
+            &["palmr", "admin", "enable-password-login"],
+            &["palmr", "user", "recover", "ada"],
         ] {
             let err = Cli::try_parse_from(unknown).unwrap_err();
             assert_eq!(err.kind(), ErrorKind::InvalidSubcommand, "{unknown:?}");
         }
         assert!(Cli::try_parse_from(["palmr", "jobs"]).is_err());
+        assert!(Cli::try_parse_from(["palmr", "admin"]).is_err());
+        assert!(Cli::try_parse_from(["palmr", "user"]).is_err());
+    }
+
+    #[test]
+    fn unit_cli_recovery_commands_parse() {
+        let recover =
+            Cli::try_parse_from(["palmr", "admin", "recover", "Ada@Example.test"]).unwrap();
+        assert_eq!(
+            recover.command,
+            Some(Command::Admin {
+                command: AdminCommand::Recover {
+                    user: "Ada@Example.test".to_owned()
+                }
+            })
+        );
+
+        let id = "01996fc4-6a33-7c1e-9d2b-4f1a8e3c5b7d";
+        let reset = Cli::try_parse_from(["palmr", "user", "reset-password", id]).unwrap();
+        assert_eq!(
+            reset.command,
+            Some(Command::User {
+                command: UserCommand::ResetPassword {
+                    id: id.parse::<UserId>().unwrap()
+                }
+            })
+        );
+
+        for invalid in [
+            "ada",
+            "ada@example.test",
+            "01996FC4-6A33-7C1E-9D2B-4F1A8E3C5B7D",
+            "550e8400-e29b-41d4-a716-446655440000",
+        ] {
+            let err =
+                Cli::try_parse_from(["palmr", "user", "reset-password", invalid]).unwrap_err();
+            assert_eq!(err.kind(), ErrorKind::ValueValidation, "{invalid}");
+        }
+
+        for missing in [
+            &["palmr", "admin", "recover"][..],
+            &["palmr", "user", "reset-password"],
+        ] {
+            let err = Cli::try_parse_from(missing).unwrap_err();
+            assert_eq!(
+                err.kind(),
+                ErrorKind::MissingRequiredArgument,
+                "{missing:?}"
+            );
+        }
+
+        for bypass in [
+            &["palmr", "admin", "recover", "ada", "--allow-concurrent"][..],
+            &["palmr", "user", "reset-password", id, "--allow-concurrent"],
+        ] {
+            let err = Cli::try_parse_from(bypass).unwrap_err();
+            assert_eq!(err.kind(), ErrorKind::UnknownArgument, "{bypass:?}");
+        }
     }
 
     #[test]

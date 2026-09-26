@@ -1,5 +1,8 @@
 use crate::domain::bytes::ByteSize;
+use crate::domain::secret::Secret;
 use crate::features::settings::model::AppSettings;
+use crate::infra::crypto::token::{Token, ENCODED_TOKEN_LEN};
+use crate::infra::crypto::CryptoError;
 use crate::infra::db::WriteTx;
 
 use super::error::UserError;
@@ -26,6 +29,18 @@ impl AccountPasswordPolicy {
 
     pub const fn min_length(self) -> u32 {
         self.min_length
+    }
+
+    pub fn temporary_password(self) -> Result<Secret<String>, CryptoError> {
+        let length = usize::try_from(self.min_length)
+            .unwrap_or(usize::MAX)
+            .max(ENCODED_TOKEN_LEN);
+        let mut password = String::with_capacity(length.saturating_add(ENCODED_TOKEN_LEN));
+        while password.len() < length {
+            password.push_str(Token::mint()?.encode().expose_secret());
+        }
+        password.truncate(length);
+        Ok(Secret::new(password))
     }
 
     pub fn check(self, password: &str) -> Result<(), UserError> {

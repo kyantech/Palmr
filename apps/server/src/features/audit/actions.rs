@@ -184,6 +184,52 @@ pub fn password_changed(
     ActionSpec::new(AuditAction::PasswordChanged, metadata)
 }
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct AdminRecoverFacts {
+    pub role_changed: bool,
+    pub activated: bool,
+    pub lockout_cleared: bool,
+    pub password_login_reenabled: bool,
+    pub sessions_revoked: u64,
+}
+
+pub fn operator_cli_admin_recover(facts: AdminRecoverFacts) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("role_changed", Value::from(facts.role_changed)),
+        ("activated", Value::from(facts.activated)),
+        ("lockout_cleared", Value::from(facts.lockout_cleared)),
+        (
+            "password_login_reenabled",
+            Value::from(facts.password_login_reenabled),
+        ),
+        ("sessions_revoked", Value::from(facts.sessions_revoked)),
+    ]);
+    ActionSpec::new(AuditAction::OperatorCliAdminRecover, metadata)
+}
+
+// The temporary password and its hash have no parameter here: the row can
+// record that a local credential was established, never what it is.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct PasswordResetFacts {
+    pub had_local_password: bool,
+    pub sessions_revoked: u64,
+    pub trusted_devices_revoked: u64,
+    pub lockout_cleared: bool,
+}
+
+pub fn operator_cli_password_reset(facts: PasswordResetFacts) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("had_local_password", Value::from(facts.had_local_password)),
+        ("sessions_revoked", Value::from(facts.sessions_revoked)),
+        (
+            "trusted_devices_revoked",
+            Value::from(facts.trusted_devices_revoked),
+        ),
+        ("lockout_cleared", Value::from(facts.lockout_cleared)),
+    ]);
+    ActionSpec::new(AuditAction::OperatorCliPasswordReset, metadata)
+}
+
 pub fn setup_completed() -> ActionSpec {
     ActionSpec::new(AuditAction::SetupCompleted, Metadata::json(&[]))
 }

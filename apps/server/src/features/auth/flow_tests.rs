@@ -846,7 +846,7 @@ async fn it_lockout_durable_and_admin_clearable() {
         .pools
         .write_tx(&clock, "auth.test_clear", async |tx| {
             let now = Timestamp::try_from(clock_now(&clock)).unwrap();
-            lockout::clear(tx, ada, admin, now).await
+            lockout::clear(tx, ada, Some(admin), now).await
         })
         .await
         .unwrap();
@@ -1690,5 +1690,6 @@ async fn it_login_audit_and_attempts_never_store_secrets() {
     stack.stop().await;
 }
 
+mod operator_cli;
 mod profile;
 mod recent_auth;

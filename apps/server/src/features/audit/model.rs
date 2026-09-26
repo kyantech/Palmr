@@ -275,6 +275,8 @@ pub enum AuditAction {
     LoginLockedOut,
     Logout,
     PasswordChanged,
+    OperatorCliAdminRecover,
+    OperatorCliPasswordReset,
 }
 
 impl AuditAction {
@@ -290,6 +292,8 @@ impl AuditAction {
         Self::LoginLockedOut,
         Self::Logout,
         Self::PasswordChanged,
+        Self::OperatorCliAdminRecover,
+        Self::OperatorCliPasswordReset,
     ];
 
     pub const fn as_str(self) -> &'static str {
@@ -305,6 +309,8 @@ impl AuditAction {
             Self::LoginLockedOut => "LOGIN_LOCKED_OUT",
             Self::Logout => "LOGOUT",
             Self::PasswordChanged => "PASSWORD_CHANGED",
+            Self::OperatorCliAdminRecover => "OPERATOR_CLI_ADMIN_RECOVER",
+            Self::OperatorCliPasswordReset => "OPERATOR_CLI_PASSWORD_RESET",
         }
     }
 
@@ -320,7 +326,9 @@ impl AuditAction {
             | Self::SessionRevoked
             | Self::AllSessionsRevoked
             | Self::SetupCompleted
-            | Self::PasswordChanged => WritePath::InTransaction,
+            | Self::PasswordChanged
+            | Self::OperatorCliAdminRecover
+            | Self::OperatorCliPasswordReset => WritePath::InTransaction,
         }
     }
 }

@@ -2,7 +2,9 @@ use std::fmt;
 use std::io;
 use std::path::PathBuf;
 
+use super::admin::RecoveryError;
 use crate::app::lifecycle::StartupError;
+use crate::features::users::model::UserId;
 use crate::infra::db::InstanceLockError;
 use crate::infra::jobs::JobsError;
 
@@ -13,10 +15,15 @@ pub const CLI_BACKUP_DESTINATION_INVALID: &str = "CLI_BACKUP_DESTINATION_INVALID
 pub const CLI_BACKUP_EXISTS: &str = "CLI_BACKUP_EXISTS";
 pub const CLI_BACKUP_FAILED: &str = "CLI_BACKUP_FAILED";
 pub const CLI_JOBS_FAILED: &str = "CLI_JOBS_FAILED";
+pub const CLI_USER_NOT_FOUND: &str = "CLI_USER_NOT_FOUND";
+pub const CLI_RECOVERY_FAILED: &str = "CLI_RECOVERY_FAILED";
+pub const CLI_OUTPUT_FAILED: &str = "CLI_OUTPUT_FAILED";
 
 const EX_FAILURE: u8 = 1;
 const EX_DATAERR: u8 = 65;
 const EX_NOINPUT: u8 = 66;
+const EX_NOUSER: u8 = 67;
+const EX_IOERR: u8 = 74;
 const EX_CANTCREAT: u8 = 73;
 const EX_CONFIG: u8 = 78;
 
@@ -87,6 +94,15 @@ pub enum CliError {
     Jobs {
         source: JobsError,
     },
+    UserNotFound {
+        user: String,
+    },
+    RecoveryFailed {
+        source: RecoveryError,
+    },
+    CredentialNotDelivered {
+        user: UserId,
+    },
 }
 
 impl CliError {
@@ -95,9 +111,12 @@ impl CliError {
             Self::Startup(error) => error.exit_code(),
             Self::DataDirInUse { .. } => EX_CONFIG,
             Self::DatabaseNotFound { .. } => EX_NOINPUT,
+            Self::UserNotFound { .. } => EX_NOUSER,
+            Self::CredentialNotDelivered { .. } => EX_IOERR,
             Self::IntegrityFailed { .. } => EX_DATAERR,
             Self::BackupDestination { .. } | Self::BackupExists { .. } => EX_CANTCREAT,
             Self::Jobs { .. }
+            | Self::RecoveryFailed { .. }
             | Self::Runtime(_)
             | Self::CheckFailed { .. }
             | Self::BackupFailed { .. } => EX_FAILURE,
@@ -152,6 +171,18 @@ impl fmt::Display for CliError {
                 path.display()
             ),
             Self::Jobs { source } => write!(f, "{CLI_JOBS_FAILED}: {source}"),
+            Self::UserNotFound { user } => write!(
+                f,
+                "{CLI_USER_NOT_FOUND}: no account matches {user:?}; nothing was changed"
+            ),
+            Self::RecoveryFailed { source } => write!(
+                f,
+                "{CLI_RECOVERY_FAILED}: the recovery was rolled back and nothing was changed: {source}"
+            ),
+            Self::CredentialNotDelivered { user } => write!(
+                f,
+                "{CLI_OUTPUT_FAILED}: the password of user {user} was reset but the temporary password could not be written to standard output; run the command again to issue a new one"
+            ),
         }
     }
 }

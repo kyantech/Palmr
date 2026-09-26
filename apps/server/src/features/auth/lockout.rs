@@ -242,13 +242,13 @@ pub async fn reset(
 pub async fn clear(
     tx: &mut WriteTx<'_>,
     user_id: UserId,
-    cleared_by: UserId,
+    cleared_by: Option<UserId>,
     now: Timestamp,
 ) -> Result<bool, LoginError> {
     let updated = sqlx::query(CLEAR)
         .bind(user_id.to_string())
         .bind(now.to_string())
-        .bind(cleared_by.to_string())
+        .bind(cleared_by.map(|id| id.to_string()))
         .execute(tx.executor())
         .await?;
     Ok(updated.rows_affected() == 1)

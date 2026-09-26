@@ -1,6 +1,7 @@
+pub(crate) mod admin;
 mod args;
 mod db;
-mod error;
+pub(crate) mod error;
 mod jobs;
 mod migrate;
 mod ownership;
@@ -12,7 +13,7 @@ use std::sync::Arc;
 
 use clap::Parser;
 
-pub use self::args::{Cli, Command, DbCommand};
+pub use self::args::{AdminCommand, Cli, Command, DbCommand, UserCommand};
 use self::error::CliError;
 use crate::app::lifecycle::StartupError;
 use crate::config::{EnvironmentSource, OperatorConfig};
@@ -30,6 +31,8 @@ pub fn execute(command: Command) -> ExitCode {
         Command::Migrate => operate(Operation::Migrate),
         Command::Db { command } => operate(Operation::Db(command)),
         Command::Jobs { command } => operate(Operation::Jobs(command)),
+        Command::Admin { command } => operate(Operation::Admin(command)),
+        Command::User { command } => operate(Operation::User(command)),
         #[cfg(feature = "openapi-export")]
         Command::Openapi => serve::export_openapi(),
     }
@@ -39,6 +42,8 @@ enum Operation {
     Migrate,
     Db(DbCommand),
     Jobs(JobsCommand),
+    Admin(AdminCommand),
+    User(UserCommand),
 }
 
 fn operate(operation: Operation) -> ExitCode {
@@ -99,6 +104,14 @@ async fn run(
                 "jobs run-once: executed {} job(s) of kind {}",
                 outcome.executed, outcome.kind
             ));
+            Ok(())
+        }
+        Operation::Admin(AdminCommand::Recover { user }) => {
+            admin::admin_recover(config, &user, clock, &mut io::stdout()).await?;
+            Ok(())
+        }
+        Operation::User(UserCommand::ResetPassword { id }) => {
+            admin::user_reset_password(config, id, clock, &mut io::stdout()).await?;
             Ok(())
         }
     }

@@ -8,6 +8,7 @@ use crate::features::settings::model::AppSettings;
 use crate::features::users::model::NormalizedIdentifier;
 use crate::infra::crypto::password::{verify_password, DummyPasswordHash, PasswordVerification};
 use crate::infra::crypto::CryptoError;
+use crate::infra::db::{DbError, WriteTx};
 use crate::infra::http::json::{JsonField, JsonKind, JsonRequest};
 
 use super::error::LoginError;
@@ -16,6 +17,10 @@ pub const MAX_IDENTIFIER_CHARS: usize = 254;
 
 pub const fn password_login_enabled(_settings: &AppSettings) -> bool {
     true
+}
+
+pub async fn reenable_password_login_in_tx(_tx: &mut WriteTx<'_>) -> Result<bool, DbError> {
+    Ok(false)
 }
 
 #[derive(Deserialize, ToSchema)]

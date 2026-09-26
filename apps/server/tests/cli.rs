@@ -9,6 +9,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use anyhow::{ensure, Context, Result};
+use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode};
 use sqlx::{ConnectOptions, Connection, SqliteConnection};
 use tempfile::{Builder, TempDir};
@@ -19,8 +20,13 @@ const LOCK_FILE: &str = "runtime/instance.lock";
 const DATA_DIR_IN_USE: &str = "STARTUP_DATA_DIR_IN_USE";
 const EX_CONFIG: i32 = 78;
 const SQLITE_MAGIC: &[u8; 16] = b"SQLite format 3\0";
+const EX_NOUSER: i32 = 67;
+const EX_USAGE: i32 = 2;
+const TARGET_ID: &str = "01996fc4-6a33-7c1e-9d2b-4f1a8e3c5b7d";
+const MISSING_ID: &str = "01996fc4-6a33-7c1e-9d2b-4f1a8e3c5b7e";
 
 type MigrationRow = (i64, String, Vec<u8>, String, bool);
+type AccountRow = (Option<String>, bool, String, bool, Option<String>);
 type SchemaRow = (String, String, Option<String>);
 
 struct DataRoot {
@@ -81,6 +87,50 @@ fn assert_refused_in_use(output: &Output) {
     );
     assert_eq!(stderr.lines().count(), 1, "{stderr}");
     assert!(output.stdout.is_empty(), "{output:?}");
+}
+
+fn assert_refused_with(output: &Output, code: i32, prefix: &str) {
+    assert_eq!(output.status.code(), Some(code), "{output:?}");
+    assert!(output.stdout.is_empty(), "{output:?}");
+    let stderr = text(&output.stderr);
+    assert!(stderr.starts_with(prefix), "{stderr}");
+    assert!(!stderr.contains("Temporary password"), "{stderr}");
+}
+
+async fn seed_account(path: &Path) -> Result<()> {
+    let mut connection = open_writer(path).await?;
+    sqlx::query(
+        "INSERT INTO users (id, email, email_normalized, username, username_normalized,
+                            password_hash, role, is_active, created_at, updated_at)
+         VALUES (?1, 'SSO@example.test', 'sso@example.test', 'sso', 'sso', NULL, 'user', 1,
+                 '2026-09-25T12:00:00.000Z', '2026-09-25T12:00:00.000Z')",
+    )
+    .bind(TARGET_ID)
+    .execute(&mut connection)
+    .await?;
+    connection.close().await?;
+    Ok(())
+}
+
+async fn account(path: &Path) -> Result<(AccountRow, i64)> {
+    let mut connection = open_read_only(path).await?;
+    let row = sqlx::query_as(
+        "SELECT password_hash, must_change_password, role, is_active, updated_at
+           FROM users WHERE id = ?1",
+    )
+    .bind(TARGET_ID)
+    .fetch_one(&mut connection)
+    .await?;
+    let audited = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM audit_events
+          WHERE action LIKE 'OPERATOR_CLI_%' AND actor_type = 'operator_cli'
+            AND actor_user_id IS NULL AND target_id = ?1",
+    )
+    .bind(TARGET_ID)
+    .fetch_one(&mut connection)
+    .await?;
+    connection.close().await?;
+    Ok((row, audited))
 }
 
 fn applied_count(output: &Output) -> Result<u64> {
@@ -391,5 +441,127 @@ async fn it_cli_db_backup_vacuum_into_consistent() -> Result<()> {
     source.close().await?;
 
     assert_eq!(directory_entries(&root.out)?, [name]);
+    Ok(())
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn it_cli_recovery_refuses_while_server_holds_lock() -> Result<()> {
+    let root = DataRoot::new("palmr-cli-recovery-lock-")?;
+    assert_success(&root.palmr(&["migrate"])?);
+    seed_account(&root.database()).await?;
+    let before = account(&root.database()).await?;
+
+    let mut server = ServerProcess::spawn(&root.data)?;
+    server.wait_ready().await?;
+    let lock = read_text(&root.data.join(LOCK_FILE))?;
+
+    for args in [
+        &["admin", "recover", "sso"][..],
+        &["user", "reset-password", TARGET_ID],
+    ] {
+        let refused = root.palmr(args)?;
+        assert_refused_in_use(&refused);
+        assert!(
+            !text(&refused.stderr).contains("--allow-concurrent"),
+            "{refused:?}"
+        );
+    }
+    for args in [
+        &["admin", "recover", "sso", "--allow-concurrent"][..],
+        &["user", "reset-password", TARGET_ID, "--allow-concurrent"],
+    ] {
+        let rejected = root.palmr(args)?;
+        assert_eq!(rejected.status.code(), Some(EX_USAGE), "{rejected:?}");
+        assert!(rejected.stdout.is_empty(), "{rejected:?}");
+    }
+
+    assert_eq!(read_text(&root.data.join(LOCK_FILE))?, lock);
+    assert!(server.is_ready().await);
+    assert!(server.stop().await?.success());
+    assert_eq!(account(&root.database()).await?, before);
+    assert_eq!(before.1, 0);
+    Ok(())
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn it_cli_recovery_output_streams() -> Result<()> {
+    let root = DataRoot::new("palmr-cli-recovery-output-")?;
+    assert_success(&root.palmr(&["migrate"])?);
+    seed_account(&root.database()).await?;
+
+    let reset = root.palmr(&["user", "reset-password", TARGET_ID])?;
+    assert_success(&reset);
+    assert!(reset.stderr.is_empty(), "{reset:?}");
+    let stdout = text(&reset.stdout);
+    let lines: Vec<&str> = stdout.lines().collect();
+    assert_eq!(lines.len(), 3, "{stdout}");
+    assert!(lines[0].starts_with(&format!(
+        "Password reset completed for user {TARGET_ID} (sso)"
+    )));
+    let temporary = lines[1]
+        .strip_prefix("Temporary password: ")
+        .context("temporary password line")?
+        .to_owned();
+    assert!(temporary.len() >= 43);
+    assert_eq!(stdout.matches(temporary.as_str()).count(), 1);
+    assert_eq!(
+        lines[2],
+        "The user must change this password at the next login."
+    );
+    assert_eq!(read_text(&root.data.join(LOCK_FILE))?, "");
+
+    let ((hash, must_change, role, active, _), audited) = account(&root.database()).await?;
+    let hash = hash.context("a local password now exists")?;
+    assert!(!hash.contains(&temporary));
+    let parsed = PasswordHash::new(&hash).map_err(|error| anyhow::anyhow!("{error}"))?;
+    assert!(Argon2::default()
+        .verify_password(temporary.as_bytes(), &parsed)
+        .is_ok());
+    assert!(Argon2::default()
+        .verify_password(b"not the temporary password", &parsed)
+        .is_err());
+    assert!(must_change);
+    assert_eq!((role.as_str(), active, audited), ("user", true, 1));
+
+    let recover = root.palmr(&["admin", "recover", "SSO@Example.TEST"])?;
+    assert_success(&recover);
+    assert!(recover.stderr.is_empty(), "{recover:?}");
+    let summary = text(&recover.stdout);
+    assert_eq!(summary.lines().count(), 1, "{summary}");
+    assert!(summary.starts_with(&format!(
+        "Admin recovery completed for user {TARGET_ID} (sso)"
+    )));
+    let ((_, _, role, active, _), audited) = account(&root.database()).await?;
+    assert_eq!((role.as_str(), active, audited), ("admin", true, 2));
+
+    assert_refused_with(
+        &root.palmr(&["admin", "recover", "ghost@example.test"])?,
+        EX_NOUSER,
+        "FATAL: CLI_USER_NOT_FOUND: ",
+    );
+    assert_refused_with(
+        &root.palmr(&["user", "reset-password", MISSING_ID])?,
+        EX_NOUSER,
+        "FATAL: CLI_USER_NOT_FOUND: ",
+    );
+    let malformed = root.palmr(&["user", "reset-password", "sso@example.test"])?;
+    assert_eq!(malformed.status.code(), Some(EX_USAGE), "{malformed:?}");
+    assert!(malformed.stdout.is_empty());
+
+    let mut connection = open_writer(&root.database()).await?;
+    sqlx::query(
+        "CREATE TRIGGER inject_reset_failure BEFORE INSERT ON audit_events
+          WHEN NEW.action = 'OPERATOR_CLI_PASSWORD_RESET'
+          BEGIN SELECT RAISE(ABORT, 'injected reset failure'); END",
+    )
+    .execute(&mut connection)
+    .await?;
+    connection.close().await?;
+    let before = account(&root.database()).await?;
+    let failed = root.palmr(&["user", "reset-password", TARGET_ID])?;
+    assert_refused_with(&failed, 1, "FATAL: CLI_RECOVERY_FAILED: ");
+    assert!(text(&failed.stderr).contains("injected reset failure"));
+    assert!(!text(&failed.stderr).contains(&temporary));
+    assert_eq!(account(&root.database()).await?, before);
     Ok(())
 }

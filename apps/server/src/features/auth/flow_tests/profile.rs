@@ -16,43 +16,43 @@ const SESSIONS: &str = "/api/v1/sessions";
 const NEW_PASSWORD: &str = "a brand new passphrase";
 
 #[derive(Debug, Clone, PartialEq, Eq, sqlx::FromRow)]
-struct SessionRow {
-    id: String,
-    state: String,
-    revoked_reason: Option<String>,
-    token_hash: String,
-    csrf_token_hash: String,
-    created_at: String,
-    last_auth_at: String,
-    absolute_expires_at: String,
+pub(super) struct SessionRow {
+    pub(super) id: String,
+    pub(super) state: String,
+    pub(super) revoked_reason: Option<String>,
+    pub(super) token_hash: String,
+    pub(super) csrf_token_hash: String,
+    pub(super) created_at: String,
+    pub(super) last_auth_at: String,
+    pub(super) absolute_expires_at: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, sqlx::FromRow)]
-struct SecurityState {
-    password_hash: Option<String>,
-    password_updated_at: Option<String>,
-    must_change_password: bool,
-    first_name: String,
-    last_name: String,
-    email: String,
-    username: String,
-    role: String,
-    is_active: bool,
+pub(super) struct SecurityState {
+    pub(super) password_hash: Option<String>,
+    pub(super) password_updated_at: Option<String>,
+    pub(super) must_change_password: bool,
+    pub(super) first_name: String,
+    pub(super) last_name: String,
+    pub(super) email: String,
+    pub(super) username: String,
+    pub(super) role: String,
+    pub(super) is_active: bool,
 }
 
-struct Call<'a> {
-    method: Method,
-    path: &'a str,
-    body: Option<String>,
-    content_type: Option<&'a str>,
-    session: Option<&'a str>,
-    csrf_cookie: Option<&'a str>,
-    csrf_header: Option<&'a str>,
-    origin: Option<&'a str>,
+pub(super) struct Call<'a> {
+    pub(super) method: Method,
+    pub(super) path: &'a str,
+    pub(super) body: Option<String>,
+    pub(super) content_type: Option<&'a str>,
+    pub(super) session: Option<&'a str>,
+    pub(super) csrf_cookie: Option<&'a str>,
+    pub(super) csrf_header: Option<&'a str>,
+    pub(super) origin: Option<&'a str>,
 }
 
 impl<'a> Call<'a> {
-    fn new(method: Method, path: &'a str, credentials: &'a Credentials) -> Self {
+    pub(super) fn new(method: Method, path: &'a str, credentials: &'a Credentials) -> Self {
         Self {
             method,
             path,
@@ -65,7 +65,7 @@ impl<'a> Call<'a> {
         }
     }
 
-    fn json(mut self, body: &Value) -> Self {
+    pub(super) fn json(mut self, body: &Value) -> Self {
         self.body = Some(body.to_string());
         self
     }
@@ -77,7 +77,7 @@ impl<'a> Call<'a> {
 }
 
 impl Stack {
-    async fn call(&self, call: Call<'_>, host: u8) -> Fetched {
+    pub(super) async fn call(&self, call: Call<'_>, host: u8) -> Fetched {
         let mut builder = Request::builder().method(call.method).uri(call.path);
         if let Some(content_type) = call.content_type {
             builder = builder.header(CONTENT_TYPE, content_type);
@@ -114,7 +114,7 @@ impl Stack {
             .await
     }
 
-    async fn change_password(
+    pub(super) async fn change_password(
         &self,
         credentials: &Credentials,
         current: &str,
@@ -129,7 +129,7 @@ impl Stack {
         .await
     }
 
-    async fn security_state(&self, user: UserId) -> SecurityState {
+    pub(super) async fn security_state(&self, user: UserId) -> SecurityState {
         sqlx::query_as(
             "SELECT password_hash, password_updated_at, must_change_password, first_name,
                     last_name, email, username, role, is_active
@@ -141,7 +141,7 @@ impl Stack {
         .unwrap()
     }
 
-    async fn sessions_of(&self, user: UserId) -> Vec<SessionRow> {
+    pub(super) async fn sessions_of(&self, user: UserId) -> Vec<SessionRow> {
         sqlx::query_as(
             "SELECT id, state, revoked_reason, token_hash, csrf_token_hash, created_at,
                     last_auth_at, absolute_expires_at
@@ -165,7 +165,7 @@ impl Stack {
         .unwrap()
     }
 
-    async fn devices_of(&self, user: UserId) -> Vec<(String, Option<String>)> {
+    pub(super) async fn devices_of(&self, user: UserId) -> Vec<(String, Option<String>)> {
         sqlx::query_as("SELECT id, revoked_at FROM trusted_devices WHERE user_id = ?1 ORDER BY id")
             .bind(user.to_string())
             .fetch_all(self.pools.reader().executor())
@@ -173,7 +173,7 @@ impl Stack {
             .unwrap()
     }
 
-    async fn trusted_device(&self, user: UserId, id: &str, revoked_at: Option<&str>) {
+    pub(super) async fn trusted_device(&self, user: UserId, id: &str, revoked_at: Option<&str>) {
         let revoked = revoked_at.map_or_else(|| "NULL".to_owned(), |at| format!("'{at}'"));
         self.execute(&format!(
             "INSERT INTO trusted_devices (id, user_id, token_hash, created_at, expires_at, revoked_at)
@@ -199,7 +199,7 @@ impl Stack {
         .await;
     }
 
-    async fn audit_rows(&self, action: &str) -> Vec<(String, Option<String>, String)> {
+    pub(super) async fn audit_rows(&self, action: &str) -> Vec<(String, Option<String>, String)> {
         sqlx::query_as(
             "SELECT actor_label, target_id, metadata_json FROM audit_events
               WHERE action = ?1 ORDER BY id",
@@ -232,7 +232,7 @@ fn validation_fields(fetched: &Fetched) -> Value {
     fetched.json()["error"]["details"]["fields"].clone()
 }
 
-fn assert_code(fetched: &Fetched, status: StatusCode, code: &str) {
+pub(super) fn assert_code(fetched: &Fetched, status: StatusCode, code: &str) {
     assert_eq!(fetched.status, status, "{}", fetched.text());
     assert_eq!(fetched.error_code(), code, "{}", fetched.text());
 }
