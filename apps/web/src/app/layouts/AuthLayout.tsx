@@ -1,8 +1,9 @@
-import { Layout, theme, Typography } from "antd";
-import { type CSSProperties, useState } from "react";
+import { Layout, theme } from "antd";
+import type { CSSProperties } from "react";
 import { Outlet, useMatches } from "react-router";
 import { resolveApiUrl } from "../../shared/api/basePath";
 import { useBootState } from "../bootstrap/bootState";
+import { AppBrand } from "./AppBrand";
 
 export const AUTH_BACKGROUND_SIZE = "cover";
 export const AUTH_BACKGROUND_POSITION = "center center";
@@ -36,50 +37,6 @@ function useCardWidth(): number {
     "default",
   );
   return CARD_WIDTH[width ?? "default"];
-}
-
-function Brand({ appName, logoUrl }: { appName: string; logoUrl: string | null }) {
-  const { token } = theme.useToken();
-  const [logoFailed, setLogoFailed] = useState(false);
-  const showLogo = logoUrl !== null && !logoFailed;
-  return (
-    <div
-      data-testid="auth-brand"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: token.marginSM,
-        marginBottom: token.marginXL,
-        minHeight: 36,
-      }}
-    >
-      {showLogo ? (
-        <img
-          src={resolveApiUrl(logoUrl)}
-          alt=""
-          width={36}
-          height={36}
-          style={{ borderRadius: token.borderRadius, objectFit: "contain", flex: "none" }}
-          onError={() => {
-            setLogoFailed(true);
-          }}
-        />
-      ) : null}
-      <Typography.Text
-        strong
-        style={{
-          minWidth: 0,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-          fontSize: token.fontSizeLG,
-          lineHeight: token.lineHeightLG,
-        }}
-      >
-        {appName}
-      </Typography.Text>
-    </div>
-  );
 }
 
 interface AuthLayoutProps {
@@ -123,7 +80,13 @@ export function AuthLayout({ backgroundUrl = null }: AuthLayoutProps) {
             padding: `clamp(${px(token.paddingLG)}, 6vw, ${px(token.paddingXL + token.paddingXS)})`,
           }}
         >
-          <Brand appName={bootstrap.appName} logoUrl={bootstrap.logoUrl} />
+          <AppBrand
+            appName={bootstrap.appName}
+            logoUrl={bootstrap.logoUrl}
+            logoSize={36}
+            testId="auth-brand"
+            style={{ marginBottom: token.marginXL, minHeight: 36 }}
+          />
           <Outlet />
         </div>
       </main>

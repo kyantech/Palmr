@@ -10,5 +10,19 @@
       "description": "Nie masz uprawnień do wyświetlania tej strony.",
       "action": "Przejdź do Przeglądu"
     }
+  },
+  "nav": {
+    "label": "Nawigacja główna",
+    "overview": "Przegląd",
+    "open": "Otwórz nawigację",
+    "more": "Więcej",
+    "collapse": "Zwiń nawigację",
+    "expand": "Rozwiń nawigację"
+  },
+  "user": {
+    "menu": {
+      "label": "Menu konta",
+      "signOut": "Wyloguj się"
+    }
   }
 }

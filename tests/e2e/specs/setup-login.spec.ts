@@ -17,6 +17,15 @@ function collectPageErrors(page: Page): string[] {
   return errors;
 }
 
+// The setup locale (de-DE) is persisted as the Admin's locale and the instance
+// default, so the authenticated shell renders in German after both entry paths.
+async function expectShellOverview(page: Page) {
+  await expect(page).toHaveURL(/\/overview$/);
+  await expect(page.getByTestId("app-shell")).toBeVisible();
+  await expect(page.getByTestId("overview-page")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Übersicht");
+}
+
 test("e2e_setup_login_overview_smoke", async ({ page, browser }) => {
   const pageErrors = collectPageErrors(page);
   const setupPosts: string[] = [];
@@ -42,10 +51,12 @@ test("e2e_setup_login_overview_smoke", async ({ page, browser }) => {
   const language = page.getByLabel("Language");
   await language.click();
   await language.fill("Deutsch");
-  await page.keyboard.press("Enter");
-  await expect(
-    page.getByText("Deutsch (Deutschland)").filter({ visible: true }).first(),
-  ).toBeVisible();
+  const german = page
+    .getByTitle("Deutsch (Deutschland)", { exact: true })
+    .filter({ visible: true });
+  await german.click();
+  await expect(language).toHaveAttribute("aria-expanded", "false");
+  await expect(german).toHaveCount(1);
   await page.getByLabel("First name").fill(ADMIN.firstName);
   await page.getByLabel("Last name").fill(ADMIN.lastName);
   await page.getByLabel("Username").fill(ADMIN.username);
@@ -53,7 +64,7 @@ test("e2e_setup_login_overview_smoke", async ({ page, browser }) => {
   await page.getByLabel("Password", { exact: true }).fill(ADMIN.password);
   await page.getByRole("button", { name: "Complete setup" }).dblclick();
 
-  await expect(page).toHaveURL(/\/overview$/);
+  await expectShellOverview(page);
   expect(setupPosts).toHaveLength(1);
   const me = await page.request.get("/api/v1/auth/me");
   expect(me.status()).toBe(200);
@@ -63,7 +74,7 @@ test("e2e_setup_login_overview_smoke", async ({ page, browser }) => {
   });
 
   await page.goto("/setup");
-  await expect(page).toHaveURL(/\/overview$/);
+  await expectShellOverview(page);
 
   const anonymous = await browser.newContext();
   const login = await anonymous.newPage();
@@ -88,7 +99,7 @@ test("e2e_setup_login_overview_smoke", async ({ page, browser }) => {
 
   await login.getByLabel("Password", { exact: true }).fill(ADMIN.password);
   await login.getByRole("button", { name: "Sign in", exact: true }).click();
-  await expect(login).toHaveURL(/\/overview$/);
+  await expectShellOverview(login);
   expect((await login.request.get("/api/v1/auth/me")).status()).toBe(200);
 
   expect(pageErrors).toEqual([]);

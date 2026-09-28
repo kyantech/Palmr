@@ -10,5 +10,19 @@
       "description": "Non hai l’autorizzazione per visualizzare questa pagina.",
       "action": "Vai a Panoramica"
     }
+  },
+  "nav": {
+    "label": "Navigazione principale",
+    "overview": "Panoramica",
+    "open": "Apri navigazione",
+    "more": "Altro",
+    "collapse": "Comprimi navigazione",
+    "expand": "Espandi navigazione"
+  },
+  "user": {
+    "menu": {
+      "label": "Menu account",
+      "signOut": "Esci"
+    }
   }
 }

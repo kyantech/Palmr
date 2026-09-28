@@ -10,5 +10,19 @@
       "description": "Je hebt geen toestemming om deze pagina te bekijken.",
       "action": "Naar Overzicht"
     }
+  },
+  "nav": {
+    "label": "Hoofdnavigatie",
+    "overview": "Overzicht",
+    "open": "Navigatie openen",
+    "more": "Meer",
+    "collapse": "Navigatie invouwen",
+    "expand": "Navigatie uitvouwen"
+  },
+  "user": {
+    "menu": {
+      "label": "Accountmenu",
+      "signOut": "Afmelden"
+    }
   }
 }

@@ -10,5 +10,19 @@
       "description": "Sie haben keine Berechtigung, diese Seite anzuzeigen.",
       "action": "Zur Übersicht"
     }
+  },
+  "nav": {
+    "label": "Hauptnavigation",
+    "overview": "Übersicht",
+    "open": "Navigation öffnen",
+    "more": "Mehr",
+    "collapse": "Navigation einklappen",
+    "expand": "Navigation ausklappen"
+  },
+  "user": {
+    "menu": {
+      "label": "Kontomenü",
+      "signOut": "Abmelden"
+    }
   }
 }

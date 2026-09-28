@@ -10,5 +10,19 @@
       "description": "Anda tidak memiliki izin untuk melihat halaman ini.",
       "action": "Buka Ikhtisar"
     }
+  },
+  "nav": {
+    "label": "Navigasi utama",
+    "overview": "Ikhtisar",
+    "open": "Buka navigasi",
+    "more": "Lainnya",
+    "collapse": "Ciutkan navigasi",
+    "expand": "Perluas navigasi"
+  },
+  "user": {
+    "menu": {
+      "label": "Menu akun",
+      "signOut": "Keluar"
+    }
   }
 }

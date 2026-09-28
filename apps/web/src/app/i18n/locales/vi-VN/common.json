@@ -10,5 +10,19 @@
       "description": "Bạn không có quyền xem trang này.",
       "action": "Đến Tổng quan"
     }
+  },
+  "nav": {
+    "label": "Điều hướng chính",
+    "overview": "Tổng quan",
+    "open": "Mở điều hướng",
+    "more": "Thêm",
+    "collapse": "Thu gọn điều hướng",
+    "expand": "Mở rộng điều hướng"
+  },
+  "user": {
+    "menu": {
+      "label": "Menu tài khoản",
+      "signOut": "Đăng xuất"
+    }
   }
 }

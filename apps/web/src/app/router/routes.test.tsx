@@ -39,13 +39,14 @@ describe("production route table", () => {
       "/",
       "/setup",
       "/login",
+      "/overview",
       "*",
     ]);
   });
 
   test("never declares /e, public Share, registration, or unbuilt product routes", () => {
     const paths = collectPaths(appRoutes).filter((path) => path !== undefined);
-    for (const forbidden of ["/e", "/s", "/r", "/register", "/signup", "/overview", "/admin"]) {
+    for (const forbidden of ["/e", "/s", "/r", "/register", "/signup", "/admin", "/settings"]) {
       for (const path of paths) {
         expect(path === forbidden || path.startsWith(`${forbidden}/`)).toBe(false);
       }
@@ -53,36 +54,63 @@ describe("production route table", () => {
   });
 });
 
+describe("component_authenticated_root_lands_on_the_shell_overview", () => {
+  test("/overview renders the AppShell and the Overview placeholder instead of the 404 panel", async () => {
+    await renderRouter(appRoutes, { state: AUTHENTICATED, initialEntries: ["/overview"] });
+
+    expect(await screen.findByTestId("app-shell")).toBeDefined();
+    const heading = await screen.findByRole("heading", { level: 1, name: "Overview" });
+    expect(heading.textContent).toBe("Overview");
+    expect(screen.queryByText("404")).toBeNull();
+    expect(screen.queryByRole("heading", { name: "Page not found" })).toBeNull();
+  });
+
+  test("the authenticated root redirect resolves to the real /overview route", async () => {
+    const { router } = await renderRouter(appRoutes, {
+      state: AUTHENTICATED,
+      initialEntries: ["/"],
+    });
+
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe(PATHS.overview);
+    });
+    expect(await screen.findByRole("heading", { level: 1, name: "Overview" })).toBeDefined();
+  });
+});
+
 describe("component_root_redirect_is_deterministic", () => {
   test.each([
-    ["setup incomplete", SETUP_INCOMPLETE, PATHS.setup],
+    ["setup incomplete", PATHS.setup, PATHS.setup, SETUP_INCOMPLETE],
     [
       "setup incomplete even with a stale session",
-      { ...SETUP_INCOMPLETE, me: meFixture() },
       PATHS.setup,
+      PATHS.setup,
+      { ...SETUP_INCOMPLETE, me: meFixture() },
     ],
-    ["anonymous", ANONYMOUS, PATHS.login],
-    ["authenticated", AUTHENTICATED, PATHS.overview],
+    ["anonymous", PATHS.login, PATHS.login, ANONYMOUS],
+    ["authenticated", PATHS.overview, PATHS.overview, AUTHENTICATED],
     [
       "authenticated and restricted",
-      { ...AUTHENTICATED, me: meFixture({ restriction: "must_change_password" }) },
       PATHS.overview,
+      PATHS.forcedPasswordChange,
+      { ...AUTHENTICATED, me: meFixture({ restriction: "must_change_password" }) },
     ],
     [
       "authenticated admin needing 2FA",
+      PATHS.overview,
+      PATHS.enrollTwoFactor,
       {
         ...AUTHENTICATED,
         me: meFixture({ role: "admin", restriction: "mfa_enrollment_required" }),
       },
-      PATHS.overview,
     ],
-  ])("%s → %s", async (_label, state, destination) => {
-    expect(rootDestination(state)).toBe(destination);
+  ])("%s → %s", async (_label, root, finalPath, state) => {
+    expect(rootDestination(state)).toBe(root);
 
     const { router } = await renderRouter(appRoutes, { state, initialEntries: ["/"] });
 
     await waitFor(() => {
-      expect(router.state.location.pathname).toBe(destination);
+      expect(router.state.location.pathname).toBe(finalPath);
     });
     expect(router.state.historyAction).toBe("REPLACE");
     expect(router.state.location.search).toBe("");

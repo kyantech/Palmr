@@ -10,5 +10,19 @@
       "description": "您没有权限查看此页面。",
       "action": "前往概览"
     }
+  },
+  "nav": {
+    "label": "主导航",
+    "overview": "概览",
+    "open": "打开导航",
+    "more": "更多",
+    "collapse": "收起导航",
+    "expand": "展开导航"
+  },
+  "user": {
+    "menu": {
+      "label": "账户菜单",
+      "signOut": "退出登录"
+    }
   }
 }

@@ -10,5 +10,19 @@
       "description": "Vous n’avez pas l’autorisation d’afficher cette page.",
       "action": "Aller à la vue d’ensemble"
     }
+  },
+  "nav": {
+    "label": "Navigation principale",
+    "overview": "Vue d’ensemble",
+    "open": "Ouvrir la navigation",
+    "more": "Plus",
+    "collapse": "Réduire la navigation",
+    "expand": "Développer la navigation"
+  },
+  "user": {
+    "menu": {
+      "label": "Menu du compte",
+      "signOut": "Se déconnecter"
+    }
   }
 }

@@ -10,5 +10,19 @@
       "description": "Du har inte behörighet att visa den här sidan.",
       "action": "Gå till Översikt"
     }
+  },
+  "nav": {
+    "label": "Huvudnavigering",
+    "overview": "Översikt",
+    "open": "Öppna navigering",
+    "more": "Mer",
+    "collapse": "Fäll ihop navigering",
+    "expand": "Expandera navigering"
+  },
+  "user": {
+    "menu": {
+      "label": "Kontomeny",
+      "signOut": "Logga ut"
+    }
   }
 }

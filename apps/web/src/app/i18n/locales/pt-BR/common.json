@@ -10,5 +10,19 @@
       "description": "Você não tem permissão para visualizar esta página.",
       "action": "Ir para a Visão geral"
     }
+  },
+  "nav": {
+    "label": "Navegação principal",
+    "overview": "Visão geral",
+    "open": "Abrir navegação",
+    "more": "Mais",
+    "collapse": "Recolher navegação",
+    "expand": "Expandir navegação"
+  },
+  "user": {
+    "menu": {
+      "label": "Menu da conta",
+      "signOut": "Sair"
+    }
   }
 }

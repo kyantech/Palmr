@@ -10,5 +10,19 @@
       "description": "Bu sayfayı görüntüleme izniniz yok.",
       "action": "Genel Bakış’a git"
     }
+  },
+  "nav": {
+    "label": "Ana gezinme",
+    "overview": "Genel Bakış",
+    "open": "Gezinmeyi aç",
+    "more": "Daha fazla",
+    "collapse": "Gezinmeyi daralt",
+    "expand": "Gezinmeyi genişlet"
+  },
+  "user": {
+    "menu": {
+      "label": "Hesap menüsü",
+      "signOut": "Oturumu kapat"
+    }
   }
 }

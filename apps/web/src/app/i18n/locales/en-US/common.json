@@ -10,5 +10,19 @@
       "description": "You do not have permission to view this page.",
       "action": "Go to Overview"
     }
+  },
+  "nav": {
+    "label": "Primary navigation",
+    "overview": "Overview",
+    "open": "Open navigation",
+    "more": "More",
+    "collapse": "Collapse navigation",
+    "expand": "Expand navigation"
+  },
+  "user": {
+    "menu": {
+      "label": "Account menu",
+      "signOut": "Sign out"
+    }
   }
 }

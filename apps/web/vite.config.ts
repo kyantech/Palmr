@@ -5,9 +5,16 @@ const REACT_VENDOR = /[\\/]node_modules[\\/](?:react|react-dom|react-router|sche
 const ANTD_VENDOR = /[\\/]node_modules[\\/](?:antd|@ant-design|@rc-component)[\\/]/;
 const LOCALE_DATA = /[\\/]locale[\\/]/;
 
+const DEV_API_TARGET = process.env.PALMR_DEV_API ?? "http://127.0.0.1:5487";
+
 export default defineConfig({
   base: "./",
   plugins: [react()],
+  server: {
+    port: 5173,
+    strictPort: true,
+    proxy: { "/api": DEV_API_TARGET },
+  },
   build: {
     rolldownOptions: {
       output: {

@@ -1,5 +1,8 @@
 import { createBrowserRouter, type RouteObject, useRouteError } from "react-router";
+import { OverviewPage } from "../../features/overview";
 import { RouteErrorView } from "../error/RouteErrorBoundary";
+import { authenticatedRoutes } from "../guards/chain";
+import { AppShell } from "../layouts/AppShell";
 import { authRoutes } from "./authRoutes";
 import { resolveBasename } from "./basename";
 import { PATHS } from "./paths";
@@ -16,6 +19,12 @@ export const appRoutes: RouteObject[] = [
     children: [
       { path: PATHS.root, element: <RootRedirect /> },
       ...authRoutes,
+      ...authenticatedRoutes([
+        {
+          element: <AppShell />,
+          children: [{ path: PATHS.overview, element: <OverviewPage /> }],
+        },
+      ]),
       { path: "*", element: <NotFoundPanel /> },
     ],
   },

@@ -10,5 +10,19 @@
       "description": "No tienes permiso para ver esta página.",
       "action": "Ir a Resumen"
     }
+  },
+  "nav": {
+    "label": "Navegación principal",
+    "overview": "Resumen",
+    "open": "Abrir navegación",
+    "more": "Más",
+    "collapse": "Contraer navegación",
+    "expand": "Expandir navegación"
+  },
+  "user": {
+    "menu": {
+      "label": "Menú de cuenta",
+      "signOut": "Cerrar sesión"
+    }
   }
 }
