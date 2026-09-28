@@ -1,1 +1,14 @@
-{}
+{
+  "status": {
+    "notFound": {
+      "title": "Page not found",
+      "description": "The page you are looking for does not exist or may have been moved.",
+      "action": "Go to the home page"
+    },
+    "forbidden": {
+      "title": "Access denied",
+      "description": "You do not have permission to view this page.",
+      "action": "Go to Overview"
+    }
+  }
+}

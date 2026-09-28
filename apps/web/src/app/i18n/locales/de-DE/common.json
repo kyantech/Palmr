@@ -1,1 +1,14 @@
-{}
+{
+  "status": {
+    "notFound": {
+      "title": "Seite nicht gefunden",
+      "description": "Die gesuchte Seite existiert nicht oder wurde möglicherweise verschoben.",
+      "action": "Zur Startseite"
+    },
+    "forbidden": {
+      "title": "Zugriff verweigert",
+      "description": "Sie haben keine Berechtigung, diese Seite anzuzeigen.",
+      "action": "Zur Übersicht"
+    }
+  }
+}

@@ -7,8 +7,7 @@ test("e2e_shell_loads", async ({ page }) => {
   const response = await page.goto("/");
   expect(response).not.toBeNull();
   expect(response?.ok()).toBe(true);
-  await expect(
-    page.getByRole("heading", { name: "Palmr", exact: true }),
-  ).toBeVisible();
+  await expect(page).toHaveURL(/\/setup$/);
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   expect(pageErrors).toEqual([]);
 });

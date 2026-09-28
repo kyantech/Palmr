@@ -1,1 +1,14 @@
-{}
+{
+  "status": {
+    "notFound": {
+      "title": "页面未找到",
+      "description": "您要查找的页面不存在或可能已被移动。",
+      "action": "前往首页"
+    },
+    "forbidden": {
+      "title": "访问被拒绝",
+      "description": "您没有权限查看此页面。",
+      "action": "前往概览"
+    }
+  }
+}

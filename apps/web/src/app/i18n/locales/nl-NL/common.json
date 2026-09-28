@@ -1,1 +1,14 @@
-{}
+{
+  "status": {
+    "notFound": {
+      "title": "Pagina niet gevonden",
+      "description": "De pagina die je zoekt bestaat niet of is mogelijk verplaatst.",
+      "action": "Naar de startpagina"
+    },
+    "forbidden": {
+      "title": "Toegang geweigerd",
+      "description": "Je hebt geen toestemming om deze pagina te bekijken.",
+      "action": "Naar Overzicht"
+    }
+  }
+}

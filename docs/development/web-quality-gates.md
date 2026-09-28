@@ -29,6 +29,7 @@ The prohibited names apply only directly under `src/`. `features/<x>/components/
 
 ## Tooling versions
 
+- Node.js 24 is required for frontend development, builds, tests, generation scripts and CI (`engines.node` in `v4/package.json`). Node 22 is unsupported. The production image runs the Rust binary only and contains no Node.js.
 - ESLint stays on 9. `eslint-plugin-import` 2.32 and `eslint-plugin-jsx-a11y` 6.10 do not declare support for ESLint 10. Move to ESLint 10 when both plugins support it.
 - `eslint-plugin-boundaries` 7 renamed `element-types` and `entry-point` (the names in FRONTEND_ARCHITECTURE §2.5) to one rule, `boundaries/dependencies`. It covers I1–I4, including the I2 entry point.
 - Prettier is pinned exactly because formatting can change between releases.

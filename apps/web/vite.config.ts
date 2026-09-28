@@ -1,7 +1,7 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-const REACT_VENDOR = /[\\/]node_modules[\\/](?:react|react-dom|scheduler)[\\/]/;
+const REACT_VENDOR = /[\\/]node_modules[\\/](?:react|react-dom|react-router|scheduler)[\\/]/;
 const ANTD_VENDOR = /[\\/]node_modules[\\/](?:antd|@ant-design|@rc-component)[\\/]/;
 const LOCALE_DATA = /[\\/]locale[\\/]/;
 

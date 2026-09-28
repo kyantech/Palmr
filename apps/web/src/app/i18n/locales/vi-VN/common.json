@@ -1,1 +1,14 @@
-{}
+{
+  "status": {
+    "notFound": {
+      "title": "Không tìm thấy trang",
+      "description": "Trang bạn đang tìm không tồn tại hoặc có thể đã được di chuyển.",
+      "action": "Đến trang chủ"
+    },
+    "forbidden": {
+      "title": "Truy cập bị từ chối",
+      "description": "Bạn không có quyền xem trang này.",
+      "action": "Đến Tổng quan"
+    }
+  }
+}

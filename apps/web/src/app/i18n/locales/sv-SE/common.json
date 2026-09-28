@@ -1,1 +1,14 @@
-{}
+{
+  "status": {
+    "notFound": {
+      "title": "Sidan hittades inte",
+      "description": "Sidan du letar efter finns inte eller kan ha flyttats.",
+      "action": "Gå till startsidan"
+    },
+    "forbidden": {
+      "title": "Åtkomst nekad",
+      "description": "Du har inte behörighet att visa den här sidan.",
+      "action": "Gå till Översikt"
+    }
+  }
+}

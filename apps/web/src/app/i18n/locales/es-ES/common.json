@@ -1,1 +1,14 @@
-{}
+{
+  "status": {
+    "notFound": {
+      "title": "Página no encontrada",
+      "description": "La página que buscas no existe o puede que se haya movido.",
+      "action": "Ir a la página de inicio"
+    },
+    "forbidden": {
+      "title": "Acceso denegado",
+      "description": "No tienes permiso para ver esta página.",
+      "action": "Ir a Resumen"
+    }
+  }
+}

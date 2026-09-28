@@ -1,1 +1,14 @@
-{}
+{
+  "status": {
+    "notFound": {
+      "title": "Halaman tidak ditemukan",
+      "description": "Halaman yang Anda cari tidak ada atau mungkin telah dipindahkan.",
+      "action": "Buka halaman beranda"
+    },
+    "forbidden": {
+      "title": "Akses ditolak",
+      "description": "Anda tidak memiliki izin untuk melihat halaman ini.",
+      "action": "Buka Ikhtisar"
+    }
+  }
+}
