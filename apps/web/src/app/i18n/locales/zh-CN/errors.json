@@ -1,0 +1,12 @@
+{
+  "boundary": {
+    "title": "出现了问题",
+    "description": "发生意外错误，此页面无法加载。",
+    "reload": "重新加载",
+    "requestId": "请求 ID：{{requestId}}"
+  },
+  "staleChunk": {
+    "title": "Palmr 已更新",
+    "description": "Palmr 有新版本可用。请重新加载页面以继续。"
+  }
+}

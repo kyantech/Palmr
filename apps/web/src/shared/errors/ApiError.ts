@@ -12,6 +12,7 @@ export interface ApiErrorInit {
   details: ErrorDetails;
   request: ApiRequestDescription;
   serverMessage: string;
+  retryAfterSeconds?: number | null;
   cause?: unknown;
 }
 
@@ -22,13 +23,24 @@ export class ApiError extends Error {
   readonly requestId: string | null;
   readonly details: ErrorDetails;
   readonly request: ApiRequestDescription;
+  readonly retryAfterSeconds: number | null;
 
-  constructor({ code, status, requestId, details, request, serverMessage, cause }: ApiErrorInit) {
+  constructor({
+    code,
+    status,
+    requestId,
+    details,
+    request,
+    serverMessage,
+    retryAfterSeconds = null,
+    cause,
+  }: ApiErrorInit) {
     super(serverMessage, cause === undefined ? undefined : { cause });
     this.code = code;
     this.status = status;
     this.requestId = requestId;
     this.details = details;
     this.request = request;
+    this.retryAfterSeconds = retryAfterSeconds;
   }
 }

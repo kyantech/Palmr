@@ -4,7 +4,7 @@
   "license": "AGPL-3.0-only",
   "packageManager": "pnpm@12.4.2",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22.18.0"
   },
   "scripts": {
     "build": "pnpm -r build",

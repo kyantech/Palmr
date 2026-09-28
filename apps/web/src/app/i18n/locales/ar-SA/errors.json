@@ -1,0 +1,12 @@
+{
+  "boundary": {
+    "title": "حدث خطأ ما",
+    "description": "منع خطأ غير متوقع تحميل هذه الصفحة.",
+    "reload": "إعادة التحميل",
+    "requestId": "معرّف الطلب: {{requestId}}"
+  },
+  "staleChunk": {
+    "title": "تم تحديث Palmr",
+    "description": "يتوفر إصدار أحدث من Palmr. أعد تحميل الصفحة للمتابعة."
+  }
+}

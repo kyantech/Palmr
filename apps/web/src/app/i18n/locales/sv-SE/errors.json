@@ -1,0 +1,12 @@
+{
+  "boundary": {
+    "title": "Något gick fel",
+    "description": "Ett oväntat fel hindrade sidan från att läsas in.",
+    "reload": "Läs in igen",
+    "requestId": "Begäran-ID: {{requestId}}"
+  },
+  "staleChunk": {
+    "title": "Palmr har uppdaterats",
+    "description": "En nyare version av Palmr är tillgänglig. Läs in sidan igen för att fortsätta."
+  }
+}

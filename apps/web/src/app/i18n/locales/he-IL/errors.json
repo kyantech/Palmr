@@ -1,0 +1,12 @@
+{
+  "boundary": {
+    "title": "משהו השתבש",
+    "description": "שגיאה בלתי צפויה מנעה את טעינת הדף.",
+    "reload": "טעינה מחדש",
+    "requestId": "מזהה בקשה: {{requestId}}"
+  },
+  "staleChunk": {
+    "title": "Palmr עודכן",
+    "description": "גרסה חדשה יותר של Palmr זמינה. טענו את הדף מחדש כדי להמשיך."
+  }
+}

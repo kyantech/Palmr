@@ -1,0 +1,12 @@
+{
+  "boundary": {
+    "title": "문제가 발생했습니다",
+    "description": "예기치 않은 오류로 인해 이 페이지를 불러오지 못했습니다.",
+    "reload": "새로고침",
+    "requestId": "요청 ID: {{requestId}}"
+  },
+  "staleChunk": {
+    "title": "Palmr가 업데이트되었습니다",
+    "description": "새 버전의 Palmr를 사용할 수 있습니다. 계속하려면 페이지를 새로고침하세요."
+  }
+}

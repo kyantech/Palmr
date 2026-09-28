@@ -1,0 +1,12 @@
+{
+  "boundary": {
+    "title": "Something went wrong",
+    "description": "An unexpected error stopped this page from loading.",
+    "reload": "Reload",
+    "requestId": "Request ID: {{requestId}}"
+  },
+  "staleChunk": {
+    "title": "Palmr was updated",
+    "description": "A newer version of Palmr is available. Reload the page to continue."
+  }
+}

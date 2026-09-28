@@ -1,0 +1,12 @@
+{
+  "boundary": {
+    "title": "Đã xảy ra lỗi",
+    "description": "Một lỗi không mong muốn đã khiến trang này không tải được.",
+    "reload": "Tải lại",
+    "requestId": "Mã yêu cầu: {{requestId}}"
+  },
+  "staleChunk": {
+    "title": "Palmr đã được cập nhật",
+    "description": "Đã có phiên bản Palmr mới hơn. Hãy tải lại trang để tiếp tục."
+  }
+}

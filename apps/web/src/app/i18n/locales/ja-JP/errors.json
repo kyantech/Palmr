@@ -1,0 +1,12 @@
+{
+  "boundary": {
+    "title": "問題が発生しました",
+    "description": "予期しないエラーにより、このページを読み込めませんでした。",
+    "reload": "再読み込み",
+    "requestId": "リクエスト ID: {{requestId}}"
+  },
+  "staleChunk": {
+    "title": "Palmr が更新されました",
+    "description": "新しいバージョンの Palmr が利用可能です。続行するにはページを再読み込みしてください。"
+  }
+}

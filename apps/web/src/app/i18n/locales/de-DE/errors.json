@@ -1,0 +1,12 @@
+{
+  "boundary": {
+    "title": "Etwas ist schiefgelaufen",
+    "description": "Ein unerwarteter Fehler hat das Laden dieser Seite verhindert.",
+    "reload": "Neu laden",
+    "requestId": "Anfrage-ID: {{requestId}}"
+  },
+  "staleChunk": {
+    "title": "Palmr wurde aktualisiert",
+    "description": "Eine neuere Version von Palmr ist verfügbar. Laden Sie die Seite neu, um fortzufahren."
+  }
+}

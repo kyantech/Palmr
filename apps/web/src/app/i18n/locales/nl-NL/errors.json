@@ -1,0 +1,12 @@
+{
+  "boundary": {
+    "title": "Er is iets misgegaan",
+    "description": "Een onverwachte fout heeft het laden van deze pagina verhinderd.",
+    "reload": "Opnieuw laden",
+    "requestId": "Verzoek-ID: {{requestId}}"
+  },
+  "staleChunk": {
+    "title": "Palmr is bijgewerkt",
+    "description": "Er is een nieuwere versie van Palmr beschikbaar. Laad de pagina opnieuw om door te gaan."
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "boundary": {
+    "title": "Terjadi kesalahan",
+    "description": "Kesalahan tak terduga menghentikan pemuatan halaman ini.",
+    "reload": "Muat ulang",
+    "requestId": "ID permintaan: {{requestId}}"
+  },
+  "staleChunk": {
+    "title": "Palmr telah diperbarui",
+    "description": "Versi Palmr yang lebih baru tersedia. Muat ulang halaman untuk melanjutkan."
+  }
+}

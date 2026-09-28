@@ -7,6 +7,7 @@ import {
   type ApiRoutes,
   type HttpMethod,
   type MethodOf,
+  parseRetryAfter,
 } from "./apiFetch";
 import { CSRF_COOKIE, CSRF_HEADER } from "./csrf";
 import type { components } from "./schema";
@@ -203,6 +204,7 @@ test("unit_apiFetch_parses_error_envelope", async () => {
     "name",
     "request",
     "requestId",
+    "retryAfterSeconds",
     "status",
   ]);
   expect(Object.values(error)).not.toContain(response);
@@ -554,6 +556,59 @@ describe("error classification", () => {
 
     expect(error.code).toBe("CLIENT_NETWORK_ERROR");
     expect(error.cause).toBe(failure);
+  });
+});
+
+describe("Retry-After", () => {
+  test("delta seconds on a Palmr envelope are kept", async () => {
+    stubFetch(() =>
+      json(
+        { error: { code: "RATE_LIMITED", message: "m", requestId: "r", details: {} } },
+        { status: 429, headers: { "Retry-After": "7" } },
+      ),
+    );
+
+    const error = await rejection(fixtureFetch("get", "/items"));
+
+    expect(error.code).toBe("RATE_LIMITED");
+    expect(error.retryAfterSeconds).toBe(7);
+  });
+
+  test("a proxy 429 keeps its Retry-After", async () => {
+    stubFetch(
+      () =>
+        new Response("slow down", {
+          status: 429,
+          headers: { "Content-Type": "text/plain", "Retry-After": "3" },
+        }),
+    );
+
+    const error = await rejection(fixtureFetch("get", "/items"));
+
+    expect(error.code).toBe("CLIENT_RATE_LIMITED");
+    expect(error.retryAfterSeconds).toBe(3);
+  });
+
+  test("absent or malformed values are null", async () => {
+    stubFetch(() =>
+      json(
+        { error: { code: "INTERNAL_ERROR", message: "m", requestId: "r", details: {} } },
+        { status: 500 },
+      ),
+    );
+
+    const error = await rejection(fixtureFetch("get", "/items"));
+
+    expect(error.retryAfterSeconds).toBeNull();
+    expect(parseRetryAfter("soon")).toBeNull();
+    expect(parseRetryAfter("-5")).toBeNull();
+  });
+
+  test("an HTTP date becomes whole seconds from now, never negative", () => {
+    const now = Date.parse("2026-09-28T12:00:00Z");
+
+    expect(parseRetryAfter("Mon, 28 Sep 2026 12:00:10 GMT", now)).toBe(10);
+    expect(parseRetryAfter("Mon, 28 Sep 2026 11:59:00 GMT", now)).toBe(0);
   });
 });
 

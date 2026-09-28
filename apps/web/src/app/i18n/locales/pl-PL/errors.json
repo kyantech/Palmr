@@ -1,0 +1,12 @@
+{
+  "boundary": {
+    "title": "Coś poszło nie tak",
+    "description": "Nieoczekiwany błąd uniemożliwił załadowanie tej strony.",
+    "reload": "Załaduj ponownie",
+    "requestId": "ID żądania: {{requestId}}"
+  },
+  "staleChunk": {
+    "title": "Palmr został zaktualizowany",
+    "description": "Dostępna jest nowsza wersja Palmr. Załaduj stronę ponownie, aby kontynuować."
+  }
+}

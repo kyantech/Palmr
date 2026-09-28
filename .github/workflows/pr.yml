@@ -83,6 +83,7 @@ jobs:
           git diff --exit-code -- apps/web/src/shared/api/schema.d.ts
           test -z "$(git status --porcelain -- apps/web/src/shared/api/schema.d.ts)"
       - run: pnpm --filter web check:structure
+      - run: pnpm --filter web check:i18n
       - run: pnpm --filter web format:check
       - run: pnpm --filter web lint
       - run: pnpm --filter web typecheck

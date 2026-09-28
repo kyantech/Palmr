@@ -10,9 +10,12 @@ import { CSRF_COOKIE, CSRF_HEADER, readCookie } from "./csrf";
 import type { paths } from "./schema";
 
 export const REQUEST_ID_HEADER = "X-Request-Id";
+export const RETRY_AFTER_HEADER = "Retry-After";
 
 const JSON_MEDIA_TYPE = "application/json";
 const SERVER_ERROR_CODE = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/;
+const DELAY_SECONDS = /^\d+$/;
+const HTTP_DATE = /^[A-Za-z]{3}, .+ GMT$/;
 
 export type HttpMethod = "get" | "put" | "post" | "delete" | "options" | "head" | "patch";
 
@@ -137,7 +140,10 @@ async function sendApiRequest(
   if (response.ok) {
     return readSuccess(response, method, context);
   }
-  throw await readFailure(response, context);
+  throw await readFailure(response, {
+    ...context,
+    retryAfterSeconds: parseRetryAfter(response.headers.get(RETRY_AFTER_HEADER)),
+  });
 }
 
 // The runtime request does not depend on the route map, and TypeScript cannot
@@ -178,6 +184,19 @@ interface ResponseContext {
   request: ApiRequestDescription;
   requestId: string | null;
   signal: AbortSignal | undefined;
+  retryAfterSeconds?: number | null;
+}
+
+export function parseRetryAfter(value: string | null, now: number = Date.now()): number | null {
+  if (value === null) {
+    return null;
+  }
+  const trimmed = value.trim();
+  if (DELAY_SECONDS.test(trimmed)) {
+    return Number(trimmed);
+  }
+  const date = HTTP_DATE.test(trimmed) ? Date.parse(trimmed) : Number.NaN;
+  return Number.isNaN(date) ? null : Math.max(0, Math.ceil((date - now) / 1000));
 }
 
 async function readSuccess(
@@ -232,6 +251,7 @@ function envelopeError(body: unknown, status: number, context: ResponseContext):
     details: toDetails(details),
     request: context.request,
     serverMessage: typeof message === "string" ? message : code,
+    retryAfterSeconds: context.retryAfterSeconds ?? null,
   });
 }
 
@@ -310,7 +330,7 @@ function bodyReadError(
 function clientError(
   code: ClientErrorCode,
   status: number,
-  context: Pick<ResponseContext, "request" | "requestId">,
+  context: Pick<ResponseContext, "request" | "requestId" | "retryAfterSeconds">,
   cause?: unknown,
 ): ApiError {
   return new ApiError({
@@ -320,6 +340,7 @@ function clientError(
     details: {},
     request: context.request,
     serverMessage: code,
+    retryAfterSeconds: context.retryAfterSeconds ?? null,
     cause,
   });
 }

@@ -12,13 +12,18 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "check:structure": "node ../../scripts/check-web-structure.mjs"
+    "check:structure": "node ../../scripts/check-web-structure.mjs",
+    "check:i18n": "node scripts/check-i18n-parity.mjs",
+    "i18n:pseudo": "node scripts/generate-pseudolocale.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.103.2",
     "antd": "^6.6.5",
+    "dayjs": "^1.11.23",
+    "i18next": "^26.4.2",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react-dom": "^19.3.0",
+    "react-i18next": "^17.0.15"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

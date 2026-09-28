@@ -1,0 +1,12 @@
+{
+  "boundary": {
+    "title": "Bir şeyler ters gitti",
+    "description": "Beklenmeyen bir hata bu sayfanın yüklenmesini engelledi.",
+    "reload": "Yeniden yükle",
+    "requestId": "İstek kimliği: {{requestId}}"
+  },
+  "staleChunk": {
+    "title": "Palmr güncellendi",
+    "description": "Palmr'ın daha yeni bir sürümü mevcut. Devam etmek için sayfayı yeniden yükleyin."
+  }
+}

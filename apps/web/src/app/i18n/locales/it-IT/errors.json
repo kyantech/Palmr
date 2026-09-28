@@ -1,0 +1,12 @@
+{
+  "boundary": {
+    "title": "Si è verificato un errore",
+    "description": "Un errore imprevisto ha impedito il caricamento di questa pagina.",
+    "reload": "Ricarica",
+    "requestId": "ID richiesta: {{requestId}}"
+  },
+  "staleChunk": {
+    "title": "Palmr è stato aggiornato",
+    "description": "È disponibile una versione più recente di Palmr. Ricarica la pagina per continuare."
+  }
+}
