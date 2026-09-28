@@ -1,1 +1,25 @@
-{}
+{
+  "title": "Configure sua instância",
+  "description": "Dê um nome a esta instância e crie a primeira conta de administrador.",
+  "instanceSection": "Instância",
+  "accountSection": "Conta de administrador",
+  "appName": "Nome da instância",
+  "locale": "Idioma",
+  "localeHelp": "Torna-se o idioma padrão desta instância e da sua conta. Você pode alterar cada um depois.",
+  "firstName": "Nome",
+  "lastName": "Sobrenome",
+  "username": "Nome de usuário",
+  "email": "E-mail",
+  "password": "Senha",
+  "passwordHint": "Use pelo menos {{minLength}} caracteres.",
+  "submit": "Concluir configuração",
+  "retry": "Tentar novamente",
+  "validation": {
+    "required": "Este campo é obrigatório.",
+    "tooLong": "Use no máximo {{max}} caracteres.",
+    "usernameLength": "Use entre {{min}} e {{max}} caracteres.",
+    "email": "Digite um endereço de e-mail válido.",
+    "passwordLength": "Use pelo menos {{minLength}} caracteres.",
+    "invalid": "Verifique este valor."
+  }
+}

@@ -1,1 +1,25 @@
-{}
+{
+  "title": "הגדרת המופע",
+  "description": "תנו שם למופע וצרו את חשבון המנהל הראשון.",
+  "instanceSection": "מופע",
+  "accountSection": "חשבון מנהל",
+  "appName": "שם המופע",
+  "locale": "שפה",
+  "localeHelp": "תהיה שפת ברירת המחדל של המופע ושל החשבון שלכם. אפשר לשנות כל אחת מהן בהמשך.",
+  "firstName": "שם פרטי",
+  "lastName": "שם משפחה",
+  "username": "שם משתמש",
+  "email": "דוא\"ל",
+  "password": "סיסמה",
+  "passwordHint": "השתמשו לפחות ב-{{minLength}} תווים.",
+  "submit": "סיום ההגדרה",
+  "retry": "ניסיון נוסף",
+  "validation": {
+    "required": "שדה זה הוא חובה.",
+    "tooLong": "השתמשו ב-{{max}} תווים לכל היותר.",
+    "usernameLength": "השתמשו ב-{{min}} עד {{max}} תווים.",
+    "email": "הזינו כתובת דוא\"ל תקינה.",
+    "passwordLength": "השתמשו לפחות ב-{{minLength}} תווים.",
+    "invalid": "בדקו את הערך הזה."
+  }
+}

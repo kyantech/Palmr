@@ -1,1 +1,25 @@
-{}
+{
+  "title": "Configura la tua istanza",
+  "description": "Dai un nome a questa istanza e crea il primo account amministratore.",
+  "instanceSection": "Istanza",
+  "accountSection": "Account amministratore",
+  "appName": "Nome dell'istanza",
+  "locale": "Lingua",
+  "localeHelp": "Diventa la lingua predefinita di questa istanza e del tuo account. Potrai modificarle separatamente in seguito.",
+  "firstName": "Nome",
+  "lastName": "Cognome",
+  "username": "Nome utente",
+  "email": "E-mail",
+  "password": "Password",
+  "passwordHint": "Usa almeno {{minLength}} caratteri.",
+  "submit": "Completa la configurazione",
+  "retry": "Riprova",
+  "validation": {
+    "required": "Questo campo è obbligatorio.",
+    "tooLong": "Usa al massimo {{max}} caratteri.",
+    "usernameLength": "Usa tra {{min}} e {{max}} caratteri.",
+    "email": "Inserisci un indirizzo e-mail valido.",
+    "passwordLength": "Usa almeno {{minLength}} caratteri.",
+    "invalid": "Controlla questo valore."
+  }
+}

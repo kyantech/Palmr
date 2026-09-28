@@ -1,1 +1,25 @@
-{}
+{
+  "title": "インスタンスのセットアップ",
+  "description": "このインスタンスに名前を付け、最初の管理者アカウントを作成します。",
+  "instanceSection": "インスタンス",
+  "accountSection": "管理者アカウント",
+  "appName": "インスタンス名",
+  "locale": "言語",
+  "localeHelp": "このインスタンスとあなたのアカウントの既定の言語になります。どちらも後から個別に変更できます。",
+  "firstName": "名",
+  "lastName": "姓",
+  "username": "ユーザー名",
+  "email": "メールアドレス",
+  "password": "パスワード",
+  "passwordHint": "{{minLength}} 文字以上で入力してください。",
+  "submit": "セットアップを完了",
+  "retry": "再試行",
+  "validation": {
+    "required": "この項目は必須です。",
+    "tooLong": "{{max}} 文字以内で入力してください。",
+    "usernameLength": "{{min}}〜{{max}} 文字で入力してください。",
+    "email": "有効なメールアドレスを入力してください。",
+    "passwordLength": "{{minLength}} 文字以上で入力してください。",
+    "invalid": "この値を確認してください。"
+  }
+}

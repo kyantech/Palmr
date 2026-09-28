@@ -34,14 +34,21 @@ afterEach(() => {
 });
 
 describe("production route table", () => {
-  test("registers only the infrastructure routes owned so far", () => {
-    expect(collectPaths(appRoutes).filter((path) => path !== undefined)).toEqual(["/", "*"]);
+  test("registers only the routes owned so far", () => {
+    expect(collectPaths(appRoutes).filter((path) => path !== undefined)).toEqual([
+      "/",
+      "/setup",
+      "/login",
+      "*",
+    ]);
   });
 
-  test("never declares /e, public Share, or unbuilt product routes", () => {
-    const paths = collectPaths(appRoutes).join(" ");
-    for (const forbidden of ["/e", "/s", "/r", "/login", "/setup", "/overview", "/admin"]) {
-      expect(paths).not.toContain(forbidden);
+  test("never declares /e, public Share, registration, or unbuilt product routes", () => {
+    const paths = collectPaths(appRoutes).filter((path) => path !== undefined);
+    for (const forbidden of ["/e", "/s", "/r", "/register", "/signup", "/overview", "/admin"]) {
+      for (const path of paths) {
+        expect(path === forbidden || path.startsWith(`${forbidden}/`)).toBe(false);
+      }
     }
   });
 });

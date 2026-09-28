@@ -1,5 +1,6 @@
 import { createBrowserRouter, type RouteObject, useRouteError } from "react-router";
 import { RouteErrorView } from "../error/RouteErrorBoundary";
+import { authRoutes } from "./authRoutes";
 import { resolveBasename } from "./basename";
 import { PATHS } from "./paths";
 import { RootRedirect } from "./RootRedirect";
@@ -14,6 +15,7 @@ export const appRoutes: RouteObject[] = [
     errorElement: <RouteErrorElement />,
     children: [
       { path: PATHS.root, element: <RootRedirect /> },
+      ...authRoutes,
       { path: "*", element: <NotFoundPanel /> },
     ],
   },

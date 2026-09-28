@@ -1,1 +1,25 @@
-{}
+{
+  "title": "Configura tu instancia",
+  "description": "Ponle nombre a esta instancia y crea la primera cuenta de administrador.",
+  "instanceSection": "Instancia",
+  "accountSection": "Cuenta de administrador",
+  "appName": "Nombre de la instancia",
+  "locale": "Idioma",
+  "localeHelp": "Será el idioma predeterminado de esta instancia y de tu cuenta. Puedes cambiar cada uno más adelante.",
+  "firstName": "Nombre",
+  "lastName": "Apellidos",
+  "username": "Nombre de usuario",
+  "email": "Correo electrónico",
+  "password": "Contraseña",
+  "passwordHint": "Usa al menos {{minLength}} caracteres.",
+  "submit": "Completar configuración",
+  "retry": "Reintentar",
+  "validation": {
+    "required": "Este campo es obligatorio.",
+    "tooLong": "Usa {{max}} caracteres como máximo.",
+    "usernameLength": "Usa entre {{min}} y {{max}} caracteres.",
+    "email": "Introduce una dirección de correo electrónico válida.",
+    "passwordLength": "Usa al menos {{minLength}} caracteres.",
+    "invalid": "Revisa este valor."
+  }
+}

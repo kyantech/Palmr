@@ -29,6 +29,42 @@ const authenticatedQueries = {
   predicate: (query: { queryKey: readonly unknown[] }) => isAuthenticatedQueryKey(query.queryKey),
 };
 
+function purgeAuthenticatedQueries(client: QueryClient) {
+  const cache = client.getQueryCache();
+  const signedOut = () => client.getQueryData(qk.me.current()) === null;
+  const hasActive = () => cache.findAll({ ...authenticatedQueries, type: "active" }).length > 0;
+  void client.cancelQueries(authenticatedQueries);
+  client.removeQueries({ ...authenticatedQueries, type: "inactive" });
+  if (!hasActive()) {
+    return;
+  }
+  const unsubscribe = cache.subscribe((event) => {
+    if (!signedOut()) {
+      unsubscribe();
+      return;
+    }
+    if (event.type !== "observerRemoved" || !authenticatedQueries.predicate(event.query)) {
+      return;
+    }
+    if (event.query.getObserversCount() === 0) {
+      cache.remove(event.query);
+    }
+    if (!hasActive()) {
+      unsubscribe();
+    }
+  });
+}
+
+export function signOutLocally(client: QueryClient): boolean {
+  discardRecentAuthChallenge();
+  if (client.getQueryData(qk.me.current()) === null) {
+    return false;
+  }
+  client.setQueryData(qk.me.current(), null);
+  purgeAuthenticatedQueries(client);
+  return true;
+}
+
 export function createSessionCoordinator(): SessionCoordinator {
   let router: SessionRouter | null = null;
 
@@ -44,40 +80,10 @@ export function createSessionCoordinator(): SessionCoordinator {
     void router.navigate(target, { replace: true });
   }
 
-  function purgeAuthenticatedQueries(client: QueryClient) {
-    const cache = client.getQueryCache();
-    const signedOut = () => client.getQueryData(qk.me.current()) === null;
-    const hasActive = () => cache.findAll({ ...authenticatedQueries, type: "active" }).length > 0;
-    void client.cancelQueries(authenticatedQueries);
-    client.removeQueries({ ...authenticatedQueries, type: "inactive" });
-    if (!hasActive()) {
-      return;
-    }
-    const unsubscribe = cache.subscribe((event) => {
-      if (!signedOut()) {
-        unsubscribe();
-        return;
-      }
-      if (event.type !== "observerRemoved" || !authenticatedQueries.predicate(event.query)) {
-        return;
-      }
-      if (event.query.getObserversCount() === 0) {
-        cache.remove(event.query);
-      }
-      if (!hasActive()) {
-        unsubscribe();
-      }
-    });
-  }
-
   function reconcileSignedOut(client: QueryClient) {
-    discardRecentAuthChallenge();
-    if (client.getQueryData(qk.me.current()) === null) {
-      return;
+    if (signOutLocally(client)) {
+      navigateToLogin();
     }
-    client.setQueryData(qk.me.current(), null);
-    purgeAuthenticatedQueries(client);
-    navigateToLogin();
   }
 
   function challengeRecentAuth(event: Extract<GlobalQueryError, { source: "mutation" }>) {

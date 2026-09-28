@@ -1,1 +1,25 @@
-{}
+{
+  "title": "Je instantie instellen",
+  "description": "Geef deze instantie een naam en maak het eerste beheerdersaccount aan.",
+  "instanceSection": "Instantie",
+  "accountSection": "Beheerdersaccount",
+  "appName": "Naam van de instantie",
+  "locale": "Taal",
+  "localeHelp": "Wordt de standaardtaal van deze instantie en van je account. Je kunt ze later elk afzonderlijk wijzigen.",
+  "firstName": "Voornaam",
+  "lastName": "Achternaam",
+  "username": "Gebruikersnaam",
+  "email": "E-mail",
+  "password": "Wachtwoord",
+  "passwordHint": "Gebruik minimaal {{minLength}} tekens.",
+  "submit": "Installatie voltooien",
+  "retry": "Opnieuw proberen",
+  "validation": {
+    "required": "Dit veld is verplicht.",
+    "tooLong": "Gebruik maximaal {{max}} tekens.",
+    "usernameLength": "Gebruik tussen {{min}} en {{max}} tekens.",
+    "email": "Voer een geldig e-mailadres in.",
+    "passwordLength": "Gebruik minimaal {{minLength}} tekens.",
+    "invalid": "Controleer deze waarde."
+  }
+}

@@ -1,1 +1,25 @@
-{}
+{
+  "title": "Konfigurera din instans",
+  "description": "Namnge den här instansen och skapa det första administratörskontot.",
+  "instanceSection": "Instans",
+  "accountSection": "Administratörskonto",
+  "appName": "Instansens namn",
+  "locale": "Språk",
+  "localeHelp": "Blir standardspråket för den här instansen och för ditt konto. Du kan ändra dem var för sig senare.",
+  "firstName": "Förnamn",
+  "lastName": "Efternamn",
+  "username": "Användarnamn",
+  "email": "E-post",
+  "password": "Lösenord",
+  "passwordHint": "Använd minst {{minLength}} tecken.",
+  "submit": "Slutför konfigurationen",
+  "retry": "Försök igen",
+  "validation": {
+    "required": "Fältet är obligatoriskt.",
+    "tooLong": "Använd högst {{max}} tecken.",
+    "usernameLength": "Använd mellan {{min}} och {{max}} tecken.",
+    "email": "Ange en giltig e-postadress.",
+    "passwordLength": "Använd minst {{minLength}} tecken.",
+    "invalid": "Kontrollera det här värdet."
+  }
+}

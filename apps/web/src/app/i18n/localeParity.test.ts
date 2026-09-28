@@ -125,12 +125,13 @@ describe("G4 structure", () => {
 
   test("an en-US key missing everywhere else is reported for every other locale", () => {
     const root = copyOfLocales();
-    writeJson(join(root, "en-US", "setup.json"), { title: "Set up Palmr" });
+    const setup = readJson(join(root, "en-US", "setup.json"));
+    writeJson(join(root, "en-US", "setup.json"), { ...setup, parityProbe: "Probe" });
 
     const result = checkParity(root);
 
     expect(result.status).toBe(1);
-    expect(result.stderr.match(/setup\.json: missing key "title"/g)).toHaveLength(22);
+    expect(result.stderr.match(/setup\.json: missing key "parityProbe"/g)).toHaveLength(22);
   });
 });
 

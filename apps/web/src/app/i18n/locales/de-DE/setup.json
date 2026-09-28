@@ -1,1 +1,25 @@
-{}
+{
+  "title": "Instanz einrichten",
+  "description": "Gib dieser Instanz einen Namen und erstelle das erste Administratorkonto.",
+  "instanceSection": "Instanz",
+  "accountSection": "Administratorkonto",
+  "appName": "Name der Instanz",
+  "locale": "Sprache",
+  "localeHelp": "Wird zur Standardsprache dieser Instanz und deines Kontos. Beides kannst du später getrennt ändern.",
+  "firstName": "Vorname",
+  "lastName": "Nachname",
+  "username": "Benutzername",
+  "email": "E-Mail",
+  "password": "Passwort",
+  "passwordHint": "Verwende mindestens {{minLength}} Zeichen.",
+  "submit": "Einrichtung abschließen",
+  "retry": "Erneut versuchen",
+  "validation": {
+    "required": "Dieses Feld ist erforderlich.",
+    "tooLong": "Verwende höchstens {{max}} Zeichen.",
+    "usernameLength": "Verwende zwischen {{min}} und {{max}} Zeichen.",
+    "email": "Gib eine gültige E-Mail-Adresse ein.",
+    "passwordLength": "Verwende mindestens {{minLength}} Zeichen.",
+    "invalid": "Überprüfe diesen Wert."
+  }
+}

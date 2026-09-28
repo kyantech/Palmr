@@ -117,3 +117,4 @@ jobs:
           echo "Release binary size (bytes): $(stat -c %s target/release/palmr)" | tee -a "$GITHUB_STEP_SUMMARY"
       - run: PALMR_CONTAINER_REQUIRED=1 ./tests/container/smoke.sh
       - run: pnpm --filter @palmr/e2e test:container --project=Chromium --grep e2e_shell_loads
+      - run: pnpm --filter @palmr/e2e test:container --project=Chromium setup-login.spec.ts

@@ -1,1 +1,25 @@
-{}
+{
+  "title": "设置你的实例",
+  "description": "为此实例命名，并创建第一个管理员账户。",
+  "instanceSection": "实例",
+  "accountSection": "管理员账户",
+  "appName": "实例名称",
+  "locale": "语言",
+  "localeHelp": "将成为此实例和你账户的默认语言。之后可分别更改。",
+  "firstName": "名",
+  "lastName": "姓",
+  "username": "用户名",
+  "email": "电子邮件",
+  "password": "密码",
+  "passwordHint": "请至少使用 {{minLength}} 个字符。",
+  "submit": "完成设置",
+  "retry": "重试",
+  "validation": {
+    "required": "此字段为必填项。",
+    "tooLong": "请最多使用 {{max}} 个字符。",
+    "usernameLength": "请使用 {{min}} 到 {{max}} 个字符。",
+    "email": "请输入有效的电子邮件地址。",
+    "passwordLength": "请至少使用 {{minLength}} 个字符。",
+    "invalid": "请检查此值。"
+  }
+}

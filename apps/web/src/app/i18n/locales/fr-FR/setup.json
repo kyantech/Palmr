@@ -1,1 +1,25 @@
-{}
+{
+  "title": "Configurer votre instance",
+  "description": "Nommez cette instance et créez le premier compte administrateur.",
+  "instanceSection": "Instance",
+  "accountSection": "Compte administrateur",
+  "appName": "Nom de l'instance",
+  "locale": "Langue",
+  "localeHelp": "Devient la langue par défaut de cette instance et de votre compte. Vous pourrez modifier chacune plus tard.",
+  "firstName": "Prénom",
+  "lastName": "Nom",
+  "username": "Nom d'utilisateur",
+  "email": "E-mail",
+  "password": "Mot de passe",
+  "passwordHint": "Utilisez au moins {{minLength}} caractères.",
+  "submit": "Terminer la configuration",
+  "retry": "Réessayer",
+  "validation": {
+    "required": "Ce champ est obligatoire.",
+    "tooLong": "Utilisez {{max}} caractères au maximum.",
+    "usernameLength": "Utilisez entre {{min}} et {{max}} caractères.",
+    "email": "Saisissez une adresse e-mail valide.",
+    "passwordLength": "Utilisez au moins {{minLength}} caractères.",
+    "invalid": "Vérifiez cette valeur."
+  }
+}

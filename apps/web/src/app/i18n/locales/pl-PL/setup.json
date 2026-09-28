@@ -1,1 +1,25 @@
-{}
+{
+  "title": "Skonfiguruj instancję",
+  "description": "Nadaj nazwę tej instancji i utwórz pierwsze konto administratora.",
+  "instanceSection": "Instancja",
+  "accountSection": "Konto administratora",
+  "appName": "Nazwa instancji",
+  "locale": "Język",
+  "localeHelp": "Stanie się domyślnym językiem tej instancji i Twojego konta. Każdy z nich możesz później zmienić osobno.",
+  "firstName": "Imię",
+  "lastName": "Nazwisko",
+  "username": "Nazwa użytkownika",
+  "email": "E-mail",
+  "password": "Hasło",
+  "passwordHint": "Użyj co najmniej {{minLength}} znaków.",
+  "submit": "Zakończ konfigurację",
+  "retry": "Spróbuj ponownie",
+  "validation": {
+    "required": "To pole jest wymagane.",
+    "tooLong": "Użyj maksymalnie {{max}} znaków.",
+    "usernameLength": "Użyj od {{min}} do {{max}} znaków.",
+    "email": "Wpisz prawidłowy adres e-mail.",
+    "passwordLength": "Użyj co najmniej {{minLength}} znaków.",
+    "invalid": "Sprawdź tę wartość."
+  }
+}

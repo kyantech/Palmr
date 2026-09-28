@@ -1,1 +1,25 @@
-{}
+{
+  "title": "Siapkan instans Anda",
+  "description": "Beri nama instans ini dan buat akun administrator pertama.",
+  "instanceSection": "Instans",
+  "accountSection": "Akun administrator",
+  "appName": "Nama instans",
+  "locale": "Bahasa",
+  "localeHelp": "Menjadi bahasa default untuk instans ini dan akun Anda. Masing-masing dapat diubah nanti.",
+  "firstName": "Nama depan",
+  "lastName": "Nama belakang",
+  "username": "Nama pengguna",
+  "email": "E-mail",
+  "password": "Kata sandi",
+  "passwordHint": "Gunakan minimal {{minLength}} karakter.",
+  "submit": "Selesaikan penyiapan",
+  "retry": "Coba lagi",
+  "validation": {
+    "required": "Kolom ini wajib diisi.",
+    "tooLong": "Gunakan maksimal {{max}} karakter.",
+    "usernameLength": "Gunakan antara {{min}} dan {{max}} karakter.",
+    "email": "Masukkan alamat e-mail yang valid.",
+    "passwordLength": "Gunakan minimal {{minLength}} karakter.",
+    "invalid": "Periksa nilai ini."
+  }
+}

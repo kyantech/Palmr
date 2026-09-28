@@ -1,1 +1,25 @@
-{}
+{
+  "title": "Örneğinizi kurun",
+  "description": "Bu örneğe bir ad verin ve ilk yönetici hesabını oluşturun.",
+  "instanceSection": "Örnek",
+  "accountSection": "Yönetici hesabı",
+  "appName": "Örnek adı",
+  "locale": "Dil",
+  "localeHelp": "Bu örneğin ve hesabınızın varsayılan dili olur. Her birini daha sonra ayrı ayrı değiştirebilirsiniz.",
+  "firstName": "Ad",
+  "lastName": "Soyad",
+  "username": "Kullanıcı adı",
+  "email": "E-posta",
+  "password": "Parola",
+  "passwordHint": "En az {{minLength}} karakter kullanın.",
+  "submit": "Kurulumu tamamla",
+  "retry": "Yeniden dene",
+  "validation": {
+    "required": "Bu alan zorunludur.",
+    "tooLong": "En fazla {{max}} karakter kullanın.",
+    "usernameLength": "{{min}} ile {{max}} karakter arasında kullanın.",
+    "email": "Geçerli bir e-posta adresi girin.",
+    "passwordLength": "En az {{minLength}} karakter kullanın.",
+    "invalid": "Bu değeri kontrol edin."
+  }
+}

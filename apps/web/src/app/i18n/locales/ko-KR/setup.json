@@ -1,1 +1,25 @@
-{}
+{
+  "title": "인스턴스 설정",
+  "description": "이 인스턴스의 이름을 정하고 첫 번째 관리자 계정을 만드세요.",
+  "instanceSection": "인스턴스",
+  "accountSection": "관리자 계정",
+  "appName": "인스턴스 이름",
+  "locale": "언어",
+  "localeHelp": "이 인스턴스와 내 계정의 기본 언어가 됩니다. 나중에 각각 변경할 수 있습니다.",
+  "firstName": "이름",
+  "lastName": "성",
+  "username": "사용자 이름",
+  "email": "이메일",
+  "password": "비밀번호",
+  "passwordHint": "{{minLength}}자 이상 입력하세요.",
+  "submit": "설정 완료",
+  "retry": "다시 시도",
+  "validation": {
+    "required": "필수 입력 항목입니다.",
+    "tooLong": "{{max}}자 이하로 입력하세요.",
+    "usernameLength": "{{min}}~{{max}}자로 입력하세요.",
+    "email": "올바른 이메일 주소를 입력하세요.",
+    "passwordLength": "{{minLength}}자 이상 입력하세요.",
+    "invalid": "이 값을 확인하세요."
+  }
+}

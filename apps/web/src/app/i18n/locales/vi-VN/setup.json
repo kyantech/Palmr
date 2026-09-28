@@ -1,1 +1,25 @@
-{}
+{
+  "title": "Thiết lập phiên bản của bạn",
+  "description": "Đặt tên cho phiên bản này và tạo tài khoản quản trị viên đầu tiên.",
+  "instanceSection": "Phiên bản",
+  "accountSection": "Tài khoản quản trị viên",
+  "appName": "Tên phiên bản",
+  "locale": "Ngôn ngữ",
+  "localeHelp": "Sẽ trở thành ngôn ngữ mặc định của phiên bản này và của tài khoản bạn. Bạn có thể đổi từng mục sau.",
+  "firstName": "Tên",
+  "lastName": "Họ",
+  "username": "Tên người dùng",
+  "email": "E-mail",
+  "password": "Mật khẩu",
+  "passwordHint": "Dùng ít nhất {{minLength}} ký tự.",
+  "submit": "Hoàn tất thiết lập",
+  "retry": "Thử lại",
+  "validation": {
+    "required": "Trường này là bắt buộc.",
+    "tooLong": "Dùng tối đa {{max}} ký tự.",
+    "usernameLength": "Dùng từ {{min}} đến {{max}} ký tự.",
+    "email": "Nhập địa chỉ e-mail hợp lệ.",
+    "passwordLength": "Dùng ít nhất {{minLength}} ký tự.",
+    "invalid": "Kiểm tra giá trị này."
+  }
+}

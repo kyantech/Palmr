@@ -1,1 +1,25 @@
-{}
+{
+  "title": "Set up your instance",
+  "description": "Name this instance and create the first administrator account.",
+  "instanceSection": "Instance",
+  "accountSection": "Administrator account",
+  "appName": "Instance name",
+  "locale": "Language",
+  "localeHelp": "Becomes the default language for this instance and for your account. You can change each one later.",
+  "firstName": "First name",
+  "lastName": "Last name",
+  "username": "Username",
+  "email": "E-mail",
+  "password": "Password",
+  "passwordHint": "Use at least {{minLength}} characters.",
+  "submit": "Complete setup",
+  "retry": "Try again",
+  "validation": {
+    "required": "This field is required.",
+    "tooLong": "Use {{max}} characters or fewer.",
+    "usernameLength": "Use between {{min}} and {{max}} characters.",
+    "email": "Enter a valid e-mail address.",
+    "passwordLength": "Use at least {{minLength}} characters.",
+    "invalid": "Check this value."
+  }
+}
