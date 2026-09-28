@@ -1,1 +1,122 @@
-{}
+{
+  "title": "Pengaturan",
+  "sections": {
+    "label": "Bagian pengaturan",
+    "profile": "Profil",
+    "appearance": "Tampilan",
+    "security": "Keamanan",
+    "sessions": "Sesi"
+  },
+  "profile": {
+    "title": "Profil",
+    "description": "Nama Anda sebagaimana terlihat oleh orang lain di instans ini.",
+    "firstName": "Nama depan",
+    "lastName": "Nama belakang",
+    "managedByAdmin": "Alamat e-mail, nama pengguna, dan peran Anda hanya dapat diubah oleh administrator.",
+    "save": "Simpan perubahan",
+    "saved": "Profil disimpan.",
+    "validation": {
+      "required": "Kolom ini wajib diisi.",
+      "tooLong": "Gunakan paling banyak {{max}} karakter.",
+      "invalid": "Masukkan nama yang valid."
+    }
+  },
+  "appearance": {
+    "title": "Tampilan",
+    "description": "Perubahan langsung diterapkan dan mengikuti akun Anda di semua perangkat.",
+    "saving": "Menyimpan…",
+    "saved": "Tersimpan",
+    "theme": {
+      "label": "Tema",
+      "options": {
+        "light": "Terang",
+        "dark": "Gelap",
+        "system": "Sistem"
+      }
+    },
+    "accent": {
+      "label": "Warna aksen",
+      "options": {
+        "default": "Bawaan instans",
+        "blue": "Biru",
+        "violet": "Ungu",
+        "emerald": "Zamrud",
+        "amber": "Kuning amber",
+        "rose": "Merah muda",
+        "slate": "Abu batu"
+      }
+    },
+    "locale": {
+      "label": "Bahasa"
+    }
+  },
+  "security": {
+    "password": {
+      "title": "Kata sandi",
+      "description": "Ubah kata sandi yang Anda gunakan untuk masuk.",
+      "current": "Kata sandi saat ini",
+      "new": "Kata sandi baru",
+      "confirm": "Konfirmasi kata sandi baru",
+      "hint": "Gunakan minimal {{minLength}} karakter.",
+      "consequence": "Mengubah kata sandi akan mengeluarkan semua sesi Anda yang lain.",
+      "submit": "Ubah kata sandi",
+      "changed": "Kata sandi diubah.",
+      "changedDescription": "Sesi Anda yang lain telah dikeluarkan. Browser ini tetap masuk.",
+      "validation": {
+        "required": "Kolom ini wajib diisi.",
+        "tooShort": "Gunakan minimal {{minLength}} karakter.",
+        "mismatch": "Kata sandi tidak cocok.",
+        "invalid": "Masukkan kata sandi yang valid."
+      },
+      "unavailable": {
+        "disabled": "Masuk dengan kata sandi dinonaktifkan di instans ini, jadi kata sandi tidak dapat diubah di sini.",
+        "external": "Akun ini masuk melalui penyedia eksternal dan tidak memiliki kata sandi untuk diubah."
+      }
+    }
+  },
+  "sessions": {
+    "title": "Sesi",
+    "description": "Browser dan perangkat yang masuk ke akun Anda.",
+    "listLabel": "Sesi aktif",
+    "current": "Sesi saat ini",
+    "origin": {
+      "password": "Kata sandi",
+      "external": "Penyedia eksternal"
+    },
+    "device": {
+      "browserOnSystem": "{{browser}} di {{system}}",
+      "unknown": "Browser tidak dikenal"
+    },
+    "ip": "Alamat IP {{ip}}",
+    "ipUnavailable": "Alamat IP tidak tersedia",
+    "lastActive": "Terakhir aktif: {{date}}",
+    "signedIn": "Masuk: {{date}}",
+    "expires": "Kedaluwarsa: {{date}}",
+    "cancel": "Batal",
+    "loadMore": "Tampilkan sesi lainnya",
+    "revoke": {
+      "action": "Cabut",
+      "label": "Cabut sesi: {{device}}",
+      "title": "Cabut sesi ini?",
+      "description": "Browser yang menggunakannya akan dikeluarkan.",
+      "confirm": "Cabut"
+    },
+    "signOutCurrent": {
+      "action": "Keluar",
+      "label": "Keluar dari sesi saat ini: {{device}}",
+      "title": "Keluar dari browser ini?",
+      "description": "Ini akan mengakhiri sesi Anda saat ini. Anda perlu masuk lagi.",
+      "confirm": "Keluar"
+    },
+    "revokeOthers": {
+      "action": "Keluarkan sesi lain",
+      "title": "Keluarkan semua sesi lain?",
+      "description": "Semua browser dan perangkat lain akan dikeluarkan. Browser ini tetap masuk.",
+      "confirm": "Keluarkan yang lain"
+    },
+    "notice": {
+      "revoked": "Sesi telah dicabut.",
+      "othersRevoked": "Semua sesi lain telah dikeluarkan."
+    }
+  }
+}

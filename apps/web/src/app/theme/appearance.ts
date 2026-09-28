@@ -48,6 +48,18 @@ export function toAccentKey(value: unknown): AccentKey {
     : "default";
 }
 
+export interface AccentSwatch {
+  key: AccentKey;
+  color: string;
+}
+
+export function accentSwatches(primaryColor: string | null | undefined): AccentSwatch[] {
+  return (Object.keys(ACCENT_PRESETS) as AccentKey[]).map((key) => ({
+    key,
+    color: ACCENT_PRESETS[key] ?? safePrimaryColor(primaryColor),
+  }));
+}
+
 export function composeTheme(
   mode: ResolvedThemeMode,
   { accent, primaryColor }: Pick<Appearance, "accent" | "primaryColor">,

@@ -1,1 +1,122 @@
-{}
+{
+  "title": "Ayarlar",
+  "sections": {
+    "label": "Ayar bölümleri",
+    "profile": "Profil",
+    "appearance": "Görünüm",
+    "security": "Güvenlik",
+    "sessions": "Oturumlar"
+  },
+  "profile": {
+    "title": "Profil",
+    "description": "Bu örnekte diğer kişilere görünen adınız.",
+    "firstName": "Ad",
+    "lastName": "Soyadı",
+    "managedByAdmin": "E-posta adresiniz, kullanıcı adınız ve rolünüz yalnızca bir yönetici tarafından değiştirilebilir.",
+    "save": "Değişiklikleri kaydet",
+    "saved": "Profil kaydedildi.",
+    "validation": {
+      "required": "Bu alan zorunludur.",
+      "tooLong": "En fazla {{max}} karakter kullanın.",
+      "invalid": "Geçerli bir ad girin."
+    }
+  },
+  "appearance": {
+    "title": "Görünüm",
+    "description": "Değişiklikler hemen uygulanır ve her cihazda hesabınızla birlikte gelir.",
+    "saving": "Kaydediliyor…",
+    "saved": "Kaydedildi",
+    "theme": {
+      "label": "Tema",
+      "options": {
+        "light": "Açık",
+        "dark": "Koyu",
+        "system": "Sistem"
+      }
+    },
+    "accent": {
+      "label": "Vurgu rengi",
+      "options": {
+        "default": "Örnek varsayılanı",
+        "blue": "Mavi",
+        "violet": "Mor",
+        "emerald": "Zümrüt",
+        "amber": "Kehribar",
+        "rose": "Pembe",
+        "slate": "Arduvaz"
+      }
+    },
+    "locale": {
+      "label": "Dil"
+    }
+  },
+  "security": {
+    "password": {
+      "title": "Parola",
+      "description": "Oturum açmak için kullandığınız parolayı değiştirin.",
+      "current": "Mevcut parola",
+      "new": "Yeni parola",
+      "confirm": "Yeni parolayı onaylayın",
+      "hint": "En az {{minLength}} karakter kullanın.",
+      "consequence": "Parolanızı değiştirmek diğer tüm oturumlarınızı kapatır.",
+      "submit": "Parolayı değiştir",
+      "changed": "Parola değiştirildi.",
+      "changedDescription": "Diğer oturumlarınız kapatıldı. Bu tarayıcıda oturumunuz açık kalır.",
+      "validation": {
+        "required": "Bu alan zorunludur.",
+        "tooShort": "En az {{minLength}} karakter kullanın.",
+        "mismatch": "Parolalar eşleşmiyor.",
+        "invalid": "Geçerli bir parola girin."
+      },
+      "unavailable": {
+        "disabled": "Bu örnekte parolayla oturum açma devre dışı olduğundan parola burada değiştirilemez.",
+        "external": "Bu hesap harici bir sağlayıcıyla oturum açar ve değiştirilecek bir parolası yoktur."
+      }
+    }
+  },
+  "sessions": {
+    "title": "Oturumlar",
+    "description": "Hesabınızda oturum açmış tarayıcılar ve cihazlar.",
+    "listLabel": "Etkin oturumlar",
+    "current": "Geçerli oturum",
+    "origin": {
+      "password": "Parola",
+      "external": "Harici sağlayıcı"
+    },
+    "device": {
+      "browserOnSystem": "{{browser}} ({{system}})",
+      "unknown": "Bilinmeyen tarayıcı"
+    },
+    "ip": "IP adresi {{ip}}",
+    "ipUnavailable": "IP adresi kullanılamıyor",
+    "lastActive": "Son etkinlik: {{date}}",
+    "signedIn": "Oturum açma: {{date}}",
+    "expires": "Sona erme: {{date}}",
+    "cancel": "İptal",
+    "loadMore": "Daha fazla oturum göster",
+    "revoke": {
+      "action": "Sonlandır",
+      "label": "Oturumu sonlandır: {{device}}",
+      "title": "Bu oturum sonlandırılsın mı?",
+      "description": "Bu oturumu kullanan tarayıcının oturumu kapatılır.",
+      "confirm": "Sonlandır"
+    },
+    "signOutCurrent": {
+      "action": "Oturumu kapat",
+      "label": "Geçerli oturumu kapat: {{device}}",
+      "title": "Bu tarayıcıda oturum kapatılsın mı?",
+      "description": "Bu işlem geçerli oturumunuzu sonlandırır. Yeniden oturum açmanız gerekir.",
+      "confirm": "Oturumu kapat"
+    },
+    "revokeOthers": {
+      "action": "Diğer oturumları kapat",
+      "title": "Diğer tüm oturumlar kapatılsın mı?",
+      "description": "Diğer tüm tarayıcı ve cihazlarda oturum kapatılır. Bu tarayıcıda oturumunuz açık kalır.",
+      "confirm": "Diğerlerini kapat"
+    },
+    "notice": {
+      "revoked": "Oturum sonlandırıldı.",
+      "othersRevoked": "Diğer tüm oturumlar kapatıldı."
+    }
+  }
+}

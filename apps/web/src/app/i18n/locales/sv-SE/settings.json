@@ -1,1 +1,122 @@
-{}
+{
+  "title": "Inställningar",
+  "sections": {
+    "label": "Avsnitt i inställningarna",
+    "profile": "Profil",
+    "appearance": "Utseende",
+    "security": "Säkerhet",
+    "sessions": "Sessioner"
+  },
+  "profile": {
+    "title": "Profil",
+    "description": "Ditt namn som det visas för andra på den här instansen.",
+    "firstName": "Förnamn",
+    "lastName": "Efternamn",
+    "managedByAdmin": "Din e-postadress, ditt användarnamn och din roll kan bara ändras av en administratör.",
+    "save": "Spara ändringar",
+    "saved": "Profilen har sparats.",
+    "validation": {
+      "required": "Det här fältet är obligatoriskt.",
+      "tooLong": "Använd högst {{max}} tecken.",
+      "invalid": "Ange ett giltigt namn."
+    }
+  },
+  "appearance": {
+    "title": "Utseende",
+    "description": "Ändringarna gäller direkt och följer ditt konto på alla enheter.",
+    "saving": "Sparar…",
+    "saved": "Sparat",
+    "theme": {
+      "label": "Tema",
+      "options": {
+        "light": "Ljust",
+        "dark": "Mörkt",
+        "system": "System"
+      }
+    },
+    "accent": {
+      "label": "Accentfärg",
+      "options": {
+        "default": "Instansens standard",
+        "blue": "Blå",
+        "violet": "Violett",
+        "emerald": "Smaragd",
+        "amber": "Bärnsten",
+        "rose": "Rosa",
+        "slate": "Skiffer"
+      }
+    },
+    "locale": {
+      "label": "Språk"
+    }
+  },
+  "security": {
+    "password": {
+      "title": "Lösenord",
+      "description": "Ändra lösenordet som du loggar in med.",
+      "current": "Nuvarande lösenord",
+      "new": "Nytt lösenord",
+      "confirm": "Bekräfta nytt lösenord",
+      "hint": "Använd minst {{minLength}} tecken.",
+      "consequence": "När du ändrar lösenordet loggas alla dina andra sessioner ut.",
+      "submit": "Ändra lösenord",
+      "changed": "Lösenordet har ändrats.",
+      "changedDescription": "Dina andra sessioner har loggats ut. Den här webbläsaren förblir inloggad.",
+      "validation": {
+        "required": "Det här fältet är obligatoriskt.",
+        "tooShort": "Använd minst {{minLength}} tecken.",
+        "mismatch": "Lösenorden matchar inte.",
+        "invalid": "Ange ett giltigt lösenord."
+      },
+      "unavailable": {
+        "disabled": "Inloggning med lösenord är inaktiverad på den här instansen, så lösenordet kan inte ändras här.",
+        "external": "Det här kontot loggar in via en extern leverantör och har inget lösenord att ändra."
+      }
+    }
+  },
+  "sessions": {
+    "title": "Sessioner",
+    "description": "Webbläsare och enheter som är inloggade på ditt konto.",
+    "listLabel": "Aktiva sessioner",
+    "current": "Aktuell session",
+    "origin": {
+      "password": "Lösenord",
+      "external": "Extern leverantör"
+    },
+    "device": {
+      "browserOnSystem": "{{browser}} på {{system}}",
+      "unknown": "Okänd webbläsare"
+    },
+    "ip": "IP-adress {{ip}}",
+    "ipUnavailable": "IP-adress inte tillgänglig",
+    "lastActive": "Senast aktiv: {{date}}",
+    "signedIn": "Inloggad: {{date}}",
+    "expires": "Upphör: {{date}}",
+    "cancel": "Avbryt",
+    "loadMore": "Visa fler sessioner",
+    "revoke": {
+      "action": "Återkalla",
+      "label": "Återkalla session: {{device}}",
+      "title": "Återkalla den här sessionen?",
+      "description": "Webbläsaren som använder den loggas ut.",
+      "confirm": "Återkalla"
+    },
+    "signOutCurrent": {
+      "action": "Logga ut",
+      "label": "Logga ut från den aktuella sessionen: {{device}}",
+      "title": "Logga ut från den här webbläsaren?",
+      "description": "Det här avslutar din aktuella session. Du måste logga in igen.",
+      "confirm": "Logga ut"
+    },
+    "revokeOthers": {
+      "action": "Logga ut andra sessioner",
+      "title": "Logga ut alla andra sessioner?",
+      "description": "Alla andra webbläsare och enheter loggas ut. Den här webbläsaren förblir inloggad.",
+      "confirm": "Logga ut andra"
+    },
+    "notice": {
+      "revoked": "Sessionen har återkallats.",
+      "othersRevoked": "Alla andra sessioner har loggats ut."
+    }
+  }
+}

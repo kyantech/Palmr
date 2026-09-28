@@ -31,12 +31,28 @@ const OVERVIEW_ENTRY = entry({ key: "overview", order: 10 });
 
 describe("navigation registry", () => {
   test("lists only the concepts whose feature and route exist", () => {
-    expect(NAV_ENTRIES.map((item) => item.path)).toEqual([PATHS.overview]);
+    expect(NAV_ENTRIES.map((item) => item.path)).toEqual([PATHS.overview, PATHS.settings]);
 
     const registered = new Set(NAV_ENTRIES.map((item) => item.key));
-    for (const concept of ["files", "shared", "received", "transfers", "admin", "settings"]) {
+    for (const concept of ["files", "shared", "received", "transfers", "admin"]) {
       expect(registered.has(concept)).toBe(false);
     }
+  });
+
+  test("Settings is contributed for both roles and outside the bottom bar", () => {
+    const settings = NAV_ENTRIES.find((item) => item.key === "settings");
+    expect(settings).toMatchObject({ path: PATHS.settings, labelKey: "nav.settings" });
+    expect(settings?.requiredRole).toBeUndefined();
+    expect(settings?.bottomBar).not.toBe(true);
+    expect(visibleNavigation(NAV_ENTRIES, "user").map((item) => item.key)).toEqual([
+      "overview",
+      "settings",
+    ]);
+    expect(visibleNavigation(NAV_ENTRIES, "admin").map((item) => item.key)).toEqual([
+      "overview",
+      "settings",
+    ]);
+    expect(selectedNavigationKey(NAV_ENTRIES, PATHS.settingsSessions)).toBe("settings");
   });
 
   test("every entry carries the metadata the desktop, drawer and bottom surfaces need", () => {

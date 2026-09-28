@@ -40,6 +40,15 @@ The version is a small monospace chip (`fontFamilyCode`, `colorFillQuaternary`);
 - Do not add page-level padding or max-width inside a feature route; the shell provides both.
 - Loading states use skeletons shaped like the content that arrives; empty states use icon + title + description + action.
 
+## Settings pages
+
+`/settings/*` renders one `h1` ("Settings") from `SettingsLayout`; each section is an `h2` with a one-line secondary description.
+
+- Section navigation is local to the page and never duplicates the primary registry. At `≥ md` it is a 220 px inline `Menu` (selected item `colorFillSecondary`) beside a content column capped at 760 px; below `md` it is a horizontally scrollable row of pill links above the content, so no section is hidden behind an overflow menu.
+- Forms keep the vertical layout of the auth screens. Password fields sit in a 480 px column; the language `Select` is capped at 360 px.
+- Appearance changes save on selection. The status slot next to the section title reads "Saving…" then "Saved"; a failed save shows the mapped error and the controls return to the server's value.
+- Destructive session actions confirm with a `Popconfirm` that states the consequence. Ending the current session is labelled "Sign out", never "Revoke".
+
 ## Visual validation
 
 Component tests cannot see layout. For any change to the shell, run the real backend against a throwaway data directory and capture desktop (1440 × 900), tablet (834 × 1112, drawer open) and phone (390 × 844) in both colour schemes, plus the expanded account menu and the collapsed sider.

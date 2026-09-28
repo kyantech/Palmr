@@ -1,1 +1,122 @@
-{}
+{
+  "title": "Settings",
+  "sections": {
+    "label": "Settings sections",
+    "profile": "Profile",
+    "appearance": "Appearance",
+    "security": "Security",
+    "sessions": "Sessions"
+  },
+  "profile": {
+    "title": "Profile",
+    "description": "Your name as it appears to other people on this instance.",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "managedByAdmin": "Your e-mail address, username and role can only be changed by an administrator.",
+    "save": "Save changes",
+    "saved": "Profile saved.",
+    "validation": {
+      "required": "This field is required.",
+      "tooLong": "Use at most {{max}} characters.",
+      "invalid": "Enter a valid name."
+    }
+  },
+  "appearance": {
+    "title": "Appearance",
+    "description": "Changes apply immediately and follow your account on every device.",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "theme": {
+      "label": "Theme",
+      "options": {
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
+      }
+    },
+    "accent": {
+      "label": "Accent color",
+      "options": {
+        "default": "Instance default",
+        "blue": "Blue",
+        "violet": "Violet",
+        "emerald": "Emerald",
+        "amber": "Amber",
+        "rose": "Rose",
+        "slate": "Slate"
+      }
+    },
+    "locale": {
+      "label": "Language"
+    }
+  },
+  "security": {
+    "password": {
+      "title": "Password",
+      "description": "Change the password you use to sign in.",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm new password",
+      "hint": "Use at least {{minLength}} characters.",
+      "consequence": "Changing your password signs out all your other sessions.",
+      "submit": "Change password",
+      "changed": "Password changed.",
+      "changedDescription": "Your other sessions were signed out. This browser stays signed in.",
+      "validation": {
+        "required": "This field is required.",
+        "tooShort": "Use at least {{minLength}} characters.",
+        "mismatch": "The passwords don't match.",
+        "invalid": "Enter a valid password."
+      },
+      "unavailable": {
+        "disabled": "Password sign-in is disabled on this instance, so the password can't be changed here.",
+        "external": "This account signs in with an external provider and has no password to change."
+      }
+    }
+  },
+  "sessions": {
+    "title": "Sessions",
+    "description": "Browsers and devices that are signed in to your account.",
+    "listLabel": "Active sessions",
+    "current": "Current session",
+    "origin": {
+      "password": "Password",
+      "external": "External provider"
+    },
+    "device": {
+      "browserOnSystem": "{{browser}} on {{system}}",
+      "unknown": "Unknown browser"
+    },
+    "ip": "IP address {{ip}}",
+    "ipUnavailable": "IP address unavailable",
+    "lastActive": "Last active {{date}}",
+    "signedIn": "Signed in {{date}}",
+    "expires": "Expires {{date}}",
+    "cancel": "Cancel",
+    "loadMore": "Show more sessions",
+    "revoke": {
+      "action": "Revoke",
+      "label": "Revoke session: {{device}}",
+      "title": "Revoke this session?",
+      "description": "The browser using it will be signed out.",
+      "confirm": "Revoke"
+    },
+    "signOutCurrent": {
+      "action": "Sign out",
+      "label": "Sign out of the current session: {{device}}",
+      "title": "Sign out of this browser?",
+      "description": "This ends your current session. You will need to sign in again.",
+      "confirm": "Sign out"
+    },
+    "revokeOthers": {
+      "action": "Sign out other sessions",
+      "title": "Sign out all other sessions?",
+      "description": "Every other browser and device will be signed out. This browser stays signed in.",
+      "confirm": "Sign out others"
+    },
+    "notice": {
+      "revoked": "The session was revoked.",
+      "othersRevoked": "All other sessions were signed out."
+    }
+  }
+}

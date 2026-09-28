@@ -1,1 +1,122 @@
-{}
+{
+  "title": "Configurações",
+  "sections": {
+    "label": "Seções das configurações",
+    "profile": "Perfil",
+    "appearance": "Aparência",
+    "security": "Segurança",
+    "sessions": "Sessões"
+  },
+  "profile": {
+    "title": "Perfil",
+    "description": "Seu nome como aparece para outras pessoas nesta instância.",
+    "firstName": "Nome",
+    "lastName": "Sobrenome",
+    "managedByAdmin": "Seu e-mail, nome de usuário e função só podem ser alterados por um administrador.",
+    "save": "Salvar alterações",
+    "saved": "Perfil salvo.",
+    "validation": {
+      "required": "Este campo é obrigatório.",
+      "tooLong": "Use no máximo {{max}} caracteres.",
+      "invalid": "Informe um nome válido."
+    }
+  },
+  "appearance": {
+    "title": "Aparência",
+    "description": "As alterações são aplicadas imediatamente e acompanham sua conta em todos os dispositivos.",
+    "saving": "Salvando…",
+    "saved": "Salvo",
+    "theme": {
+      "label": "Tema",
+      "options": {
+        "light": "Claro",
+        "dark": "Escuro",
+        "system": "Sistema"
+      }
+    },
+    "accent": {
+      "label": "Cor de destaque",
+      "options": {
+        "default": "Padrão da instância",
+        "blue": "Azul",
+        "violet": "Violeta",
+        "emerald": "Esmeralda",
+        "amber": "Âmbar",
+        "rose": "Rosa",
+        "slate": "Ardósia"
+      }
+    },
+    "locale": {
+      "label": "Idioma"
+    }
+  },
+  "security": {
+    "password": {
+      "title": "Senha",
+      "description": "Altere a senha que você usa para entrar.",
+      "current": "Senha atual",
+      "new": "Nova senha",
+      "confirm": "Confirme a nova senha",
+      "hint": "Use pelo menos {{minLength}} caracteres.",
+      "consequence": "Alterar sua senha encerra todas as suas outras sessões.",
+      "submit": "Alterar senha",
+      "changed": "Senha alterada.",
+      "changedDescription": "Suas outras sessões foram encerradas. Este navegador continua conectado.",
+      "validation": {
+        "required": "Este campo é obrigatório.",
+        "tooShort": "Use pelo menos {{minLength}} caracteres.",
+        "mismatch": "As senhas não coincidem.",
+        "invalid": "Informe uma senha válida."
+      },
+      "unavailable": {
+        "disabled": "O login com senha está desativado nesta instância, então a senha não pode ser alterada aqui.",
+        "external": "Esta conta entra com um provedor externo e não tem senha para alterar."
+      }
+    }
+  },
+  "sessions": {
+    "title": "Sessões",
+    "description": "Navegadores e dispositivos conectados à sua conta.",
+    "listLabel": "Sessões ativas",
+    "current": "Sessão atual",
+    "origin": {
+      "password": "Senha",
+      "external": "Provedor externo"
+    },
+    "device": {
+      "browserOnSystem": "{{browser}} no {{system}}",
+      "unknown": "Navegador desconhecido"
+    },
+    "ip": "Endereço IP {{ip}}",
+    "ipUnavailable": "Endereço IP indisponível",
+    "lastActive": "Última atividade em {{date}}",
+    "signedIn": "Entrou em {{date}}",
+    "expires": "Expira em {{date}}",
+    "cancel": "Cancelar",
+    "loadMore": "Mostrar mais sessões",
+    "revoke": {
+      "action": "Revogar",
+      "label": "Revogar sessão: {{device}}",
+      "title": "Revogar esta sessão?",
+      "description": "O navegador que a utiliza será desconectado.",
+      "confirm": "Revogar"
+    },
+    "signOutCurrent": {
+      "action": "Sair",
+      "label": "Sair da sessão atual: {{device}}",
+      "title": "Sair deste navegador?",
+      "description": "Isso encerra sua sessão atual. Você precisará entrar novamente.",
+      "confirm": "Sair"
+    },
+    "revokeOthers": {
+      "action": "Sair das outras sessões",
+      "title": "Sair de todas as outras sessões?",
+      "description": "Todos os outros navegadores e dispositivos serão desconectados. Este navegador continua conectado.",
+      "confirm": "Sair das outras"
+    },
+    "notice": {
+      "revoked": "A sessão foi revogada.",
+      "othersRevoked": "Todas as outras sessões foram encerradas."
+    }
+  }
+}

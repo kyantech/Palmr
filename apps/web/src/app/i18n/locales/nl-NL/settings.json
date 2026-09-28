@@ -1,1 +1,122 @@
-{}
+{
+  "title": "Instellingen",
+  "sections": {
+    "label": "Onderdelen van de instellingen",
+    "profile": "Profiel",
+    "appearance": "Weergave",
+    "security": "Beveiliging",
+    "sessions": "Sessies"
+  },
+  "profile": {
+    "title": "Profiel",
+    "description": "Je naam zoals anderen die op deze instantie zien.",
+    "firstName": "Voornaam",
+    "lastName": "Achternaam",
+    "managedByAdmin": "Je e-mailadres, gebruikersnaam en rol kunnen alleen door een beheerder worden gewijzigd.",
+    "save": "Wijzigingen opslaan",
+    "saved": "Profiel opgeslagen.",
+    "validation": {
+      "required": "Dit veld is verplicht.",
+      "tooLong": "Gebruik maximaal {{max}} tekens.",
+      "invalid": "Voer een geldige naam in."
+    }
+  },
+  "appearance": {
+    "title": "Weergave",
+    "description": "Wijzigingen worden meteen toegepast en gelden voor je account op elk apparaat.",
+    "saving": "Opslaan…",
+    "saved": "Opgeslagen",
+    "theme": {
+      "label": "Thema",
+      "options": {
+        "light": "Licht",
+        "dark": "Donker",
+        "system": "Systeem"
+      }
+    },
+    "accent": {
+      "label": "Accentkleur",
+      "options": {
+        "default": "Standaard van de instantie",
+        "blue": "Blauw",
+        "violet": "Violet",
+        "emerald": "Smaragd",
+        "amber": "Amber",
+        "rose": "Roze",
+        "slate": "Leisteen"
+      }
+    },
+    "locale": {
+      "label": "Taal"
+    }
+  },
+  "security": {
+    "password": {
+      "title": "Wachtwoord",
+      "description": "Wijzig het wachtwoord waarmee je inlogt.",
+      "current": "Huidig wachtwoord",
+      "new": "Nieuw wachtwoord",
+      "confirm": "Bevestig het nieuwe wachtwoord",
+      "hint": "Gebruik minstens {{minLength}} tekens.",
+      "consequence": "Als je je wachtwoord wijzigt, worden al je andere sessies afgemeld.",
+      "submit": "Wachtwoord wijzigen",
+      "changed": "Wachtwoord gewijzigd.",
+      "changedDescription": "Je andere sessies zijn afgemeld. Deze browser blijft ingelogd.",
+      "validation": {
+        "required": "Dit veld is verplicht.",
+        "tooShort": "Gebruik minstens {{minLength}} tekens.",
+        "mismatch": "De wachtwoorden komen niet overeen.",
+        "invalid": "Voer een geldig wachtwoord in."
+      },
+      "unavailable": {
+        "disabled": "Inloggen met een wachtwoord is uitgeschakeld op deze instantie, dus het wachtwoord kan hier niet worden gewijzigd.",
+        "external": "Dit account logt in via een externe provider en heeft geen wachtwoord om te wijzigen."
+      }
+    }
+  },
+  "sessions": {
+    "title": "Sessies",
+    "description": "Browsers en apparaten die bij je account zijn ingelogd.",
+    "listLabel": "Actieve sessies",
+    "current": "Huidige sessie",
+    "origin": {
+      "password": "Wachtwoord",
+      "external": "Externe provider"
+    },
+    "device": {
+      "browserOnSystem": "{{browser}} op {{system}}",
+      "unknown": "Onbekende browser"
+    },
+    "ip": "IP-adres {{ip}}",
+    "ipUnavailable": "IP-adres niet beschikbaar",
+    "lastActive": "Laatst actief: {{date}}",
+    "signedIn": "Ingelogd: {{date}}",
+    "expires": "Verloopt: {{date}}",
+    "cancel": "Annuleren",
+    "loadMore": "Meer sessies tonen",
+    "revoke": {
+      "action": "Intrekken",
+      "label": "Sessie intrekken: {{device}}",
+      "title": "Deze sessie intrekken?",
+      "description": "De browser die deze sessie gebruikt, wordt afgemeld.",
+      "confirm": "Intrekken"
+    },
+    "signOutCurrent": {
+      "action": "Afmelden",
+      "label": "Afmelden van de huidige sessie: {{device}}",
+      "title": "Afmelden in deze browser?",
+      "description": "Hiermee beëindig je je huidige sessie. Je moet opnieuw inloggen.",
+      "confirm": "Afmelden"
+    },
+    "revokeOthers": {
+      "action": "Andere sessies afmelden",
+      "title": "Alle andere sessies afmelden?",
+      "description": "Alle andere browsers en apparaten worden afgemeld. Deze browser blijft ingelogd.",
+      "confirm": "Andere afmelden"
+    },
+    "notice": {
+      "revoked": "De sessie is ingetrokken.",
+      "othersRevoked": "Alle andere sessies zijn afgemeld."
+    }
+  }
+}

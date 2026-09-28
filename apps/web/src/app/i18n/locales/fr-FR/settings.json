@@ -1,1 +1,122 @@
-{}
+{
+  "title": "Paramètres",
+  "sections": {
+    "label": "Sections des paramètres",
+    "profile": "Profil",
+    "appearance": "Apparence",
+    "security": "Sécurité",
+    "sessions": "Sessions"
+  },
+  "profile": {
+    "title": "Profil",
+    "description": "Votre nom tel qu’il apparaît aux autres personnes sur cette instance.",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "managedByAdmin": "Seul un administrateur peut modifier votre adresse e-mail, votre nom d’utilisateur et votre rôle.",
+    "save": "Enregistrer les modifications",
+    "saved": "Profil enregistré.",
+    "validation": {
+      "required": "Ce champ est obligatoire.",
+      "tooLong": "Utilisez au maximum {{max}} caractères.",
+      "invalid": "Saisissez un nom valide."
+    }
+  },
+  "appearance": {
+    "title": "Apparence",
+    "description": "Les modifications s’appliquent immédiatement et suivent votre compte sur tous vos appareils.",
+    "saving": "Enregistrement…",
+    "saved": "Enregistré",
+    "theme": {
+      "label": "Thème",
+      "options": {
+        "light": "Clair",
+        "dark": "Sombre",
+        "system": "Système"
+      }
+    },
+    "accent": {
+      "label": "Couleur d’accent",
+      "options": {
+        "default": "Par défaut de l’instance",
+        "blue": "Bleu",
+        "violet": "Violet",
+        "emerald": "Émeraude",
+        "amber": "Ambre",
+        "rose": "Rose",
+        "slate": "Ardoise"
+      }
+    },
+    "locale": {
+      "label": "Langue"
+    }
+  },
+  "security": {
+    "password": {
+      "title": "Mot de passe",
+      "description": "Modifiez le mot de passe que vous utilisez pour vous connecter.",
+      "current": "Mot de passe actuel",
+      "new": "Nouveau mot de passe",
+      "confirm": "Confirmez le nouveau mot de passe",
+      "hint": "Utilisez au moins {{minLength}} caractères.",
+      "consequence": "Modifier votre mot de passe déconnecte toutes vos autres sessions.",
+      "submit": "Modifier le mot de passe",
+      "changed": "Mot de passe modifié.",
+      "changedDescription": "Vos autres sessions ont été déconnectées. Ce navigateur reste connecté.",
+      "validation": {
+        "required": "Ce champ est obligatoire.",
+        "tooShort": "Utilisez au moins {{minLength}} caractères.",
+        "mismatch": "Les mots de passe ne correspondent pas.",
+        "invalid": "Saisissez un mot de passe valide."
+      },
+      "unavailable": {
+        "disabled": "La connexion par mot de passe est désactivée sur cette instance ; le mot de passe ne peut donc pas être modifié ici.",
+        "external": "Ce compte se connecte avec un fournisseur externe et n’a pas de mot de passe à modifier."
+      }
+    }
+  },
+  "sessions": {
+    "title": "Sessions",
+    "description": "Navigateurs et appareils connectés à votre compte.",
+    "listLabel": "Sessions actives",
+    "current": "Session actuelle",
+    "origin": {
+      "password": "Mot de passe",
+      "external": "Fournisseur externe"
+    },
+    "device": {
+      "browserOnSystem": "{{browser}} sur {{system}}",
+      "unknown": "Navigateur inconnu"
+    },
+    "ip": "Adresse IP {{ip}}",
+    "ipUnavailable": "Adresse IP indisponible",
+    "lastActive": "Dernière activité : {{date}}",
+    "signedIn": "Connexion : {{date}}",
+    "expires": "Expiration : {{date}}",
+    "cancel": "Annuler",
+    "loadMore": "Afficher plus de sessions",
+    "revoke": {
+      "action": "Révoquer",
+      "label": "Révoquer la session : {{device}}",
+      "title": "Révoquer cette session ?",
+      "description": "Le navigateur qui l’utilise sera déconnecté.",
+      "confirm": "Révoquer"
+    },
+    "signOutCurrent": {
+      "action": "Se déconnecter",
+      "label": "Se déconnecter de la session actuelle : {{device}}",
+      "title": "Se déconnecter de ce navigateur ?",
+      "description": "Cela met fin à votre session actuelle. Vous devrez vous reconnecter.",
+      "confirm": "Se déconnecter"
+    },
+    "revokeOthers": {
+      "action": "Déconnecter les autres sessions",
+      "title": "Déconnecter toutes les autres sessions ?",
+      "description": "Tous les autres navigateurs et appareils seront déconnectés. Ce navigateur reste connecté.",
+      "confirm": "Déconnecter les autres"
+    },
+    "notice": {
+      "revoked": "La session a été révoquée.",
+      "othersRevoked": "Toutes les autres sessions ont été déconnectées."
+    }
+  }
+}

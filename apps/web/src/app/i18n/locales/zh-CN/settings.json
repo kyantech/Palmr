@@ -1,1 +1,122 @@
-{}
+{
+  "title": "设置",
+  "sections": {
+    "label": "设置分区",
+    "profile": "个人资料",
+    "appearance": "外观",
+    "security": "安全",
+    "sessions": "会话"
+  },
+  "profile": {
+    "title": "个人资料",
+    "description": "你在此实例中向其他人显示的姓名。",
+    "firstName": "名",
+    "lastName": "姓",
+    "managedByAdmin": "只有管理员可以更改你的电子邮件地址、用户名和角色。",
+    "save": "保存更改",
+    "saved": "个人资料已保存。",
+    "validation": {
+      "required": "此字段为必填项。",
+      "tooLong": "最多使用 {{max}} 个字符。",
+      "invalid": "请输入有效的姓名。"
+    }
+  },
+  "appearance": {
+    "title": "外观",
+    "description": "更改会立即生效，并在所有设备上随你的账户同步。",
+    "saving": "正在保存…",
+    "saved": "已保存",
+    "theme": {
+      "label": "主题",
+      "options": {
+        "light": "浅色",
+        "dark": "深色",
+        "system": "跟随系统"
+      }
+    },
+    "accent": {
+      "label": "强调色",
+      "options": {
+        "default": "实例默认",
+        "blue": "蓝色",
+        "violet": "紫罗兰",
+        "emerald": "翡翠绿",
+        "amber": "琥珀色",
+        "rose": "玫瑰色",
+        "slate": "石板灰"
+      }
+    },
+    "locale": {
+      "label": "语言"
+    }
+  },
+  "security": {
+    "password": {
+      "title": "密码",
+      "description": "更改你用于登录的密码。",
+      "current": "当前密码",
+      "new": "新密码",
+      "confirm": "确认新密码",
+      "hint": "至少使用 {{minLength}} 个字符。",
+      "consequence": "更改密码会退出你的所有其他会话。",
+      "submit": "更改密码",
+      "changed": "密码已更改。",
+      "changedDescription": "你的其他会话已退出。此浏览器保持登录状态。",
+      "validation": {
+        "required": "此字段为必填项。",
+        "tooShort": "至少使用 {{minLength}} 个字符。",
+        "mismatch": "两次输入的密码不一致。",
+        "invalid": "请输入有效的密码。"
+      },
+      "unavailable": {
+        "disabled": "此实例已禁用密码登录，因此无法在此处更改密码。",
+        "external": "此账户通过外部提供方登录，没有可更改的密码。"
+      }
+    }
+  },
+  "sessions": {
+    "title": "会话",
+    "description": "已登录你账户的浏览器和设备。",
+    "listLabel": "活动会话",
+    "current": "当前会话",
+    "origin": {
+      "password": "密码",
+      "external": "外部提供方"
+    },
+    "device": {
+      "browserOnSystem": "{{system}} 上的 {{browser}}",
+      "unknown": "未知浏览器"
+    },
+    "ip": "IP 地址 {{ip}}",
+    "ipUnavailable": "IP 地址不可用",
+    "lastActive": "上次活动：{{date}}",
+    "signedIn": "登录时间：{{date}}",
+    "expires": "到期时间：{{date}}",
+    "cancel": "取消",
+    "loadMore": "显示更多会话",
+    "revoke": {
+      "action": "撤销",
+      "label": "撤销会话：{{device}}",
+      "title": "要撤销此会话吗？",
+      "description": "使用此会话的浏览器将被退出登录。",
+      "confirm": "撤销"
+    },
+    "signOutCurrent": {
+      "action": "退出登录",
+      "label": "退出当前会话：{{device}}",
+      "title": "要在此浏览器中退出登录吗？",
+      "description": "这将结束你的当前会话。你需要重新登录。",
+      "confirm": "退出登录"
+    },
+    "revokeOthers": {
+      "action": "退出其他会话",
+      "title": "要退出所有其他会话吗？",
+      "description": "所有其他浏览器和设备都将退出登录。此浏览器保持登录状态。",
+      "confirm": "退出其他会话"
+    },
+    "notice": {
+      "revoked": "会话已撤销。",
+      "othersRevoked": "所有其他会话均已退出。"
+    }
+  }
+}

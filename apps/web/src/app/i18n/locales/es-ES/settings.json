@@ -1,1 +1,122 @@
-{}
+{
+  "title": "Ajustes",
+  "sections": {
+    "label": "Secciones de ajustes",
+    "profile": "Perfil",
+    "appearance": "Apariencia",
+    "security": "Seguridad",
+    "sessions": "Sesiones"
+  },
+  "profile": {
+    "title": "Perfil",
+    "description": "Tu nombre tal como lo ven otras personas en esta instancia.",
+    "firstName": "Nombre",
+    "lastName": "Apellidos",
+    "managedByAdmin": "Solo un administrador puede cambiar tu correo electrónico, nombre de usuario y rol.",
+    "save": "Guardar cambios",
+    "saved": "Perfil guardado.",
+    "validation": {
+      "required": "Este campo es obligatorio.",
+      "tooLong": "Usa como máximo {{max}} caracteres.",
+      "invalid": "Introduce un nombre válido."
+    }
+  },
+  "appearance": {
+    "title": "Apariencia",
+    "description": "Los cambios se aplican al instante y acompañan a tu cuenta en todos los dispositivos.",
+    "saving": "Guardando…",
+    "saved": "Guardado",
+    "theme": {
+      "label": "Tema",
+      "options": {
+        "light": "Claro",
+        "dark": "Oscuro",
+        "system": "Sistema"
+      }
+    },
+    "accent": {
+      "label": "Color de acento",
+      "options": {
+        "default": "Predeterminado de la instancia",
+        "blue": "Azul",
+        "violet": "Violeta",
+        "emerald": "Esmeralda",
+        "amber": "Ámbar",
+        "rose": "Rosa",
+        "slate": "Pizarra"
+      }
+    },
+    "locale": {
+      "label": "Idioma"
+    }
+  },
+  "security": {
+    "password": {
+      "title": "Contraseña",
+      "description": "Cambia la contraseña que usas para iniciar sesión.",
+      "current": "Contraseña actual",
+      "new": "Nueva contraseña",
+      "confirm": "Confirma la nueva contraseña",
+      "hint": "Usa al menos {{minLength}} caracteres.",
+      "consequence": "Cambiar la contraseña cierra todas tus demás sesiones.",
+      "submit": "Cambiar contraseña",
+      "changed": "Contraseña cambiada.",
+      "changedDescription": "Se han cerrado tus demás sesiones. Este navegador sigue con la sesión iniciada.",
+      "validation": {
+        "required": "Este campo es obligatorio.",
+        "tooShort": "Usa al menos {{minLength}} caracteres.",
+        "mismatch": "Las contraseñas no coinciden.",
+        "invalid": "Introduce una contraseña válida."
+      },
+      "unavailable": {
+        "disabled": "El inicio de sesión con contraseña está desactivado en esta instancia, así que la contraseña no se puede cambiar aquí.",
+        "external": "Esta cuenta inicia sesión con un proveedor externo y no tiene contraseña que cambiar."
+      }
+    }
+  },
+  "sessions": {
+    "title": "Sesiones",
+    "description": "Navegadores y dispositivos con sesión iniciada en tu cuenta.",
+    "listLabel": "Sesiones activas",
+    "current": "Sesión actual",
+    "origin": {
+      "password": "Contraseña",
+      "external": "Proveedor externo"
+    },
+    "device": {
+      "browserOnSystem": "{{browser}} en {{system}}",
+      "unknown": "Navegador desconocido"
+    },
+    "ip": "Dirección IP {{ip}}",
+    "ipUnavailable": "Dirección IP no disponible",
+    "lastActive": "Última actividad: {{date}}",
+    "signedIn": "Inicio de sesión: {{date}}",
+    "expires": "Caduca: {{date}}",
+    "cancel": "Cancelar",
+    "loadMore": "Mostrar más sesiones",
+    "revoke": {
+      "action": "Revocar",
+      "label": "Revocar sesión: {{device}}",
+      "title": "¿Revocar esta sesión?",
+      "description": "Se cerrará la sesión del navegador que la usa.",
+      "confirm": "Revocar"
+    },
+    "signOutCurrent": {
+      "action": "Cerrar sesión",
+      "label": "Cerrar la sesión actual: {{device}}",
+      "title": "¿Cerrar sesión en este navegador?",
+      "description": "Esto finaliza tu sesión actual. Tendrás que volver a iniciar sesión.",
+      "confirm": "Cerrar sesión"
+    },
+    "revokeOthers": {
+      "action": "Cerrar las demás sesiones",
+      "title": "¿Cerrar todas las demás sesiones?",
+      "description": "Se cerrará la sesión en todos los demás navegadores y dispositivos. Este navegador sigue con la sesión iniciada.",
+      "confirm": "Cerrar las demás"
+    },
+    "notice": {
+      "revoked": "Se ha revocado la sesión.",
+      "othersRevoked": "Se han cerrado todas las demás sesiones."
+    }
+  }
+}

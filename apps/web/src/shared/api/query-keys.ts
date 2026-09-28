@@ -6,6 +6,10 @@ export const qk = {
   me: {
     all: () => ["me"] as const,
     current: () => ["me", "current"] as const,
+    profile: () => ["me", "profile"] as const,
+    preferences: () => ["me", "preferences"] as const,
+    sessions: () => ["me", "sessions"] as const,
+    effectiveSettings: () => ["me", "effective-settings"] as const,
   },
 
   public: {

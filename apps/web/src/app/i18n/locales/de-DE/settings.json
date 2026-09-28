@@ -1,1 +1,122 @@
-{}
+{
+  "title": "Einstellungen",
+  "sections": {
+    "label": "Einstellungsbereiche",
+    "profile": "Profil",
+    "appearance": "Darstellung",
+    "security": "Sicherheit",
+    "sessions": "Sitzungen"
+  },
+  "profile": {
+    "title": "Profil",
+    "description": "Dein Name, wie er anderen Personen auf dieser Instanz angezeigt wird.",
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "managedByAdmin": "Deine E-Mail-Adresse, dein Benutzername und deine Rolle können nur von einem Administrator geändert werden.",
+    "save": "Änderungen speichern",
+    "saved": "Profil gespeichert.",
+    "validation": {
+      "required": "Dieses Feld ist erforderlich.",
+      "tooLong": "Verwende höchstens {{max}} Zeichen.",
+      "invalid": "Gib einen gültigen Namen ein."
+    }
+  },
+  "appearance": {
+    "title": "Darstellung",
+    "description": "Änderungen gelten sofort und folgen deinem Konto auf allen Geräten.",
+    "saving": "Wird gespeichert…",
+    "saved": "Gespeichert",
+    "theme": {
+      "label": "Design",
+      "options": {
+        "light": "Hell",
+        "dark": "Dunkel",
+        "system": "System"
+      }
+    },
+    "accent": {
+      "label": "Akzentfarbe",
+      "options": {
+        "default": "Standard der Instanz",
+        "blue": "Blau",
+        "violet": "Violett",
+        "emerald": "Smaragd",
+        "amber": "Bernstein",
+        "rose": "Rosa",
+        "slate": "Schiefer"
+      }
+    },
+    "locale": {
+      "label": "Sprache"
+    }
+  },
+  "security": {
+    "password": {
+      "title": "Passwort",
+      "description": "Ändere das Passwort, mit dem du dich anmeldest.",
+      "current": "Aktuelles Passwort",
+      "new": "Neues Passwort",
+      "confirm": "Neues Passwort bestätigen",
+      "hint": "Verwende mindestens {{minLength}} Zeichen.",
+      "consequence": "Wenn du dein Passwort änderst, werden alle deine anderen Sitzungen abgemeldet.",
+      "submit": "Passwort ändern",
+      "changed": "Passwort geändert.",
+      "changedDescription": "Deine anderen Sitzungen wurden abgemeldet. Dieser Browser bleibt angemeldet.",
+      "validation": {
+        "required": "Dieses Feld ist erforderlich.",
+        "tooShort": "Verwende mindestens {{minLength}} Zeichen.",
+        "mismatch": "Die Passwörter stimmen nicht überein.",
+        "invalid": "Gib ein gültiges Passwort ein."
+      },
+      "unavailable": {
+        "disabled": "Die Anmeldung mit Passwort ist auf dieser Instanz deaktiviert, daher kann das Passwort hier nicht geändert werden.",
+        "external": "Dieses Konto meldet sich über einen externen Anbieter an und hat kein Passwort, das geändert werden kann."
+      }
+    }
+  },
+  "sessions": {
+    "title": "Sitzungen",
+    "description": "Browser und Geräte, die bei deinem Konto angemeldet sind.",
+    "listLabel": "Aktive Sitzungen",
+    "current": "Aktuelle Sitzung",
+    "origin": {
+      "password": "Passwort",
+      "external": "Externer Anbieter"
+    },
+    "device": {
+      "browserOnSystem": "{{browser}} unter {{system}}",
+      "unknown": "Unbekannter Browser"
+    },
+    "ip": "IP-Adresse {{ip}}",
+    "ipUnavailable": "IP-Adresse nicht verfügbar",
+    "lastActive": "Zuletzt aktiv: {{date}}",
+    "signedIn": "Angemeldet: {{date}}",
+    "expires": "Läuft ab: {{date}}",
+    "cancel": "Abbrechen",
+    "loadMore": "Weitere Sitzungen anzeigen",
+    "revoke": {
+      "action": "Widerrufen",
+      "label": "Sitzung widerrufen: {{device}}",
+      "title": "Diese Sitzung widerrufen?",
+      "description": "Der Browser, der sie verwendet, wird abgemeldet.",
+      "confirm": "Widerrufen"
+    },
+    "signOutCurrent": {
+      "action": "Abmelden",
+      "label": "Von der aktuellen Sitzung abmelden: {{device}}",
+      "title": "Von diesem Browser abmelden?",
+      "description": "Damit endet deine aktuelle Sitzung. Du musst dich erneut anmelden.",
+      "confirm": "Abmelden"
+    },
+    "revokeOthers": {
+      "action": "Andere Sitzungen abmelden",
+      "title": "Alle anderen Sitzungen abmelden?",
+      "description": "Alle anderen Browser und Geräte werden abgemeldet. Dieser Browser bleibt angemeldet.",
+      "confirm": "Andere abmelden"
+    },
+    "notice": {
+      "revoked": "Die Sitzung wurde widerrufen.",
+      "othersRevoked": "Alle anderen Sitzungen wurden abgemeldet."
+    }
+  }
+}

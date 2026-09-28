@@ -24,7 +24,7 @@ const ADMIN_ENTRY: NavigationEntry = {
   requiredRole: "admin",
 };
 
-const FORBIDDEN_LABELS = ["Files", "Shared", "Received", "Transfers", "Admin", "Settings"];
+const FORBIDDEN_LABELS = ["Files", "Shared", "Received", "Transfers", "Admin"];
 
 function stubViewportWidth(width: number) {
   vi.stubGlobal("matchMedia", (query: string) => {
@@ -72,6 +72,9 @@ test("component_appshell_desktop_navigation_uses_the_registry", async () => {
   const link = within(navigation).getByRole("link", { name: "Overview" });
   expect(link.getAttribute("href")).toBe("/overview");
   expect(link.getAttribute("aria-current")).toBe("page");
+  const settings = within(navigation).getByRole("link", { name: "Settings" });
+  expect(settings.getAttribute("href")).toBe("/settings");
+  expect(settings.getAttribute("aria-current")).toBeNull();
   expect(screen.getByTestId("app-main")).toBeDefined();
   expect(document.querySelector("[data-transfer-dock]")).not.toBeNull();
   expect(screen.queryByRole("button", { name: "Open navigation" })).toBeNull();
@@ -123,8 +126,13 @@ test("component_appshell_xs_bottom_tabs_use_the_same_registry", async () => {
   const link = within(tabs).getByRole("link", { name: "Overview" });
   expect(link.getAttribute("href")).toBe("/overview");
   expect(link.getAttribute("aria-current")).toBe("page");
-  expect(within(tabs).queryByRole("button", { name: "More" })).toBeNull();
+  expect(within(tabs).queryByRole("link", { name: "Settings" })).toBeNull();
   expect(screen.queryByTestId("app-sider")).toBeNull();
+
+  await userEvent.click(within(tabs).getByRole("button", { name: "More" }));
+
+  const settings = await screen.findByRole("link", { name: "Settings" });
+  expect(settings.getAttribute("href")).toBe("/settings");
 });
 
 test("component_nav_admin_only_for_admin", async () => {

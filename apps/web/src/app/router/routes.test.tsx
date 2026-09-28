@@ -40,13 +40,31 @@ describe("production route table", () => {
       "/setup",
       "/login",
       "/overview",
+      "/settings",
+      "profile",
+      "appearance",
+      "security",
+      "sessions",
       "*",
     ]);
   });
 
   test("never declares /e, public Share, registration, or unbuilt product routes", () => {
     const paths = collectPaths(appRoutes).filter((path) => path !== undefined);
-    for (const forbidden of ["/e", "/s", "/r", "/register", "/signup", "/admin", "/settings"]) {
+    expect(paths).not.toContain("trusted-devices");
+    for (const forbidden of [
+      "/e",
+      "/s",
+      "/r",
+      "/register",
+      "/signup",
+      "/admin",
+      "/files",
+      "/shared",
+      "/received",
+      "/transfers",
+      "/reverse-shares",
+    ]) {
       for (const path of paths) {
         expect(path === forbidden || path.startsWith(`${forbidden}/`)).toBe(false);
       }

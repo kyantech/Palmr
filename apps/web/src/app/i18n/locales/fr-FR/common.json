@@ -14,6 +14,7 @@
   "nav": {
     "label": "Navigation principale",
     "overview": "Vue d’ensemble",
+    "settings": "Paramètres",
     "open": "Ouvrir la navigation",
     "more": "Plus",
     "collapse": "Réduire la navigation",

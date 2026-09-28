@@ -1,1 +1,122 @@
-{}
+{
+  "title": "設定",
+  "sections": {
+    "label": "設定のセクション",
+    "profile": "プロフィール",
+    "appearance": "外観",
+    "security": "セキュリティ",
+    "sessions": "セッション"
+  },
+  "profile": {
+    "title": "プロフィール",
+    "description": "このインスタンスでほかのユーザーに表示される名前です。",
+    "firstName": "名",
+    "lastName": "姓",
+    "managedByAdmin": "メールアドレス、ユーザー名、ロールは管理者のみが変更できます。",
+    "save": "変更を保存",
+    "saved": "プロフィールを保存しました。",
+    "validation": {
+      "required": "この項目は必須です。",
+      "tooLong": "{{max}} 文字以内で入力してください。",
+      "invalid": "有効な名前を入力してください。"
+    }
+  },
+  "appearance": {
+    "title": "外観",
+    "description": "変更はすぐに適用され、すべてのデバイスでアカウントに反映されます。",
+    "saving": "保存中…",
+    "saved": "保存しました",
+    "theme": {
+      "label": "テーマ",
+      "options": {
+        "light": "ライト",
+        "dark": "ダーク",
+        "system": "システム"
+      }
+    },
+    "accent": {
+      "label": "アクセントカラー",
+      "options": {
+        "default": "インスタンスの既定",
+        "blue": "ブルー",
+        "violet": "バイオレット",
+        "emerald": "エメラルド",
+        "amber": "アンバー",
+        "rose": "ローズ",
+        "slate": "スレート"
+      }
+    },
+    "locale": {
+      "label": "言語"
+    }
+  },
+  "security": {
+    "password": {
+      "title": "パスワード",
+      "description": "サインインに使用するパスワードを変更します。",
+      "current": "現在のパスワード",
+      "new": "新しいパスワード",
+      "confirm": "新しいパスワード（確認）",
+      "hint": "{{minLength}} 文字以上で入力してください。",
+      "consequence": "パスワードを変更すると、ほかのすべてのセッションからサインアウトされます。",
+      "submit": "パスワードを変更",
+      "changed": "パスワードを変更しました。",
+      "changedDescription": "ほかのセッションからサインアウトしました。このブラウザーはサインインしたままです。",
+      "validation": {
+        "required": "この項目は必須です。",
+        "tooShort": "{{minLength}} 文字以上で入力してください。",
+        "mismatch": "パスワードが一致しません。",
+        "invalid": "有効なパスワードを入力してください。"
+      },
+      "unavailable": {
+        "disabled": "このインスタンスではパスワードによるサインインが無効なため、ここでパスワードを変更することはできません。",
+        "external": "このアカウントは外部プロバイダーでサインインするため、変更できるパスワードはありません。"
+      }
+    }
+  },
+  "sessions": {
+    "title": "セッション",
+    "description": "アカウントにサインインしているブラウザーとデバイスです。",
+    "listLabel": "アクティブなセッション",
+    "current": "現在のセッション",
+    "origin": {
+      "password": "パスワード",
+      "external": "外部プロバイダー"
+    },
+    "device": {
+      "browserOnSystem": "{{system}} 上の {{browser}}",
+      "unknown": "不明なブラウザー"
+    },
+    "ip": "IP アドレス {{ip}}",
+    "ipUnavailable": "IP アドレスは利用できません",
+    "lastActive": "最終アクティビティ: {{date}}",
+    "signedIn": "サインイン: {{date}}",
+    "expires": "有効期限: {{date}}",
+    "cancel": "キャンセル",
+    "loadMore": "さらにセッションを表示",
+    "revoke": {
+      "action": "取り消す",
+      "label": "セッションを取り消す: {{device}}",
+      "title": "このセッションを取り消しますか？",
+      "description": "このセッションを使用しているブラウザーはサインアウトされます。",
+      "confirm": "取り消す"
+    },
+    "signOutCurrent": {
+      "action": "サインアウト",
+      "label": "現在のセッションからサインアウト: {{device}}",
+      "title": "このブラウザーからサインアウトしますか？",
+      "description": "現在のセッションが終了します。もう一度サインインする必要があります。",
+      "confirm": "サインアウト"
+    },
+    "revokeOthers": {
+      "action": "ほかのセッションからサインアウト",
+      "title": "ほかのすべてのセッションからサインアウトしますか？",
+      "description": "ほかのすべてのブラウザーとデバイスはサインアウトされます。このブラウザーはサインインしたままです。",
+      "confirm": "ほかをサインアウト"
+    },
+    "notice": {
+      "revoked": "セッションを取り消しました。",
+      "othersRevoked": "ほかのすべてのセッションからサインアウトしました。"
+    }
+  }
+}

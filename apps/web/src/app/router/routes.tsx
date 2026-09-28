@@ -7,6 +7,7 @@ import { authRoutes } from "./authRoutes";
 import { resolveBasename } from "./basename";
 import { PATHS } from "./paths";
 import { RootRedirect } from "./RootRedirect";
+import { settingsRoutes } from "./settingsRoutes";
 import { NotFoundPanel } from "./StatusPanel";
 
 function RouteErrorElement() {
@@ -22,7 +23,7 @@ export const appRoutes: RouteObject[] = [
       ...authenticatedRoutes([
         {
           element: <AppShell />,
-          children: [{ path: PATHS.overview, element: <OverviewPage /> }],
+          children: [{ path: PATHS.overview, element: <OverviewPage /> }, ...settingsRoutes],
         },
       ]),
       { path: "*", element: <NotFoundPanel /> },

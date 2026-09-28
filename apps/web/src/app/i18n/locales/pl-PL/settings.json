@@ -1,1 +1,122 @@
-{}
+{
+  "title": "Ustawienia",
+  "sections": {
+    "label": "Sekcje ustawień",
+    "profile": "Profil",
+    "appearance": "Wygląd",
+    "security": "Bezpieczeństwo",
+    "sessions": "Sesje"
+  },
+  "profile": {
+    "title": "Profil",
+    "description": "Twoje imię i nazwisko widoczne dla innych osób w tej instancji.",
+    "firstName": "Imię",
+    "lastName": "Nazwisko",
+    "managedByAdmin": "Adres e-mail, nazwę użytkownika i rolę może zmienić tylko administrator.",
+    "save": "Zapisz zmiany",
+    "saved": "Profil zapisany.",
+    "validation": {
+      "required": "To pole jest wymagane.",
+      "tooLong": "Użyj maksymalnie {{max}} znaków.",
+      "invalid": "Wpisz prawidłowe imię lub nazwisko."
+    }
+  },
+  "appearance": {
+    "title": "Wygląd",
+    "description": "Zmiany są stosowane od razu i obowiązują na Twoim koncie na każdym urządzeniu.",
+    "saving": "Zapisywanie…",
+    "saved": "Zapisano",
+    "theme": {
+      "label": "Motyw",
+      "options": {
+        "light": "Jasny",
+        "dark": "Ciemny",
+        "system": "Systemowy"
+      }
+    },
+    "accent": {
+      "label": "Kolor akcentu",
+      "options": {
+        "default": "Domyślny instancji",
+        "blue": "Niebieski",
+        "violet": "Fioletowy",
+        "emerald": "Szmaragdowy",
+        "amber": "Bursztynowy",
+        "rose": "Różowy",
+        "slate": "Łupkowy"
+      }
+    },
+    "locale": {
+      "label": "Język"
+    }
+  },
+  "security": {
+    "password": {
+      "title": "Hasło",
+      "description": "Zmień hasło, którego używasz do logowania.",
+      "current": "Obecne hasło",
+      "new": "Nowe hasło",
+      "confirm": "Potwierdź nowe hasło",
+      "hint": "Użyj co najmniej {{minLength}} znaków.",
+      "consequence": "Zmiana hasła wyloguje wszystkie Twoje pozostałe sesje.",
+      "submit": "Zmień hasło",
+      "changed": "Hasło zostało zmienione.",
+      "changedDescription": "Pozostałe sesje zostały wylogowane. Ta przeglądarka pozostaje zalogowana.",
+      "validation": {
+        "required": "To pole jest wymagane.",
+        "tooShort": "Użyj co najmniej {{minLength}} znaków.",
+        "mismatch": "Hasła nie są zgodne.",
+        "invalid": "Wpisz prawidłowe hasło."
+      },
+      "unavailable": {
+        "disabled": "Logowanie hasłem jest wyłączone w tej instancji, więc nie można tu zmienić hasła.",
+        "external": "To konto loguje się przez zewnętrznego dostawcę i nie ma hasła do zmiany."
+      }
+    }
+  },
+  "sessions": {
+    "title": "Sesje",
+    "description": "Przeglądarki i urządzenia zalogowane na Twoje konto.",
+    "listLabel": "Aktywne sesje",
+    "current": "Bieżąca sesja",
+    "origin": {
+      "password": "Hasło",
+      "external": "Zewnętrzny dostawca"
+    },
+    "device": {
+      "browserOnSystem": "{{browser}} w systemie {{system}}",
+      "unknown": "Nieznana przeglądarka"
+    },
+    "ip": "Adres IP {{ip}}",
+    "ipUnavailable": "Adres IP niedostępny",
+    "lastActive": "Ostatnia aktywność: {{date}}",
+    "signedIn": "Zalogowano: {{date}}",
+    "expires": "Wygasa: {{date}}",
+    "cancel": "Anuluj",
+    "loadMore": "Pokaż więcej sesji",
+    "revoke": {
+      "action": "Unieważnij",
+      "label": "Unieważnij sesję: {{device}}",
+      "title": "Unieważnić tę sesję?",
+      "description": "Przeglądarka, która jej używa, zostanie wylogowana.",
+      "confirm": "Unieważnij"
+    },
+    "signOutCurrent": {
+      "action": "Wyloguj się",
+      "label": "Wyloguj z bieżącej sesji: {{device}}",
+      "title": "Wylogować się z tej przeglądarki?",
+      "description": "To zakończy bieżącą sesję. Trzeba będzie zalogować się ponownie.",
+      "confirm": "Wyloguj się"
+    },
+    "revokeOthers": {
+      "action": "Wyloguj pozostałe sesje",
+      "title": "Wylogować wszystkie pozostałe sesje?",
+      "description": "Wszystkie inne przeglądarki i urządzenia zostaną wylogowane. Ta przeglądarka pozostaje zalogowana.",
+      "confirm": "Wyloguj pozostałe"
+    },
+    "notice": {
+      "revoked": "Sesja została unieważniona.",
+      "othersRevoked": "Wszystkie pozostałe sesje zostały wylogowane."
+    }
+  }
+}

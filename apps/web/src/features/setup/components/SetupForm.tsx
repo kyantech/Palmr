@@ -12,6 +12,7 @@ import {
   isApiErrorCode,
   presentError,
 } from "../../../shared/errors";
+import { localeOptions } from "../../../shared/format/locale";
 import { FormField } from "../../../shared/ui/FormField";
 import { type SetupRequest, useCompleteSetup } from "../api/mutations";
 
@@ -80,18 +81,6 @@ function setupSchema(t: TFunction<"setup">, passwordMinLength: number) {
   });
 }
 
-export function localeDisplayName(code: string): string {
-  try {
-    const name = new Intl.DisplayNames([code], {
-      type: "language",
-      languageDisplay: "standard",
-    }).of(code);
-    return name ? `${name.charAt(0).toLocaleUpperCase(code)}${name.slice(1)}` : code;
-  } catch {
-    return code;
-  }
-}
-
 function isSetupField(value: string): value is SetupField {
   return (SETUP_FIELDS as readonly string[]).includes(value);
 }
@@ -121,13 +110,7 @@ export function SetupForm({
     () => setupSchema(t as TFunction<"setup">, passwordMinLength ?? 0),
     [t, passwordMinLength],
   );
-  const localeOptions = useMemo(
-    () =>
-      supportedLocales
-        .map((code) => ({ value: code, label: localeDisplayName(code) }))
-        .sort((a, b) => a.label.localeCompare(b.label)),
-    [supportedLocales],
-  );
+  const options = useMemo(() => localeOptions(supportedLocales), [supportedLocales]);
   const {
     control,
     handleSubmit,
@@ -265,7 +248,7 @@ export function SetupForm({
                     value={value}
                     onChange={onChange}
                     onBlur={onBlur}
-                    options={localeOptions}
+                    options={options}
                     showSearch={{ optionFilterProp: "label" }}
                   />
                 )}

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { PATHS } from "../../router/paths";
-import { OverviewIcon } from "./icons";
+import { OverviewIcon, SettingsIcon } from "./icons";
 
 export type NavigationRole = "admin" | "user";
 
@@ -25,6 +25,13 @@ export const NAV_ENTRIES: readonly NavigationEntry[] = [
     icon: <OverviewIcon />,
     order: 10,
     bottomBar: true,
+  },
+  {
+    key: "settings",
+    path: PATHS.settings,
+    labelKey: "nav.settings",
+    icon: <SettingsIcon />,
+    order: 70,
   },
 ];
 

@@ -1,1 +1,122 @@
-{}
+{
+  "title": "Impostazioni",
+  "sections": {
+    "label": "Sezioni delle impostazioni",
+    "profile": "Profilo",
+    "appearance": "Aspetto",
+    "security": "Sicurezza",
+    "sessions": "Sessioni"
+  },
+  "profile": {
+    "title": "Profilo",
+    "description": "Il tuo nome come appare alle altre persone su questa istanza.",
+    "firstName": "Nome",
+    "lastName": "Cognome",
+    "managedByAdmin": "Solo un amministratore può modificare il tuo indirizzo e-mail, il nome utente e il ruolo.",
+    "save": "Salva modifiche",
+    "saved": "Profilo salvato.",
+    "validation": {
+      "required": "Questo campo è obbligatorio.",
+      "tooLong": "Usa al massimo {{max}} caratteri.",
+      "invalid": "Inserisci un nome valido."
+    }
+  },
+  "appearance": {
+    "title": "Aspetto",
+    "description": "Le modifiche si applicano subito e seguono il tuo account su tutti i dispositivi.",
+    "saving": "Salvataggio…",
+    "saved": "Salvato",
+    "theme": {
+      "label": "Tema",
+      "options": {
+        "light": "Chiaro",
+        "dark": "Scuro",
+        "system": "Sistema"
+      }
+    },
+    "accent": {
+      "label": "Colore di accento",
+      "options": {
+        "default": "Predefinito dell’istanza",
+        "blue": "Blu",
+        "violet": "Viola",
+        "emerald": "Smeraldo",
+        "amber": "Ambra",
+        "rose": "Rosa",
+        "slate": "Ardesia"
+      }
+    },
+    "locale": {
+      "label": "Lingua"
+    }
+  },
+  "security": {
+    "password": {
+      "title": "Password",
+      "description": "Modifica la password che usi per accedere.",
+      "current": "Password attuale",
+      "new": "Nuova password",
+      "confirm": "Conferma la nuova password",
+      "hint": "Usa almeno {{minLength}} caratteri.",
+      "consequence": "La modifica della password disconnette tutte le altre sessioni.",
+      "submit": "Cambia password",
+      "changed": "Password modificata.",
+      "changedDescription": "Le altre sessioni sono state disconnesse. Questo browser resta connesso.",
+      "validation": {
+        "required": "Questo campo è obbligatorio.",
+        "tooShort": "Usa almeno {{minLength}} caratteri.",
+        "mismatch": "Le password non corrispondono.",
+        "invalid": "Inserisci una password valida."
+      },
+      "unavailable": {
+        "disabled": "L’accesso con password è disattivato su questa istanza, quindi la password non può essere modificata qui.",
+        "external": "Questo account accede tramite un provider esterno e non ha una password da modificare."
+      }
+    }
+  },
+  "sessions": {
+    "title": "Sessioni",
+    "description": "Browser e dispositivi connessi al tuo account.",
+    "listLabel": "Sessioni attive",
+    "current": "Sessione attuale",
+    "origin": {
+      "password": "Password",
+      "external": "Provider esterno"
+    },
+    "device": {
+      "browserOnSystem": "{{browser}} su {{system}}",
+      "unknown": "Browser sconosciuto"
+    },
+    "ip": "Indirizzo IP {{ip}}",
+    "ipUnavailable": "Indirizzo IP non disponibile",
+    "lastActive": "Ultima attività: {{date}}",
+    "signedIn": "Accesso: {{date}}",
+    "expires": "Scadenza: {{date}}",
+    "cancel": "Annulla",
+    "loadMore": "Mostra altre sessioni",
+    "revoke": {
+      "action": "Revoca",
+      "label": "Revoca sessione: {{device}}",
+      "title": "Revocare questa sessione?",
+      "description": "Il browser che la utilizza verrà disconnesso.",
+      "confirm": "Revoca"
+    },
+    "signOutCurrent": {
+      "action": "Esci",
+      "label": "Esci dalla sessione attuale: {{device}}",
+      "title": "Uscire da questo browser?",
+      "description": "La sessione attuale verrà chiusa. Dovrai accedere di nuovo.",
+      "confirm": "Esci"
+    },
+    "revokeOthers": {
+      "action": "Disconnetti le altre sessioni",
+      "title": "Disconnettere tutte le altre sessioni?",
+      "description": "Tutti gli altri browser e dispositivi verranno disconnessi. Questo browser resta connesso.",
+      "confirm": "Disconnetti le altre"
+    },
+    "notice": {
+      "revoked": "La sessione è stata revocata.",
+      "othersRevoked": "Tutte le altre sessioni sono state disconnesse."
+    }
+  }
+}

@@ -174,3 +174,183 @@ test("regression_R069_setup_atomic_and_idempotent", async ({ page }) => {
   );
   await expect(page).toHaveURL(/\/login$/);
 });
+
+const NEW_PASSWORD = "an entirely different passphrase";
+
+async function signIn(page: Page, identifier: string, password: string) {
+  await page.goto("/login");
+  await page.getByLabel("E-mail or username").fill(identifier);
+  await page.getByLabel("Password", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page.getByTestId("app-shell")).toBeVisible();
+}
+
+async function sessionStatus(page: Page): Promise<number> {
+  return (await page.request.get("/api/v1/auth/me")).status();
+}
+
+async function currentSessionId(page: Page): Promise<string> {
+  const me = (await (await page.request.get("/api/v1/auth/me")).json()) as {
+    session: { id: string };
+  };
+  return me.session.id;
+}
+
+async function completeRecentAuthIfAsked(
+  page: Page,
+  outcome: ReturnType<Page["getByText"]>,
+  password: string,
+) {
+  const dialog = page
+    .getByRole("dialog")
+    .filter({ hasText: "Confirm it's you" });
+  await expect(outcome.or(dialog)).toBeVisible();
+  if (await dialog.isVisible()) {
+    await dialog.getByLabel("Password").fill(password);
+    await dialog.getByRole("button", { name: "Confirm" }).click();
+  }
+  await expect(outcome).toBeVisible();
+}
+
+test("e2e_settings_appearance_profile_sessions_password", async ({
+  browser,
+}) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const pageErrors = collectPageErrors(page);
+  await signIn(page, ADMIN.username, ADMIN.password);
+
+  await page.goto("/settings/appearance");
+  const language = page.getByRole("combobox");
+  await language.click();
+  await language.fill("English");
+  await page
+    .getByTitle("English (United States)", { exact: true })
+    .filter({ visible: true })
+    .click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Settings");
+  await page
+    .getByRole("radiogroup", { name: "Theme" })
+    .locator("label", { hasText: "Dark" })
+    .click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(
+    page.getByRole("status").filter({ hasText: "Saved" }),
+  ).toBeVisible();
+  await page
+    .getByRole("radiogroup", { name: "Accent color" })
+    .locator("label", { hasText: "Rose" })
+    .click();
+  await expect
+    .poll(async () =>
+      (await page.request.get("/api/v1/profile/preferences")).json(),
+    )
+    .toEqual({ locale: "en-US", theme: "dark", accent: "rose" });
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(page.getByRole("radio", { name: "Rose" })).toBeChecked();
+  await expect(page.getByRole("radio", { name: "Dark" })).toBeChecked();
+
+  await page.goto("/settings/profile");
+  await expect(page.getByRole("textbox")).toHaveCount(2);
+  await expect(page.getByLabel(/e-?mail|username|role/i)).toHaveCount(0);
+  await page.getByLabel("First name").fill("Augusta");
+  await page.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByText("Profile saved.")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Account menu" }),
+  ).toContainText("Augusta Lovelace");
+  expect(
+    await (await page.request.get("/api/v1/auth/me")).json(),
+  ).toMatchObject({
+    user: {
+      firstName: "Augusta",
+      lastName: ADMIN.lastName,
+      username: ADMIN.username,
+      email: ADMIN.email,
+      role: "admin",
+    },
+  });
+
+  const elsewhere = await browser.newContext();
+  const elsewherePage = await elsewhere.newPage();
+  await signIn(elsewherePage, ADMIN.email, ADMIN.password);
+  const elsewhereId = await currentSessionId(elsewherePage);
+  await page.goto("/settings/sessions");
+  const elsewhereRow = page.locator(`[data-session-id="${elsewhereId}"]`);
+  await expect(elsewhereRow).toBeVisible();
+  const currentRow = page.locator('[data-current="true"]');
+  await expect(currentRow).toHaveCount(1);
+  await expect(currentRow).toHaveAttribute(
+    "data-session-id",
+    await currentSessionId(page),
+  );
+  await expect(currentRow.getByText("Current session")).toBeVisible();
+  await elsewhereRow.getByRole("button", { name: /^Revoke session/ }).click();
+  await page.getByRole("button", { name: "Revoke", exact: true }).click();
+  await expect(elsewhereRow).toHaveCount(0);
+  expect(await sessionStatus(elsewherePage)).toBe(401);
+  expect(await sessionStatus(page)).toBe(200);
+
+  const bystander = await browser.newContext();
+  const bystanderPage = await bystander.newPage();
+  await signIn(bystanderPage, ADMIN.username, ADMIN.password);
+  await page.goto("/settings/security");
+  await page.getByLabel("Current password").fill(ADMIN.password);
+  await page.getByLabel("New password", { exact: true }).fill(NEW_PASSWORD);
+  await page.getByLabel("Confirm new password").fill(NEW_PASSWORD);
+  await page.getByRole("button", { name: "Change password" }).click();
+  await completeRecentAuthIfAsked(
+    page,
+    page.getByText("Password changed."),
+    ADMIN.password,
+  );
+  expect(await sessionStatus(page)).toBe(200);
+  expect(await sessionStatus(bystanderPage)).toBe(401);
+
+  const fresh = await browser.newContext();
+  const freshPage = await fresh.newPage();
+  await freshPage.goto("/login");
+  await freshPage.getByLabel("E-mail or username").fill(ADMIN.username);
+  await freshPage.getByLabel("Password", { exact: true }).fill(ADMIN.password);
+  await freshPage.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(freshPage.getByRole("alert")).toContainText(
+    "Incorrect sign-in details",
+  );
+  await signIn(freshPage, ADMIN.username, NEW_PASSWORD);
+
+  await page.goto("/settings/sessions");
+  await page.getByRole("button", { name: "Sign out other sessions" }).click();
+  await page.getByRole("button", { name: "Sign out others" }).click();
+  await completeRecentAuthIfAsked(
+    page,
+    page.getByText("All other sessions were signed out."),
+    NEW_PASSWORD,
+  );
+  await expect(page.getByTestId("session-row")).toHaveCount(1);
+  expect(await sessionStatus(freshPage)).toBe(401);
+  expect(await sessionStatus(page)).toBe(200);
+
+  await currentRow
+    .getByRole("button", { name: /^Sign out of the current session/ })
+    .click();
+  await expect(
+    page.getByText(
+      "This ends your current session. You will need to sign in again.",
+    ),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Sign out", exact: true }).click();
+  await expect(page).toHaveURL(/\/login(\?|$)/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Sign in" }),
+  ).toBeVisible();
+  expect(await sessionStatus(page)).toBe(401);
+
+  expect(pageErrors).toEqual([]);
+  await Promise.all([
+    context.close(),
+    elsewhere.close(),
+    bystander.close(),
+    fresh.close(),
+  ]);
+});

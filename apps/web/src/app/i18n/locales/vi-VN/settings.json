@@ -1,1 +1,122 @@
-{}
+{
+  "title": "Cài đặt",
+  "sections": {
+    "label": "Các mục cài đặt",
+    "profile": "Hồ sơ",
+    "appearance": "Giao diện",
+    "security": "Bảo mật",
+    "sessions": "Phiên"
+  },
+  "profile": {
+    "title": "Hồ sơ",
+    "description": "Tên của bạn như người khác nhìn thấy trên phiên bản này.",
+    "firstName": "Tên",
+    "lastName": "Họ",
+    "managedByAdmin": "Chỉ quản trị viên mới có thể thay đổi địa chỉ e-mail, tên người dùng và vai trò của bạn.",
+    "save": "Lưu thay đổi",
+    "saved": "Đã lưu hồ sơ.",
+    "validation": {
+      "required": "Trường này là bắt buộc.",
+      "tooLong": "Dùng tối đa {{max}} ký tự.",
+      "invalid": "Nhập tên hợp lệ."
+    }
+  },
+  "appearance": {
+    "title": "Giao diện",
+    "description": "Thay đổi được áp dụng ngay và theo tài khoản của bạn trên mọi thiết bị.",
+    "saving": "Đang lưu…",
+    "saved": "Đã lưu",
+    "theme": {
+      "label": "Chủ đề",
+      "options": {
+        "light": "Sáng",
+        "dark": "Tối",
+        "system": "Theo hệ thống"
+      }
+    },
+    "accent": {
+      "label": "Màu nhấn",
+      "options": {
+        "default": "Mặc định của phiên bản",
+        "blue": "Xanh dương",
+        "violet": "Tím",
+        "emerald": "Ngọc lục bảo",
+        "amber": "Hổ phách",
+        "rose": "Hồng",
+        "slate": "Xám đá"
+      }
+    },
+    "locale": {
+      "label": "Ngôn ngữ"
+    }
+  },
+  "security": {
+    "password": {
+      "title": "Mật khẩu",
+      "description": "Thay đổi mật khẩu bạn dùng để đăng nhập.",
+      "current": "Mật khẩu hiện tại",
+      "new": "Mật khẩu mới",
+      "confirm": "Xác nhận mật khẩu mới",
+      "hint": "Dùng ít nhất {{minLength}} ký tự.",
+      "consequence": "Thay đổi mật khẩu sẽ đăng xuất tất cả các phiên khác của bạn.",
+      "submit": "Đổi mật khẩu",
+      "changed": "Đã đổi mật khẩu.",
+      "changedDescription": "Các phiên khác của bạn đã được đăng xuất. Trình duyệt này vẫn đăng nhập.",
+      "validation": {
+        "required": "Trường này là bắt buộc.",
+        "tooShort": "Dùng ít nhất {{minLength}} ký tự.",
+        "mismatch": "Mật khẩu không khớp.",
+        "invalid": "Nhập mật khẩu hợp lệ."
+      },
+      "unavailable": {
+        "disabled": "Đăng nhập bằng mật khẩu đã bị tắt trên phiên bản này, nên không thể đổi mật khẩu tại đây.",
+        "external": "Tài khoản này đăng nhập bằng nhà cung cấp bên ngoài và không có mật khẩu để thay đổi."
+      }
+    }
+  },
+  "sessions": {
+    "title": "Phiên",
+    "description": "Các trình duyệt và thiết bị đang đăng nhập vào tài khoản của bạn.",
+    "listLabel": "Phiên đang hoạt động",
+    "current": "Phiên hiện tại",
+    "origin": {
+      "password": "Mật khẩu",
+      "external": "Nhà cung cấp bên ngoài"
+    },
+    "device": {
+      "browserOnSystem": "{{browser}} trên {{system}}",
+      "unknown": "Trình duyệt không xác định"
+    },
+    "ip": "Địa chỉ IP {{ip}}",
+    "ipUnavailable": "Không có địa chỉ IP",
+    "lastActive": "Hoạt động lần cuối: {{date}}",
+    "signedIn": "Đăng nhập: {{date}}",
+    "expires": "Hết hạn: {{date}}",
+    "cancel": "Hủy",
+    "loadMore": "Hiển thị thêm phiên",
+    "revoke": {
+      "action": "Thu hồi",
+      "label": "Thu hồi phiên: {{device}}",
+      "title": "Thu hồi phiên này?",
+      "description": "Trình duyệt đang dùng phiên này sẽ bị đăng xuất.",
+      "confirm": "Thu hồi"
+    },
+    "signOutCurrent": {
+      "action": "Đăng xuất",
+      "label": "Đăng xuất khỏi phiên hiện tại: {{device}}",
+      "title": "Đăng xuất khỏi trình duyệt này?",
+      "description": "Thao tác này kết thúc phiên hiện tại của bạn. Bạn sẽ cần đăng nhập lại.",
+      "confirm": "Đăng xuất"
+    },
+    "revokeOthers": {
+      "action": "Đăng xuất các phiên khác",
+      "title": "Đăng xuất tất cả các phiên khác?",
+      "description": "Mọi trình duyệt và thiết bị khác sẽ bị đăng xuất. Trình duyệt này vẫn đăng nhập.",
+      "confirm": "Đăng xuất phiên khác"
+    },
+    "notice": {
+      "revoked": "Đã thu hồi phiên.",
+      "othersRevoked": "Đã đăng xuất tất cả các phiên khác."
+    }
+  }
+}
