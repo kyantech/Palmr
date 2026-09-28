@@ -957,6 +957,35 @@ async fn svc_restricted_session_allowlist() {
             entry.path()
         );
     }
+    let (totp_only, protected): (Vec<_>, Vec<_>) = protected.into_iter().partition(|entry| {
+        TOTP_ONLY
+            .iter()
+            .any(|(method, path)| method == entry.method() && *path == entry.path())
+    });
+    assert_eq!(totp_only.len(), TOTP_ONLY.len());
+    for entry in totp_only {
+        assert!(restriction_allows(
+            SessionRestriction::MustEnrollTotp,
+            entry.method(),
+            entry.path()
+        ));
+        assert_eq!(
+            restricted_code(
+                application.clone(),
+                entry.method().clone(),
+                entry.path(),
+                &password_session
+            )
+            .await,
+            (
+                StatusCode::FORBIDDEN,
+                Some("AUTH_PASSWORD_CHANGE_REQUIRED".to_owned())
+            ),
+            "{} {}",
+            entry.method(),
+            entry.path()
+        );
+    }
     for entry in protected {
         let path = concrete(entry.path(), &harness.clock);
         assert!(!restriction_allows(

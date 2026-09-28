@@ -98,12 +98,14 @@ impl LockoutPolicy {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AttemptMethod {
     Password,
+    Totp,
 }
 
 impl AttemptMethod {
     pub const fn as_str(self) -> &'static str {
         match self {
             Self::Password => "password",
+            Self::Totp => "totp",
         }
     }
 }
@@ -116,6 +118,7 @@ pub enum AttemptResult {
     Inactive,
     LockedOut,
     PasswordAuthDisabled,
+    TotpFailed,
 }
 
 impl AttemptResult {
@@ -127,6 +130,7 @@ impl AttemptResult {
             Self::Inactive => "inactive",
             Self::LockedOut => "locked_out",
             Self::PasswordAuthDisabled => "password_auth_disabled",
+            Self::TotpFailed => "totp_failed",
         }
     }
 }

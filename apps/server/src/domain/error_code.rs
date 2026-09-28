@@ -96,6 +96,18 @@ error_catalog! {
         "A password change is required";
     Auth2faEnrollmentRequired = "AUTH_2FA_ENROLLMENT_REQUIRED", FORBIDDEN, retryable: false,
         "Two-factor authentication enrollment is required";
+    Auth2faInvalid = "AUTH_2FA_INVALID", UNAUTHORIZED, retryable: false,
+        "The two-factor code is invalid";
+    TotpCodeReplayed = "TOTP_CODE_REPLAYED", UNAUTHORIZED, retryable: false,
+        "The two-factor code was already used";
+    TotpAlreadyEnabled = "TOTP_ALREADY_ENABLED", CONFLICT, retryable: false,
+        "Two-factor authentication is already enabled";
+    TotpNotEnrolled = "TOTP_NOT_ENROLLED", CONFLICT, retryable: false,
+        "Two-factor authentication is not enabled";
+    TotpRequiredByPolicy = "TOTP_REQUIRED_BY_POLICY", FORBIDDEN, retryable: false,
+        "Two-factor authentication is required by instance policy";
+    TotpEnrollmentPendingMissing = "TOTP_ENROLLMENT_PENDING_MISSING", CONFLICT, retryable: false,
+        "The two-factor enrollment was not found or has expired";
     SessionNotFound = "SESSION_NOT_FOUND", NOT_FOUND, retryable: false,
         "The session was not found";
     PasswordCurrentInvalid = "PASSWORD_CURRENT_INVALID", FORBIDDEN, retryable: false,

@@ -6,6 +6,7 @@ pub mod hkdf;
 pub mod instance_key;
 pub mod password;
 pub mod token;
+pub mod totp;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CryptoError {
@@ -17,6 +18,7 @@ pub enum CryptoError {
     MalformedToken,
     MalformedDigest,
     MalformedPasswordHash,
+    MalformedTotpSecret,
     PasswordHashing,
 }
 
@@ -33,6 +35,7 @@ impl fmt::Display for CryptoError {
             Self::MalformedPasswordHash => {
                 "stored password hash is not a supported Argon2 PHC string"
             }
+            Self::MalformedTotpSecret => "opened TOTP secret is not 20 bytes",
             Self::PasswordHashing => "password hashing failed",
         })
     }

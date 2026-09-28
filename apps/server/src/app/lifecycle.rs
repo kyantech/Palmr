@@ -39,6 +39,7 @@ use crate::domain::locale::LocaleCode;
 use crate::features::audit;
 use crate::features::audit::service::{AuditDrain, AuditService};
 use crate::features::auth::sessions::SessionService;
+use crate::features::auth::totp::TotpService;
 use crate::features::auth::AuthService;
 use crate::features::branding::BrandingService;
 use crate::features::email::{self, EmailService, SmtpTransport};
@@ -784,6 +785,7 @@ async fn initialize(
             database.pools().clone(),
             Arc::clone(&clock),
             settings.clone(),
+            Arc::clone(&email_keys),
             sessions.clone(),
             audit_service.clone(),
         )
@@ -803,9 +805,18 @@ async fn initialize(
         auth.clone(),
         audit_service.clone(),
     );
+    let totp = TotpService::new(
+        database.pools().clone(),
+        Arc::clone(&clock),
+        settings.clone(),
+        Arc::clone(&email_keys),
+        auth.clone(),
+        audit_service.clone(),
+    );
     let services = RequestServices {
         auth,
         profile,
+        totp,
         setup: SetupService::new(
             database.pools().clone(),
             Arc::clone(&clock),
@@ -1044,6 +1055,7 @@ pub(crate) fn setup_locale(config: &OperatorConfig) -> Option<LocaleCode> {
 struct RequestServices {
     auth: AuthService,
     profile: ProfileService,
+    totp: TotpService,
     setup: SetupService,
     sessions: SessionService,
     branding: BrandingService,
@@ -1073,6 +1085,7 @@ fn composed_router(
         Some(services) => routes
             .layer(axum::Extension(services.auth))
             .layer(axum::Extension(services.profile))
+            .layer(axum::Extension(services.totp))
             .layer(axum::Extension(services.setup))
             .layer(axum::Extension(services.sessions))
             .layer(axum::Extension(services.branding))

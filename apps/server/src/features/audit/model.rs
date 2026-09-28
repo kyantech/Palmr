@@ -196,6 +196,7 @@ pub enum AuditCode {
     AuthInvalidCredentials,
     AuthLocked,
     AuthPasswordLoginDisabled,
+    Auth2faInvalid,
 }
 
 impl AuditCode {
@@ -208,6 +209,7 @@ impl AuditCode {
             Self::AuthInvalidCredentials => "AUTH_INVALID_CREDENTIALS",
             Self::AuthLocked => "AUTH_LOCKED",
             Self::AuthPasswordLoginDisabled => "AUTH_PASSWORD_LOGIN_DISABLED",
+            Self::Auth2faInvalid => "AUTH_2FA_INVALID",
         }
     }
 }
@@ -275,6 +277,9 @@ pub enum AuditAction {
     LoginLockedOut,
     Logout,
     PasswordChanged,
+    TwoFactorEnabled,
+    TwoFactorDisabled,
+    TwoFactorBackupCodesRegenerated,
     OperatorCliAdminRecover,
     OperatorCliPasswordReset,
 }
@@ -292,6 +297,9 @@ impl AuditAction {
         Self::LoginLockedOut,
         Self::Logout,
         Self::PasswordChanged,
+        Self::TwoFactorEnabled,
+        Self::TwoFactorDisabled,
+        Self::TwoFactorBackupCodesRegenerated,
         Self::OperatorCliAdminRecover,
         Self::OperatorCliPasswordReset,
     ];
@@ -309,6 +317,9 @@ impl AuditAction {
             Self::LoginLockedOut => "LOGIN_LOCKED_OUT",
             Self::Logout => "LOGOUT",
             Self::PasswordChanged => "PASSWORD_CHANGED",
+            Self::TwoFactorEnabled => "TWO_FACTOR_ENABLED",
+            Self::TwoFactorDisabled => "TWO_FACTOR_DISABLED",
+            Self::TwoFactorBackupCodesRegenerated => "TWO_FACTOR_BACKUP_CODES_REGENERATED",
             Self::OperatorCliAdminRecover => "OPERATOR_CLI_ADMIN_RECOVER",
             Self::OperatorCliPasswordReset => "OPERATOR_CLI_PASSWORD_RESET",
         }
@@ -327,6 +338,9 @@ impl AuditAction {
             | Self::AllSessionsRevoked
             | Self::SetupCompleted
             | Self::PasswordChanged
+            | Self::TwoFactorEnabled
+            | Self::TwoFactorDisabled
+            | Self::TwoFactorBackupCodesRegenerated
             | Self::OperatorCliAdminRecover
             | Self::OperatorCliPasswordReset => WritePath::InTransaction,
         }

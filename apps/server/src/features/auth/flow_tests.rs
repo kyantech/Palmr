@@ -42,6 +42,7 @@ use crate::domain::username::Username;
 use crate::features::audit;
 use crate::features::audit::service::AuditDrain;
 use crate::features::auth::sessions::SessionService;
+use crate::features::auth::totp::TotpService;
 use crate::features::settings::effective::{EffectiveSettingsService, OperatorPolicy};
 use crate::features::settings::SettingsService;
 use crate::features::setup::SetupService;
@@ -74,6 +75,7 @@ struct Stack {
     sessions: SessionService,
     auth: AuthService,
     profile: ProfileService,
+    totp: TotpService,
     drain: AuditDrain,
     service: BoxedService,
 }
@@ -122,10 +124,19 @@ impl Stack {
             pools.clone(),
             Arc::new(clock.clone()),
             settings.handle(),
+            settings.keys(),
             sessions.clone(),
             audit.clone(),
         )
         .unwrap();
+        let totp = TotpService::new(
+            pools.clone(),
+            Arc::new(clock.clone()),
+            settings.handle(),
+            settings.keys(),
+            auth.clone(),
+            audit.clone(),
+        );
         let profile = ProfileService::new(
             pools.clone(),
             Arc::new(clock.clone()),
@@ -152,6 +163,7 @@ impl Stack {
             ))
             .layer(Extension(auth.clone()))
             .layer(Extension(profile.clone()))
+            .layer(Extension(totp.clone()))
             .layer(Extension(EffectiveSettingsService::new(
                 pools.reader().clone(),
                 settings.handle(),
@@ -178,6 +190,7 @@ impl Stack {
             sessions,
             auth,
             profile,
+            totp,
             drain,
             service,
         }
@@ -358,6 +371,7 @@ impl Stack {
         drop(self.service);
         drop(self.auth);
         drop(self.profile);
+        drop(self.totp);
         drop(self.sessions);
         drop(self.settings);
         drop(self.drain);
@@ -1693,3 +1707,4 @@ async fn it_login_audit_and_attempts_never_store_secrets() {
 mod operator_cli;
 mod profile;
 mod recent_auth;
+mod totp;

@@ -544,13 +544,21 @@ async fn it_reauth_second_factor_account_fails_closed() {
     clock.advance(Duration::from_secs(10 * 60));
     let before = session_row(&stack, &current.session).await;
 
-    for body in [
-        json!({ "password": PASSWORD }),
-        json!({ "password": PASSWORD, "totpCode": "492013" }),
+    for (body, status, code) in [
+        (
+            json!({ "password": PASSWORD }),
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "VALIDATION_ERROR",
+        ),
+        (
+            json!({ "password": PASSWORD, "totpCode": "492013" }),
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "INTERNAL_ERROR",
+        ),
     ] {
         let refused = stack.reauth(&current, &body.to_string(), 11).await;
-        assert_eq!(refused.status, StatusCode::INTERNAL_SERVER_ERROR, "{body}");
-        assert_eq!(refused.error_code(), "INTERNAL_ERROR");
+        assert_eq!(refused.status, status, "{body}");
+        assert_eq!(refused.error_code(), code);
         assert!(refused.set_cookies().is_empty());
         let after = session_row(&stack, &current.session).await;
         assert_eq!(
@@ -568,9 +576,10 @@ async fn it_reauth_second_factor_account_fails_closed() {
             .error_code(),
         "AUTH_RECENT_AUTH_REQUIRED"
     );
+    let wrong = json!({ "password": WRONG, "totpCode": "492013" });
     assert_eq!(
         stack
-            .reauth_password(&current, WRONG, 13)
+            .reauth(&current, &wrong.to_string(), 13)
             .await
             .error_code(),
         "AUTH_INVALID_CREDENTIALS"

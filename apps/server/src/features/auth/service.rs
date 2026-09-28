@@ -16,6 +16,7 @@ use crate::features::settings::SettingsHandle;
 use crate::features::users::model::{NormalizedIdentifier, User, UserId};
 use crate::features::users::repo as users;
 use crate::infra::crypto::hash::TokenDigest;
+use crate::infra::crypto::hkdf::KeyRing;
 use crate::infra::crypto::password::hash_password;
 use crate::infra::crypto::CryptoError;
 use crate::infra::db::{DbPools, WriteTx};
@@ -39,6 +40,7 @@ pub struct AuthService {
     pub(super) pools: DbPools,
     pub(super) clock: Arc<dyn Clock>,
     pub(super) settings: SettingsHandle,
+    pub(super) keys: Arc<KeyRing>,
     sessions: SessionService,
     audit: AuditService,
     verifier: Arc<CredentialVerifier>,
@@ -108,6 +110,7 @@ impl AuthService {
         pools: DbPools,
         clock: Arc<dyn Clock>,
         settings: SettingsHandle,
+        keys: Arc<KeyRing>,
         sessions: SessionService,
         audit: AuditService,
     ) -> Result<Self, CryptoError> {
@@ -115,6 +118,7 @@ impl AuthService {
             pools,
             clock,
             settings,
+            keys,
             sessions,
             audit,
             verifier: Arc::new(CredentialVerifier::new()?),
@@ -586,6 +590,43 @@ impl AuthService {
         .with_target(user_target(&user.id, &user.username))
         .with_client(client.clone());
         self.audit.record_async(event);
+    }
+
+    pub(super) fn audit_second_factor_failure(
+        &self,
+        user: &User,
+        locked_now: Option<LockState>,
+        client: &ClientMetadata,
+        policy: LockoutPolicy,
+    ) {
+        let Ok(now) = Timestamp::try_from(self.clock.now()) else {
+            return;
+        };
+        let actor = Actor::user(&user.id.to_string(), &user.username);
+        let target = user_target(&user.id, &user.username);
+        let event = AuditEvent::new(
+            actions::login_failed(
+                AttemptMethod::Totp.as_str(),
+                AttemptResult::TotpFailed.as_str(),
+            ),
+            actor.clone(),
+            Outcome::Failure(AuditCode::Auth2faInvalid),
+            now,
+        )
+        .with_target(target.clone())
+        .with_client(client.clone());
+        self.audit.record_async(event);
+        if let Some(state) = locked_now {
+            let event = AuditEvent::new(
+                actions::login_locked_out(state.failed_count, state.lock_count, policy.minutes()),
+                actor,
+                Outcome::Denied(AuditCode::AuthLocked),
+                now,
+            )
+            .with_target(target)
+            .with_client(client.clone());
+            self.audit.record_async(event);
+        }
     }
 
     pub(super) fn audit_failure(

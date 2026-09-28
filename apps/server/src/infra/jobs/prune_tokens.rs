@@ -6,6 +6,7 @@ use super::recurring::Recurring;
 use super::{ClaimedJob, Idempotency, JobKind, JobPayload, JobsError, Registry};
 use crate::domain::clock::Clock;
 use crate::domain::time::Timestamp;
+use crate::features::auth::totp::service::PENDING_ENROLLMENT_TTL;
 use crate::infra::db::DbPools;
 
 pub const TOKENS_PRUNE_PERIOD: Duration = Duration::from_secs(60 * 60);
@@ -13,20 +14,30 @@ pub const TOKENS_PRUNE_PERIOD: Duration = Duration::from_secs(60 * 60);
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PruneStep {
     IdempotencyRecords,
+    PendingTotpEnrollments,
 }
 
 impl PruneStep {
-    pub const ALL: [Self; 1] = [Self::IdempotencyRecords];
+    pub const ALL: [Self; 2] = [Self::IdempotencyRecords, Self::PendingTotpEnrollments];
 
     pub const fn as_str(self) -> &'static str {
         match self {
             Self::IdempotencyRecords => "idempotency_records",
+            Self::PendingTotpEnrollments => "pending_totp_enrollments",
         }
     }
 
     const fn transaction(self) -> &'static str {
         match self {
             Self::IdempotencyRecords => "tokens.prune.idempotency_records",
+            Self::PendingTotpEnrollments => "tokens.prune.pending_totp_enrollments",
+        }
+    }
+
+    const fn retention(self) -> Duration {
+        match self {
+            Self::IdempotencyRecords => Duration::ZERO,
+            Self::PendingTotpEnrollments => PENDING_ENROLLMENT_TTL,
         }
     }
 
@@ -38,6 +49,13 @@ impl PruneStep {
                                 WHERE expires_at <= ?1
                                 ORDER BY expires_at
                                 LIMIT ?2)"
+            }
+            Self::PendingTotpEnrollments => {
+                "DELETE FROM totp_secrets
+                  WHERE user_id IN (SELECT user_id FROM totp_secrets
+                                     WHERE state = 'pending' AND created_at <= ?1
+                                     ORDER BY created_at
+                                     LIMIT ?2)"
             }
         }
     }
@@ -55,7 +73,7 @@ pub async fn prune_step(
     clock: &dyn Clock,
     step: PruneStep,
 ) -> Result<StepReport, JobsError> {
-    let cutoff = Timestamp::try_from(clock.now())?.to_string();
+    let cutoff = Timestamp::try_from(clock.now() - step.retention())?.to_string();
     let mut report = StepReport::default();
     loop {
         let batch = pools

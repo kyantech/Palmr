@@ -184,6 +184,41 @@ pub fn password_changed(
     ActionSpec::new(AuditAction::PasswordChanged, metadata)
 }
 
+pub fn two_factor_enabled(sessions_revoked: u64, backup_codes: usize) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("sessions_revoked", Value::from(sessions_revoked)),
+        ("backup_codes", Value::from(backup_codes)),
+    ]);
+    ActionSpec::new(AuditAction::TwoFactorEnabled, metadata)
+}
+
+pub fn two_factor_disabled(
+    sessions_revoked: u64,
+    trusted_devices_revoked: u64,
+    backup_codes_deleted: u64,
+) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("sessions_revoked", Value::from(sessions_revoked)),
+        (
+            "trusted_devices_revoked",
+            Value::from(trusted_devices_revoked),
+        ),
+        ("backup_codes_deleted", Value::from(backup_codes_deleted)),
+    ]);
+    ActionSpec::new(AuditAction::TwoFactorDisabled, metadata)
+}
+
+pub fn two_factor_backup_codes_regenerated(
+    backup_codes_deleted: u64,
+    backup_codes: usize,
+) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("backup_codes_deleted", Value::from(backup_codes_deleted)),
+        ("backup_codes", Value::from(backup_codes)),
+    ]);
+    ActionSpec::new(AuditAction::TwoFactorBackupCodesRegenerated, metadata)
+}
+
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct AdminRecoverFacts {
     pub role_changed: bool,

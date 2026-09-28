@@ -7,6 +7,7 @@ pub(crate) mod repo;
 pub mod routes;
 pub mod service;
 pub mod sessions;
+pub mod totp;
 pub mod trusted_devices;
 
 pub use service::AuthService;

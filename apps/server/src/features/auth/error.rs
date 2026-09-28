@@ -4,6 +4,7 @@ use crate::domain::error_code::ErrorCode;
 use crate::domain::time::InvalidTimestamp;
 use crate::features::audit::error::AuditError;
 use crate::features::auth::sessions::SessionError;
+use crate::features::auth::totp::TotpError;
 use crate::features::users::error::UserError;
 use crate::infra::crypto::CryptoError;
 use crate::infra::db::DbError;
@@ -17,11 +18,14 @@ pub enum LoginError {
     Locked { retry_after: RetryAfter },
     PasswordLoginDisabled,
     SecondFactorUnavailable,
+    SecondFactorInvalid,
+    SecondFactorReplayed,
     ExternalReauthUnavailable,
     RepositoryInvariant { column: &'static str },
     VerificationTask,
     User(UserError),
     Session(SessionError),
+    Totp(TotpError),
     Audit(AuditError),
     Crypto(CryptoError),
     Db(DbError),
@@ -36,11 +40,14 @@ impl LoginError {
             Self::Locked { .. } => "login_locked",
             Self::PasswordLoginDisabled => "login_password_disabled",
             Self::SecondFactorUnavailable => "login_second_factor_unavailable",
+            Self::SecondFactorInvalid => "login_second_factor_invalid",
+            Self::SecondFactorReplayed => "login_second_factor_replayed",
             Self::ExternalReauthUnavailable => "reauth_external_unavailable",
             Self::RepositoryInvariant { .. } => "login_repository_invariant",
             Self::VerificationTask => "login_verification_task_failed",
             Self::User(error) => error.kind(),
             Self::Session(error) => error.kind(),
+            Self::Totp(error) => error.kind(),
             Self::Audit(error) => error.kind(),
             Self::Crypto(_) => "login_crypto",
             Self::Db(error) => error.kind().as_str(),
@@ -54,6 +61,9 @@ impl LoginError {
             Self::InvalidCredentials => ApiError::new(ErrorCode::AuthInvalidCredentials),
             Self::Locked { .. } => ApiError::new(ErrorCode::AuthLocked),
             Self::PasswordLoginDisabled => ApiError::new(ErrorCode::AuthPasswordLoginDisabled),
+            Self::SecondFactorInvalid => ApiError::new(ErrorCode::Auth2faInvalid),
+            Self::SecondFactorReplayed => ApiError::new(ErrorCode::TotpCodeReplayed),
+            Self::Totp(error) => error.api_error(),
             Self::User(UserError::Db(error))
             | Self::Db(error)
             | Self::Audit(AuditError::Db(error))
@@ -90,6 +100,10 @@ impl fmt::Display for LoginError {
             Self::SecondFactorUnavailable => f.write_str(
                 "the account requires a second factor and the second login step is not available",
             ),
+            Self::SecondFactorInvalid => f.write_str("the second factor did not verify"),
+            Self::SecondFactorReplayed => {
+                f.write_str("the second factor time step was already consumed")
+            }
             Self::ExternalReauthUnavailable => f.write_str(
                 "the account has no local password and external re-authentication is not available",
             ),
@@ -104,6 +118,7 @@ impl fmt::Display for LoginError {
             }
             Self::User(error) => write!(f, "login user operation failed: {error}"),
             Self::Session(error) => write!(f, "login session operation failed: {error}"),
+            Self::Totp(error) => write!(f, "login second-factor operation failed: {error}"),
             Self::Audit(error) => write!(f, "login audit record failed: {error}"),
             Self::Crypto(error) => write!(f, "login credential operation failed: {error}"),
             Self::Db(error) => write!(f, "login database operation failed: {error}"),
@@ -123,6 +138,12 @@ impl From<UserError> for LoginError {
 impl From<SessionError> for LoginError {
     fn from(error: SessionError) -> Self {
         Self::Session(error)
+    }
+}
+
+impl From<TotpError> for LoginError {
+    fn from(error: TotpError) -> Self {
+        Self::Totp(error)
     }
 }
 

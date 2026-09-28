@@ -45,10 +45,10 @@ type RecoverySnapshot = (
 );
 
 #[derive(Clone, Default)]
-struct Capture(Arc<Mutex<Vec<u8>>>);
+pub(super) struct Capture(Arc<Mutex<Vec<u8>>>);
 
 impl Capture {
-    fn text(&self) -> String {
+    pub(super) fn text(&self) -> String {
         String::from_utf8(
             self.0
                 .lock()
@@ -195,7 +195,7 @@ impl Stack {
         .unwrap()
     }
 
-    async fn all_audit_text(&self) -> String {
+    pub(super) async fn all_audit_text(&self) -> String {
         let rows: Vec<(String,)> = sqlx::query_as(
             "SELECT action || '|' || actor_type || '|' || COALESCE(actor_label, '') || '|' ||
                     COALESCE(target_label, '') || '|' || COALESCE(error_code, '') || '|' ||

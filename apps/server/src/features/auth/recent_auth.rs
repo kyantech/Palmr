@@ -5,13 +5,19 @@ use crate::domain::secret::Secret;
 use crate::domain::time::Timestamp;
 use crate::features::audit::model::ClientMetadata;
 use crate::features::auth::sessions::{AuthenticatedPrincipal, SessionError};
+use crate::features::auth::totp::model::CodeCheck;
+use crate::features::auth::totp::service::consume_active_code_in_tx;
 use crate::features::users::model::{NormalizedIdentifier, User};
 use crate::features::users::repo as users;
+use crate::infra::crypto::totp::TotpCode;
 use crate::infra::db::WriteTx;
 use crate::infra::http::json::{JsonField, JsonKind, JsonRequest};
 
 use super::error::LoginError;
-use super::lockout::{self, AttemptClient, AttemptResult, LockoutPolicy};
+use super::lockout::{
+    self, AttemptClient, AttemptMethod, AttemptResult, FailureOutcome, LockState, LockoutPolicy,
+    LoginAttempt,
+};
 use super::login::CredentialProof;
 use super::service::{AuthService, FailureAudit};
 
@@ -24,7 +30,6 @@ pub struct ReauthenticateRequest {
     #[schema(format = Password)]
     pub password: Option<String>,
     #[schema(example = "492013")]
-    #[expect(dead_code, reason = "verified by TOTP-aware re-authentication in M10")]
     pub totp_code: Option<String>,
 }
 
@@ -59,6 +64,11 @@ impl ReauthMethod {
     }
 }
 
+enum SecondFactor {
+    NotRequired,
+    Presented(Option<TotpCode>),
+}
+
 enum Proven {
     Stamped,
     Refused(Refused),
@@ -67,6 +77,10 @@ enum Proven {
 enum Refused {
     Failure(FailureAudit),
     Locked(Box<User>),
+    SecondFactor {
+        user: Box<User>,
+        locked_now: Option<LockState>,
+    },
 }
 
 impl AuthService {
@@ -84,13 +98,26 @@ impl AuthService {
         let Some(stored) = user.password_hash.clone() else {
             return Err(LoginError::ExternalReauthUnavailable);
         };
+        let mut missing = Vec::new();
         let password = match request.password {
-            Some(password) if !password.is_empty() => Secret::new(password),
+            Some(password) if !password.is_empty() => Some(Secret::new(password)),
             _ => {
-                return Err(LoginError::Invalid {
-                    fields: vec!["password"],
-                })
+                missing.push("password");
+                None
             }
+        };
+        let second = match (ReauthMethod::for_user(&user), request.totp_code) {
+            (ReauthMethod::PasswordTotp, Some(code)) if !code.is_empty() => {
+                SecondFactor::Presented(TotpCode::parse(&code))
+            }
+            (ReauthMethod::PasswordTotp, _) => {
+                missing.push("totpCode");
+                SecondFactor::NotRequired
+            }
+            _ => SecondFactor::NotRequired,
+        };
+        let Some(password) = password.filter(|_| missing.is_empty()) else {
+            return Err(LoginError::Invalid { fields: missing });
         };
         let identifier = NormalizedIdentifier::from_input(&user.username);
 
@@ -122,8 +149,19 @@ impl AuthService {
         let proven = self
             .pools
             .write_tx(self.clock.as_ref(), REAUTH_TRANSACTION, async |tx| {
-                self.stamp_in_tx(tx, principal, &user, &stored, &identifier, &context, policy)
-                    .await
+                self.stamp_in_tx(
+                    tx,
+                    principal,
+                    Verified {
+                        user: &user,
+                        stored: &stored,
+                        second: &second,
+                    },
+                    &identifier,
+                    &context,
+                    policy,
+                )
+                .await
             })
             .await?;
         match proven {
@@ -137,23 +175,27 @@ impl AuthService {
                 self.audit_refused(&user, AttemptResult::LockedOut, &context.audit, now);
                 Err(LoginError::InvalidCredentials)
             }
+            Proven::Refused(Refused::SecondFactor { user, locked_now }) => {
+                self.audit_second_factor_failure(&user, locked_now, &context.audit, policy);
+                Err(LoginError::SecondFactorInvalid)
+            }
         }
     }
 
-    #[expect(
-        clippy::too_many_arguments,
-        reason = "the stamp transaction re-validates every fact the credential step proved"
-    )]
     async fn stamp_in_tx(
         &self,
         tx: &mut WriteTx<'_>,
         principal: &AuthenticatedPrincipal,
-        verified: &User,
-        stored: &Secret<String>,
+        verified: Verified<'_>,
         identifier: &NormalizedIdentifier,
         context: &ReauthContext,
         policy: LockoutPolicy,
     ) -> Result<Proven, LoginError> {
+        let Verified {
+            user: verified,
+            stored,
+            second,
+        } = verified;
         let now = Timestamp::try_from(self.clock.now())?;
         let current = users::find_by_id_in_tx(tx, verified.id)
             .await?
@@ -183,22 +225,95 @@ impl AuthService {
             .await?;
             return Ok(Proven::Refused(Refused::Locked(Box::new(current))));
         }
-        if ReauthMethod::for_user(&current) != ReauthMethod::Password {
-            return Err(LoginError::SecondFactorUnavailable);
-        }
+        let method = match (ReauthMethod::for_user(&current), second) {
+            (ReauthMethod::Password, _) => AttemptMethod::Password,
+            (ReauthMethod::PasswordTotp, SecondFactor::Presented(code)) => {
+                let check = match code {
+                    Some(code) => {
+                        consume_active_code_in_tx(tx, &self.keys, current.id, code, now).await?
+                    }
+                    None => CodeCheck::Invalid,
+                };
+                match check {
+                    CodeCheck::Accepted => AttemptMethod::Totp,
+                    CodeCheck::Invalid => {
+                        let locked_now = self
+                            .count_second_factor_failure_in_tx(
+                                tx,
+                                &current,
+                                identifier,
+                                &context.attempt,
+                                policy,
+                            )
+                            .await?;
+                        return Ok(Proven::Refused(Refused::SecondFactor {
+                            user: Box::new(current),
+                            locked_now,
+                        }));
+                    }
+                    CodeCheck::Replayed => return Err(LoginError::SecondFactorReplayed),
+                    CodeCheck::NotEnrolled => return Err(LoginError::SecondFactorUnavailable),
+                }
+            }
+            (ReauthMethod::PasswordTotp, SecondFactor::NotRequired) => {
+                return Err(LoginError::Invalid {
+                    fields: vec!["totpCode"],
+                })
+            }
+            (ReauthMethod::External, _) => return Err(LoginError::SecondFactorUnavailable),
+        };
 
         self.sessions()
             .mark_reauthenticated_in_tx(tx, principal.session_id)
             .await?;
         lockout::reset(tx, current.id, now).await?;
-        self.attempt(
+        lockout::record_attempt(
             tx,
-            identifier,
-            Some(current.id),
-            AttemptResult::Success,
-            &context.attempt,
+            self.clock.as_ref(),
+            &LoginAttempt {
+                identifier,
+                user_id: Some(current.id),
+                method,
+                result: AttemptResult::Success,
+                client: &context.attempt,
+            },
         )
         .await?;
         Ok(Proven::Stamped)
     }
+
+    async fn count_second_factor_failure_in_tx(
+        &self,
+        tx: &mut WriteTx<'_>,
+        user: &User,
+        identifier: &NormalizedIdentifier,
+        client: &AttemptClient,
+        policy: LockoutPolicy,
+    ) -> Result<Option<LockState>, LoginError> {
+        let now = Timestamp::try_from(self.clock.now())?;
+        lockout::record_attempt(
+            tx,
+            self.clock.as_ref(),
+            &LoginAttempt {
+                identifier,
+                user_id: Some(user.id),
+                method: AttemptMethod::Totp,
+                result: AttemptResult::TotpFailed,
+                client,
+            },
+        )
+        .await?;
+        Ok(
+            match lockout::record_failure(tx, user.id, now, policy).await? {
+                FailureOutcome::LockedNow(state) => Some(state),
+                FailureOutcome::Counted(_) => None,
+            },
+        )
+    }
+}
+
+struct Verified<'a> {
+    user: &'a User,
+    stored: &'a Secret<String>,
+    second: &'a SecondFactor,
 }

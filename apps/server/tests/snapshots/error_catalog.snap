@@ -8,6 +8,11 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "AUTH_2FA_INVALID",
+    "status": 401,
+    "retryable": false
+  },
+  {
     "code": "AUTH_INVALID_CREDENTIALS",
     "status": 401,
     "retryable": false
@@ -181,6 +186,31 @@ source: apps/server/src/domain/error_code.rs
     "code": "STORAGE_UNAVAILABLE",
     "status": 503,
     "retryable": true
+  },
+  {
+    "code": "TOTP_ALREADY_ENABLED",
+    "status": 409,
+    "retryable": false
+  },
+  {
+    "code": "TOTP_CODE_REPLAYED",
+    "status": 401,
+    "retryable": false
+  },
+  {
+    "code": "TOTP_ENROLLMENT_PENDING_MISSING",
+    "status": 409,
+    "retryable": false
+  },
+  {
+    "code": "TOTP_NOT_ENROLLED",
+    "status": 409,
+    "retryable": false
+  },
+  {
+    "code": "TOTP_REQUIRED_BY_POLICY",
+    "status": 403,
+    "retryable": false
   },
   {
     "code": "UNSUPPORTED_MEDIA_TYPE",
