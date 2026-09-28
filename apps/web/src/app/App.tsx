@@ -3,12 +3,15 @@ import { AppTree } from "./AppTree";
 import { createI18n } from "./i18n/i18n";
 import { browserLanguages } from "./i18n/resolveLocale";
 import { createAppRouter } from "./router/routes";
+import { createSessionCoordinator } from "./session/sessionCoordinator";
 import { readCspNonce } from "./theme/cspNonce";
 
 const cspNonce = readCspNonce();
-const queryClient = createQueryClient();
+const session = createSessionCoordinator();
+const queryClient = createQueryClient({ onError: session.handleError });
 const i18n = createI18n();
 const router = createAppRouter();
+session.connect(router);
 const languages = browserLanguages();
 
 export function App() {

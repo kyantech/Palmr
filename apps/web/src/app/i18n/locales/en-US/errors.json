@@ -2,11 +2,60 @@
   "boundary": {
     "title": "Something went wrong",
     "description": "An unexpected error stopped this page from loading.",
-    "reload": "Reload",
-    "requestId": "Request ID: {{requestId}}"
+    "reload": "Reload"
   },
   "staleChunk": {
     "title": "Palmr was updated",
     "description": "A newer version of Palmr is available. Reload the page to continue."
+  },
+  "details": {
+    "requestId": "Request ID: {{requestId}}",
+    "errorCode": "Error code: {{code}}"
+  },
+  "message": {
+    "validation": "Some of the information entered isn't valid. Review it and try again.",
+    "requestRejected": "Palmr couldn't process this request. Reload the page and try again.",
+    "notFound": "The item you're looking for doesn't exist or is no longer available.",
+    "forbidden": "You don't have permission to do this.",
+    "requestTooLarge": "This request is larger than the server allows.",
+    "requestTimeout": "The server took too long to respond. Try again.",
+    "internal": "Palmr ran into an unexpected problem. Try again, and contact your administrator with the request ID if it keeps happening.",
+    "serviceUnavailable": "Palmr is temporarily unavailable. Try again in a moment.",
+    "listingChanged": "This list changed while you were browsing. Reload it to continue.",
+    "rateLimited": "Too many attempts. Wait a moment and try again.",
+    "securityCheckFailed": "Palmr couldn't verify this request. Reload the page and try again.",
+    "idempotencyConflict": "This request was already submitted with different details. Reload the page and try again.",
+    "requestInProgress": "This request is still being processed. Wait a moment before trying again.",
+    "batchTooLarge": "Too many items were selected at once. Select fewer items and try again.",
+    "emailUnavailable": "E-mail isn't configured on this instance, so this action isn't available. Contact your administrator.",
+    "setupCompleted": "This Palmr instance has already been set up.",
+    "sessionEnded": "Your session has ended. Sign in again to continue.",
+    "invalidCredentials": "Incorrect sign-in details. Check them and try again.",
+    "accountLocked": "Sign-in is temporarily locked after too many failed attempts. Try again later.",
+    "passwordLoginDisabled": "Password sign-in is disabled on this instance.",
+    "recentAuthRequired": "Confirm your password to continue.",
+    "passwordChangeRequired": "You need to set a new password before continuing.",
+    "twoFactorEnrollmentRequired": "This instance requires two-factor authentication. Set it up to continue.",
+    "sessionNotFound": "This session no longer exists. It may already have been signed out.",
+    "currentPasswordInvalid": "The current password is incorrect.",
+    "passwordPolicy": "The password doesn't meet this instance's requirements.",
+    "emailTaken": "This e-mail address is already in use.",
+    "usernameTaken": "This username is already in use.",
+    "serverBusy": "Palmr is busy right now. Try again in a moment.",
+    "fileNotFound": "This file no longer exists.",
+    "rangeNotSatisfiable": "The requested part of the file isn't available. Start the download again.",
+    "storageUnavailable": "File storage is temporarily unavailable. Try again later.",
+    "storageFull": "The server's storage is full. Contact your administrator.",
+    "storageProviderMismatch": "This file is stored in a location the server isn't configured to use. Contact your administrator.",
+    "storageSizeMismatch": "The stored file didn't match the expected size and was discarded. Upload it again.",
+    "brandingAssetUnknown": "This branding asset doesn't exist.",
+    "offline": "You appear to be offline. Palmr will retry when the connection returns.",
+    "networkError": "The connection to the server was lost. Check your connection and try again.",
+    "aborted": "The request was canceled.",
+    "proxyBodyLimit": "A proxy in front of Palmr rejected the request as too large. Ask your administrator to raise the proxy's request size limit.",
+    "proxyBadGateway": "Palmr couldn't be reached through the proxy. Try again in a moment.",
+    "proxyTimeout": "The proxy timed out waiting for Palmr. Try again in a moment.",
+    "unexpectedResponse": "The server sent a response Palmr didn't expect. Try again, and contact your administrator with the request ID if it keeps happening.",
+    "unexpected": "Palmr couldn't complete this action. If the problem continues, contact your administrator and include the details below."
   }
 }

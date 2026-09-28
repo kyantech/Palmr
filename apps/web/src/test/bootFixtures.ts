@@ -29,6 +29,8 @@ interface MeOptions {
   locale?: string;
   theme?: string;
   accent?: string;
+  capabilities?: Partial<Me["capabilities"]>;
+  recentAuthUntil?: string;
 }
 
 export function meFixture({
@@ -37,6 +39,8 @@ export function meFixture({
   locale = "en-US",
   theme = "system",
   accent = "default",
+  capabilities = {},
+  recentAuthUntil = "2026-09-28T00:10:00Z",
 }: MeOptions = {}): Me {
   return {
     user: {
@@ -59,7 +63,7 @@ export function meFixture({
       createdAt: "2026-09-28T00:00:00Z",
       lastSeenAt: "2026-09-28T00:00:00Z",
       expiresAt: "2026-10-05T00:00:00Z",
-      recentAuthUntil: "2026-09-28T00:10:00Z",
+      recentAuthUntil,
     },
     restriction,
     capabilities: {
@@ -67,14 +71,20 @@ export function meFixture({
       hasLocalPassword: true,
       identityLinkCount: 0,
       twoFactorEnabled: false,
+      ...capabilities,
     },
   };
 }
 
-export function errorEnvelope(code: string, status: number, requestId: string) {
+export function errorEnvelope(
+  code: string,
+  status: number,
+  requestId: string,
+  { message = code, headers = {} }: { message?: string; headers?: Record<string, string> } = {},
+) {
   return HttpResponse.json(
-    { error: { code, message: code, requestId, details: {} } },
-    { status, headers: { "X-Request-Id": requestId } },
+    { error: { code, message, requestId, details: {} } },
+    { status, headers: { "X-Request-Id": requestId, ...headers } },
   );
 }
 

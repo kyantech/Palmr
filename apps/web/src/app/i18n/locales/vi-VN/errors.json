@@ -2,11 +2,60 @@
   "boundary": {
     "title": "Đã xảy ra lỗi",
     "description": "Một lỗi không mong muốn đã khiến trang này không tải được.",
-    "reload": "Tải lại",
-    "requestId": "Mã yêu cầu: {{requestId}}"
+    "reload": "Tải lại"
   },
   "staleChunk": {
     "title": "Palmr đã được cập nhật",
     "description": "Đã có phiên bản Palmr mới hơn. Hãy tải lại trang để tiếp tục."
+  },
+  "details": {
+    "requestId": "Mã yêu cầu: {{requestId}}",
+    "errorCode": "Mã lỗi: {{code}}"
+  },
+  "message": {
+    "validation": "Một số thông tin đã nhập không hợp lệ. Hãy kiểm tra và thử lại.",
+    "requestRejected": "Palmr không thể xử lý yêu cầu này. Hãy tải lại trang và thử lại.",
+    "notFound": "Mục bạn đang tìm không tồn tại hoặc không còn khả dụng.",
+    "forbidden": "Bạn không có quyền thực hiện thao tác này.",
+    "requestTooLarge": "Yêu cầu này lớn hơn mức máy chủ cho phép.",
+    "requestTimeout": "Máy chủ phản hồi quá lâu. Hãy thử lại.",
+    "internal": "Palmr gặp sự cố không mong muốn. Hãy thử lại và liên hệ quản trị viên kèm mã yêu cầu nếu lỗi vẫn tiếp diễn.",
+    "serviceUnavailable": "Palmr tạm thời không khả dụng. Hãy thử lại sau giây lát.",
+    "listingChanged": "Danh sách này đã thay đổi trong lúc bạn duyệt. Hãy tải lại để tiếp tục.",
+    "rateLimited": "Quá nhiều lần thử. Hãy đợi một lát rồi thử lại.",
+    "securityCheckFailed": "Palmr không thể xác minh yêu cầu này. Hãy tải lại trang và thử lại.",
+    "idempotencyConflict": "Yêu cầu này đã được gửi với thông tin khác. Hãy tải lại trang và thử lại.",
+    "requestInProgress": "Yêu cầu này vẫn đang được xử lý. Hãy đợi một lát trước khi thử lại.",
+    "batchTooLarge": "Đã chọn quá nhiều mục cùng lúc. Hãy chọn ít mục hơn và thử lại.",
+    "emailUnavailable": "E-mail chưa được cấu hình trên phiên bản này nên thao tác này không khả dụng. Hãy liên hệ quản trị viên.",
+    "setupCompleted": "Phiên bản Palmr này đã được thiết lập.",
+    "sessionEnded": "Phiên của bạn đã kết thúc. Hãy đăng nhập lại để tiếp tục.",
+    "invalidCredentials": "Thông tin đăng nhập không đúng. Hãy kiểm tra và thử lại.",
+    "accountLocked": "Đăng nhập tạm thời bị khóa sau quá nhiều lần thất bại. Hãy thử lại sau.",
+    "passwordLoginDisabled": "Đăng nhập bằng mật khẩu đã bị tắt trên phiên bản này.",
+    "recentAuthRequired": "Hãy xác nhận mật khẩu để tiếp tục.",
+    "passwordChangeRequired": "Bạn cần đặt mật khẩu mới trước khi tiếp tục.",
+    "twoFactorEnrollmentRequired": "Phiên bản này yêu cầu xác thực hai yếu tố. Hãy thiết lập để tiếp tục.",
+    "sessionNotFound": "Phiên này không còn tồn tại. Có thể nó đã được đăng xuất.",
+    "currentPasswordInvalid": "Mật khẩu hiện tại không đúng.",
+    "passwordPolicy": "Mật khẩu không đáp ứng yêu cầu của phiên bản này.",
+    "emailTaken": "Địa chỉ e-mail này đã được sử dụng.",
+    "usernameTaken": "Tên người dùng này đã được sử dụng.",
+    "serverBusy": "Palmr hiện đang bận. Hãy thử lại sau giây lát.",
+    "fileNotFound": "Tệp này không còn tồn tại.",
+    "rangeNotSatisfiable": "Phần tệp được yêu cầu không khả dụng. Hãy bắt đầu tải xuống lại.",
+    "storageUnavailable": "Kho lưu trữ tệp tạm thời không khả dụng. Hãy thử lại sau.",
+    "storageFull": "Bộ nhớ lưu trữ của máy chủ đã đầy. Hãy liên hệ quản trị viên.",
+    "storageProviderMismatch": "Tệp này được lưu ở vị trí mà máy chủ không được cấu hình để sử dụng. Hãy liên hệ quản trị viên.",
+    "storageSizeMismatch": "Tệp đã lưu không khớp kích thước dự kiến nên đã bị loại bỏ. Hãy tải lên lại.",
+    "brandingAssetUnknown": "Tài nguyên thương hiệu này không tồn tại.",
+    "offline": "Có vẻ bạn đang ngoại tuyến. Palmr sẽ thử lại khi có kết nối.",
+    "networkError": "Mất kết nối tới máy chủ. Hãy kiểm tra kết nối và thử lại.",
+    "aborted": "Yêu cầu đã bị hủy.",
+    "proxyBodyLimit": "Một proxy phía trước Palmr đã từ chối yêu cầu vì quá lớn. Hãy yêu cầu quản trị viên tăng giới hạn kích thước yêu cầu của proxy.",
+    "proxyBadGateway": "Không thể kết nối tới Palmr qua proxy. Hãy thử lại sau giây lát.",
+    "proxyTimeout": "Proxy đã hết thời gian chờ Palmr. Hãy thử lại sau giây lát.",
+    "unexpectedResponse": "Máy chủ gửi phản hồi mà Palmr không mong đợi. Hãy thử lại và liên hệ quản trị viên kèm mã yêu cầu nếu lỗi vẫn tiếp diễn.",
+    "unexpected": "Palmr không thể hoàn tất thao tác này. Nếu sự cố tiếp diễn, hãy liên hệ quản trị viên và cung cấp thông tin bên dưới."
   }
 }

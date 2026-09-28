@@ -1,6 +1,7 @@
-import { Button, Result, Typography } from "antd";
+import { Button, Result } from "antd";
 import { Component, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { RequestId } from "../../shared/errors";
 import { ErrorRecovery } from "./ErrorRecovery";
 import {
   isStaleChunkError,
@@ -72,11 +73,7 @@ function RouteErrorPanel({ error, onReload }: RouteErrorPanelProps) {
         </Button>
       }
     >
-      {requestId === null ? null : (
-        <Typography.Text type="secondary" copyable={{ text: requestId }}>
-          {t("boundary.requestId", { requestId })}
-        </Typography.Text>
-      )}
+      {requestId === null ? null : <RequestId requestId={requestId} />}
     </Result>
   );
 }

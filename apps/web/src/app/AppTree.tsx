@@ -10,6 +10,7 @@ import { RootErrorBoundary } from "./error/RootErrorBoundary";
 import type { StaleChunkRecovery } from "./error/staleChunk";
 import type { LocaleLoaders } from "./i18n/useLocaleBridge";
 import { PresentationProviders } from "./PresentationProviders";
+import { RecentAuthHost } from "./session/RecentAuthHost";
 
 export interface AppTreeProps {
   queryClient: QueryClient;
@@ -75,6 +76,7 @@ export function AppTree({
               loaders={loaders}
             >
               <RouterProvider router={router} />
+              <RecentAuthHost />
             </BootedPresentation>
           </BootGate>
         </BootstrapProvider>

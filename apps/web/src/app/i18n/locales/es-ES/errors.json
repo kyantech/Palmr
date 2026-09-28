@@ -2,11 +2,60 @@
   "boundary": {
     "title": "Algo salió mal",
     "description": "Un error inesperado impidió cargar esta página.",
-    "reload": "Recargar",
-    "requestId": "ID de la solicitud: {{requestId}}"
+    "reload": "Recargar"
   },
   "staleChunk": {
     "title": "Palmr se ha actualizado",
     "description": "Hay una versión más reciente de Palmr disponible. Recarga la página para continuar."
+  },
+  "details": {
+    "requestId": "ID de la solicitud: {{requestId}}",
+    "errorCode": "Código de error: {{code}}"
+  },
+  "message": {
+    "validation": "Parte de la información introducida no es válida. Revísala e inténtalo de nuevo.",
+    "requestRejected": "Palmr no pudo procesar esta solicitud. Recarga la página e inténtalo de nuevo.",
+    "notFound": "El elemento que buscas no existe o ya no está disponible.",
+    "forbidden": "No tienes permiso para hacer esto.",
+    "requestTooLarge": "Esta solicitud supera el tamaño que permite el servidor.",
+    "requestTimeout": "El servidor tardó demasiado en responder. Inténtalo de nuevo.",
+    "internal": "Palmr encontró un problema inesperado. Inténtalo de nuevo y, si sigue ocurriendo, contacta con tu administrador indicando el ID de solicitud.",
+    "serviceUnavailable": "Palmr no está disponible temporalmente. Inténtalo de nuevo en un momento.",
+    "listingChanged": "Esta lista cambió mientras navegabas. Recárgala para continuar.",
+    "rateLimited": "Demasiados intentos. Espera un momento e inténtalo de nuevo.",
+    "securityCheckFailed": "Palmr no pudo verificar esta solicitud. Recarga la página e inténtalo de nuevo.",
+    "idempotencyConflict": "Esta solicitud ya se envió con datos diferentes. Recarga la página e inténtalo de nuevo.",
+    "requestInProgress": "Esta solicitud todavía se está procesando. Espera un momento antes de volver a intentarlo.",
+    "batchTooLarge": "Se seleccionaron demasiados elementos a la vez. Selecciona menos e inténtalo de nuevo.",
+    "emailUnavailable": "El correo electrónico no está configurado en esta instancia, así que esta acción no está disponible. Contacta con tu administrador.",
+    "setupCompleted": "Esta instancia de Palmr ya está configurada.",
+    "sessionEnded": "Tu sesión ha finalizado. Inicia sesión de nuevo para continuar.",
+    "invalidCredentials": "Datos de acceso incorrectos. Revísalos e inténtalo de nuevo.",
+    "accountLocked": "El inicio de sesión está bloqueado temporalmente tras demasiados intentos fallidos. Inténtalo más tarde.",
+    "passwordLoginDisabled": "El inicio de sesión con contraseña está desactivado en esta instancia.",
+    "recentAuthRequired": "Confirma tu contraseña para continuar.",
+    "passwordChangeRequired": "Debes establecer una nueva contraseña antes de continuar.",
+    "twoFactorEnrollmentRequired": "Esta instancia requiere autenticación en dos pasos. Configúrala para continuar.",
+    "sessionNotFound": "Esta sesión ya no existe. Es posible que ya se haya cerrado.",
+    "currentPasswordInvalid": "La contraseña actual es incorrecta.",
+    "passwordPolicy": "La contraseña no cumple los requisitos de esta instancia.",
+    "emailTaken": "Esta dirección de correo electrónico ya está en uso.",
+    "usernameTaken": "Este nombre de usuario ya está en uso.",
+    "serverBusy": "Palmr está ocupado en este momento. Inténtalo de nuevo en un momento.",
+    "fileNotFound": "Este archivo ya no existe.",
+    "rangeNotSatisfiable": "La parte solicitada del archivo no está disponible. Inicia la descarga de nuevo.",
+    "storageUnavailable": "El almacenamiento de archivos no está disponible temporalmente. Inténtalo más tarde.",
+    "storageFull": "El almacenamiento del servidor está lleno. Contacta con tu administrador.",
+    "storageProviderMismatch": "Este archivo está guardado en una ubicación que el servidor no está configurado para usar. Contacta con tu administrador.",
+    "storageSizeMismatch": "El archivo guardado no tenía el tamaño esperado y se descartó. Súbelo de nuevo.",
+    "brandingAssetUnknown": "Este recurso de marca no existe.",
+    "offline": "Parece que no tienes conexión. Palmr lo reintentará cuando vuelva la conexión.",
+    "networkError": "Se perdió la conexión con el servidor. Comprueba tu conexión e inténtalo de nuevo.",
+    "aborted": "La solicitud se canceló.",
+    "proxyBodyLimit": "Un proxy delante de Palmr rechazó la solicitud por ser demasiado grande. Pide a tu administrador que aumente el límite de tamaño de solicitud del proxy.",
+    "proxyBadGateway": "No se pudo acceder a Palmr a través del proxy. Inténtalo de nuevo en un momento.",
+    "proxyTimeout": "El proxy agotó el tiempo de espera de Palmr. Inténtalo de nuevo en un momento.",
+    "unexpectedResponse": "El servidor envió una respuesta que Palmr no esperaba. Inténtalo de nuevo y, si sigue ocurriendo, contacta con tu administrador indicando el ID de solicitud.",
+    "unexpected": "Palmr no pudo completar esta acción. Si el problema continúa, contacta con tu administrador e incluye los detalles siguientes."
   }
 }

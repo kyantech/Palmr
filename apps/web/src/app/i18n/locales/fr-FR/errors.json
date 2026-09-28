@@ -2,11 +2,60 @@
   "boundary": {
     "title": "Une erreur s'est produite",
     "description": "Une erreur inattendue a empêché le chargement de cette page.",
-    "reload": "Recharger",
-    "requestId": "ID de requête : {{requestId}}"
+    "reload": "Recharger"
   },
   "staleChunk": {
     "title": "Palmr a été mis à jour",
     "description": "Une version plus récente de Palmr est disponible. Rechargez la page pour continuer."
+  },
+  "details": {
+    "requestId": "ID de requête : {{requestId}}",
+    "errorCode": "Code d'erreur : {{code}}"
+  },
+  "message": {
+    "validation": "Certaines informations saisies ne sont pas valides. Vérifiez-les et réessayez.",
+    "requestRejected": "Palmr n'a pas pu traiter cette requête. Rechargez la page et réessayez.",
+    "notFound": "L'élément recherché n'existe pas ou n'est plus disponible.",
+    "forbidden": "Vous n'avez pas l'autorisation d'effectuer cette action.",
+    "requestTooLarge": "Cette requête dépasse la taille autorisée par le serveur.",
+    "requestTimeout": "Le serveur a mis trop de temps à répondre. Réessayez.",
+    "internal": "Palmr a rencontré un problème inattendu. Réessayez et, si cela persiste, contactez votre administrateur en indiquant l'ID de requête.",
+    "serviceUnavailable": "Palmr est temporairement indisponible. Réessayez dans un instant.",
+    "listingChanged": "Cette liste a changé pendant votre navigation. Rechargez-la pour continuer.",
+    "rateLimited": "Trop de tentatives. Patientez un instant et réessayez.",
+    "securityCheckFailed": "Palmr n'a pas pu vérifier cette requête. Rechargez la page et réessayez.",
+    "idempotencyConflict": "Cette requête a déjà été envoyée avec des données différentes. Rechargez la page et réessayez.",
+    "requestInProgress": "Cette requête est toujours en cours de traitement. Patientez un instant avant de réessayer.",
+    "batchTooLarge": "Trop d'éléments ont été sélectionnés à la fois. Sélectionnez-en moins et réessayez.",
+    "emailUnavailable": "L'e-mail n'est pas configuré sur cette instance, cette action n'est donc pas disponible. Contactez votre administrateur.",
+    "setupCompleted": "Cette instance de Palmr a déjà été configurée.",
+    "sessionEnded": "Votre session a pris fin. Reconnectez-vous pour continuer.",
+    "invalidCredentials": "Identifiants incorrects. Vérifiez-les et réessayez.",
+    "accountLocked": "La connexion est temporairement bloquée après trop d'échecs. Réessayez plus tard.",
+    "passwordLoginDisabled": "La connexion par mot de passe est désactivée sur cette instance.",
+    "recentAuthRequired": "Confirmez votre mot de passe pour continuer.",
+    "passwordChangeRequired": "Vous devez définir un nouveau mot de passe avant de continuer.",
+    "twoFactorEnrollmentRequired": "Cette instance exige l'authentification à deux facteurs. Configurez-la pour continuer.",
+    "sessionNotFound": "Cette session n'existe plus. Elle a peut-être déjà été fermée.",
+    "currentPasswordInvalid": "Le mot de passe actuel est incorrect.",
+    "passwordPolicy": "Le mot de passe ne respecte pas les exigences de cette instance.",
+    "emailTaken": "Cette adresse e-mail est déjà utilisée.",
+    "usernameTaken": "Ce nom d'utilisateur est déjà utilisé.",
+    "serverBusy": "Palmr est occupé pour le moment. Réessayez dans un instant.",
+    "fileNotFound": "Ce fichier n'existe plus.",
+    "rangeNotSatisfiable": "La partie demandée du fichier n'est pas disponible. Relancez le téléchargement.",
+    "storageUnavailable": "Le stockage des fichiers est temporairement indisponible. Réessayez plus tard.",
+    "storageFull": "Le stockage du serveur est plein. Contactez votre administrateur.",
+    "storageProviderMismatch": "Ce fichier est stocké dans un emplacement que le serveur n'est pas configuré pour utiliser. Contactez votre administrateur.",
+    "storageSizeMismatch": "Le fichier stocké n'avait pas la taille attendue et a été supprimé. Envoyez-le à nouveau.",
+    "brandingAssetUnknown": "Cet élément de personnalisation n'existe pas.",
+    "offline": "Vous semblez hors ligne. Palmr réessaiera au retour de la connexion.",
+    "networkError": "La connexion au serveur a été perdue. Vérifiez votre connexion et réessayez.",
+    "aborted": "La requête a été annulée.",
+    "proxyBodyLimit": "Un proxy placé devant Palmr a rejeté la requête car elle est trop volumineuse. Demandez à votre administrateur d'augmenter la limite de taille des requêtes du proxy.",
+    "proxyBadGateway": "Palmr est injoignable via le proxy. Réessayez dans un instant.",
+    "proxyTimeout": "Le proxy a expiré en attendant Palmr. Réessayez dans un instant.",
+    "unexpectedResponse": "Le serveur a envoyé une réponse inattendue pour Palmr. Réessayez et, si cela persiste, contactez votre administrateur en indiquant l'ID de requête.",
+    "unexpected": "Palmr n'a pas pu terminer cette action. Si le problème persiste, contactez votre administrateur en joignant les détails ci-dessous."
   }
 }

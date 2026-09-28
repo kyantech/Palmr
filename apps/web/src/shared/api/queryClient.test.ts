@@ -59,6 +59,14 @@ test("the global error seam reports query and mutation failures without acting o
     .execute(undefined)
     .catch(() => undefined);
 
-  expect(onError).toHaveBeenNthCalledWith(1, failure, "query");
-  expect(onError).toHaveBeenNthCalledWith(2, failure, "mutation");
+  expect(onError).toHaveBeenCalledTimes(2);
+  expect(onError).toHaveBeenNthCalledWith(
+    1,
+    expect.objectContaining({ source: "query", error: failure, client }),
+  );
+  expect(onError).toHaveBeenNthCalledWith(
+    2,
+    expect.objectContaining({ source: "mutation", error: failure, client }),
+  );
+  expect(client.getQueryCache().find({ queryKey: ["probe"] })?.state.status).toBe("error");
 });

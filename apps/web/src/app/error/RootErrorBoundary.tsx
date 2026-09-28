@@ -53,7 +53,7 @@ export function fallbackText(error: unknown, i18n?: I18n): FallbackText {
       title: t(`${prefix}.title`),
       description: t(`${prefix}.description`),
       reload: t("boundary.reload"),
-      requestId: (requestId) => t("boundary.requestId", { requestId }),
+      requestId: (requestId) => t("details.requestId", { requestId }),
     };
   } catch {
     return english;

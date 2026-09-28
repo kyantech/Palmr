@@ -2,11 +2,60 @@
   "boundary": {
     "title": "Bir şeyler ters gitti",
     "description": "Beklenmeyen bir hata bu sayfanın yüklenmesini engelledi.",
-    "reload": "Yeniden yükle",
-    "requestId": "İstek kimliği: {{requestId}}"
+    "reload": "Yeniden yükle"
   },
   "staleChunk": {
     "title": "Palmr güncellendi",
     "description": "Palmr'ın daha yeni bir sürümü mevcut. Devam etmek için sayfayı yeniden yükleyin."
+  },
+  "details": {
+    "requestId": "İstek kimliği: {{requestId}}",
+    "errorCode": "Hata kodu: {{code}}"
+  },
+  "message": {
+    "validation": "Girilen bilgilerin bazıları geçerli değil. Gözden geçirip tekrar deneyin.",
+    "requestRejected": "Palmr bu isteği işleyemedi. Sayfayı yenileyip tekrar deneyin.",
+    "notFound": "Aradığınız öğe mevcut değil veya artık kullanılamıyor.",
+    "forbidden": "Bunu yapma izniniz yok.",
+    "requestTooLarge": "Bu istek, sunucunun izin verdiği boyuttan büyük.",
+    "requestTimeout": "Sunucunun yanıt vermesi çok uzun sürdü. Tekrar deneyin.",
+    "internal": "Palmr beklenmeyen bir sorunla karşılaştı. Tekrar deneyin; sorun devam ederse istek kimliğiyle birlikte yöneticinize başvurun.",
+    "serviceUnavailable": "Palmr geçici olarak kullanılamıyor. Birazdan tekrar deneyin.",
+    "listingChanged": "Siz gezinirken bu liste değişti. Devam etmek için listeyi yenileyin.",
+    "rateLimited": "Çok fazla deneme. Biraz bekleyip tekrar deneyin.",
+    "securityCheckFailed": "Palmr bu isteği doğrulayamadı. Sayfayı yenileyip tekrar deneyin.",
+    "idempotencyConflict": "Bu istek daha önce farklı bilgilerle gönderildi. Sayfayı yenileyip tekrar deneyin.",
+    "requestInProgress": "Bu istek hâlâ işleniyor. Tekrar denemeden önce biraz bekleyin.",
+    "batchTooLarge": "Aynı anda çok fazla öğe seçildi. Daha az öğe seçip tekrar deneyin.",
+    "emailUnavailable": "Bu örnekte e-posta yapılandırılmadığından bu işlem kullanılamıyor. Yöneticinize başvurun.",
+    "setupCompleted": "Bu Palmr örneği zaten kurulmuş.",
+    "sessionEnded": "Oturumunuz sona erdi. Devam etmek için tekrar oturum açın.",
+    "invalidCredentials": "Oturum açma bilgileri hatalı. Kontrol edip tekrar deneyin.",
+    "accountLocked": "Çok fazla başarısız denemeden sonra oturum açma geçici olarak kilitlendi. Daha sonra tekrar deneyin.",
+    "passwordLoginDisabled": "Bu örnekte parolayla oturum açma devre dışı.",
+    "recentAuthRequired": "Devam etmek için parolanızı onaylayın.",
+    "passwordChangeRequired": "Devam etmeden önce yeni bir parola belirlemeniz gerekiyor.",
+    "twoFactorEnrollmentRequired": "Bu örnek iki adımlı doğrulama gerektiriyor. Devam etmek için ayarlayın.",
+    "sessionNotFound": "Bu oturum artık mevcut değil. Zaten kapatılmış olabilir.",
+    "currentPasswordInvalid": "Mevcut parola yanlış.",
+    "passwordPolicy": "Parola bu örneğin gereksinimlerini karşılamıyor.",
+    "emailTaken": "Bu e-posta adresi zaten kullanılıyor.",
+    "usernameTaken": "Bu kullanıcı adı zaten kullanılıyor.",
+    "serverBusy": "Palmr şu anda meşgul. Birazdan tekrar deneyin.",
+    "fileNotFound": "Bu dosya artık mevcut değil.",
+    "rangeNotSatisfiable": "Dosyanın istenen bölümü kullanılamıyor. İndirmeyi yeniden başlatın.",
+    "storageUnavailable": "Dosya depolama geçici olarak kullanılamıyor. Daha sonra tekrar deneyin.",
+    "storageFull": "Sunucunun depolama alanı dolu. Yöneticinize başvurun.",
+    "storageProviderMismatch": "Bu dosya, sunucunun kullanmak üzere yapılandırılmadığı bir konumda depolanıyor. Yöneticinize başvurun.",
+    "storageSizeMismatch": "Depolanan dosya beklenen boyutta olmadığından silindi. Tekrar yükleyin.",
+    "brandingAssetUnknown": "Bu marka öğesi mevcut değil.",
+    "offline": "Çevrimdışı görünüyorsunuz. Bağlantı geri geldiğinde Palmr tekrar deneyecek.",
+    "networkError": "Sunucuyla bağlantı kesildi. Bağlantınızı kontrol edip tekrar deneyin.",
+    "aborted": "İstek iptal edildi.",
+    "proxyBodyLimit": "Palmr'ın önündeki bir proxy, isteği çok büyük olduğu için reddetti. Yöneticinizden proxy'nin istek boyutu sınırını artırmasını isteyin.",
+    "proxyBadGateway": "Palmr'a proxy üzerinden ulaşılamadı. Birazdan tekrar deneyin.",
+    "proxyTimeout": "Proxy, Palmr'ı beklerken zaman aşımına uğradı. Birazdan tekrar deneyin.",
+    "unexpectedResponse": "Sunucu beklenmeyen bir yanıt gönderdi. Tekrar deneyin; sorun devam ederse istek kimliğiyle birlikte yöneticinize başvurun.",
+    "unexpected": "Palmr bu işlemi tamamlayamadı. Sorun devam ederse aşağıdaki ayrıntılarla birlikte yöneticinize başvurun."
   }
 }

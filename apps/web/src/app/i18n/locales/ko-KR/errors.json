@@ -2,11 +2,60 @@
   "boundary": {
     "title": "문제가 발생했습니다",
     "description": "예기치 않은 오류로 인해 이 페이지를 불러오지 못했습니다.",
-    "reload": "새로고침",
-    "requestId": "요청 ID: {{requestId}}"
+    "reload": "새로고침"
   },
   "staleChunk": {
     "title": "Palmr가 업데이트되었습니다",
     "description": "새 버전의 Palmr를 사용할 수 있습니다. 계속하려면 페이지를 새로고침하세요."
+  },
+  "details": {
+    "requestId": "요청 ID: {{requestId}}",
+    "errorCode": "오류 코드: {{code}}"
+  },
+  "message": {
+    "validation": "입력한 정보 중 일부가 올바르지 않습니다. 확인한 후 다시 시도하세요.",
+    "requestRejected": "Palmr가 이 요청을 처리하지 못했습니다. 페이지를 새로고침한 후 다시 시도하세요.",
+    "notFound": "찾으려는 항목이 없거나 더 이상 사용할 수 없습니다.",
+    "forbidden": "이 작업을 수행할 권한이 없습니다.",
+    "requestTooLarge": "이 요청은 서버에서 허용하는 크기보다 큽니다.",
+    "requestTimeout": "서버 응답 시간이 너무 오래 걸렸습니다. 다시 시도하세요.",
+    "internal": "Palmr에서 예기치 않은 문제가 발생했습니다. 다시 시도하고, 문제가 계속되면 요청 ID와 함께 관리자에게 문의하세요.",
+    "serviceUnavailable": "Palmr를 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도하세요.",
+    "listingChanged": "탐색하는 동안 목록이 변경되었습니다. 계속하려면 새로고침하세요.",
+    "rateLimited": "시도 횟수가 너무 많습니다. 잠시 기다린 후 다시 시도하세요.",
+    "securityCheckFailed": "Palmr가 이 요청을 확인하지 못했습니다. 페이지를 새로고침한 후 다시 시도하세요.",
+    "idempotencyConflict": "이 요청은 이미 다른 내용으로 제출되었습니다. 페이지를 새로고침한 후 다시 시도하세요.",
+    "requestInProgress": "이 요청은 아직 처리 중입니다. 잠시 기다린 후 다시 시도하세요.",
+    "batchTooLarge": "한 번에 너무 많은 항목을 선택했습니다. 더 적게 선택한 후 다시 시도하세요.",
+    "emailUnavailable": "이 인스턴스에 이메일이 설정되어 있지 않아 이 작업을 사용할 수 없습니다. 관리자에게 문의하세요.",
+    "setupCompleted": "이 Palmr 인스턴스는 이미 설정되었습니다.",
+    "sessionEnded": "세션이 종료되었습니다. 계속하려면 다시 로그인하세요.",
+    "invalidCredentials": "로그인 정보가 올바르지 않습니다. 확인한 후 다시 시도하세요.",
+    "accountLocked": "로그인 실패가 너무 많아 일시적으로 잠겼습니다. 나중에 다시 시도하세요.",
+    "passwordLoginDisabled": "이 인스턴스에서는 비밀번호 로그인이 비활성화되어 있습니다.",
+    "recentAuthRequired": "계속하려면 비밀번호를 확인하세요.",
+    "passwordChangeRequired": "계속하기 전에 새 비밀번호를 설정해야 합니다.",
+    "twoFactorEnrollmentRequired": "이 인스턴스는 2단계 인증이 필요합니다. 계속하려면 설정하세요.",
+    "sessionNotFound": "이 세션은 더 이상 존재하지 않습니다. 이미 로그아웃되었을 수 있습니다.",
+    "currentPasswordInvalid": "현재 비밀번호가 올바르지 않습니다.",
+    "passwordPolicy": "비밀번호가 이 인스턴스의 요구 사항을 충족하지 않습니다.",
+    "emailTaken": "이 이메일 주소는 이미 사용 중입니다.",
+    "usernameTaken": "이 사용자 이름은 이미 사용 중입니다.",
+    "serverBusy": "Palmr가 현재 바쁩니다. 잠시 후 다시 시도하세요.",
+    "fileNotFound": "이 파일은 더 이상 존재하지 않습니다.",
+    "rangeNotSatisfiable": "요청한 파일 부분을 사용할 수 없습니다. 다운로드를 다시 시작하세요.",
+    "storageUnavailable": "파일 저장소를 일시적으로 사용할 수 없습니다. 나중에 다시 시도하세요.",
+    "storageFull": "서버 저장 공간이 가득 찼습니다. 관리자에게 문의하세요.",
+    "storageProviderMismatch": "이 파일은 서버가 사용하도록 설정되지 않은 위치에 저장되어 있습니다. 관리자에게 문의하세요.",
+    "storageSizeMismatch": "저장된 파일의 크기가 예상과 달라 폐기되었습니다. 다시 업로드하세요.",
+    "brandingAssetUnknown": "이 브랜딩 자산은 존재하지 않습니다.",
+    "offline": "오프라인 상태인 것 같습니다. 연결이 복구되면 Palmr가 다시 시도합니다.",
+    "networkError": "서버와의 연결이 끊어졌습니다. 연결을 확인한 후 다시 시도하세요.",
+    "aborted": "요청이 취소되었습니다.",
+    "proxyBodyLimit": "Palmr 앞단의 프록시가 요청이 너무 크다며 거부했습니다. 관리자에게 프록시의 요청 크기 제한을 늘려 달라고 요청하세요.",
+    "proxyBadGateway": "프록시를 통해 Palmr에 연결할 수 없습니다. 잠시 후 다시 시도하세요.",
+    "proxyTimeout": "Palmr 응답을 기다리던 중 프록시 시간이 초과되었습니다. 잠시 후 다시 시도하세요.",
+    "unexpectedResponse": "서버가 예상하지 못한 응답을 보냈습니다. 다시 시도하고, 문제가 계속되면 요청 ID와 함께 관리자에게 문의하세요.",
+    "unexpected": "Palmr가 이 작업을 완료하지 못했습니다. 문제가 계속되면 아래 세부 정보와 함께 관리자에게 문의하세요."
   }
 }

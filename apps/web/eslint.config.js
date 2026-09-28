@@ -9,6 +9,7 @@ import reactHooks from "eslint-plugin-react-hooks";
 import { defineConfig, globalIgnores } from "eslint/config";
 import globals from "globals";
 import tseslint from "typescript-eslint";
+import ts from "typescript";
 
 const LINT_FIXTURES = "src/test/lint-fixtures";
 const SOURCE_ROOTS = ["src", LINT_FIXTURES];
@@ -48,6 +49,57 @@ const USER_FACING_ATTRIBUTES = [
 ];
 
 const BRAND_WORDS = ["Palmr"];
+
+const SERVER_PROSE_TYPES = new Set(["ApiError", "Error"]);
+
+function carriesServerProse(type) {
+  if (type.isUnion() || type.isIntersection()) {
+    return type.types.some(carriesServerProse);
+  }
+  if (type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) {
+    return false;
+  }
+  const name = (type.getSymbol() ?? type.aliasSymbol)?.getName();
+  return name !== undefined && SERVER_PROSE_TYPES.has(name);
+}
+
+const palmr = {
+  rules: {
+    "no-api-error-message": {
+      meta: {
+        type: "problem",
+        schema: [],
+        messages: {
+          message:
+            "F4: never read .message from an ApiError/Error in product UI; branch on error.code and render its errors.* key (FRONTEND_ARCHITECTURE §5.3).",
+          serverMessage:
+            "F4: serverMessage is for logs and support only (FRONTEND_ARCHITECTURE §5.1).",
+        },
+      },
+      create(context) {
+        const services = context.sourceCode.parserServices;
+        if (!services?.program) {
+          return {};
+        }
+        return {
+          MemberExpression(node) {
+            if (node.computed || node.property.type !== "Identifier") {
+              return;
+            }
+            if (node.property.name === "serverMessage") {
+              context.report({ node: node.property, messageId: "serverMessage" });
+            } else if (
+              node.property.name === "message" &&
+              carriesServerProse(services.getTypeAtLocation(node.object))
+            ) {
+              context.report({ node: node.property, messageId: "message" });
+            }
+          },
+        };
+      },
+    },
+  },
+};
 
 const restrictedPathZones = SOURCE_ROOTS.flatMap((root) => [
   {
@@ -148,6 +200,12 @@ export default defineConfig([
         },
       ],
     },
+  },
+
+  {
+    files: inRoots("app/**/*.{ts,tsx}", "features/**/*.{ts,tsx}"),
+    plugins: { palmr },
+    rules: { "palmr/no-api-error-message": "error" },
   },
 
   {

@@ -2,11 +2,60 @@
   "boundary": {
     "title": "出现了问题",
     "description": "发生意外错误，此页面无法加载。",
-    "reload": "重新加载",
-    "requestId": "请求 ID：{{requestId}}"
+    "reload": "重新加载"
   },
   "staleChunk": {
     "title": "Palmr 已更新",
     "description": "Palmr 有新版本可用。请重新加载页面以继续。"
+  },
+  "details": {
+    "requestId": "请求 ID：{{requestId}}",
+    "errorCode": "错误代码：{{code}}"
+  },
+  "message": {
+    "validation": "输入的部分信息无效。请检查后重试。",
+    "requestRejected": "Palmr 无法处理此请求。请刷新页面后重试。",
+    "notFound": "你要查找的项目不存在或已不可用。",
+    "forbidden": "你没有执行此操作的权限。",
+    "requestTooLarge": "此请求超出了服务器允许的大小。",
+    "requestTimeout": "服务器响应时间过长。请重试。",
+    "internal": "Palmr 遇到意外问题。请重试；如果问题持续存在，请携带请求 ID 联系管理员。",
+    "serviceUnavailable": "Palmr 暂时不可用。请稍后重试。",
+    "listingChanged": "浏览期间此列表已发生变化。请刷新后继续。",
+    "rateLimited": "尝试次数过多。请稍候再试。",
+    "securityCheckFailed": "Palmr 无法验证此请求。请刷新页面后重试。",
+    "idempotencyConflict": "此请求已使用不同的内容提交过。请刷新页面后重试。",
+    "requestInProgress": "此请求仍在处理中。请稍候再试。",
+    "batchTooLarge": "一次选择的项目过多。请减少所选项目后重试。",
+    "emailUnavailable": "此实例未配置电子邮件，因此无法执行此操作。请联系管理员。",
+    "setupCompleted": "此 Palmr 实例已完成设置。",
+    "sessionEnded": "你的会话已结束。请重新登录以继续。",
+    "invalidCredentials": "登录信息不正确。请检查后重试。",
+    "accountLocked": "失败次数过多，登录已暂时锁定。请稍后重试。",
+    "passwordLoginDisabled": "此实例已禁用密码登录。",
+    "recentAuthRequired": "请确认密码以继续。",
+    "passwordChangeRequired": "继续之前需要设置新密码。",
+    "twoFactorEnrollmentRequired": "此实例要求使用双重身份验证。请设置后继续。",
+    "sessionNotFound": "此会话已不存在，可能已经退出登录。",
+    "currentPasswordInvalid": "当前密码不正确。",
+    "passwordPolicy": "密码不符合此实例的要求。",
+    "emailTaken": "此电子邮件地址已被使用。",
+    "usernameTaken": "此用户名已被使用。",
+    "serverBusy": "Palmr 当前繁忙。请稍后重试。",
+    "fileNotFound": "此文件已不存在。",
+    "rangeNotSatisfiable": "所请求的文件部分不可用。请重新开始下载。",
+    "storageUnavailable": "文件存储暂时不可用。请稍后重试。",
+    "storageFull": "服务器存储空间已满。请联系管理员。",
+    "storageProviderMismatch": "此文件存储在服务器未配置使用的位置。请联系管理员。",
+    "storageSizeMismatch": "存储的文件大小与预期不符，已被丢弃。请重新上传。",
+    "brandingAssetUnknown": "此品牌资源不存在。",
+    "offline": "你似乎处于离线状态。连接恢复后 Palmr 将自动重试。",
+    "networkError": "与服务器的连接已断开。请检查网络连接后重试。",
+    "aborted": "请求已取消。",
+    "proxyBodyLimit": "Palmr 前面的代理因请求过大而拒绝了请求。请让管理员提高代理的请求大小上限。",
+    "proxyBadGateway": "无法通过代理访问 Palmr。请稍后重试。",
+    "proxyTimeout": "代理等待 Palmr 响应超时。请稍后重试。",
+    "unexpectedResponse": "服务器返回了 Palmr 意料之外的响应。请重试；如果问题持续存在，请携带请求 ID 联系管理员。",
+    "unexpected": "Palmr 无法完成此操作。如果问题持续存在，请联系管理员并提供以下详细信息。"
   }
 }

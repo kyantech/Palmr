@@ -146,11 +146,14 @@ test("the en-XA pseudolocale is generated deterministically outside the product 
   expect(run().status).toBe(0);
   expect(readFileSync(join(output, "en-XA", "errors.json"), "utf8")).toBe(first);
 
-  const errors = JSON.parse(first) as { boundary: Record<string, string> };
+  const errors = JSON.parse(first) as {
+    boundary: Record<string, string>;
+    details: Record<string, string>;
+  };
   const english = readJson(join(localesRoot, "en-US", "errors.json")) as {
     boundary: Record<string, string>;
   };
-  expect(errors.boundary.requestId).toContain("{{requestId}}");
+  expect(errors.details.requestId).toContain("{{requestId}}");
   expect(errors.boundary.title).toMatch(/^\[.+~+\]$/);
   expect(errors.boundary.title).not.toBe(english.boundary.title);
   expect(errors.boundary.title?.length).toBeGreaterThan(english.boundary.title?.length ?? 0);

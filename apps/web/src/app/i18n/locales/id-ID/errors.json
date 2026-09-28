@@ -2,11 +2,60 @@
   "boundary": {
     "title": "Terjadi kesalahan",
     "description": "Kesalahan tak terduga menghentikan pemuatan halaman ini.",
-    "reload": "Muat ulang",
-    "requestId": "ID permintaan: {{requestId}}"
+    "reload": "Muat ulang"
   },
   "staleChunk": {
     "title": "Palmr telah diperbarui",
     "description": "Versi Palmr yang lebih baru tersedia. Muat ulang halaman untuk melanjutkan."
+  },
+  "details": {
+    "requestId": "ID permintaan: {{requestId}}",
+    "errorCode": "Kode kesalahan: {{code}}"
+  },
+  "message": {
+    "validation": "Sebagian informasi yang dimasukkan tidak valid. Periksa lalu coba lagi.",
+    "requestRejected": "Palmr tidak dapat memproses permintaan ini. Muat ulang halaman lalu coba lagi.",
+    "notFound": "Item yang Anda cari tidak ada atau sudah tidak tersedia.",
+    "forbidden": "Anda tidak memiliki izin untuk melakukan ini.",
+    "requestTooLarge": "Permintaan ini melebihi ukuran yang diizinkan server.",
+    "requestTimeout": "Server terlalu lama merespons. Coba lagi.",
+    "internal": "Palmr mengalami masalah tak terduga. Coba lagi, dan hubungi administrator dengan menyertakan ID permintaan jika masalah berlanjut.",
+    "serviceUnavailable": "Palmr untuk sementara tidak tersedia. Coba lagi sebentar lagi.",
+    "listingChanged": "Daftar ini berubah saat Anda menjelajah. Muat ulang untuk melanjutkan.",
+    "rateLimited": "Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.",
+    "securityCheckFailed": "Palmr tidak dapat memverifikasi permintaan ini. Muat ulang halaman lalu coba lagi.",
+    "idempotencyConflict": "Permintaan ini sudah dikirim dengan data berbeda. Muat ulang halaman lalu coba lagi.",
+    "requestInProgress": "Permintaan ini masih diproses. Tunggu sebentar sebelum mencoba lagi.",
+    "batchTooLarge": "Terlalu banyak item dipilih sekaligus. Pilih lebih sedikit lalu coba lagi.",
+    "emailUnavailable": "E-mail belum dikonfigurasi di instans ini, sehingga tindakan ini tidak tersedia. Hubungi administrator.",
+    "setupCompleted": "Instans Palmr ini sudah disiapkan.",
+    "sessionEnded": "Sesi Anda telah berakhir. Masuk lagi untuk melanjutkan.",
+    "invalidCredentials": "Detail masuk salah. Periksa lalu coba lagi.",
+    "accountLocked": "Proses masuk dikunci sementara setelah terlalu banyak percobaan gagal. Coba lagi nanti.",
+    "passwordLoginDisabled": "Masuk dengan kata sandi dinonaktifkan di instans ini.",
+    "recentAuthRequired": "Konfirmasi kata sandi Anda untuk melanjutkan.",
+    "passwordChangeRequired": "Anda perlu menetapkan kata sandi baru sebelum melanjutkan.",
+    "twoFactorEnrollmentRequired": "Instans ini mewajibkan autentikasi dua faktor. Siapkan untuk melanjutkan.",
+    "sessionNotFound": "Sesi ini sudah tidak ada. Mungkin sesi tersebut sudah keluar.",
+    "currentPasswordInvalid": "Kata sandi saat ini salah.",
+    "passwordPolicy": "Kata sandi tidak memenuhi persyaratan instans ini.",
+    "emailTaken": "Alamat e-mail ini sudah digunakan.",
+    "usernameTaken": "Nama pengguna ini sudah digunakan.",
+    "serverBusy": "Palmr sedang sibuk. Coba lagi sebentar lagi.",
+    "fileNotFound": "File ini sudah tidak ada.",
+    "rangeNotSatisfiable": "Bagian file yang diminta tidak tersedia. Mulai ulang unduhan.",
+    "storageUnavailable": "Penyimpanan file untuk sementara tidak tersedia. Coba lagi nanti.",
+    "storageFull": "Penyimpanan server penuh. Hubungi administrator.",
+    "storageProviderMismatch": "File ini disimpan di lokasi yang tidak dikonfigurasi untuk digunakan server. Hubungi administrator.",
+    "storageSizeMismatch": "File yang disimpan tidak sesuai ukuran yang diharapkan dan telah dibuang. Unggah lagi.",
+    "brandingAssetUnknown": "Aset branding ini tidak ada.",
+    "offline": "Sepertinya Anda sedang offline. Palmr akan mencoba lagi saat koneksi kembali.",
+    "networkError": "Koneksi ke server terputus. Periksa koneksi Anda lalu coba lagi.",
+    "aborted": "Permintaan dibatalkan.",
+    "proxyBodyLimit": "Proxy di depan Palmr menolak permintaan karena terlalu besar. Minta administrator menaikkan batas ukuran permintaan pada proxy.",
+    "proxyBadGateway": "Palmr tidak dapat dijangkau melalui proxy. Coba lagi sebentar lagi.",
+    "proxyTimeout": "Proxy kehabisan waktu menunggu Palmr. Coba lagi sebentar lagi.",
+    "unexpectedResponse": "Server mengirim respons yang tidak diharapkan Palmr. Coba lagi, dan hubungi administrator dengan menyertakan ID permintaan jika masalah berlanjut.",
+    "unexpected": "Palmr tidak dapat menyelesaikan tindakan ini. Jika masalah berlanjut, hubungi administrator dan sertakan detail di bawah."
   }
 }

@@ -2,11 +2,60 @@
   "boundary": {
     "title": "Något gick fel",
     "description": "Ett oväntat fel hindrade sidan från att läsas in.",
-    "reload": "Läs in igen",
-    "requestId": "Begäran-ID: {{requestId}}"
+    "reload": "Läs in igen"
   },
   "staleChunk": {
     "title": "Palmr har uppdaterats",
     "description": "En nyare version av Palmr är tillgänglig. Läs in sidan igen för att fortsätta."
+  },
+  "details": {
+    "requestId": "Begäran-ID: {{requestId}}",
+    "errorCode": "Felkod: {{code}}"
+  },
+  "message": {
+    "validation": "En del av de angivna uppgifterna är ogiltiga. Kontrollera dem och försök igen.",
+    "requestRejected": "Palmr kunde inte behandla begäran. Läs in sidan igen och försök på nytt.",
+    "notFound": "Objektet du letar efter finns inte eller är inte längre tillgängligt.",
+    "forbidden": "Du har inte behörighet att göra detta.",
+    "requestTooLarge": "Begäran är större än servern tillåter.",
+    "requestTimeout": "Servern tog för lång tid att svara. Försök igen.",
+    "internal": "Palmr stötte på ett oväntat problem. Försök igen och kontakta administratören med begärans ID om det fortsätter.",
+    "serviceUnavailable": "Palmr är tillfälligt otillgängligt. Försök igen om en stund.",
+    "listingChanged": "Listan ändrades medan du bläddrade. Läs in den igen för att fortsätta.",
+    "rateLimited": "För många försök. Vänta en stund och försök igen.",
+    "securityCheckFailed": "Palmr kunde inte verifiera begäran. Läs in sidan igen och försök på nytt.",
+    "idempotencyConflict": "Begäran har redan skickats med andra uppgifter. Läs in sidan igen och försök på nytt.",
+    "requestInProgress": "Begäran behandlas fortfarande. Vänta en stund innan du försöker igen.",
+    "batchTooLarge": "För många objekt valdes samtidigt. Välj färre och försök igen.",
+    "emailUnavailable": "E-post är inte konfigurerad på den här instansen, så åtgärden är inte tillgänglig. Kontakta administratören.",
+    "setupCompleted": "Den här Palmr-instansen är redan konfigurerad.",
+    "sessionEnded": "Din session har avslutats. Logga in igen för att fortsätta.",
+    "invalidCredentials": "Felaktiga inloggningsuppgifter. Kontrollera dem och försök igen.",
+    "accountLocked": "Inloggningen är tillfälligt spärrad efter för många misslyckade försök. Försök igen senare.",
+    "passwordLoginDisabled": "Inloggning med lösenord är inaktiverad på den här instansen.",
+    "recentAuthRequired": "Bekräfta ditt lösenord för att fortsätta.",
+    "passwordChangeRequired": "Du måste ange ett nytt lösenord innan du fortsätter.",
+    "twoFactorEnrollmentRequired": "Den här instansen kräver tvåfaktorsautentisering. Konfigurera den för att fortsätta.",
+    "sessionNotFound": "Sessionen finns inte längre. Den kan redan ha loggats ut.",
+    "currentPasswordInvalid": "Det nuvarande lösenordet är felaktigt.",
+    "passwordPolicy": "Lösenordet uppfyller inte instansens krav.",
+    "emailTaken": "E-postadressen används redan.",
+    "usernameTaken": "Användarnamnet används redan.",
+    "serverBusy": "Palmr är upptaget just nu. Försök igen om en stund.",
+    "fileNotFound": "Filen finns inte längre.",
+    "rangeNotSatisfiable": "Den begärda delen av filen är inte tillgänglig. Starta nedladdningen igen.",
+    "storageUnavailable": "Fillagringen är tillfälligt otillgänglig. Försök igen senare.",
+    "storageFull": "Serverns lagring är full. Kontakta administratören.",
+    "storageProviderMismatch": "Filen lagras på en plats som servern inte är konfigurerad att använda. Kontakta administratören.",
+    "storageSizeMismatch": "Den lagrade filen hade inte förväntad storlek och kastades. Ladda upp den igen.",
+    "brandingAssetUnknown": "Den här varumärkesresursen finns inte.",
+    "offline": "Du verkar vara offline. Palmr försöker igen när anslutningen är tillbaka.",
+    "networkError": "Anslutningen till servern bröts. Kontrollera anslutningen och försök igen.",
+    "aborted": "Begäran avbröts.",
+    "proxyBodyLimit": "En proxy framför Palmr avvisade begäran som för stor. Be administratören att höja proxyns storleksgräns för begäranden.",
+    "proxyBadGateway": "Palmr kunde inte nås via proxyn. Försök igen om en stund.",
+    "proxyTimeout": "Proxyn fick tidsgräns i väntan på Palmr. Försök igen om en stund.",
+    "unexpectedResponse": "Servern skickade ett oväntat svar. Försök igen och kontakta administratören med begärans ID om det fortsätter.",
+    "unexpected": "Palmr kunde inte slutföra åtgärden. Om problemet kvarstår, kontakta administratören och ange uppgifterna nedan."
   }
 }
