@@ -41,8 +41,11 @@ use crate::domain::time::Timestamp;
 use crate::domain::username::Username;
 use crate::features::audit;
 use crate::features::audit::service::AuditDrain;
+use crate::features::auth::password_reset::PasswordResetService;
 use crate::features::auth::sessions::SessionService;
 use crate::features::auth::totp::TotpService;
+use crate::features::email::transport::CapturingTransport;
+use crate::features::email::EmailService;
 use crate::features::settings::effective::{EffectiveSettingsService, OperatorPolicy};
 use crate::features::settings::SettingsService;
 use crate::features::setup::SetupService;
@@ -77,6 +80,9 @@ struct Stack {
     auth: AuthService,
     profile: ProfileService,
     totp: TotpService,
+    resets: PasswordResetService,
+    mail: Arc<CapturingTransport>,
+    email: EmailService,
     drain: AuditDrain,
     limiter: Arc<RateLimiter>,
     service: BoxedService,
@@ -151,6 +157,23 @@ impl Stack {
             Arc::new(clock.clone()),
             settings.handle(),
             auth.clone(),
+            audit.clone(),
+        );
+        let mail = Arc::new(CapturingTransport::new());
+        let email = EmailService::new(
+            pools.clone(),
+            Arc::new(clock.clone()),
+            settings.keys(),
+            settings.handle(),
+            config.base_url.clone(),
+            mail.clone(),
+        );
+        let resets = PasswordResetService::new(
+            pools.clone(),
+            Arc::new(clock.clone()),
+            settings.handle(),
+            auth.clone(),
+            email.clone(),
             audit,
         );
         let setup = SetupService::new(
@@ -173,6 +196,7 @@ impl Stack {
             .layer(Extension(auth.clone()))
             .layer(Extension(profile.clone()))
             .layer(Extension(totp.clone()))
+            .layer(Extension(resets.clone()))
             .layer(Extension(EffectiveSettingsService::new(
                 pools.reader().clone(),
                 settings.handle(),
@@ -200,6 +224,9 @@ impl Stack {
             auth,
             profile,
             totp,
+            resets,
+            mail,
+            email,
             drain,
             limiter: Arc::clone(edge.rate_limits()),
             service,
@@ -382,6 +409,8 @@ impl Stack {
         drop(self.auth);
         drop(self.profile);
         drop(self.totp);
+        drop(self.resets);
+        drop(self.email);
         drop(self.sessions);
         drop(self.settings);
         drop(self.drain);
@@ -1694,6 +1723,7 @@ async fn it_login_audit_and_attempts_never_store_secrets() {
 mod forced_states;
 mod mfa;
 mod operator_cli;
+mod password_reset;
 mod profile;
 mod rate_limit;
 mod recent_auth;

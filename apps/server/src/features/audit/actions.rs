@@ -200,6 +200,22 @@ pub fn password_changed(
     ActionSpec::new(AuditAction::PasswordChanged, metadata)
 }
 
+pub fn password_reset_completed(
+    sessions_revoked: u64,
+    trusted_devices_revoked: u64,
+    lockout_cleared: bool,
+) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("sessions_revoked", Value::from(sessions_revoked)),
+        (
+            "trusted_devices_revoked",
+            Value::from(trusted_devices_revoked),
+        ),
+        ("lockout_cleared", Value::from(lockout_cleared)),
+    ]);
+    ActionSpec::new(AuditAction::PasswordResetCompleted, metadata)
+}
+
 pub fn two_factor_enabled(sessions_revoked: u64, backup_codes: usize) -> ActionSpec {
     let metadata = Metadata::json(&[
         ("sessions_revoked", Value::from(sessions_revoked)),

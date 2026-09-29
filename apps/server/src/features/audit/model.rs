@@ -278,6 +278,7 @@ pub enum AuditAction {
     LoginLockedOut,
     Logout,
     PasswordChanged,
+    PasswordResetCompleted,
     TwoFactorEnabled,
     TwoFactorDisabled,
     TwoFactorBackupCodesRegenerated,
@@ -299,6 +300,7 @@ impl AuditAction {
         Self::LoginLockedOut,
         Self::Logout,
         Self::PasswordChanged,
+        Self::PasswordResetCompleted,
         Self::TwoFactorEnabled,
         Self::TwoFactorDisabled,
         Self::TwoFactorBackupCodesRegenerated,
@@ -320,6 +322,7 @@ impl AuditAction {
             Self::LoginLockedOut => "LOGIN_LOCKED_OUT",
             Self::Logout => "LOGOUT",
             Self::PasswordChanged => "PASSWORD_CHANGED",
+            Self::PasswordResetCompleted => "PASSWORD_RESET_COMPLETED",
             Self::TwoFactorEnabled => "TWO_FACTOR_ENABLED",
             Self::TwoFactorDisabled => "TWO_FACTOR_DISABLED",
             Self::TwoFactorBackupCodesRegenerated => "TWO_FACTOR_BACKUP_CODES_REGENERATED",
@@ -342,6 +345,7 @@ impl AuditAction {
             | Self::TrustedDeviceRevoked
             | Self::SetupCompleted
             | Self::PasswordChanged
+            | Self::PasswordResetCompleted
             | Self::TwoFactorEnabled
             | Self::TwoFactorDisabled
             | Self::TwoFactorBackupCodesRegenerated

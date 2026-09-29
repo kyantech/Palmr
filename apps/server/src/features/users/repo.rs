@@ -139,6 +139,17 @@ pub async fn find_by_login_identifier(
     row.map(|row| user_from(&row)).transpose()
 }
 
+pub async fn find_by_login_identifier_in_tx(
+    tx: &mut WriteTx<'_>,
+    identifier: &NormalizedIdentifier,
+) -> Result<Option<User>, UserError> {
+    let row = sqlx::query(SELECT_BY_LOGIN_IDENTIFIER)
+        .bind(identifier.as_str())
+        .fetch_optional(tx.executor())
+        .await?;
+    row.map(|row| user_from(&row)).transpose()
+}
+
 pub async fn find_by_id_in_tx(tx: &mut WriteTx<'_>, id: UserId) -> Result<Option<User>, UserError> {
     let row = sqlx::query(SELECT_BY_ID)
         .bind(id.to_string())

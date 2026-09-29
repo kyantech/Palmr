@@ -44,6 +44,9 @@ export const RETRY_CLASS: Readonly<Record<ErrorCode, RetryClass>> = {
   TRUSTED_DEVICE_NOT_FOUND: "never",
   PASSWORD_CURRENT_INVALID: "never",
   PASSWORD_POLICY_VIOLATION: "never",
+  RESET_TOKEN_INVALID: "never",
+  RESET_TOKEN_EXPIRED: "never",
+  RESET_TOKEN_USED: "never",
 
   VALIDATION_ERROR: "never",
   INVALID_JSON: "never",

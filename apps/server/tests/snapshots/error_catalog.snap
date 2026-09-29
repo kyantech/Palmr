@@ -168,6 +168,21 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "RESET_TOKEN_EXPIRED",
+    "status": 410,
+    "retryable": false
+  },
+  {
+    "code": "RESET_TOKEN_INVALID",
+    "status": 400,
+    "retryable": false
+  },
+  {
+    "code": "RESET_TOKEN_USED",
+    "status": 410,
+    "retryable": false
+  },
+  {
     "code": "SERVICE_UNAVAILABLE",
     "status": 503,
     "retryable": true

@@ -999,6 +999,7 @@ async fn it_trusted_device_policy_disable() {
             PruneStep::IdempotencyRecords,
             PruneStep::PendingTotpEnrollments,
             PruneStep::TrustedDevices,
+            PruneStep::PasswordResetTokens,
             PruneStep::DisabledTrustedDevices,
         ]
     );

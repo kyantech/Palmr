@@ -124,6 +124,12 @@ error_catalog! {
         "The current password is incorrect";
     PasswordPolicyViolation = "PASSWORD_POLICY_VIOLATION", UNPROCESSABLE_ENTITY, retryable: false,
         "The password does not meet the password policy";
+    ResetTokenInvalid = "RESET_TOKEN_INVALID", BAD_REQUEST, retryable: false,
+        "The password reset link is invalid";
+    ResetTokenExpired = "RESET_TOKEN_EXPIRED", GONE, retryable: false,
+        "The password reset link has expired";
+    ResetTokenUsed = "RESET_TOKEN_USED", GONE, retryable: false,
+        "The password reset link was already used";
     UserEmailTaken = "USER_EMAIL_TAKEN", CONFLICT, retryable: false,
         "The e-mail address is already in use";
     UserUsernameTaken = "USER_USERNAME_TAKEN", CONFLICT, retryable: false,

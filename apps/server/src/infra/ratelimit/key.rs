@@ -84,6 +84,13 @@ impl NormalizedAccount {
             normalize(identifier).as_bytes(),
         ))
     }
+
+    pub fn resolved(account_id: &[u8]) -> Self {
+        Self(IdentityDigest::derive(
+            b"palmr:ratelimit:account-id",
+            account_id,
+        ))
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -223,6 +230,23 @@ mod tests {
         assert_ne!(
             NormalizedAccount::new("alice@example.com"),
             NormalizedAccount::new("bob@example.com")
+        );
+    }
+
+    #[test]
+    fn unit_resolved_account_identity_is_separate_from_submitted_identifiers() {
+        let id = "01996fc4-6a33-7c1e-9d2b-4f1a8e3c5b7d";
+        assert_eq!(
+            NormalizedAccount::resolved(id.as_bytes()),
+            NormalizedAccount::resolved(id.as_bytes())
+        );
+        assert_ne!(
+            NormalizedAccount::resolved(id.as_bytes()),
+            NormalizedAccount::new(id)
+        );
+        assert_ne!(
+            NormalizedAccount::resolved(id.as_bytes()),
+            NormalizedAccount::resolved(b"01996fc4-6a33-7c1e-9d2b-4f1a8e3c5b7e")
         );
     }
 

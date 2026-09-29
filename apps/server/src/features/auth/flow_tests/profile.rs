@@ -1488,7 +1488,13 @@ async fn it_profile_usage_accounting() {
 }
 
 impl Stack {
-    async fn setting_in(&self, group: &str, key: &str, value_type: &str, value_json: &str) {
+    pub(super) async fn setting_in(
+        &self,
+        group: &str,
+        key: &str,
+        value_type: &str,
+        value_json: &str,
+    ) {
         self.execute(&format!(
             "INSERT INTO app_settings (key, group_name, value_type, value_json, is_secret, updated_at)
              VALUES ('{key}', '{group}', '{value_type}', '{value_json}', 0, '2026-09-25T12:00:00.000Z')

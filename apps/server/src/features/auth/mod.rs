@@ -3,6 +3,7 @@ pub mod lockout;
 pub mod login;
 pub mod mfa;
 pub mod model;
+pub mod password_reset;
 pub mod recent_auth;
 pub(crate) mod repo;
 pub mod restrictions;

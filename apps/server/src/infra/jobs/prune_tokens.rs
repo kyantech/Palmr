@@ -13,20 +13,23 @@ use crate::infra::db::DbPools;
 
 pub const TOKENS_PRUNE_PERIOD: Duration = Duration::from_secs(60 * 60);
 pub const TRUSTED_DEVICE_RETENTION: Duration = Duration::from_secs(24 * 60 * 60);
+pub const PASSWORD_RESET_TOKEN_RETENTION: Duration = Duration::from_secs(24 * 60 * 60);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PruneStep {
     IdempotencyRecords,
     PendingTotpEnrollments,
     TrustedDevices,
+    PasswordResetTokens,
     DisabledTrustedDevices,
 }
 
 impl PruneStep {
-    pub const ALL: [Self; 3] = [
+    pub const ALL: [Self; 4] = [
         Self::IdempotencyRecords,
         Self::PendingTotpEnrollments,
         Self::TrustedDevices,
+        Self::PasswordResetTokens,
     ];
 
     pub const fn as_str(self) -> &'static str {
@@ -34,6 +37,7 @@ impl PruneStep {
             Self::IdempotencyRecords => "idempotency_records",
             Self::PendingTotpEnrollments => "pending_totp_enrollments",
             Self::TrustedDevices => "trusted_devices",
+            Self::PasswordResetTokens => "password_reset_tokens",
             Self::DisabledTrustedDevices => "disabled_trusted_devices",
         }
     }
@@ -43,6 +47,7 @@ impl PruneStep {
             Self::IdempotencyRecords => "tokens.prune.idempotency_records",
             Self::PendingTotpEnrollments => "tokens.prune.pending_totp_enrollments",
             Self::TrustedDevices => "tokens.prune.trusted_devices",
+            Self::PasswordResetTokens => "tokens.prune.password_reset_tokens",
             Self::DisabledTrustedDevices => "tokens.prune.disabled_trusted_devices",
         }
     }
@@ -52,6 +57,7 @@ impl PruneStep {
             Self::IdempotencyRecords | Self::DisabledTrustedDevices => Duration::ZERO,
             Self::PendingTotpEnrollments => PENDING_ENROLLMENT_TTL,
             Self::TrustedDevices => TRUSTED_DEVICE_RETENTION,
+            Self::PasswordResetTokens => PASSWORD_RESET_TOKEN_RETENTION,
         }
     }
 
@@ -76,6 +82,13 @@ impl PruneStep {
                   WHERE id IN (SELECT id FROM trusted_devices
                                 WHERE expires_at <= ?1
                                    OR (revoked_at IS NOT NULL AND revoked_at <= ?1)
+                                LIMIT ?2)"
+            }
+            Self::PasswordResetTokens => {
+                "DELETE FROM password_reset_tokens
+                  WHERE id IN (SELECT id FROM password_reset_tokens
+                                WHERE expires_at <= ?1
+                                ORDER BY expires_at
                                 LIMIT ?2)"
             }
             Self::DisabledTrustedDevices => {

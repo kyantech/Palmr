@@ -148,6 +148,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/password/forgot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["forgot"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/password/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/password/reset/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reset_check"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/reauthenticate": {
         parameters: {
             query?: never;
@@ -488,6 +536,10 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AcceptedResponse: {
+            /** @example true */
+            accepted: boolean;
+        };
         ApiErrorBody: {
             error: components["schemas"]["ApiErrorPayload"];
         };
@@ -585,7 +637,11 @@ export interface components {
             enrollmentId: string;
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "BRANDING_ASSET_UNKNOWN";
+        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "BRANDING_ASSET_UNKNOWN";
+        ForgotPasswordRequest: {
+            /** @example ada@example.com */
+            identifier: string;
+        };
         HealthLive: {
             status: components["schemas"]["HealthLiveStatus"];
             version: string;
@@ -774,6 +830,30 @@ export interface components {
             password?: string | null;
             /** @example 492013 */
             totpCode?: string | null;
+        };
+        ResetCheckRequest: {
+            /** @description The opaque token from the e-mailed `/reset-password/{token}` link. */
+            token: string;
+        };
+        ResetCheckResponse: {
+            /**
+             * Format: date-time
+             * @example 2026-09-22T15:03:51.204Z
+             */
+            expiresAt: string;
+            /**
+             * Format: int32
+             * @example 8
+             */
+            passwordMinLength: number;
+            /** @example true */
+            valid: boolean;
+        };
+        ResetPasswordRequest: {
+            /** Format: password */
+            newPassword: string;
+            /** @description The opaque token from the e-mailed `/reset-password/{token}` link. */
+            token: string;
         };
         /** @enum {string} */
         RestrictionName: "must_change_password" | "mfa_enrollment_required";
@@ -1401,6 +1481,221 @@ export interface operations {
             };
             /** @description Authentication required. */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    forgot: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description `identifier` is an e-mail address or a username. The body carries no URL of any kind: the e-mailed link is always the configured public base URL plus `/reset-password/{token}`. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForgotPasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description Accepted. The answer is identical whether or not the identifier names an account, and whatever that account's state; when a reset is issued, the e-mail is queued durably and sent later. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcceptedResponse"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FEATURE_UNAVAILABLE_SMTP` when the instance has no usable outbound e-mail configuration. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request failed validation. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited per client address or per requested account. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    reset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetPasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description The password is replaced. Every session and trusted device of the account is revoked, the account lockout is cleared and no session is created; two-factor enrollment is unchanged. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `RESET_TOKEN_INVALID` for a malformed, unknown or invalidated token, or the body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `AUTH_PASSWORD_LOGIN_DISABLED` while password login is disabled. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `RESET_TOKEN_EXPIRED` or `RESET_TOKEN_USED`. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PASSWORD_POLICY_VIOLATION` with `details.minLength`, or the request failed validation. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    reset_check: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetCheckRequest"];
+            };
+        };
+        responses: {
+            /** @description The token is live. The answer describes only the token, never the account it belongs to. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResetCheckResponse"];
+                };
+            };
+            /** @description `RESET_TOKEN_INVALID` for a malformed, unknown or invalidated token, or the body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `RESET_TOKEN_EXPIRED` or `RESET_TOKEN_USED`. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request failed validation. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

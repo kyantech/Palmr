@@ -1,5 +1,8 @@
 POST /api/v1/auth/login public
 POST /api/v1/auth/login/totp public
+POST /api/v1/auth/password/forgot public
+POST /api/v1/auth/password/reset public
+POST /api/v1/auth/password/reset/check public
 GET /api/v1/bootstrap public
 GET /api/v1/public/branding/{asset} public
 POST /api/v1/setup setup

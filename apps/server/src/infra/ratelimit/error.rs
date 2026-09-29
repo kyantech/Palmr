@@ -88,6 +88,9 @@ impl RateLimitRejection {
             request_id: request_id.cloned(),
         }
     }
+    pub const fn is_throttled(&self) -> bool {
+        matches!(self.rejected, Rejected::Throttled(_))
+    }
 }
 
 impl IntoResponse for RateLimitRejection {

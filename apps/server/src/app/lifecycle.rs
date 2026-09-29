@@ -38,6 +38,7 @@ use crate::domain::clock::{Clock, SystemClock};
 use crate::domain::locale::LocaleCode;
 use crate::features::audit;
 use crate::features::audit::service::{AuditDrain, AuditService};
+use crate::features::auth::password_reset::PasswordResetService;
 use crate::features::auth::sessions::SessionService;
 use crate::features::auth::totp::TotpService;
 use crate::features::auth::AuthService;
@@ -813,10 +814,26 @@ async fn initialize(
         auth.clone(),
         audit_service.clone(),
     );
+    let password_reset = PasswordResetService::new(
+        database.pools().clone(),
+        Arc::clone(&clock),
+        settings.clone(),
+        auth.clone(),
+        EmailService::new(
+            database.pools().clone(),
+            Arc::clone(&clock),
+            Arc::clone(&email_keys),
+            settings.clone(),
+            config.base_url.clone(),
+            Arc::new(SmtpTransport),
+        ),
+        audit_service.clone(),
+    );
     let services = RequestServices {
         auth,
         profile,
         totp,
+        password_reset,
         setup: SetupService::new(
             database.pools().clone(),
             Arc::clone(&clock),
@@ -1057,6 +1074,7 @@ struct RequestServices {
     auth: AuthService,
     profile: ProfileService,
     totp: TotpService,
+    password_reset: PasswordResetService,
     setup: SetupService,
     sessions: SessionService,
     branding: BrandingService,
@@ -1087,6 +1105,7 @@ fn composed_router(
             .layer(axum::Extension(services.auth))
             .layer(axum::Extension(services.profile))
             .layer(axum::Extension(services.totp))
+            .layer(axum::Extension(services.password_reset))
             .layer(axum::Extension(services.setup))
             .layer(axum::Extension(services.sessions))
             .layer(axum::Extension(services.branding))

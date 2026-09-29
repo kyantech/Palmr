@@ -642,6 +642,7 @@ pub fn application_routes() -> Routes<AppState> {
     Routes::new()
         .merge(health::routes())
         .merge(auth::routes::routes())
+        .merge(auth::password_reset::routes::routes())
         .merge(auth::sessions::routes::routes())
         .merge(auth::totp::routes::routes())
         .merge(auth::trusted_devices::routes::routes())
