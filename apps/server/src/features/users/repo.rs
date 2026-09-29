@@ -176,7 +176,15 @@ pub async fn insert(
     clock: &dyn Clock,
     new: &NewUser,
 ) -> Result<User, UserError> {
-    let id = UserId::generate(clock);
+    insert_with_id(tx, clock, UserId::generate(clock), new).await
+}
+
+pub async fn insert_with_id(
+    tx: &mut WriteTx<'_>,
+    clock: &dyn Clock,
+    id: UserId,
+    new: &NewUser,
+) -> Result<User, UserError> {
     let now = Timestamp::try_from(clock.now())?;
     let password_updated_at = new.password_hash.as_ref().map(|_| now);
     let deactivated_at = (!new.is_active).then_some(now);

@@ -41,6 +41,8 @@ use crate::domain::time::Timestamp;
 use crate::domain::username::Username;
 use crate::features::audit;
 use crate::features::audit::service::AuditDrain;
+use crate::features::auth::invites::service::InviteServiceParts;
+use crate::features::auth::invites::InviteService;
 use crate::features::auth::password_reset::PasswordResetService;
 use crate::features::auth::sessions::SessionService;
 use crate::features::auth::totp::TotpService;
@@ -81,6 +83,7 @@ struct Stack {
     profile: ProfileService,
     totp: TotpService,
     resets: PasswordResetService,
+    invites: InviteService,
     mail: Arc<CapturingTransport>,
     email: EmailService,
     drain: AuditDrain,
@@ -174,8 +177,18 @@ impl Stack {
             settings.handle(),
             auth.clone(),
             email.clone(),
-            audit,
+            audit.clone(),
         );
+        let invites = InviteService::new(InviteServiceParts {
+            pools: pools.clone(),
+            clock: Arc::new(clock.clone()),
+            settings: settings.handle(),
+            keys: settings.keys(),
+            base_url: config.base_url.clone(),
+            auth: auth.clone(),
+            email: email.clone(),
+            audit,
+        });
         let setup = SetupService::new(
             pools.clone(),
             Arc::new(clock.clone()),
@@ -197,6 +210,7 @@ impl Stack {
             .layer(Extension(profile.clone()))
             .layer(Extension(totp.clone()))
             .layer(Extension(resets.clone()))
+            .layer(Extension(invites.clone()))
             .layer(Extension(EffectiveSettingsService::new(
                 pools.reader().clone(),
                 settings.handle(),
@@ -225,6 +239,7 @@ impl Stack {
             profile,
             totp,
             resets,
+            invites,
             mail,
             email,
             drain,
@@ -410,6 +425,7 @@ impl Stack {
         drop(self.profile);
         drop(self.totp);
         drop(self.resets);
+        drop(self.invites);
         drop(self.email);
         drop(self.sessions);
         drop(self.settings);
@@ -1721,6 +1737,7 @@ async fn it_login_audit_and_attempts_never_store_secrets() {
 }
 
 mod forced_states;
+mod invites;
 mod mfa;
 mod operator_cli;
 mod password_reset;

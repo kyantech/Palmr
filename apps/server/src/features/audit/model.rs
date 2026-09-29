@@ -273,6 +273,9 @@ pub enum AuditAction {
     AllSessionsRevoked,
     TrustedDeviceRevoked,
     SetupCompleted,
+    InviteCreated,
+    InviteRevoked,
+    InviteConsumed,
     LoginSucceeded,
     LoginFailed,
     LoginLockedOut,
@@ -295,6 +298,9 @@ impl AuditAction {
         Self::AllSessionsRevoked,
         Self::TrustedDeviceRevoked,
         Self::SetupCompleted,
+        Self::InviteCreated,
+        Self::InviteRevoked,
+        Self::InviteConsumed,
         Self::LoginSucceeded,
         Self::LoginFailed,
         Self::LoginLockedOut,
@@ -317,6 +323,9 @@ impl AuditAction {
             Self::AllSessionsRevoked => "ALL_SESSIONS_REVOKED",
             Self::TrustedDeviceRevoked => "TRUSTED_DEVICE_REVOKED",
             Self::SetupCompleted => "SETUP_COMPLETED",
+            Self::InviteCreated => "INVITE_CREATED",
+            Self::InviteRevoked => "INVITE_REVOKED",
+            Self::InviteConsumed => "INVITE_CONSUMED",
             Self::LoginSucceeded => "LOGIN_SUCCEEDED",
             Self::LoginFailed => "LOGIN_FAILED",
             Self::LoginLockedOut => "LOGIN_LOCKED_OUT",
@@ -344,6 +353,9 @@ impl AuditAction {
             | Self::AllSessionsRevoked
             | Self::TrustedDeviceRevoked
             | Self::SetupCompleted
+            | Self::InviteCreated
+            | Self::InviteRevoked
+            | Self::InviteConsumed
             | Self::PasswordChanged
             | Self::PasswordResetCompleted
             | Self::TwoFactorEnabled

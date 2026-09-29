@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test";
+import { type BrowserContext, expect, type Page, test } from "@playwright/test";
 
 test.describe.configure({ mode: "serial" });
 
@@ -353,4 +353,144 @@ test("e2e_settings_appearance_profile_sessions_password", async ({
     bystander.close(),
     fresh.close(),
   ]);
+});
+
+const INVITEE = {
+  firstName: "Grace",
+  lastName: "Hopper",
+  username: "grace",
+  email: "grace@example.test",
+  password: "an invited person's passphrase",
+};
+const INVITEE_NEW_PASSWORD = "a freshly chosen passphrase";
+
+async function csrfOf(context: BrowserContext): Promise<string> {
+  const cookies = await context.cookies();
+  return cookies.find((cookie) => cookie.name === "palmr_csrf")?.value ?? "";
+}
+
+async function apiLogin(
+  context: BrowserContext,
+  identifier: string,
+  password: string,
+) {
+  for (;;) {
+    const response = await context.request.post("/api/v1/auth/login", {
+      data: { identifier, password },
+    });
+    if (response.status() !== 429) {
+      return response;
+    }
+    const wait = Number(response.headers()["retry-after"] ?? "1");
+    await new Promise((resolve) => setTimeout(resolve, wait * 1000));
+  }
+}
+
+test("regression_R068_user_self_service_profile_and_password", async ({
+  browser,
+}) => {
+  const adminContext = await browser.newContext();
+  const login = await apiLogin(adminContext, ADMIN.username, NEW_PASSWORD);
+  expect(login.status()).toBe(200);
+  const created = await adminContext.request.post("/api/v1/admin/invites", {
+    headers: { "X-Palmr-CSRF": await csrfOf(adminContext) },
+    data: { email: INVITEE.email, role: "user", sendEmail: false },
+  });
+  expect(created.status()).toBe(201);
+  const { inviteUrl } = (await created.json()) as { inviteUrl: string };
+  const token = new URL(inviteUrl).pathname.split("/").pop() ?? "";
+  expect(new URL(inviteUrl).pathname).toBe(`/invite/${token}`);
+  expect(token).toHaveLength(43);
+
+  const userContext = await browser.newContext();
+  const found = await userContext.request.get(
+    `/api/v1/public/invites/${token}`,
+  );
+  expect(found.status()).toBe(200);
+  expect(await found.json()).toMatchObject({
+    valid: true,
+    email: INVITEE.email,
+  });
+  const accepted = await userContext.request.post(
+    `/api/v1/public/invites/${token}/accept`,
+    {
+      data: {
+        firstName: INVITEE.firstName,
+        lastName: INVITEE.lastName,
+        username: INVITEE.username,
+        password: INVITEE.password,
+        locale: "en-US",
+      },
+    },
+  );
+  expect(accepted.status()).toBe(201);
+  expect(await accepted.json()).toMatchObject({
+    user: { username: INVITEE.username, role: "user" },
+    mustChangePassword: false,
+  });
+  const reused = await userContext.request.post(
+    `/api/v1/public/invites/${token}/accept`,
+    {
+      data: {
+        firstName: "Eve",
+        lastName: "Mallory",
+        username: "eve",
+        password: INVITEE.password,
+        locale: "en-US",
+      },
+    },
+  );
+  expect(reused.status()).toBe(410);
+  expect(
+    ((await reused.json()) as { error: { code: string } }).error.code,
+  ).toBe("INVITE_ALREADY_USED");
+
+  const page = await userContext.newPage();
+  const pageErrors = collectPageErrors(page);
+  await page.goto("/settings/profile");
+  await expect(page.getByTestId("app-shell")).toBeVisible();
+  await expect(page.getByLabel(/e-?mail|username|role/i)).toHaveCount(0);
+  await page.getByLabel("First name").fill("Grace M.");
+  await page.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByText("Profile saved.")).toBeVisible();
+  expect(
+    await (await page.request.get("/api/v1/auth/me")).json(),
+  ).toMatchObject({
+    user: { firstName: "Grace M.", username: INVITEE.username, role: "user" },
+  });
+
+  const wrong = await page.request.post("/api/v1/profile/password", {
+    headers: { "X-Palmr-CSRF": await csrfOf(userContext) },
+    data: {
+      currentPassword: "not the password",
+      newPassword: INVITEE_NEW_PASSWORD,
+    },
+  });
+  expect(wrong.status()).toBe(403);
+  expect(((await wrong.json()) as { error: { code: string } }).error.code).toBe(
+    "PASSWORD_CURRENT_INVALID",
+  );
+
+  await page.goto("/settings/security");
+  await page.getByLabel("Current password").fill(INVITEE.password);
+  await page
+    .getByLabel("New password", { exact: true })
+    .fill(INVITEE_NEW_PASSWORD);
+  await page.getByLabel("Confirm new password").fill(INVITEE_NEW_PASSWORD);
+  await page.getByRole("button", { name: "Change password" }).click();
+  await completeRecentAuthIfAsked(
+    page,
+    page.getByText("Password changed."),
+    INVITEE.password,
+  );
+
+  const denied = await page.request.get("/api/v1/admin/invites");
+  expect(denied.status()).toBe(403);
+  const fresh = await browser.newContext();
+  const relogin = await apiLogin(fresh, INVITEE.username, INVITEE_NEW_PASSWORD);
+  expect(relogin.status()).toBe(200);
+  expect(await relogin.json()).toMatchObject({ user: { role: "user" } });
+
+  expect(pageErrors).toEqual([]);
+  await Promise.all([adminContext.close(), userContext.close(), fresh.close()]);
 });

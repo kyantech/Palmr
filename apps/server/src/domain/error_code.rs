@@ -130,6 +130,14 @@ error_catalog! {
         "The password reset link has expired";
     ResetTokenUsed = "RESET_TOKEN_USED", GONE, retryable: false,
         "The password reset link was already used";
+    InviteNotFound = "INVITE_NOT_FOUND", NOT_FOUND, retryable: false,
+        "The invite was not found";
+    InviteExpired = "INVITE_EXPIRED", GONE, retryable: false,
+        "The invite has expired";
+    InviteAlreadyUsed = "INVITE_ALREADY_USED", GONE, retryable: false,
+        "The invite was already used";
+    InviteRevoked = "INVITE_REVOKED", GONE, retryable: false,
+        "The invite was revoked";
     UserEmailTaken = "USER_EMAIL_TAKEN", CONFLICT, retryable: false,
         "The e-mail address is already in use";
     UserUsernameTaken = "USER_USERNAME_TAKEN", CONFLICT, retryable: false,

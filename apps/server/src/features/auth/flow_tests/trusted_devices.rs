@@ -1000,6 +1000,8 @@ async fn it_trusted_device_policy_disable() {
             PruneStep::PendingTotpEnrollments,
             PruneStep::TrustedDevices,
             PruneStep::PasswordResetTokens,
+            PruneStep::ExpiredInvites,
+            PruneStep::TerminalInvites,
             PruneStep::DisabledTrustedDevices,
         ]
     );

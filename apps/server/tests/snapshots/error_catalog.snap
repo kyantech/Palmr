@@ -123,6 +123,26 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "INVITE_ALREADY_USED",
+    "status": 410,
+    "retryable": false
+  },
+  {
+    "code": "INVITE_EXPIRED",
+    "status": 410,
+    "retryable": false
+  },
+  {
+    "code": "INVITE_NOT_FOUND",
+    "status": 404,
+    "retryable": false
+  },
+  {
+    "code": "INVITE_REVOKED",
+    "status": 410,
+    "retryable": false
+  },
+  {
     "code": "METHOD_NOT_ALLOWED",
     "status": 405,
     "retryable": false

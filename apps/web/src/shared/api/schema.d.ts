@@ -4,6 +4,54 @@
  */
 
 export interface paths {
+    "/api/v1/admin/invites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_invites"];
+        put?: never;
+        post: operations["create_invite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/invites/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["revoke_invite"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/invites/{id}/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resend_invite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/2fa": {
         parameters: {
             query?: never;
@@ -340,6 +388,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/invites/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["lookup_invite"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/invites/{token}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["accept_invite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/sessions": {
         parameters: {
             query?: never;
@@ -536,6 +616,18 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AcceptInviteRequest: {
+            /** @example Alan */
+            firstName: string;
+            /** @example Turing */
+            lastName: string;
+            /** @example en-US */
+            locale: string;
+            /** Format: password */
+            password: string;
+            /** @example alan */
+            username: string;
+        };
         AcceptedResponse: {
             /** @example true */
             accepted: boolean;
@@ -590,6 +682,39 @@ export interface components {
             /** Format: int64 */
             sortOrder: number;
         };
+        CreateInviteRequest: {
+            /**
+             * @description The address the invite is bound to; the account is created with it.
+             * @example new@example.com
+             */
+            email: string;
+            /**
+             * Format: int64
+             * @description Validity in hours (1–720); the admin-configured invite validity when omitted.
+             * @example 24
+             */
+            expiresInHours?: number | null;
+            /** @example user */
+            role: string;
+            /**
+             * @description Queue the invite e-mail. Requires a configured SMTP server.
+             * @example true
+             */
+            sendEmail: boolean;
+        };
+        CreateInviteResponse: {
+            /**
+             * Format: date-time
+             * @example 2026-09-23T14:20:00.000Z
+             */
+            expiresAt: string;
+            id: string;
+            /**
+             * @description The one-time invite link, built from the configured public base URL.
+             * @example https://palmr.example.com/invite/9f3c…
+             */
+            inviteUrl: string;
+        };
         /** @enum {string} */
         DatabaseHealthStatus: "ok";
         DetailValue: boolean | number | string | string[];
@@ -637,7 +762,7 @@ export interface components {
             enrollmentId: string;
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "BRANDING_ASSET_UNKNOWN";
+        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "BRANDING_ASSET_UNKNOWN";
         ForgotPasswordRequest: {
             /** @example ada@example.com */
             identifier: string;
@@ -677,6 +802,43 @@ export interface components {
         };
         /** @enum {string} */
         HealthSummaryStatus: "ok" | "degraded" | "not_ready";
+        InviteCreator: {
+            id: string;
+            username: string;
+        };
+        InviteItem: {
+            acceptedAt: string | null;
+            acceptedUserId: string | null;
+            createdAt: string;
+            createdBy: components["schemas"]["InviteCreator"];
+            /** @example new@example.com */
+            email: string | null;
+            expiresAt: string;
+            id: string;
+            /** @description When the invite e-mail was last queued for delivery; `null` if it never was. */
+            lastSentAt: string | null;
+            /** @example user */
+            role: string;
+            status: components["schemas"]["InviteStatus"];
+        };
+        InviteLookupResponse: {
+            /** @example new@example.com */
+            email: string;
+            /**
+             * Format: date-time
+             * @example 2026-09-23T14:20:00.000Z
+             */
+            expiresAt: string;
+            /**
+             * Format: int32
+             * @example 8
+             */
+            passwordMinLength: number;
+            /** @example true */
+            valid: boolean;
+        };
+        /** @enum {string} */
+        InviteStatus: "pending" | "accepted" | "revoked" | "expired";
         LoginRequest: {
             /** @example ada@example.com */
             identifier: string;
@@ -774,6 +936,30 @@ export interface components {
         };
         /** @enum {string} */
         MigrationHealthStatus: "current";
+        Page_InviteItem: {
+            items: {
+                acceptedAt: string | null;
+                acceptedUserId: string | null;
+                createdAt: string;
+                createdBy: components["schemas"]["InviteCreator"];
+                /** @example new@example.com */
+                email: string | null;
+                expiresAt: string;
+                id: string;
+                /** @description When the invite e-mail was last queued for delivery; `null` if it never was. */
+                lastSentAt: string | null;
+                /** @example user */
+                role: string;
+                status: components["schemas"]["InviteStatus"];
+            }[];
+            /** @description Opaque cursor for the next page; `null` on the last page. */
+            nextCursor: string | null;
+            /**
+             * Format: int64
+             * @description Matching items overall; `null` where counting would require a scan.
+             */
+            totalCount: number | null;
+        };
         Page_SessionItem: {
             items: {
                 absoluteExpiresAt: string;
@@ -986,6 +1172,285 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    list_invites: {
+        parameters: {
+            query?: {
+                /** @description Filter: pending|accepted|revoked|expired. A pending invite past its expiry is reported as expired. */
+                status?: string;
+                /** @description Opaque pagination cursor. */
+                cursor?: string;
+                /** @description Page size. */
+                limit?: number;
+                /** @description Sort: createdAt:asc|desc */
+                sort?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Invites, newest first. The token, its digest and its sealed copy are never part of this response. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_InviteItem"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Invalid query. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    create_invite: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 16–128 characters. A replay within 24 hours returns the original response from a sealed record without creating another invite. */
+                "Idempotency-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The body carries no URL of any kind: the invite link is always the configured public base URL plus `/invite/{token}`. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateInviteRequest"];
+            };
+        };
+        responses: {
+            /** @description The invite is created. `inviteUrl` is returned only here (and on a keyed replay) so it can be delivered by hand. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateInviteResponse"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `USER_EMAIL_TAKEN` when an account or a pending invite already holds the address; `FEATURE_UNAVAILABLE_SMTP` when `sendEmail` is true and SMTP is not configured; `IDEMPOTENCY_KEY_CONFLICT` or `IDEMPOTENCY_REQUEST_IN_PROGRESS` for a reused key. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request failed validation. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    revoke_invite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Invite UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The invite is revoked and its sealed token copy wiped. An invite that is already accepted, revoked or expired is left unchanged. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `INVITE_NOT_FOUND`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    resend_invite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Invite UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The original token is queued for delivery again; the expiry is unchanged. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `INVITE_NOT_FOUND`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FEATURE_UNAVAILABLE_SMTP` when SMTP is not configured. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `INVITE_ALREADY_USED`, `INVITE_REVOKED` or `INVITE_EXPIRED`. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
     status: {
         parameters: {
             query?: never;
@@ -2320,6 +2785,147 @@ export interface operations {
             };
             /** @description Unknown or disabled asset. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    lookup_invite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The opaque token from the `/invite/{token}` link. */
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The invite is live. Only the bound e-mail, the password policy and the expiry are disclosed. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InviteLookupResponse"];
+                };
+            };
+            /** @description `INVITE_NOT_FOUND` for a malformed or unknown token. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `INVITE_EXPIRED`, `INVITE_ALREADY_USED` or `INVITE_REVOKED`. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    accept_invite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The opaque token from the `/invite/{token}` link. */
+                token: string;
+            };
+            cookie?: never;
+        };
+        /** @description The account's e-mail address and role come from the invite and cannot be supplied here. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptInviteRequest"];
+            };
+        };
+        responses: {
+            /** @description The account is created and signed in; `palmr_session` and `palmr_csrf` are set. The invite is consumed in the same transaction. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginResponse"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `INVITE_NOT_FOUND` for a malformed or unknown token. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `USER_USERNAME_TAKEN` or `USER_EMAIL_TAKEN`; the invite stays usable. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `INVITE_EXPIRED`, `INVITE_ALREADY_USED` or `INVITE_REVOKED`. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PASSWORD_POLICY_VIOLATION` with `details.minLength`, or the request failed validation. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

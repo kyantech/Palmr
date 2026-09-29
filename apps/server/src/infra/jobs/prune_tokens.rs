@@ -14,6 +14,7 @@ use crate::infra::db::DbPools;
 pub const TOKENS_PRUNE_PERIOD: Duration = Duration::from_secs(60 * 60);
 pub const TRUSTED_DEVICE_RETENTION: Duration = Duration::from_secs(24 * 60 * 60);
 pub const PASSWORD_RESET_TOKEN_RETENTION: Duration = Duration::from_secs(24 * 60 * 60);
+pub const INVITE_RETENTION: Duration = Duration::from_secs(30 * 24 * 60 * 60);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PruneStep {
@@ -21,15 +22,19 @@ pub enum PruneStep {
     PendingTotpEnrollments,
     TrustedDevices,
     PasswordResetTokens,
+    ExpiredInvites,
+    TerminalInvites,
     DisabledTrustedDevices,
 }
 
 impl PruneStep {
-    pub const ALL: [Self; 4] = [
+    pub const ALL: [Self; 6] = [
         Self::IdempotencyRecords,
         Self::PendingTotpEnrollments,
         Self::TrustedDevices,
         Self::PasswordResetTokens,
+        Self::ExpiredInvites,
+        Self::TerminalInvites,
     ];
 
     pub const fn as_str(self) -> &'static str {
@@ -38,6 +43,8 @@ impl PruneStep {
             Self::PendingTotpEnrollments => "pending_totp_enrollments",
             Self::TrustedDevices => "trusted_devices",
             Self::PasswordResetTokens => "password_reset_tokens",
+            Self::ExpiredInvites => "expired_invites",
+            Self::TerminalInvites => "terminal_invites",
             Self::DisabledTrustedDevices => "disabled_trusted_devices",
         }
     }
@@ -48,16 +55,21 @@ impl PruneStep {
             Self::PendingTotpEnrollments => "tokens.prune.pending_totp_enrollments",
             Self::TrustedDevices => "tokens.prune.trusted_devices",
             Self::PasswordResetTokens => "tokens.prune.password_reset_tokens",
+            Self::ExpiredInvites => "tokens.prune.expired_invites",
+            Self::TerminalInvites => "tokens.prune.terminal_invites",
             Self::DisabledTrustedDevices => "tokens.prune.disabled_trusted_devices",
         }
     }
 
     const fn retention(self) -> Duration {
         match self {
-            Self::IdempotencyRecords | Self::DisabledTrustedDevices => Duration::ZERO,
+            Self::IdempotencyRecords | Self::ExpiredInvites | Self::DisabledTrustedDevices => {
+                Duration::ZERO
+            }
             Self::PendingTotpEnrollments => PENDING_ENROLLMENT_TTL,
             Self::TrustedDevices => TRUSTED_DEVICE_RETENTION,
             Self::PasswordResetTokens => PASSWORD_RESET_TOKEN_RETENTION,
+            Self::TerminalInvites => INVITE_RETENTION,
         }
     }
 
@@ -89,6 +101,22 @@ impl PruneStep {
                   WHERE id IN (SELECT id FROM password_reset_tokens
                                 WHERE expires_at <= ?1
                                 ORDER BY expires_at
+                                LIMIT ?2)"
+            }
+            Self::ExpiredInvites => {
+                "UPDATE invites
+                    SET state = 'expired',
+                        token_ciphertext = NULL, token_nonce = NULL, key_version = NULL
+                  WHERE id IN (SELECT id FROM invites
+                                WHERE state = 'pending' AND expires_at <= ?1
+                                ORDER BY expires_at
+                                LIMIT ?2)"
+            }
+            Self::TerminalInvites => {
+                "DELETE FROM invites
+                  WHERE id IN (SELECT id FROM invites
+                                WHERE state <> 'pending'
+                                  AND COALESCE(accepted_at, revoked_at, expires_at) <= ?1
                                 LIMIT ?2)"
             }
             Self::DisabledTrustedDevices => {

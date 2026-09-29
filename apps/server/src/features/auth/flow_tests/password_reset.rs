@@ -38,7 +38,7 @@ type ResetRow = (
 );
 
 impl Stack {
-    async fn enable_smtp(&self) {
+    pub(super) async fn enable_smtp(&self) {
         self.setting_in("smtp", "smtp_enabled", "boolean", "true")
             .await;
         self.setting_in("smtp", "smtp_host", "string", "\"smtp.example.test\"")
@@ -69,7 +69,7 @@ impl Stack {
         self.post_json(RESET, &body.to_string(), host, None).await
     }
 
-    async fn deliver_mail(&self) {
+    pub(super) async fn deliver_mail(&self) {
         let registry = register_email_jobs(Registry::production(), self.email.clone());
         let dispatcher = Dispatcher::new(
             self.pools.clone(),
@@ -128,7 +128,7 @@ impl Stack {
         .await;
     }
 
-    async fn every_stored_text(&self) -> Vec<(String, String)> {
+    pub(super) async fn every_stored_text(&self) -> Vec<(String, String)> {
         let tables: Vec<String> = sqlx::query_scalar(
             "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'",
         )
@@ -168,10 +168,10 @@ fn sha256(token: &str) -> String {
 }
 
 #[derive(Clone, Default)]
-struct Capture(Arc<Mutex<Vec<u8>>>);
+pub(super) struct Capture(Arc<Mutex<Vec<u8>>>);
 
 impl Capture {
-    fn text(&self) -> String {
+    pub(super) fn text(&self) -> String {
         String::from_utf8(
             self.0
                 .lock()

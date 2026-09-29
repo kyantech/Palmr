@@ -1,5 +1,6 @@
 use serde_json::{Map, Value};
 
+use crate::domain::role::Role;
 use crate::infra::jobs::{FailureClass, JobKind};
 
 use super::model::AuditAction;
@@ -299,6 +300,27 @@ pub fn operator_cli_password_reset(facts: PasswordResetFacts) -> ActionSpec {
 
 pub fn setup_completed() -> ActionSpec {
     ActionSpec::new(AuditAction::SetupCompleted, Metadata::json(&[]))
+}
+
+// Invite builders take the role and delivery facts only: the token, its
+// digest, its sealed copy and the invite URL have no parameter here.
+pub fn invite_created(role: Role, validity_hours: u32, email_queued: bool) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("role", Value::from(role.as_str())),
+        ("validity_hours", Value::from(validity_hours)),
+        ("email_queued", Value::from(email_queued)),
+    ]);
+    ActionSpec::new(AuditAction::InviteCreated, metadata)
+}
+
+pub fn invite_revoked(role: Role) -> ActionSpec {
+    let metadata = Metadata::json(&[("role", Value::from(role.as_str()))]);
+    ActionSpec::new(AuditAction::InviteRevoked, metadata)
+}
+
+pub fn invite_consumed(role: Role) -> ActionSpec {
+    let metadata = Metadata::json(&[("role", Value::from(role.as_str()))]);
+    ActionSpec::new(AuditAction::InviteConsumed, metadata)
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]

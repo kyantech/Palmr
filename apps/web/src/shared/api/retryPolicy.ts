@@ -47,6 +47,10 @@ export const RETRY_CLASS: Readonly<Record<ErrorCode, RetryClass>> = {
   RESET_TOKEN_INVALID: "never",
   RESET_TOKEN_EXPIRED: "never",
   RESET_TOKEN_USED: "never",
+  INVITE_NOT_FOUND: "never",
+  INVITE_EXPIRED: "never",
+  INVITE_ALREADY_USED: "never",
+  INVITE_REVOKED: "never",
 
   VALIDATION_ERROR: "never",
   INVALID_JSON: "never",

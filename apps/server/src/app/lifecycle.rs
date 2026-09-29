@@ -38,6 +38,8 @@ use crate::domain::clock::{Clock, SystemClock};
 use crate::domain::locale::LocaleCode;
 use crate::features::audit;
 use crate::features::audit::service::{AuditDrain, AuditService};
+use crate::features::auth::invites::service::InviteServiceParts;
+use crate::features::auth::invites::InviteService;
 use crate::features::auth::password_reset::PasswordResetService;
 use crate::features::auth::sessions::SessionService;
 use crate::features::auth::totp::TotpService;
@@ -814,26 +816,38 @@ async fn initialize(
         auth.clone(),
         audit_service.clone(),
     );
+    let outbox = EmailService::new(
+        database.pools().clone(),
+        Arc::clone(&clock),
+        Arc::clone(&email_keys),
+        settings.clone(),
+        config.base_url.clone(),
+        Arc::new(SmtpTransport),
+    );
     let password_reset = PasswordResetService::new(
         database.pools().clone(),
         Arc::clone(&clock),
         settings.clone(),
         auth.clone(),
-        EmailService::new(
-            database.pools().clone(),
-            Arc::clone(&clock),
-            Arc::clone(&email_keys),
-            settings.clone(),
-            config.base_url.clone(),
-            Arc::new(SmtpTransport),
-        ),
+        outbox.clone(),
         audit_service.clone(),
     );
+    let invites = InviteService::new(InviteServiceParts {
+        pools: database.pools().clone(),
+        clock: Arc::clone(&clock),
+        settings: settings.clone(),
+        keys: Arc::clone(&email_keys),
+        base_url: config.base_url.clone(),
+        auth: auth.clone(),
+        email: outbox,
+        audit: audit_service.clone(),
+    });
     let services = RequestServices {
         auth,
         profile,
         totp,
         password_reset,
+        invites,
         setup: SetupService::new(
             database.pools().clone(),
             Arc::clone(&clock),
@@ -1075,6 +1089,7 @@ struct RequestServices {
     profile: ProfileService,
     totp: TotpService,
     password_reset: PasswordResetService,
+    invites: InviteService,
     setup: SetupService,
     sessions: SessionService,
     branding: BrandingService,
@@ -1106,6 +1121,7 @@ fn composed_router(
             .layer(axum::Extension(services.profile))
             .layer(axum::Extension(services.totp))
             .layer(axum::Extension(services.password_reset))
+            .layer(axum::Extension(services.invites))
             .layer(axum::Extension(services.setup))
             .layer(axum::Extension(services.sessions))
             .layer(axum::Extension(services.branding))

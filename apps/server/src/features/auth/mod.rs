@@ -1,4 +1,5 @@
 pub mod error;
+pub mod invites;
 pub mod lockout;
 pub mod login;
 pub mod mfa;

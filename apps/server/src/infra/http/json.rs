@@ -76,13 +76,20 @@ pub async fn read_with<T: DeserializeOwned>(
     body: Body,
     fields: &'static [JsonField],
 ) -> Result<T, ApiError> {
+    from_value(read_value(body).await?, fields)
+}
+
+pub async fn read_value(body: Body) -> Result<Value, ApiError> {
     let bytes = body
         .collect()
         .await
         .map_err(|_| ApiError::invalid_json())?
         .to_bytes();
-    let value: Value = serde_json::from_slice(&bytes).map_err(|_| ApiError::invalid_json())?;
-    from_value(value, fields)
+    serde_json::from_slice(&bytes).map_err(|_| ApiError::invalid_json())
+}
+
+pub fn parse<T: JsonRequest>(value: Value) -> Result<T, ApiError> {
+    from_value(value, T::FIELDS)
 }
 
 fn from_value<T: DeserializeOwned>(
