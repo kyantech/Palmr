@@ -2,7 +2,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
 use axum::extract::{FromRequestParts, RawPathParams, Request, State};
-use axum::middleware::{from_fn_with_state, Next};
+use axum::middleware::{from_fn, from_fn_with_state, Next};
 use axum::response::{IntoResponse, Response};
 use axum::routing::MethodRouter;
 use http::request::Parts;
@@ -26,6 +26,24 @@ where
     } else {
         handler
     }
+}
+
+pub(crate) fn require_principal_admission<S>(handler: MethodRouter<S>) -> MethodRouter<S>
+where
+    S: Clone + Send + Sync + 'static,
+{
+    handler.route_layer(from_fn(reject_unadmitted_principal))
+}
+
+async fn reject_unadmitted_principal(request: Request, next: Next) -> Response {
+    if let Some(pending) = request.extensions().get::<PrincipalAdmission>() {
+        tracing::error!(
+            scope = pending.class.as_str(),
+            "a handler was reached before its session-keyed rate-limit buckets were admitted"
+        );
+        return RateLimitRejection::internal(pending.request_id.as_ref()).into_response();
+    }
+    next.run(request).await
 }
 
 fn keys_on_public_scope(class: RateLimitClass) -> bool {
@@ -84,17 +102,22 @@ async fn enforce_rate_limit(
     } else {
         None
     };
-    let principal = parts.extensions.get::<RateLimitPrincipal>().copied();
-    let subject = Subject::new(client.ip())
-        .with_principal(principal)
-        .with_scope(scope);
+    let subject = Subject::new(client.ip()).with_scope(scope);
 
     if let Err(denial) = limiter.admit(class, Stage::Edge, &subject) {
         return rejection(class, denial, request_id.as_ref()).into_response();
     }
 
     let mut request = Request::from_parts(parts, body);
-    if !class.has_deferred_buckets() {
+    if class.has_buckets_at(Stage::Session) {
+        request.extensions_mut().insert(PrincipalAdmission {
+            class,
+            limiter: Arc::clone(&limiter),
+            subject,
+            request_id: request_id.clone(),
+        });
+    }
+    if !class.has_buckets_at(Stage::Deferred) {
         return next.run(request).await;
     }
 
@@ -114,6 +137,27 @@ async fn enforce_rate_limit(
         );
     }
     response
+}
+
+#[derive(Clone)]
+pub struct PrincipalAdmission {
+    class: RateLimitClass,
+    limiter: Arc<RateLimiter>,
+    subject: Subject,
+    request_id: Option<RequestId>,
+}
+
+impl PrincipalAdmission {
+    pub fn take(extensions: &mut http::Extensions) -> Option<Self> {
+        extensions.remove::<Self>()
+    }
+
+    pub fn admit(self, principal: Option<RateLimitPrincipal>) -> Result<(), RateLimitRejection> {
+        let subject = self.subject.with_principal(principal);
+        self.limiter
+            .admit(self.class, Stage::Session, &subject)
+            .map_err(|denial| rejection(self.class, denial, self.request_id.as_ref()))
+    }
 }
 
 #[derive(Clone)]

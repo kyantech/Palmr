@@ -36,18 +36,16 @@ pub enum Dimension {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Stage {
     Edge,
+    Session,
     Deferred,
 }
 
 impl Dimension {
     pub const fn stage(self) -> Stage {
         match self {
+            Self::SessionOrIp | Self::SessionOrGrantOrIp => Stage::Session,
             Self::MfaPendingOrSessionOrIp | Self::NormalizedAccount => Stage::Deferred,
-            Self::ResolvedIp
-            | Self::SessionOrIp
-            | Self::SessionOrGrantOrIp
-            | Self::IpAndPublicScope
-            | Self::InstanceWide => Stage::Edge,
+            Self::ResolvedIp | Self::IpAndPublicScope | Self::InstanceWide => Stage::Edge,
         }
     }
 }
@@ -172,10 +170,10 @@ impl RateLimitClass {
         !self.buckets().is_empty()
     }
 
-    pub fn has_deferred_buckets(self) -> bool {
+    pub fn has_buckets_at(self, stage: Stage) -> bool {
         self.buckets()
             .iter()
-            .any(|bucket| bucket.dimension.stage() == Stage::Deferred)
+            .any(|bucket| bucket.dimension.stage() == stage)
     }
 
     pub(super) const fn index(self) -> usize {
@@ -251,16 +249,44 @@ mod tests {
         }
     }
 
-    #[test]
-    fn unit_only_body_derived_dimensions_are_deferred() {
-        let deferred: Vec<RateLimitClass> = RateLimitClass::ALL
+    fn classes_at(stage: Stage) -> Vec<RateLimitClass> {
+        RateLimitClass::ALL
             .into_iter()
-            .filter(|class| class.has_deferred_buckets())
-            .collect();
+            .filter(|class| class.has_buckets_at(stage))
+            .collect()
+    }
+
+    #[test]
+    fn unit_each_dimension_is_admitted_once_its_identity_is_known() {
         assert_eq!(
-            deferred,
+            classes_at(Stage::Edge),
+            [
+                RateLimitClass::AuthLogin,
+                RateLimitClass::AuthReset,
+                RateLimitClass::AuthToken,
+                RateLimitClass::PublicRead,
+                RateLimitClass::PublicPassword,
+                RateLimitClass::PublicSession,
+                RateLimitClass::EmailTest,
+                RateLimitClass::ProviderTest,
+            ]
+        );
+        assert_eq!(
+            classes_at(Stage::Session),
+            [
+                RateLimitClass::Read,
+                RateLimitClass::Write,
+                RateLimitClass::AdminWrite,
+                RateLimitClass::TransferControl,
+            ]
+        );
+        assert_eq!(
+            classes_at(Stage::Deferred),
             [RateLimitClass::AuthTotp, RateLimitClass::AuthReset]
         );
+        assert_eq!(Dimension::SessionOrIp.stage(), Stage::Session);
+        assert_eq!(Dimension::SessionOrGrantOrIp.stage(), Stage::Session);
+        assert_eq!(Dimension::MfaPendingOrSessionOrIp.stage(), Stage::Deferred);
         assert_eq!(Dimension::NormalizedAccount.stage(), Stage::Deferred);
         assert_eq!(Dimension::ResolvedIp.stage(), Stage::Edge);
     }

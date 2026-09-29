@@ -9,7 +9,8 @@ use crate::app::auth_class::{AbsentSession, AuthClass, RecentAuthWaiver};
 use crate::features::auth::sessions::{
     AuthenticatedPrincipal, SessionError, SessionRestriction, SessionService,
 };
-use crate::infra::ratelimit::{RateLimitGate, RateLimitPrincipal};
+use crate::infra::ratelimit::error::RateLimitRejection;
+use crate::infra::ratelimit::{PrincipalAdmission, RateLimitGate, RateLimitPrincipal};
 
 use super::cookies::{self, SESSION_COOKIE};
 use super::csrf::{is_state_changing, CsrfProof};
@@ -53,11 +54,17 @@ async fn enforce_auth_class(
         class,
         AuthClass::Public | AuthClass::PublicGrant | AuthClass::Setup
     ) {
+        if let Err(throttled) = admit_principal(&mut request, None) {
+            return throttled.into_response();
+        }
         return next.run(request).await;
     }
 
     let signed_out_satisfies = gate.absent_session == AbsentSession::AlreadySignedOut;
     if signed_out_satisfies && !cookies::presents(request.headers(), SESSION_COOKIE) {
+        if let Err(throttled) = admit_principal(&mut request, None) {
+            return throttled.into_response();
+        }
         request.extensions_mut().insert(SignedOut);
         return next.run(request).await;
     }
@@ -79,12 +86,22 @@ async fn enforce_auth_class(
         .await
     {
         Ok(principal) => principal,
-        Err(SessionError::AuthRequired) if signed_out_satisfies => {
+        Err(SessionError::AuthRequired) => {
+            if let Err(throttled) = admit_principal(&mut request, None) {
+                return throttled.into_response();
+            }
+            if !signed_out_satisfies {
+                return tagged(SessionError::AuthRequired, request_id.as_ref());
+            }
             request.extensions_mut().insert(SignedOut);
             return next.run(request).await;
         }
         Err(error) => return tagged(error, request_id.as_ref()),
     };
+    let session = RateLimitPrincipal::session(principal.session_id.to_string().as_bytes());
+    if let Err(throttled) = admit_principal(&mut request, Some(session)) {
+        return throttled.into_response();
+    }
     let waived = gate.recent_auth_waiver.waives(principal.restriction);
     let enforced = if waived {
         AuthClass::Authenticated
@@ -105,7 +122,6 @@ async fn enforce_auth_class(
         .extensions_mut()
         .insert(IdempotencyScope::user(principal.user_id));
     if let Some(gate) = request.extensions_mut().remove::<RateLimitGate>() {
-        let session = RateLimitPrincipal::session(principal.session_id.to_string().as_bytes());
         request
             .extensions_mut()
             .insert(gate.with_principal(session));
@@ -116,6 +132,14 @@ async fn enforce_auth_class(
         request.extensions_mut().insert(ForcedPasswordChange);
     }
     next.run(request).await
+}
+
+fn admit_principal(
+    request: &mut Request,
+    principal: Option<RateLimitPrincipal>,
+) -> Result<(), RateLimitRejection> {
+    PrincipalAdmission::take(request.extensions_mut())
+        .map_or(Ok(()), |admission| admission.admit(principal))
 }
 
 fn tagged(error: SessionError, request_id: Option<&RequestId>) -> Response {

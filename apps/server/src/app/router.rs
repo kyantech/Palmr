@@ -571,7 +571,7 @@ where
                     policy.auth,
                     policy.absent_session,
                     policy.recent_auth_waiver,
-                    handler,
+                    ratelimit::layer::require_principal_admission(handler),
                 ),
             );
             let mut handler = policy.request_log.apply(

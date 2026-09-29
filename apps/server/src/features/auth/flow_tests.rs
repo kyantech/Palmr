@@ -56,6 +56,7 @@ use crate::infra::db::{DbPools, MIGRATOR};
 use crate::infra::http::csrf::{CsrfGuard, CSRF_HEADER};
 use crate::infra::http::headers::SecurityHeaders;
 use crate::infra::http::proxy::TrustedProxies;
+use crate::infra::ratelimit::RateLimiter;
 
 const BASE_URL: &str = "https://files.example.test";
 const LOGIN: &str = "/api/v1/auth/login";
@@ -77,6 +78,7 @@ struct Stack {
     profile: ProfileService,
     totp: TotpService,
     drain: AuditDrain,
+    limiter: Arc<RateLimiter>,
     service: BoxedService,
 }
 
@@ -192,6 +194,7 @@ impl Stack {
             profile,
             totp,
             drain,
+            limiter: Arc::clone(edge.rate_limits()),
             service,
         }
     }
@@ -1684,5 +1687,6 @@ async fn it_login_audit_and_attempts_never_store_secrets() {
 mod mfa;
 mod operator_cli;
 mod profile;
+mod rate_limit;
 mod recent_auth;
 mod totp;

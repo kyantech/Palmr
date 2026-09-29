@@ -6,7 +6,6 @@ use std::time::Duration;
 
 use axum::body::Body;
 use axum::extract::{ConnectInfo, Request};
-use axum::middleware::{from_fn, Next};
 use axum::response::{IntoResponse, Response};
 use axum::Extension;
 use http::header::RETRY_AFTER;
@@ -42,7 +41,6 @@ use crate::infra::telemetry::build_dispatch;
 const CLIENT_A: &str = "198.51.100.10";
 const CLIENT_B: &str = "198.51.100.20";
 const TRUSTED_PROXY: &str = "10.0.0.2";
-const SESSION_HEADER: &str = "x-test-session";
 const ACCOUNT_HEADER: &str = "x-test-account";
 const MFA_HEADER: &str = "x-test-mfa";
 const RESPONSE_READ_CAP: usize = 64 * 1024;
@@ -217,15 +215,6 @@ fn test_routes() -> Routes<()> {
         )
 }
 
-async fn resolve_test_session(mut request: Request, next: Next) -> Response {
-    if let Some(session) = header_text(&request, SESSION_HEADER).map(str::to_owned) {
-        request
-            .extensions_mut()
-            .insert(RateLimitPrincipal::session(session.as_bytes()));
-    }
-    next.run(request).await
-}
-
 struct Harness<S> {
     clock: TestClock,
     limiter: Arc<RateLimiter>,
@@ -253,8 +242,7 @@ fn harness(
         .build()
         .unwrap()
         .router
-        .layer(Extension(verifier.clone()))
-        .layer(from_fn(resolve_test_session));
+        .layer(Extension(verifier.clone()));
     Harness {
         clock,
         limiter: Arc::clone(edge.rate_limits()),
@@ -300,8 +288,11 @@ fn reset_request(peer: &str, account: &str) -> Request {
     empty(request(Method::POST, "/test/rl/reset", peer).header(ACCOUNT_HEADER, account))
 }
 
-fn session_read(peer: &str, session: &str) -> Request {
-    empty(request(Method::GET, "/test/rl/read", peer).header(SESSION_HEADER, session))
+fn forged_session_read(peer: &str, session: &str) -> Request {
+    empty(
+        request(Method::GET, "/test/rl/read", peer)
+            .extension(RateLimitPrincipal::session(session.as_bytes())),
+    )
 }
 
 async fn body_json(response: Response) -> Value {
@@ -379,18 +370,19 @@ async fn svc_rate_limit_class_enforced() {
     );
     assert_eq!(app.verifier.calls(), 12);
 
-    exhaust(&app, 300, || session_read(CLIENT_A, "session-one")).await;
+    exhaust(&app, 300, || forged_session_read(CLIENT_A, "session-one")).await;
     assert_throttled(
-        app.send(session_read(CLIENT_A, "session-one")).await,
+        app.send(forged_session_read(CLIENT_A, "session-two")).await,
+        RateLimitClass::Read,
+    )
+    .await;
+    assert_throttled(
+        app.send(get("/test/rl/read", CLIENT_A)).await,
         RateLimitClass::Read,
     )
     .await;
     assert_eq!(
-        app.status(session_read(CLIENT_A, "session-two")).await,
-        StatusCode::OK
-    );
-    assert_eq!(
-        app.status(get("/test/rl/read", CLIENT_A)).await,
+        app.status(get("/test/rl/read", CLIENT_B)).await,
         StatusCode::OK
     );
 
@@ -487,6 +479,54 @@ async fn svc_rate_limit_fails_closed_without_the_edge() {
         .await
         .unwrap();
     assert_eq!(unlimited.status(), StatusCode::OK);
+}
+
+async fn admitted() -> StatusCode {
+    StatusCode::OK
+}
+
+#[tokio::test]
+async fn svc_rate_limit_session_stage_fails_closed_when_unadmitted() {
+    let app = harness();
+    let unguarded = |class| {
+        super::layer::apply(
+            class,
+            super::layer::require_principal_admission(axum::routing::post(admitted)),
+        )
+    };
+    let router = axum::Router::new()
+        .route("/write", unguarded(RateLimitClass::Write))
+        .route("/admin-write", unguarded(RateLimitClass::AdminWrite))
+        .route("/read", unguarded(RateLimitClass::Read))
+        .route("/transfer", unguarded(RateLimitClass::TransferControl))
+        .route("/login", unguarded(RateLimitClass::AuthLogin))
+        .route("/none", unguarded(RateLimitClass::None));
+    let config = OperatorConfig::load(&EnvironmentSource::from_vars(std::iter::empty::<(
+        &str,
+        &str,
+    )>()))
+    .unwrap()
+    .config;
+    let edge = HttpEdge::new(
+        Arc::new(app.clock.clone()),
+        TrustedProxies::new(&TrustProxy::Off),
+        SecurityHeaders::new(&config),
+        CsrfGuard::new(&config.base_url),
+    );
+    let service = with_middleware(router, &edge);
+    for path in ["/write", "/admin-write", "/read", "/transfer"] {
+        let response = service.clone().oneshot(post(path, CLIENT_A)).await.unwrap();
+        assert_eq!(
+            response.status(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "{path}"
+        );
+        assert_eq!(body_json(response).await["error"]["code"], "INTERNAL_ERROR");
+    }
+    for path in ["/login", "/none"] {
+        let response = service.clone().oneshot(post(path, CLIENT_A)).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK, "{path}");
+    }
 }
 
 #[tokio::test]
@@ -807,8 +847,8 @@ async fn svc_rate_limit_rejection_leaks_no_key_material() {
     assert_eq!(response.status(), StatusCode::TOO_MANY_REQUESTS);
     bodies.push(body_json(response).await.to_string());
 
-    exhaust(&app, 300, || session_read(CLIENT_A, SESSION)).await;
-    let response = app.send(session_read(CLIENT_A, SESSION)).await;
+    exhaust(&app, 300, || forged_session_read(CLIENT_A, SESSION)).await;
+    let response = app.send(forged_session_read(CLIENT_A, SESSION)).await;
     assert_eq!(response.status(), StatusCode::TOO_MANY_REQUESTS);
     bodies.push(body_json(response).await.to_string());
 
