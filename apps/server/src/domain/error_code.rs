@@ -116,6 +116,10 @@ error_catalog! {
         "The two-factor enrollment was not found or has expired";
     SessionNotFound = "SESSION_NOT_FOUND", NOT_FOUND, retryable: false,
         "The session was not found";
+    TrustedDeviceDisabled = "TRUSTED_DEVICE_DISABLED", FORBIDDEN, retryable: false,
+        "Trusted devices are disabled";
+    TrustedDeviceNotFound = "TRUSTED_DEVICE_NOT_FOUND", NOT_FOUND, retryable: false,
+        "The trusted device was not found";
     PasswordCurrentInvalid = "PASSWORD_CURRENT_INVALID", FORBIDDEN, retryable: false,
         "The current password is incorrect";
     PasswordPolicyViolation = "PASSWORD_POLICY_VIOLATION", UNPROCESSABLE_ENTITY, retryable: false,

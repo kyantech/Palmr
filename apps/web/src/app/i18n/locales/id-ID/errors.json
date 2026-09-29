@@ -57,6 +57,8 @@
     "twoFactorEnrollmentExpired": "Penyiapan autentikasi dua faktor ini sudah kedaluwarsa. Mulai penyiapan lagi.",
     "twoFactorChallengeExpired": "Upaya masuk ini telah kedaluwarsa. Masuk lagi dengan kata sandi Anda.",
     "backupCodeInvalid": "Kode cadangan ini salah atau sudah pernah digunakan.",
+    "trustedDeviceDisabled": "Mengingat perangkat dinonaktifkan di instans ini. Masuk tanpa mengingat perangkat ini.",
+    "trustedDeviceNotFound": "Perangkat tepercaya ini sudah tidak ada. Mungkin sudah dihapus.",
     "offline": "Sepertinya Anda sedang offline. Palmr akan mencoba lagi saat koneksi kembali.",
     "networkError": "Koneksi ke server terputus. Periksa koneksi Anda lalu coba lagi.",
     "aborted": "Permintaan dibatalkan.",

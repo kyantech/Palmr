@@ -57,6 +57,8 @@
     "twoFactorEnrollmentExpired": "İki faktörlü kimlik doğrulama kurulumunun süresi doldu. Kurulumu yeniden başlatın.",
     "twoFactorChallengeExpired": "Bu oturum açma girişiminin süresi doldu. Parolanızla yeniden oturum açın.",
     "backupCodeInvalid": "Bu yedek kod yanlış veya daha önce kullanılmış.",
+    "trustedDeviceDisabled": "Bu örnekte cihazları hatırlama kapalı. Bu cihazı hatırlamadan oturum açın.",
+    "trustedDeviceNotFound": "Bu güvenilir cihaz artık mevcut değil. Zaten kaldırılmış olabilir.",
     "offline": "Çevrimdışı görünüyorsunuz. Bağlantı geri geldiğinde Palmr tekrar deneyecek.",
     "networkError": "Sunucuyla bağlantı kesildi. Bağlantınızı kontrol edip tekrar deneyin.",
     "aborted": "İstek iptal edildi.",

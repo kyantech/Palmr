@@ -57,6 +57,8 @@
     "twoFactorEnrollmentExpired": "La configuration de l'authentification à deux facteurs a expiré. Recommencez la configuration.",
     "twoFactorChallengeExpired": "Cette tentative de connexion a expiré. Reconnectez-vous avec votre mot de passe.",
     "backupCodeInvalid": "Ce code de secours est incorrect ou a déjà été utilisé.",
+    "trustedDeviceDisabled": "La mémorisation des appareils est désactivée sur cette instance. Connectez-vous sans mémoriser cet appareil.",
+    "trustedDeviceNotFound": "Cet appareil de confiance n'existe plus. Il a peut-être déjà été supprimé.",
     "offline": "Vous semblez hors ligne. Palmr réessaiera au retour de la connexion.",
     "networkError": "La connexion au serveur a été perdue. Vérifiez votre connexion et réessayez.",
     "aborted": "La requête a été annulée.",

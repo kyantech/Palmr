@@ -31,6 +31,7 @@ use super::lockout::{
 use super::login::{password_login_enabled, CredentialProof, CredentialVerifier, LoginInput};
 use super::model::{AccountView, LoginResponse, MeParts, MeResponse};
 use super::repo;
+use super::trusted_devices::model::IssuedDevice;
 
 pub const LOGIN_TRANSACTION: &str = "auth.login";
 pub const LOGIN_FAILURE_TRANSACTION: &str = "auth.login_failed";
@@ -52,11 +53,13 @@ pub struct LoginContext {
     pub attempt: AttemptClient,
     pub audit: ClientMetadata,
     pub presented_session: Option<TokenDigest>,
+    pub presented_device: Option<TokenDigest>,
 }
 
 pub struct LoggedIn {
     pub response: LoginResponse,
     pub session: MintedSession,
+    pub device: Option<IssuedDevice>,
 }
 
 pub enum LoginResult {
@@ -72,11 +75,13 @@ pub struct IssueSession<'a> {
     pub verified_password_hash: Option<&'a Secret<String>>,
     pub replaces: Option<&'a TokenDigest>,
     pub promotes: Option<PendingSession<'a>>,
+    pub trusted_device: Option<&'a TokenDigest>,
 }
 
 pub enum SessionIssue {
     Issued {
         user: Box<User>,
+        method: AuthMethod,
         session: MintedSession,
         restriction: SessionRestriction,
     },
@@ -94,6 +99,7 @@ pub enum Refusal {
 enum LoginOutcome {
     Issued {
         account: AccountView,
+        method: AuthMethod,
         session: MintedSession,
         restriction: SessionRestriction,
     },
@@ -205,13 +211,15 @@ impl AuthService {
         match outcome {
             LoginOutcome::Issued {
                 account,
+                method,
                 session,
                 restriction,
             } => {
-                self.audit_success(&account, AuthMethod::Password, &context.audit);
+                self.audit_success(&account, method, &context.audit);
                 Ok(LoginResult::SignedIn(Box::new(LoggedIn {
                     response: LoginResponse::new(&account, restriction),
                     session,
+                    device: None,
                 })))
             }
             LoginOutcome::Challenged(challenge) => Ok(LoginResult::SecondFactorRequired(challenge)),
@@ -276,22 +284,30 @@ impl AuthService {
                     verified_password_hash: Some(stored),
                     replaces: context.presented_session.as_ref(),
                     promotes: None,
+                    trusted_device: context.presented_device.as_ref(),
                 },
             )
             .await?;
         match issue {
             SessionIssue::Issued {
                 user: current,
+                method,
                 session,
                 restriction,
             } => {
                 if let Some(upgraded) = upgraded {
                     users::upgrade_password_hash(tx, current.id, stored, upgraded).await?;
                 }
-                self.attempt(
+                let attempt_method = if method == AuthMethod::PasswordTrustedDevice {
+                    AttemptMethod::TrustedDevice
+                } else {
+                    AttemptMethod::Password
+                };
+                self.attempt_by(
                     tx,
                     &input.identifier,
                     Some(current.id),
+                    attempt_method,
                     AttemptResult::Success,
                     &context.attempt,
                 )
@@ -301,6 +317,7 @@ impl AuthService {
                     .ok_or(LoginError::Session(SessionError::AuthRequired))?;
                 Ok(LoginOutcome::Issued {
                     account,
+                    method,
                     session,
                     restriction,
                 })
@@ -387,8 +404,20 @@ impl AuthService {
         {
             return Ok(SessionIssue::Refused(Refusal::Locked { until }));
         }
-        if user.totp_enabled && !proves_second_factor(request.method) {
-            return Ok(SessionIssue::SecondFactorRequired(Box::new(user)));
+        let mut method = request.method;
+        let mut trusted_device = None;
+        if user.totp_enabled && !proves_second_factor(method) {
+            let usable = if method == AuthMethod::Password {
+                self.usable_device_in_tx(tx, request.trusted_device, user.id, now)
+                    .await?
+            } else {
+                None
+            };
+            let Some(device) = usable else {
+                return Ok(SessionIssue::SecondFactorRequired(Box::new(user)));
+            };
+            method = AuthMethod::PasswordTrustedDevice;
+            trusted_device = Some(device);
         }
 
         lockout::reset(tx, user.id, now).await?;
@@ -405,7 +434,7 @@ impl AuthService {
                         tx,
                         pending.id,
                         pending.mfa_token_hash,
-                        request.method,
+                        method,
                         request.credentials,
                     )
                     .await?
@@ -414,17 +443,23 @@ impl AuthService {
                 self.sessions
                     .mint_in_tx(
                         tx,
-                        request.client.session(user.id, request.method),
+                        request.client.session(user.id, method),
                         request.credentials,
                     )
                     .await?
             }
         };
+        if let Some(device) = trusted_device {
+            self.sessions
+                .bind_trusted_device_in_tx(tx, session.id, &device.to_string())
+                .await?;
+        }
         let restriction = self
             .sessions
             .restriction_for(user.must_change_password, user.totp_enabled);
         Ok(SessionIssue::Issued {
             user: Box::new(user),
+            method,
             session,
             restriction,
         })
@@ -599,13 +634,33 @@ impl AuthService {
         result: AttemptResult,
         client: &AttemptClient,
     ) -> Result<(), LoginError> {
+        self.attempt_by(
+            tx,
+            identifier,
+            user_id,
+            AttemptMethod::Password,
+            result,
+            client,
+        )
+        .await
+    }
+
+    async fn attempt_by(
+        &self,
+        tx: &mut WriteTx<'_>,
+        identifier: &NormalizedIdentifier,
+        user_id: Option<UserId>,
+        method: AttemptMethod,
+        result: AttemptResult,
+        client: &AttemptClient,
+    ) -> Result<(), LoginError> {
         lockout::record_attempt(
             tx,
             self.clock.as_ref(),
             &LoginAttempt {
                 identifier,
                 user_id,
-                method: AttemptMethod::Password,
+                method,
                 result,
                 client,
             },

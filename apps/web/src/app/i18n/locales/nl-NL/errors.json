@@ -57,6 +57,8 @@
     "twoFactorEnrollmentExpired": "Het instellen van tweestapsverificatie is verlopen. Begin opnieuw met instellen.",
     "twoFactorChallengeExpired": "Deze inlogpoging is verlopen. Log opnieuw in met je wachtwoord.",
     "backupCodeInvalid": "Deze back-upcode is onjuist of is al gebruikt.",
+    "trustedDeviceDisabled": "Apparaten onthouden is uitgeschakeld op deze instantie. Meld je aan zonder dit apparaat te onthouden.",
+    "trustedDeviceNotFound": "Dit vertrouwde apparaat bestaat niet meer. Het is mogelijk al verwijderd.",
     "offline": "Je lijkt offline te zijn. Palmr probeert het opnieuw zodra de verbinding terug is.",
     "networkError": "De verbinding met de server is verbroken. Controleer je verbinding en probeer het opnieuw.",
     "aborted": "Het verzoek is geannuleerd.",

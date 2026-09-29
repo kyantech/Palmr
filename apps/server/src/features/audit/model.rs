@@ -271,6 +271,7 @@ pub enum AuditAction {
     StorageOrphanDetected,
     SessionRevoked,
     AllSessionsRevoked,
+    TrustedDeviceRevoked,
     SetupCompleted,
     LoginSucceeded,
     LoginFailed,
@@ -291,6 +292,7 @@ impl AuditAction {
         Self::StorageOrphanDetected,
         Self::SessionRevoked,
         Self::AllSessionsRevoked,
+        Self::TrustedDeviceRevoked,
         Self::SetupCompleted,
         Self::LoginSucceeded,
         Self::LoginFailed,
@@ -311,6 +313,7 @@ impl AuditAction {
             Self::StorageOrphanDetected => "STORAGE_ORPHAN_DETECTED",
             Self::SessionRevoked => "SESSION_REVOKED",
             Self::AllSessionsRevoked => "ALL_SESSIONS_REVOKED",
+            Self::TrustedDeviceRevoked => "TRUSTED_DEVICE_REVOKED",
             Self::SetupCompleted => "SETUP_COMPLETED",
             Self::LoginSucceeded => "LOGIN_SUCCEEDED",
             Self::LoginFailed => "LOGIN_FAILED",
@@ -336,6 +339,7 @@ impl AuditAction {
             Self::SettingChanged
             | Self::SessionRevoked
             | Self::AllSessionsRevoked
+            | Self::TrustedDeviceRevoked
             | Self::SetupCompleted
             | Self::PasswordChanged
             | Self::TwoFactorEnabled

@@ -164,6 +164,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/trusted-devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_trusted_devices"];
+        put?: never;
+        post?: never;
+        delete: operations["revoke_trusted_devices"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/trusted-devices/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["revoke_trusted_device"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/bootstrap": {
         parameters: {
             query?: never;
@@ -553,7 +585,7 @@ export interface components {
             enrollmentId: string;
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "BRANDING_ASSET_UNKNOWN";
+        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "BRANDING_ASSET_UNKNOWN";
         HealthLive: {
             status: components["schemas"]["HealthLiveStatus"];
             version: string;
@@ -605,6 +637,8 @@ export interface components {
             code: string;
             /** Format: password */
             mfaToken: string;
+            /** @description Set `palmr_device` on success; refused with `TRUSTED_DEVICE_DISABLED` while the policy disables trusted devices. */
+            rememberDevice?: boolean | null;
         };
         LoginUnauthorized: components["schemas"]["MfaChallengeBody"] | components["schemas"]["ApiErrorBody"];
         LoginUser: {
@@ -786,6 +820,31 @@ export interface components {
         };
         /** @enum {string} */
         StorageHealthStatus: "ok" | "degraded" | "down";
+        TrustedDeviceItem: {
+            createdAt: string;
+            expiresAt: string;
+            id: string;
+            /** @description Display metadata; recorded only when the client address came through a trusted proxy. */
+            ipAtEnrollment: string | null;
+            /** @description True only when this request presented the device's own `palmr_device` token. */
+            isCurrent: boolean;
+            /** @description Display metadata derived from the enrolling User-Agent; never part of trust. */
+            label: string | null;
+            lastSeenAt: string;
+        };
+        TrustedDeviceList: {
+            items: components["schemas"]["TrustedDeviceItem"][];
+            /** @description Opaque cursor for the next page; `null` on the last page. */
+            nextCursor: string | null;
+            policy: components["schemas"]["TrustedDevicePolicy"];
+            /** Format: int64 */
+            totalCount: number | null;
+        };
+        TrustedDevicePolicy: {
+            /** Format: int32 */
+            durationDays: number;
+            enabled: boolean;
+        };
         TwoFactorStatus: {
             /**
              * Format: int32
@@ -1148,7 +1207,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Signed in; `palmr_session` and `palmr_csrf` are set and any presented session is revoked. */
+            /** @description Signed in; `palmr_session` and `palmr_csrf` are set and any presented session is revoked. For an account with TOTP, a presented `palmr_device` satisfies the second factor only when it is unrevoked, unexpired, bound to this account and trusted devices are enabled. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1227,7 +1286,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Signed in; the pending challenge is promoted to a fresh session, `palmr_session` and `palmr_csrf` are set, and any presented session is revoked. */
+            /** @description Signed in; the pending challenge is promoted to a fresh session, `palmr_session` and `palmr_csrf` are set, and any presented session is revoked. With `rememberDevice: true`, `palmr_device` is also set. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1254,7 +1313,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
-            /** @description The origin is not allowed. */
+            /** @description `TRUSTED_DEVICE_DISABLED` when `rememberDevice` is true while trusted devices are disabled, or the origin is not allowed. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -1407,6 +1466,171 @@ export interface operations {
             };
             /** @description The request failed validation. */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    list_trusted_devices: {
+        parameters: {
+            query?: {
+                /** @description Opaque pagination cursor. */
+                cursor?: string;
+                /** @description Page size. */
+                limit?: number;
+                /** @description Sort: lastSeenAt:asc|desc */
+                sort?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The caller's unrevoked, unexpired trusted devices and the current policy. Label and IP are display metadata only; `isCurrent` is derived from the presented `palmr_device` token. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrustedDeviceList"];
+                };
+            };
+            /** @description Invalid cursor or query. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    revoke_trusted_devices: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Every trusted device of the caller is revoked, including the current one, and `palmr_device` is expired. Sessions are not revoked. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Recent authentication is required, the session is restricted, or the CSRF proof or origin is not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    revoke_trusted_device: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Trusted device UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The device no longer satisfies the second factor at the next login. Sessions are not revoked. `palmr_device` is expired when it belonged to this device. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Recent authentication is required, the session is restricted, or the CSRF proof or origin is not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRUSTED_DEVICE_NOT_FOUND`: unknown or foreign device. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

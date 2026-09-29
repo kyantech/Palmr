@@ -263,7 +263,10 @@ async fn regression_R030_two_factor_requires_password_step() {
         .keys()
         .map(String::as_str)
         .collect();
-    assert_eq!(fields, BTreeSet::from(["code", "mfaToken"]));
+    assert_eq!(
+        fields,
+        BTreeSet::from(["code", "mfaToken", "rememberDevice"])
+    );
     assert_eq!(request["additionalProperties"], false);
     assert_eq!(
         document["paths"][LOGIN_TOTP]["post"]["requestBody"]["content"]["application/json"]
@@ -391,7 +394,7 @@ async fn it_mfa_token_browser_contract() {
                     "mfaToken": token,
                     "expiresAt": stamp(challenged_at + CHALLENGE_TTL),
                     "methods": ["totp", "backup_code"],
-                    "trustedDeviceOffered": false,
+                    "trustedDeviceOffered": true,
                 },
             }
         })

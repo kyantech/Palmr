@@ -639,6 +639,7 @@ pub fn application_routes() -> Routes<AppState> {
         .merge(auth::routes::routes())
         .merge(auth::sessions::routes::routes())
         .merge(auth::totp::routes::routes())
+        .merge(auth::trusted_devices::routes::routes())
         .merge(branding::routes::routes())
         .merge(setup::routes::routes())
         .merge(settings::routes::routes())

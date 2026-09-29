@@ -70,7 +70,12 @@ async fn execute(
     );
     let registry = email::register_jobs(registry, email);
     let registry = auth::sessions::register_jobs(registry, pools.clone(), Arc::clone(&clock));
-    let registry = prune_tokens::register_jobs(registry, pools.clone(), Arc::clone(&clock));
+    let registry = prune_tokens::register_jobs(
+        registry,
+        pools.clone(),
+        Arc::clone(&clock),
+        settings.handle(),
+    );
     let registry = if matches!(
         kind,
         JobKind::StorageDeleteBlob | JobKind::StorageOrphanSweep

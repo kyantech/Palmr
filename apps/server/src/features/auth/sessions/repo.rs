@@ -67,6 +67,9 @@ const TOUCH: &str = "UPDATE sessions
     WHERE id = ?1 AND state = 'active' AND revoked_at IS NULL
       AND last_seen_at < ?4 AND idle_expires_at > ?2 AND absolute_expires_at > ?2";
 
+const BIND_TRUSTED_DEVICE: &str = "UPDATE sessions SET trusted_device_id = ?2
+    WHERE id = ?1 AND state = 'active'";
+
 const MARK_EXPIRED: &str = "UPDATE sessions SET state = 'expired'
     WHERE id = ?1 AND state = 'active'";
 
@@ -285,6 +288,19 @@ pub async fn touch(
         .bind(now.to_string())
         .bind(idle_expires_at.to_string())
         .bind(threshold.to_string())
+        .execute(tx.executor())
+        .await?;
+    Ok(updated.rows_affected() == 1)
+}
+
+pub async fn bind_trusted_device(
+    tx: &mut WriteTx<'_>,
+    id: SessionId,
+    trusted_device_id: &str,
+) -> Result<bool, SessionError> {
+    let updated = sqlx::query(BIND_TRUSTED_DEVICE)
+        .bind(id.to_string())
+        .bind(trusted_device_id)
         .execute(tx.executor())
         .await?;
     Ok(updated.rows_affected() == 1)

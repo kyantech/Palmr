@@ -8,6 +8,7 @@ use crate::domain::secret::Secret;
 
 pub const SESSION_COOKIE: &str = "palmr_session";
 pub const CSRF_COOKIE: &str = "palmr_csrf";
+pub const DEVICE_COOKIE: &str = "palmr_device";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct CookiePolicy {
@@ -49,6 +50,26 @@ impl CookiePolicy {
     pub fn expire_session_pair(self, headers: &mut HeaderMap) -> Result<(), CookieError> {
         append_cookie(headers, SESSION_COOKIE, "", true, self.secure, Some(0))?;
         append_cookie(headers, CSRF_COOKIE, "", false, self.secure, Some(0))
+    }
+
+    pub fn append_device(
+        self,
+        headers: &mut HeaderMap,
+        device: &Secret<String>,
+        max_age_seconds: u64,
+    ) -> Result<(), CookieError> {
+        append_cookie(
+            headers,
+            DEVICE_COOKIE,
+            device.expose_secret(),
+            true,
+            self.secure,
+            Some(max_age_seconds),
+        )
+    }
+
+    pub fn expire_device(self, headers: &mut HeaderMap) -> Result<(), CookieError> {
+        append_cookie(headers, DEVICE_COOKIE, "", true, self.secure, Some(0))
     }
 
     pub fn append_anonymous_csrf(
@@ -151,7 +172,7 @@ mod tests {
     use http::header::{HeaderValue, COOKIE, SET_COOKIE};
     use http::HeaderMap;
 
-    use super::{read, CookieError, CookiePolicy, CSRF_COOKIE, SESSION_COOKIE};
+    use super::{read, CookieError, CookiePolicy, CSRF_COOKIE, DEVICE_COOKIE, SESSION_COOKIE};
     use crate::config::{EnvironmentSource, OperatorConfig};
     use crate::domain::secret::Secret;
 
@@ -222,6 +243,41 @@ mod tests {
             .get_all(SET_COOKIE)
             .iter()
             .all(|value| !value.to_str().unwrap().contains("; Secure")));
+    }
+
+    #[test]
+    fn unit_device_cookie_flags_follow_base_url() {
+        let mut https = HeaderMap::new();
+        let secure = policy("https://files.example.test");
+        secure
+            .append_device(
+                &mut https,
+                &Secret::new("device-token".to_owned()),
+                2_592_000,
+            )
+            .unwrap();
+        secure.expire_device(&mut https).unwrap();
+        let values: Vec<&str> = https
+            .get_all(SET_COOKIE)
+            .iter()
+            .map(|value| value.to_str().unwrap())
+            .collect();
+        assert_eq!(
+            values,
+            [
+                "palmr_device=device-token; Path=/; SameSite=Lax; Max-Age=2592000; Secure; HttpOnly",
+                "palmr_device=; Path=/; SameSite=Lax; Max-Age=0; Secure; HttpOnly",
+            ]
+        );
+
+        let mut http = HeaderMap::new();
+        policy("http://localhost:5487")
+            .append_device(&mut http, &Secret::new("device-token".to_owned()), 60)
+            .unwrap();
+        assert_eq!(
+            http.get(SET_COOKIE).unwrap(),
+            &format!("{DEVICE_COOKIE}=device-token; Path=/; SameSite=Lax; Max-Age=60; HttpOnly")
+        );
     }
 
     #[test]

@@ -100,6 +100,7 @@ pub enum AttemptMethod {
     Password,
     Totp,
     BackupCode,
+    TrustedDevice,
 }
 
 impl AttemptMethod {
@@ -108,6 +109,7 @@ impl AttemptMethod {
             Self::Password => "password",
             Self::Totp => "totp",
             Self::BackupCode => "backup_code",
+            Self::TrustedDevice => "trusted_device",
         }
     }
 }

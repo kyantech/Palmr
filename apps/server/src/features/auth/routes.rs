@@ -23,6 +23,7 @@ use super::mfa::{LoginTotpInput, LoginTotpRequest, MfaChallengeBody, MfaContext}
 use super::model::{LoginResponse, MeResponse};
 use super::recent_auth::{ReauthContext, ReauthenticateRequest};
 use super::service::{AuthService, LoggedIn, LoginContext, LoginResult};
+use super::trusted_devices::service::presented_device;
 
 pub const LOGIN_ROUTE: RoutePolicy = RoutePolicy::new(
     AuthClass::Public,
@@ -74,7 +75,7 @@ pub fn routes() -> Routes<AppState> {
     responses(
         (
             status = 200,
-            description = "Signed in; `palmr_session` and `palmr_csrf` are set and any presented session is revoked.",
+            description = "Signed in; `palmr_session` and `palmr_csrf` are set and any presented session is revoked. For an account with TOTP, a presented `palmr_device` satisfies the second factor only when it is unrevoked, unexpired, bound to this account and trusted devices are enabled.",
             body = LoginResponse
         ),
         (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
@@ -101,6 +102,7 @@ async fn login(Extension(service): Extension<AuthService>, request: Request) -> 
         session,
         audit: client_metadata(&request),
         presented_session: SessionService::presented_token(request.headers()),
+        presented_device: presented_device(request.headers()),
     };
     let input = match json::read::<LoginRequest>(request.into_body()).await {
         Ok(body) => match LoginInput::parse(body) {
@@ -116,7 +118,11 @@ async fn login(Extension(service): Extension<AuthService>, request: Request) -> 
         }
         Ok(LoginResult::SecondFactorRequired(challenge)) => json(
             StatusCode::UNAUTHORIZED,
-            &MfaChallengeBody::new(&challenge, request_id.as_ref().map(RequestId::as_str)),
+            &MfaChallengeBody::new(
+                &challenge,
+                service.trusted_device_policy().enabled,
+                request_id.as_ref().map(RequestId::as_str),
+            ),
             request_id.as_ref(),
         ),
         Err(error) => login_error(&error, request_id.as_ref()),
@@ -146,12 +152,12 @@ enum LoginUnauthorized {
     responses(
         (
             status = 200,
-            description = "Signed in; the pending challenge is promoted to a fresh session, `palmr_session` and `palmr_csrf` are set, and any presented session is revoked.",
+            description = "Signed in; the pending challenge is promoted to a fresh session, `palmr_session` and `palmr_csrf` are set, and any presented session is revoked. With `rememberDevice: true`, `palmr_device` is also set.",
             body = LoginResponse
         ),
         (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
         (status = 401, description = "The challenge is unknown, expired, used or burnt, or the code did not verify or was already used.", body = ApiErrorBody),
-        (status = 403, description = "The origin is not allowed.", body = ApiErrorBody),
+        (status = 403, description = "`TRUSTED_DEVICE_DISABLED` when `rememberDevice` is true while trusted devices are disabled, or the origin is not allowed.", body = ApiErrorBody),
         (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
         (status = 422, description = "The request failed validation.", body = ApiErrorBody),
         (status = 429, description = "Rate limited, or the account is locked.", body = ApiErrorBody),
@@ -210,6 +216,15 @@ fn signed_in(
             "login session cookies could not be emitted"
         );
         return tag_error(ApiError::internal(), request_id).into_response();
+    }
+    if let Some(device) = &logged_in.device {
+        if service
+            .emit_device_cookie(response.headers_mut(), device)
+            .is_err()
+        {
+            tracing::error!("trusted-device cookie could not be emitted");
+            return tag_error(ApiError::internal(), request_id).into_response();
+        }
     }
     response
 }

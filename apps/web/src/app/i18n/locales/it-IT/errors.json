@@ -57,6 +57,8 @@
     "twoFactorEnrollmentExpired": "La configurazione dell'autenticazione a due fattori è scaduta. Ricomincia la configurazione.",
     "twoFactorChallengeExpired": "Questo tentativo di accesso è scaduto. Accedi di nuovo con la tua password.",
     "backupCodeInvalid": "Questo codice di backup non è corretto o è già stato usato.",
+    "trustedDeviceDisabled": "La memorizzazione dei dispositivi è disattivata su questa istanza. Accedi senza memorizzare questo dispositivo.",
+    "trustedDeviceNotFound": "Questo dispositivo attendibile non esiste più. Potrebbe essere già stato rimosso.",
     "offline": "Sembra che tu sia offline. Palmr riproverà quando la connessione tornerà disponibile.",
     "networkError": "La connessione al server si è interrotta. Controlla la connessione e riprova.",
     "aborted": "La richiesta è stata annullata.",

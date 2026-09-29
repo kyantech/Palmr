@@ -7,23 +7,34 @@ use super::{ClaimedJob, Idempotency, JobKind, JobPayload, JobsError, Registry};
 use crate::domain::clock::Clock;
 use crate::domain::time::Timestamp;
 use crate::features::auth::totp::service::PENDING_ENROLLMENT_TTL;
+use crate::features::auth::trusted_devices::model::TrustedDevicePolicy;
+use crate::features::settings::SettingsHandle;
 use crate::infra::db::DbPools;
 
 pub const TOKENS_PRUNE_PERIOD: Duration = Duration::from_secs(60 * 60);
+pub const TRUSTED_DEVICE_RETENTION: Duration = Duration::from_secs(24 * 60 * 60);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PruneStep {
     IdempotencyRecords,
     PendingTotpEnrollments,
+    TrustedDevices,
+    DisabledTrustedDevices,
 }
 
 impl PruneStep {
-    pub const ALL: [Self; 2] = [Self::IdempotencyRecords, Self::PendingTotpEnrollments];
+    pub const ALL: [Self; 3] = [
+        Self::IdempotencyRecords,
+        Self::PendingTotpEnrollments,
+        Self::TrustedDevices,
+    ];
 
     pub const fn as_str(self) -> &'static str {
         match self {
             Self::IdempotencyRecords => "idempotency_records",
             Self::PendingTotpEnrollments => "pending_totp_enrollments",
+            Self::TrustedDevices => "trusted_devices",
+            Self::DisabledTrustedDevices => "disabled_trusted_devices",
         }
     }
 
@@ -31,13 +42,16 @@ impl PruneStep {
         match self {
             Self::IdempotencyRecords => "tokens.prune.idempotency_records",
             Self::PendingTotpEnrollments => "tokens.prune.pending_totp_enrollments",
+            Self::TrustedDevices => "tokens.prune.trusted_devices",
+            Self::DisabledTrustedDevices => "tokens.prune.disabled_trusted_devices",
         }
     }
 
     const fn retention(self) -> Duration {
         match self {
-            Self::IdempotencyRecords => Duration::ZERO,
+            Self::IdempotencyRecords | Self::DisabledTrustedDevices => Duration::ZERO,
             Self::PendingTotpEnrollments => PENDING_ENROLLMENT_TTL,
+            Self::TrustedDevices => TRUSTED_DEVICE_RETENTION,
         }
     }
 
@@ -56,6 +70,19 @@ impl PruneStep {
                                      WHERE state = 'pending' AND created_at <= ?1
                                      ORDER BY created_at
                                      LIMIT ?2)"
+            }
+            Self::TrustedDevices => {
+                "DELETE FROM trusted_devices
+                  WHERE id IN (SELECT id FROM trusted_devices
+                                WHERE expires_at <= ?1
+                                   OR (revoked_at IS NOT NULL AND revoked_at <= ?1)
+                                LIMIT ?2)"
+            }
+            Self::DisabledTrustedDevices => {
+                "DELETE FROM trusted_devices
+                  WHERE id IN (SELECT id FROM trusted_devices
+                                WHERE created_at <= ?1
+                                LIMIT ?2)"
             }
         }
     }
@@ -99,10 +126,20 @@ pub async fn prune_step(
 struct PruneContext {
     pools: DbPools,
     clock: Arc<dyn Clock>,
+    settings: SettingsHandle,
 }
 
-pub fn register_jobs(registry: Registry, pools: DbPools, clock: Arc<dyn Clock>) -> Registry {
-    let context = PruneContext { pools, clock };
+pub fn register_jobs(
+    registry: Registry,
+    pools: DbPools,
+    clock: Arc<dyn Clock>,
+    settings: SettingsHandle,
+) -> Registry {
+    let context = PruneContext {
+        pools,
+        clock,
+        settings,
+    };
     registry.register(
         JobKind::TokensPrune,
         Idempotency::key("tokens.prune expiry cutoff"),
@@ -113,8 +150,17 @@ pub fn register_jobs(registry: Registry, pools: DbPools, clock: Arc<dyn Clock>) 
     )
 }
 
+pub fn steps(policy: TrustedDevicePolicy) -> Vec<PruneStep> {
+    let mut steps = PruneStep::ALL.to_vec();
+    if !policy.enabled {
+        steps.push(PruneStep::DisabledTrustedDevices);
+    }
+    steps
+}
+
 async fn prune(_job: ClaimedJob, context: PruneContext) -> anyhow::Result<()> {
-    for step in PruneStep::ALL {
+    let policy = TrustedDevicePolicy::from_settings(&context.settings.load());
+    for step in steps(policy) {
         let report = prune_step(&context.pools, context.clock.as_ref(), step).await?;
         tracing::info!(
             step = step.as_str(),

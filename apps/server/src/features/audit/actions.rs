@@ -142,6 +142,22 @@ pub fn all_sessions_revoked(
     ActionSpec::new(AuditAction::AllSessionsRevoked, metadata)
 }
 
+pub fn trusted_device_revoked(current: bool) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("scope", Value::from("one")),
+        ("current", Value::from(current)),
+    ]);
+    ActionSpec::new(AuditAction::TrustedDeviceRevoked, metadata)
+}
+
+pub fn all_trusted_devices_revoked(revoked: u64) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("scope", Value::from("all")),
+        ("revoked", Value::from(revoked)),
+    ]);
+    ActionSpec::new(AuditAction::TrustedDeviceRevoked, metadata)
+}
+
 pub fn login_succeeded(method: &'static str) -> ActionSpec {
     let metadata = Metadata::json(&[("method", Value::from(method))]);
     ActionSpec::new(AuditAction::LoginSucceeded, metadata)

@@ -57,6 +57,8 @@
     "twoFactorEnrollmentExpired": "Diese Einrichtung der Zwei-Faktor-Authentifizierung ist abgelaufen. Starte die Einrichtung erneut.",
     "twoFactorChallengeExpired": "Dieser Anmeldeversuch ist abgelaufen. Melde dich erneut mit deinem Passwort an.",
     "backupCodeInvalid": "Dieser Backup-Code ist falsch oder wurde bereits verwendet.",
+    "trustedDeviceDisabled": "Das Merken von Geräten ist auf dieser Instanz deaktiviert. Melde dich an, ohne dieses Gerät zu merken.",
+    "trustedDeviceNotFound": "Dieses vertrauenswürdige Gerät existiert nicht mehr. Es wurde möglicherweise bereits entfernt.",
     "offline": "Du scheinst offline zu sein. Palmr versucht es erneut, sobald die Verbindung zurück ist.",
     "networkError": "Die Verbindung zum Server wurde unterbrochen. Überprüfe deine Verbindung und versuche es erneut.",
     "aborted": "Die Anfrage wurde abgebrochen.",

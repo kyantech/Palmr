@@ -40,6 +40,8 @@ export const RETRY_CLASS: Readonly<Record<ErrorCode, RetryClass>> = {
   TOTP_REQUIRED_BY_POLICY: "never",
   TOTP_ENROLLMENT_PENDING_MISSING: "never",
   SESSION_NOT_FOUND: "never",
+  TRUSTED_DEVICE_DISABLED: "never",
+  TRUSTED_DEVICE_NOT_FOUND: "never",
   PASSWORD_CURRENT_INVALID: "never",
   PASSWORD_POLICY_VIOLATION: "never",
 

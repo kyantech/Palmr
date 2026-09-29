@@ -57,6 +57,8 @@
     "twoFactorEnrollmentExpired": "Konfiguracja uwierzytelniania dwuskładnikowego wygasła. Rozpocznij ją ponownie.",
     "twoFactorChallengeExpired": "Ta próba logowania wygasła. Zaloguj się ponownie, podając hasło.",
     "backupCodeInvalid": "Ten kod zapasowy jest nieprawidłowy lub został już użyty.",
+    "trustedDeviceDisabled": "Zapamiętywanie urządzeń jest wyłączone w tej instancji. Zaloguj się bez zapamiętywania tego urządzenia.",
+    "trustedDeviceNotFound": "To zaufane urządzenie już nie istnieje. Mogło zostać już usunięte.",
     "offline": "Wygląda na to, że jesteś offline. Palmr spróbuje ponownie po przywróceniu połączenia.",
     "networkError": "Utracono połączenie z serwerem. Sprawdź połączenie i spróbuj ponownie.",
     "aborted": "Żądanie zostało anulowane.",

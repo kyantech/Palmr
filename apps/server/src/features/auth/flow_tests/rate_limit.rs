@@ -58,7 +58,7 @@ async fn probe_stack(root: &Path) -> Stack {
     Stack::start_with(root, &TestClock::new(START), probes()).await
 }
 
-fn assert_throttled(fetched: &Fetched, class: RateLimitClass) {
+pub(super) fn assert_throttled(fetched: &Fetched, class: RateLimitClass) {
     assert_eq!(
         fetched.status,
         StatusCode::TOO_MANY_REQUESTS,
@@ -90,7 +90,11 @@ impl Stack {
         RateLimitPrincipal::session(id.as_bytes())
     }
 
-    async fn exhaust_session_bucket(&self, class: RateLimitClass, credentials: &Credentials) {
+    pub(super) async fn exhaust_session_bucket(
+        &self,
+        class: RateLimitClass,
+        credentials: &Credentials,
+    ) {
         let subject = Subject::new(std::net::Ipv4Addr::new(203, 0, 113, 1).into())
             .with_principal(Some(self.session_principal(credentials).await));
         let mut admitted = 0;

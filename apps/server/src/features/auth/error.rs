@@ -5,6 +5,7 @@ use crate::domain::time::InvalidTimestamp;
 use crate::features::audit::error::AuditError;
 use crate::features::auth::sessions::SessionError;
 use crate::features::auth::totp::TotpError;
+use crate::features::auth::trusted_devices::TrustedDeviceError;
 use crate::features::users::error::UserError;
 use crate::infra::crypto::CryptoError;
 use crate::infra::db::DbError;
@@ -22,12 +23,14 @@ pub enum LoginError {
     SecondFactorReplayed,
     SecondFactorChallengeExpired,
     BackupCodeInvalid,
+    TrustedDeviceDisabled,
     ExternalReauthUnavailable,
     RepositoryInvariant { column: &'static str },
     VerificationTask,
     User(UserError),
     Session(SessionError),
     Totp(TotpError),
+    TrustedDevice(TrustedDeviceError),
     Audit(AuditError),
     Crypto(CryptoError),
     Db(DbError),
@@ -46,12 +49,14 @@ impl LoginError {
             Self::SecondFactorReplayed => "login_second_factor_replayed",
             Self::SecondFactorChallengeExpired => "login_second_factor_challenge_expired",
             Self::BackupCodeInvalid => "login_backup_code_invalid",
+            Self::TrustedDeviceDisabled => "login_trusted_device_disabled",
             Self::ExternalReauthUnavailable => "reauth_external_unavailable",
             Self::RepositoryInvariant { .. } => "login_repository_invariant",
             Self::VerificationTask => "login_verification_task_failed",
             Self::User(error) => error.kind(),
             Self::Session(error) => error.kind(),
             Self::Totp(error) => error.kind(),
+            Self::TrustedDevice(error) => error.kind(),
             Self::Audit(error) => error.kind(),
             Self::Crypto(_) => "login_crypto",
             Self::Db(error) => error.kind().as_str(),
@@ -69,7 +74,9 @@ impl LoginError {
             Self::SecondFactorReplayed => ApiError::new(ErrorCode::TotpCodeReplayed),
             Self::SecondFactorChallengeExpired => ApiError::new(ErrorCode::Auth2faChallengeExpired),
             Self::BackupCodeInvalid => ApiError::new(ErrorCode::BackupCodeInvalid),
+            Self::TrustedDeviceDisabled => ApiError::new(ErrorCode::TrustedDeviceDisabled),
             Self::Totp(error) => error.api_error(),
+            Self::TrustedDevice(error) => error.api_error(),
             Self::User(UserError::Db(error))
             | Self::Db(error)
             | Self::Audit(AuditError::Db(error))
@@ -114,6 +121,9 @@ impl fmt::Display for LoginError {
                 f.write_str("the second-factor challenge is unknown, expired, used or burnt")
             }
             Self::BackupCodeInvalid => f.write_str("the backup code did not match an unused code"),
+            Self::TrustedDeviceDisabled => {
+                f.write_str("remembering a device was requested while trusted devices are disabled")
+            }
             Self::ExternalReauthUnavailable => f.write_str(
                 "the account has no local password and external re-authentication is not available",
             ),
@@ -129,6 +139,9 @@ impl fmt::Display for LoginError {
             Self::User(error) => write!(f, "login user operation failed: {error}"),
             Self::Session(error) => write!(f, "login session operation failed: {error}"),
             Self::Totp(error) => write!(f, "login second-factor operation failed: {error}"),
+            Self::TrustedDevice(error) => {
+                write!(f, "login trusted-device operation failed: {error}")
+            }
             Self::Audit(error) => write!(f, "login audit record failed: {error}"),
             Self::Crypto(error) => write!(f, "login credential operation failed: {error}"),
             Self::Db(error) => write!(f, "login database operation failed: {error}"),
@@ -154,6 +167,12 @@ impl From<SessionError> for LoginError {
 impl From<TotpError> for LoginError {
     fn from(error: TotpError) -> Self {
         Self::Totp(error)
+    }
+}
+
+impl From<TrustedDeviceError> for LoginError {
+    fn from(error: TrustedDeviceError) -> Self {
+        Self::TrustedDevice(error)
     }
 }
 

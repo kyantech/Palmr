@@ -57,6 +57,8 @@
     "twoFactorEnrollmentExpired": "Phiên thiết lập xác thực hai yếu tố đã hết hạn. Hãy bắt đầu thiết lập lại.",
     "twoFactorChallengeExpired": "Lượt đăng nhập này đã hết hạn. Hãy đăng nhập lại bằng mật khẩu của bạn.",
     "backupCodeInvalid": "Mã dự phòng này không đúng hoặc đã được sử dụng.",
+    "trustedDeviceDisabled": "Tính năng ghi nhớ thiết bị đã bị tắt trên phiên bản này. Hãy đăng nhập mà không ghi nhớ thiết bị này.",
+    "trustedDeviceNotFound": "Thiết bị tin cậy này không còn tồn tại. Có thể nó đã bị xóa.",
     "offline": "Có vẻ bạn đang ngoại tuyến. Palmr sẽ thử lại khi có kết nối.",
     "networkError": "Mất kết nối tới máy chủ. Hãy kiểm tra kết nối và thử lại.",
     "aborted": "Yêu cầu đã bị hủy.",

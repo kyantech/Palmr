@@ -164,6 +164,19 @@ impl SessionService {
         ))
     }
 
+    pub async fn bind_trusted_device_in_tx(
+        &self,
+        tx: &mut WriteTx<'_>,
+        id: SessionId,
+        trusted_device_id: &str,
+    ) -> Result<(), SessionError> {
+        if repo::bind_trusted_device(tx, id, trusted_device_id).await? {
+            Ok(())
+        } else {
+            Err(SessionError::AuthRequired)
+        }
+    }
+
     pub async fn rotate(&self, id: SessionId) -> Result<MintedSession, SessionError> {
         let credentials = self.prepare_credentials()?;
         self.pools

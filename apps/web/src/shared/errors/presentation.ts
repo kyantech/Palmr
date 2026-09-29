@@ -85,6 +85,8 @@ export const ERROR_PRESENTATION: Readonly<Record<ErrorCode, ErrorPresentation>> 
   TOTP_REQUIRED_BY_POLICY: entry("message.twoFactorRequiredByPolicy", inline("warning")),
   TOTP_ENROLLMENT_PENDING_MISSING: entry("message.twoFactorEnrollmentExpired", inline("warning")),
   SESSION_NOT_FOUND: entry("message.sessionNotFound", inline("warning")),
+  TRUSTED_DEVICE_DISABLED: entry("message.trustedDeviceDisabled", inline("warning")),
+  TRUSTED_DEVICE_NOT_FOUND: entry("message.trustedDeviceNotFound", inline("warning")),
   PASSWORD_CURRENT_INVALID: entry("message.currentPasswordInvalid", inline()),
   PASSWORD_POLICY_VIOLATION: entry("message.passwordPolicy", inline()),
   USER_EMAIL_TAKEN: entry("message.emailTaken", inline()),

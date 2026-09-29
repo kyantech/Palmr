@@ -57,6 +57,8 @@
     "twoFactorEnrollmentExpired": "Konfigurationen av tvåfaktorsautentisering har gått ut. Starta konfigurationen igen.",
     "twoFactorChallengeExpired": "Det här inloggningsförsöket har gått ut. Logga in igen med ditt lösenord.",
     "backupCodeInvalid": "Den här reservkoden är felaktig eller har redan använts.",
+    "trustedDeviceDisabled": "Att komma ihåg enheter är avstängt på den här instansen. Logga in utan att komma ihåg den här enheten.",
+    "trustedDeviceNotFound": "Den här betrodda enheten finns inte längre. Den kan redan ha tagits bort.",
     "offline": "Du verkar vara offline. Palmr försöker igen när anslutningen är tillbaka.",
     "networkError": "Anslutningen till servern bröts. Kontrollera anslutningen och försök igen.",
     "aborted": "Begäran avbröts.",

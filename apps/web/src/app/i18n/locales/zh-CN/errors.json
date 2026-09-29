@@ -57,6 +57,8 @@
     "twoFactorEnrollmentExpired": "双重身份验证设置已过期。请重新开始设置。",
     "twoFactorChallengeExpired": "此次登录尝试已过期。请使用密码重新登录。",
     "backupCodeInvalid": "此备用码不正确或已被使用。",
+    "trustedDeviceDisabled": "此实例已关闭记住设备功能。请在不记住此设备的情况下登录。",
+    "trustedDeviceNotFound": "此受信任设备已不存在。它可能已被移除。",
     "offline": "你似乎处于离线状态。连接恢复后 Palmr 将自动重试。",
     "networkError": "与服务器的连接已断开。请检查网络连接后重试。",
     "aborted": "请求已取消。",

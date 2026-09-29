@@ -91,12 +91,19 @@ impl Stack {
     }
 
     async fn start_with(root: &Path, clock: &TestClock, extra: Routes<AppState>) -> Self {
-        let config = OperatorConfig::load(&EnvironmentSource::from_vars([(
-            "PALMR_BASE_URL",
-            BASE_URL,
-        )]))
-        .unwrap()
-        .config;
+        Self::start_configured(root, clock, extra, &[]).await
+    }
+
+    async fn start_configured(
+        root: &Path,
+        clock: &TestClock,
+        extra: Routes<AppState>,
+        env: &[(&str, &str)],
+    ) -> Self {
+        let vars = std::iter::once(("PALMR_BASE_URL", BASE_URL)).chain(env.iter().copied());
+        let config = OperatorConfig::load(&EnvironmentSource::from_vars(vars))
+            .unwrap()
+            .config;
         let pools = DbPools::open(root, 4, SqliteSynchronous::Full)
             .await
             .unwrap();
@@ -1690,3 +1697,4 @@ mod profile;
 mod rate_limit;
 mod recent_auth;
 mod totp;
+mod trusted_devices;

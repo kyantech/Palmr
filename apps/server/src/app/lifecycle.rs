@@ -926,7 +926,8 @@ fn start_jobs(
     let registry = email::register_jobs(registry, email);
     let registry =
         crate::features::auth::sessions::register_jobs(registry, pools.clone(), Arc::clone(clock));
-    let registry = prune_tokens::register_jobs(registry, pools.clone(), Arc::clone(clock));
+    let registry =
+        prune_tokens::register_jobs(registry, pools.clone(), Arc::clone(clock), settings.clone());
     let registry = storage_lifecycle::register_jobs(
         registry,
         storage_lifecycle::LifecycleContext::new(

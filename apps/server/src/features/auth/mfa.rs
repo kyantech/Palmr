@@ -25,6 +25,7 @@ use super::lockout::{self, AttemptClient, AttemptMethod, AttemptResult, LockStat
 use super::model::{AccountView, LoginResponse};
 use super::repo;
 use super::service::{remaining, AuthService, IssueSession, LoggedIn, Refusal, SessionIssue};
+use super::trusted_devices::model::{IssuedDevice, PreparedDevice};
 
 pub const LOGIN_TOTP_TRANSACTION: &str = "auth.login_totp";
 
@@ -35,12 +36,16 @@ pub struct LoginTotpRequest {
     pub mfa_token: String,
     #[schema(example = "492013")]
     pub code: String,
+    /// Set `palmr_device` on success; refused with `TRUSTED_DEVICE_DISABLED` while the policy disables trusted devices.
+    #[serde(default)]
+    pub remember_device: Option<bool>,
 }
 
 impl JsonRequest for LoginTotpRequest {
     const FIELDS: &'static [JsonField] = &[
         JsonField::required("mfaToken", JsonKind::String),
         JsonField::required("code", JsonKind::String),
+        JsonField::optional("rememberDevice", JsonKind::Boolean),
     ];
 }
 
@@ -72,6 +77,7 @@ impl SecondFactorCode {
 pub struct LoginTotpInput {
     mfa_token_hash: Option<TokenDigest>,
     code: SecondFactorCode,
+    remember_device: bool,
 }
 
 impl LoginTotpInput {
@@ -91,8 +97,14 @@ impl LoginTotpInput {
                 .ok()
                 .map(|token| token.digest()),
             code: SecondFactorCode::parse(&request.code),
+            remember_device: request.remember_device.unwrap_or(false),
         })
     }
+}
+
+struct PreparedCompletion {
+    credentials: PreparedSessionCredentials,
+    device: Option<PreparedDevice>,
 }
 
 pub struct MfaContext {
@@ -135,7 +147,11 @@ pub struct MfaChallengeBody {
 }
 
 impl MfaChallengeBody {
-    pub fn new(challenge: &MfaChallenge, request_id: Option<&str>) -> Self {
+    pub fn new(
+        challenge: &MfaChallenge,
+        trusted_device_offered: bool,
+        request_id: Option<&str>,
+    ) -> Self {
         let code = ErrorCode::Auth2faRequired;
         Self {
             error: MfaChallengePayload {
@@ -146,7 +162,7 @@ impl MfaChallengeBody {
                     mfa_token: challenge.mfa_token.expose_secret().clone(),
                     expires_at: challenge.expires_at.to_string(),
                     methods: [SecondFactorMethod::Totp, SecondFactorMethod::BackupCode],
-                    trusted_device_offered: false,
+                    trusted_device_offered,
                 },
             },
         }
@@ -181,6 +197,7 @@ enum Completion {
         method: AuthMethod,
         session: Box<MintedSession>,
         restriction: SessionRestriction,
+        device: Option<IssuedDevice>,
     },
     Expired,
     Replayed,
@@ -209,11 +226,22 @@ impl AuthService {
         if self.sessions().find_pending(digest).await?.is_none() {
             return Err(LoginError::SecondFactorChallengeExpired);
         }
-        let credentials = self.sessions().prepare_credentials()?;
+        let device = if input.remember_device {
+            if !self.trusted_device_policy().enabled {
+                return Err(LoginError::TrustedDeviceDisabled);
+            }
+            Some(PreparedDevice::mint()?)
+        } else {
+            None
+        };
+        let prepared = PreparedCompletion {
+            credentials: self.sessions().prepare_credentials()?,
+            device,
+        };
         let completion = self
             .pools
             .write_tx(self.clock.as_ref(), LOGIN_TOTP_TRANSACTION, async |tx| {
-                self.second_factor_in_tx(tx, digest, &input.code, &credentials, &context, policy)
+                self.second_factor_in_tx(tx, digest, &input.code, &prepared, &context, policy)
                     .await
             })
             .await?;
@@ -223,11 +251,13 @@ impl AuthService {
                 method,
                 session,
                 restriction,
+                device,
             } => {
                 self.audit_success(&account, method, &context.audit);
                 Ok(LoggedIn {
                     response: LoginResponse::new(&account, restriction),
                     session: *session,
+                    device,
                 })
             }
             Completion::Expired => Err(LoginError::SecondFactorChallengeExpired),
@@ -256,7 +286,7 @@ impl AuthService {
         tx: &mut WriteTx<'_>,
         digest: &TokenDigest,
         code: &SecondFactorCode,
-        credentials: &PreparedSessionCredentials,
+        prepared: &PreparedCompletion,
         context: &MfaContext,
         policy: LockoutPolicy,
     ) -> Result<Completion, LoginError> {
@@ -352,10 +382,11 @@ impl AuthService {
                     user_id: user.id,
                     method: method_used,
                     client: context.session.clone(),
-                    credentials,
+                    credentials: &prepared.credentials,
                     verified_password_hash: None,
                     replaces: context.presented_session.as_ref(),
                     promotes: Some(challenge),
+                    trusted_device: None,
                 },
             )
             .await
@@ -392,6 +423,13 @@ impl AuthService {
             &context.attempt,
         )
         .await?;
+        let device = match &prepared.device {
+            Some(device) => Some(
+                self.remember_device_in_tx(tx, device, user.id, &context.session)
+                    .await?,
+            ),
+            None => None,
+        };
         let account = repo::account(&mut *tx.executor(), user.id)
             .await?
             .ok_or(LoginError::SecondFactorChallengeExpired)?;
@@ -400,6 +438,7 @@ impl AuthService {
             method: method_used,
             session: Box::new(session),
             restriction,
+            device,
         })
     }
 

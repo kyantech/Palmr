@@ -228,6 +228,16 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "TRUSTED_DEVICE_DISABLED",
+    "status": 403,
+    "retryable": false
+  },
+  {
+    "code": "TRUSTED_DEVICE_NOT_FOUND",
+    "status": 404,
+    "retryable": false
+  },
+  {
     "code": "UNSUPPORTED_MEDIA_TYPE",
     "status": 415,
     "retryable": false

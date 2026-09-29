@@ -90,7 +90,7 @@ fn operator_config(root: &Path) -> OperatorConfig {
     .config
 }
 
-async fn run_recover(
+pub(super) async fn run_recover(
     root: &Path,
     clock: &TestClock,
     selector: &str,

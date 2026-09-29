@@ -57,6 +57,8 @@
     "twoFactorEnrollmentExpired": "La configuración de la autenticación en dos pasos ha caducado. Vuelve a iniciarla.",
     "twoFactorChallengeExpired": "Este intento de inicio de sesión ha caducado. Vuelve a iniciar sesión con tu contraseña.",
     "backupCodeInvalid": "Este código de respaldo es incorrecto o ya se ha usado.",
+    "trustedDeviceDisabled": "Recordar dispositivos está desactivado en esta instancia. Inicia sesión sin recordar este dispositivo.",
+    "trustedDeviceNotFound": "Este dispositivo de confianza ya no existe. Es posible que ya se haya eliminado.",
     "offline": "Parece que no tienes conexión. Palmr lo reintentará cuando vuelva la conexión.",
     "networkError": "Se perdió la conexión con el servidor. Comprueba tu conexión e inténtalo de nuevo.",
     "aborted": "La solicitud se canceló.",
