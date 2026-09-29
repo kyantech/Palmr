@@ -55,6 +55,8 @@
     "twoFactorNotEnabled": "你的账户未启用双重身份验证。",
     "twoFactorRequiredByPolicy": "此实例要求启用双重身份验证，因此无法关闭。",
     "twoFactorEnrollmentExpired": "双重身份验证设置已过期。请重新开始设置。",
+    "twoFactorChallengeExpired": "此次登录尝试已过期。请使用密码重新登录。",
+    "backupCodeInvalid": "此备用码不正确或已被使用。",
     "offline": "你似乎处于离线状态。连接恢复后 Palmr 将自动重试。",
     "networkError": "与服务器的连接已断开。请检查网络连接后重试。",
     "aborted": "请求已取消。",

@@ -176,7 +176,13 @@ impl AuthService {
                 Err(LoginError::InvalidCredentials)
             }
             Proven::Refused(Refused::SecondFactor { user, locked_now }) => {
-                self.audit_second_factor_failure(&user, locked_now, &context.audit, policy);
+                self.audit_second_factor_failure(
+                    &user,
+                    AttemptMethod::Totp,
+                    locked_now,
+                    &context.audit,
+                    policy,
+                );
                 Err(LoginError::SecondFactorInvalid)
             }
         }
@@ -242,6 +248,7 @@ impl AuthService {
                                 tx,
                                 &current,
                                 identifier,
+                                AttemptMethod::Totp,
                                 &context.attempt,
                                 policy,
                             )
@@ -282,11 +289,12 @@ impl AuthService {
         Ok(Proven::Stamped)
     }
 
-    async fn count_second_factor_failure_in_tx(
+    pub(super) async fn count_second_factor_failure_in_tx(
         &self,
         tx: &mut WriteTx<'_>,
         user: &User,
         identifier: &NormalizedIdentifier,
+        method: AttemptMethod,
         client: &AttemptClient,
         policy: LockoutPolicy,
     ) -> Result<Option<LockState>, LoginError> {
@@ -297,7 +305,7 @@ impl AuthService {
             &LoginAttempt {
                 identifier,
                 user_id: Some(user.id),
-                method: AttemptMethod::Totp,
+                method,
                 result: AttemptResult::TotpFailed,
                 client,
             },

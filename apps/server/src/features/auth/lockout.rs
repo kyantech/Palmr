@@ -99,6 +99,7 @@ impl LockoutPolicy {
 pub enum AttemptMethod {
     Password,
     Totp,
+    BackupCode,
 }
 
 impl AttemptMethod {
@@ -106,6 +107,7 @@ impl AttemptMethod {
         match self {
             Self::Password => "password",
             Self::Totp => "totp",
+            Self::BackupCode => "backup_code",
         }
     }
 }
@@ -118,6 +120,7 @@ pub enum AttemptResult {
     Inactive,
     LockedOut,
     PasswordAuthDisabled,
+    TotpRequired,
     TotpFailed,
 }
 
@@ -130,6 +133,7 @@ impl AttemptResult {
             Self::Inactive => "inactive",
             Self::LockedOut => "locked_out",
             Self::PasswordAuthDisabled => "password_auth_disabled",
+            Self::TotpRequired => "totp_required",
             Self::TotpFailed => "totp_failed",
         }
     }

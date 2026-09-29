@@ -167,6 +167,31 @@ pub struct PreparedSessionCredentials {
     pub(super) csrf_token_hash: TokenDigest,
 }
 
+pub struct PreparedMfaChallenge {
+    pub(super) mfa_token: Secret<String>,
+    pub(super) mfa_token_hash: TokenDigest,
+    pub(super) unissued_token_hash: TokenDigest,
+    pub(super) unissued_csrf_token_hash: TokenDigest,
+}
+
+pub struct MfaChallenge {
+    pub mfa_token: Secret<String>,
+    pub expires_at: Timestamp,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PendingMfa {
+    pub id: SessionId,
+    pub user_id: UserId,
+    pub attempts: u32,
+}
+
+#[derive(Clone, Copy)]
+pub struct PendingSession<'a> {
+    pub id: SessionId,
+    pub mfa_token_hash: &'a TokenDigest,
+}
+
 #[derive(Clone)]
 pub struct SessionRecord {
     pub id: SessionId,

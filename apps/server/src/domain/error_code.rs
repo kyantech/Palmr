@@ -96,8 +96,14 @@ error_catalog! {
         "A password change is required";
     Auth2faEnrollmentRequired = "AUTH_2FA_ENROLLMENT_REQUIRED", FORBIDDEN, retryable: false,
         "Two-factor authentication enrollment is required";
+    Auth2faRequired = "AUTH_2FA_REQUIRED", UNAUTHORIZED, retryable: false,
+        "Two-factor authentication is required";
     Auth2faInvalid = "AUTH_2FA_INVALID", UNAUTHORIZED, retryable: false,
         "The two-factor code is invalid";
+    Auth2faChallengeExpired = "AUTH_2FA_CHALLENGE_EXPIRED", UNAUTHORIZED, retryable: false,
+        "The two-factor challenge is unknown or has expired";
+    BackupCodeInvalid = "BACKUP_CODE_INVALID", UNAUTHORIZED, retryable: false,
+        "The backup code is invalid";
     TotpCodeReplayed = "TOTP_CODE_REPLAYED", UNAUTHORIZED, retryable: false,
         "The two-factor code was already used";
     TotpAlreadyEnabled = "TOTP_ALREADY_ENABLED", CONFLICT, retryable: false,

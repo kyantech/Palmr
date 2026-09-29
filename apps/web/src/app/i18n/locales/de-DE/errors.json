@@ -55,6 +55,8 @@
     "twoFactorNotEnabled": "Die Zwei-Faktor-Authentifizierung ist für dein Konto nicht aktiviert.",
     "twoFactorRequiredByPolicy": "Diese Instanz erfordert eine Zwei-Faktor-Authentifizierung, daher kann sie nicht deaktiviert werden.",
     "twoFactorEnrollmentExpired": "Diese Einrichtung der Zwei-Faktor-Authentifizierung ist abgelaufen. Starte die Einrichtung erneut.",
+    "twoFactorChallengeExpired": "Dieser Anmeldeversuch ist abgelaufen. Melde dich erneut mit deinem Passwort an.",
+    "backupCodeInvalid": "Dieser Backup-Code ist falsch oder wurde bereits verwendet.",
     "offline": "Du scheinst offline zu sein. Palmr versucht es erneut, sobald die Verbindung zurück ist.",
     "networkError": "Die Verbindung zum Server wurde unterbrochen. Überprüfe deine Verbindung und versuche es erneut.",
     "aborted": "Die Anfrage wurde abgebrochen.",

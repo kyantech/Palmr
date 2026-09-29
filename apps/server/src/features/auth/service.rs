@@ -9,8 +9,9 @@ use crate::features::audit::model::{
 };
 use crate::features::audit::service::AuditService;
 use crate::features::auth::sessions::{
-    AuthMethod, AuthenticatedPrincipal, MintedSession, PreparedSessionCredentials, RevokedReason,
-    SessionClient, SessionError, SessionRestriction, SessionService,
+    AuthMethod, AuthenticatedPrincipal, MfaChallenge, MintedSession, PendingSession,
+    PreparedMfaChallenge, PreparedSessionCredentials, RevokedReason, SessionClient, SessionError,
+    SessionRestriction, SessionService,
 };
 use crate::features::settings::SettingsHandle;
 use crate::features::users::model::{NormalizedIdentifier, User, UserId};
@@ -58,6 +59,11 @@ pub struct LoggedIn {
     pub session: MintedSession,
 }
 
+pub enum LoginResult {
+    SignedIn(Box<LoggedIn>),
+    SecondFactorRequired(MfaChallenge),
+}
+
 pub struct IssueSession<'a> {
     pub user_id: UserId,
     pub method: AuthMethod,
@@ -65,6 +71,7 @@ pub struct IssueSession<'a> {
     pub credentials: &'a PreparedSessionCredentials,
     pub verified_password_hash: Option<&'a Secret<String>>,
     pub replaces: Option<&'a TokenDigest>,
+    pub promotes: Option<PendingSession<'a>>,
 }
 
 pub enum SessionIssue {
@@ -73,6 +80,7 @@ pub enum SessionIssue {
         session: MintedSession,
         restriction: SessionRestriction,
     },
+    SecondFactorRequired(Box<User>),
     Refused(Refusal),
 }
 
@@ -89,11 +97,17 @@ enum LoginOutcome {
         session: MintedSession,
         restriction: SessionRestriction,
     },
+    Challenged(MfaChallenge),
     Refused {
         user: User,
         refusal: Refusal,
         lock: Option<LockState>,
     },
+}
+
+pub(super) struct PreparedLogin {
+    credentials: PreparedSessionCredentials,
+    challenge: PreparedMfaChallenge,
 }
 
 pub(super) enum FailureAudit {
@@ -137,7 +151,7 @@ impl AuthService {
         &self,
         input: LoginInput,
         context: LoginContext,
-    ) -> Result<LoggedIn, LoginError> {
+    ) -> Result<LoginResult, LoginError> {
         let settings = self.settings.load();
         let enabled = password_login_enabled(&settings);
         let policy = LockoutPolicy::from_settings(&settings);
@@ -167,7 +181,10 @@ impl AuthService {
         } else {
             None
         };
-        let credentials = self.sessions.prepare_credentials()?;
+        let prepared = PreparedLogin {
+            credentials: self.sessions.prepare_credentials()?,
+            challenge: self.sessions.prepare_mfa_challenge()?,
+        };
         let outcome = self
             .pools
             .write_tx(self.clock.as_ref(), LOGIN_TRANSACTION, async |tx| {
@@ -176,7 +193,7 @@ impl AuthService {
                     &user,
                     &stored,
                     upgraded.as_ref(),
-                    &credentials,
+                    &prepared,
                     &context,
                     &input,
                     policy,
@@ -191,12 +208,13 @@ impl AuthService {
                 session,
                 restriction,
             } => {
-                self.audit_success(&account, &context.audit);
-                Ok(LoggedIn {
+                self.audit_success(&account, AuthMethod::Password, &context.audit);
+                Ok(LoginResult::SignedIn(Box::new(LoggedIn {
                     response: LoginResponse::new(&account, restriction),
                     session,
-                })
+                })))
             }
+            LoginOutcome::Challenged(challenge) => Ok(LoginResult::SecondFactorRequired(challenge)),
             LoginOutcome::Refused {
                 user,
                 refusal,
@@ -242,7 +260,7 @@ impl AuthService {
         user: &User,
         stored: &Secret<String>,
         upgraded: Option<&Secret<String>>,
-        credentials: &PreparedSessionCredentials,
+        prepared: &PreparedLogin,
         context: &LoginContext,
         input: &LoginInput,
         policy: LockoutPolicy,
@@ -254,9 +272,10 @@ impl AuthService {
                     user_id: user.id,
                     method: AuthMethod::Password,
                     client: context.session.clone(),
-                    credentials,
+                    credentials: &prepared.credentials,
                     verified_password_hash: Some(stored),
                     replaces: context.presented_session.as_ref(),
+                    promotes: None,
                 },
             )
             .await?;
@@ -285,6 +304,31 @@ impl AuthService {
                     session,
                     restriction,
                 })
+            }
+            SessionIssue::SecondFactorRequired(current) => {
+                if let Some(upgraded) = upgraded {
+                    users::upgrade_password_hash(tx, current.id, stored, upgraded).await?;
+                }
+                let challenge = self
+                    .sessions
+                    .create_pending_in_tx(
+                        tx,
+                        context
+                            .session
+                            .clone()
+                            .session(current.id, AuthMethod::Password),
+                        &prepared.challenge,
+                    )
+                    .await?;
+                self.attempt(
+                    tx,
+                    &input.identifier,
+                    Some(current.id),
+                    AttemptResult::TotpRequired,
+                    &context.attempt,
+                )
+                .await?;
+                Ok(LoginOutcome::Challenged(challenge))
             }
             SessionIssue::Refused(refusal) => {
                 let (result, lock) = match refusal {
@@ -344,7 +388,7 @@ impl AuthService {
             return Ok(SessionIssue::Refused(Refusal::Locked { until }));
         }
         if user.totp_enabled && !proves_second_factor(request.method) {
-            return Err(LoginError::SecondFactorUnavailable);
+            return Ok(SessionIssue::SecondFactorRequired(Box::new(user)));
         }
 
         lockout::reset(tx, user.id, now).await?;
@@ -354,14 +398,28 @@ impl AuthService {
                 .revoke_presented_in_tx(tx, presented, RevokedReason::Rotated)
                 .await?;
         }
-        let session = self
-            .sessions
-            .mint_in_tx(
-                tx,
-                request.client.session(user.id, request.method),
-                request.credentials,
-            )
-            .await?;
+        let session = match request.promotes {
+            Some(pending) => {
+                self.sessions
+                    .promote_pending_in_tx(
+                        tx,
+                        pending.id,
+                        pending.mfa_token_hash,
+                        request.method,
+                        request.credentials,
+                    )
+                    .await?
+            }
+            None => {
+                self.sessions
+                    .mint_in_tx(
+                        tx,
+                        request.client.session(user.id, request.method),
+                        request.credentials,
+                    )
+                    .await?
+            }
+        };
         let restriction = self
             .sessions
             .restriction_for(user.must_change_password, user.totp_enabled);
@@ -555,12 +613,17 @@ impl AuthService {
         .await
     }
 
-    fn audit_success(&self, account: &AccountView, client: &ClientMetadata) {
+    pub(super) fn audit_success(
+        &self,
+        account: &AccountView,
+        method: AuthMethod,
+        client: &ClientMetadata,
+    ) {
         let Ok(now) = Timestamp::try_from(self.clock.now()) else {
             return;
         };
         let event = AuditEvent::new(
-            actions::login_succeeded(AuthMethod::Password.as_str()),
+            actions::login_succeeded(method.as_str()),
             Actor::user(&account.id.to_string(), &account.username),
             Outcome::Success,
             now,
@@ -595,6 +658,7 @@ impl AuthService {
     pub(super) fn audit_second_factor_failure(
         &self,
         user: &User,
+        method: AttemptMethod,
         locked_now: Option<LockState>,
         client: &ClientMetadata,
         policy: LockoutPolicy,
@@ -605,10 +669,7 @@ impl AuthService {
         let actor = Actor::user(&user.id.to_string(), &user.username);
         let target = user_target(&user.id, &user.username);
         let event = AuditEvent::new(
-            actions::login_failed(
-                AttemptMethod::Totp.as_str(),
-                AttemptResult::TotpFailed.as_str(),
-            ),
+            actions::login_failed(method.as_str(), AttemptResult::TotpFailed.as_str()),
             actor.clone(),
             Outcome::Failure(AuditCode::Auth2faInvalid),
             now,
@@ -703,7 +764,7 @@ fn user_target(id: &UserId, username: &str) -> Target {
         .label(username)
 }
 
-fn remaining(now: Timestamp, until: Timestamp) -> std::time::Duration {
+pub(super) fn remaining(now: Timestamp, until: Timestamp) -> std::time::Duration {
     std::time::Duration::try_from(until.get() - now.get()).unwrap_or(std::time::Duration::ZERO)
 }
 

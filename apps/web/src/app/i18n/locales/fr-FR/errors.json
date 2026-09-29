@@ -55,6 +55,8 @@
     "twoFactorNotEnabled": "L'authentification à deux facteurs n'est pas activée sur votre compte.",
     "twoFactorRequiredByPolicy": "Cette instance exige l'authentification à deux facteurs ; elle ne peut donc pas être désactivée.",
     "twoFactorEnrollmentExpired": "La configuration de l'authentification à deux facteurs a expiré. Recommencez la configuration.",
+    "twoFactorChallengeExpired": "Cette tentative de connexion a expiré. Reconnectez-vous avec votre mot de passe.",
+    "backupCodeInvalid": "Ce code de secours est incorrect ou a déjà été utilisé.",
     "offline": "Vous semblez hors ligne. Palmr réessaiera au retour de la connexion.",
     "networkError": "La connexion au serveur a été perdue. Vérifiez votre connexion et réessayez.",
     "aborted": "La requête a été annulée.",

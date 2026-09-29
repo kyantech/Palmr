@@ -3,12 +3,22 @@ source: apps/server/src/domain/error_code.rs
 ---
 [
   {
+    "code": "AUTH_2FA_CHALLENGE_EXPIRED",
+    "status": 401,
+    "retryable": false
+  },
+  {
     "code": "AUTH_2FA_ENROLLMENT_REQUIRED",
     "status": 403,
     "retryable": false
   },
   {
     "code": "AUTH_2FA_INVALID",
+    "status": 401,
+    "retryable": false
+  },
+  {
+    "code": "AUTH_2FA_REQUIRED",
     "status": 401,
     "retryable": false
   },
@@ -39,6 +49,11 @@ source: apps/server/src/domain/error_code.rs
   },
   {
     "code": "AUTH_REQUIRED",
+    "status": 401,
+    "retryable": false
+  },
+  {
+    "code": "BACKUP_CODE_INVALID",
     "status": 401,
     "retryable": false
   },

@@ -55,6 +55,8 @@
     "twoFactorNotEnabled": "La autenticación en dos pasos no está activada en tu cuenta.",
     "twoFactorRequiredByPolicy": "Esta instancia exige la autenticación en dos pasos, por lo que no se puede desactivar.",
     "twoFactorEnrollmentExpired": "La configuración de la autenticación en dos pasos ha caducado. Vuelve a iniciarla.",
+    "twoFactorChallengeExpired": "Este intento de inicio de sesión ha caducado. Vuelve a iniciar sesión con tu contraseña.",
+    "backupCodeInvalid": "Este código de respaldo es incorrecto o ya se ha usado.",
     "offline": "Parece que no tienes conexión. Palmr lo reintentará cuando vuelva la conexión.",
     "networkError": "Se perdió la conexión con el servidor. Comprueba tu conexión e inténtalo de nuevo.",
     "aborted": "La solicitud se canceló.",

@@ -695,6 +695,8 @@ async fn regression_R049_credential_surface_rate_limits() {
     stack.clock.advance(Duration::from_secs(60));
     let refilled = stack.login("ada", PASSWORD, 60).await;
     assert_eq!(refilled.status, StatusCode::OK);
+
+    mfa::totp_credential_surface_rate_limits(&stack).await;
     stack.stop().await;
 }
 
@@ -1577,31 +1579,6 @@ async fn it_login_upgrades_stale_password_hash() {
 }
 
 #[tokio::test]
-async fn it_login_second_factor_account_fails_closed() {
-    let root = TempDir::new().unwrap();
-    let stack = Stack::start(root.path(), &TestClock::new(START)).await;
-    let hash = password_hash();
-    let ada = stack
-        .user(UserSpec::local("ada", "ada@example.test", &hash))
-        .await;
-    stack
-        .execute(&format!(
-            "UPDATE users SET totp_enabled = 1 WHERE id = '{ada}'"
-        ))
-        .await;
-
-    let refused = stack.login("ada", PASSWORD, 10).await;
-    assert_eq!(refused.status, StatusCode::INTERNAL_SERVER_ERROR);
-    assert!(refused.set_cookies().is_empty());
-    assert_eq!(stack.scalar_i64("SELECT COUNT(*) FROM sessions").await, 0);
-    assert_eq!(
-        stack.login("ada", WRONG, 11).await.error_code(),
-        "AUTH_INVALID_CREDENTIALS"
-    );
-    stack.stop().await;
-}
-
-#[tokio::test]
 async fn it_login_audit_and_attempts_never_store_secrets() {
     let root = TempDir::new().unwrap();
     let mut stack = Stack::start(root.path(), &TestClock::new(START)).await;
@@ -1704,6 +1681,7 @@ async fn it_login_audit_and_attempts_never_store_secrets() {
     stack.stop().await;
 }
 
+mod mfa;
 mod operator_cli;
 mod profile;
 mod recent_auth;

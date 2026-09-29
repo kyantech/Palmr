@@ -28,35 +28,35 @@ const STEP: Duration = Duration::from_secs(30);
 const PENDING_TTL: Duration = Duration::from_secs(10 * 60);
 const RECENT_AUTH_LAPSE: Duration = Duration::from_secs(6 * 60);
 
-struct Enrollment {
-    id: String,
+pub(super) struct Enrollment {
+    pub(super) id: String,
     uri: String,
     base32: String,
     expires_at: String,
-    secret: TotpSecret,
+    pub(super) secret: TotpSecret,
 }
 
-struct Enabled {
-    credentials: Credentials,
-    codes: Vec<String>,
-    enrollment: Enrollment,
+pub(super) struct Enabled {
+    pub(super) credentials: Credentials,
+    pub(super) codes: Vec<String>,
+    pub(super) enrollment: Enrollment,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, sqlx::FromRow)]
-struct SecretRow {
+pub(super) struct SecretRow {
     state: String,
     secret_ciphertext: Vec<u8>,
     secret_nonce: Vec<u8>,
     key_version: i64,
-    last_used_step: Option<i64>,
+    pub(super) last_used_step: Option<i64>,
     confirmed_at: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, sqlx::FromRow)]
-struct BackupRow {
+pub(super) struct BackupRow {
     batch_id: String,
-    code_hash: String,
-    used_at: Option<String>,
+    pub(super) code_hash: String,
+    pub(super) used_at: Option<String>,
 }
 
 fn decode_base32(text: &str) -> Vec<u8> {
@@ -79,15 +79,15 @@ fn decode_base32(text: &str) -> Vec<u8> {
     bytes
 }
 
-fn step_of(at: OffsetDateTime) -> u64 {
+pub(super) fn step_of(at: OffsetDateTime) -> u64 {
     time_step(at.unix_timestamp()).unwrap()
 }
 
-fn code_for(secret: &TotpSecret, step: u64) -> String {
+pub(super) fn code_for(secret: &TotpSecret, step: u64) -> String {
     String::from_utf8(secret.code_at(step).to_vec()).unwrap()
 }
 
-fn wrong_code(secret: &TotpSecret, now: OffsetDateTime) -> String {
+pub(super) fn wrong_code(secret: &TotpSecret, now: OffsetDateTime) -> String {
     let window: Vec<String> = (step_of(now) - 1..=step_of(now) + 1)
         .map(|step| code_for(secret, step))
         .collect();
@@ -97,7 +97,7 @@ fn wrong_code(secret: &TotpSecret, now: OffsetDateTime) -> String {
         .unwrap()
 }
 
-fn stamp(at: OffsetDateTime) -> String {
+pub(super) fn stamp(at: OffsetDateTime) -> String {
     Timestamp::try_from(at).unwrap().to_string()
 }
 
@@ -116,7 +116,7 @@ impl Stack {
         self.call(call, host).await
     }
 
-    async fn tf_enroll(&self, credentials: &Credentials, host: u8) -> Enrollment {
+    pub(super) async fn tf_enroll(&self, credentials: &Credentials, host: u8) -> Enrollment {
         let fetched = self.tf_post(ENROLL, credentials, None, host).await;
         assert_eq!(fetched.status, StatusCode::OK, "{}", fetched.text());
         assert_eq!(fetched.headers.get("cache-control").unwrap(), "no-store");
@@ -132,7 +132,7 @@ impl Stack {
         }
     }
 
-    async fn tf_verify(
+    pub(super) async fn tf_verify(
         &self,
         credentials: &Credentials,
         enrollment_id: &str,
@@ -143,7 +143,7 @@ impl Stack {
         self.tf_post(VERIFY, credentials, Some(&body), host).await
     }
 
-    async fn tf_enable(&self, credentials: &Credentials, host: u8) -> Enabled {
+    pub(super) async fn tf_enable(&self, credentials: &Credentials, host: u8) -> Enabled {
         let enrollment = self.tf_enroll(credentials, host).await;
         let code = code_for(&enrollment.secret, step_of(clock_now(&self.clock)));
         let verified = self
@@ -174,7 +174,7 @@ impl Stack {
         fetched.json()
     }
 
-    async fn tf_secret_row(&self, user: UserId) -> Option<SecretRow> {
+    pub(super) async fn tf_secret_row(&self, user: UserId) -> Option<SecretRow> {
         sqlx::query_as(
             "SELECT state, secret_ciphertext, secret_nonce, key_version, last_used_step,
                     confirmed_at
@@ -186,7 +186,7 @@ impl Stack {
         .unwrap()
     }
 
-    async fn tf_backup_rows(&self, user: UserId) -> Vec<BackupRow> {
+    pub(super) async fn tf_backup_rows(&self, user: UserId) -> Vec<BackupRow> {
         sqlx::query_as(
             "SELECT batch_id, code_hash, used_at FROM totp_backup_codes
               WHERE user_id = ?1 ORDER BY code_hash",
@@ -260,7 +260,7 @@ impl Stack {
     }
 }
 
-fn capture_dispatch() -> (Capture, tracing::Dispatch) {
+pub(super) fn capture_dispatch() -> (Capture, tracing::Dispatch) {
     let capture = Capture::default();
     let dispatch = build_dispatch(
         EnvFilter::new("trace"),
@@ -509,10 +509,18 @@ async fn it_totp_enroll_requires_verification() {
         StatusCode::CONFLICT,
         "TOTP_ENROLLMENT_PENDING_MISSING",
     );
-    let refused = stack.login("ada", PASSWORD, 29).await;
-    assert_ne!(refused.status, StatusCode::OK);
-    assert!(refused.set_cookies().is_empty());
-    assert_eq!(stack.tf_session_states(ada).await.len(), 3);
+    let challenged = stack.login("ada", PASSWORD, 29).await;
+    assert_code(&challenged, StatusCode::UNAUTHORIZED, "AUTH_2FA_REQUIRED");
+    assert!(challenged.set_cookies().is_empty());
+    let states = stack.tf_session_states(ada).await;
+    assert_eq!(states.len(), 4);
+    assert_eq!(
+        states
+            .iter()
+            .filter(|(state, _)| state == "mfa_pending")
+            .count(),
+        1
+    );
     stack.stop().await;
 }
 

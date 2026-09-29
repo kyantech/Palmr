@@ -9,6 +9,7 @@ use crate::app::auth_class::{AbsentSession, AuthClass, RecentAuthWaiver};
 use crate::features::auth::sessions::{
     AuthenticatedPrincipal, SessionError, SessionRestriction, SessionService,
 };
+use crate::infra::ratelimit::{RateLimitGate, RateLimitPrincipal};
 
 use super::cookies::{self, SESSION_COOKIE};
 use super::csrf::{is_state_changing, CsrfProof};
@@ -103,6 +104,12 @@ async fn enforce_auth_class(
     request
         .extensions_mut()
         .insert(IdempotencyScope::user(principal.user_id));
+    if let Some(gate) = request.extensions_mut().remove::<RateLimitGate>() {
+        let session = RateLimitPrincipal::session(principal.session_id.to_string().as_bytes());
+        request
+            .extensions_mut()
+            .insert(gate.with_principal(session));
+    }
     request.extensions_mut().insert(principal);
     request.extensions_mut().insert(AuthorizedClass(class));
     if waived {

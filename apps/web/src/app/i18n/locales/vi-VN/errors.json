@@ -55,6 +55,8 @@
     "twoFactorNotEnabled": "Xác thực hai yếu tố chưa được bật cho tài khoản của bạn.",
     "twoFactorRequiredByPolicy": "Phiên bản này yêu cầu xác thực hai yếu tố nên không thể tắt.",
     "twoFactorEnrollmentExpired": "Phiên thiết lập xác thực hai yếu tố đã hết hạn. Hãy bắt đầu thiết lập lại.",
+    "twoFactorChallengeExpired": "Lượt đăng nhập này đã hết hạn. Hãy đăng nhập lại bằng mật khẩu của bạn.",
+    "backupCodeInvalid": "Mã dự phòng này không đúng hoặc đã được sử dụng.",
     "offline": "Có vẻ bạn đang ngoại tuyến. Palmr sẽ thử lại khi có kết nối.",
     "networkError": "Mất kết nối tới máy chủ. Hãy kiểm tra kết nối và thử lại.",
     "aborted": "Yêu cầu đã bị hủy.",

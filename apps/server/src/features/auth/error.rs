@@ -20,6 +20,8 @@ pub enum LoginError {
     SecondFactorUnavailable,
     SecondFactorInvalid,
     SecondFactorReplayed,
+    SecondFactorChallengeExpired,
+    BackupCodeInvalid,
     ExternalReauthUnavailable,
     RepositoryInvariant { column: &'static str },
     VerificationTask,
@@ -42,6 +44,8 @@ impl LoginError {
             Self::SecondFactorUnavailable => "login_second_factor_unavailable",
             Self::SecondFactorInvalid => "login_second_factor_invalid",
             Self::SecondFactorReplayed => "login_second_factor_replayed",
+            Self::SecondFactorChallengeExpired => "login_second_factor_challenge_expired",
+            Self::BackupCodeInvalid => "login_backup_code_invalid",
             Self::ExternalReauthUnavailable => "reauth_external_unavailable",
             Self::RepositoryInvariant { .. } => "login_repository_invariant",
             Self::VerificationTask => "login_verification_task_failed",
@@ -63,6 +67,8 @@ impl LoginError {
             Self::PasswordLoginDisabled => ApiError::new(ErrorCode::AuthPasswordLoginDisabled),
             Self::SecondFactorInvalid => ApiError::new(ErrorCode::Auth2faInvalid),
             Self::SecondFactorReplayed => ApiError::new(ErrorCode::TotpCodeReplayed),
+            Self::SecondFactorChallengeExpired => ApiError::new(ErrorCode::Auth2faChallengeExpired),
+            Self::BackupCodeInvalid => ApiError::new(ErrorCode::BackupCodeInvalid),
             Self::Totp(error) => error.api_error(),
             Self::User(UserError::Db(error))
             | Self::Db(error)
@@ -104,6 +110,10 @@ impl fmt::Display for LoginError {
             Self::SecondFactorReplayed => {
                 f.write_str("the second factor time step was already consumed")
             }
+            Self::SecondFactorChallengeExpired => {
+                f.write_str("the second-factor challenge is unknown, expired, used or burnt")
+            }
+            Self::BackupCodeInvalid => f.write_str("the backup code did not match an unused code"),
             Self::ExternalReauthUnavailable => f.write_str(
                 "the account has no local password and external re-authentication is not available",
             ),

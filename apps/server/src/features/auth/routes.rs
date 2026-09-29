@@ -14,17 +14,25 @@ use crate::infra::http::error::{ApiError, ApiErrorBody, JSON_CONTENT_TYPE};
 use crate::infra::http::extractors::{Authenticated, SignOutCaller};
 use crate::infra::http::json;
 use crate::infra::http::request_id::{tag_error, RequestId};
+use crate::infra::ratelimit::{MfaPendingToken, RateLimitGate};
 
 use super::error::LoginError;
 use super::lockout::AttemptClient;
 use super::login::{LoginInput, LoginRequest};
+use super::mfa::{LoginTotpInput, LoginTotpRequest, MfaChallengeBody, MfaContext};
 use super::model::{LoginResponse, MeResponse};
 use super::recent_auth::{ReauthContext, ReauthenticateRequest};
-use super::service::{AuthService, LoginContext};
+use super::service::{AuthService, LoggedIn, LoginContext, LoginResult};
 
 pub const LOGIN_ROUTE: RoutePolicy = RoutePolicy::new(
     AuthClass::Public,
     RateLimitClass::AuthLogin,
+    Transport::ControlPlane,
+);
+
+pub const LOGIN_TOTP_ROUTE: RoutePolicy = RoutePolicy::new(
+    AuthClass::Public,
+    RateLimitClass::AuthTotp,
     Transport::ControlPlane,
 );
 
@@ -52,6 +60,7 @@ const NO_STORE: HeaderValue = HeaderValue::from_static("no-store");
 pub fn routes() -> Routes<AppState> {
     Routes::new()
         .route(LOGIN_ROUTE, routes!(login))
+        .route(LOGIN_TOTP_ROUTE, routes!(login_totp))
         .route(LOGOUT_ROUTE, routes!(logout))
         .route(ME_ROUTE, routes!(me))
         .route(REAUTHENTICATE_ROUTE, routes!(reauthenticate))
@@ -69,7 +78,11 @@ pub fn routes() -> Routes<AppState> {
             body = LoginResponse
         ),
         (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
-        (status = 401, description = "The credentials did not authenticate.", body = ApiErrorBody),
+        (
+            status = 401,
+            description = "`AUTH_INVALID_CREDENTIALS` when the credentials did not authenticate, or `AUTH_2FA_REQUIRED` when the password was proven and the account requires a second factor: no cookie is set, and `details.mfaToken` is the single-use challenge for `POST /api/v1/auth/login/totp`.",
+            body = LoginUnauthorized
+        ),
         (status = 403, description = "Password login is disabled, or the origin is not allowed.", body = ApiErrorBody),
         (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
         (status = 422, description = "The request failed validation.", body = ApiErrorBody),
@@ -97,11 +110,97 @@ async fn login(Extension(service): Extension<AuthService>, request: Request) -> 
         Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
     };
 
-    let logged_in = match service.login(input, context).await {
-        Ok(logged_in) => logged_in,
-        Err(error) => return login_error(&error, request_id.as_ref()),
+    match service.login(input, context).await {
+        Ok(LoginResult::SignedIn(logged_in)) => {
+            signed_in(&service, &logged_in, request_id.as_ref())
+        }
+        Ok(LoginResult::SecondFactorRequired(challenge)) => json(
+            StatusCode::UNAUTHORIZED,
+            &MfaChallengeBody::new(&challenge, request_id.as_ref().map(RequestId::as_str)),
+            request_id.as_ref(),
+        ),
+        Err(error) => login_error(&error, request_id.as_ref()),
+    }
+}
+
+#[derive(serde::Serialize, utoipa::ToSchema)]
+#[serde(untagged)]
+#[expect(
+    dead_code,
+    reason = "documents the two 401 envelopes of the password step"
+)]
+enum LoginUnauthorized {
+    SecondFactorRequired(MfaChallengeBody),
+    Error(ApiErrorBody),
+}
+
+#[utoipa::path(
+    post,
+    path = "/api/v1/auth/login/totp",
+    tag = "auth",
+    request_body(
+        content = LoginTotpRequest,
+        content_type = "application/json",
+        description = "`mfaToken` is the challenge from `AUTH_2FA_REQUIRED`; it is the only identity this step accepts. `code` is a six-digit TOTP or a backup code in `XXXX-XXXX-XXXX-XXXX` form."
+    ),
+    responses(
+        (
+            status = 200,
+            description = "Signed in; the pending challenge is promoted to a fresh session, `palmr_session` and `palmr_csrf` are set, and any presented session is revoked.",
+            body = LoginResponse
+        ),
+        (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
+        (status = 401, description = "The challenge is unknown, expired, used or burnt, or the code did not verify or was already used.", body = ApiErrorBody),
+        (status = 403, description = "The origin is not allowed.", body = ApiErrorBody),
+        (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
+        (status = 422, description = "The request failed validation.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited, or the account is locked.", body = ApiErrorBody),
+    )
+)]
+async fn login_totp(
+    Extension(service): Extension<AuthService>,
+    gate: RateLimitGate,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let session = SessionService::client(&request);
+    let context = MfaContext {
+        attempt: AttemptClient {
+            ip: session.ip_address.clone(),
+            user_agent: session.user_agent.clone(),
+            request_id: request_id.as_ref().map(|id| id.as_str().to_owned()),
+        },
+        session,
+        audit: client_metadata(&request),
+        presented_session: SessionService::presented_token(request.headers()),
     };
-    let mut response = json(StatusCode::OK, &logged_in.response, request_id.as_ref());
+    let body = json::read::<LoginTotpRequest>(request.into_body()).await;
+    let gate = match &body {
+        Ok(body) if !body.mfa_token.is_empty() => {
+            gate.with_mfa_pending(MfaPendingToken::new(body.mfa_token.as_bytes()))
+        }
+        _ => gate,
+    };
+    if let Err(rejection) = gate.admit() {
+        return rejection.into_response();
+    }
+    let input = match body.map(LoginTotpInput::parse) {
+        Ok(Ok(input)) => input,
+        Ok(Err(error)) => return login_error(&error, request_id.as_ref()),
+        Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
+    };
+    match service.complete_second_factor(input, context).await {
+        Ok(logged_in) => signed_in(&service, &logged_in, request_id.as_ref()),
+        Err(error) => login_error(&error, request_id.as_ref()),
+    }
+}
+
+fn signed_in(
+    service: &AuthService,
+    logged_in: &LoggedIn,
+    request_id: Option<&RequestId>,
+) -> Response {
+    let mut response = json(StatusCode::OK, &logged_in.response, request_id);
     if let Err(error) = service
         .sessions()
         .emit_cookies(response.headers_mut(), &logged_in.session)
@@ -110,7 +209,7 @@ async fn login(Extension(service): Extension<AuthService>, request: Request) -> 
             kind = error.kind(),
             "login session cookies could not be emitted"
         );
-        return tag_error(ApiError::internal(), request_id.as_ref()).into_response();
+        return tag_error(ApiError::internal(), request_id).into_response();
     }
     response
 }
@@ -194,8 +293,12 @@ async fn me(
 async fn reauthenticate(
     Extension(service): Extension<AuthService>,
     Authenticated(principal): Authenticated,
+    gate: RateLimitGate,
     request: Request,
 ) -> Response {
+    if let Err(rejection) = gate.admit() {
+        return rejection.into_response();
+    }
     let request_id = RequestId::of(&request);
     let client = SessionService::client(&request);
     let context = ReauthContext {

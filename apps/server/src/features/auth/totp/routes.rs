@@ -13,6 +13,7 @@ use crate::infra::http::error::{ApiError, ApiErrorBody, JSON_CONTENT_TYPE};
 use crate::infra::http::extractors::{Authenticated, AuthenticatedRecentAuth};
 use crate::infra::http::json;
 use crate::infra::http::request_id::{tag_error, RequestId};
+use crate::infra::ratelimit::RateLimitGate;
 
 use super::error::TotpError;
 use super::model::{
@@ -134,8 +135,12 @@ async fn enroll(
 async fn verify(
     Extension(service): Extension<TotpService>,
     AuthenticatedRecentAuth(principal): AuthenticatedRecentAuth,
+    gate: RateLimitGate,
     request: Request,
 ) -> Response {
+    if let Err(rejection) = gate.admit() {
+        return rejection.into_response();
+    }
     let request_id = RequestId::of(&request);
     let client = client_metadata(&request);
     let body = match json::read::<EnrollmentVerifyRequest>(request.into_body()).await {

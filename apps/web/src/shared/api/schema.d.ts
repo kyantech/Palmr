@@ -100,6 +100,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/login/totp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["login_totp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/logout": {
         parameters: {
             query?: never;
@@ -537,7 +553,7 @@ export interface components {
             enrollmentId: string;
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "BRANDING_ASSET_UNKNOWN";
+        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "BRANDING_ASSET_UNKNOWN";
         HealthLive: {
             status: components["schemas"]["HealthLiveStatus"];
             version: string;
@@ -584,6 +600,13 @@ export interface components {
             mustChangePassword: boolean;
             user: components["schemas"]["LoginUser"];
         };
+        LoginTotpRequest: {
+            /** @example 492013 */
+            code: string;
+            /** Format: password */
+            mfaToken: string;
+        };
+        LoginUnauthorized: components["schemas"]["MfaChallengeBody"] | components["schemas"]["ApiErrorBody"];
         LoginUser: {
             /** @example /api/v1/profile/avatar */
             avatarUrl: string | null;
@@ -643,6 +666,22 @@ export interface components {
             theme: string;
             username: string;
         };
+        MfaChallengeBody: {
+            error: components["schemas"]["MfaChallengePayload"];
+        };
+        MfaChallengeDetails: {
+            expiresAt: string;
+            methods: components["schemas"]["SecondFactorMethod"][];
+            /** @description Opaque single-use challenge; carried back only in the body of `POST /api/v1/auth/login/totp`. */
+            mfaToken: string;
+            trustedDeviceOffered: boolean;
+        };
+        MfaChallengePayload: {
+            code: components["schemas"]["ErrorCode"];
+            details: components["schemas"]["MfaChallengeDetails"];
+            message: string;
+            requestId: string;
+        };
         /** @enum {string} */
         MigrationHealthStatus: "current";
         Page_SessionItem: {
@@ -701,6 +740,8 @@ export interface components {
         };
         /** @enum {string} */
         RestrictionName: "must_change_password" | "mfa_enrollment_required";
+        /** @enum {string} */
+        SecondFactorMethod: "totp" | "backup_code";
         SessionItem: {
             absoluteExpiresAt: string;
             createdAt: string;
@@ -1125,13 +1166,13 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
-            /** @description The credentials did not authenticate. */
+            /** @description `AUTH_INVALID_CREDENTIALS` when the credentials did not authenticate, or `AUTH_2FA_REQUIRED` when the password was proven and the account requires a second factor: no cookie is set, and `details.mfaToken` is the single-use challenge for `POST /api/v1/auth/login/totp`. */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ApiErrorBody"];
+                    "application/json": components["schemas"]["LoginUnauthorized"];
                 };
             };
             /** @description Password login is disabled, or the origin is not allowed. */
@@ -1162,6 +1203,85 @@ export interface operations {
                 };
             };
             /** @description Rate limited, or the account is locked after the password was proven. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    login_totp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description `mfaToken` is the challenge from `AUTH_2FA_REQUIRED`; it is the only identity this step accepts. `code` is a six-digit TOTP or a backup code in `XXXX-XXXX-XXXX-XXXX` form. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginTotpRequest"];
+            };
+        };
+        responses: {
+            /** @description Signed in; the pending challenge is promoted to a fresh session, `palmr_session` and `palmr_csrf` are set, and any presented session is revoked. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginResponse"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The challenge is unknown, expired, used or burnt, or the code did not verify or was already used. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The origin is not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request failed validation. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited, or the account is locked. */
             429: {
                 headers: {
                     [name: string]: unknown;

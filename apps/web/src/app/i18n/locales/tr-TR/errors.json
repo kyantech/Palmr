@@ -55,6 +55,8 @@
     "twoFactorNotEnabled": "Hesabınızda iki faktörlü kimlik doğrulama açık değil.",
     "twoFactorRequiredByPolicy": "Bu örnek iki faktörlü kimlik doğrulamayı zorunlu kılıyor, bu nedenle kapatılamaz.",
     "twoFactorEnrollmentExpired": "İki faktörlü kimlik doğrulama kurulumunun süresi doldu. Kurulumu yeniden başlatın.",
+    "twoFactorChallengeExpired": "Bu oturum açma girişiminin süresi doldu. Parolanızla yeniden oturum açın.",
+    "backupCodeInvalid": "Bu yedek kod yanlış veya daha önce kullanılmış.",
     "offline": "Çevrimdışı görünüyorsunuz. Bağlantı geri geldiğinde Palmr tekrar deneyecek.",
     "networkError": "Sunucuyla bağlantı kesildi. Bağlantınızı kontrol edip tekrar deneyin.",
     "aborted": "İstek iptal edildi.",

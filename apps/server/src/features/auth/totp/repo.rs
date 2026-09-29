@@ -196,13 +196,6 @@ pub async fn count_unused_backup_codes(
     u32::try_from(count).map_err(|_| invariant("totp_backup_codes"))
 }
 
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "consumed by the backup-code login step in M10-T02"
-    )
-)]
 pub async fn consume_backup_code(
     tx: &mut WriteTx<'_>,
     user_id: UserId,

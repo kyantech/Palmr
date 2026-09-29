@@ -107,7 +107,7 @@ async fn enforce_rate_limit(
         admitted: Arc::clone(&admitted),
     });
     let response = next.run(request).await;
-    if !admitted.load(Ordering::Acquire) {
+    if !admitted.load(Ordering::Acquire) && response.status().is_success() {
         tracing::error!(
             scope = class.as_str(),
             "a route completed without admitting its deferred rate-limit buckets"
@@ -135,6 +135,12 @@ impl RateLimitGate {
     #[must_use]
     pub const fn with_mfa_pending(mut self, token: MfaPendingToken) -> Self {
         self.subject = self.subject.with_mfa_pending(token);
+        self
+    }
+
+    #[must_use]
+    pub const fn with_principal(mut self, principal: RateLimitPrincipal) -> Self {
+        self.subject = self.subject.with_principal(Some(principal));
         self
     }
 

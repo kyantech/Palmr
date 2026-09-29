@@ -10,7 +10,7 @@ use crate::infra::http::pagination::{Conjunction, PageRequest};
 
 use super::error::SessionError;
 use super::model::{
-    AuthMethod, ResolvedSession, RevokedReason, SessionId, SessionRecord, SessionState,
+    AuthMethod, PendingMfa, ResolvedSession, RevokedReason, SessionId, SessionRecord, SessionState,
     SessionSummary,
 };
 
@@ -44,6 +44,23 @@ const PROMOTE_PENDING: &str = "UPDATE sessions
     WHERE id = ?1 AND state = 'mfa_pending' AND mfa_token_hash = ?2
       AND mfa_expires_at > ?6
     RETURNING idle_expires_at, absolute_expires_at";
+
+const INSERT_PENDING: &str = "INSERT INTO sessions (
+        id, user_id, token_hash, csrf_token_hash, state, auth_method,
+        mfa_token_hash, mfa_expires_at, mfa_attempts,
+        created_at, last_seen_at, last_auth_at, idle_expires_at, absolute_expires_at,
+        ip, user_agent
+    ) VALUES (?1, ?2, ?3, ?4, 'mfa_pending', 'password', ?5, ?6, 0, ?7, ?7, ?7, ?6, ?6, ?8, ?9)";
+
+const SELECT_PENDING: &str = "SELECT id, user_id, mfa_attempts FROM sessions
+    WHERE mfa_token_hash = ?1 AND state = 'mfa_pending'
+      AND mfa_expires_at > ?2 AND mfa_attempts < ?3";
+
+const COUNT_MFA_FAILURE: &str = "UPDATE sessions SET mfa_attempts = mfa_attempts + 1
+    WHERE id = ?1 AND state = 'mfa_pending' AND mfa_token_hash = ?2
+    RETURNING mfa_attempts";
+
+const BURN_PENDING: &str = "DELETE FROM sessions WHERE id = ?1 AND state = 'mfa_pending'";
 
 const TOUCH: &str = "UPDATE sessions
     SET last_seen_at = ?2, idle_expires_at = ?3
@@ -173,6 +190,87 @@ pub async fn promote_pending(
         ))
     })
     .transpose()
+}
+
+pub struct PendingInsert<'a> {
+    pub id: SessionId,
+    pub user_id: UserId,
+    pub token_hash: &'a TokenDigest,
+    pub csrf_token_hash: &'a TokenDigest,
+    pub mfa_token_hash: &'a TokenDigest,
+    pub mfa_expires_at: Timestamp,
+    pub now: Timestamp,
+    pub ip_address: Option<&'a str>,
+    pub user_agent: Option<&'a str>,
+}
+
+pub async fn insert_pending(
+    tx: &mut WriteTx<'_>,
+    pending: PendingInsert<'_>,
+) -> Result<(), SessionError> {
+    sqlx::query(INSERT_PENDING)
+        .bind(pending.id.to_string())
+        .bind(pending.user_id.to_string())
+        .bind(pending.token_hash.as_str())
+        .bind(pending.csrf_token_hash.as_str())
+        .bind(pending.mfa_token_hash.as_str())
+        .bind(pending.mfa_expires_at.to_string())
+        .bind(pending.now.to_string())
+        .bind(pending.ip_address)
+        .bind(pending.user_agent)
+        .execute(tx.executor())
+        .await?;
+    Ok(())
+}
+
+pub async fn find_pending<'e, E>(
+    executor: E,
+    mfa_token_hash: &TokenDigest,
+    now: Timestamp,
+    max_attempts: u32,
+) -> Result<Option<PendingMfa>, SessionError>
+where
+    E: sqlx::Executor<'e, Database = Sqlite>,
+{
+    let row = sqlx::query(SELECT_PENDING)
+        .bind(mfa_token_hash.as_str())
+        .bind(now.to_string())
+        .bind(i64::from(max_attempts))
+        .fetch_optional(executor)
+        .await?;
+    row.map(|row| {
+        Ok(PendingMfa {
+            id: parsed(&row, "id")?,
+            user_id: parsed(&row, "user_id")?,
+            attempts: attempts(&row)?,
+        })
+    })
+    .transpose()
+}
+
+pub async fn count_mfa_failure(
+    tx: &mut WriteTx<'_>,
+    id: SessionId,
+    mfa_token_hash: &TokenDigest,
+) -> Result<Option<u32>, SessionError> {
+    let row = sqlx::query(COUNT_MFA_FAILURE)
+        .bind(id.to_string())
+        .bind(mfa_token_hash.as_str())
+        .fetch_optional(tx.executor())
+        .await?;
+    row.as_ref().map(attempts).transpose()
+}
+
+pub async fn burn_pending(tx: &mut WriteTx<'_>, id: SessionId) -> Result<bool, SessionError> {
+    let deleted = sqlx::query(BURN_PENDING)
+        .bind(id.to_string())
+        .execute(tx.executor())
+        .await?;
+    Ok(deleted.rows_affected() == 1)
+}
+
+fn attempts(row: &SqliteRow) -> Result<u32, SessionError> {
+    u32::try_from(column::<i64>(row, "mfa_attempts")?).map_err(|_| invariant("mfa_attempts"))
 }
 
 pub async fn touch(

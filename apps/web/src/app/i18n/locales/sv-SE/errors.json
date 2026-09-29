@@ -55,6 +55,8 @@
     "twoFactorNotEnabled": "Tvåfaktorsautentisering är inte aktiverad för ditt konto.",
     "twoFactorRequiredByPolicy": "Den här instansen kräver tvåfaktorsautentisering, så den kan inte stängas av.",
     "twoFactorEnrollmentExpired": "Konfigurationen av tvåfaktorsautentisering har gått ut. Starta konfigurationen igen.",
+    "twoFactorChallengeExpired": "Det här inloggningsförsöket har gått ut. Logga in igen med ditt lösenord.",
+    "backupCodeInvalid": "Den här reservkoden är felaktig eller har redan använts.",
     "offline": "Du verkar vara offline. Palmr försöker igen när anslutningen är tillbaka.",
     "networkError": "Anslutningen till servern bröts. Kontrollera anslutningen och försök igen.",
     "aborted": "Begäran avbröts.",

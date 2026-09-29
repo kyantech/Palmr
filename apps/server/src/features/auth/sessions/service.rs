@@ -31,13 +31,16 @@ use crate::infra::http::proxy::ResolvedClient;
 
 use super::error::SessionError;
 use super::model::{
-    AuthMethod, AuthenticatedPrincipal, MintedSession, NewSession, PreparedSessionCredentials,
-    ResolvedSession, RevokedReason, SessionClient, SessionId, SessionItem, SessionRecord,
-    SessionRestriction, SessionState, SessionSummary,
+    AuthMethod, AuthenticatedPrincipal, MfaChallenge, MintedSession, NewSession, PendingMfa,
+    PendingSession, PreparedMfaChallenge, PreparedSessionCredentials, ResolvedSession,
+    RevokedReason, SessionClient, SessionId, SessionItem, SessionRecord, SessionRestriction,
+    SessionState, SessionSummary,
 };
 use super::repo;
 
 pub const LAST_SEEN_WRITE_INTERVAL: std::time::Duration = std::time::Duration::from_secs(60);
+pub const MFA_CHALLENGE_TTL: std::time::Duration = std::time::Duration::from_secs(5 * 60);
+pub const MFA_MAX_ATTEMPTS: u32 = 5;
 
 static SESSION_SORT_FIELDS: [SortField; 1] = [SortField::new(
     "lastSeenAt",
@@ -207,6 +210,93 @@ impl SessionService {
             idle_expires_at,
             absolute_expires_at,
         ))
+    }
+
+    pub fn prepare_mfa_challenge(&self) -> Result<PreparedMfaChallenge, SessionError> {
+        let mfa_token = Token::mint()?;
+        let unissued_token = Token::mint()?;
+        let unissued_csrf_token = Token::mint()?;
+        Ok(PreparedMfaChallenge {
+            mfa_token_hash: mfa_token.digest(),
+            mfa_token: mfa_token.encode(),
+            unissued_token_hash: unissued_token.digest(),
+            unissued_csrf_token_hash: unissued_csrf_token.digest(),
+        })
+    }
+
+    pub async fn create_pending_in_tx(
+        &self,
+        tx: &mut WriteTx<'_>,
+        new: NewSession,
+        prepared: &PreparedMfaChallenge,
+    ) -> Result<MfaChallenge, SessionError> {
+        let now = Timestamp::try_from(self.clock.now())?;
+        let expires_at = Timestamp::try_from(now.get() + MFA_CHALLENGE_TTL)?;
+        let id = SessionId::generate(self.clock.as_ref());
+        let ip_address = bound(new.ip_address, 45);
+        let user_agent = bound(new.user_agent, 512);
+        repo::insert_pending(
+            tx,
+            repo::PendingInsert {
+                id,
+                user_id: new.user_id,
+                token_hash: &prepared.unissued_token_hash,
+                csrf_token_hash: &prepared.unissued_csrf_token_hash,
+                mfa_token_hash: &prepared.mfa_token_hash,
+                mfa_expires_at: expires_at,
+                now,
+                ip_address: ip_address.as_deref(),
+                user_agent: user_agent.as_deref(),
+            },
+        )
+        .await?;
+        Ok(MfaChallenge {
+            mfa_token: prepared.mfa_token.clone(),
+            expires_at,
+        })
+    }
+
+    pub async fn find_pending(
+        &self,
+        mfa_token_hash: &TokenDigest,
+    ) -> Result<Option<PendingMfa>, SessionError> {
+        let now = Timestamp::try_from(self.clock.now())?;
+        repo::find_pending(
+            self.pools.reader().executor(),
+            mfa_token_hash,
+            now,
+            MFA_MAX_ATTEMPTS,
+        )
+        .await
+    }
+
+    pub async fn find_pending_in_tx(
+        &self,
+        tx: &mut WriteTx<'_>,
+        mfa_token_hash: &TokenDigest,
+    ) -> Result<Option<PendingMfa>, SessionError> {
+        let now = Timestamp::try_from(self.clock.now())?;
+        repo::find_pending(tx.executor(), mfa_token_hash, now, MFA_MAX_ATTEMPTS).await
+    }
+
+    pub async fn record_mfa_failure_in_tx(
+        &self,
+        tx: &mut WriteTx<'_>,
+        pending: PendingSession<'_>,
+    ) -> Result<(), SessionError> {
+        let attempts = repo::count_mfa_failure(tx, pending.id, pending.mfa_token_hash).await?;
+        if attempts.is_some_and(|attempts| attempts >= MFA_MAX_ATTEMPTS) {
+            repo::burn_pending(tx, pending.id).await?;
+        }
+        Ok(())
+    }
+
+    pub async fn burn_pending_in_tx(
+        &self,
+        tx: &mut WriteTx<'_>,
+        id: SessionId,
+    ) -> Result<bool, SessionError> {
+        repo::burn_pending(tx, id).await
     }
 
     pub async fn promote_pending_in_tx(
