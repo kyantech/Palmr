@@ -69,17 +69,27 @@ pub trait JsonRequest: DeserializeOwned {
 }
 
 pub async fn read<T: JsonRequest>(body: Body) -> Result<T, ApiError> {
+    read_with(body, T::FIELDS).await
+}
+
+pub async fn read_with<T: DeserializeOwned>(
+    body: Body,
+    fields: &'static [JsonField],
+) -> Result<T, ApiError> {
     let bytes = body
         .collect()
         .await
         .map_err(|_| ApiError::invalid_json())?
         .to_bytes();
     let value: Value = serde_json::from_slice(&bytes).map_err(|_| ApiError::invalid_json())?;
-    from_value(value)
+    from_value(value, fields)
 }
 
-pub fn from_value<T: JsonRequest>(value: Value) -> Result<T, ApiError> {
-    let offending = offending_fields(T::FIELDS, &value);
+fn from_value<T: DeserializeOwned>(
+    value: Value,
+    fields: &'static [JsonField],
+) -> Result<T, ApiError> {
+    let offending = offending_fields(fields, &value);
     if !offending.is_empty() {
         return Err(ApiError::validation(offending));
     }

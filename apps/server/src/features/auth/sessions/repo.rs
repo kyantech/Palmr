@@ -3,6 +3,7 @@ use sqlx::{QueryBuilder, Row, Sqlite};
 
 use crate::domain::role::Role;
 use crate::domain::time::Timestamp;
+use crate::features::auth::restrictions::AccountSecurity;
 use crate::features::users::model::UserId;
 use crate::infra::crypto::hash::TokenDigest;
 use crate::infra::db::{ReadPool, WriteTx};
@@ -24,7 +25,8 @@ const SELECT_RESOLVED: &str = "SELECT
         s.id, s.user_id, s.token_hash, s.csrf_token_hash, s.state, s.auth_method,
         s.created_at, s.last_seen_at, s.last_auth_at, s.idle_expires_at,
         s.absolute_expires_at, s.ip, s.user_agent,
-        u.username, u.role, u.is_active, u.must_change_password, u.totp_enabled
+        u.username, u.role, u.is_active, u.must_change_password, u.totp_enabled,
+        u.password_hash IS NOT NULL AS has_local_password
       FROM sessions s
       JOIN users u ON u.id = s.user_id
       WHERE s.token_hash = ?1";
@@ -477,8 +479,11 @@ fn resolved_from(row: &SqliteRow) -> Result<ResolvedSession, SessionError> {
         username: column(row, "username")?,
         role: role.parse::<Role>().map_err(|_| invariant("role"))?,
         is_active: column(row, "is_active")?,
-        must_change_password: column(row, "must_change_password")?,
-        totp_enabled: column(row, "totp_enabled")?,
+        security: AccountSecurity {
+            must_change_password: column(row, "must_change_password")?,
+            has_local_password: column(row, "has_local_password")?,
+            totp_enabled: column(row, "totp_enabled")?,
+        },
     })
 }
 

@@ -16,6 +16,7 @@ use crate::features::audit::model::{
     Actor, AuditEvent, ClientMetadata, Outcome, Target, TargetType,
 };
 use crate::features::audit::repo as audit_repo;
+use crate::features::auth::restrictions::AccountSecurity;
 use crate::features::settings::SettingsHandle;
 use crate::features::users::model::UserId;
 use crate::infra::crypto::hash::TokenDigest;
@@ -441,23 +442,12 @@ impl SessionService {
 
         let recent_auth = resolved.session.last_auth_at <= now
             && now <= recent_auth_until(resolved.session.last_auth_at, policy.recent_auth)?;
-        let restriction =
-            self.restriction_for(resolved.must_change_password, resolved.totp_enabled);
+        let restriction = self.restriction_for(resolved.security);
         Ok(principal(resolved, restriction, recent_auth))
     }
 
-    pub fn restriction_for(
-        &self,
-        must_change_password: bool,
-        totp_enabled: bool,
-    ) -> SessionRestriction {
-        if must_change_password {
-            SessionRestriction::MustChangePassword
-        } else if self.settings.load().security.two_factor_required && !totp_enabled {
-            SessionRestriction::MustEnrollTotp
-        } else {
-            SessionRestriction::None
-        }
+    pub fn restriction_for(&self, account: AccountSecurity) -> SessionRestriction {
+        account.restriction(self.settings.load().security.two_factor_required)
     }
 
     pub fn enforce_class(

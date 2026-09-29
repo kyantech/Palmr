@@ -1,4 +1,6 @@
+use std::collections::BTreeSet;
 use std::net::SocketAddr;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -34,10 +36,12 @@ use crate::domain::secret::Secret;
 use crate::domain::time::Timestamp;
 use crate::domain::username::Username;
 use crate::features::audit::model::ClientMetadata;
+use crate::features::auth::totp::routes::{ENROLL_ROUTE, VERIFY_ROUTE};
 use crate::features::settings::model::AppSettings;
 use crate::features::settings::SettingsHandle;
 use crate::features::users::model::{NewUser, QuotaOverride, UserId};
 use crate::features::users::repo as users;
+use crate::features::users::routes::PASSWORD_CHANGE_ROUTE;
 use crate::infra::crypto::hkdf::KeyRing;
 use crate::infra::crypto::instance_key::InstanceKey;
 use crate::infra::crypto::token::Token;
@@ -45,13 +49,14 @@ use crate::infra::db::{DbPools, MIGRATOR};
 use crate::infra::http::csrf::{CsrfGuard, RequestContent, CSRF_HEADER};
 use crate::infra::http::extractors::{
     enforce_restriction, restriction_allows, Admin, AdminRecentAuth, Authenticated,
-    AuthenticatedRecentAuth,
+    AuthenticatedRecentAuth, PasswordChangeCaller, TotpEnrollmentCaller,
 };
 use crate::infra::http::headers::SecurityHeaders;
 use crate::infra::http::proxy::TrustedProxies;
 
 const RESPONSE_READ_CAP: usize = 64 * 1024;
 const START: time::OffsetDateTime = datetime!(2026-09-25 12:00 UTC);
+const LOCAL_PASSWORD_HASH: &str = "$argon2id$v=19$m=19456,t=2,p=1$c2Vzc2lvbnM$Zml4dHVyZQ";
 
 struct Harness {
     _root: TempDir,
@@ -106,7 +111,7 @@ impl Harness {
             username: Username::parse(&format!("user-{suffix}")).unwrap(),
             first_name: String::new(),
             last_name: String::new(),
-            password_hash: None,
+            password_hash: Some(Secret::new(LOCAL_PASSWORD_HASH.to_owned())),
             must_change_password,
             role,
             is_active: true,
@@ -150,6 +155,19 @@ impl Harness {
         .fetch_all(self.pools.reader().executor())
         .await
         .unwrap()
+    }
+
+    async fn enable_totp(&self, user: UserId) {
+        self.pools
+            .write_tx(&self.clock, "sessions.test_totp", async |tx| {
+                sqlx::query("UPDATE users SET totp_enabled = 1 WHERE id = ?1")
+                    .bind(user.to_string())
+                    .execute(tx.executor())
+                    .await?;
+                Ok::<(), crate::infra::db::DbError>(())
+            })
+            .await
+            .unwrap();
     }
 
     async fn state(&self, id: super::model::SessionId) -> Option<String> {
@@ -683,7 +701,7 @@ async fn stub_effective_settings(Authenticated(_): Authenticated) -> StatusCode 
 }
 
 #[utoipa::path(post, path = "/api/v1/profile/password", responses((status = 204)))]
-async fn stub_profile_password(Authenticated(_): Authenticated) -> StatusCode {
+async fn stub_profile_password(PasswordChangeCaller(_): PasswordChangeCaller) -> StatusCode {
     StatusCode::NO_CONTENT
 }
 
@@ -693,12 +711,12 @@ async fn stub_2fa_status(Authenticated(_): Authenticated) -> StatusCode {
 }
 
 #[utoipa::path(post, path = "/api/v1/auth/2fa/enroll", responses((status = 204)))]
-async fn stub_2fa_enroll(Authenticated(_): Authenticated) -> StatusCode {
+async fn stub_2fa_enroll(TotpEnrollmentCaller(_): TotpEnrollmentCaller) -> StatusCode {
     StatusCode::NO_CONTENT
 }
 
 #[utoipa::path(post, path = "/api/v1/auth/2fa/enroll/verify", responses((status = 204)))]
-async fn stub_2fa_verify(Authenticated(_): Authenticated) -> StatusCode {
+async fn stub_2fa_verify(TotpEnrollmentCaller(_): TotpEnrollmentCaller) -> StatusCode {
     StatusCode::NO_CONTENT
 }
 
@@ -712,6 +730,57 @@ async fn stub_admin_users(Admin(_): Admin) -> StatusCode {
     StatusCode::NO_CONTENT
 }
 
+static FUTURE_ROUTE_HITS: AtomicUsize = AtomicUsize::new(0);
+
+#[utoipa::path(post, path = "/api/v1/future/authenticated", responses((status = 204)))]
+async fn future_authenticated(Authenticated(_): Authenticated) -> StatusCode {
+    FUTURE_ROUTE_HITS.fetch_add(1, Ordering::SeqCst);
+    StatusCode::NO_CONTENT
+}
+
+#[utoipa::path(get, path = "/api/v1/future/recent", responses((status = 204)))]
+async fn future_recent(AuthenticatedRecentAuth(_): AuthenticatedRecentAuth) -> StatusCode {
+    FUTURE_ROUTE_HITS.fetch_add(1, Ordering::SeqCst);
+    StatusCode::NO_CONTENT
+}
+
+#[utoipa::path(delete, path = "/api/v1/future/admin", responses((status = 204)))]
+async fn future_admin(Admin(_): Admin) -> StatusCode {
+    FUTURE_ROUTE_HITS.fetch_add(1, Ordering::SeqCst);
+    StatusCode::NO_CONTENT
+}
+
+#[utoipa::path(put, path = "/api/v1/future/admin-recent", responses((status = 204)))]
+async fn future_admin_recent(AdminRecentAuth(_): AdminRecentAuth) -> StatusCode {
+    FUTURE_ROUTE_HITS.fetch_add(1, Ordering::SeqCst);
+    StatusCode::NO_CONTENT
+}
+
+const FUTURE_ROUTES: [(Method, &str); 4] = [
+    (Method::POST, "/api/v1/future/authenticated"),
+    (Method::GET, "/api/v1/future/recent"),
+    (Method::DELETE, "/api/v1/future/admin"),
+    (Method::PUT, "/api/v1/future/admin-recent"),
+];
+
+fn future_routes() -> Routes<AppState> {
+    let policy = |class| RoutePolicy::new(class, RateLimitClass::None, Transport::ControlPlane);
+    Routes::new()
+        .route(
+            policy(AuthClass::Authenticated),
+            routes!(future_authenticated),
+        )
+        .route(
+            policy(AuthClass::AuthenticatedRecentAuth),
+            routes!(future_recent),
+        )
+        .route(policy(AuthClass::Admin), routes!(future_admin))
+        .route(
+            policy(AuthClass::AdminRecentAuth),
+            routes!(future_admin_recent),
+        )
+}
+
 fn allowlist_routes() -> Routes<AppState> {
     let policy = |class| RoutePolicy::new(class, RateLimitClass::None, Transport::ControlPlane);
     Routes::new()
@@ -722,19 +791,10 @@ fn allowlist_routes() -> Routes<AppState> {
             policy(AuthClass::Authenticated),
             routes!(stub_effective_settings),
         )
-        .route(
-            policy(AuthClass::AuthenticatedRecentAuth),
-            routes!(stub_profile_password),
-        )
+        .route(PASSWORD_CHANGE_ROUTE, routes!(stub_profile_password))
         .route(policy(AuthClass::Authenticated), routes!(stub_2fa_status))
-        .route(
-            policy(AuthClass::AuthenticatedRecentAuth),
-            routes!(stub_2fa_enroll),
-        )
-        .route(
-            policy(AuthClass::AuthenticatedRecentAuth),
-            routes!(stub_2fa_verify),
-        )
+        .route(ENROLL_ROUTE, routes!(stub_2fa_enroll))
+        .route(VERIFY_ROUTE, routes!(stub_2fa_verify))
         .route(policy(AuthClass::Authenticated), routes!(stub_files))
         .route(policy(AuthClass::Admin), routes!(stub_admin_users))
 }
@@ -1006,6 +1066,153 @@ async fn svc_restricted_session_allowlist() {
             );
         }
     }
+    let is_protected = |entry: &&crate::app::router::RouteEntry| {
+        !matches!(
+            entry.policy().auth(),
+            AuthClass::Public | AuthClass::PublicGrant | AuthClass::Setup
+        )
+    };
+    for (restriction, specific) in [
+        (SessionRestriction::MustChangePassword, &PASSWORD_ONLY[..]),
+        (SessionRestriction::MustEnrollTotp, &TOTP_ONLY[..]),
+    ] {
+        let reachable: BTreeSet<(String, String)> = inventory
+            .entries()
+            .iter()
+            .filter(is_protected)
+            .filter(|entry| restriction_allows(restriction, entry.method(), entry.path()))
+            .map(|entry| (entry.method().to_string(), entry.path().to_owned()))
+            .collect();
+        let mut expected = BTreeSet::new();
+        for (method, path) in SHARED_ALLOWLIST.iter().chain(specific) {
+            let entry = inventory
+                .get(method, path)
+                .unwrap_or_else(|| panic!("{method} {path} is allowlisted but not registered"));
+            if is_protected(&entry) {
+                expected.insert((method.to_string(), (*path).to_owned()));
+            }
+        }
+        assert_eq!(reachable, expected, "{restriction:?}");
+    }
+
+    let unrestricted_user = harness.user("unrestricted", Role::Admin, false).await;
+    harness.enable_totp(unrestricted_user).await;
+    let unrestricted = harness.mint(unrestricted_user).await;
+    let future = app_service(&harness, future_routes());
+    for (method, path) in &FUTURE_ROUTES {
+        for (session, code) in [
+            (&password_session, "AUTH_PASSWORD_CHANGE_REQUIRED"),
+            (&totp_session, "AUTH_2FA_ENROLLMENT_REQUIRED"),
+        ] {
+            assert_eq!(
+                restricted_code(future.clone(), method.clone(), path, session).await,
+                (StatusCode::FORBIDDEN, Some(code.to_owned())),
+                "{method} {path}"
+            );
+        }
+    }
+    assert_eq!(
+        FUTURE_ROUTE_HITS.load(Ordering::SeqCst),
+        0,
+        "a route that forgot the allowlist must never run its handler for a restricted session"
+    );
+    for (method, path) in &FUTURE_ROUTES {
+        assert_eq!(
+            restricted_code(future.clone(), method.clone(), path, &unrestricted).await,
+            (StatusCode::NO_CONTENT, None),
+            "{method} {path}"
+        );
+    }
+    assert_eq!(
+        FUTURE_ROUTE_HITS.load(Ordering::SeqCst),
+        FUTURE_ROUTES.len()
+    );
+
+    let audit_before = harness.audit_rows().await;
+    harness.clock.advance(Duration::from_secs(6 * 60));
+    for (session, restriction, code) in [
+        (
+            &password_session,
+            SessionRestriction::MustChangePassword,
+            "AUTH_PASSWORD_CHANGE_REQUIRED",
+        ),
+        (
+            &totp_session,
+            SessionRestriction::MustEnrollTotp,
+            "AUTH_2FA_ENROLLMENT_REQUIRED",
+        ),
+    ] {
+        let principal = harness
+            .service
+            .authenticate(&session.session_token)
+            .await
+            .unwrap();
+        assert!(!principal.recent_auth);
+        for entry in inventory
+            .entries()
+            .iter()
+            .filter(is_protected)
+            .filter(|entry| !restriction_allows(restriction, entry.method(), entry.path()))
+        {
+            let expected = if matches!(
+                entry.policy().auth(),
+                AuthClass::AuthenticatedRecentAuth | AuthClass::AdminRecentAuth
+            ) {
+                "AUTH_RECENT_AUTH_REQUIRED"
+            } else {
+                code
+            };
+            let path = concrete(entry.path(), &harness.clock);
+            assert_eq!(
+                restricted_code(application.clone(), entry.method().clone(), &path, session).await,
+                (StatusCode::FORBIDDEN, Some(expected.to_owned())),
+                "stale {restriction:?}: {} {}",
+                entry.method(),
+                entry.path()
+            );
+        }
+    }
+    assert_eq!(harness.audit_rows().await, audit_before);
+
+    for (method, path) in &PASSWORD_ONLY {
+        assert_eq!(
+            restricted_code(stubs.clone(), method.clone(), path, &password_session).await,
+            (StatusCode::NO_CONTENT, None),
+            "the forced password change waives recent auth: {method} {path}"
+        );
+    }
+    for (method, path) in TOTP_ONLY
+        .iter()
+        .filter(|(method, _)| method == Method::POST)
+    {
+        assert_eq!(
+            restricted_code(stubs.clone(), method.clone(), path, &totp_session).await,
+            (StatusCode::NO_CONTENT, None),
+            "mandatory enrollment waives recent auth: {method} {path}"
+        );
+        assert_eq!(
+            restricted_code(stubs.clone(), method.clone(), path, &unrestricted).await,
+            (
+                StatusCode::FORBIDDEN,
+                Some("AUTH_RECENT_AUTH_REQUIRED".to_owned())
+            ),
+            "an unrestricted session keeps the recent-auth requirement: {method} {path}"
+        );
+    }
+    assert_eq!(
+        restricted_code(
+            stubs.clone(),
+            Method::POST,
+            PASSWORD_ONLY[0].1,
+            &unrestricted
+        )
+        .await,
+        (
+            StatusCode::FORBIDDEN,
+            Some("AUTH_RECENT_AUTH_REQUIRED".to_owned())
+        )
+    );
+
     assert_eq!(
         harness.state(password_session.id).await.as_deref(),
         Some("active")

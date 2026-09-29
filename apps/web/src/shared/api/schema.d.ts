@@ -739,8 +739,11 @@ export interface components {
             totalCount: number | null;
         };
         PasswordChangeRequest: {
-            /** Format: password */
-            currentPassword: string;
+            /**
+             * Format: password
+             * @description Required, except for a `must_change_password` session established with the temporary password.
+             */
+            currentPassword?: string | null;
             /** Format: password */
             newPassword: string;
         };
@@ -1078,7 +1081,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
-            /** @description Recent authentication is required, the session is restricted, or the CSRF proof or origin is not allowed. */
+            /** @description Recent authentication is required (waived only for a session whose restriction is `mfa_enrollment_required`), the session is otherwise restricted, or the CSRF proof or origin is not allowed. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -1120,7 +1123,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Two-factor authentication is enabled against the server-held pending secret. The ten backup codes are returned exactly once; every other session is revoked and the current session is rotated with fresh `palmr_session` and `palmr_csrf` cookies. */
+            /** @description Two-factor authentication is enabled against the server-held pending secret. The ten backup codes are returned exactly once; every other session is revoked and the current session is rotated with fresh `palmr_session` and `palmr_csrf` cookies. An `mfa_enrollment_required` restriction is lifted by this change. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1147,7 +1150,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
-            /** @description Recent authentication is required, the session is restricted, or the CSRF proof or origin is not allowed. */
+            /** @description Recent authentication is required (waived only for a session whose restriction is `mfa_enrollment_required`), the session is otherwise restricted, or the CSRF proof or origin is not allowed. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -1784,13 +1787,14 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
+        /** @description `currentPassword` is required for self-service changes. It may be omitted only by a `must_change_password` session that was established by signing in with the temporary password; when supplied, it is always verified. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["PasswordChangeRequest"];
             };
         };
         responses: {
-            /** @description The password is changed; every other session and every trusted device is revoked, and the current session is rotated with fresh `palmr_session` and `palmr_csrf` cookies. */
+            /** @description The password is changed and `must_change_password` is cleared; every other session and every trusted device is revoked, and the current session is rotated with fresh `palmr_session` and `palmr_csrf` cookies. The session's restriction is then re-derived from current account state, so a session may move directly to `mfa_enrollment_required`. */
             204: {
                 headers: {
                     [name: string]: unknown;

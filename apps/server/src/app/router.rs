@@ -261,6 +261,11 @@ impl RoutePolicy {
         self
     }
 
+    pub const fn with_mandatory_totp_enrollment_waiver(mut self) -> Self {
+        self.recent_auth_waiver = RecentAuthWaiver::MandatoryTotpEnrollment;
+        self
+    }
+
     pub const fn auth(&self) -> AuthClass {
         self.auth
     }
@@ -365,7 +370,7 @@ pub enum RouteError {
     IdempotencyNotApplicable { method: Method, path: String },
     AnonymousCsrfOutsidePublicSurface { method: Method, path: String },
     SignOutOutsideAuthenticatedPost { method: Method, path: String },
-    RecentAuthWaiverOutsidePasswordChange { method: Method, path: String },
+    RecentAuthWaiverOutsideForcedState { method: Method, path: String },
 }
 
 impl fmt::Display for RouteError {
@@ -400,9 +405,9 @@ impl fmt::Display for RouteError {
                 f,
                 "{method} {path} treats a missing session as already signed out but is not an authenticated POST"
             ),
-            Self::RecentAuthWaiverOutsidePasswordChange { method, path } => write!(
+            Self::RecentAuthWaiverOutsideForcedState { method, path } => write!(
                 f,
-                "{method} {path} waives recent authentication for a forced password change but is not the authenticated+recent-auth POST /api/v1/profile/password route"
+                "{method} {path} waives recent authentication for a restricted session but is not the authenticated+recent-auth POST route that resolves that restriction"
             ),
         }
     }
@@ -535,7 +540,7 @@ where
                     .recent_auth_waiver
                     .permitted_for(policy.auth, &entry.method, &entry.path)
                 {
-                    errors.push(RouteError::RecentAuthWaiverOutsidePasswordChange {
+                    errors.push(RouteError::RecentAuthWaiverOutsideForcedState {
                         method: entry.method.clone(),
                         path: entry.path.clone(),
                     });

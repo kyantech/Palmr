@@ -5,6 +5,7 @@ pub mod mfa;
 pub mod model;
 pub mod recent_auth;
 pub(crate) mod repo;
+pub mod restrictions;
 pub mod routes;
 pub mod service;
 pub mod sessions;

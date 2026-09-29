@@ -129,7 +129,9 @@ async fn enforce_auth_class(
     request.extensions_mut().insert(principal);
     request.extensions_mut().insert(AuthorizedClass(class));
     if waived {
-        request.extensions_mut().insert(ForcedPasswordChange);
+        request
+            .extensions_mut()
+            .insert(WaivedRecentAuth(gate.recent_auth_waiver));
     }
     next.run(request).await
 }
@@ -195,7 +197,7 @@ struct AuthorizedClass(AuthClass);
 struct SignedOut;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-struct ForcedPasswordChange;
+struct WaivedRecentAuth(RecentAuthWaiver);
 
 #[derive(Debug, Clone)]
 pub enum SignOutCaller {
@@ -228,6 +230,9 @@ pub struct AuthenticatedRecentAuth(pub AuthenticatedPrincipal);
 
 #[derive(Debug, Clone)]
 pub struct PasswordChangeCaller(pub AuthenticatedPrincipal);
+
+#[derive(Debug, Clone)]
+pub struct TotpEnrollmentCaller(pub AuthenticatedPrincipal);
 
 #[derive(Debug, Clone)]
 pub struct Admin(pub AuthenticatedPrincipal);
@@ -285,6 +290,32 @@ extractor!(
     }
 );
 
+fn recent_or_waived(
+    parts: &Parts,
+    waiver: RecentAuthWaiver,
+) -> Result<AuthenticatedPrincipal, ApiError> {
+    let principal = parts
+        .extensions
+        .get::<AuthenticatedPrincipal>()
+        .cloned()
+        .ok_or_else(|| tagged_api(SessionError::AuthRequired, parts))?;
+    let class = parts.extensions.get::<AuthorizedClass>().copied();
+    let recent =
+        principal.recent_auth && class == Some(AuthorizedClass(AuthClass::AuthenticatedRecentAuth));
+    let waived = waiver.waives(principal.restriction)
+        && parts.extensions.get::<WaivedRecentAuth>() == Some(&WaivedRecentAuth(waiver));
+    if recent || waived {
+        Ok(principal)
+    } else {
+        Err(tagged_api(
+            SessionError::RecentAuthRequired {
+                method: principal.auth_method.recent_auth_hint(),
+            },
+            parts,
+        ))
+    }
+}
+
 impl<S> FromRequestParts<S> for PasswordChangeCaller
 where
     S: Send + Sync,
@@ -292,26 +323,18 @@ where
     type Rejection = ApiError;
 
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
-        let principal = parts
-            .extensions
-            .get::<AuthenticatedPrincipal>()
-            .cloned()
-            .ok_or_else(|| tagged_api(SessionError::AuthRequired, parts))?;
-        let class = parts.extensions.get::<AuthorizedClass>().copied();
-        let recent = principal.recent_auth
-            && class == Some(AuthorizedClass(AuthClass::AuthenticatedRecentAuth));
-        let forced = principal.restriction == SessionRestriction::MustChangePassword
-            && parts.extensions.get::<ForcedPasswordChange>().is_some();
-        if recent || forced {
-            Ok(Self(principal))
-        } else {
-            Err(tagged_api(
-                SessionError::RecentAuthRequired {
-                    method: principal.auth_method.recent_auth_hint(),
-                },
-                parts,
-            ))
-        }
+        recent_or_waived(parts, RecentAuthWaiver::ForcedPasswordChange).map(Self)
+    }
+}
+
+impl<S> FromRequestParts<S> for TotpEnrollmentCaller
+where
+    S: Send + Sync,
+{
+    type Rejection = ApiError;
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        recent_or_waived(parts, RecentAuthWaiver::MandatoryTotpEnrollment).map(Self)
     }
 }
 

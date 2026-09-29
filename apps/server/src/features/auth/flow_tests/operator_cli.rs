@@ -106,7 +106,7 @@ pub(super) async fn run_recover(
     (outcome, String::from_utf8(out).unwrap())
 }
 
-async fn run_reset(
+pub(super) async fn run_reset(
     root: &Path,
     clock: &TestClock,
     id: UserId,
@@ -122,7 +122,7 @@ async fn run_reset(
     (outcome, String::from_utf8(out).unwrap())
 }
 
-fn temporary_password(output: &str) -> String {
+pub(super) fn temporary_password(output: &str) -> String {
     let lines: Vec<&str> = output.lines().collect();
     assert_eq!(lines.len(), 3, "{output:?}");
     let password = lines[1]

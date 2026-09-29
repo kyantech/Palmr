@@ -31,6 +31,7 @@ use super::lockout::{
 use super::login::{password_login_enabled, CredentialProof, CredentialVerifier, LoginInput};
 use super::model::{AccountView, LoginResponse, MeParts, MeResponse};
 use super::repo;
+use super::restrictions::AccountSecurity;
 use super::trusted_devices::model::IssuedDevice;
 
 pub const LOGIN_TRANSACTION: &str = "auth.login";
@@ -454,9 +455,11 @@ impl AuthService {
                 .bind_trusted_device_in_tx(tx, session.id, &device.to_string())
                 .await?;
         }
-        let restriction = self
-            .sessions
-            .restriction_for(user.must_change_password, user.totp_enabled);
+        let restriction = self.sessions.restriction_for(AccountSecurity {
+            must_change_password: user.must_change_password,
+            has_local_password: user.password_hash.is_some(),
+            totp_enabled: user.totp_enabled,
+        });
         Ok(SessionIssue::Issued {
             user: Box::new(user),
             method,

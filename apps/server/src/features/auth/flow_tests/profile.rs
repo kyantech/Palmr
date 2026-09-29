@@ -4,7 +4,7 @@ use crate::app::router::application_routes as inventory_routes;
 use crate::features::audit::model::ClientMetadata;
 use crate::features::auth::sessions::{AuthMethod, NewSession, SessionError};
 use crate::features::users::preferences::{Accent, Theme};
-use crate::features::users::profile::{ProfileError, VerifiedChange};
+use crate::features::users::profile::{CurrentPasswordProof, ProfileError, VerifiedChange};
 use crate::features::users::routes::PASSWORD_CHANGE_ROUTE;
 
 const PROFILE: &str = "/api/v1/profile";
@@ -890,7 +890,14 @@ async fn it_password_change_waiver_is_narrow() {
         .filter(|entry| entry.policy().recent_auth_waiver() != RecentAuthWaiver::None)
         .map(|entry| (entry.method().clone(), entry.path().to_owned()))
         .collect();
-    assert_eq!(waivers, vec![(Method::POST, PASSWORD_PATH.to_owned())]);
+    assert_eq!(
+        waivers,
+        vec![
+            (Method::POST, "/api/v1/auth/2fa/enroll".to_owned()),
+            (Method::POST, "/api/v1/auth/2fa/enroll/verify".to_owned()),
+            (Method::POST, PASSWORD_PATH.to_owned()),
+        ]
+    );
     assert_eq!(
         PASSWORD_CHANGE_ROUTE.auth(),
         AuthClass::AuthenticatedRecentAuth
@@ -927,7 +934,7 @@ async fn it_password_change_waiver_is_narrow() {
         assert!(
             matches!(
                 error.errors(),
-                [RouteError::RecentAuthWaiverOutsidePasswordChange { .. }]
+                [RouteError::RecentAuthWaiverOutsideForcedState { .. }]
             ),
             "{error}"
         );
@@ -1187,6 +1194,7 @@ async fn it_password_change_transaction_is_all_or_nothing() {
                         tx,
                         VerifiedChange {
                             principal: &principal,
+                            proof: CurrentPasswordProof::Presented,
                             verified,
                             replacement: &replacement,
                             credentials: &credentials,

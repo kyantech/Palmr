@@ -45,6 +45,7 @@ use crate::infra::http::proxy::TrustedProxies;
 const PATH: &str = "/api/v1/settings/effective";
 const BODY_CAP: usize = 64 * 1024;
 const GIB: u64 = 1024 * 1024 * 1024;
+const LOCAL_PASSWORD_HASH: &str = "$argon2id$v=19$m=19456,t=2,p=1$c2V0dGluZ3M$Zml4dHVyZQ";
 const EFFECTIVE_FIELDS: [&str; 13] = [
     "aliasPattern",
     "maxConcurrentTransfers",
@@ -115,7 +116,7 @@ impl Harness {
             username: Username::parse(&format!("user-{suffix}")).unwrap(),
             first_name: String::new(),
             last_name: String::new(),
-            password_hash: None,
+            password_hash: Some(Secret::new(LOCAL_PASSWORD_HASH.to_owned())),
             must_change_password,
             role,
             is_active: true,

@@ -19,6 +19,7 @@ use crate::features::auth::error::LoginError;
 use crate::features::auth::login::{password_login_enabled, CredentialProof};
 use crate::features::auth::model::{AccountView, MeUser};
 use crate::features::auth::repo as accounts;
+use crate::features::auth::restrictions::proved_temporary_password;
 use crate::features::auth::sessions::{
     AuthenticatedPrincipal, MintedSession, PreparedSessionCredentials, RevokedReason, SessionError,
     SessionRestriction,
@@ -94,15 +95,31 @@ impl ProfileChange {
 #[derive(Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PasswordChangeRequest {
+    /// Required, except for a `must_change_password` session established with the temporary password.
     #[schema(format = Password)]
-    pub current_password: String,
+    pub current_password: Option<String>,
     #[schema(format = Password)]
     pub new_password: String,
 }
 
+impl PasswordChangeRequest {
+    pub const SELF_SERVICE_FIELDS: &'static [JsonField] = &[
+        JsonField::required("currentPassword", JsonKind::String),
+        JsonField::required("newPassword", JsonKind::String),
+    ];
+
+    pub const fn fields_for(principal: &AuthenticatedPrincipal) -> &'static [JsonField] {
+        if proved_temporary_password(principal) {
+            Self::FIELDS
+        } else {
+            Self::SELF_SERVICE_FIELDS
+        }
+    }
+}
+
 impl JsonRequest for PasswordChangeRequest {
     const FIELDS: &'static [JsonField] = &[
-        JsonField::required("currentPassword", JsonKind::String),
+        JsonField::optional("currentPassword", JsonKind::String),
         JsonField::required("newPassword", JsonKind::String),
     ];
 }
@@ -266,16 +283,23 @@ impl From<InvalidTimestamp> for ProfileError {
 }
 
 struct PasswordChange {
-    current: Secret<String>,
+    current: Option<Secret<String>>,
     replacement: Secret<String>,
 }
 
 pub(crate) struct VerifiedChange<'a> {
     pub(crate) principal: &'a AuthenticatedPrincipal,
+    pub(crate) proof: CurrentPasswordProof,
     pub(crate) verified: &'a Secret<String>,
     pub(crate) replacement: &'a Secret<String>,
     pub(crate) credentials: &'a PreparedSessionCredentials,
     pub(crate) client: &'a ClientMetadata,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum CurrentPasswordProof {
+    Presented,
+    TemporaryPasswordSession,
 }
 
 #[derive(Clone)]
@@ -406,14 +430,20 @@ impl ProfileService {
             return Err(recent_auth_required(principal));
         }
         let change = PasswordChange {
-            current: Secret::new(request.current_password),
+            current: request.current_password.map(Secret::new),
             replacement: Secret::new(request.new_password),
         };
-        if change.current.expose_secret().is_empty() {
-            return Err(ProfileError::Invalid {
-                fields: vec!["currentPassword"],
-            });
-        }
+        let proof = match &change.current {
+            Some(current) if !current.expose_secret().is_empty() => CurrentPasswordProof::Presented,
+            None if proved_temporary_password(principal) => {
+                CurrentPasswordProof::TemporaryPasswordSession
+            }
+            _ => {
+                return Err(ProfileError::Invalid {
+                    fields: vec!["currentPassword"],
+                })
+            }
+        };
         let settings = self.settings.load();
         let enabled = password_login_enabled(&settings);
         let policy = AccountPasswordPolicy::from_settings(&settings);
@@ -425,13 +455,18 @@ impl ProfileService {
 
         let user = self.active_user(principal.user_id).await?;
         let stored = user.password_hash.clone();
-        let proof = self
-            .auth
-            .verify_off_runtime(change.current, stored.clone())
-            .await?;
-        let verified = match (stored, proof) {
-            (Some(stored), CredentialProof::Verified { .. }) => stored,
-            _ => return Err(ProfileError::CurrentPasswordInvalid),
+        let verified = match change.current {
+            Some(current) => {
+                let checked = self
+                    .auth
+                    .verify_off_runtime(current, stored.clone())
+                    .await?;
+                match (stored, checked) {
+                    (Some(stored), CredentialProof::Verified { .. }) => stored,
+                    _ => return Err(ProfileError::CurrentPasswordInvalid),
+                }
+            }
+            None => stored.ok_or(ProfileError::CurrentPasswordInvalid)?,
         };
         let replacement = hash_off_runtime(change.replacement).await?;
         let credentials = self.auth.sessions().prepare_credentials()?;
@@ -444,6 +479,7 @@ impl ProfileService {
                         tx,
                         VerifiedChange {
                             principal,
+                            proof,
                             verified: &verified,
                             replacement: &replacement,
                             credentials: &credentials,
@@ -463,6 +499,7 @@ impl ProfileService {
     ) -> Result<MintedSession, ProfileError> {
         let VerifiedChange {
             principal,
+            proof,
             verified,
             replacement,
             credentials,
@@ -480,6 +517,13 @@ impl ProfileService {
         };
         if !authorized_for_password_change(principal, restriction) {
             return Err(recent_auth_required(principal));
+        }
+        if proof == CurrentPasswordProof::TemporaryPasswordSession
+            && restriction != SessionRestriction::MustChangePassword
+        {
+            return Err(ProfileError::Invalid {
+                fields: vec!["currentPassword"],
+            });
         }
         if !users::change_password(tx, current.id, verified, replacement, now).await? {
             return Err(ProfileError::CurrentPasswordInvalid);

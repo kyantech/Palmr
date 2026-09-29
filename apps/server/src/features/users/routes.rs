@@ -171,11 +171,15 @@ async fn update_preferences(
     post,
     path = "/api/v1/profile/password",
     tag = "profile",
-    request_body(content = PasswordChangeRequest, content_type = "application/json"),
+    request_body(
+        content = PasswordChangeRequest,
+        content_type = "application/json",
+        description = "`currentPassword` is required for self-service changes. It may be omitted only by a `must_change_password` session that was established by signing in with the temporary password; when supplied, it is always verified."
+    ),
     responses(
         (
             status = 204,
-            description = "The password is changed; every other session and every trusted device is revoked, and the current session is rotated with fresh `palmr_session` and `palmr_csrf` cookies."
+            description = "The password is changed and `must_change_password` is cleared; every other session and every trusted device is revoked, and the current session is rotated with fresh `palmr_session` and `palmr_csrf` cookies. The session's restriction is then re-derived from current account state, so a session may move directly to `mfa_enrollment_required`."
         ),
         (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
         (status = 401, description = "Authentication required.", body = ApiErrorBody),
@@ -191,7 +195,8 @@ async fn change_password(
 ) -> Response {
     let request_id = RequestId::of(&request);
     let client = client_metadata(&request);
-    let body = match json::read::<PasswordChangeRequest>(request.into_body()).await {
+    let fields = PasswordChangeRequest::fields_for(&principal);
+    let body = match json::read_with::<PasswordChangeRequest>(request.into_body(), fields).await {
         Ok(body) => body,
         Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
     };

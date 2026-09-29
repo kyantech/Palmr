@@ -1691,6 +1691,7 @@ async fn it_login_audit_and_attempts_never_store_secrets() {
     stack.stop().await;
 }
 
+mod forced_states;
 mod mfa;
 mod operator_cli;
 mod profile;

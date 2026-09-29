@@ -10,7 +10,9 @@ use crate::app::router::{RateLimitClass, RoutePolicy, Routes, Transport};
 use crate::app::state::AppState;
 use crate::features::auth::sessions::routes::client_metadata;
 use crate::infra::http::error::{ApiError, ApiErrorBody, JSON_CONTENT_TYPE};
-use crate::infra::http::extractors::{Authenticated, AuthenticatedRecentAuth};
+use crate::infra::http::extractors::{
+    Authenticated, AuthenticatedRecentAuth, TotpEnrollmentCaller,
+};
 use crate::infra::http::json;
 use crate::infra::http::request_id::{tag_error, RequestId};
 use crate::infra::ratelimit::RateLimitGate;
@@ -31,13 +33,15 @@ pub const ENROLL_ROUTE: RoutePolicy = RoutePolicy::new(
     AuthClass::AuthenticatedRecentAuth,
     RateLimitClass::Write,
     Transport::ControlPlane,
-);
+)
+.with_mandatory_totp_enrollment_waiver();
 
 pub const VERIFY_ROUTE: RoutePolicy = RoutePolicy::new(
     AuthClass::AuthenticatedRecentAuth,
     RateLimitClass::AuthTotp,
     Transport::ControlPlane,
-);
+)
+.with_mandatory_totp_enrollment_waiver();
 
 pub const DISABLE_ROUTE: RoutePolicy = RoutePolicy::new(
     AuthClass::AuthenticatedRecentAuth,
@@ -95,14 +99,14 @@ async fn status(
             body = EnrollmentResponse
         ),
         (status = 401, description = "Authentication required.", body = ApiErrorBody),
-        (status = 403, description = "Recent authentication is required, the session is restricted, or the CSRF proof or origin is not allowed.", body = ApiErrorBody),
+        (status = 403, description = "Recent authentication is required (waived only for a session whose restriction is `mfa_enrollment_required`), the session is otherwise restricted, or the CSRF proof or origin is not allowed.", body = ApiErrorBody),
         (status = 409, description = "Two-factor authentication is already enabled.", body = ApiErrorBody),
         (status = 429, description = "Rate limited.", body = ApiErrorBody),
     )
 )]
 async fn enroll(
     Extension(service): Extension<TotpService>,
-    AuthenticatedRecentAuth(principal): AuthenticatedRecentAuth,
+    TotpEnrollmentCaller(principal): TotpEnrollmentCaller,
     request: Request,
 ) -> Response {
     let request_id = RequestId::of(&request);
@@ -120,12 +124,12 @@ async fn enroll(
     responses(
         (
             status = 200,
-            description = "Two-factor authentication is enabled against the server-held pending secret. The ten backup codes are returned exactly once; every other session is revoked and the current session is rotated with fresh `palmr_session` and `palmr_csrf` cookies.",
+            description = "Two-factor authentication is enabled against the server-held pending secret. The ten backup codes are returned exactly once; every other session is revoked and the current session is rotated with fresh `palmr_session` and `palmr_csrf` cookies. An `mfa_enrollment_required` restriction is lifted by this change.",
             body = BackupCodesResponse
         ),
         (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
         (status = 401, description = "The code did not verify, its time step was already used, or authentication is required.", body = ApiErrorBody),
-        (status = 403, description = "Recent authentication is required, the session is restricted, or the CSRF proof or origin is not allowed.", body = ApiErrorBody),
+        (status = 403, description = "Recent authentication is required (waived only for a session whose restriction is `mfa_enrollment_required`), the session is otherwise restricted, or the CSRF proof or origin is not allowed.", body = ApiErrorBody),
         (status = 409, description = "No unexpired pending enrollment matches `enrollmentId`.", body = ApiErrorBody),
         (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
         (status = 422, description = "The request failed validation.", body = ApiErrorBody),
@@ -134,7 +138,7 @@ async fn enroll(
 )]
 async fn verify(
     Extension(service): Extension<TotpService>,
-    AuthenticatedRecentAuth(principal): AuthenticatedRecentAuth,
+    TotpEnrollmentCaller(principal): TotpEnrollmentCaller,
     gate: RateLimitGate,
     request: Request,
 ) -> Response {

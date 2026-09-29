@@ -5,6 +5,7 @@ use crate::domain::id::Id;
 use crate::domain::role::Role;
 use crate::domain::secret::Secret;
 use crate::domain::time::Timestamp;
+use crate::features::auth::restrictions::AccountSecurity;
 use crate::features::users::model::UserId;
 use crate::infra::crypto::hash::TokenDigest;
 
@@ -215,8 +216,7 @@ pub struct ResolvedSession {
     pub username: String,
     pub role: Role,
     pub is_active: bool,
-    pub must_change_password: bool,
-    pub totp_enabled: bool,
+    pub security: AccountSecurity,
 }
 
 #[derive(Clone)]
