@@ -42,6 +42,7 @@
     "emailTaken": "Diese E-Mail-Adresse wird bereits verwendet.",
     "usernameTaken": "Dieser Benutzername wird bereits verwendet.",
     "userNotFound": "Dieser Benutzer existiert nicht.",
+    "lastAdminProtected": "Palmr muss mindestens einen aktiven Administrator behalten.",
     "serverBusy": "Palmr ist gerade ausgelastet. Versuche es gleich noch einmal.",
     "fileNotFound": "Diese Datei existiert nicht mehr.",
     "rangeNotSatisfiable": "Der angeforderte Teil der Datei ist nicht verfügbar. Starte den Download erneut.",

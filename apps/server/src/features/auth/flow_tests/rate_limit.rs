@@ -363,6 +363,9 @@ async fn svc_rate_limit_class_enforced_on_every_session_keyed_route() {
         (Method::GET, "/api/v1/admin/users"),
         (Method::GET, "/api/v1/admin/users/{id}"),
         (Method::GET, "/api/v1/admin/users/{userId}/sessions"),
+        (Method::PUT, "/api/v1/admin/users/{id}/role"),
+        (Method::POST, "/api/v1/admin/users/{id}/activate"),
+        (Method::POST, "/api/v1/admin/users/{id}/deactivate"),
     ] {
         assert!(
             swept.iter().any(|(m, p, _)| *m == method && p == path),

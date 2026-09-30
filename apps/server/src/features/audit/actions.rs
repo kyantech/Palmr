@@ -325,6 +325,52 @@ pub fn user_created(facts: UserCreatedFacts) -> ActionSpec {
     ActionSpec::new(AuditAction::UserCreated, metadata)
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct UserRoleChangedFacts {
+    pub from: Role,
+    pub to: Role,
+    pub sessions_revoked: u64,
+}
+
+pub fn user_role_changed(facts: UserRoleChangedFacts) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("from", Value::from(facts.from.as_str())),
+        ("to", Value::from(facts.to.as_str())),
+        ("sessions_revoked", Value::from(facts.sessions_revoked)),
+    ]);
+    ActionSpec::new(AuditAction::UserRoleChanged, metadata)
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct UserDeactivatedFacts {
+    pub sessions_revoked: u64,
+    pub trusted_devices_revoked: u64,
+    pub identity_links_suspended: u64,
+}
+
+pub fn user_deactivated(facts: UserDeactivatedFacts) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("sessions_revoked", Value::from(facts.sessions_revoked)),
+        (
+            "trusted_devices_revoked",
+            Value::from(facts.trusted_devices_revoked),
+        ),
+        (
+            "identity_links_suspended",
+            Value::from(facts.identity_links_suspended),
+        ),
+    ]);
+    ActionSpec::new(AuditAction::UserDeactivated, metadata)
+}
+
+pub fn user_activated(identity_links_restored: u64) -> ActionSpec {
+    let metadata = Metadata::json(&[(
+        "identity_links_restored",
+        Value::from(identity_links_restored),
+    )]);
+    ActionSpec::new(AuditAction::UserActivated, metadata)
+}
+
 // Invite builders take the role and delivery facts only: the token, its
 // digest, its sealed copy and the invite URL have no parameter here.
 pub fn invite_created(role: Role, validity_hours: u32, email_queued: bool) -> ActionSpec {
@@ -378,4 +424,58 @@ pub fn storage_orphan_detected(counts: &OrphanSweepCounts) -> ActionSpec {
         ("stale_tombstones", Value::from(counts.stale_tombstones)),
     ]);
     ActionSpec::new(AuditAction::StorageOrphanDetected, metadata)
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::Value;
+
+    use super::super::model::WritePath;
+    use super::*;
+
+    fn fields(spec: &ActionSpec) -> Vec<String> {
+        let parsed: Value = serde_json::from_str(spec.metadata().as_str()).unwrap();
+        let mut keys: Vec<String> = parsed.as_object().unwrap().keys().cloned().collect();
+        keys.sort();
+        keys
+    }
+
+    #[test]
+    fn unit_user_lifecycle_metadata_is_closed_bounded_and_secret_free() {
+        let role = user_role_changed(UserRoleChangedFacts {
+            from: Role::Admin,
+            to: Role::User,
+            sessions_revoked: u64::MAX,
+        });
+        assert_eq!(role.action(), AuditAction::UserRoleChanged);
+        assert_eq!(fields(&role), ["from", "sessions_revoked", "to"]);
+
+        let deactivated = user_deactivated(UserDeactivatedFacts {
+            sessions_revoked: u64::MAX,
+            trusted_devices_revoked: u64::MAX,
+            identity_links_suspended: u64::MAX,
+        });
+        assert_eq!(deactivated.action(), AuditAction::UserDeactivated);
+        assert_eq!(
+            fields(&deactivated),
+            [
+                "identity_links_suspended",
+                "sessions_revoked",
+                "trusted_devices_revoked"
+            ]
+        );
+
+        let activated = user_activated(u64::MAX);
+        assert_eq!(activated.action(), AuditAction::UserActivated);
+        assert_eq!(fields(&activated), ["identity_links_restored"]);
+
+        for spec in [&role, &deactivated, &activated] {
+            assert!(spec.metadata().bytes() <= MAX_METADATA_BYTES);
+            assert_eq!(spec.action().write_path(), WritePath::InTransaction);
+            let text = spec.metadata().as_str();
+            for forbidden in ["token", "hash", "password", "secret", "email"] {
+                assert!(!text.contains(forbidden), "{text}");
+            }
+        }
+    }
 }

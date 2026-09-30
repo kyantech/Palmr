@@ -84,6 +84,7 @@ struct Stack {
     totp: TotpService,
     resets: PasswordResetService,
     invites: InviteService,
+    admin_users: AdminUserService,
     mail: Arc<CapturingTransport>,
     email: EmailService,
     drain: AuditDrain,
@@ -219,7 +220,7 @@ impl Stack {
             .layer(Extension(totp.clone()))
             .layer(Extension(resets.clone()))
             .layer(Extension(invites.clone()))
-            .layer(Extension(admin_users))
+            .layer(Extension(admin_users.clone()))
             .layer(Extension(EffectiveSettingsService::new(
                 pools.reader().clone(),
                 settings.handle(),
@@ -249,6 +250,7 @@ impl Stack {
             totp,
             resets,
             invites,
+            admin_users,
             mail,
             email,
             drain,
@@ -1745,6 +1747,7 @@ async fn it_login_audit_and_attempts_never_store_secrets() {
     stack.stop().await;
 }
 
+mod admin_lifecycle;
 mod admin_users;
 mod forced_states;
 mod invites;

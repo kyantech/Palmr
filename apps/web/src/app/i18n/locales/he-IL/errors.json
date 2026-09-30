@@ -42,6 +42,7 @@
     "emailTaken": "כתובת הדואר האלקטרוני הזו כבר בשימוש.",
     "usernameTaken": "שם המשתמש הזה כבר בשימוש.",
     "userNotFound": "המשתמש הזה לא קיים.",
+    "lastAdminProtected": "Palmr חייב להשאיר לפחות מנהל פעיל אחד.",
     "serverBusy": "Palmr עמוס כרגע. נסו שוב בעוד רגע.",
     "fileNotFound": "הקובץ הזה כבר לא קיים.",
     "rangeNotSatisfiable": "החלק המבוקש של הקובץ אינו זמין. התחילו את ההורדה מחדש.",

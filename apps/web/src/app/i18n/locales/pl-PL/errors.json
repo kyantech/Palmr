@@ -42,6 +42,7 @@
     "emailTaken": "Ten adres e-mail jest już używany.",
     "usernameTaken": "Ta nazwa użytkownika jest już używana.",
     "userNotFound": "Ten użytkownik nie istnieje.",
+    "lastAdminProtected": "Palmr musi zachować co najmniej jednego aktywnego administratora.",
     "serverBusy": "Palmr jest teraz zajęty. Spróbuj ponownie za chwilę.",
     "fileNotFound": "Ten plik już nie istnieje.",
     "rangeNotSatisfiable": "Żądana część pliku jest niedostępna. Rozpocznij pobieranie od nowa.",

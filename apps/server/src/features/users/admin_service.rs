@@ -8,14 +8,16 @@ use crate::domain::error_code::ErrorCode;
 use crate::domain::role::Role;
 use crate::domain::secret::Secret;
 use crate::domain::time::{InvalidTimestamp, Timestamp};
-use crate::features::audit::actions::{self, UserCreatedFacts};
+use crate::features::audit::actions::{
+    self, UserCreatedFacts, UserDeactivatedFacts, UserRoleChangedFacts,
+};
 use crate::features::audit::error::AuditError;
 use crate::features::audit::model::{
     Actor, AuditEvent, ClientMetadata, Outcome, Target, TargetType,
 };
 use crate::features::audit::service::AuditService;
 use crate::features::auth::sessions::{
-    AuthenticatedPrincipal, SessionError, SessionItem, SessionService,
+    AuthenticatedPrincipal, RevokedReason, SessionError, SessionItem, SessionService,
 };
 use crate::features::auth::trusted_devices::repo as trusted_devices;
 use crate::features::auth::trusted_devices::TrustedDeviceError;
@@ -23,7 +25,7 @@ use crate::features::settings::SettingsHandle;
 use crate::infra::crypto::hkdf::KeyRing;
 use crate::infra::crypto::password::hash_password;
 use crate::infra::crypto::CryptoError;
-use crate::infra::db::{DbError, DbPools};
+use crate::infra::db::{DbError, DbPools, WriteTx};
 use crate::infra::http::error::ApiError;
 use crate::infra::http::idempotency::{
     Claim, IdempotencyError, IdempotencyService, ReplayEnvelope,
@@ -39,12 +41,16 @@ use super::admin_model::{
 };
 use super::admin_repo::{self as repo, SearchPrefix, UserFilter};
 use super::error::UserError;
-use super::model::{NewUser, UserId};
+use super::lifecycle;
+use super::model::{NewUser, User, UserId};
 use super::repo as users;
-use super::service::AccountPasswordPolicy;
+use super::service::{assert_active_admin_remains, AccountPasswordPolicy};
 
 pub const CREATE_TRANSACTION: &str = "users.admin_create";
 pub const UPDATE_TRANSACTION: &str = "users.admin_update";
+pub const ROLE_TRANSACTION: &str = "users.admin_role";
+pub const DEACTIVATE_TRANSACTION: &str = "users.admin_deactivate";
+pub const ACTIVATE_TRANSACTION: &str = "users.admin_activate";
 
 pub const ROLE_PARAM: &str = "role";
 pub const STATUS_PARAM: &str = "status";
@@ -94,6 +100,9 @@ impl AdminUserError {
         match self {
             Self::NotFound | Self::User(UserError::NotFound) => {
                 ApiError::new(ErrorCode::UserNotFound)
+            }
+            Self::User(UserError::LastAdminProtected) => {
+                ApiError::new(ErrorCode::LastAdminProtected)
             }
             Self::Invalid { fields } => ApiError::validation(fields.iter().copied()),
             Self::User(UserError::EmailTaken) => ApiError::new(ErrorCode::UserEmailTaken),
@@ -414,6 +423,128 @@ impl AdminUserService {
             })
             .await?;
         self.item(id).await
+    }
+
+    pub async fn change_role(
+        &self,
+        admin: &AuthenticatedPrincipal,
+        id: UserId,
+        role: Role,
+        client: &ClientMetadata,
+    ) -> Result<AdminUserItem, AdminUserError> {
+        self.pools
+            .write_tx(self.clock.as_ref(), ROLE_TRANSACTION, async |tx| {
+                let at = Timestamp::try_from(self.clock.now())?;
+                let user = users::find_by_id_in_tx(tx, id)
+                    .await?
+                    .ok_or(AdminUserError::NotFound)?;
+                if user.role == role {
+                    return Ok::<_, AdminUserError>(());
+                }
+                if role == Role::User {
+                    assert_active_admin_remains(tx, id).await?;
+                }
+                lifecycle::set_role(tx, id, role, at).await?;
+                let sessions_revoked = self
+                    .sessions
+                    .revoke_all_in_tx(tx, id, RevokedReason::RoleChanged)
+                    .await?;
+                let spec = actions::user_role_changed(UserRoleChangedFacts {
+                    from: user.role,
+                    to: role,
+                    sessions_revoked,
+                });
+                self.record_lifecycle(tx, spec, admin, &user, at, client)
+                    .await
+            })
+            .await?;
+        self.item(id).await
+    }
+
+    pub async fn deactivate(
+        &self,
+        admin: &AuthenticatedPrincipal,
+        id: UserId,
+        client: &ClientMetadata,
+    ) -> Result<AdminUserItem, AdminUserError> {
+        self.pools
+            .write_tx(self.clock.as_ref(), DEACTIVATE_TRANSACTION, async |tx| {
+                let at = Timestamp::try_from(self.clock.now())?;
+                let user = users::find_by_id_in_tx(tx, id)
+                    .await?
+                    .ok_or(AdminUserError::NotFound)?;
+                if !user.is_active {
+                    return Ok::<_, AdminUserError>(());
+                }
+                assert_active_admin_remains(tx, id).await?;
+                lifecycle::deactivate(tx, id, admin.user_id, at).await?;
+                let sessions_revoked = self
+                    .sessions
+                    .revoke_all_in_tx(tx, id, RevokedReason::Deactivated)
+                    .await?;
+                let trusted_devices_revoked = trusted_devices::revoke_all_in_tx(tx, id, at).await?;
+                let identity_links_suspended =
+                    lifecycle::suspend_identity_links(tx, id, at).await?;
+                let spec = actions::user_deactivated(UserDeactivatedFacts {
+                    sessions_revoked,
+                    trusted_devices_revoked,
+                    identity_links_suspended,
+                });
+                self.record_lifecycle(tx, spec, admin, &user, at, client)
+                    .await
+            })
+            .await?;
+        self.item(id).await
+    }
+
+    pub async fn activate(
+        &self,
+        admin: &AuthenticatedPrincipal,
+        id: UserId,
+        client: &ClientMetadata,
+    ) -> Result<AdminUserItem, AdminUserError> {
+        self.pools
+            .write_tx(self.clock.as_ref(), ACTIVATE_TRANSACTION, async |tx| {
+                let at = Timestamp::try_from(self.clock.now())?;
+                let user = users::find_by_id_in_tx(tx, id)
+                    .await?
+                    .ok_or(AdminUserError::NotFound)?;
+                if user.is_active {
+                    return Ok::<_, AdminUserError>(());
+                }
+                lifecycle::activate(tx, id, at).await?;
+                let identity_links_restored = lifecycle::restore_identity_links(tx, id).await?;
+                let spec = actions::user_activated(identity_links_restored);
+                self.record_lifecycle(tx, spec, admin, &user, at, client)
+                    .await
+            })
+            .await?;
+        self.item(id).await
+    }
+
+    async fn record_lifecycle(
+        &self,
+        tx: &mut WriteTx<'_>,
+        spec: actions::ActionSpec,
+        admin: &AuthenticatedPrincipal,
+        target: &User,
+        at: Timestamp,
+        client: &ClientMetadata,
+    ) -> Result<(), AdminUserError> {
+        let event = AuditEvent::new(
+            spec,
+            Actor::user(&admin.user_id.to_string(), &admin.username),
+            Outcome::Success,
+            at,
+        )
+        .with_target(
+            Target::new(TargetType::User)
+                .id(&target.id.to_string())
+                .label(&target.username),
+        )
+        .with_client(client.clone());
+        self.audit.record_in_tx(tx, &event).await?;
+        Ok(())
     }
 
     async fn item(&self, id: UserId) -> Result<AdminUserItem, AdminUserError> {

@@ -233,6 +233,27 @@ impl UpdateInput {
     }
 }
 
+#[derive(Debug, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ChangeRoleRequest {
+    #[schema(example = "user")]
+    pub role: String,
+}
+
+impl JsonRequest for ChangeRoleRequest {
+    const FIELDS: &'static [JsonField] = &[JsonField::required("role", JsonKind::String)];
+}
+
+impl ChangeRoleRequest {
+    pub fn parse(self) -> Result<Role, AdminUserError> {
+        self.role
+            .parse::<Role>()
+            .map_err(|_| AdminUserError::Invalid {
+                fields: vec!["role"],
+            })
+    }
+}
+
 fn quota_override(quota_bytes: Option<i64>) -> Option<QuotaOverride> {
     match quota_bytes {
         None => Some(QuotaOverride::Inherit),
@@ -443,5 +464,25 @@ mod tests {
         let username = parsed.username.unwrap();
         assert_eq!(username.as_str(), "GHopper");
         assert_eq!(username.normalized(), "ghopper");
+    }
+
+    #[test]
+    fn unit_admin_change_role_request_is_a_closed_role_value() {
+        for (text, expected) in [("admin", Role::Admin), ("user", Role::User)] {
+            let parsed = ChangeRoleRequest {
+                role: text.to_owned(),
+            }
+            .parse();
+            assert_eq!(parsed.unwrap(), expected);
+        }
+        for text in ["", "Admin", "ADMIN", " user", "root", "administrator"] {
+            let Err(AdminUserError::Invalid { fields }) = (ChangeRoleRequest {
+                role: text.to_owned(),
+            })
+            .parse() else {
+                panic!("{text:?} parsed as a role");
+            };
+            assert_eq!(fields, ["role"]);
+        }
     }
 }

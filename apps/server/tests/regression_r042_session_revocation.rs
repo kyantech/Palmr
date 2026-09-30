@@ -47,6 +47,9 @@ const PASSWORD_RESET: &str = "password_reset";
 const POLICY_CHANGED: &str = "policy_changed";
 const USER_REQUEST: &str = "user_request";
 const LOGGED_OUT: &str = "logout";
+const ROLE_CHANGED: &str = "role_changed";
+const DEACTIVATED: &str = "deactivated";
+const ADMIN_USERS: &str = "/api/v1/admin/users";
 
 #[derive(Debug, Clone, Copy)]
 enum Fate {
@@ -644,6 +647,40 @@ impl World {
                 ),
             )
             .await
+    }
+
+    async fn add_admin_actor(&self) -> Result<Creds> {
+        self.http
+            .send(
+                Method::POST,
+                ADMIN_USERS,
+                Some(&self.a.sessions[0].creds),
+                None,
+                Some(json!({
+                    "firstName": "Cy",
+                    "lastName": "Actor",
+                    "username": "cyrus",
+                    "email": "cyrus@example.test",
+                    "role": "admin",
+                    "password": PASSWORD,
+                    "requirePasswordChange": false,
+                    "locale": "en-US",
+                })),
+            )
+            .await?
+            .expect(StatusCode::CREATED)?;
+        self.login_creds("cyrus").await
+    }
+
+    async fn lifecycle(&self, actor: &Creds, target: &str, action: &str) -> Result<Reply> {
+        let path = format!("{ADMIN_USERS}/{target}/{action}");
+        match action {
+            "role" => {
+                self.call_json(Method::PUT, &path, actor, json!({ "role": "user" }))
+                    .await
+            }
+            _ => self.call(Method::POST, &path, actor).await,
+        }
     }
 
     async fn seed_device(&self, user_id: &str, label: &str) -> Result<Device> {
@@ -1494,6 +1531,157 @@ async fn revoke_all_trusted_devices() -> Result<()> {
     world.finish().await
 }
 
+async fn role_demotion() -> Result<()> {
+    let world = World::standard("r042_role_demotion", false).await?;
+    let actor = world.add_admin_actor().await?;
+    let target = world.a.id.clone();
+    let before = world.snapshot().await?;
+    let audit_before = world.audit_count("USER_ROLE_CHANGED").await?;
+
+    world.inject_audit_failure("USER_ROLE_CHANGED").await?;
+    let failed = world.lifecycle(&actor, &target, "role").await?;
+    world.assert_injected_failure(failed).await?;
+    world
+        .assert_rolled_back("role demotion", &before, "USER_ROLE_CHANGED", audit_before)
+        .await?;
+    world.remove_audit_failure().await?;
+
+    world
+        .lifecycle(&actor, &target, "role")
+        .await?
+        .expect(StatusCode::OK)?
+        .assert_no_session_cookie()?;
+    let fates = [Fate::Revoked(ROLE_CHANGED); 3];
+    let after = world
+        .settle("role demotion", &before, &fates, &NO_DEVICE_REVOKED, None)
+        .await?;
+    expect_eq(
+        world.audit_count("USER_ROLE_CHANGED").await?,
+        audit_before + 1,
+        "role demotion audit",
+    )?;
+    expect_eq(
+        world
+            .db
+            .scalar_text("SELECT role FROM users WHERE id = ?1", &target)
+            .await?
+            .as_str(),
+        "user",
+        "demoted role",
+    )?;
+    expect_eq(
+        after.users.get(&world.a.id).map(|row| &row.password_hash),
+        before.users.get(&world.a.id).map(|row| &row.password_hash),
+        "a role change keeps the credential",
+    )?;
+    world.finish().await
+}
+
+async fn role_promotion() -> Result<()> {
+    let world = World::standard("r042_role_promotion", false).await?;
+    let actor = world.add_admin_actor().await?;
+    let target = world.a.id.clone();
+    world
+        .db
+        .execute(&format!(
+            "UPDATE users SET role = 'user' WHERE id = '{target}'"
+        ))
+        .await?;
+    let before = world.snapshot().await?;
+
+    let promote = world
+        .call_json(
+            Method::PUT,
+            &format!("{ADMIN_USERS}/{target}/role"),
+            &actor,
+            json!({ "role": "admin" }),
+        )
+        .await?
+        .expect(StatusCode::OK)?;
+    promote.assert_no_session_cookie()?;
+    let fates = [Fate::Revoked(ROLE_CHANGED); 3];
+    world
+        .settle("role promotion", &before, &fates, &NO_DEVICE_REVOKED, None)
+        .await?;
+    expect_eq(
+        world.audit_count("USER_ROLE_CHANGED").await?,
+        1,
+        "role promotion audit",
+    )?;
+    let fresh = world.login_creds("ada").await?;
+    world
+        .call(Method::GET, ADMIN_USERS, &fresh)
+        .await?
+        .expect(StatusCode::OK)?;
+    world.finish().await
+}
+
+async fn user_deactivation() -> Result<()> {
+    let world = World::standard("r042_user_deactivation", false).await?;
+    let actor = world.add_admin_actor().await?;
+    let target = world.a.id.clone();
+    let before = world.snapshot().await?;
+    let audit_before = world.audit_count("USER_DEACTIVATED").await?;
+
+    world.inject_audit_failure("USER_DEACTIVATED").await?;
+    let failed = world.lifecycle(&actor, &target, "deactivate").await?;
+    world.assert_injected_failure(failed).await?;
+    world
+        .assert_rolled_back("deactivation", &before, "USER_DEACTIVATED", audit_before)
+        .await?;
+    world.remove_audit_failure().await?;
+
+    world
+        .lifecycle(&actor, &target, "deactivate")
+        .await?
+        .expect(StatusCode::OK)?
+        .assert_no_session_cookie()?;
+    let fates = [Fate::Revoked(DEACTIVATED); 3];
+    let after = world
+        .settle("deactivation", &before, &fates, &EVERY_DEVICE_REVOKED, None)
+        .await?;
+    expect_eq(
+        world.audit_count("USER_DEACTIVATED").await?,
+        audit_before + 1,
+        "deactivation audit",
+    )?;
+    let refused = world
+        .http
+        .send(
+            Method::POST,
+            LOGIN,
+            None,
+            None,
+            Some(json!({ "identifier": "ada", "password": PASSWORD })),
+        )
+        .await?;
+    expect_eq(
+        refused.status,
+        StatusCode::UNAUTHORIZED,
+        "an inactive account cannot sign in",
+    )?;
+
+    world
+        .lifecycle(&actor, &target, "activate")
+        .await?
+        .expect(StatusCode::OK)?
+        .assert_no_session_cookie()?;
+    let reactivated = world.snapshot().await?;
+    expect_eq(
+        &reactivated.sessions,
+        &after.sessions,
+        "activation restores no session",
+    )?;
+    expect_eq(
+        &reactivated.devices,
+        &after.devices,
+        "activation restores no trusted device",
+    )?;
+    world.probe("activation", &fates, None).await?;
+    world.login_creds("ada").await?;
+    world.finish().await
+}
+
 type Scenario = Pin<Box<dyn Future<Output = Result<()>>>>;
 
 #[allow(non_snake_case, reason = "the accepted regression identifier is R-042")]
@@ -1521,6 +1709,9 @@ async fn regression_R042_session_revocation_on_security_change() -> Result<()> {
             "revoke_all_trusted_devices",
             Box::pin(revoke_all_trusted_devices()),
         ),
+        ("role_demotion", Box::pin(role_demotion())),
+        ("role_promotion", Box::pin(role_promotion())),
+        ("user_deactivation", Box::pin(user_deactivation())),
     ];
     let (names, futures): (Vec<_>, Vec<_>) = scenarios.into_iter().unzip();
     let results = futures_util::future::join_all(futures).await;

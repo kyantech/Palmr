@@ -42,6 +42,7 @@
     "emailTaken": "E-postadressen används redan.",
     "usernameTaken": "Användarnamnet används redan.",
     "userNotFound": "Den här användaren finns inte.",
+    "lastAdminProtected": "Palmr måste ha minst en aktiv administratör.",
     "serverBusy": "Palmr är upptaget just nu. Försök igen om en stund.",
     "fileNotFound": "Filen finns inte längre.",
     "rangeNotSatisfiable": "Den begärda delen av filen är inte tillgänglig. Starta nedladdningen igen.",

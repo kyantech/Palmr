@@ -21,7 +21,9 @@ use crate::infra::http::pagination::{
 };
 use crate::infra::http::request_id::{tag_error, RequestId};
 
-use super::admin_input::{CreateInput, CreateUserRequest, UpdateInput, UpdateUserRequest};
+use super::admin_input::{
+    ChangeRoleRequest, CreateInput, CreateUserRequest, UpdateInput, UpdateUserRequest,
+};
 use super::admin_model::{AdminUserDetail, AdminUserItem, UserStatus};
 use super::admin_service::{AdminUserError, AdminUserService, ROLE_PARAM, STATUS_PARAM, USER_SORT};
 use super::model::UserId;
@@ -45,6 +47,12 @@ pub const UPDATE_ROUTE: RoutePolicy = RoutePolicy::new(
     Transport::ControlPlane,
 );
 
+pub const SENSITIVE_WRITE_ROUTE: RoutePolicy = RoutePolicy::new(
+    AuthClass::AdminRecentAuth,
+    RateLimitClass::AdminWrite,
+    Transport::ControlPlane,
+);
+
 const NO_STORE: HeaderValue = HeaderValue::from_static("no-store");
 
 pub fn routes() -> Routes<AppState> {
@@ -56,6 +64,9 @@ pub fn routes() -> Routes<AppState> {
         .route(CREATE_ROUTE, routes!(create_user))
         .route(READ_ROUTE, routes!(get_user))
         .route(UPDATE_ROUTE, routes!(update_user))
+        .route(SENSITIVE_WRITE_ROUTE, routes!(change_user_role))
+        .route(UPDATE_ROUTE, routes!(activate_user))
+        .route(SENSITIVE_WRITE_ROUTE, routes!(deactivate_user))
         .route(
             READ_ROUTE,
             with_query_parameters(routes!(list_user_sessions), &session_list_parameters()),
@@ -255,6 +266,113 @@ async fn update_user(
     };
     match service.update(id, input).await {
         Ok(item) => json_response(StatusCode::OK, &item, request_id.as_ref()),
+        Err(error) => admin_user_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    put,
+    path = "/api/v1/admin/users/{id}/role",
+    tag = "admin-users",
+    params(("id" = String, Path, description = "User UUIDv7")),
+    request_body(
+        content = ChangeRoleRequest,
+        content_type = "application/json",
+        description = "The new role, `admin` or `user`. A change revokes every session of the target user in the same transaction; trusted devices are kept. Setting the current role succeeds without any side effect."
+    ),
+    responses(
+        (status = 200, description = "The user in the shape of a `GET /api/v1/admin/users` row.", body = AdminUserItem),
+        (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role or recent authentication required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
+        (status = 404, description = "`USER_NOT_FOUND`.", body = ApiErrorBody),
+        (status = 409, description = "`LAST_ADMIN_PROTECTED` when the target is the only active Admin.", body = ApiErrorBody),
+        (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
+        (status = 422, description = "`VALIDATION_ERROR` for a missing or unknown role.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn change_user_role(
+    Extension(service): Extension<AdminUserService>,
+    Admin(admin): Admin,
+    Path(id): Path<String>,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let client = client_metadata(&request);
+    let Ok(id) = id.parse::<UserId>() else {
+        return admin_user_error(&AdminUserError::NotFound, request_id.as_ref());
+    };
+    let role = match json::read::<ChangeRoleRequest>(request.into_body()).await {
+        Ok(body) => match body.parse() {
+            Ok(role) => role,
+            Err(error) => return admin_user_error(&error, request_id.as_ref()),
+        },
+        Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
+    };
+    match service.change_role(&admin, id, role, &client).await {
+        Ok(item) => json_ok(&item, request_id.as_ref()),
+        Err(error) => admin_user_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    post,
+    path = "/api/v1/admin/users/{id}/activate",
+    tag = "admin-users",
+    params(("id" = String, Path, description = "User UUIDv7")),
+    responses(
+        (status = 200, description = "The user in the shape of a `GET /api/v1/admin/users` row. Identity links suspended by the deactivation are restored; revoked sessions and trusted devices are not. Activating an active user succeeds without any side effect.", body = AdminUserItem),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
+        (status = 404, description = "`USER_NOT_FOUND`.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn activate_user(
+    Extension(service): Extension<AdminUserService>,
+    Admin(admin): Admin,
+    Path(id): Path<String>,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let client = client_metadata(&request);
+    let Ok(id) = id.parse::<UserId>() else {
+        return admin_user_error(&AdminUserError::NotFound, request_id.as_ref());
+    };
+    match service.activate(&admin, id, &client).await {
+        Ok(item) => json_ok(&item, request_id.as_ref()),
+        Err(error) => admin_user_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    post,
+    path = "/api/v1/admin/users/{id}/deactivate",
+    tag = "admin-users",
+    params(("id" = String, Path, description = "User UUIDv7")),
+    responses(
+        (status = 200, description = "The user in the shape of a `GET /api/v1/admin/users` row. In one transaction every session and trusted device of the user is revoked and every active identity link is suspended; no content is changed. Deactivating an inactive user succeeds without any side effect.", body = AdminUserItem),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role or recent authentication required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
+        (status = 404, description = "`USER_NOT_FOUND`.", body = ApiErrorBody),
+        (status = 409, description = "`LAST_ADMIN_PROTECTED` when the target is the only active Admin.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn deactivate_user(
+    Extension(service): Extension<AdminUserService>,
+    Admin(admin): Admin,
+    Path(id): Path<String>,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let client = client_metadata(&request);
+    let Ok(id) = id.parse::<UserId>() else {
+        return admin_user_error(&AdminUserError::NotFound, request_id.as_ref());
+    };
+    match service.deactivate(&admin, id, &client).await {
+        Ok(item) => json_ok(&item, request_id.as_ref()),
         Err(error) => admin_user_error(&error, request_id.as_ref()),
     }
 }

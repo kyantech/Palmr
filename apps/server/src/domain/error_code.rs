@@ -144,6 +144,8 @@ error_catalog! {
         "The e-mail address is already in use";
     UserUsernameTaken = "USER_USERNAME_TAKEN", CONFLICT, retryable: false,
         "The username is already in use";
+    LastAdminProtected = "LAST_ADMIN_PROTECTED", CONFLICT, retryable: false,
+        "The action would leave the instance without an active administrator";
     DatabaseBusy = "DATABASE_BUSY", SERVICE_UNAVAILABLE, retryable: true,
         "The database is temporarily busy";
     FileNotFound = "FILE_NOT_FOUND", NOT_FOUND, retryable: false,

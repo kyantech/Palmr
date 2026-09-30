@@ -42,6 +42,7 @@
     "emailTaken": "此电子邮件地址已被使用。",
     "usernameTaken": "此用户名已被使用。",
     "userNotFound": "该用户不存在。",
+    "lastAdminProtected": "Palmr 必须至少保留一名启用的管理员。",
     "serverBusy": "Palmr 当前繁忙。请稍后重试。",
     "fileNotFound": "此文件已不存在。",
     "rangeNotSatisfiable": "所请求的文件部分不可用。请重新开始下载。",

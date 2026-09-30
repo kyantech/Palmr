@@ -99,6 +99,7 @@ export const ERROR_PRESENTATION: Readonly<Record<ErrorCode, ErrorPresentation>> 
   USER_EMAIL_TAKEN: entry("message.emailTaken", inline()),
   USER_USERNAME_TAKEN: entry("message.usernameTaken", inline()),
   USER_NOT_FOUND: entry("message.userNotFound", inline("warning")),
+  LAST_ADMIN_PROTECTED: entry("message.lastAdminProtected", inline("warning")),
   DATABASE_BUSY: entry("message.serverBusy", toast("warning", true)),
   FILE_NOT_FOUND: entry("message.fileNotFound", inline()),
   RANGE_NOT_SATISFIABLE: entry("message.rangeNotSatisfiable", inline()),

@@ -4,6 +4,7 @@ pub mod admin_repo;
 pub mod admin_routes;
 pub mod admin_service;
 pub mod error;
+pub mod lifecycle;
 pub mod model;
 pub mod preferences;
 pub mod profile;

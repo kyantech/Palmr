@@ -824,7 +824,7 @@ fn unit_admin_namespace_is_admin_classed_and_never_public() {
             admin_routes += 1;
         }
     }
-    assert!(admin_routes >= 7);
+    assert!(admin_routes >= 10);
     assert!(!PUBLIC_ROUTES_GOLDEN.contains("/api/v1/admin"));
 }
 
@@ -857,15 +857,35 @@ fn unit_admin_user_read_routes_are_declared_admin_and_read_limited() {
 #[test]
 fn unit_admin_user_write_routes_are_declared_admin_write_limited() {
     let inventory = application_inventory();
-    for (method, path, idempotency) in [
+    for (method, path, auth, idempotency) in [
         (
             Method::POST,
             "/api/v1/admin/users",
+            AuthClass::Admin,
             IdempotencyMode::Plaintext,
         ),
         (
             Method::PATCH,
             "/api/v1/admin/users/{id}",
+            AuthClass::Admin,
+            IdempotencyMode::None,
+        ),
+        (
+            Method::PUT,
+            "/api/v1/admin/users/{id}/role",
+            AuthClass::AdminRecentAuth,
+            IdempotencyMode::None,
+        ),
+        (
+            Method::POST,
+            "/api/v1/admin/users/{id}/activate",
+            AuthClass::Admin,
+            IdempotencyMode::None,
+        ),
+        (
+            Method::POST,
+            "/api/v1/admin/users/{id}/deactivate",
+            AuthClass::AdminRecentAuth,
             IdempotencyMode::None,
         ),
     ] {
@@ -876,7 +896,7 @@ fn unit_admin_user_write_routes_are_declared_admin_write_limited() {
             .collect();
         assert_eq!(matching.len(), 1, "{method} {path}");
         let entry = matching[0];
-        assert_eq!(entry.policy().auth(), AuthClass::Admin, "{method} {path}");
+        assert_eq!(entry.policy().auth(), auth, "{method} {path}");
         assert_eq!(
             entry.policy().rate_limit(),
             RateLimitClass::AdminWrite,
@@ -896,6 +916,60 @@ fn parameter<'a>(operation: &'a Value, name: &str) -> &'a Value {
                 .find(|parameter| parameter["name"] == name)
         })
         .unwrap_or_else(|| panic!("parameter {name} is not declared"))
+}
+
+#[test]
+fn it_openapi_admin_user_lifecycle_routes_declare_typed_contracts() {
+    let document = application_document();
+    let paths = &document["paths"];
+    let role = &paths["/api/v1/admin/users/{id}/role"]["put"];
+    let activate = &paths["/api/v1/admin/users/{id}/activate"]["post"];
+    let deactivate = &paths["/api/v1/admin/users/{id}/deactivate"]["post"];
+
+    for (operation, class) in [
+        (role, "admin+recent-auth"),
+        (activate, "admin"),
+        (deactivate, "admin+recent-auth"),
+    ] {
+        assert!(operation["tags"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|tag| tag == class));
+        assert_eq!(
+            operation["security"],
+            json!([{ "palmrSession": [], "palmrCsrfCookie": [], "palmrCsrfHeader": [] }])
+        );
+        for status in ["200", "401", "403", "404", "429"] {
+            assert!(operation["responses"][status].is_object(), "{status}");
+        }
+        assert_eq!(parameter(operation, "id")["in"], "path");
+        assert!(operation["responses"]["404"]["description"]
+            .as_str()
+            .unwrap()
+            .contains("USER_NOT_FOUND"));
+        assert_eq!(
+            operation["responses"]["200"]["content"]["application/json"]["schema"]["$ref"],
+            "#/components/schemas/AdminUserItem"
+        );
+    }
+    for operation in [role, deactivate] {
+        assert!(operation["responses"]["409"]["description"]
+            .as_str()
+            .unwrap()
+            .contains("LAST_ADMIN_PROTECTED"));
+    }
+    assert!(activate["responses"]["409"].is_null());
+    assert_eq!(
+        role["requestBody"]["content"]["application/json"]["schema"]["$ref"],
+        "#/components/schemas/ChangeRoleRequest"
+    );
+    assert!(activate["requestBody"].is_null());
+    assert!(deactivate["requestBody"].is_null());
+
+    let request = &document["components"]["schemas"]["ChangeRoleRequest"];
+    assert_eq!(request["required"], json!(["role"]));
+    assert_eq!(request["additionalProperties"], false);
 }
 
 #[test]
