@@ -277,6 +277,8 @@ pub enum AuditAction {
     UserRoleChanged,
     UserActivated,
     UserDeactivated,
+    UserPasswordResetByAdmin,
+    QuotaOverrideChanged,
     InviteCreated,
     InviteRevoked,
     InviteConsumed,
@@ -306,6 +308,8 @@ impl AuditAction {
         Self::UserRoleChanged,
         Self::UserActivated,
         Self::UserDeactivated,
+        Self::UserPasswordResetByAdmin,
+        Self::QuotaOverrideChanged,
         Self::InviteCreated,
         Self::InviteRevoked,
         Self::InviteConsumed,
@@ -335,6 +339,8 @@ impl AuditAction {
             Self::UserRoleChanged => "USER_ROLE_CHANGED",
             Self::UserActivated => "USER_ACTIVATED",
             Self::UserDeactivated => "USER_DEACTIVATED",
+            Self::UserPasswordResetByAdmin => "USER_PASSWORD_RESET_BY_ADMIN",
+            Self::QuotaOverrideChanged => "QUOTA_OVERRIDE_CHANGED",
             Self::InviteCreated => "INVITE_CREATED",
             Self::InviteRevoked => "INVITE_REVOKED",
             Self::InviteConsumed => "INVITE_CONSUMED",
@@ -369,6 +375,8 @@ impl AuditAction {
             | Self::UserRoleChanged
             | Self::UserActivated
             | Self::UserDeactivated
+            | Self::UserPasswordResetByAdmin
+            | Self::QuotaOverrideChanged
             | Self::InviteCreated
             | Self::InviteRevoked
             | Self::InviteConsumed

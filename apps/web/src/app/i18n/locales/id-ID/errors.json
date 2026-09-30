@@ -43,6 +43,7 @@
     "usernameTaken": "Nama pengguna ini sudah digunakan.",
     "userNotFound": "Pengguna ini tidak ada.",
     "lastAdminProtected": "Palmr harus mempertahankan setidaknya satu administrator aktif.",
+    "userHasNoLocalAuth": "Akun ini tidak memiliki kata sandi lokal untuk direset.",
     "serverBusy": "Palmr sedang sibuk. Coba lagi sebentar lagi.",
     "fileNotFound": "File ini sudah tidak ada.",
     "rangeNotSatisfiable": "Bagian file yang diminta tidak tersedia. Mulai ulang unduhan.",

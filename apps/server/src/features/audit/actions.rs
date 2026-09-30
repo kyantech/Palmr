@@ -371,6 +371,48 @@ pub fn user_activated(identity_links_restored: u64) -> ActionSpec {
     ActionSpec::new(AuditAction::UserActivated, metadata)
 }
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct UserPasswordResetByAdminFacts {
+    pub sessions_revoked: u64,
+    pub trusted_devices_revoked: u64,
+    pub reset_links_invalidated: u64,
+    pub lockout_cleared: bool,
+}
+
+pub fn user_password_reset_by_admin(facts: UserPasswordResetByAdminFacts) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("sessions_revoked", Value::from(facts.sessions_revoked)),
+        (
+            "trusted_devices_revoked",
+            Value::from(facts.trusted_devices_revoked),
+        ),
+        (
+            "reset_links_invalidated",
+            Value::from(facts.reset_links_invalidated),
+        ),
+        ("lockout_cleared", Value::from(facts.lockout_cleared)),
+    ]);
+    ActionSpec::new(AuditAction::UserPasswordResetByAdmin, metadata)
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct QuotaOverrideChangedFacts {
+    pub from_mode: &'static str,
+    pub from_quota_bytes: Option<u64>,
+    pub to_mode: &'static str,
+    pub to_quota_bytes: Option<u64>,
+}
+
+pub fn quota_override_changed(facts: QuotaOverrideChangedFacts) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("from_mode", Value::from(facts.from_mode)),
+        ("from_quota_bytes", Value::from(facts.from_quota_bytes)),
+        ("to_mode", Value::from(facts.to_mode)),
+        ("to_quota_bytes", Value::from(facts.to_quota_bytes)),
+    ]);
+    ActionSpec::new(AuditAction::QuotaOverrideChanged, metadata)
+}
+
 // Invite builders take the role and delivery facts only: the token, its
 // digest, its sealed copy and the invite URL have no parameter here.
 pub fn invite_created(role: Role, validity_hours: u32, email_queued: bool) -> ActionSpec {
@@ -469,7 +511,36 @@ mod tests {
         assert_eq!(activated.action(), AuditAction::UserActivated);
         assert_eq!(fields(&activated), ["identity_links_restored"]);
 
-        for spec in [&role, &deactivated, &activated] {
+        let reset = user_password_reset_by_admin(UserPasswordResetByAdminFacts {
+            sessions_revoked: u64::MAX,
+            trusted_devices_revoked: u64::MAX,
+            reset_links_invalidated: u64::MAX,
+            lockout_cleared: true,
+        });
+        assert_eq!(reset.action(), AuditAction::UserPasswordResetByAdmin);
+        assert_eq!(
+            fields(&reset),
+            [
+                "lockout_cleared",
+                "reset_links_invalidated",
+                "sessions_revoked",
+                "trusted_devices_revoked"
+            ]
+        );
+
+        let quota = quota_override_changed(QuotaOverrideChangedFacts {
+            from_mode: "inherit",
+            from_quota_bytes: None,
+            to_mode: "bytes",
+            to_quota_bytes: Some(u64::MAX),
+        });
+        assert_eq!(quota.action(), AuditAction::QuotaOverrideChanged);
+        assert_eq!(
+            fields(&quota),
+            ["from_mode", "from_quota_bytes", "to_mode", "to_quota_bytes"]
+        );
+
+        for spec in [&role, &deactivated, &activated, &reset, &quota] {
             assert!(spec.metadata().bytes() <= MAX_METADATA_BYTES);
             assert_eq!(spec.action().write_path(), WritePath::InTransaction);
             let text = spec.metadata().as_str();

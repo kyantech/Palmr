@@ -1,6 +1,7 @@
 use std::fmt;
 
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
+use serde_json::Number;
 use utoipa::ToSchema;
 
 use crate::domain::bytes::ByteSize;
@@ -254,6 +255,58 @@ impl ChangeRoleRequest {
     }
 }
 
+#[derive(Debug, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct QuotaOverrideRequest {
+    /// `inherit` follows the instance default, `unlimited` is an explicit Unlimited override and `bytes` is an explicit cap.
+    #[schema(example = "bytes")]
+    pub mode: String,
+    /// Required for `bytes` and forbidden for `inherit` and `unlimited`, where even `null` is rejected. `0` is a valid zero-byte cap, never Unlimited.
+    #[serde(default, deserialize_with = "present")]
+    #[schema(
+        value_type = Option<i64>,
+        minimum = 0,
+        maximum = 9_007_199_254_740_991_u64,
+        example = 107_374_182_400_u64
+    )]
+    pub quota_bytes: Option<Option<Number>>,
+}
+
+fn present<'de, D>(deserializer: D) -> Result<Option<Option<Number>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    Option::<Number>::deserialize(deserializer).map(Some)
+}
+
+impl JsonRequest for QuotaOverrideRequest {
+    const FIELDS: &'static [JsonField] = &[
+        JsonField::required("mode", JsonKind::String),
+        JsonField::optional("quotaBytes", JsonKind::Integer),
+    ];
+}
+
+impl QuotaOverrideRequest {
+    pub fn parse(self) -> Result<QuotaOverride, AdminUserError> {
+        let invalid = |field| AdminUserError::Invalid {
+            fields: vec![field],
+        };
+        match (self.mode.as_str(), self.quota_bytes) {
+            ("inherit", None) => Ok(QuotaOverride::Inherit),
+            ("unlimited", None) => Ok(QuotaOverride::Unlimited),
+            ("inherit" | "unlimited", Some(_)) => Err(invalid("quotaBytes")),
+            ("bytes", Some(Some(bytes))) => bytes
+                .as_u64()
+                .filter(|bytes| *bytes <= MAX_SAFE_JSON_INTEGER)
+                .and_then(|bytes| ByteSize::try_from(bytes).ok())
+                .map(QuotaOverride::Bytes)
+                .ok_or_else(|| invalid("quotaBytes")),
+            ("bytes", _) => Err(invalid("quotaBytes")),
+            _ => Err(invalid("mode")),
+        }
+    }
+}
+
 fn quota_override(quota_bytes: Option<i64>) -> Option<QuotaOverride> {
     match quota_bytes {
         None => Some(QuotaOverride::Inherit),
@@ -464,6 +517,82 @@ mod tests {
         let username = parsed.username.unwrap();
         assert_eq!(username.as_str(), "GHopper");
         assert_eq!(username.normalized(), "ghopper");
+    }
+
+    fn quota_request(body: serde_json::Value) -> QuotaOverrideRequest {
+        crate::infra::http::json::parse(body).unwrap()
+    }
+
+    #[test]
+    fn unit_admin_quota_request_has_three_distinct_states_and_no_sentinels() {
+        use serde_json::json;
+
+        let parsed = |body| quota_request(body).parse();
+        assert_eq!(
+            parsed(json!({ "mode": "inherit" })).unwrap(),
+            QuotaOverride::Inherit
+        );
+        assert_eq!(
+            parsed(json!({ "mode": "unlimited" })).unwrap(),
+            QuotaOverride::Unlimited
+        );
+        for bytes in [0_u64, 1, 107_374_182_400, MAX_SAFE_JSON_INTEGER] {
+            assert_eq!(
+                parsed(json!({ "mode": "bytes", "quotaBytes": bytes })).unwrap(),
+                QuotaOverride::Bytes(ByteSize::try_from(bytes).unwrap())
+            );
+        }
+        assert_ne!(
+            parsed(json!({ "mode": "bytes", "quotaBytes": 0 })).unwrap(),
+            QuotaOverride::Unlimited
+        );
+
+        let fields = |body| match parsed(body) {
+            Err(AdminUserError::Invalid { fields }) => fields,
+            other => panic!("expected a validation failure, got {other:?}"),
+        };
+        for body in [
+            json!({ "mode": "bytes" }),
+            json!({ "mode": "bytes", "quotaBytes": null }),
+            json!({ "mode": "bytes", "quotaBytes": -1 }),
+            json!({ "mode": "bytes", "quotaBytes": MAX_SAFE_JSON_INTEGER + 1 }),
+            json!({ "mode": "bytes", "quotaBytes": u64::MAX }),
+            json!({ "mode": "inherit", "quotaBytes": 5 }),
+            json!({ "mode": "inherit", "quotaBytes": null }),
+            json!({ "mode": "unlimited", "quotaBytes": 0 }),
+            json!({ "mode": "unlimited", "quotaBytes": null }),
+        ] {
+            assert_eq!(fields(body.clone()), ["quotaBytes"], "{body}");
+        }
+        for body in [
+            json!({ "mode": "Inherit" }),
+            json!({ "mode": "" }),
+            json!({ "mode": "none" }),
+            json!({ "mode": "bytes ", "quotaBytes": 1 }),
+        ] {
+            assert_eq!(fields(body.clone()), ["mode"], "{body}");
+        }
+    }
+
+    #[test]
+    fn unit_admin_quota_request_rejects_malformed_shapes_before_parsing() {
+        use serde_json::json;
+
+        for body in [
+            json!({}),
+            json!({ "quotaBytes": 5 }),
+            json!({ "mode": null }),
+            json!({ "mode": 1 }),
+            json!({ "mode": "bytes", "quotaBytes": "5" }),
+            json!({ "mode": "bytes", "quotaBytes": 1.5 }),
+            json!({ "mode": "bytes", "quotaBytes": 1, "extra": true }),
+            json!([]),
+        ] {
+            assert!(
+                crate::infra::http::json::parse::<QuotaOverrideRequest>(body.clone()).is_err(),
+                "{body}"
+            );
+        }
     }
 
     #[test]

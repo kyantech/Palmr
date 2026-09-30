@@ -19,7 +19,7 @@ use time::macros::datetime;
 use time::OffsetDateTime;
 use tower::ServiceExt;
 
-use super::lockout::{self, LockoutPolicy};
+use super::lockout::LockoutPolicy;
 use super::routes::{LOGIN_ROUTE, LOGOUT_ROUTE, ME_ROUTE};
 use super::AuthService;
 use crate::app::auth_class::{AbsentSession, AuthClass};
@@ -921,18 +921,17 @@ async fn it_lockout_durable_and_admin_clearable() {
         restarted.login("ada", WRONG, 11 + attempt).await;
     }
     assert_eq!(restarted.lock_row(ada).await.2, 3);
-    let admin = restarted
-        .user(UserSpec::local("root", "root@example.test", &hash))
+    let operator = restarted.operator(60).await;
+    let admin = restarted.operator_id("root").await;
+    let unlocked = restarted
+        .unlock_user_of(&operator, &ada.to_string(), 61)
         .await;
-    let cleared = restarted
-        .pools
-        .write_tx(&clock, "auth.test_clear", async |tx| {
-            let now = Timestamp::try_from(clock_now(&clock)).unwrap();
-            lockout::clear(tx, ada, Some(admin), now).await
-        })
-        .await
-        .unwrap();
-    assert!(cleared);
+    assert_eq!(
+        unlocked.status,
+        StatusCode::NO_CONTENT,
+        "{}",
+        unlocked.text()
+    );
     let (failed, until, lock_count) = restarted.lock_row(ada).await;
     assert_eq!((failed, until, lock_count), (0, None, 3));
     let cleared_by: Option<String> =
@@ -941,7 +940,7 @@ async fn it_lockout_durable_and_admin_clearable() {
             .fetch_one(restarted.pools.reader().executor())
             .await
             .unwrap();
-    assert_eq!(cleared_by, Some(admin.to_string()));
+    assert_eq!(cleared_by, Some(admin));
     assert_eq!(
         restarted.login("ada", PASSWORD, 13).await.status,
         StatusCode::OK
@@ -1748,6 +1747,7 @@ async fn it_login_audit_and_attempts_never_store_secrets() {
 }
 
 mod admin_lifecycle;
+mod admin_security;
 mod admin_users;
 mod forced_states;
 mod invites;

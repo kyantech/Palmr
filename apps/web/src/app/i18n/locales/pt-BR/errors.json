@@ -43,6 +43,7 @@
     "usernameTaken": "Este nome de usuário já está em uso.",
     "userNotFound": "Este usuário não existe.",
     "lastAdminProtected": "O Palmr precisa manter pelo menos um administrador ativo.",
+    "userHasNoLocalAuth": "Esta conta não tem senha local para redefinir.",
     "serverBusy": "O Palmr está ocupado no momento. Tente novamente em instantes.",
     "fileNotFound": "Este arquivo não existe mais.",
     "rangeNotSatisfiable": "A parte solicitada do arquivo não está disponível. Inicie o download novamente.",

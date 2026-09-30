@@ -43,6 +43,7 @@
     "usernameTaken": "This username is already in use.",
     "userNotFound": "This user doesn't exist.",
     "lastAdminProtected": "Palmr must keep at least one active administrator.",
+    "userHasNoLocalAuth": "This account has no local password to reset.",
     "serverBusy": "Palmr is busy right now. Try again in a moment.",
     "fileNotFound": "This file no longer exists.",
     "rangeNotSatisfiable": "The requested part of the file isn't available. Start the download again.",

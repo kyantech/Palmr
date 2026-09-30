@@ -116,6 +116,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/users/{id}/password-reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reset_user_password"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/quota": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["set_user_quota"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/users/{id}/role": {
         parameters: {
             query?: never;
@@ -132,6 +164,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/users/{id}/unlock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["unlock_user"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/users/{userId}/sessions": {
         parameters: {
             query?: never;
@@ -142,7 +190,7 @@ export interface paths {
         get: operations["list_user_sessions"];
         put?: never;
         post?: never;
-        delete?: never;
+        delete: operations["revoke_user_sessions"];
         options?: never;
         head?: never;
         patch?: never;
@@ -744,6 +792,14 @@ export interface components {
             lockCount: number;
             lockedUntil: string | null;
         };
+        AdminPasswordReset: {
+            mustChangePassword: boolean;
+            /**
+             * @description Returned exactly once and never stored in plaintext, logged or readable again.
+             * @example temporary-password-shown-once
+             */
+            temporaryPassword: string;
+        };
         AdminUserCounts: {
             /** Format: int64 */
             files: number;
@@ -785,6 +841,18 @@ export interface components {
             twoFactorEnabled: boolean;
             usedBytes: components["schemas"]["ByteCount"];
             username: string;
+        };
+        AdminUserQuota: {
+            /** @description `true` when the effective cap is below the bytes the user already holds. */
+            belowCurrentUsage: boolean;
+            effectiveQuotaBytes: null | components["schemas"]["ByteCount"];
+            instanceDefaultQuotaBytes: null | components["schemas"]["ByteCount"];
+            /**
+             * @description `inherit`, `unlimited` or `bytes`.
+             * @example bytes
+             */
+            mode: string;
+            quotaBytes: null | components["schemas"]["ByteCount"];
         };
         ApiErrorBody: {
             error: components["schemas"]["ApiErrorPayload"];
@@ -954,7 +1022,7 @@ export interface components {
             enrollmentId: string;
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "BRANDING_ASSET_UNKNOWN";
+        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "BRANDING_ASSET_UNKNOWN";
         ForgotPasswordRequest: {
             /** @example ada@example.com */
             identifier: string;
@@ -1238,6 +1306,19 @@ export interface components {
             firstName?: string | null;
             /** @example Lovelace */
             lastName?: string | null;
+        };
+        QuotaOverrideRequest: {
+            /**
+             * @description `inherit` follows the instance default, `unlimited` is an explicit Unlimited override and `bytes` is an explicit cap.
+             * @example bytes
+             */
+            mode: string;
+            /**
+             * Format: int64
+             * @description Required for `bytes` and forbidden for `inherit` and `unlimited`, where even `null` is rejected. `0` is a valid zero-byte cap, never Unlimited.
+             * @example 107374182400
+             */
+            quotaBytes?: number | null;
         };
         ReauthenticateRequest: {
             /** Format: password */
@@ -2136,6 +2217,165 @@ export interface operations {
             };
         };
     };
+    reset_user_password: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description User UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A server-generated temporary password, returned exactly once and never stored in plaintext, logged or readable again. In one transaction the password hash is replaced, a password change is required at the next sign-in, outstanding reset links are invalidated, every session and trusted device of the user is revoked and the account lockout is cleared; TOTP, backup codes, identity links, role, activation and quota are untouched. When the Admin resets their own account the current session is revoked too and its cookies are cleared. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPasswordReset"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role or recent authentication required, the CSRF proof or origin is missing or not allowed, or `AUTH_PASSWORD_LOGIN_DISABLED` when password sign-in is disabled for the instance. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `USER_NOT_FOUND`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `USER_HAS_NO_LOCAL_AUTH` when the account is SSO-only and has no local password. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    set_user_quota: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description User UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description Three distinct states: `{"mode":"inherit"}` follows the instance default, `{"mode":"unlimited"}` is an explicit Unlimited override and `{"mode":"bytes","quotaBytes":n}` is an explicit cap. `0` and `-1` are never Unlimited. The change applies at the next quota admission and is audited as `QUOTA_OVERRIDE_CHANGED`; existing data is never deleted and the Admin role gets no bypass. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuotaOverrideRequest"];
+            };
+        };
+        responses: {
+            /** @description The resulting policy: override `mode`, stored `quotaBytes`, `instanceDefaultQuotaBytes`, `effectiveQuotaBytes` (`null` is Unlimited) and `belowCurrentUsage`, which is `true` when the effective cap is below the bytes already held; the change is still applied and only future admission is blocked. Setting the current override succeeds without any side effect. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUserQuota"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `USER_NOT_FOUND`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `VALIDATION_ERROR` for an unknown `mode`, a missing, negative or out-of-range `quotaBytes` with `bytes`, or a `quotaBytes` member with `inherit` or `unlimited`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
     change_user_role: {
         parameters: {
             query?: never;
@@ -2236,6 +2476,63 @@ export interface operations {
             };
         };
     };
+    unlock_user: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description User UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The failed-attempt counter and any active lockout are cleared and the acting Admin is recorded. Succeeds without any side effect when the account is not locked. Sessions, credentials, TOTP and activation are untouched. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `USER_NOT_FOUND`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
     list_user_sessions: {
         parameters: {
             query?: {
@@ -2299,6 +2596,63 @@ export interface operations {
             };
             /** @description Invalid query. */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    revoke_user_sessions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description User UUIDv7 */
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Every session of the user is revoked in one transaction and audited as `ALL_SESSIONS_REVOKED`; trusted devices are kept. When the Admin targets their own account the current session is revoked too and its cookies are cleared. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role or recent authentication required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `USER_NOT_FOUND`. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

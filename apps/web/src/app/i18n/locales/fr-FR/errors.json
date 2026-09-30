@@ -43,6 +43,7 @@
     "usernameTaken": "Ce nom d'utilisateur est déjà utilisé.",
     "userNotFound": "Cet utilisateur n'existe pas.",
     "lastAdminProtected": "Palmr doit conserver au moins un administrateur actif.",
+    "userHasNoLocalAuth": "Ce compte n'a pas de mot de passe local à réinitialiser.",
     "serverBusy": "Palmr est occupé pour le moment. Réessayez dans un instant.",
     "fileNotFound": "Ce fichier n'existe plus.",
     "rangeNotSatisfiable": "La partie demandée du fichier n'est pas disponible. Relancez le téléchargement.",

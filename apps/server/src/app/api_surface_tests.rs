@@ -824,7 +824,7 @@ fn unit_admin_namespace_is_admin_classed_and_never_public() {
             admin_routes += 1;
         }
     }
-    assert!(admin_routes >= 10);
+    assert!(admin_routes >= 14);
     assert!(!PUBLIC_ROUTES_GOLDEN.contains("/api/v1/admin"));
 }
 
@@ -886,6 +886,30 @@ fn unit_admin_user_write_routes_are_declared_admin_write_limited() {
             Method::POST,
             "/api/v1/admin/users/{id}/deactivate",
             AuthClass::AdminRecentAuth,
+            IdempotencyMode::None,
+        ),
+        (
+            Method::POST,
+            "/api/v1/admin/users/{id}/password-reset",
+            AuthClass::AdminRecentAuth,
+            IdempotencyMode::None,
+        ),
+        (
+            Method::POST,
+            "/api/v1/admin/users/{id}/unlock",
+            AuthClass::Admin,
+            IdempotencyMode::None,
+        ),
+        (
+            Method::DELETE,
+            "/api/v1/admin/users/{userId}/sessions",
+            AuthClass::AdminRecentAuth,
+            IdempotencyMode::None,
+        ),
+        (
+            Method::PUT,
+            "/api/v1/admin/users/{id}/quota",
+            AuthClass::Admin,
             IdempotencyMode::None,
         ),
     ] {
@@ -970,6 +994,94 @@ fn it_openapi_admin_user_lifecycle_routes_declare_typed_contracts() {
     let request = &document["components"]["schemas"]["ChangeRoleRequest"];
     assert_eq!(request["required"], json!(["role"]));
     assert_eq!(request["additionalProperties"], false);
+}
+
+#[test]
+fn it_openapi_admin_user_security_routes_declare_typed_contracts() {
+    let document = application_document();
+    let paths = &document["paths"];
+    let reset = &paths["/api/v1/admin/users/{id}/password-reset"]["post"];
+    let unlock = &paths["/api/v1/admin/users/{id}/unlock"]["post"];
+    let revoke = &paths["/api/v1/admin/users/{userId}/sessions"]["delete"];
+    let quota = &paths["/api/v1/admin/users/{id}/quota"]["put"];
+
+    for (operation, class, path_parameter, success) in [
+        (reset, "admin+recent-auth", "id", "200"),
+        (unlock, "admin", "id", "204"),
+        (revoke, "admin+recent-auth", "userId", "204"),
+        (quota, "admin", "id", "200"),
+    ] {
+        assert!(operation["tags"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|tag| tag == class));
+        assert_eq!(
+            operation["security"],
+            json!([{ "palmrSession": [], "palmrCsrfCookie": [], "palmrCsrfHeader": [] }])
+        );
+        for status in [success, "401", "403", "404", "429"] {
+            assert!(operation["responses"][status].is_object(), "{status}");
+        }
+        assert_eq!(parameter(operation, path_parameter)["in"], "path");
+        assert!(operation["responses"]["404"]["description"]
+            .as_str()
+            .unwrap()
+            .contains("USER_NOT_FOUND"));
+    }
+    assert_eq!(
+        reset["responses"]["200"]["content"]["application/json"]["schema"]["$ref"],
+        "#/components/schemas/AdminPasswordReset"
+    );
+    assert!(reset["responses"]["409"]["description"]
+        .as_str()
+        .unwrap()
+        .contains("USER_HAS_NO_LOCAL_AUTH"));
+    assert!(reset["responses"]["403"]["description"]
+        .as_str()
+        .unwrap()
+        .contains("AUTH_PASSWORD_LOGIN_DISABLED"));
+    assert!(reset["requestBody"].is_null());
+    assert!(unlock["requestBody"].is_null());
+    assert!(revoke["requestBody"].is_null());
+    assert!(reset["parameters"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .all(|parameter| parameter["name"] != "Idempotency-Key"));
+    assert_eq!(
+        quota["requestBody"]["content"]["application/json"]["schema"]["$ref"],
+        "#/components/schemas/QuotaOverrideRequest"
+    );
+    assert_eq!(
+        quota["responses"]["200"]["content"]["application/json"]["schema"]["$ref"],
+        "#/components/schemas/AdminUserQuota"
+    );
+    assert!(quota["responses"]["422"]["description"]
+        .as_str()
+        .unwrap()
+        .contains("VALIDATION_ERROR"));
+
+    let schemas = &document["components"]["schemas"];
+    let request = &schemas["QuotaOverrideRequest"];
+    assert_eq!(request["required"], json!(["mode"]));
+    assert_eq!(request["additionalProperties"], false);
+    let response = &schemas["AdminUserQuota"];
+    assert_eq!(
+        response["required"],
+        json!([
+            "mode",
+            "quotaBytes",
+            "instanceDefaultQuotaBytes",
+            "effectiveQuotaBytes",
+            "belowCurrentUsage"
+        ])
+    );
+    let reset_response = &schemas["AdminPasswordReset"];
+    assert_eq!(
+        reset_response["required"],
+        json!(["temporaryPassword", "mustChangePassword"])
+    );
 }
 
 #[test]

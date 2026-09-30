@@ -1,3 +1,4 @@
+use axum::body::Body;
 use axum::extract::{Extension, Path, RawQuery, Request};
 use axum::response::{IntoResponse, Response};
 use http::header::{CACHE_CONTROL, CONTENT_TYPE};
@@ -22,9 +23,12 @@ use crate::infra::http::pagination::{
 use crate::infra::http::request_id::{tag_error, RequestId};
 
 use super::admin_input::{
-    ChangeRoleRequest, CreateInput, CreateUserRequest, UpdateInput, UpdateUserRequest,
+    ChangeRoleRequest, CreateInput, CreateUserRequest, QuotaOverrideRequest, UpdateInput,
+    UpdateUserRequest,
 };
-use super::admin_model::{AdminUserDetail, AdminUserItem, UserStatus};
+use super::admin_model::{
+    AdminPasswordReset, AdminUserDetail, AdminUserItem, AdminUserQuota, UserStatus,
+};
 use super::admin_service::{AdminUserError, AdminUserService, ROLE_PARAM, STATUS_PARAM, USER_SORT};
 use super::model::UserId;
 
@@ -67,6 +71,10 @@ pub fn routes() -> Routes<AppState> {
         .route(SENSITIVE_WRITE_ROUTE, routes!(change_user_role))
         .route(UPDATE_ROUTE, routes!(activate_user))
         .route(SENSITIVE_WRITE_ROUTE, routes!(deactivate_user))
+        .route(SENSITIVE_WRITE_ROUTE, routes!(reset_user_password))
+        .route(UPDATE_ROUTE, routes!(unlock_user))
+        .route(SENSITIVE_WRITE_ROUTE, routes!(revoke_user_sessions))
+        .route(UPDATE_ROUTE, routes!(set_user_quota))
         .route(
             READ_ROUTE,
             with_query_parameters(routes!(list_user_sessions), &session_list_parameters()),
@@ -410,6 +418,167 @@ async fn list_user_sessions(
     match service.sessions(&admin, user_id, page).await {
         Ok(page) => json_ok(&page, request_id.as_ref()),
         Err(error) => admin_user_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    post,
+    path = "/api/v1/admin/users/{id}/password-reset",
+    tag = "admin-users",
+    params(("id" = String, Path, description = "User UUIDv7")),
+    responses(
+        (status = 200, description = "A server-generated temporary password, returned exactly once and never stored in plaintext, logged or readable again. In one transaction the password hash is replaced, a password change is required at the next sign-in, outstanding reset links are invalidated, every session and trusted device of the user is revoked and the account lockout is cleared; TOTP, backup codes, identity links, role, activation and quota are untouched. When the Admin resets their own account the current session is revoked too and its cookies are cleared.", body = AdminPasswordReset),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role or recent authentication required, the CSRF proof or origin is missing or not allowed, or `AUTH_PASSWORD_LOGIN_DISABLED` when password sign-in is disabled for the instance.", body = ApiErrorBody),
+        (status = 404, description = "`USER_NOT_FOUND`.", body = ApiErrorBody),
+        (status = 409, description = "`USER_HAS_NO_LOCAL_AUTH` when the account is SSO-only and has no local password.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn reset_user_password(
+    Extension(service): Extension<AdminUserService>,
+    Extension(sessions): Extension<SessionService>,
+    Admin(admin): Admin,
+    Path(id): Path<String>,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let client = client_metadata(&request);
+    let Ok(id) = id.parse::<UserId>() else {
+        return admin_user_error(&AdminUserError::NotFound, request_id.as_ref());
+    };
+    match service.reset_password(&admin, id, &client).await {
+        Ok(temporary) => {
+            let body = AdminPasswordReset::new(temporary.expose_secret().clone());
+            let mut response = json_ok(&body, request_id.as_ref());
+            if id == admin.user_id {
+                expire_current_session(&sessions, &mut response);
+            }
+            response
+        }
+        Err(error) => admin_user_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    post,
+    path = "/api/v1/admin/users/{id}/unlock",
+    tag = "admin-users",
+    params(("id" = String, Path, description = "User UUIDv7")),
+    responses(
+        (status = 204, description = "The failed-attempt counter and any active lockout are cleared and the acting Admin is recorded. Succeeds without any side effect when the account is not locked. Sessions, credentials, TOTP and activation are untouched."),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
+        (status = 404, description = "`USER_NOT_FOUND`.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn unlock_user(
+    Extension(service): Extension<AdminUserService>,
+    Admin(admin): Admin,
+    Path(id): Path<String>,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let Ok(id) = id.parse::<UserId>() else {
+        return admin_user_error(&AdminUserError::NotFound, request_id.as_ref());
+    };
+    match service.unlock(&admin, id).await {
+        Ok(()) => StatusCode::NO_CONTENT.into_response(),
+        Err(error) => admin_user_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    delete,
+    path = "/api/v1/admin/users/{userId}/sessions",
+    tag = "admin-users",
+    params(("userId" = String, Path, description = "User UUIDv7")),
+    responses(
+        (status = 204, description = "Every session of the user is revoked in one transaction and audited as `ALL_SESSIONS_REVOKED`; trusted devices are kept. When the Admin targets their own account the current session is revoked too and its cookies are cleared."),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role or recent authentication required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
+        (status = 404, description = "`USER_NOT_FOUND`.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn revoke_user_sessions(
+    Extension(service): Extension<AdminUserService>,
+    Extension(sessions): Extension<SessionService>,
+    Admin(admin): Admin,
+    Path(user_id): Path<String>,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let client = client_metadata(&request);
+    let Ok(user_id) = user_id.parse::<UserId>() else {
+        return admin_user_error(&AdminUserError::NotFound, request_id.as_ref());
+    };
+    match service.revoke_sessions(&admin, user_id, &client).await {
+        Ok(()) => {
+            let mut response = Response::new(Body::empty());
+            *response.status_mut() = StatusCode::NO_CONTENT;
+            if user_id == admin.user_id {
+                expire_current_session(&sessions, &mut response);
+            }
+            response
+        }
+        Err(error) => admin_user_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    put,
+    path = "/api/v1/admin/users/{id}/quota",
+    tag = "admin-users",
+    params(("id" = String, Path, description = "User UUIDv7")),
+    request_body(
+        content = QuotaOverrideRequest,
+        content_type = "application/json",
+        description = "Three distinct states: `{\"mode\":\"inherit\"}` follows the instance default, `{\"mode\":\"unlimited\"}` is an explicit Unlimited override and `{\"mode\":\"bytes\",\"quotaBytes\":n}` is an explicit cap. `0` and `-1` are never Unlimited. The change applies at the next quota admission and is audited as `QUOTA_OVERRIDE_CHANGED`; existing data is never deleted and the Admin role gets no bypass."
+    ),
+    responses(
+        (status = 200, description = "The resulting policy: override `mode`, stored `quotaBytes`, `instanceDefaultQuotaBytes`, `effectiveQuotaBytes` (`null` is Unlimited) and `belowCurrentUsage`, which is `true` when the effective cap is below the bytes already held; the change is still applied and only future admission is blocked. Setting the current override succeeds without any side effect.", body = AdminUserQuota),
+        (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
+        (status = 404, description = "`USER_NOT_FOUND`.", body = ApiErrorBody),
+        (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
+        (status = 422, description = "`VALIDATION_ERROR` for an unknown `mode`, a missing, negative or out-of-range `quotaBytes` with `bytes`, or a `quotaBytes` member with `inherit` or `unlimited`.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn set_user_quota(
+    Extension(service): Extension<AdminUserService>,
+    Admin(admin): Admin,
+    Path(id): Path<String>,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let client = client_metadata(&request);
+    let Ok(id) = id.parse::<UserId>() else {
+        return admin_user_error(&AdminUserError::NotFound, request_id.as_ref());
+    };
+    let quota = match json::read::<QuotaOverrideRequest>(request.into_body()).await {
+        Ok(body) => match body.parse() {
+            Ok(quota) => quota,
+            Err(error) => return admin_user_error(&error, request_id.as_ref()),
+        },
+        Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
+    };
+    match service.set_quota(&admin, id, quota, &client).await {
+        Ok(policy) => json_ok(&policy, request_id.as_ref()),
+        Err(error) => admin_user_error(&error, request_id.as_ref()),
+    }
+}
+
+fn expire_current_session(sessions: &SessionService, response: &mut Response) {
+    if sessions
+        .cookie_policy()
+        .expire_session_pair(response.headers_mut())
+        .is_err()
+    {
+        tracing::error!("the revoked session cookies could not be expired");
     }
 }
 

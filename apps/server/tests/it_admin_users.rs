@@ -1169,16 +1169,18 @@ async fn it_admin_user_sessions_are_target_scoped_paginated_and_safe() -> Result
         )
         .await?;
     let sessions_before = world.db.scalar_i64("SELECT COUNT(*) FROM sessions").await?;
-    let deleted = world
-        .http
-        .send(Method::DELETE, &path, Some(&world.admin), None)
-        .await?;
-    assert!(
-        deleted.status == StatusCode::METHOD_NOT_ALLOWED,
-        "DELETE on the admin sessions collection is not part of M11-T01: {} {}",
-        deleted.status,
-        deleted.body
-    );
+    for method in [Method::POST, Method::PUT, Method::PATCH] {
+        let refused = world
+            .http
+            .send(method.clone(), &path, Some(&world.admin), None)
+            .await?;
+        assert!(
+            refused.status == StatusCode::METHOD_NOT_ALLOWED,
+            "{method} on the admin sessions collection is not a route: {} {}",
+            refused.status,
+            refused.body
+        );
+    }
     assert_eq!(
         world.db.scalar_i64("SELECT COUNT(*) FROM sessions").await?,
         sessions_before

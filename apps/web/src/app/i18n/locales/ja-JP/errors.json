@@ -43,6 +43,7 @@
     "usernameTaken": "このユーザー名はすでに使用されています。",
     "userNotFound": "このユーザーは存在しません。",
     "lastAdminProtected": "Palmr には有効な管理者が少なくとも 1 人必要です。",
+    "userHasNoLocalAuth": "このアカウントにはリセットできるローカルパスワードがありません。",
     "serverBusy": "Palmr は現在混み合っています。しばらくしてからもう一度お試しください。",
     "fileNotFound": "このファイルはもう存在しません。",
     "rangeNotSatisfiable": "ファイルの要求された部分は利用できません。ダウンロードをやり直してください。",

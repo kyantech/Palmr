@@ -1,8 +1,11 @@
+use std::fmt;
+
 use serde::Serialize;
 use utoipa::ToSchema;
 
 use crate::domain::bytes::ByteSize;
 use crate::domain::role::Role;
+use crate::domain::secret::REDACTED;
 use crate::domain::time::Timestamp;
 use crate::features::auth::lockout::LockState;
 use crate::infra::http::pagination::WireBytes;
@@ -217,6 +220,69 @@ pub struct AdminUserDetail {
     pub trusted_device_count: u64,
     pub lockout: AdminLockout,
     pub identity_links: Vec<AdminIdentityLink>,
+}
+
+#[derive(Clone, PartialEq, Eq, Serialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct AdminPasswordReset {
+    /// Returned exactly once and never stored in plaintext, logged or readable again.
+    #[schema(example = "temporary-password-shown-once")]
+    pub temporary_password: String,
+    pub must_change_password: bool,
+}
+
+impl AdminPasswordReset {
+    pub fn new(temporary_password: String) -> Self {
+        Self {
+            temporary_password,
+            must_change_password: true,
+        }
+    }
+}
+
+impl fmt::Debug for AdminPasswordReset {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("AdminPasswordReset")
+            .field("temporary_password", &REDACTED)
+            .field("must_change_password", &self.must_change_password)
+            .finish()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct AdminUserQuota {
+    /// `inherit`, `unlimited` or `bytes`.
+    #[schema(example = "bytes")]
+    pub mode: &'static str,
+    /// The stored explicit cap; `null` unless `mode` is `bytes`.
+    #[schema(required = true)]
+    pub quota_bytes: Option<WireBytes>,
+    /// The instance default in force; `null` when it is Unlimited.
+    #[schema(required = true)]
+    pub instance_default_quota_bytes: Option<WireBytes>,
+    /// The cap admission enforces; `null` only when the user is effectively Unlimited.
+    #[schema(required = true)]
+    pub effective_quota_bytes: Option<WireBytes>,
+    /// `true` when the effective cap is below the bytes the user already holds.
+    pub below_current_usage: bool,
+}
+
+impl AdminUserQuota {
+    pub fn new(
+        quota: QuotaOverride,
+        instance_default: Option<ByteSize>,
+        used_bytes: ByteSize,
+    ) -> Self {
+        let effective = effective_quota(quota, instance_default);
+        Self {
+            mode: quota.mode(),
+            quota_bytes: quota.quota_bytes().map(wire),
+            instance_default_quota_bytes: instance_default.map(wire),
+            effective_quota_bytes: effective.map(wire),
+            below_current_usage: is_over_quota(used_bytes, effective),
+        }
+    }
 }
 
 pub struct DetailParts {

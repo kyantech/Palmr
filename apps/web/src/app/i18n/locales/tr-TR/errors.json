@@ -43,6 +43,7 @@
     "usernameTaken": "Bu kullanıcı adı zaten kullanılıyor.",
     "userNotFound": "Bu kullanıcı mevcut değil.",
     "lastAdminProtected": "Palmr'da en az bir etkin yönetici kalmalıdır.",
+    "userHasNoLocalAuth": "Bu hesabın sıfırlanacak yerel bir parolası yok.",
     "serverBusy": "Palmr şu anda meşgul. Birazdan tekrar deneyin.",
     "fileNotFound": "Bu dosya artık mevcut değil.",
     "rangeNotSatisfiable": "Dosyanın istenen bölümü kullanılamıyor. İndirmeyi yeniden başlatın.",

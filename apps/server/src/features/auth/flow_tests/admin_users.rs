@@ -58,7 +58,7 @@ fn users_request(
 }
 
 impl Stack {
-    async fn operator(&self, host: u8) -> Credentials {
+    pub(super) async fn operator(&self, host: u8) -> Credentials {
         let hash = password_hash();
         let id = self
             .user(UserSpec::local("root", "root@example.test", &hash))
@@ -86,7 +86,7 @@ impl Stack {
         .await
     }
 
-    async fn read_users(&self, creds: &Credentials, host: u8) -> Fetched {
+    pub(super) async fn read_users(&self, creds: &Credentials, host: u8) -> Fetched {
         self.send(with_peer(
             users_request(Method::GET, USERS, creds, None, &[]),
             host,
@@ -112,7 +112,7 @@ impl Stack {
         .await;
     }
 
-    async fn operator_id(&self, username: &str) -> String {
+    pub(super) async fn operator_id(&self, username: &str) -> String {
         sqlx::query_scalar("SELECT id FROM users WHERE username = ?1")
             .bind(username)
             .fetch_one(self.pools.reader().executor())

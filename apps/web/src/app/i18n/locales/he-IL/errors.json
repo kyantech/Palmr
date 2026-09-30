@@ -43,6 +43,7 @@
     "usernameTaken": "שם המשתמש הזה כבר בשימוש.",
     "userNotFound": "המשתמש הזה לא קיים.",
     "lastAdminProtected": "Palmr חייב להשאיר לפחות מנהל פעיל אחד.",
+    "userHasNoLocalAuth": "לחשבון זה אין סיסמה מקומית לאיפוס.",
     "serverBusy": "Palmr עמוס כרגע. נסו שוב בעוד רגע.",
     "fileNotFound": "הקובץ הזה כבר לא קיים.",
     "rangeNotSatisfiable": "החלק המבוקש של הקובץ אינו זמין. התחילו את ההורדה מחדש.",

@@ -72,6 +72,7 @@ export const RETRY_CLASS: Readonly<Record<ErrorCode, RetryClass>> = {
   USER_USERNAME_TAKEN: "never",
   USER_NOT_FOUND: "never",
   LAST_ADMIN_PROTECTED: "never",
+  USER_HAS_NO_LOCAL_AUTH: "never",
   FILE_NOT_FOUND: "never",
   RANGE_NOT_SATISFIABLE: "never",
   STORAGE_PROVIDER_MISMATCH: "never",

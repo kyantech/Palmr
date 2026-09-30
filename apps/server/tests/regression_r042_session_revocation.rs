@@ -49,6 +49,7 @@ const USER_REQUEST: &str = "user_request";
 const LOGGED_OUT: &str = "logout";
 const ROLE_CHANGED: &str = "role_changed";
 const DEACTIVATED: &str = "deactivated";
+const ADMIN_REQUEST: &str = "admin_request";
 const ADMIN_USERS: &str = "/api/v1/admin/users";
 
 #[derive(Debug, Clone, Copy)]
@@ -1682,6 +1683,225 @@ async fn user_deactivation() -> Result<()> {
     world.finish().await
 }
 
+async fn admin_password_reset() -> Result<()> {
+    let world = World::standard("r042_admin_password_reset", true).await?;
+    let actor = world.add_admin_actor().await?;
+    let target = world.a.id.clone();
+    world.seed_reset_token(&target).await?;
+    let before = world.snapshot().await?;
+    let audit_before = world.audit_count("USER_PASSWORD_RESET_BY_ADMIN").await?;
+    let path = format!("{ADMIN_USERS}/{target}/password-reset");
+
+    world
+        .inject_audit_failure("USER_PASSWORD_RESET_BY_ADMIN")
+        .await?;
+    let failed = world.call(Method::POST, &path, &actor).await?;
+    ensure!(
+        !failed.body.contains("temporaryPassword"),
+        "a rolled-back reset must not return a temporary password: {}",
+        failed.body
+    );
+    world.assert_injected_failure(failed).await?;
+    world
+        .assert_rolled_back(
+            "admin password reset",
+            &before,
+            "USER_PASSWORD_RESET_BY_ADMIN",
+            audit_before,
+        )
+        .await?;
+    world.remove_audit_failure().await?;
+
+    let reset = world
+        .call(Method::POST, &path, &actor)
+        .await?
+        .expect(StatusCode::OK)?;
+    reset.assert_no_session_cookie()?;
+    let body = reset.json()?;
+    let temporary = body["temporaryPassword"]
+        .as_str()
+        .context("temporary password")?
+        .to_owned();
+    expect_eq(
+        body["mustChangePassword"].as_bool(),
+        Some(true),
+        "forced flag",
+    )?;
+    let fates = [Fate::Revoked(PASSWORD_RESET); 3];
+    let after = world
+        .settle(
+            "admin password reset",
+            &before,
+            &fates,
+            &EVERY_DEVICE_REVOKED,
+            None,
+        )
+        .await?;
+    expect_eq(
+        world.audit_count("USER_PASSWORD_RESET_BY_ADMIN").await?,
+        audit_before + 1,
+        "admin password reset audit",
+    )?;
+    let (old, new) = (&before.users[&target], &after.users[&target]);
+    ensure!(
+        new.password_hash != old.password_hash,
+        "the credential must change"
+    );
+    expect_eq(
+        new.must_change_password,
+        1,
+        "reset forces a password change",
+    )?;
+    expect_eq(new.totp_enabled, old.totp_enabled, "TOTP flag is kept")?;
+    expect_eq(
+        &after.totp_secrets,
+        &before.totp_secrets,
+        "TOTP secret is kept",
+    )?;
+    expect_eq(
+        &after.backup_codes,
+        &before.backup_codes,
+        "backup codes are kept",
+    )?;
+    expect_eq(
+        after
+            .reset_tokens
+            .iter()
+            .filter(|(_, used, invalidated)| used.is_none() && invalidated.is_none())
+            .count(),
+        0,
+        "no outstanding reset link survives",
+    )?;
+    expect_eq(
+        world.me(&actor).await?,
+        StatusCode::OK,
+        "the acting Admin keeps their session",
+    )?;
+
+    let old_password = world
+        .http
+        .send(
+            Method::POST,
+            LOGIN,
+            None,
+            None,
+            Some(json!({ "identifier": "ada", "password": PASSWORD })),
+        )
+        .await?;
+    expect_eq(
+        old_password.error_code()?,
+        "AUTH_INVALID_CREDENTIALS".to_owned(),
+        "the old password no longer works",
+    )?;
+    let challenged = world
+        .http
+        .send(
+            Method::POST,
+            LOGIN,
+            None,
+            None,
+            Some(json!({ "identifier": "ada", "password": temporary })),
+        )
+        .await?;
+    expect_eq(
+        challenged.error_code()?,
+        "AUTH_2FA_REQUIRED".to_owned(),
+        "the temporary password is accepted and TOTP is still required",
+    )?;
+    world.finish().await
+}
+
+async fn admin_revoke_all_sessions() -> Result<()> {
+    let world = World::standard("r042_admin_revoke_all", true).await?;
+    let actor = world.add_admin_actor().await?;
+    let target = world.a.id.clone();
+    let before = world.snapshot().await?;
+    let audit_before = world.audit_count("ALL_SESSIONS_REVOKED").await?;
+    let path = format!("{ADMIN_USERS}/{target}/sessions");
+
+    world.inject_audit_failure("ALL_SESSIONS_REVOKED").await?;
+    let failed = world.call(Method::DELETE, &path, &actor).await?;
+    world.assert_injected_failure(failed).await?;
+    world
+        .assert_rolled_back(
+            "admin revoke all sessions",
+            &before,
+            "ALL_SESSIONS_REVOKED",
+            audit_before,
+        )
+        .await?;
+    world.remove_audit_failure().await?;
+
+    world
+        .call(Method::DELETE, &path, &actor)
+        .await?
+        .expect(StatusCode::NO_CONTENT)?
+        .assert_no_session_cookie()?;
+    let fates = [Fate::Revoked(ADMIN_REQUEST); 3];
+    let after = world
+        .settle(
+            "admin revoke all sessions",
+            &before,
+            &fates,
+            &NO_DEVICE_REVOKED,
+            None,
+        )
+        .await?;
+    expect_eq(
+        world.audit_count("ALL_SESSIONS_REVOKED").await?,
+        audit_before + 1,
+        "admin revoke-all audit",
+    )?;
+    expect_eq(
+        &after.users,
+        &before.users,
+        "revoking sessions changes no account row",
+    )?;
+    expect_eq(&after.totp_secrets, &before.totp_secrets, "TOTP is kept")?;
+    world
+        .login_with_device_skips_second_factor(&world.a.devices[0])
+        .await?;
+    expect_eq(
+        world.me(&actor).await?,
+        StatusCode::OK,
+        "the acting Admin keeps their session",
+    )?;
+    world.finish().await
+}
+
+async fn admin_revoke_own_sessions() -> Result<()> {
+    let world = World::standard("r042_admin_revoke_own", false).await?;
+    let current = world.a.sessions[CURRENT].creds.clone();
+    let before = world.snapshot().await?;
+    let audit_before = world.audit_count("ALL_SESSIONS_REVOKED").await?;
+
+    let reply = world
+        .call(
+            Method::DELETE,
+            &format!("{ADMIN_USERS}/{}/sessions", world.a.id),
+            &current,
+        )
+        .await?
+        .expect(StatusCode::NO_CONTENT)?;
+    reply.assert_cleared()?;
+    let fates = [Fate::Revoked(ADMIN_REQUEST); 3];
+    world
+        .settle(
+            "admin revokes their own sessions",
+            &before,
+            &fates,
+            &NO_DEVICE_REVOKED,
+            None,
+        )
+        .await?;
+    expect_eq(
+        world.audit_count("ALL_SESSIONS_REVOKED").await?,
+        audit_before + 1,
+        "self revoke-all audit",
+    )?;
+    world.finish().await
+}
+
 type Scenario = Pin<Box<dyn Future<Output = Result<()>>>>;
 
 #[allow(non_snake_case, reason = "the accepted regression identifier is R-042")]
@@ -1712,6 +1932,15 @@ async fn regression_R042_session_revocation_on_security_change() -> Result<()> {
         ("role_demotion", Box::pin(role_demotion())),
         ("role_promotion", Box::pin(role_promotion())),
         ("user_deactivation", Box::pin(user_deactivation())),
+        ("admin_password_reset", Box::pin(admin_password_reset())),
+        (
+            "admin_revoke_all_sessions",
+            Box::pin(admin_revoke_all_sessions()),
+        ),
+        (
+            "admin_revoke_own_sessions",
+            Box::pin(admin_revoke_own_sessions()),
+        ),
     ];
     let (names, futures): (Vec<_>, Vec<_>) = scenarios.into_iter().unzip();
     let results = futures_util::future::join_all(futures).await;

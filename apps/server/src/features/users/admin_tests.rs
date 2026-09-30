@@ -3,14 +3,15 @@ use sqlx::{QueryBuilder, Row, Sqlite};
 use tempfile::TempDir;
 
 use super::admin_model::{
-    AdminUserDetail, AdminUserItem, AdminUserRecord, DetailParts, IdentityLinkMethod,
-    IdentityLinkRecord, IdentityLinkState, ResourceCounts, UserStatus,
+    AdminPasswordReset, AdminUserDetail, AdminUserItem, AdminUserQuota, AdminUserRecord,
+    DetailParts, IdentityLinkMethod, IdentityLinkRecord, IdentityLinkState, ResourceCounts,
+    UserStatus,
 };
 use super::admin_repo::{
     push_count, push_grouped_count, push_list, Counted, SearchPrefix, UserFilter,
 };
-use super::admin_service::{USER_SORT, USER_SORT_FIELDS};
-use super::model::{QuotaOverride, UserId};
+use super::admin_service::{check_reset_target, AdminUserError, USER_SORT, USER_SORT_FIELDS};
+use super::model::{QuotaOverride, User, UserId};
 use crate::config::SqliteSynchronous;
 use crate::domain::bytes::ByteSize;
 use crate::domain::clock::TestClock;
@@ -532,4 +533,125 @@ async fn it_admin_user_detail_counts_use_the_user_indexes() {
     let trusted = trusted.join("\n");
     assert!(trusted.contains("ix_trusted_devices_user"), "{trusted}");
     assert!(!trusted.contains("SCAN"), "{trusted}");
+}
+
+fn account(password_hash: Option<&str>) -> User {
+    let clock = TestClock::new(time::macros::datetime!(2026-09-25 12:00 UTC));
+    User {
+        id: UserId::generate(&clock),
+        email: "bea@example.test".to_owned(),
+        email_normalized: "bea@example.test".to_owned(),
+        username: "bea".to_owned(),
+        username_normalized: "bea".to_owned(),
+        first_name: "Bea".to_owned(),
+        last_name: "Baker".to_owned(),
+        password_hash: password_hash
+            .map(|hash| crate::domain::secret::Secret::new(hash.to_owned())),
+        password_updated_at: None,
+        must_change_password: false,
+        role: Role::User,
+        is_active: true,
+        deactivated_at: None,
+        totp_enabled: false,
+        quota: QuotaOverride::Inherit,
+        used_bytes: ByteSize::ZERO,
+        created_at: at(EARLIER),
+        updated_at: at(EARLIER),
+        created_by: None,
+    }
+}
+
+#[test]
+fn unit_admin_password_reset_precondition_errors_map_to_canonical_codes() {
+    let local = account(Some("$argon2id$stored"));
+    let sso = account(None);
+
+    assert!(check_reset_target(&local, true).is_ok());
+    assert!(matches!(
+        check_reset_target(&local, false),
+        Err(AdminUserError::PasswordLoginDisabled)
+    ));
+    for password_login in [true, false] {
+        assert!(matches!(
+            check_reset_target(&sso, password_login),
+            Err(AdminUserError::NoLocalAuth)
+        ));
+    }
+    for (error, status, code) in [
+        (AdminUserError::NoLocalAuth, 409, "USER_HAS_NO_LOCAL_AUTH"),
+        (
+            AdminUserError::PasswordLoginDisabled,
+            403,
+            "AUTH_PASSWORD_LOGIN_DISABLED",
+        ),
+    ] {
+        let api = error.api_error();
+        assert_eq!(api.status().as_u16(), status, "{code}");
+        assert_eq!(api.code().as_str(), code);
+    }
+}
+
+#[test]
+fn unit_admin_password_reset_response_never_debug_prints_the_password() {
+    let reset = AdminPasswordReset::new("temporary-sentinel-Zx81".to_owned());
+    assert!(!format!("{reset:?}").contains("temporary-sentinel"));
+    assert_eq!(
+        serde_json::to_value(&reset).unwrap(),
+        json!({ "temporaryPassword": "temporary-sentinel-Zx81", "mustChangePassword": true })
+    );
+}
+
+#[test]
+fn unit_admin_quota_policy_keeps_inherit_unlimited_and_bytes_distinct() {
+    let cases = [
+        (
+            QuotaOverride::Inherit,
+            None,
+            0,
+            json!({
+                "mode": "inherit", "quotaBytes": null, "instanceDefaultQuotaBytes": null,
+                "effectiveQuotaBytes": null, "belowCurrentUsage": false
+            }),
+        ),
+        (
+            QuotaOverride::Inherit,
+            Some(1000),
+            2000,
+            json!({
+                "mode": "inherit", "quotaBytes": null, "instanceDefaultQuotaBytes": 1000,
+                "effectiveQuotaBytes": 1000, "belowCurrentUsage": true
+            }),
+        ),
+        (
+            QuotaOverride::Unlimited,
+            Some(1000),
+            i64::MAX,
+            json!({
+                "mode": "unlimited", "quotaBytes": null, "instanceDefaultQuotaBytes": 1000,
+                "effectiveQuotaBytes": null, "belowCurrentUsage": false
+            }),
+        ),
+        (
+            QuotaOverride::Bytes(bytes(0)),
+            Some(1000),
+            0,
+            json!({
+                "mode": "bytes", "quotaBytes": 0, "instanceDefaultQuotaBytes": 1000,
+                "effectiveQuotaBytes": 0, "belowCurrentUsage": false
+            }),
+        ),
+        (
+            QuotaOverride::Bytes(bytes(0)),
+            None,
+            1,
+            json!({
+                "mode": "bytes", "quotaBytes": 0, "instanceDefaultQuotaBytes": null,
+                "effectiveQuotaBytes": 0, "belowCurrentUsage": true
+            }),
+        ),
+    ];
+    for (quota, default, used, expected) in cases {
+        let policy = AdminUserQuota::new(quota, default.map(bytes), bytes(used));
+        assert_eq!(serde_json::to_value(&policy).unwrap(), expected);
+    }
 }
