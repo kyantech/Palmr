@@ -1,12 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Alert, Button, Flex, Form, Input, Modal, theme, Typography } from "antd";
-import { Suspense, useEffect, useId, useRef, useState } from "react";
+import { Suspense, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import type { components } from "../../../shared/api/schema";
 import { ErrorAlert, presentError, useErrorMessage } from "../../../shared/errors";
+import { FormField } from "../../../shared/ui/FormField";
 import { useReauthenticate } from "../api/mutations";
+import { compactCode, isTotpCode } from "./codeFormat";
+import { OneTimeCodeInput } from "./OneTimeCodeInput";
 import {
   discardRecentAuthChallenge,
   type RecentAuthChallenge,
@@ -25,9 +28,12 @@ function recentAuthMethodOf({ capabilities }: Pick<Me, "capabilities">): RecentA
   return capabilities.twoFactorEnabled ? "twoFactor" : "password";
 }
 
-const passwordSchema = z.object({ password: z.string().min(1) });
+interface ChallengeValues {
+  password: string;
+  totpCode: string;
+}
 
-type PasswordValues = z.infer<typeof passwordSchema>;
+const CODE_ERRORS: readonly string[] = ["AUTH_2FA_INVALID", "TOTP_CODE_REPLAYED"];
 
 interface RecentAuthModalProps {
   me: Me;
@@ -93,41 +99,34 @@ function RecentAuthBody({ me, challenge, onCancel }: RecentAuthBodyProps) {
   return (
     <Flex vertical gap={16}>
       <Flex vertical gap={4}>
-        <Typography.Text>
-          {t(
-            method === "password" ? "recentAuth.description" : "recentAuth.unavailableDescription",
-          )}
-        </Typography.Text>
+        <Typography.Text>{t(`recentAuth.descriptions.${method}`)}</Typography.Text>
         <Typography.Text type="secondary" style={{ fontSize: "0.8125rem" }}>
           {t("recentAuth.signedInAs", { account: me.user.email })}
         </Typography.Text>
       </Flex>
-      {method === "password" ? (
-        <PasswordChallenge challenge={challenge} onCancel={onCancel} />
+      {method === "external" ? (
+        <UnavailableChallenge onCancel={onCancel} />
       ) : (
-        <UnavailableChallenge method={method} onCancel={onCancel} />
+        <CredentialChallenge
+          challenge={challenge}
+          requireCode={method === "twoFactor"}
+          onCancel={onCancel}
+        />
       )}
     </Flex>
   );
 }
 
-function UnavailableChallenge({
-  method,
-  onCancel,
-}: {
-  method: Exclude<RecentAuthMethod, "password">;
-  onCancel: () => void;
-}) {
+function UnavailableChallenge({ onCancel }: { onCancel: () => void }) {
   const { t } = useTranslation("auth");
-  const copy = method === "twoFactor" ? "twoFactorUnavailable" : "externalUnavailable";
   return (
     <>
       <Alert
         type="info"
         showIcon
-        data-recent-auth-method={method}
-        title={t(`recentAuth.${copy}.title`)}
-        description={t(`recentAuth.${copy}.description`)}
+        data-recent-auth-method="external"
+        title={t("recentAuth.externalUnavailable.title")}
+        description={t("recentAuth.externalUnavailable.description")}
       />
       <Flex justify="end">
         <Button onClick={onCancel}>{t("recentAuth.close")}</Button>
@@ -136,30 +135,46 @@ function UnavailableChallenge({
   );
 }
 
-function PasswordChallenge({
+function CredentialChallenge({
   challenge,
+  requireCode,
   onCancel,
 }: {
   challenge: RecentAuthChallenge;
+  requireCode: boolean;
   onCancel: () => void;
 }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation(["auth", "errors"]);
   const { token } = theme.useToken();
-  const passwordId = useId();
-  const helpId = useId();
+  const idPrefix = useId();
+  const passwordId = `${idPrefix}-password`;
+  const codeId = `${idPrefix}-code`;
   const inFlight = useRef(false);
   const [failure, setFailure] = useState<unknown>(null);
   const [retryBlock, setRetryBlock] = useState<{ seconds: number } | null>(null);
   const reauthenticate = useReauthenticate();
+  const schema = useMemo(
+    () =>
+      z.object({
+        password: z.string().min(1, t("recentAuth.passwordRequired")),
+        totpCode: requireCode
+          ? z.string().refine(isTotpCode, {
+              message: t("recentAuth.codeRequired"),
+            })
+          : z.string(),
+      }),
+    [t, requireCode],
+  );
   const {
     control,
     handleSubmit,
     resetField,
+    setError,
     setFocus,
     formState: { errors, isSubmitting },
-  } = useForm<PasswordValues>({
-    resolver: zodResolver(passwordSchema),
-    defaultValues: { password: "" },
+  } = useForm<ChallengeValues>({
+    resolver: zodResolver(schema),
+    defaultValues: { password: "", totpCode: "" },
   });
   const failureText = useErrorMessage(failure);
 
@@ -179,24 +194,38 @@ function PasswordChallenge({
     };
   }, [retryBlock]);
 
-  async function confirm({ password }: PasswordValues) {
+  async function confirm({ password, totpCode }: ChallengeValues) {
     if (inFlight.current) {
       return;
     }
     inFlight.current = true;
     setFailure(null);
     try {
-      await reauthenticate.mutateAsync({ password });
+      await reauthenticate.mutateAsync(
+        requireCode ? { password, totpCode: compactCode(totpCode) } : { password },
+      );
     } catch (error) {
       const presented = presentError(error);
       if (presented.presentation.silent) {
         return;
       }
-      setFailure(error);
-      if (presented.retryAfterSeconds !== null && presented.retryAfterSeconds > 0) {
-        setRetryBlock({ seconds: presented.retryAfterSeconds });
+      if (retryAfter(presented.retryAfterSeconds)) {
+        setRetryBlock({ seconds: presented.retryAfterSeconds ?? 0 });
       }
+      if (requireCode && presented.code !== null && CODE_ERRORS.includes(presented.code)) {
+        resetField("totpCode");
+        setError("totpCode", {
+          type: "server",
+          message: t(presented.presentation.i18nKey, { ns: "errors" }),
+        });
+        setFocus("totpCode");
+        return;
+      }
+      setFailure(error);
       resetField("password");
+      if (requireCode) {
+        resetField("totpCode");
+      }
       setFocus("password");
       return;
     } finally {
@@ -210,12 +239,7 @@ function PasswordChallenge({
 
   const presentedFailure = failure === null ? null : presentError(failure);
   const inlineFailure = presentedFailure?.presentation.surface === "inline";
-  const fieldHelp =
-    errors.password !== undefined
-      ? t("recentAuth.passwordRequired")
-      : inlineFailure
-        ? failureText
-        : null;
+  const passwordHelp = errors.password?.message ?? (inlineFailure ? failureText : undefined);
 
   return (
     <form
@@ -231,28 +255,43 @@ function PasswordChallenge({
       <Flex vertical gap={16}>
         {failure !== null && !inlineFailure ? <ErrorAlert error={failure} /> : null}
         <Form layout="vertical" component={false} requiredMark={false}>
-          <Form.Item
-            label={t("recentAuth.password")}
-            htmlFor={passwordId}
-            {...(fieldHelp === null
-              ? {}
-              : { validateStatus: "error", help: <span id={helpId}>{fieldHelp}</span> })}
-            style={{ marginBottom: 0 }}
-          >
-            <Controller
-              name="password"
-              control={control}
-              render={({ field }) => (
-                <Input.Password
-                  {...field}
-                  id={passwordId}
-                  autoComplete="current-password"
-                  aria-invalid={fieldHelp !== null}
-                  aria-describedby={fieldHelp === null ? undefined : helpId}
+          <div>
+            <FormField
+              id={passwordId}
+              label={t("recentAuth.password")}
+              error={passwordHelp}
+              {...(requireCode ? {} : { style: { marginBottom: 0 } })}
+            >
+              {(aria) => (
+                <Controller
+                  name="password"
+                  control={control}
+                  render={({ field }) => (
+                    <Input.Password {...field} {...aria} autoComplete="current-password" />
+                  )}
                 />
               )}
-            />
-          </Form.Item>
+            </FormField>
+            {requireCode ? (
+              <FormField
+                id={codeId}
+                label={t("recentAuth.code")}
+                error={errors.totpCode?.message}
+                extra={t("recentAuth.codeHelp")}
+                style={{ marginBottom: 0 }}
+              >
+                {(aria) => (
+                  <Controller
+                    name="totpCode"
+                    control={control}
+                    render={({ field }) => (
+                      <OneTimeCodeInput {...field} {...aria} kind="totp" size="middle" />
+                    )}
+                  />
+                )}
+              </FormField>
+            ) : null}
+          </div>
         </Form>
         <Flex justify="end" gap={token.marginXS} style={{ marginTop: token.marginXS }}>
           <Button onClick={onCancel}>{t("recentAuth.cancel")}</Button>
@@ -268,4 +307,8 @@ function PasswordChallenge({
       </Flex>
     </form>
   );
+}
+
+function retryAfter(seconds: number | null): boolean {
+  return seconds !== null && seconds > 0;
 }

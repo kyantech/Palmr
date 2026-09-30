@@ -5,10 +5,16 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 publish.workspace = true
+default-run = "palmr"
 
 [[bin]]
 name = "palmr"
 path = "src/main.rs"
+
+[[bin]]
+name = "palmr-e2e-fixture"
+path = "src/bin/palmr-e2e-fixture.rs"
+required-features = ["e2e-fixture"]
 
 [dependencies]
 anyhow = "1"
@@ -71,6 +77,7 @@ infer = { version = "0.22", default-features = false }
 
 [features]
 dev-assets = []
+e2e-fixture = []
 openapi-export = []
 
 [lints]

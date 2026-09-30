@@ -10,10 +10,14 @@ export const qk = {
     preferences: () => ["me", "preferences"] as const,
     sessions: () => ["me", "sessions"] as const,
     effectiveSettings: () => ["me", "effective-settings"] as const,
+    twoFactor: () => ["me", "two-factor"] as const,
+    trustedDevices: () => ["me", "trusted-devices"] as const,
   },
 
   public: {
     all: () => ["public"] as const,
+    invite: (instance: string) => ["public", "invite", instance] as const,
+    passwordReset: (instance: string) => ["public", "password-reset", instance] as const,
   },
 } as const;
 

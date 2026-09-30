@@ -1,3 +1,4 @@
+export { useEffectiveSettings } from "./api/queries";
 export { SETTINGS_SECTIONS, SettingsLayout } from "./components/SettingsLayout";
 export { AppearancePage, type AppearancePageProps } from "./routes/AppearancePage";
 export { ProfilePage } from "./routes/ProfilePage";

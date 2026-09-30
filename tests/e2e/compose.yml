@@ -9,5 +9,20 @@ services:
     volumes:
       - palmr-data:/data
 
+  smtp-sink:
+    image: ${PALMR_E2E_SINK_IMAGE:-axllent/mailpit:v1.29.1}
+    pull_policy: never
+    ports:
+      - "127.0.0.1:${PALMR_E2E_SINK_PORT:-8025}:8025"
+
+  data-seed:
+    image: ${PALMR_E2E_SEED_IMAGE:-busybox:1.37.0-musl}
+    pull_policy: never
+    user: "0"
+    entrypoint: ["sh", "-c"]
+    command: ["true"]
+    volumes:
+      - palmr-data:/data
+
 volumes:
   palmr-data:

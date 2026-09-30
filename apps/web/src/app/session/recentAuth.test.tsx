@@ -367,22 +367,77 @@ describe("component_recent_auth_challenge_lifecycle", () => {
   });
 });
 
-describe("component_recent_auth_fails_closed", () => {
-  test("TOTP-enabled accounts get no password-only proof and nothing replays", async () => {
-    const state = installServer({ me: meFixture({ capabilities: { twoFactorEnabled: true } }) });
+describe("component_recent_auth_totp", () => {
+  const totpMe = () => meFixture({ capabilities: { twoFactorEnabled: true } });
+
+  test("a TOTP account proves password + code, and the blocked mutation replays exactly once", async () => {
+    const setItem = vi.spyOn(Storage.prototype, "setItem");
+    const state = installServer({ me: totpMe() });
     const { user, dialog } = await startBlockedChange();
 
-    expect(within(dialog).queryByLabelText("Password")).toBeNull();
-    expect(within(dialog).getByText("Two-factor confirmation required")).toBeDefined();
-    expect(within(dialog).queryByRole("button", { name: "Confirm" })).toBeNull();
+    expect(
+      within(dialog).getByText(
+        "For your security, enter your password and a code from your authenticator app to continue.",
+      ),
+    ).toBeDefined();
+    const code = within(dialog).getByLabelText("Authentication code");
+    expect(code.getAttribute("autocomplete")).toBe("one-time-code");
+    expect(code.getAttribute("inputmode")).toBe("numeric");
 
-    await user.click(within(dialog).getByText("Close"));
-
-    expect(recentAuthStore.getState().challenge).toBeNull();
+    await user.type(within(dialog).getByLabelText("Password"), "correct horse");
+    await user.click(within(dialog).getByRole("button", { name: "Confirm" }));
+    expect(
+      await within(dialog).findByText("Enter the 6-digit code from your authenticator app."),
+    ).toBeDefined();
     expect(state.reauthBodies).toHaveLength(0);
-    expect(state.passwordBodies).toHaveLength(1);
+
+    await user.type(code, "492 013");
+    await user.dblClick(within(dialog).getByRole("button", { name: "Confirm" }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("mutation-status").textContent).toBe("success");
+    });
+    expect(state.reauthBodies).toEqual([{ password: "correct horse", totpCode: "492013" }]);
+    expect(state.passwordBodies).toHaveLength(2);
+    expect(recentAuthStore.getState().challenge).toBeNull();
+    await expectDialogClosed();
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+    expect(state.passwordBodies).toHaveLength(2);
+    expect(state.reauthBodies).toHaveLength(1);
+    expect(setItem).not.toHaveBeenCalled();
   });
 
+  test("a wrong code is shown on the code field by error code, keeps the challenge and replays nothing", async () => {
+    const state = installServer({
+      me: totpMe(),
+      reauth: () => errorEnvelope("AUTH_2FA_INVALID", 401, "req-code", { message: SERVER_PROSE }),
+    });
+    const { user, dialog } = await startBlockedChange();
+    const challenge = recentAuthStore.getState().challenge;
+
+    await user.type(within(dialog).getByLabelText("Password"), "correct horse");
+    await user.type(within(dialog).getByLabelText("Authentication code"), "000000");
+    await user.click(within(dialog).getByRole("button", { name: "Confirm" }));
+
+    expect(
+      await within(dialog).findByText(
+        "The verification code is incorrect. Check your authenticator app and try again.",
+      ),
+    ).toBeDefined();
+    expect(within(dialog).getByLabelText("Authentication code").getAttribute("aria-invalid")).toBe(
+      "true",
+    );
+    expect(within(dialog).getByLabelText<HTMLInputElement>("Authentication code").value).toBe("");
+    expect(document.body.textContent).not.toContain(SERVER_PROSE);
+    expect(recentAuthStore.getState().challenge).toBe(challenge);
+    expect(state.passwordBodies).toHaveLength(1);
+    expectOriginalFormIntact();
+  });
+});
+
+describe("component_recent_auth_fails_closed", () => {
   test("SSO-only accounts get no fabricated provider URL and nothing replays", async () => {
     const state = installServer({ me: meFixture({ capabilities: { hasLocalPassword: false } }) });
     const { user, dialog } = await startBlockedChange();

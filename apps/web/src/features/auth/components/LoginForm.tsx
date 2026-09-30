@@ -1,18 +1,21 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Flex, Form, Input, theme } from "antd";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { ErrorAlert, presentError } from "../../../shared/errors";
 import { FormField } from "../../../shared/ui/FormField";
 import { type LoginRequest, useLogin } from "../api/mutations";
+import { clearLoginNotice } from "../store";
 
 interface LoginFormProps {
   onSignedIn: () => Promise<void>;
+  onMfaRequired: () => void;
+  passwordAction?: ReactNode;
 }
 
-export function LoginForm({ onSignedIn }: LoginFormProps) {
+export function LoginForm({ onSignedIn, onMfaRequired, passwordAction }: LoginFormProps) {
   const { t } = useTranslation("auth");
   const { token } = theme.useToken();
   const idPrefix = useId();
@@ -63,9 +66,11 @@ export function LoginForm({ onSignedIn }: LoginFormProps) {
     }
     inFlight.current = true;
     setFailure(null);
+    clearLoginNotice();
     try {
+      let outcome;
       try {
-        await login.mutateAsync(values);
+        outcome = await login.mutateAsync(values);
       } catch (error) {
         const presented = presentError(error);
         if (presented.presentation.silent) {
@@ -81,6 +86,11 @@ export function LoginForm({ onSignedIn }: LoginFormProps) {
         }
         resetField("password");
         setFocus("password");
+        return;
+      }
+      if (outcome === "mfaRequired") {
+        resetField("password");
+        onMfaRequired();
         return;
       }
       await onSignedIn();
@@ -149,6 +159,14 @@ export function LoginForm({ onSignedIn }: LoginFormProps) {
             />
           )}
         </FormField>
+        {passwordAction === undefined ? null : (
+          <Flex
+            justify="flex-end"
+            style={{ marginTop: -token.marginSM, marginBottom: token.marginSM }}
+          >
+            {passwordAction}
+          </Flex>
+        )}
         <Flex vertical style={{ marginTop: token.marginXS }}>
           <Button
             type="primary"

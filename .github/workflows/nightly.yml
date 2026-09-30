@@ -36,6 +36,8 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
+      - run: rustup toolchain install
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @palmr/e2e exec playwright install --with-deps chromium firefox webkit
       - run: PALMR_CONTAINER_REQUIRED=1 ./tests/container/smoke.sh

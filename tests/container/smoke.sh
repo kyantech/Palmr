@@ -101,7 +101,7 @@ container_runs_as_10001() {
 }
 
 container_single_process_single_port() {
-  local volume container port processes sockets files root_headers root_body openapi docs api
+  local volume container port processes sockets files help root_headers root_body openapi docs api
   new_volume
   volume=$NEW_VOLUME
   start_container "$volume"
@@ -121,6 +121,14 @@ container_single_process_single_port() {
   if grep -Eiq '(^|/)(node|npm|pnpm|minio|supervisord|tini|s6)(/|$)' <<<"$files"; then
     return 1
   fi
+  if grep -Eiq 'e2e-fixture' <<<"$files"; then
+    return 1
+  fi
+  help=$(docker run --rm "$IMAGE" --help)
+  grep -Eq '(^|[[:space:]])admin([[:space:]]|$)' <<<"$help"
+  if grep -Eiq 'fixture' <<<"$help"; then
+    return 1
+  fi
   root_headers=$(mktemp)
   root_body=$(mktemp)
   temp_dirs+=("$root_headers" "$root_body")
@@ -132,6 +140,9 @@ container_single_process_single_port() {
   grep -Eq '<script[^>]+src="\./assets/[^\"]+\.js"' "$root_body"
   openapi=$(curl --fail --silent --show-error "http://127.0.0.1:$port/openapi.json")
   grep -Eq '"openapi":"3\.[01]\.' <<<"$openapi"
+  if grep -Fiq 'fixture' <<<"$openapi"; then
+    return 1
+  fi
   docs=$(curl --fail --silent --show-error "http://127.0.0.1:$port/docs")
   grep -Eiq 'scalar|api-reference' <<<"$docs"
   api=$(curl --silent --show-error "http://127.0.0.1:$port/api/v1/not-real")

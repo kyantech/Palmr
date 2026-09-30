@@ -11,7 +11,7 @@ import {
   THEME_OPTIONS,
   type ThemeOption,
 } from "../types";
-import { SettingsSection } from "./SettingsSection";
+import { SettingsSection } from "../../../shared/ui/SettingsSection";
 
 interface AppearanceFormProps {
   preferences: Preferences;

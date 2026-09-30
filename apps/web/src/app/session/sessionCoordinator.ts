@@ -1,6 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type { RouterProviderProps } from "react-router/dom";
 import {
+  clearMfaChallenge,
   discardRecentAuthChallenge,
   openRecentAuthChallenge,
   recentAuthStore,
@@ -19,7 +20,7 @@ export interface SessionCoordinator {
   connect: (router: SessionRouter) => () => void;
 }
 
-const AUTH_ROUTES: readonly string[] = [PATHS.login, PATHS.setup];
+const AUTH_ROUTES: readonly string[] = [PATHS.login, PATHS.setup, "/reset-password", "/invite"];
 
 function isAuthRoute(pathname: string): boolean {
   return AUTH_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
@@ -57,6 +58,7 @@ function purgeAuthenticatedQueries(client: QueryClient) {
 
 export function signOutLocally(client: QueryClient): boolean {
   discardRecentAuthChallenge();
+  clearMfaChallenge();
   if (client.getQueryData(qk.me.current()) === null) {
     return false;
   }

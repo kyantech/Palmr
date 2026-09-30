@@ -10,7 +10,7 @@ import { FormField } from "../../../shared/ui/FormField";
 import { useUpdateProfile } from "../api/mutations";
 import type { Profile, ProfileChange } from "../types";
 import { characters, invalidFields } from "./formErrors";
-import { SettingsSection } from "./SettingsSection";
+import { SettingsSection } from "../../../shared/ui/SettingsSection";
 
 const DISPLAY_TEXT_MAX = 100;
 const CONTROL_CHARACTER = /\p{Cc}/u;

@@ -1,6 +1,8 @@
 pub(crate) mod admin;
 mod args;
 mod db;
+#[cfg(feature = "e2e-fixture")]
+pub mod e2e_fixture;
 pub(crate) mod error;
 mod jobs;
 mod migrate;

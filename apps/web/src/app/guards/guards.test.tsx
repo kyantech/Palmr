@@ -1,6 +1,7 @@
 import { screen } from "@testing-library/react";
 import { type RouteObject, useLocation } from "react-router";
-import { describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test } from "vitest";
+import { clearMfaChallenge, mfaChallengeStore } from "../../features/auth";
 import { bootstrapFixture, meFixture } from "../../test/bootFixtures";
 import { renderRouter } from "../../test/renderRouter";
 import type { BootState } from "../bootstrap/bootState";
@@ -11,6 +12,9 @@ import { RequireAdmin } from "./RequireAdmin";
 import { RequireAnonymous } from "./RequireAnonymous";
 import { RequireAuth } from "./RequireAuth";
 import { RequireEnrolled2FA } from "./RequireEnrolled2FA";
+import { RequireMfaPending } from "./RequireMfaPending";
+import { RequirePending2faEnrollment } from "./RequirePending2faEnrollment";
+import { RequirePendingPasswordChange } from "./RequirePendingPasswordChange";
 import { RequireNoPendingPasswordChange } from "./RequireNoPendingPasswordChange";
 import { RequireSetup } from "./RequireSetup";
 import { RequireSetupIncomplete } from "./RequireSetupIncomplete";
@@ -115,7 +119,9 @@ describe("component_guard_order", () => {
       state(meFixture({ role: "admin", restriction: "must_change_password" })),
     );
 
-    expect(await landing()).toBe("forced-password /login/forced-password-change");
+    expect(await landing()).toBe(
+      `forced-password /login/forced-password-change?next=${encodeURIComponent("/admin-area")}`,
+    );
     expect(unique(log)).toEqual(["setup", "auth", "password"]);
   });
 
@@ -124,7 +130,9 @@ describe("component_guard_order", () => {
       state(meFixture({ role: "admin", restriction: "mfa_enrollment_required" })),
     );
 
-    expect(await landing()).toBe("enroll-2fa /login/enroll-2fa");
+    expect(await landing()).toBe(
+      `enroll-2fa /login/enroll-2fa?next=${encodeURIComponent("/admin-area")}`,
+    );
     expect(unique(log)).toEqual(["setup", "auth", "password", "2fa"]);
     expect(screen.queryByText(/admin-content/)).toBeNull();
   });
@@ -248,8 +256,8 @@ describe("guards", () => {
 
   test.each([
     [null, "protected /protected"],
-    ["must_change_password", "forced-password /login/forced-password-change"],
-    ["mfa_enrollment_required", "enroll-2fa /login/enroll-2fa"],
+    ["must_change_password", "forced-password /login/forced-password-change?next=%2Fprotected"],
+    ["mfa_enrollment_required", "enroll-2fa /login/enroll-2fa?next=%2Fprotected"],
   ] as const)(
     "restriction %s routes an authenticated user to %s",
     async (restriction, expected) => {
@@ -266,4 +274,102 @@ describe("guards", () => {
       expect(await landing()).toBe(expected);
     },
   );
+});
+
+describe("M10 lock and challenge guards", () => {
+  afterEach(() => {
+    clearMfaChallenge();
+  });
+
+  function challenge(deadline: number) {
+    mfaChallengeStore.setState({
+      challenge: {
+        mfaToken: "memory-only-token",
+        expiresAt: "2026-09-28T00:05:00Z",
+        methods: ["totp", "backup_code"],
+        trustedDeviceOffered: false,
+        deadline,
+      },
+    });
+  }
+
+  async function renderMfaGuard(entry: string) {
+    return renderRouter(
+      [
+        { path: PATHS.login, element: <Landing label="login" /> },
+        {
+          element: <RequireMfaPending />,
+          children: [{ path: PATHS.twoFactor, element: <Landing label="2fa" /> }],
+        },
+      ],
+      { state: state(null), initialEntries: [entry] },
+    );
+  }
+
+  test("RequireMfaPending without an in-memory challenge replaces /login/2fa with /login and keeps next", async () => {
+    const { router } = await renderMfaGuard(`/login/2fa?next=${encodeURIComponent("/files/a")}`);
+
+    expect(await landing()).toBe(`login /login?next=${encodeURIComponent("/files/a")}`);
+    expect(router.state.historyAction).toBe("REPLACE");
+  });
+
+  test("RequireMfaPending renders the challenge route while the challenge is live", async () => {
+    challenge(Date.now() + 60_000);
+    await renderMfaGuard("/login/2fa");
+
+    expect(await landing()).toBe("2fa /login/2fa");
+  });
+
+  test("RequireMfaPending clears a locally expired challenge and returns to /login", async () => {
+    challenge(Date.now() - 1);
+    await renderMfaGuard("/login/2fa");
+
+    expect(await landing()).toBe("login /login");
+    expect(mfaChallengeStore.getState().challenge).toBeNull();
+  });
+
+  const lockRoutes: RouteObject[] = [
+    ...destinations,
+    { path: "/files/:id", element: <Landing label="files" /> },
+    {
+      element: <RequirePendingPasswordChange />,
+      children: [{ path: "/lock/password", element: <Landing label="password-lock" /> }],
+    },
+    {
+      element: <RequirePending2faEnrollment />,
+      children: [{ path: "/lock/2fa", element: <Landing label="2fa-lock" /> }],
+    },
+  ];
+
+  test.each([
+    ["/lock/password", "must_change_password", "password-lock /lock/password?next=%2Ffiles%2Fa"],
+    ["/lock/password", "mfa_enrollment_required", "enroll-2fa /login/enroll-2fa?next=%2Ffiles%2Fa"],
+    ["/lock/password", null, "files /files/a"],
+    ["/lock/2fa", "mfa_enrollment_required", "2fa-lock /lock/2fa?next=%2Ffiles%2Fa"],
+    [
+      "/lock/2fa",
+      "must_change_password",
+      "forced-password /login/forced-password-change?next=%2Ffiles%2Fa",
+    ],
+    ["/lock/2fa", null, "files /files/a"],
+  ] as const)(
+    "%s with restriction %s follows the server restriction to %s",
+    async (path, restriction, expected) => {
+      await renderRouter(lockRoutes, {
+        state: state(meFixture({ restriction })),
+        initialEntries: [`${path}?next=${encodeURIComponent("/files/a")}`],
+      });
+
+      expect(await landing()).toBe(expected);
+    },
+  );
+
+  test("a lifted restriction with no next lands on /overview and never follows an unsafe next", async () => {
+    await renderRouter(lockRoutes, {
+      state: state(meFixture({ restriction: null })),
+      initialEntries: [`/lock/password?next=${encodeURIComponent("//evil.example")}`],
+    });
+
+    expect(await landing()).toBe("overview /overview");
+  });
 });

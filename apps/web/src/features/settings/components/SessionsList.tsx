@@ -6,7 +6,7 @@ import { formatDateTime } from "../../../shared/format/dateTime";
 import { useRevokeOtherSessions, useRevokeSession } from "../api/mutations";
 import { useSessions } from "../api/queries";
 import type { SessionItem } from "../types";
-import { SettingsSection } from "./SettingsSection";
+import { SettingsSection } from "../../../shared/ui/SettingsSection";
 import { summarizeUserAgent } from "./userAgent";
 
 function earliest(first: string, second: string): string {

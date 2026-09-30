@@ -43,6 +43,7 @@ jobs:
       - run: cargo fmt --check
       - run: cargo clippy --all-targets --locked -- -D warnings
       - run: cargo clippy --all-targets --locked --features openapi-export -- -D warnings
+      - run: cargo clippy --all-targets --locked --features e2e-fixture -- -D warnings
       - run: cargo deny --locked check
 
   rust-test:
@@ -59,6 +60,7 @@ jobs:
         with:
           tool: cargo-nextest@0.9.146
       - run: cargo nextest run --locked --profile ci
+      - run: cargo nextest run --locked --profile ci --features e2e-fixture -E 'test(e2e_fixture)'
       - run: cargo run --locked --bin palmr -- --version
 
   web:

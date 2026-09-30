@@ -9,7 +9,7 @@ import { ApiError, ErrorAlert } from "../../../shared/errors";
 import { FormField } from "../../../shared/ui/FormField";
 import { useChangePassword } from "../api/mutations";
 import { characters, invalidFields } from "./formErrors";
-import { SettingsSection } from "./SettingsSection";
+import { SettingsSection } from "../../../shared/ui/SettingsSection";
 
 const PASSWORD_FIELDS = ["currentPassword", "newPassword"] as const;
 

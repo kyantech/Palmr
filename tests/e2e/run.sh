@@ -2,6 +2,12 @@
 set -Eeuo pipefail
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+REPO=$(cd "$ROOT/../.." && pwd)
+export COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-palmr-e2e-$$}
+export PALMR_E2E_SINK_IMAGE=${PALMR_E2E_SINK_IMAGE:-axllent/mailpit:v1.29.1}
+export PALMR_E2E_SEED_IMAGE=${PALMR_E2E_SEED_IMAGE:-busybox:1.37.0-musl}
+export PALMR_E2E_SINK_URL=${PALMR_E2E_SINK_URL:-http://127.0.0.1:${PALMR_E2E_SINK_PORT:-8025}}
+
 if docker compose version >/dev/null 2>&1; then
   COMPOSE=(docker compose --file "$ROOT/compose.yml")
 elif command -v docker-compose >/dev/null 2>&1; then
@@ -10,6 +16,13 @@ else
   printf 'E2E requires Docker Compose\n' >&2
   exit 1
 fi
+
+for image in "$PALMR_E2E_SINK_IMAGE" "$PALMR_E2E_SEED_IMAGE"; do
+  docker image inspect "$image" >/dev/null 2>&1 || docker pull "$image" >/dev/null
+done
+
+cargo build --locked --manifest-path "$REPO/Cargo.toml" --package palmr-server --features e2e-fixture --bin palmr-e2e-fixture
+export PALMR_E2E_FIXTURE_BIN=$REPO/target/debug/palmr-e2e-fixture
 
 cleanup() {
   "${COMPOSE[@]}" down --volumes --remove-orphans
