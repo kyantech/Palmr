@@ -61,7 +61,7 @@ export interface paths {
         };
         get: operations["list_users"];
         put?: never;
-        post?: never;
+        post: operations["create_user"];
         delete?: never;
         options?: never;
         head?: never;
@@ -81,7 +81,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        patch: operations["update_user"];
         trace?: never;
     };
     "/api/v1/admin/users/{userId}/sessions": {
@@ -823,6 +823,38 @@ export interface components {
              */
             inviteUrl: string;
         };
+        CreateUserRequest: {
+            /** @example grace@example.com */
+            email: string;
+            /** @example Grace */
+            firstName: string;
+            /** @description Defaults to `true`. */
+            isActive?: boolean | null;
+            /** @example Hopper */
+            lastName: string;
+            /**
+             * @description Initial locale. Defaults to the instance default locale.
+             * @example en-US
+             */
+            locale?: string | null;
+            /**
+             * Format: password
+             * @description Write-only temporary password. Omitted or `null` creates an SSO-only account without a local credential.
+             */
+            password?: string | null;
+            /**
+             * Format: int64
+             * @description Initial explicit byte quota. Omitted or `null` inherits the instance default.
+             * @example 5368709120
+             */
+            quotaBytes?: number | null;
+            /** @description Defaults to `true` when a password is supplied. `true` without a password is rejected. */
+            requirePasswordChange?: boolean | null;
+            /** @example user */
+            role: string;
+            /** @example grace */
+            username: string;
+        };
         /** @enum {string} */
         DatabaseHealthStatus: "ok";
         DetailValue: boolean | number | string | string[];
@@ -1273,6 +1305,14 @@ export interface components {
             enrolledAt: string | null;
             requiredByPolicy: boolean;
         };
+        UpdateUserRequest: {
+            /** @example Grace */
+            firstName?: string | null;
+            /** @example Hopper */
+            lastName?: string | null;
+            /** @example ghopper */
+            username?: string | null;
+        };
         UsageResponse: {
             /** Format: int64 */
             effectiveMaxFileSizeBytes: number | null;
@@ -1667,6 +1707,97 @@ export interface operations {
             };
         };
     };
+    create_user: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 16–128 characters. A replay within 24 hours returns the original `201` without creating another account. */
+                "Idempotency-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        /** @description With `password` the account has a local credential and `requirePasswordChange` defaults to `true`. Without it the account is SSO-only and cannot sign in locally. The password is write-only and never appears in any response. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateUserRequest"];
+            };
+        };
+        responses: {
+            /** @description The created user, in the shape of a `GET /api/v1/admin/users` row. Credential material is never part of this response. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUserItem"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `USER_EMAIL_TAKEN` or `USER_USERNAME_TAKEN` when the case-insensitive identity is already in use; `IDEMPOTENCY_KEY_CONFLICT` or `IDEMPOTENCY_REQUEST_IN_PROGRESS` for a reused key. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `VALIDATION_ERROR` for an invalid field, including `requirePasswordChange: true` without a password; `PASSWORD_POLICY_VIOLATION` when the password is shorter than the effective minimum. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
     get_user: {
         parameters: {
             query?: never;
@@ -1708,6 +1839,106 @@ export interface operations {
             };
             /** @description `USER_NOT_FOUND`. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    update_user: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description User UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description Only `firstName`, `lastName` and `username` are editable; any other member is rejected, and at least one editable member is required. E-mail, role, activation, quota and password have dedicated endpoints. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateUserRequest"];
+            };
+        };
+        responses: {
+            /** @description The updated user, in the shape of a `GET /api/v1/admin/users` row. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUserItem"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `USER_NOT_FOUND`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `USER_USERNAME_TAKEN` when the case-insensitive username belongs to another account. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `VALIDATION_ERROR` for an invalid or non-editable member, or an empty body. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

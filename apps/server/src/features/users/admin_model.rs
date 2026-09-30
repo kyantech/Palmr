@@ -7,7 +7,7 @@ use crate::domain::time::Timestamp;
 use crate::features::auth::lockout::LockState;
 use crate::infra::http::pagination::WireBytes;
 
-use super::model::{QuotaOverride, UserId};
+use super::model::{QuotaOverride, User, UserId};
 use super::service::effective_quota;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -64,6 +64,31 @@ pub struct AdminUserRecord {
     pub lock: Option<LockState>,
     pub last_login_at: Option<Timestamp>,
     pub created_at: Timestamp,
+}
+
+impl AdminUserRecord {
+    pub fn from_created(user: &User) -> Self {
+        Self {
+            id: user.id,
+            first_name: user.first_name.clone(),
+            last_name: user.last_name.clone(),
+            username: user.username.clone(),
+            username_normalized: user.username_normalized.clone(),
+            email: user.email.clone(),
+            email_normalized: user.email_normalized.clone(),
+            pending_email: None,
+            role: user.role,
+            is_active: user.is_active,
+            must_change_password: user.must_change_password,
+            totp_enabled: user.totp_enabled,
+            has_local_password: user.password_hash.is_some(),
+            quota: user.quota,
+            used_bytes: user.used_bytes,
+            lock: None,
+            last_login_at: None,
+            created_at: user.created_at,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, ToSchema)]

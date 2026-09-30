@@ -92,6 +92,17 @@ impl Http {
         creds: Option<&Creds>,
         body: Option<Value>,
     ) -> Result<Reply> {
+        self.send_with_headers(method, path, creds, body, &[]).await
+    }
+
+    pub async fn send_with_headers(
+        &self,
+        method: Method,
+        path: &str,
+        creds: Option<&Creds>,
+        body: Option<Value>,
+        headers: &[(&str, &str)],
+    ) -> Result<Reply> {
         let proof = creds.map(|creds| {
             (
                 format!(
@@ -101,7 +112,7 @@ impl Http {
                 creds.csrf.clone(),
             )
         });
-        self.dispatch(method, path, proof, body).await
+        self.dispatch(method, path, proof, body, headers).await
     }
 
     pub async fn send_with_anonymous_csrf(
@@ -116,6 +127,7 @@ impl Http {
             path,
             Some((format!("{CSRF_COOKIE}={token}"), token)),
             body,
+            &[],
         )
         .await
     }
@@ -126,12 +138,16 @@ impl Http {
         path: &str,
         proof: Option<(String, String)>,
         body: Option<Value>,
+        headers: &[(&str, &str)],
     ) -> Result<Reply> {
         let url = self.base.join(path.trim_start_matches('/'))?;
         let mut request = self
             .client
             .request(method, url)
             .header(ORIGIN, &self.origin);
+        for (name, value) in headers {
+            request = request.header(*name, *value);
+        }
         if let Some((cookie, csrf)) = proof {
             request = request.header(COOKIE, cookie).header(CSRF_HEADER, csrf);
         }

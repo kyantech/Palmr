@@ -814,6 +814,7 @@ async fn initialize(
         settings.clone(),
         Arc::clone(&email_keys),
         sessions.clone(),
+        audit_service.clone(),
     );
     let totp = TotpService::new(
         database.pools().clone(),

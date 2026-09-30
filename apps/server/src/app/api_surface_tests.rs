@@ -7,7 +7,8 @@ use utoipa_axum::routes;
 use super::auth_class::AuthClass;
 use super::openapi::ApiDocs;
 use super::router::{
-    application_routes, RateLimitClass, RouteInventory, RoutePolicy, Routes, Transport,
+    application_routes, IdempotencyMode, RateLimitClass, RouteInventory, RoutePolicy, Routes,
+    Transport,
 };
 use crate::config::{EnvironmentSource, OperatorConfig};
 use crate::features::users::admin_service::USER_SORT;
@@ -838,14 +839,51 @@ fn unit_admin_user_read_routes_are_declared_admin_and_read_limited() {
         let matching: Vec<_> = inventory
             .entries()
             .iter()
-            .filter(|entry| entry.path() == path)
+            .filter(|entry| entry.path() == path && *entry.method() == Method::GET)
             .collect();
         assert_eq!(matching.len(), 1, "{path}");
         let entry = matching[0];
-        assert_eq!(*entry.method(), Method::GET, "{path}");
         assert_eq!(entry.policy().auth(), AuthClass::Admin, "{path}");
         assert_eq!(entry.policy().rate_limit(), RateLimitClass::Read, "{path}");
         assert_eq!(entry.policy().transport(), Transport::ControlPlane);
+        assert_eq!(
+            entry.policy().idempotency(),
+            IdempotencyMode::None,
+            "{path}"
+        );
+    }
+}
+
+#[test]
+fn unit_admin_user_write_routes_are_declared_admin_write_limited() {
+    let inventory = application_inventory();
+    for (method, path, idempotency) in [
+        (
+            Method::POST,
+            "/api/v1/admin/users",
+            IdempotencyMode::Plaintext,
+        ),
+        (
+            Method::PATCH,
+            "/api/v1/admin/users/{id}",
+            IdempotencyMode::None,
+        ),
+    ] {
+        let matching: Vec<_> = inventory
+            .entries()
+            .iter()
+            .filter(|entry| entry.path() == path && *entry.method() == method)
+            .collect();
+        assert_eq!(matching.len(), 1, "{method} {path}");
+        let entry = matching[0];
+        assert_eq!(entry.policy().auth(), AuthClass::Admin, "{method} {path}");
+        assert_eq!(
+            entry.policy().rate_limit(),
+            RateLimitClass::AdminWrite,
+            "{method} {path}"
+        );
+        assert_eq!(entry.policy().transport(), Transport::ControlPlane);
+        assert_eq!(entry.policy().idempotency(), idempotency, "{method} {path}");
     }
 }
 

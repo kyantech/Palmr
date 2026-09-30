@@ -157,6 +157,8 @@ fn it_r031_route_registry_enumerates_every_admin_route() -> Result<()> {
         "GET /api/v1/admin/users (admin)",
         "GET /api/v1/admin/users/{id} (admin)",
         "GET /api/v1/admin/users/{userId}/sessions (admin)",
+        "POST /api/v1/admin/users (admin)",
+        "PATCH /api/v1/admin/users/{id} (admin)",
         "GET /api/v1/admin/invites (admin)",
         "POST /api/v1/admin/invites (admin)",
         "POST /api/v1/admin/invites/{id}/resend (admin)",

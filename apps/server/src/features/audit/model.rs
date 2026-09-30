@@ -273,6 +273,7 @@ pub enum AuditAction {
     AllSessionsRevoked,
     TrustedDeviceRevoked,
     SetupCompleted,
+    UserCreated,
     InviteCreated,
     InviteRevoked,
     InviteConsumed,
@@ -298,6 +299,7 @@ impl AuditAction {
         Self::AllSessionsRevoked,
         Self::TrustedDeviceRevoked,
         Self::SetupCompleted,
+        Self::UserCreated,
         Self::InviteCreated,
         Self::InviteRevoked,
         Self::InviteConsumed,
@@ -323,6 +325,7 @@ impl AuditAction {
             Self::AllSessionsRevoked => "ALL_SESSIONS_REVOKED",
             Self::TrustedDeviceRevoked => "TRUSTED_DEVICE_REVOKED",
             Self::SetupCompleted => "SETUP_COMPLETED",
+            Self::UserCreated => "USER_CREATED",
             Self::InviteCreated => "INVITE_CREATED",
             Self::InviteRevoked => "INVITE_REVOKED",
             Self::InviteConsumed => "INVITE_CONSUMED",
@@ -353,6 +356,7 @@ impl AuditAction {
             | Self::AllSessionsRevoked
             | Self::TrustedDeviceRevoked
             | Self::SetupCompleted
+            | Self::UserCreated
             | Self::InviteCreated
             | Self::InviteRevoked
             | Self::InviteConsumed

@@ -1,3 +1,4 @@
+pub mod admin_input;
 pub mod admin_model;
 pub mod admin_repo;
 pub mod admin_routes;

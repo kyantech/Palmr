@@ -53,7 +53,7 @@ use crate::features::settings::SettingsService;
 use crate::features::setup::SetupService;
 use crate::features::users::model::{NewUser, NormalizedIdentifier, QuotaOverride, UserId};
 use crate::features::users::repo as users;
-use crate::features::users::ProfileService;
+use crate::features::users::{AdminUserService, ProfileService};
 use crate::infra::crypto::instance_key::InstanceKey;
 use crate::infra::crypto::password::{hash_password, verify_password, PasswordVerification};
 use crate::infra::crypto::token::Token;
@@ -179,6 +179,14 @@ impl Stack {
             email.clone(),
             audit.clone(),
         );
+        let admin_users = AdminUserService::new(
+            pools.clone(),
+            Arc::new(clock.clone()),
+            settings.handle(),
+            settings.keys(),
+            sessions.clone(),
+            audit.clone(),
+        );
         let invites = InviteService::new(InviteServiceParts {
             pools: pools.clone(),
             clock: Arc::new(clock.clone()),
@@ -211,6 +219,7 @@ impl Stack {
             .layer(Extension(totp.clone()))
             .layer(Extension(resets.clone()))
             .layer(Extension(invites.clone()))
+            .layer(Extension(admin_users))
             .layer(Extension(EffectiveSettingsService::new(
                 pools.reader().clone(),
                 settings.handle(),
@@ -1736,6 +1745,7 @@ async fn it_login_audit_and_attempts_never_store_secrets() {
     stack.stop().await;
 }
 
+mod admin_users;
 mod forced_states;
 mod invites;
 mod mfa;

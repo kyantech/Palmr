@@ -7,8 +7,10 @@ use crate::domain::locale::LocaleCode;
 use crate::domain::role::Role;
 use crate::domain::secret::Secret;
 use crate::domain::time::Timestamp;
+use crate::domain::username::Username;
 use crate::infra::db::{DbError, ReadPool, WriteTx};
 
+use super::admin_input::UpdateInput;
 use super::error::UserError;
 use super::model::{
     AdminState, NewUser, NormalizedIdentifier, QuotaOverride, UsageRow, User, UserId,
@@ -76,6 +78,15 @@ const CHANGE_PASSWORD: &str = "UPDATE users
 const UPDATE_NAMES: &str = "UPDATE users
     SET first_name = COALESCE(?2, first_name), last_name = COALESCE(?3, last_name), updated_at = ?4
     WHERE id = ?1 AND is_active = 1";
+
+const UPDATE_IDENTITY: &str = "UPDATE users
+    SET first_name = COALESCE(?2, first_name), last_name = COALESCE(?3, last_name),
+        username = COALESCE(?4, username),
+        username_normalized = COALESCE(?5, username_normalized), updated_at = ?6
+    WHERE id = ?1";
+
+const USERNAME_HELD_BY_OTHER: &str =
+    "SELECT EXISTS(SELECT 1 FROM users WHERE username_normalized = ?1 AND id <> ?2)";
 
 const SELECT_USAGE: &str = "SELECT u.used_bytes, u.quota_override_mode, u.quota_bytes,
         (SELECT COALESCE(SUM(f.size_bytes), 0) FROM files f WHERE f.owner_id = u.id)
@@ -394,6 +405,44 @@ pub async fn update_names(
         .execute(tx.executor())
         .await?;
     affected_one(updated.rows_affected())
+}
+
+pub async fn update_identity(
+    tx: &mut WriteTx<'_>,
+    clock: &dyn Clock,
+    id: UserId,
+    change: &UpdateInput,
+) -> Result<(), UserError> {
+    let now = Timestamp::try_from(clock.now())?;
+    let updated = sqlx::query(UPDATE_IDENTITY)
+        .bind(id.to_string())
+        .bind(change.first_name.as_deref())
+        .bind(change.last_name.as_deref())
+        .bind(change.username.as_ref().map(Username::as_str))
+        .bind(change.username.as_ref().map(Username::normalized))
+        .bind(now.to_string())
+        .execute(tx.executor())
+        .await
+        .map_err(DbError::from);
+    match updated {
+        Ok(result) => affected_one(result.rows_affected()),
+        Err(error @ DbError::UniqueViolation(_)) => {
+            let Some(username) = &change.username else {
+                return Err(error.into());
+            };
+            let held = sqlx::query_scalar::<_, bool>(USERNAME_HELD_BY_OTHER)
+                .bind(username.normalized())
+                .bind(id.to_string())
+                .fetch_one(tx.executor())
+                .await?;
+            Err(if held {
+                UserError::UsernameTaken
+            } else {
+                error.into()
+            })
+        }
+        Err(error) => Err(error.into()),
+    }
 }
 
 pub async fn usage(reader: &ReadPool, id: UserId) -> Result<Option<UsageRow>, UserError> {

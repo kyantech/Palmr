@@ -302,6 +302,29 @@ pub fn setup_completed() -> ActionSpec {
     ActionSpec::new(AuditAction::SetupCompleted, Metadata::json(&[]))
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct UserCreatedFacts {
+    pub role: Role,
+    pub is_active: bool,
+    pub local_password: bool,
+    pub must_change_password: bool,
+    pub quota_mode: &'static str,
+}
+
+pub fn user_created(facts: UserCreatedFacts) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("role", Value::from(facts.role.as_str())),
+        ("is_active", Value::from(facts.is_active)),
+        ("local_password", Value::from(facts.local_password)),
+        (
+            "must_change_password",
+            Value::from(facts.must_change_password),
+        ),
+        ("quota_mode", Value::from(facts.quota_mode)),
+    ]);
+    ActionSpec::new(AuditAction::UserCreated, metadata)
+}
+
 // Invite builders take the role and delivery facts only: the token, its
 // digest, its sealed copy and the invite URL have no parameter here.
 pub fn invite_created(role: Role, validity_hours: u32, email_queued: bool) -> ActionSpec {

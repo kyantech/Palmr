@@ -7,17 +7,21 @@ use utoipa_axum::routes;
 
 use crate::app::auth_class::AuthClass;
 use crate::app::openapi::with_query_parameters;
-use crate::app::router::{RateLimitClass, RoutePolicy, Routes, Transport};
+use crate::app::router::{IdempotencyMode, RateLimitClass, RoutePolicy, Routes, Transport};
 use crate::app::state::AppState;
 use crate::domain::role::Role;
+use crate::features::auth::sessions::routes::client_metadata;
 use crate::features::auth::sessions::{SessionItem, SessionService};
 use crate::infra::http::error::{ApiError, ApiErrorBody, JSON_CONTENT_TYPE};
 use crate::infra::http::extractors::Admin;
+use crate::infra::http::idempotency::{Admission, Claim, IdempotencyRequest};
+use crate::infra::http::json;
 use crate::infra::http::pagination::{
     cursor_parameter, enum_parameter, limit_parameter, search_parameter, Page,
 };
 use crate::infra::http::request_id::{tag_error, RequestId};
 
+use super::admin_input::{CreateInput, CreateUserRequest, UpdateInput, UpdateUserRequest};
 use super::admin_model::{AdminUserDetail, AdminUserItem, UserStatus};
 use super::admin_service::{AdminUserError, AdminUserService, ROLE_PARAM, STATUS_PARAM, USER_SORT};
 use super::model::UserId;
@@ -25,6 +29,19 @@ use super::model::UserId;
 pub const READ_ROUTE: RoutePolicy = RoutePolicy::new(
     AuthClass::Admin,
     RateLimitClass::Read,
+    Transport::ControlPlane,
+);
+
+pub const CREATE_ROUTE: RoutePolicy = RoutePolicy::new(
+    AuthClass::Admin,
+    RateLimitClass::AdminWrite,
+    Transport::ControlPlane,
+)
+.with_idempotency(IdempotencyMode::Plaintext);
+
+pub const UPDATE_ROUTE: RoutePolicy = RoutePolicy::new(
+    AuthClass::Admin,
+    RateLimitClass::AdminWrite,
     Transport::ControlPlane,
 );
 
@@ -36,7 +53,9 @@ pub fn routes() -> Routes<AppState> {
             READ_ROUTE,
             with_query_parameters(routes!(list_users), &user_list_parameters()),
         )
+        .route(CREATE_ROUTE, routes!(create_user))
         .route(READ_ROUTE, routes!(get_user))
+        .route(UPDATE_ROUTE, routes!(update_user))
         .route(
             READ_ROUTE,
             with_query_parameters(routes!(list_user_sessions), &session_list_parameters()),
@@ -95,6 +114,78 @@ async fn list_users(
 }
 
 #[utoipa::path(
+    post,
+    path = "/api/v1/admin/users",
+    tag = "admin-users",
+    params(
+        ("Idempotency-Key" = Option<String>, Header, description = "16–128 characters. A replay within 24 hours returns the original `201` without creating another account.")
+    ),
+    request_body(
+        content = CreateUserRequest,
+        content_type = "application/json",
+        description = "With `password` the account has a local credential and `requirePasswordChange` defaults to `true`. Without it the account is SSO-only and cannot sign in locally. The password is write-only and never appears in any response."
+    ),
+    responses(
+        (status = 201, description = "The created user, in the shape of a `GET /api/v1/admin/users` row. Credential material is never part of this response.", body = AdminUserItem),
+        (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
+        (status = 409, description = "`USER_EMAIL_TAKEN` or `USER_USERNAME_TAKEN` when the case-insensitive identity is already in use; `IDEMPOTENCY_KEY_CONFLICT` or `IDEMPOTENCY_REQUEST_IN_PROGRESS` for a reused key.", body = ApiErrorBody),
+        (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
+        (status = 422, description = "`VALIDATION_ERROR` for an invalid field, including `requirePasswordChange: true` without a password; `PASSWORD_POLICY_VIOLATION` when the password is shorter than the effective minimum.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn create_user(
+    Extension(service): Extension<AdminUserService>,
+    Admin(admin): Admin,
+    idempotency: IdempotencyRequest,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let client = client_metadata(&request);
+    let body = match json::read_value(request.into_body()).await {
+        Ok(body) => body,
+        Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
+    };
+    let claim = match service.idempotency().claim(idempotency, &body).await {
+        Ok(Admission::Execute(claim)) => claim,
+        Ok(Admission::Replay(mut response)) => {
+            response.headers_mut().insert(CACHE_CONTROL, NO_STORE);
+            return response;
+        }
+        Err(rejection) => return rejection.into_response(),
+    };
+    let parsed = match json::parse::<CreateUserRequest>(body) {
+        Ok(parsed) => parsed,
+        Err(error) => {
+            release(&service, claim).await;
+            return tag_error(error, request_id.as_ref()).into_response();
+        }
+    };
+    let created = match CreateInput::parse(parsed) {
+        Ok(input) => service.create(&admin, input, &claim, &client).await,
+        Err(error) => Err(error),
+    };
+    match created {
+        Ok(created) => json_response(StatusCode::CREATED, &created, request_id.as_ref()),
+        Err(error) => {
+            release(&service, claim).await;
+            admin_user_error(&error, request_id.as_ref())
+        }
+    }
+}
+
+async fn release(service: &AdminUserService, claim: Claim) {
+    if let Err(error) = service.idempotency().release(claim).await {
+        tracing::error!(
+            kind = error.kind(),
+            "admin user idempotency claim could not be released"
+        );
+    }
+}
+
+#[utoipa::path(
     get,
     path = "/api/v1/admin/users/{id}",
     tag = "admin-users",
@@ -119,6 +210,51 @@ async fn get_user(
     };
     match service.detail(id).await {
         Ok(detail) => json_ok(&detail, request_id.as_ref()),
+        Err(error) => admin_user_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    patch,
+    path = "/api/v1/admin/users/{id}",
+    tag = "admin-users",
+    params(("id" = String, Path, description = "User UUIDv7")),
+    request_body(
+        content = UpdateUserRequest,
+        content_type = "application/json",
+        description = "Only `firstName`, `lastName` and `username` are editable; any other member is rejected, and at least one editable member is required. E-mail, role, activation, quota and password have dedicated endpoints."
+    ),
+    responses(
+        (status = 200, description = "The updated user, in the shape of a `GET /api/v1/admin/users` row.", body = AdminUserItem),
+        (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
+        (status = 404, description = "`USER_NOT_FOUND`.", body = ApiErrorBody),
+        (status = 409, description = "`USER_USERNAME_TAKEN` when the case-insensitive username belongs to another account.", body = ApiErrorBody),
+        (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
+        (status = 422, description = "`VALIDATION_ERROR` for an invalid or non-editable member, or an empty body.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn update_user(
+    Extension(service): Extension<AdminUserService>,
+    Admin(_admin): Admin,
+    Path(id): Path<String>,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let Ok(id) = id.parse::<UserId>() else {
+        return admin_user_error(&AdminUserError::NotFound, request_id.as_ref());
+    };
+    let input = match json::read::<UpdateUserRequest>(request.into_body()).await {
+        Ok(body) => match UpdateInput::parse(body) {
+            Ok(input) => input,
+            Err(error) => return admin_user_error(&error, request_id.as_ref()),
+        },
+        Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
+    };
+    match service.update(id, input).await {
+        Ok(item) => json_response(StatusCode::OK, &item, request_id.as_ref()),
         Err(error) => admin_user_error(&error, request_id.as_ref()),
     }
 }
@@ -168,9 +304,17 @@ fn admin_user_error(error: &AdminUserError, request_id: Option<&RequestId>) -> R
 }
 
 fn json_ok<T: serde::Serialize>(body: &T, request_id: Option<&RequestId>) -> Response {
+    json_response(StatusCode::OK, body, request_id)
+}
+
+fn json_response<T: serde::Serialize>(
+    status: StatusCode,
+    body: &T,
+    request_id: Option<&RequestId>,
+) -> Response {
     match serde_json::to_vec(body) {
         Ok(body) => (
-            StatusCode::OK,
+            status,
             [
                 (CONTENT_TYPE, HeaderValue::from_static(JSON_CONTENT_TYPE)),
                 (CACHE_CONTROL, NO_STORE),
