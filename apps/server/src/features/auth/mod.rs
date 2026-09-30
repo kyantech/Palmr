@@ -1,3 +1,4 @@
+pub mod email_verify;
 pub mod error;
 pub mod invites;
 pub mod lockout;

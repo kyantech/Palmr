@@ -642,6 +642,7 @@ pub fn application_routes() -> Routes<AppState> {
     Routes::new()
         .merge(health::routes())
         .merge(auth::routes::routes())
+        .merge(auth::email_verify::routes())
         .merge(auth::invites::routes::routes())
         .merge(auth::password_reset::routes::routes())
         .merge(auth::sessions::routes::routes())
@@ -652,6 +653,7 @@ pub fn application_routes() -> Routes<AppState> {
         .merge(settings::routes::routes())
         .merge(users::routes::routes())
         .merge(users::admin_routes::routes())
+        .merge(users::email_change_routes::routes())
         .merge(openapi::routes())
 }
 

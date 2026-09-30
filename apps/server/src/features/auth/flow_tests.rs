@@ -53,7 +53,7 @@ use crate::features::settings::SettingsService;
 use crate::features::setup::SetupService;
 use crate::features::users::model::{NewUser, NormalizedIdentifier, QuotaOverride, UserId};
 use crate::features::users::repo as users;
-use crate::features::users::{AdminUserService, ProfileService};
+use crate::features::users::{AdminUserService, EmailChangeService, ProfileService};
 use crate::infra::crypto::instance_key::InstanceKey;
 use crate::infra::crypto::password::{hash_password, verify_password, PasswordVerification};
 use crate::infra::crypto::token::Token;
@@ -85,6 +85,7 @@ struct Stack {
     resets: PasswordResetService,
     invites: InviteService,
     admin_users: AdminUserService,
+    email_changes: EmailChangeService,
     mail: Arc<CapturingTransport>,
     email: EmailService,
     drain: AuditDrain,
@@ -188,6 +189,14 @@ impl Stack {
             sessions.clone(),
             audit.clone(),
         );
+        let email_changes = EmailChangeService::new(
+            pools.clone(),
+            Arc::new(clock.clone()),
+            settings.handle(),
+            sessions.clone(),
+            email.clone(),
+            audit.clone(),
+        );
         let invites = InviteService::new(InviteServiceParts {
             pools: pools.clone(),
             clock: Arc::new(clock.clone()),
@@ -221,6 +230,7 @@ impl Stack {
             .layer(Extension(resets.clone()))
             .layer(Extension(invites.clone()))
             .layer(Extension(admin_users.clone()))
+            .layer(Extension(email_changes.clone()))
             .layer(Extension(EffectiveSettingsService::new(
                 pools.reader().clone(),
                 settings.handle(),
@@ -251,6 +261,7 @@ impl Stack {
             resets,
             invites,
             admin_users,
+            email_changes,
             mail,
             email,
             drain,
@@ -437,6 +448,7 @@ impl Stack {
         drop(self.totp);
         drop(self.resets);
         drop(self.invites);
+        drop(self.email_changes);
         drop(self.email);
         drop(self.sessions);
         drop(self.settings);
@@ -1746,6 +1758,7 @@ async fn it_login_audit_and_attempts_never_store_secrets() {
     stack.stop().await;
 }
 
+mod admin_email;
 mod admin_lifecycle;
 mod admin_security;
 mod admin_users;

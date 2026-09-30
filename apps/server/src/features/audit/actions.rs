@@ -371,6 +371,45 @@ pub fn user_activated(identity_links_restored: u64) -> ActionSpec {
     ActionSpec::new(AuditAction::UserActivated, metadata)
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct UserEmailChangeRequestedFacts<'a> {
+    pub from_email: &'a str,
+    pub to_email: &'a str,
+    pub replaced_pending: bool,
+    pub self_change: bool,
+}
+
+pub fn user_email_change_requested(facts: UserEmailChangeRequestedFacts<'_>) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("from_email", Value::from(facts.from_email)),
+        ("to_email", Value::from(facts.to_email)),
+        ("replaced_pending", Value::from(facts.replaced_pending)),
+        ("self_change", Value::from(facts.self_change)),
+    ]);
+    ActionSpec::new(AuditAction::UserEmailChangeRequested, metadata)
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct UserEmailChangeConfirmedFacts<'a> {
+    pub from_email: &'a str,
+    pub to_email: &'a str,
+    pub sessions_revoked: u64,
+    pub trusted_devices_revoked: u64,
+}
+
+pub fn user_email_change_confirmed(facts: UserEmailChangeConfirmedFacts<'_>) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("from_email", Value::from(facts.from_email)),
+        ("to_email", Value::from(facts.to_email)),
+        ("sessions_revoked", Value::from(facts.sessions_revoked)),
+        (
+            "trusted_devices_revoked",
+            Value::from(facts.trusted_devices_revoked),
+        ),
+    ]);
+    ActionSpec::new(AuditAction::UserEmailChangeConfirmed, metadata)
+}
+
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct UserPasswordResetByAdminFacts {
     pub sessions_revoked: u64,
@@ -540,11 +579,49 @@ mod tests {
             ["from_mode", "from_quota_bytes", "to_mode", "to_quota_bytes"]
         );
 
+        let requested = user_email_change_requested(UserEmailChangeRequestedFacts {
+            from_email: &"a".repeat(254),
+            to_email: &"b".repeat(254),
+            replaced_pending: true,
+            self_change: false,
+        });
+        assert_eq!(requested.action(), AuditAction::UserEmailChangeRequested);
+        assert_eq!(
+            fields(&requested),
+            ["from_email", "replaced_pending", "self_change", "to_email"]
+        );
+
+        let confirmed = user_email_change_confirmed(UserEmailChangeConfirmedFacts {
+            from_email: &"a".repeat(254),
+            to_email: &"b".repeat(254),
+            sessions_revoked: u64::MAX,
+            trusted_devices_revoked: u64::MAX,
+        });
+        assert_eq!(confirmed.action(), AuditAction::UserEmailChangeConfirmed);
+        assert_eq!(
+            fields(&confirmed),
+            [
+                "from_email",
+                "sessions_revoked",
+                "to_email",
+                "trusted_devices_revoked"
+            ]
+        );
+
         for spec in [&role, &deactivated, &activated, &reset, &quota] {
             assert!(spec.metadata().bytes() <= MAX_METADATA_BYTES);
             assert_eq!(spec.action().write_path(), WritePath::InTransaction);
             let text = spec.metadata().as_str();
             for forbidden in ["token", "hash", "password", "secret", "email"] {
+                assert!(!text.contains(forbidden), "{text}");
+            }
+        }
+
+        for spec in [&requested, &confirmed] {
+            assert!(spec.metadata().bytes() <= MAX_METADATA_BYTES);
+            assert_eq!(spec.action().write_path(), WritePath::InTransaction);
+            let text = spec.metadata().as_str();
+            for forbidden in ["token", "hash", "password", "secret", "cipher"] {
                 assert!(!text.contains(forbidden), "{text}");
             }
         }

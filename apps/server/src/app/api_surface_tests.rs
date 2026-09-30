@@ -824,7 +824,7 @@ fn unit_admin_namespace_is_admin_classed_and_never_public() {
             admin_routes += 1;
         }
     }
-    assert!(admin_routes >= 14);
+    assert!(admin_routes >= 17);
     assert!(!PUBLIC_ROUTES_GOLDEN.contains("/api/v1/admin"));
 }
 
@@ -929,6 +929,126 @@ fn unit_admin_user_write_routes_are_declared_admin_write_limited() {
         assert_eq!(entry.policy().transport(), Transport::ControlPlane);
         assert_eq!(entry.policy().idempotency(), idempotency, "{method} {path}");
     }
+}
+
+#[test]
+fn unit_admin_email_change_routes_are_declared_with_their_classes() {
+    let inventory = application_inventory();
+    for (method, path, auth, rate_limit) in [
+        (
+            Method::POST,
+            "/api/v1/admin/users/{id}/email",
+            AuthClass::AdminRecentAuth,
+            RateLimitClass::AdminWrite,
+        ),
+        (
+            Method::POST,
+            "/api/v1/admin/users/{id}/email/resend",
+            AuthClass::AdminRecentAuth,
+            RateLimitClass::EmailTest,
+        ),
+        (
+            Method::DELETE,
+            "/api/v1/admin/users/{id}/email",
+            AuthClass::AdminRecentAuth,
+            RateLimitClass::AdminWrite,
+        ),
+        (
+            Method::POST,
+            "/api/v1/auth/email/verify",
+            AuthClass::Public,
+            RateLimitClass::AuthToken,
+        ),
+    ] {
+        let matching: Vec<_> = inventory
+            .entries()
+            .iter()
+            .filter(|entry| entry.path() == path && *entry.method() == method)
+            .collect();
+        assert_eq!(matching.len(), 1, "{method} {path}");
+        let entry = matching[0];
+        assert_eq!(entry.policy().auth(), auth, "{method} {path}");
+        assert_eq!(entry.policy().rate_limit(), rate_limit, "{method} {path}");
+        assert_eq!(entry.policy().transport(), Transport::ControlPlane);
+        assert_eq!(
+            entry.policy().idempotency(),
+            IdempotencyMode::None,
+            "{method} {path}"
+        );
+    }
+}
+
+#[test]
+fn it_openapi_admin_email_change_routes_declare_typed_contracts() {
+    let document = application_document();
+    let paths = &document["paths"];
+    let start = &paths["/api/v1/admin/users/{id}/email"]["post"];
+    let cancel = &paths["/api/v1/admin/users/{id}/email"]["delete"];
+    let resend = &paths["/api/v1/admin/users/{id}/email/resend"]["post"];
+    let verify = &paths["/api/v1/auth/email/verify"]["post"];
+
+    for (operation, class, success) in [
+        (start, "admin+recent-auth", "202"),
+        (resend, "admin+recent-auth", "202"),
+        (cancel, "admin+recent-auth", "204"),
+    ] {
+        assert!(operation["tags"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|tag| tag == class));
+        assert_eq!(
+            operation["security"],
+            json!([{ "palmrSession": [], "palmrCsrfCookie": [], "palmrCsrfHeader": [] }])
+        );
+        for status in [success, "401", "403", "404", "429"] {
+            assert!(operation["responses"][status].is_object(), "{status}");
+        }
+        assert_eq!(parameter(operation, "id")["in"], "path");
+        assert!(operation["responses"]["404"]["description"]
+            .as_str()
+            .unwrap()
+            .contains("USER_NOT_FOUND"));
+        assert!(operation["responses"][success]["content"].is_null());
+    }
+    assert_eq!(
+        start["requestBody"]["content"]["application/json"]["schema"]["$ref"],
+        "#/components/schemas/ChangeEmailRequest"
+    );
+    assert!(resend["requestBody"].is_null());
+    assert!(cancel["requestBody"].is_null());
+    let conflict = start["responses"]["409"]["description"].as_str().unwrap();
+    assert!(conflict.contains("USER_EMAIL_TAKEN") && conflict.contains("FEATURE_UNAVAILABLE_SMTP"));
+    assert!(resend["responses"]["409"]["description"]
+        .as_str()
+        .unwrap()
+        .contains("EMAIL_VERIFICATION_NOT_PENDING"));
+
+    assert_eq!(
+        verify["requestBody"]["content"]["application/json"]["schema"]["$ref"],
+        "#/components/schemas/VerifyEmailRequest"
+    );
+    assert!(verify["security"].is_null() || verify["security"] == json!([]));
+    assert!(verify["responses"]["204"]["content"].is_null());
+    assert!(verify["responses"]["400"]["description"]
+        .as_str()
+        .unwrap()
+        .contains("EMAIL_VERIFICATION_TOKEN_INVALID"));
+    assert!(verify["responses"]["410"]["description"]
+        .as_str()
+        .unwrap()
+        .contains("EMAIL_VERIFICATION_TOKEN_EXPIRED"));
+    assert!(verify["responses"]["409"]["description"]
+        .as_str()
+        .unwrap()
+        .contains("USER_EMAIL_TAKEN"));
+
+    let schemas = &document["components"]["schemas"];
+    for name in ["ChangeEmailRequest", "VerifyEmailRequest"] {
+        assert_eq!(schemas[name]["additionalProperties"], false, "{name}");
+    }
+    assert_eq!(schemas["ChangeEmailRequest"]["required"], json!(["email"]));
+    assert_eq!(schemas["VerifyEmailRequest"]["required"], json!(["token"]));
 }
 
 fn parameter<'a>(operation: &'a Value, name: &str) -> &'a Value {

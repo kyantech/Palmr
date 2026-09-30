@@ -116,6 +116,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/users/{id}/email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["start_email_change"];
+        delete: operations["cancel_email_change"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/email/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resend_email_change"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/users/{id}/password-reset": {
         parameters: {
             query?: never;
@@ -270,6 +302,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["verify"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/email/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["verify_email"];
         delete?: never;
         options?: never;
         head?: never;
@@ -906,6 +954,10 @@ export interface components {
         };
         /** Format: int64 */
         ByteCount: number;
+        ChangeEmailRequest: {
+            /** @example grace@newdomain.example */
+            email: string;
+        };
         ChangeRoleRequest: {
             /** @example user */
             role: string;
@@ -1022,7 +1074,7 @@ export interface components {
             enrollmentId: string;
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "BRANDING_ASSET_UNKNOWN";
+        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "BRANDING_ASSET_UNKNOWN";
         ForgotPasswordRequest: {
             /** @example ada@example.com */
             identifier: string;
@@ -1472,6 +1524,10 @@ export interface components {
              */
             usedBytes: number;
             usedBytesExact: boolean;
+        };
+        VerifyEmailRequest: {
+            /** @description The opaque token from the e-mailed `/verify-email/{token}` link. */
+            token: string;
         };
         WebAppManifest: {
             background_color: string;
@@ -2217,6 +2273,227 @@ export interface operations {
             };
         };
     };
+    start_email_change: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description User UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new address is normalized with the canonical identity rules. It becomes the user's pending address; the current address stays canonical and keeps working for sign-in until the new one is verified. A previous pending change of the same user is replaced and its verification link stops working. The link is built from the configured public base URL only. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeEmailRequest"];
+            };
+        };
+        responses: {
+            /** @description Accepted. The pending address, a live verification and its durable verification message are recorded in one transaction together with `USER_EMAIL_CHANGE_REQUESTED`; the message is delivered later by the outbox worker. The verification token is never part of the response. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role or recent authentication required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `USER_NOT_FOUND`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `USER_EMAIL_TAKEN` when the address is canonical or pending on another user, or `FEATURE_UNAVAILABLE_SMTP` when outbound e-mail is not configured; nothing is recorded in either case. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `VALIDATION_ERROR` for a malformed address or one equal to the user's current canonical address. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    cancel_email_change: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description User UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The pending address is cleared, its verification link stops working and an undelivered verification message is cancelled. The canonical address and every session are untouched. Cancelling when nothing is pending succeeds without any side effect. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role or recent authentication required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `USER_NOT_FOUND`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    resend_email_change: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description User UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A fresh one-time token replaces the previous one, which stops working, and a new verification message is queued; the undelivered message of the previous token is cancelled. The expiry of the pending change is unchanged and the canonical address is untouched. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role or recent authentication required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `USER_NOT_FOUND`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `EMAIL_VERIFICATION_NOT_PENDING` when the user has no live pending change, including one whose verification has expired, or `FEATURE_UNAVAILABLE_SMTP`. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
     reset_user_password: {
         parameters: {
             query?: never;
@@ -2926,6 +3203,82 @@ export interface operations {
             };
             /** @description No unexpired pending enrollment matches `enrollmentId`. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request failed validation. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    verify_email: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyEmailRequest"];
+            };
+        };
+        responses: {
+            /** @description The pending address becomes the canonical address and sign-in identity and the old address stops resolving. In one transaction every session and trusted device of the account is revoked, including the session of an Administrator who changed their own address, and `USER_EMAIL_CHANGE_CONFIRMED` is audited. Activation, role, password and two-factor enrollment are unchanged and no session is created. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `EMAIL_VERIFICATION_TOKEN_INVALID` for a malformed, unknown, already used or superseded token, or the body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `USER_EMAIL_TAKEN` when the address became canonical on another account while the verification was pending; nothing is changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `EMAIL_VERIFICATION_TOKEN_EXPIRED`. */
+            410: {
                 headers: {
                     [name: string]: unknown;
                 };

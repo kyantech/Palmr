@@ -88,6 +88,21 @@ source: apps/server/src/domain/error_code.rs
     "retryable": true
   },
   {
+    "code": "EMAIL_VERIFICATION_NOT_PENDING",
+    "status": 409,
+    "retryable": false
+  },
+  {
+    "code": "EMAIL_VERIFICATION_TOKEN_EXPIRED",
+    "status": 410,
+    "retryable": false
+  },
+  {
+    "code": "EMAIL_VERIFICATION_TOKEN_INVALID",
+    "status": 400,
+    "retryable": false
+  },
+  {
     "code": "FEATURE_UNAVAILABLE_SMTP",
     "status": 409,
     "retryable": false

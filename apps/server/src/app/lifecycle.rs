@@ -50,7 +50,7 @@ use crate::features::settings::{
     EffectiveSettingsService, OperatorPolicy, SettingsError, SettingsHandle, SettingsService,
 };
 use crate::features::setup::SetupService;
-use crate::features::users::{AdminUserService, ProfileService};
+use crate::features::users::{AdminUserService, EmailChangeService, ProfileService};
 use crate::infra::crypto::hkdf::KeyRing;
 use crate::infra::crypto::instance_key::{InstanceKey, InstanceKeyError, KeyOrigin};
 use crate::infra::crypto::CryptoError;
@@ -840,6 +840,14 @@ async fn initialize(
         outbox.clone(),
         audit_service.clone(),
     );
+    let email_change = EmailChangeService::new(
+        database.pools().clone(),
+        Arc::clone(&clock),
+        settings.clone(),
+        sessions.clone(),
+        outbox.clone(),
+        audit_service.clone(),
+    );
     let invites = InviteService::new(InviteServiceParts {
         pools: database.pools().clone(),
         clock: Arc::clone(&clock),
@@ -854,6 +862,7 @@ async fn initialize(
         auth,
         profile,
         admin_users,
+        email_change,
         totp,
         password_reset,
         invites,
@@ -1097,6 +1106,7 @@ struct RequestServices {
     auth: AuthService,
     profile: ProfileService,
     admin_users: AdminUserService,
+    email_change: EmailChangeService,
     totp: TotpService,
     password_reset: PasswordResetService,
     invites: InviteService,
@@ -1130,6 +1140,7 @@ fn composed_router(
             .layer(axum::Extension(services.auth))
             .layer(axum::Extension(services.profile))
             .layer(axum::Extension(services.admin_users))
+            .layer(axum::Extension(services.email_change))
             .layer(axum::Extension(services.totp))
             .layer(axum::Extension(services.password_reset))
             .layer(axum::Extension(services.invites))

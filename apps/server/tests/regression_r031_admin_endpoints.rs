@@ -1,14 +1,17 @@
 pub mod support;
 
 use std::collections::BTreeSet;
+use std::time::Duration;
 
 use anyhow::{ensure, Context, Result};
 use reqwest::{Method, StatusCode};
 use serde_json::{json, Value};
 
+use palmr_server::TestClock;
 use support::client::{v7, Creds, Db, Http, SessionSpec};
 use support::TestApplication;
 
+const RATE_WINDOW: Duration = Duration::from_secs(3600);
 const PLACEHOLDER_ID: &str = "0192f3a1-0000-7000-8000-00000000ffff";
 const ADMIN_CLASSES: [&str; 2] = ["admin", "admin+recent-auth"];
 const METHODS: [(&str, &str); 6] = [
@@ -89,8 +92,14 @@ fn state_changing(route: &AdminRoute) -> bool {
     matches!(route.method.as_str(), "POST" | "PUT" | "PATCH" | "DELETE")
 }
 
-async fn assert_anonymous_rejected(http: &Http, routes: &[AdminRoute], state: &str) -> Result<()> {
+async fn assert_anonymous_rejected(
+    http: &Http,
+    clock: &TestClock,
+    routes: &[AdminRoute],
+    state: &str,
+) -> Result<()> {
     for route in routes {
+        clock.advance(RATE_WINDOW);
         let reply = if state_changing(route) {
             http.send_with_anonymous_csrf(route.method()?, &route.path(), route.body())
                 .await?
@@ -130,11 +139,13 @@ async fn assert_anonymous_rejected(http: &Http, routes: &[AdminRoute], state: &s
 
 async fn assert_user_forbidden(
     http: &Http,
+    clock: &TestClock,
     routes: &[AdminRoute],
     creds: &Creds,
     state: &str,
 ) -> Result<()> {
     for route in routes {
+        clock.advance(RATE_WINDOW);
         let reply = http
             .send(route.method()?, &route.path(), Some(creds), route.body())
             .await?;
@@ -166,6 +177,9 @@ fn it_r031_route_registry_enumerates_every_admin_route() -> Result<()> {
         "POST /api/v1/admin/users/{id}/unlock (admin)",
         "DELETE /api/v1/admin/users/{userId}/sessions (admin+recent-auth)",
         "PUT /api/v1/admin/users/{id}/quota (admin)",
+        "POST /api/v1/admin/users/{id}/email (admin+recent-auth)",
+        "POST /api/v1/admin/users/{id}/email/resend (admin+recent-auth)",
+        "DELETE /api/v1/admin/users/{id}/email (admin+recent-auth)",
         "GET /api/v1/admin/invites (admin)",
         "POST /api/v1/admin/invites (admin)",
         "POST /api/v1/admin/invites/{id}/resend (admin)",
@@ -197,7 +211,7 @@ async fn regression_R031_admin_endpoints_never_unauthenticated() -> Result<()> {
     let http = Http::new(empty.url("/")?)?;
     let db = Db::new(empty.data_dir());
     ensure!(db.scalar_i64("SELECT COUNT(*) FROM users").await? == 0);
-    assert_anonymous_rejected(&http, &routes, "zero users").await?;
+    assert_anonymous_rejected(&http, empty.clock(), &routes, "zero users").await?;
     empty.shutdown().await;
 
     let mid_setup = TestApplication::start("regression_R031_mid_setup").await?;
@@ -213,7 +227,13 @@ async fn regression_R031_admin_endpoints_never_unauthenticated() -> Result<()> {
             == 0,
         "setup must still be incomplete"
     );
-    assert_anonymous_rejected(&http, &routes, "mid-setup with one admin row").await?;
+    assert_anonymous_rejected(
+        &http,
+        mid_setup.clock(),
+        &routes,
+        "mid-setup with one admin row",
+    )
+    .await?;
     mid_setup.shutdown().await;
 
     Ok(())
@@ -244,7 +264,7 @@ async fn regression_R031_exactly_one_admin_grants_no_anonymous_privilege() -> Re
             == 1
     );
 
-    assert_anonymous_rejected(&http, &routes, "exactly one user, an Admin").await?;
+    assert_anonymous_rejected(&http, app.clock(), &routes, "exactly one user, an Admin").await?;
 
     let listed = http
         .get("/api/v1/admin/users", Some(&admin))
@@ -287,8 +307,8 @@ async fn regression_R031_authenticated_user_is_forbidden_on_every_admin_route() 
     let http = Http::new(app.url("/")?)?;
     let admin = http.setup_admin().await?;
     let user = http.invite_and_accept(&admin, "bea").await?;
-    assert_user_forbidden(&http, &routes, &user, "admin plus user").await?;
-    assert_anonymous_rejected(&http, &routes, "admin plus user").await?;
+    assert_user_forbidden(&http, app.clock(), &routes, &user, "admin plus user").await?;
+    assert_anonymous_rejected(&http, app.clock(), &routes, "admin plus user").await?;
     http.get("/api/v1/admin/users", Some(&admin))
         .await?
         .expect(StatusCode::OK)?;
@@ -300,8 +320,15 @@ async fn regression_R031_authenticated_user_is_forbidden_on_every_admin_route() 
     let id = v7(7);
     db.insert_user(&id, "lonely", "user").await?;
     let (_, creds) = db.insert_session(&SessionSpec::active(&id)).await?;
-    assert_user_forbidden(&http, &routes, &creds, "one user, role user").await?;
-    assert_anonymous_rejected(&http, &routes, "one user, role user").await?;
+    assert_user_forbidden(
+        &http,
+        only_user.clock(),
+        &routes,
+        &creds,
+        "one user, role user",
+    )
+    .await?;
+    assert_anonymous_rejected(&http, only_user.clock(), &routes, "one user, role user").await?;
     only_user.shutdown().await;
     Ok(())
 }

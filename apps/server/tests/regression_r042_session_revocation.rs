@@ -39,6 +39,7 @@ const VERIFY: &str = "/api/v1/auth/2fa/enroll/verify";
 const DISABLE: &str = "/api/v1/auth/2fa/disable";
 const REGENERATE: &str = "/api/v1/auth/2fa/backup-codes/regenerate";
 const RESET: &str = "/api/v1/auth/password/reset";
+const VERIFY_EMAIL: &str = "/api/v1/auth/email/verify";
 const LOGIN: &str = "/api/v1/auth/login";
 const LOGIN_TOTP: &str = "/api/v1/auth/login/totp";
 const LOGOUT: &str = "/api/v1/auth/logout";
@@ -293,6 +294,8 @@ struct UserRow {
     totp_enabled: i64,
 }
 
+type EmailRow = (String, String, String, Option<String>, Option<String>);
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Snapshot {
     sessions: BTreeMap<String, SessionRow>,
@@ -301,6 +304,8 @@ struct Snapshot {
     totp_secrets: Vec<(String, String, Option<i64>)>,
     backup_codes: Vec<(String, i64, i64)>,
     reset_tokens: Vec<(String, Option<String>, Option<String>)>,
+    emails: Vec<EmailRow>,
+    email_verifications: Vec<(String, Option<String>, Option<String>)>,
 }
 
 struct Db {
@@ -389,6 +394,17 @@ impl Db {
         )
         .fetch_all(&mut connection)
         .await?;
+        let emails = sqlx::query_as(
+            "SELECT id, email, email_normalized, pending_email, pending_email_normalized
+               FROM users ORDER BY id",
+        )
+        .fetch_all(&mut connection)
+        .await?;
+        let email_verifications = sqlx::query_as(
+            "SELECT id, consumed_at, invalidated_at FROM email_verifications ORDER BY id",
+        )
+        .fetch_all(&mut connection)
+        .await?;
         Ok(Snapshot {
             sessions: sessions
                 .into_iter()
@@ -402,6 +418,8 @@ impl Db {
             totp_secrets,
             backup_codes,
             reset_tokens,
+            emails,
+            email_verifications,
         })
     }
 }
@@ -728,6 +746,41 @@ impl World {
         .execute(&mut connection)
         .await
         .context("seed reset token")?;
+        Ok(Base64UrlUnpadded::encode_string(&raw))
+    }
+
+    async fn seed_email_change(&self, user_id: &str, email: &str) -> Result<String> {
+        let raw: Vec<u8> = Sha256::digest(format!("r042-email-{user_id}").as_bytes())
+            .iter()
+            .copied()
+            .collect();
+        let normalized = email.to_lowercase();
+        let mut connection = self.db.writer().await?;
+        sqlx::query(
+            "UPDATE users SET pending_email = ?2, pending_email_normalized = ?3 WHERE id = ?1",
+        )
+        .bind(user_id)
+        .bind(email)
+        .bind(&normalized)
+        .execute(&mut connection)
+        .await
+        .context("seed pending e-mail")?;
+        sqlx::query(
+            "INSERT INTO email_verifications
+                 (id, user_id, purpose, email, email_normalized, token_hash, created_at,
+                  expires_at, requested_by)
+             VALUES (?1, ?2, 'email_change', ?3, ?4, ?5,
+                     strftime('%Y-%m-%dT%H:%M:%fZ', '2026-01-01'),
+                     strftime('%Y-%m-%dT%H:%M:%fZ', '2027-01-01'), ?2)",
+        )
+        .bind(Uuid::now_v7().to_string())
+        .bind(user_id)
+        .bind(email)
+        .bind(&normalized)
+        .bind(hex(&Sha256::digest(&raw)))
+        .execute(&mut connection)
+        .await
+        .context("seed e-mail verification")?;
         Ok(Base64UrlUnpadded::encode_string(&raw))
     }
 
@@ -1902,6 +1955,144 @@ async fn admin_revoke_own_sessions() -> Result<()> {
     world.finish().await
 }
 
+async fn email_change_verified() -> Result<()> {
+    let world = World::standard("r042_email_change_verified", true).await?;
+    let target = world.a.id.clone();
+    let token = world
+        .seed_email_change(&target, "Ada.Next@Example.test")
+        .await?;
+    let before = world.snapshot().await?;
+    let audit_before = world.audit_count("USER_EMAIL_CHANGE_CONFIRMED").await?;
+    let verify = |token: String| {
+        world.http.send(
+            Method::POST,
+            VERIFY_EMAIL,
+            None,
+            None,
+            Some(json!({ "token": token })),
+        )
+    };
+
+    world
+        .inject_audit_failure("USER_EMAIL_CHANGE_CONFIRMED")
+        .await?;
+    let failed = verify(token.clone()).await?;
+    world.assert_injected_failure(failed).await?;
+    world
+        .assert_rolled_back(
+            "verified e-mail change",
+            &before,
+            "USER_EMAIL_CHANGE_CONFIRMED",
+            audit_before,
+        )
+        .await?;
+    world.remove_audit_failure().await?;
+
+    let confirmed = verify(token.clone())
+        .await?
+        .expect(StatusCode::NO_CONTENT)?;
+    confirmed.assert_no_session_cookie()?;
+    let fates = [Fate::Revoked(ADMIN_REQUEST); 3];
+    let after = world
+        .settle(
+            "verified e-mail change",
+            &before,
+            &fates,
+            &EVERY_DEVICE_REVOKED,
+            None,
+        )
+        .await?;
+    expect_eq(
+        world.audit_count("USER_EMAIL_CHANGE_CONFIRMED").await?,
+        audit_before + 1,
+        "verified e-mail change audit",
+    )?;
+    let (old, new) = (&before.users[&target], &after.users[&target]);
+    expect_eq(
+        new.password_hash.as_ref(),
+        old.password_hash.as_ref(),
+        "the credential is kept",
+    )?;
+    expect_eq(
+        new.must_change_password,
+        old.must_change_password,
+        "forced flag",
+    )?;
+    expect_eq(new.totp_enabled, old.totp_enabled, "TOTP flag is kept")?;
+    expect_eq(
+        &after.totp_secrets,
+        &before.totp_secrets,
+        "TOTP secret is kept",
+    )?;
+    expect_eq(
+        &after.backup_codes,
+        &before.backup_codes,
+        "backup codes are kept",
+    )?;
+    let identity = after
+        .emails
+        .iter()
+        .find(|(id, ..)| id == &target)
+        .context("target identity row")?;
+    expect_eq(
+        (&identity.1, &identity.2, &identity.3, &identity.4),
+        (
+            &"Ada.Next@Example.test".to_owned(),
+            &"ada.next@example.test".to_owned(),
+            &None,
+            &None,
+        ),
+        "the pending address is promoted",
+    )?;
+    expect_eq(
+        after
+            .email_verifications
+            .iter()
+            .filter(|(_, consumed, invalidated)| consumed.is_none() && invalidated.is_none())
+            .count(),
+        0,
+        "no live verification survives",
+    )?;
+
+    let old_identity = world
+        .http
+        .send(
+            Method::POST,
+            LOGIN,
+            None,
+            None,
+            Some(json!({ "identifier": "ada@example.test", "password": PASSWORD })),
+        )
+        .await?;
+    expect_eq(
+        old_identity.error_code()?,
+        "AUTH_INVALID_CREDENTIALS".to_owned(),
+        "the old address no longer signs in",
+    )?;
+    let challenged = world
+        .http
+        .send(
+            Method::POST,
+            LOGIN,
+            None,
+            None,
+            Some(json!({ "identifier": "ADA.NEXT@example.test", "password": PASSWORD })),
+        )
+        .await?;
+    expect_eq(
+        challenged.error_code()?,
+        "AUTH_2FA_REQUIRED".to_owned(),
+        "the new address signs in and TOTP is still required",
+    )?;
+    let replay = verify(token).await?;
+    expect_eq(
+        replay.error_code()?,
+        "EMAIL_VERIFICATION_TOKEN_INVALID".to_owned(),
+        "the token is single-use",
+    )?;
+    world.finish().await
+}
+
 type Scenario = Pin<Box<dyn Future<Output = Result<()>>>>;
 
 #[allow(non_snake_case, reason = "the accepted regression identifier is R-042")]
@@ -1941,6 +2132,7 @@ async fn regression_R042_session_revocation_on_security_change() -> Result<()> {
             "admin_revoke_own_sessions",
             Box::pin(admin_revoke_own_sessions()),
         ),
+        ("email_change_verified", Box::pin(email_change_verified())),
     ];
     let (names, futures): (Vec<_>, Vec<_>) = scenarios.into_iter().unzip();
     let results = futures_util::future::join_all(futures).await;

@@ -1,3 +1,4 @@
+POST /api/v1/auth/email/verify public
 POST /api/v1/auth/login public
 POST /api/v1/auth/login/totp public
 POST /api/v1/auth/password/forgot public

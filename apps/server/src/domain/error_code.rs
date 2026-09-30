@@ -130,6 +130,12 @@ error_catalog! {
         "The password reset link has expired";
     ResetTokenUsed = "RESET_TOKEN_USED", GONE, retryable: false,
         "The password reset link was already used";
+    EmailVerificationTokenInvalid = "EMAIL_VERIFICATION_TOKEN_INVALID", BAD_REQUEST, retryable: false,
+        "The e-mail verification link is invalid";
+    EmailVerificationTokenExpired = "EMAIL_VERIFICATION_TOKEN_EXPIRED", GONE, retryable: false,
+        "The e-mail verification link has expired";
+    EmailVerificationNotPending = "EMAIL_VERIFICATION_NOT_PENDING", CONFLICT, retryable: false,
+        "The user has no pending e-mail change to resend";
     InviteNotFound = "INVITE_NOT_FOUND", NOT_FOUND, retryable: false,
         "The invite was not found";
     InviteExpired = "INVITE_EXPIRED", GONE, retryable: false,

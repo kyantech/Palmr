@@ -1163,6 +1163,9 @@ async fn svc_restricted_session_allowlist() {
                 code
             };
             let path = concrete(entry.path(), &harness.clock);
+            if entry.policy().rate_limit() == RateLimitClass::EmailTest {
+                harness.clock.advance(Duration::from_secs(3600));
+            }
             assert_eq!(
                 restricted_code(application.clone(), entry.method().clone(), &path, session).await,
                 (StatusCode::FORBIDDEN, Some(expected.to_owned())),
