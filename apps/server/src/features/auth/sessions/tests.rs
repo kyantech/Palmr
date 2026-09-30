@@ -1978,3 +1978,23 @@ async fn it_revocation_clears_pending_mfa_rows() {
         );
     }
 }
+
+#[tokio::test]
+async fn it_session_active_count_uses_the_user_active_index() {
+    use sqlx::Row;
+
+    let harness = Harness::open().await;
+    let plan: Vec<String> =
+        sqlx::query(&format!("EXPLAIN QUERY PLAN {}", super::repo::COUNT_ACTIVE))
+            .bind("user")
+            .bind("2026-09-25T12:00:00.000Z")
+            .fetch_all(harness.pools.reader().executor())
+            .await
+            .unwrap()
+            .iter()
+            .map(|row| row.get::<String, _>("detail"))
+            .collect();
+    let plan = plan.join("\n");
+    assert!(plan.contains("ix_sessions_user_active"), "{plan}");
+    assert!(!plan.contains("SCAN"), "{plan}");
+}

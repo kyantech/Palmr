@@ -41,6 +41,7 @@
     "passwordPolicy": "Lösenordet uppfyller inte instansens krav.",
     "emailTaken": "E-postadressen används redan.",
     "usernameTaken": "Användarnamnet används redan.",
+    "userNotFound": "Den här användaren finns inte.",
     "serverBusy": "Palmr är upptaget just nu. Försök igen om en stund.",
     "fileNotFound": "Filen finns inte längre.",
     "rangeNotSatisfiable": "Den begärda delen av filen är inte tillgänglig. Starta nedladdningen igen.",

@@ -52,6 +52,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_users"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_user"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{userId}/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_user_sessions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/2fa": {
         parameters: {
             query?: never;
@@ -632,6 +680,64 @@ export interface components {
             /** @example true */
             accepted: boolean;
         };
+        AdminIdentityLink: {
+            createdAt: string;
+            id: string;
+            lastLoginAt: string | null;
+            linkMethod: components["schemas"]["IdentityLinkMethod"];
+            providerKey: string;
+            providerName: string;
+            state: components["schemas"]["IdentityLinkState"];
+        };
+        AdminLockout: {
+            /** Format: int32 */
+            failedCount: number;
+            /** Format: int32 */
+            lockCount: number;
+            lockedUntil: string | null;
+        };
+        AdminUserCounts: {
+            /** Format: int64 */
+            files: number;
+            /** Format: int64 */
+            receivedFiles: number;
+            /** Format: int64 */
+            reverseShares: number;
+            /** Format: int64 */
+            shares: number;
+        };
+        AdminUserDetail: components["schemas"]["AdminUserItem"] & {
+            identityLinks: components["schemas"]["AdminIdentityLink"][];
+            lockout: components["schemas"]["AdminLockout"];
+            overQuota: boolean;
+            /** Format: int64 */
+            sessionCount: number;
+            /** Format: int64 */
+            trustedDeviceCount: number;
+        };
+        AdminUserItem: {
+            counts: components["schemas"]["AdminUserCounts"];
+            createdAt: string;
+            effectiveQuotaBytes: null | components["schemas"]["ByteCount"];
+            email: string;
+            firstName: string;
+            hasLocalPassword: boolean;
+            id: string;
+            /** Format: int64 */
+            identityLinkCount: number;
+            isActive: boolean;
+            isLockedOut: boolean;
+            lastLoginAt: string | null;
+            lastName: string;
+            mustChangePassword: boolean;
+            pendingEmail: string | null;
+            quotaBytes: null | components["schemas"]["ByteCount"];
+            /** @example admin */
+            role: string;
+            twoFactorEnabled: boolean;
+            usedBytes: components["schemas"]["ByteCount"];
+            username: string;
+        };
         ApiErrorBody: {
             error: components["schemas"]["ApiErrorPayload"];
         };
@@ -682,6 +788,8 @@ export interface components {
             /** Format: int64 */
             sortOrder: number;
         };
+        /** Format: int64 */
+        ByteCount: number;
         CreateInviteRequest: {
             /**
              * @description The address the invite is bound to; the account is created with it.
@@ -762,7 +870,7 @@ export interface components {
             enrollmentId: string;
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "BRANDING_ASSET_UNKNOWN";
+        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "BRANDING_ASSET_UNKNOWN";
         ForgotPasswordRequest: {
             /** @example ada@example.com */
             identifier: string;
@@ -802,6 +910,10 @@ export interface components {
         };
         /** @enum {string} */
         HealthSummaryStatus: "ok" | "degraded" | "not_ready";
+        /** @enum {string} */
+        IdentityLinkMethod: "auto_verified_email" | "manual" | "auto_provision";
+        /** @enum {string} */
+        IdentityLinkState: "active" | "suspended";
         InviteCreator: {
             id: string;
             username: string;
@@ -936,6 +1048,38 @@ export interface components {
         };
         /** @enum {string} */
         MigrationHealthStatus: "current";
+        Page_AdminUserItem: {
+            items: {
+                counts: components["schemas"]["AdminUserCounts"];
+                createdAt: string;
+                effectiveQuotaBytes: null | components["schemas"]["ByteCount"];
+                email: string;
+                firstName: string;
+                hasLocalPassword: boolean;
+                id: string;
+                /** Format: int64 */
+                identityLinkCount: number;
+                isActive: boolean;
+                isLockedOut: boolean;
+                lastLoginAt: string | null;
+                lastName: string;
+                mustChangePassword: boolean;
+                pendingEmail: string | null;
+                quotaBytes: null | components["schemas"]["ByteCount"];
+                /** @example admin */
+                role: string;
+                twoFactorEnabled: boolean;
+                usedBytes: components["schemas"]["ByteCount"];
+                username: string;
+            }[];
+            /** @description Opaque cursor for the next page; `null` on the last page. */
+            nextCursor: string | null;
+            /**
+             * Format: int64
+             * @description Matching items overall; `null` where counting would require a scan.
+             */
+            totalCount: number | null;
+        };
         Page_InviteItem: {
             items: {
                 acceptedAt: string | null;
@@ -1433,6 +1577,218 @@ export interface operations {
             };
             /** @description `INVITE_ALREADY_USED`, `INVITE_REVOKED` or `INVITE_EXPIRED`. */
             410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    list_users: {
+        parameters: {
+            query?: {
+                q?: string;
+                role?: "admin" | "user";
+                status?: "active" | "inactive";
+                sort?: "createdAt:asc" | "createdAt:desc" | "usedBytes:asc" | "usedBytes:desc" | "username:asc" | "username:desc" | "email:asc" | "email:desc";
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Users with accounted storage, effective quota and resource counts. `usedBytes` is My Files plus Received; `quotaBytes` and `effectiveQuotaBytes` are `null` when Unlimited. `totalCount` is the exact filtered user count. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_AdminUserItem"];
+                };
+            };
+            /** @description `CURSOR_INVALID`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Invalid query. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    get_user: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description User UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The list row plus `overQuota`, `sessionCount`, `trustedDeviceCount`, `lockout` and `identityLinks`. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUserDetail"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `USER_NOT_FOUND`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    list_user_sessions: {
+        parameters: {
+            query?: {
+                sort?: "lastSeenAt:asc" | "lastSeenAt:desc";
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @description User UUIDv7 */
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The target user's active sessions, in the shape of `GET /api/v1/sessions`. Token material is never part of this response. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_SessionItem"];
+                };
+            };
+            /** @description `CURSOR_INVALID`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `USER_NOT_FOUND`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Invalid query. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

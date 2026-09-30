@@ -554,6 +554,16 @@ pub fn search_parameter() -> Parameter {
     )
 }
 
+pub fn enum_parameter(name: &'static str, values: &[&'static str]) -> Parameter {
+    query_parameter(
+        name,
+        ObjectBuilder::new()
+            .schema_type(Type::String)
+            .enum_values(Some(values.iter().copied()))
+            .into(),
+    )
+}
+
 pub fn repeated_enum_parameter(name: &'static str, values: &[&'static str]) -> Parameter {
     let mut parameter = query_parameter(
         name,

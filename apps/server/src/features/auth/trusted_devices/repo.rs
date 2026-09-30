@@ -31,7 +31,7 @@ const SELECT_OWNED: &str = "SELECT token_hash, revoked_at FROM trusted_devices
 const REVOKE_OWNED: &str = "UPDATE trusted_devices SET revoked_at = ?3
     WHERE id = ?1 AND user_id = ?2 AND revoked_at IS NULL";
 
-const COUNT_LISTED: &str = "SELECT COUNT(*) FROM trusted_devices
+pub(crate) const COUNT_LISTED: &str = "SELECT COUNT(*) FROM trusted_devices
     WHERE user_id = ?1 AND revoked_at IS NULL AND expires_at > ?2";
 
 pub async fn revoke_all_in_tx(
@@ -162,13 +162,21 @@ pub async fn list(
         .map(record_from)
         .collect::<Result<Vec<_>, _>>()?;
 
+    let count = count_usable(reader, user_id, now).await?;
+    Ok((devices, count))
+}
+
+pub async fn count_usable(
+    reader: &ReadPool,
+    user_id: UserId,
+    now: Timestamp,
+) -> Result<u64, TrustedDeviceError> {
     let count: i64 = sqlx::query_scalar(COUNT_LISTED)
         .bind(user_id.to_string())
         .bind(now.to_string())
         .fetch_one(reader.executor())
         .await?;
-    let count = u64::try_from(count).map_err(|_| invariant("count"))?;
-    Ok((devices, count))
+    u64::try_from(count).map_err(|_| invariant("count"))
 }
 
 fn record_from(row: &SqliteRow) -> Result<TrustedDeviceRecord, TrustedDeviceError> {

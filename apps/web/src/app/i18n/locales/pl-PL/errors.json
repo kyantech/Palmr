@@ -41,6 +41,7 @@
     "passwordPolicy": "Hasło nie spełnia wymagań tej instancji.",
     "emailTaken": "Ten adres e-mail jest już używany.",
     "usernameTaken": "Ta nazwa użytkownika jest już używana.",
+    "userNotFound": "Ten użytkownik nie istnieje.",
     "serverBusy": "Palmr jest teraz zajęty. Spróbuj ponownie za chwilę.",
     "fileNotFound": "Ten plik już nie istnieje.",
     "rangeNotSatisfiable": "Żądana część pliku jest niedostępna. Rozpocznij pobieranie od nowa.",

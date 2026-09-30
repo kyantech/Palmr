@@ -8,11 +8,12 @@ use http::header::{CACHE_CONTROL, CONTENT_TYPE, ETAG};
 use http::{HeaderValue, Method, StatusCode};
 use serde_json::{json, Value};
 use utoipa::openapi::info::{Info, LicenseBuilder};
-use utoipa::openapi::path::{Operation, PathItem};
+use utoipa::openapi::path::{Operation, Parameter, PathItem};
 use utoipa::openapi::schema::{Components, Schema};
 use utoipa::openapi::security::{ApiKey, ApiKeyValue, SecurityRequirement, SecurityScheme};
 use utoipa::openapi::{OpenApi, OpenApiVersion, RefOr};
 use utoipa::{PartialSchema, ToSchema};
+use utoipa_axum::router::UtoipaMethodRouter;
 use utoipa_axum::routes;
 use utoipa_scalar::Scalar;
 
@@ -203,6 +204,22 @@ pub fn operations(item: &PathItem) -> impl Iterator<Item = (Method, &Operation)>
     ]
     .into_iter()
     .filter_map(|(method, operation)| operation.as_ref().map(|operation| (method, operation)))
+}
+
+pub(crate) fn with_query_parameters<S>(
+    route: UtoipaMethodRouter<S>,
+    parameters: &[Parameter],
+) -> UtoipaMethodRouter<S> {
+    let (schemas, mut paths, handler) = route;
+    for item in paths.paths.values_mut() {
+        for (_, operation) in operations_mut(item) {
+            operation
+                .parameters
+                .get_or_insert_with(Vec::new)
+                .extend(parameters.iter().cloned());
+        }
+    }
+    (schemas, paths, handler)
 }
 
 pub(super) fn operations_mut(

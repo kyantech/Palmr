@@ -50,7 +50,7 @@ use crate::features::settings::{
     EffectiveSettingsService, OperatorPolicy, SettingsError, SettingsHandle, SettingsService,
 };
 use crate::features::setup::SetupService;
-use crate::features::users::ProfileService;
+use crate::features::users::{AdminUserService, ProfileService};
 use crate::infra::crypto::hkdf::KeyRing;
 use crate::infra::crypto::instance_key::{InstanceKey, InstanceKeyError, KeyOrigin};
 use crate::infra::crypto::CryptoError;
@@ -808,6 +808,13 @@ async fn initialize(
         auth.clone(),
         audit_service.clone(),
     );
+    let admin_users = AdminUserService::new(
+        database.pools().clone(),
+        Arc::clone(&clock),
+        settings.clone(),
+        Arc::clone(&email_keys),
+        sessions.clone(),
+    );
     let totp = TotpService::new(
         database.pools().clone(),
         Arc::clone(&clock),
@@ -845,6 +852,7 @@ async fn initialize(
     let services = RequestServices {
         auth,
         profile,
+        admin_users,
         totp,
         password_reset,
         invites,
@@ -1087,6 +1095,7 @@ pub(crate) fn setup_locale(config: &OperatorConfig) -> Option<LocaleCode> {
 struct RequestServices {
     auth: AuthService,
     profile: ProfileService,
+    admin_users: AdminUserService,
     totp: TotpService,
     password_reset: PasswordResetService,
     invites: InviteService,
@@ -1119,6 +1128,7 @@ fn composed_router(
         Some(services) => routes
             .layer(axum::Extension(services.auth))
             .layer(axum::Extension(services.profile))
+            .layer(axum::Extension(services.admin_users))
             .layer(axum::Extension(services.totp))
             .layer(axum::Extension(services.password_reset))
             .layer(axum::Extension(services.invites))

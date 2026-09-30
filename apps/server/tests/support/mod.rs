@@ -1,4 +1,5 @@
 mod application;
+pub mod client;
 mod process;
 mod rng;
 pub mod schema;

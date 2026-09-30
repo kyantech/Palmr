@@ -651,6 +651,7 @@ pub fn application_routes() -> Routes<AppState> {
         .merge(setup::routes::routes())
         .merge(settings::routes::routes())
         .merge(users::routes::routes())
+        .merge(users::admin_routes::routes())
         .merge(openapi::routes())
 }
 

@@ -41,6 +41,7 @@
     "passwordPolicy": "A senha não atende aos requisitos desta instância.",
     "emailTaken": "Este endereço de e-mail já está em uso.",
     "usernameTaken": "Este nome de usuário já está em uso.",
+    "userNotFound": "Este usuário não existe.",
     "serverBusy": "O Palmr está ocupado no momento. Tente novamente em instantes.",
     "fileNotFound": "Este arquivo não existe mais.",
     "rangeNotSatisfiable": "A parte solicitada do arquivo não está disponível. Inicie o download novamente.",

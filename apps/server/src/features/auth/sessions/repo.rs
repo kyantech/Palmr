@@ -94,6 +94,10 @@ const SELECT_SUMMARY: &str = "SELECT id, auth_method, created_at, last_seen_at, 
       FROM sessions
       WHERE id = ?1 AND user_id = ?2";
 
+pub(super) const COUNT_ACTIVE: &str = "SELECT COUNT(*) FROM sessions
+    WHERE user_id = ?1 AND state = 'active' AND revoked_at IS NULL
+      AND idle_expires_at > ?2 AND absolute_expires_at > ?2";
+
 const OWNED_EXISTS: &str = "SELECT EXISTS(SELECT 1 FROM sessions WHERE id = ?1 AND user_id = ?2)";
 
 const REVOKE_ALL: &str = "UPDATE sessions
@@ -443,17 +447,21 @@ pub async fn list_active(
         .map(summary_from)
         .collect::<Result<Vec<_>, _>>()?;
 
-    let count: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM sessions
-          WHERE user_id = ?1 AND state = 'active' AND revoked_at IS NULL
-            AND idle_expires_at > ?2 AND absolute_expires_at > ?2",
-    )
-    .bind(user_id.to_string())
-    .bind(now.to_string())
-    .fetch_one(reader.executor())
-    .await?;
-    let count = u64::try_from(count).map_err(|_| invariant("count"))?;
+    let count = count_active(reader, user_id, now).await?;
     Ok((sessions, count))
+}
+
+pub async fn count_active(
+    reader: &ReadPool,
+    user_id: UserId,
+    now: Timestamp,
+) -> Result<u64, SessionError> {
+    let count: i64 = sqlx::query_scalar(COUNT_ACTIVE)
+        .bind(user_id.to_string())
+        .bind(now.to_string())
+        .fetch_one(reader.executor())
+        .await?;
+    u64::try_from(count).map_err(|_| invariant("count"))
 }
 
 fn resolved_from(row: &SqliteRow) -> Result<ResolvedSession, SessionError> {

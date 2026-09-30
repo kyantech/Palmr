@@ -41,6 +41,7 @@
     "passwordPolicy": "Kata sandi tidak memenuhi persyaratan instans ini.",
     "emailTaken": "Alamat e-mail ini sudah digunakan.",
     "usernameTaken": "Nama pengguna ini sudah digunakan.",
+    "userNotFound": "Pengguna ini tidak ada.",
     "serverBusy": "Palmr sedang sibuk. Coba lagi sebentar lagi.",
     "fileNotFound": "File ini sudah tidak ada.",
     "rangeNotSatisfiable": "Bagian file yang diminta tidak tersedia. Mulai ulang unduhan.",

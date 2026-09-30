@@ -70,6 +70,7 @@ export const RETRY_CLASS: Readonly<Record<ErrorCode, RetryClass>> = {
   SETUP_ALREADY_COMPLETED: "never",
   USER_EMAIL_TAKEN: "never",
   USER_USERNAME_TAKEN: "never",
+  USER_NOT_FOUND: "never",
   FILE_NOT_FOUND: "never",
   RANGE_NOT_SATISFIABLE: "never",
   STORAGE_PROVIDER_MISMATCH: "never",

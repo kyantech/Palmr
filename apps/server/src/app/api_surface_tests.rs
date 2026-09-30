@@ -1,5 +1,6 @@
 use std::collections::BTreeSet;
 
+use http::Method;
 use serde_json::{json, Value};
 use utoipa_axum::routes;
 
@@ -9,6 +10,7 @@ use super::router::{
     application_routes, RateLimitClass, RouteInventory, RoutePolicy, Routes, Transport,
 };
 use crate::config::{EnvironmentSource, OperatorConfig};
+use crate::features::users::admin_service::USER_SORT;
 
 const PUBLIC_ROUTES_GOLDEN: &str = include_str!("../../../../tests/snapshots/public_routes.txt");
 
@@ -645,4 +647,327 @@ fn unit_storage_primitive_gate_allows_the_admin_storage_status_route() {
     );
     assert!(!in_namespace("/api/v1/storageinfo", "/api/v1/storage"));
     assert!(in_namespace("/S3/anything", "/s3"));
+}
+
+const AUTHORIZATION_DIRECTORIES: [&str; 5] = [
+    "app",
+    "infra/http",
+    "infra/ratelimit",
+    "features/auth/sessions",
+    "features/setup",
+];
+
+const AUTHORIZATION_MARKERS: [&str; 4] = [
+    "AuthClass",
+    "enforce_class",
+    "AuthenticatedPrincipal",
+    "extractors::",
+];
+
+const REQUIRED_AUTHORIZATION_FILES: [&str; 7] = [
+    "app/auth_class.rs",
+    "app/router.rs",
+    "infra/http/extractors.rs",
+    "infra/http/csrf.rs",
+    "features/auth/sessions/service.rs",
+    "features/users/admin_routes.rs",
+    "features/users/admin_service.rs",
+];
+
+const SOURCE_SCAN_CAP: u64 = 1024 * 1024;
+
+fn is_test_source(path: &std::path::Path) -> bool {
+    let name = path
+        .file_name()
+        .map(|name| name.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    name == "tests.rs"
+        || name.ends_with("_tests.rs")
+        || path
+            .components()
+            .any(|part| matches!(part.as_os_str().to_str(), Some("tests" | "flow_tests")))
+}
+
+fn authorization_sources() -> Vec<(String, String)> {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
+    let mut pending = vec![root.clone()];
+    let mut sources = Vec::new();
+    while let Some(directory) = pending.pop() {
+        for entry in std::fs::read_dir(&directory).unwrap() {
+            let path = entry.unwrap().path();
+            if path.is_dir() {
+                pending.push(path);
+                continue;
+            }
+            if path.extension().is_none_or(|ext| ext != "rs") || is_test_source(&path) {
+                continue;
+            }
+            let relative = path
+                .strip_prefix(&root)
+                .unwrap()
+                .to_string_lossy()
+                .into_owned();
+            let mut source = String::new();
+            std::io::Read::read_to_string(
+                &mut std::io::Read::take(std::fs::File::open(&path).unwrap(), SOURCE_SCAN_CAP),
+                &mut source,
+            )
+            .unwrap();
+            let in_scope = AUTHORIZATION_DIRECTORIES
+                .iter()
+                .any(|directory| relative.starts_with(&format!("{directory}/")))
+                || AUTHORIZATION_MARKERS
+                    .iter()
+                    .any(|marker| source.contains(marker));
+            if in_scope {
+                sources.push((relative, source));
+            }
+        }
+    }
+    sources.sort();
+    sources
+}
+
+const USER_COUNT_TOKENS: [&str; 14] = [
+    "count(*) from users",
+    "count(1) from users",
+    "count(id) from users",
+    "from users limit",
+    "count_active_admins",
+    "count_users",
+    "users_count",
+    "user_count",
+    "usercount",
+    "first_user",
+    "only_user",
+    "single_user",
+    "zero_users",
+    "users.len()",
+];
+
+fn user_count_violations<N: AsRef<str>, S: AsRef<str>>(sources: &[(N, S)]) -> Vec<String> {
+    let mut violations = Vec::new();
+    for (name, source) in sources {
+        let (name, source) = (name.as_ref(), source.as_ref());
+        let production = source
+            .split("#[cfg(test)]")
+            .next()
+            .unwrap_or_default()
+            .to_ascii_lowercase()
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ");
+        for token in USER_COUNT_TOKENS {
+            if production.contains(token) {
+                violations.push(format!("{name} reads a user count via {token:?}"));
+            }
+        }
+    }
+    violations
+}
+
+#[test]
+fn svc_no_user_count_in_authorization() {
+    let sources = authorization_sources();
+    let names: Vec<&str> = sources.iter().map(|(name, _)| name.as_str()).collect();
+    for required in REQUIRED_AUTHORIZATION_FILES {
+        assert!(names.contains(&required), "{required} is not scanned");
+    }
+    for (name, source) in &sources {
+        if AUTHORIZATION_MARKERS
+            .iter()
+            .any(|marker| source.contains(marker))
+        {
+            assert!(names.contains(&name.as_str()));
+        }
+    }
+    assert!(sources.len() >= 30, "{}", sources.len());
+    assert_eq!(user_count_violations(&sources), Vec::<String>::new());
+}
+
+#[test]
+fn unit_user_count_gate_detects_count_based_relaxation() {
+    let planted = [
+        (
+            "planted/admin_pre_validation.rs",
+            "let users = query_scalar(\"SELECT COUNT(*)  FROM users\");\nif users <= 1 { return next.run(request).await; }",
+        ),
+        ("planted/first.rs", "if is_first_user { skip_auth(); }"),
+        ("planted/clean.rs", "let role = principal.role;"),
+    ];
+    assert_eq!(
+        user_count_violations(&planted),
+        [
+            "planted/admin_pre_validation.rs reads a user count via \"count(*) from users\"",
+            "planted/first.rs reads a user count via \"first_user\"",
+        ]
+    );
+}
+
+#[test]
+fn unit_admin_namespace_is_admin_classed_and_never_public() {
+    let inventory = application_inventory();
+    let mut admin_routes = 0;
+    for entry in inventory.entries() {
+        if entry.path().starts_with("/api/v1/admin/") || entry.path() == "/api/v1/admin" {
+            assert!(
+                matches!(
+                    entry.policy().auth(),
+                    AuthClass::Admin | AuthClass::AdminRecentAuth
+                ),
+                "{} {} is {}",
+                entry.method(),
+                entry.path(),
+                entry.policy().auth()
+            );
+            admin_routes += 1;
+        }
+    }
+    assert!(admin_routes >= 7);
+    assert!(!PUBLIC_ROUTES_GOLDEN.contains("/api/v1/admin"));
+}
+
+#[test]
+fn unit_admin_user_read_routes_are_declared_admin_and_read_limited() {
+    let inventory = application_inventory();
+    for path in [
+        "/api/v1/admin/users",
+        "/api/v1/admin/users/{id}",
+        "/api/v1/admin/users/{userId}/sessions",
+    ] {
+        let matching: Vec<_> = inventory
+            .entries()
+            .iter()
+            .filter(|entry| entry.path() == path)
+            .collect();
+        assert_eq!(matching.len(), 1, "{path}");
+        let entry = matching[0];
+        assert_eq!(*entry.method(), Method::GET, "{path}");
+        assert_eq!(entry.policy().auth(), AuthClass::Admin, "{path}");
+        assert_eq!(entry.policy().rate_limit(), RateLimitClass::Read, "{path}");
+        assert_eq!(entry.policy().transport(), Transport::ControlPlane);
+    }
+}
+
+fn parameter<'a>(operation: &'a Value, name: &str) -> &'a Value {
+    operation["parameters"]
+        .as_array()
+        .and_then(|parameters| {
+            parameters
+                .iter()
+                .find(|parameter| parameter["name"] == name)
+        })
+        .unwrap_or_else(|| panic!("parameter {name} is not declared"))
+}
+
+#[test]
+fn it_openapi_admin_user_read_routes_declare_closed_typed_contracts() {
+    let document = application_document();
+    let list = &document["paths"]["/api/v1/admin/users"]["get"];
+    let detail = &document["paths"]["/api/v1/admin/users/{id}"]["get"];
+    let sessions = &document["paths"]["/api/v1/admin/users/{userId}/sessions"]["get"];
+
+    for operation in [list, detail, sessions] {
+        assert!(operation["tags"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|tag| tag == "admin"));
+        assert_eq!(operation["security"], json!([{ "palmrSession": [] }]));
+        for status in ["401", "403", "429"] {
+            assert!(operation["responses"][status].is_object(), "{status}");
+        }
+    }
+
+    assert_eq!(
+        parameter(list, "sort")["schema"]["enum"],
+        json!(USER_SORT.values())
+    );
+    assert_eq!(
+        parameter(list, "sort")["schema"]["default"],
+        "createdAt:desc"
+    );
+    assert_eq!(
+        parameter(list, "role")["schema"]["enum"],
+        json!(["admin", "user"])
+    );
+    assert_eq!(
+        parameter(list, "status")["schema"]["enum"],
+        json!(["active", "inactive"])
+    );
+    assert_eq!(parameter(list, "q")["schema"]["minLength"], 2);
+    assert_eq!(parameter(list, "q")["schema"]["maxLength"], 128);
+    assert_eq!(parameter(list, "limit")["schema"]["default"], 50);
+    assert_eq!(parameter(list, "limit")["schema"]["maximum"], 200);
+    assert_eq!(parameter(list, "cursor")["schema"]["type"], "string");
+    assert_eq!(
+        parameter(sessions, "sort")["schema"]["enum"],
+        json!(["lastSeenAt:asc", "lastSeenAt:desc"])
+    );
+    assert_eq!(parameter(detail, "id")["in"], "path");
+    assert_eq!(parameter(sessions, "userId")["in"], "path");
+
+    for operation in [detail, sessions] {
+        assert!(operation["responses"]["404"]["description"]
+            .as_str()
+            .unwrap()
+            .contains("USER_NOT_FOUND"));
+    }
+    assert!(list["responses"]["400"]["description"]
+        .as_str()
+        .unwrap()
+        .contains("CURSOR_INVALID"));
+
+    let schemas = &document["components"]["schemas"];
+    let item = &schemas["AdminUserItem"];
+    let required: Vec<&str> = item["required"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(Value::as_str)
+        .collect();
+    for field in ["quotaBytes", "effectiveQuotaBytes", "usedBytes", "counts"] {
+        assert!(required.contains(&field), "{field}");
+    }
+    assert_eq!(
+        item["properties"]["usedBytes"],
+        json!({ "$ref": "#/components/schemas/ByteCount" })
+    );
+    for field in ["quotaBytes", "effectiveQuotaBytes"] {
+        assert_eq!(
+            item["properties"][field],
+            json!({ "oneOf": [{ "type": "null" }, { "$ref": "#/components/schemas/ByteCount" }] }),
+            "{field}"
+        );
+    }
+    assert_eq!(schemas["ByteCount"]["maximum"], 9_007_199_254_740_991_u64);
+    assert_eq!(schemas["ByteCount"]["format"], "int64");
+    let detail_extras = &schemas["AdminUserDetail"]["allOf"][1];
+    assert_eq!(
+        detail_extras["required"],
+        json!([
+            "overQuota",
+            "sessionCount",
+            "trustedDeviceCount",
+            "lockout",
+            "identityLinks"
+        ])
+    );
+    let serialized = serde_json::to_string(&document).unwrap();
+    for forbidden in [
+        "passwordHash",
+        "password_hash",
+        "tokenHash",
+        "totpSecret",
+        "clientSecret",
+        "backupCode",
+    ] {
+        assert!(
+            !schemas["AdminUserItem"].to_string().contains(forbidden)
+                && !schemas["AdminUserDetail"].to_string().contains(forbidden)
+                && !schemas["AdminIdentityLink"].to_string().contains(forbidden),
+            "{forbidden}"
+        );
+    }
+    assert!(serialized.contains("USER_NOT_FOUND"));
 }

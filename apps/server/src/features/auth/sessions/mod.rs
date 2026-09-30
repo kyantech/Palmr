@@ -10,7 +10,7 @@ pub use error::SessionError;
 pub use model::NewSession;
 pub use model::{
     AuthMethod, AuthenticatedPrincipal, MfaChallenge, MintedSession, PendingSession,
-    PreparedMfaChallenge, PreparedSessionCredentials, RevokedReason, SessionClient,
+    PreparedMfaChallenge, PreparedSessionCredentials, RevokedReason, SessionClient, SessionItem,
     SessionRestriction, SessionSummary,
 };
 pub use prune::register_jobs;

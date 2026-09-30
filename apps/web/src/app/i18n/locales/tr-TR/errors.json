@@ -41,6 +41,7 @@
     "passwordPolicy": "Parola bu örneğin gereksinimlerini karşılamıyor.",
     "emailTaken": "Bu e-posta adresi zaten kullanılıyor.",
     "usernameTaken": "Bu kullanıcı adı zaten kullanılıyor.",
+    "userNotFound": "Bu kullanıcı mevcut değil.",
     "serverBusy": "Palmr şu anda meşgul. Birazdan tekrar deneyin.",
     "fileNotFound": "Bu dosya artık mevcut değil.",
     "rangeNotSatisfiable": "Dosyanın istenen bölümü kullanılamıyor. İndirmeyi yeniden başlatın.",

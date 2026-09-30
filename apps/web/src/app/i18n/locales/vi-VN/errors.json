@@ -41,6 +41,7 @@
     "passwordPolicy": "Mật khẩu không đáp ứng yêu cầu của phiên bản này.",
     "emailTaken": "Địa chỉ e-mail này đã được sử dụng.",
     "usernameTaken": "Tên người dùng này đã được sử dụng.",
+    "userNotFound": "Người dùng này không tồn tại.",
     "serverBusy": "Palmr hiện đang bận. Hãy thử lại sau giây lát.",
     "fileNotFound": "Tệp này không còn tồn tại.",
     "rangeNotSatisfiable": "Phần tệp được yêu cầu không khả dụng. Hãy bắt đầu tải xuống lại.",

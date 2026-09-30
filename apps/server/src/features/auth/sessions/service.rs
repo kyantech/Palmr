@@ -472,6 +472,10 @@ impl SessionService {
         Ok(())
     }
 
+    pub fn sort_parameter() -> utoipa::openapi::path::Parameter {
+        SESSION_SORT.parameter()
+    }
+
     pub fn page_request(
         &self,
         raw_query: Option<&str>,
@@ -485,9 +489,18 @@ impl SessionService {
         principal: &AuthenticatedPrincipal,
         page: PageRequest,
     ) -> Result<Page<SessionItem>, SessionError> {
+        self.list_for_user(principal.user_id, principal.session_id, page)
+            .await
+    }
+
+    pub async fn list_for_user(
+        &self,
+        user_id: UserId,
+        current: SessionId,
+        page: PageRequest,
+    ) -> Result<Page<SessionItem>, SessionError> {
         let now = Timestamp::try_from(self.clock.now())?;
-        let (rows, count) =
-            repo::list_active(self.pools.reader(), principal.user_id, now, &page).await?;
+        let (rows, count) = repo::list_active(self.pools.reader(), user_id, now, &page).await?;
         Ok(page
             .into_page(
                 rows,
@@ -500,7 +513,12 @@ impl SessionService {
                 },
                 TotalCount::Exact(count),
             )
-            .map_items(|row| SessionItem::from_summary(row, principal.session_id)))
+            .map_items(|row| SessionItem::from_summary(row, current)))
+    }
+
+    pub async fn count_active(&self, user_id: UserId) -> Result<u64, SessionError> {
+        let now = Timestamp::try_from(self.clock.now())?;
+        repo::count_active(self.pools.reader(), user_id, now).await
     }
 
     pub async fn revoke_one(

@@ -138,6 +138,8 @@ error_catalog! {
         "The invite was already used";
     InviteRevoked = "INVITE_REVOKED", GONE, retryable: false,
         "The invite was revoked";
+    UserNotFound = "USER_NOT_FOUND", NOT_FOUND, retryable: false,
+        "The user was not found";
     UserEmailTaken = "USER_EMAIL_TAKEN", CONFLICT, retryable: false,
         "The e-mail address is already in use";
     UserUsernameTaken = "USER_USERNAME_TAKEN", CONFLICT, retryable: false,

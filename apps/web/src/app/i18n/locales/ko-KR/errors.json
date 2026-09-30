@@ -41,6 +41,7 @@
     "passwordPolicy": "비밀번호가 이 인스턴스의 요구 사항을 충족하지 않습니다.",
     "emailTaken": "이 이메일 주소는 이미 사용 중입니다.",
     "usernameTaken": "이 사용자 이름은 이미 사용 중입니다.",
+    "userNotFound": "이 사용자는 존재하지 않습니다.",
     "serverBusy": "Palmr가 현재 바쁩니다. 잠시 후 다시 시도하세요.",
     "fileNotFound": "이 파일은 더 이상 존재하지 않습니다.",
     "rangeNotSatisfiable": "요청한 파일 부분을 사용할 수 없습니다. 다운로드를 다시 시작하세요.",

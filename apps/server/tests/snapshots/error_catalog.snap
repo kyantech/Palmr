@@ -283,6 +283,11 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "USER_NOT_FOUND",
+    "status": 404,
+    "retryable": false
+  },
+  {
     "code": "USER_USERNAME_TAKEN",
     "status": 409,
     "retryable": false
