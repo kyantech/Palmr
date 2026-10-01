@@ -132,6 +132,38 @@ export interface paths {
         patch: operations["patch_security"];
         trace?: never;
     };
+    "/api/v1/admin/settings/smtp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_smtp"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["patch_smtp"];
+        trace?: never;
+    };
+    "/api/v1/admin/settings/smtp/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_smtp_test"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/users": {
         parameters: {
             query?: never;
@@ -933,6 +965,7 @@ export interface components {
             "public-links": components["schemas"]["PublicLinkSettings"];
             quotas: components["schemas"]["QuotaSettings"];
             security: components["schemas"]["SecuritySettings"];
+            smtp: components["schemas"]["SmtpSettings"];
         };
         AdminUserCounts: {
             /** Format: int64 */
@@ -1160,7 +1193,7 @@ export interface components {
             enrollmentId: string;
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN";
+        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN" | "SMTP_TEST_FAILED";
         ForgotPasswordRequest: {
             /** @example ada@example.com */
             identifier: string;
@@ -1659,6 +1692,89 @@ export interface components {
             /** @example admin */
             role: string;
             username: string;
+        };
+        SmtpPatch: {
+            allowSelfSignedCertificate?: boolean;
+            enabled?: boolean;
+            /**
+             * @description Absent leaves it unchanged; explicit `null` clears it.
+             * @example palmr@example.com
+             */
+            fromEmail?: string | null;
+            /** @description Absent leaves it unchanged; explicit `null` clears it. */
+            fromName?: string | null;
+            /**
+             * @description A DNS name or IP address. Absent leaves it unchanged; explicit `null` clears it.
+             * @example smtp.example.com
+             */
+            host?: string | null;
+            noAuth?: boolean;
+            /** @description Write-only. Absent leaves the stored password unchanged, a string replaces it and explicit `null` clears it. */
+            password?: string | null;
+            /**
+             * Format: int32
+             * @example 587
+             */
+            port?: number;
+            security?: components["schemas"]["SmtpSecurity"];
+            /** @description Absent leaves it unchanged; explicit `null` clears it. */
+            username?: string | null;
+        };
+        /** @enum {string} */
+        SmtpSecurity: "starttls" | "implicit" | "none";
+        SmtpSettings: {
+            allowSelfSignedCertificate: boolean;
+            enabled: boolean;
+            /** @example palmr@example.com */
+            fromEmail: string | null;
+            /** @example Palmr */
+            fromName: string | null;
+            /** @example smtp.example.com */
+            host: string | null;
+            noAuth: boolean;
+            /** @description Whether a password is stored. The password itself is write-only and never returned. */
+            passwordConfigured: boolean;
+            /**
+             * Format: int32
+             * @example 587
+             */
+            port: number;
+            security: components["schemas"]["SmtpSecurity"];
+            username: string | null;
+        };
+        SmtpTestRequest: {
+            /**
+             * @description The recipient of the test message.
+             * @example ada@example.com
+             */
+            to: string;
+            useUnsavedSettings?: null | components["schemas"]["SmtpUnsavedSettings"];
+        };
+        SmtpTestResult: {
+            /** Format: int64 */
+            durationMs: number;
+            ok: boolean;
+            /** @description Only the stages the chosen security mode actually executes, in order. */
+            stages: components["schemas"]["SmtpTestStage"][];
+        };
+        SmtpTestStage: {
+            name: components["schemas"]["SmtpTestStageName"];
+            ok: boolean;
+        };
+        /** @enum {string} */
+        SmtpTestStageName: "connect" | "starttls" | "auth" | "send";
+        SmtpUnsavedSettings: {
+            allowSelfSignedCertificate?: boolean;
+            fromEmail: string;
+            fromName?: string | null;
+            host: string;
+            noAuth?: boolean;
+            /** @description Write-only; used for this test only and never stored or echoed. */
+            password?: string | null;
+            /** Format: int32 */
+            port: number;
+            security: components["schemas"]["SmtpSecurity"];
+            username?: string | null;
         };
         /** @enum {string} */
         StorageHealthStatus: "ok" | "degraded" | "down";
@@ -2580,6 +2696,220 @@ export interface operations {
             };
             /** @description Rate limited. */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    get_smtp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The current `smtp` group. The password is write-only: only `passwordConfigured` is returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmtpSettings"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    patch_smtp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Any subset of the `smtp` members. An absent member is left unchanged; an explicit `null` clears `host`, `username`, `fromName`, `fromEmail` and the write-only `password`. A `password` string replaces the stored secret, which is sealed at rest and never returned. A configuration may be saved incomplete while `enabled` is false; the result of a patch that leaves `enabled` true must have a host, a valid `fromEmail` and, unless `noAuth` is true, a username and a password. Every member is validated before anything is written; the changed members are then written and audited as `SMTP_SETTINGS_CHANGED` (the password and username as presence transitions only) in one transaction and take effect on the next request. A member equal to its current value is not written and not audited. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SmtpPatch"];
+            };
+        };
+        responses: {
+            /** @description The group after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmtpSettings"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role or recent authentication (`AUTH_RECENT_AUTH_REQUIRED`) required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `SETTING_UNKNOWN` for a member the group does not define, `SETTING_VALUE_INVALID` (`details.key`) for a wrong type, an invalid value, or a member that the enabled configuration requires (`details.requiredWhenEnabled`), or `VALIDATION_ERROR` when the body is not an object. Nothing is written. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    post_smtp_test: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Sends one test message inline, with a hard 20-second total deadline, and reports each transport stage that ran. It is the single synchronous e-mail send in Palmr: it never uses the outbox. Without `useUnsavedSettings` the saved configuration is tested, whether or not it is enabled. With it, only the supplied values are used: they are not persisted, not audited and never combined with the saved password. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SmtpTestRequest"];
+            };
+        };
+        responses: {
+            /** @description The message was accepted by the SMTP server. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SmtpTestResult"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `VALIDATION_ERROR` for an invalid recipient or unsaved value, or for a saved configuration that lacks the host, sender or credentials a send needs. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited (`rl.email.test`, instance-wide). */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `SMTP_TEST_FAILED`: `details.stage` is one of `connect`, `starttls`, `auth` or `send`, and the message is a fixed sanitized description that never echoes credentials or server text. */
+            502: {
                 headers: {
                     [name: string]: unknown;
                 };

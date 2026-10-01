@@ -2,10 +2,14 @@ use std::fmt;
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Mutex;
+use std::time::Duration;
 
 use lettre::message::{Mailbox, MultiPart};
-use lettre::transport::smtp::authentication::Credentials;
-use lettre::transport::smtp::client::{CertificateStore, Tls, TlsParameters, TlsParametersBuilder};
+use lettre::transport::smtp::authentication::{Credentials, DEFAULT_MECHANISMS};
+use lettre::transport::smtp::client::{
+    AsyncSmtpConnection, CertificateStore, Tls, TlsParameters, TlsParametersBuilder,
+};
+use lettre::transport::smtp::extension::ClientId;
 use lettre::{Address, AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
 
 use super::error::{
@@ -79,24 +83,72 @@ impl fmt::Debug for SmtpConfig {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SmtpGap {
+    Host,
+    FromEmail,
+    Username,
+    Password,
+}
+
+impl SmtpGap {
+    pub const fn field(self) -> &'static str {
+        match self {
+            Self::Host => "host",
+            Self::FromEmail => "fromEmail",
+            Self::Username => "username",
+            Self::Password => "password",
+        }
+    }
+}
+
+struct Resolved<'a> {
+    host: &'a str,
+    from_email: Email,
+    credentials: Option<(&'a str, &'a Secret<String>)>,
+}
+
 impl SmtpConfig {
     pub fn from_settings(settings: &SmtpSettings) -> Result<Self, TransportError> {
         if !settings.enabled {
             return Err(TransportError::NotConfigured);
         }
+        Self::resolve(settings).map_err(|_| TransportError::InvalidConfiguration)
+    }
+
+    pub fn resolve(settings: &SmtpSettings) -> Result<Self, SmtpGap> {
+        let resolved = Self::parts(settings)?;
+        Ok(Self {
+            host: resolved.host.to_owned(),
+            port: settings.port,
+            security: settings.security,
+            username: resolved
+                .credentials
+                .map(|(username, _)| username.to_owned()),
+            password: resolved.credentials.map(|(_, password)| password.clone()),
+            from_name: settings.from_name.clone(),
+            from_email: resolved.from_email,
+            allow_self_signed_certificate: settings.allow_self_signed_certificate,
+            no_auth: settings.no_auth,
+        })
+    }
+
+    pub fn gap(settings: &SmtpSettings) -> Option<SmtpGap> {
+        Self::parts(settings).err()
+    }
+
+    fn parts(settings: &SmtpSettings) -> Result<Resolved<'_>, SmtpGap> {
         let host = settings
             .host
             .as_deref()
             .filter(|host| !host.trim().is_empty())
-            .ok_or(TransportError::InvalidConfiguration)?
-            .to_owned();
+            .ok_or(SmtpGap::Host)?;
         let from_email = settings
             .from_email
             .as_deref()
-            .ok_or(TransportError::InvalidConfiguration)
-            .and_then(|address| {
-                Email::parse(address).map_err(|_| TransportError::InvalidConfiguration)
-            })?;
+            .and_then(|address| Email::parse(address).ok())
+            .filter(|email| email.as_str().parse::<Address>().is_ok())
+            .ok_or(SmtpGap::FromEmail)?;
         let credentials = if settings.no_auth {
             None
         } else {
@@ -104,23 +156,14 @@ impl SmtpConfig {
                 .username
                 .as_deref()
                 .filter(|username| !username.is_empty())
-                .ok_or(TransportError::InvalidConfiguration)?;
-            let password = settings
-                .password
-                .as_ref()
-                .ok_or(TransportError::InvalidConfiguration)?;
-            Some((username.to_owned(), password.clone()))
+                .ok_or(SmtpGap::Username)?;
+            let password = settings.password.as_ref().ok_or(SmtpGap::Password)?;
+            Some((username, password))
         };
-        Ok(Self {
+        Ok(Resolved {
             host,
-            port: settings.port,
-            security: settings.security,
-            username: credentials.as_ref().map(|(username, _)| username.clone()),
-            password: credentials.map(|(_, password)| password),
-            from_name: settings.from_name.clone(),
             from_email,
-            allow_self_signed_certificate: settings.allow_self_signed_certificate,
-            no_auth: settings.no_auth,
+            credentials,
         })
     }
 }
@@ -143,12 +186,134 @@ pub struct OutboundMessage {
 pub type TransportFuture<'a> =
     Pin<Box<dyn Future<Output = Result<(), TransportError>> + Send + 'a>>;
 
+pub type ProbeFuture<'a> = Pin<Box<dyn Future<Output = Result<(), ProbeFailure>> + Send + 'a>>;
+
 pub trait EmailTransport: Send + Sync + 'static {
     fn send<'a>(
         &'a self,
         config: &'a SmtpConfig,
         message: &'a OutboundMessage,
     ) -> TransportFuture<'a>;
+
+    fn probe<'a>(
+        &'a self,
+        config: &'a SmtpConfig,
+        message: &'a OutboundMessage,
+        progress: &'a StageTracker,
+    ) -> ProbeFuture<'a>;
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Stage {
+    Connect,
+    Starttls,
+    Auth,
+    Send,
+}
+
+impl Stage {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Connect => "connect",
+            Self::Starttls => "starttls",
+            Self::Auth => "auth",
+            Self::Send => "send",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FailureReason {
+    Unreachable,
+    TimedOut,
+    Tls,
+    StarttlsUnsupported,
+    NoAuthMechanism,
+    CredentialsRejected,
+    AuthDeferred,
+    MessageRejected,
+    MessageDeferred,
+    Protocol,
+}
+
+impl FailureReason {
+    pub const fn message(self) -> &'static str {
+        match self {
+            Self::Unreachable => "Could not connect to the SMTP server.",
+            Self::TimedOut => "The SMTP server did not respond in time.",
+            Self::Tls => "The TLS handshake failed. Check the certificate and the security mode.",
+            Self::StarttlsUnsupported => "The SMTP server does not offer STARTTLS.",
+            Self::NoAuthMechanism => {
+                "The SMTP server offers no authentication mechanism Palmr supports."
+            }
+            Self::CredentialsRejected => "The SMTP server rejected the credentials.",
+            Self::AuthDeferred => "The SMTP server could not process the credentials right now.",
+            Self::MessageRejected => "The SMTP server rejected the message.",
+            Self::MessageDeferred => "The SMTP server deferred the message.",
+            Self::Protocol => "The SMTP server sent an unexpected response.",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ProbeFailure {
+    pub stage: Stage,
+    pub reason: FailureReason,
+}
+
+impl ProbeFailure {
+    pub const fn new(stage: Stage, reason: FailureReason) -> Self {
+        Self { stage, reason }
+    }
+}
+
+#[derive(Debug)]
+pub struct StageTracker {
+    state: Mutex<TrackerState>,
+}
+
+#[derive(Debug)]
+struct TrackerState {
+    current: Stage,
+    completed: Vec<Stage>,
+}
+
+impl Default for StageTracker {
+    fn default() -> Self {
+        Self {
+            state: Mutex::new(TrackerState {
+                current: Stage::Connect,
+                completed: Vec::new(),
+            }),
+        }
+    }
+}
+
+impl StageTracker {
+    pub fn enter(&self, stage: Stage) {
+        self.lock().current = stage;
+    }
+
+    pub fn pass(&self) {
+        let mut state = self.lock();
+        let current = state.current;
+        state.completed.push(current);
+    }
+
+    pub fn current(&self) -> Stage {
+        self.lock().current
+    }
+
+    pub fn completed(&self) -> Vec<Stage> {
+        self.lock().completed.clone()
+    }
+
+    fn lock(&self) -> std::sync::MutexGuard<'_, TrackerState> {
+        match self.state.lock() {
+            Ok(guard) => guard,
+            Err(poisoned) => poisoned.into_inner(),
+        }
+    }
 }
 
 #[derive(Debug, Default, Clone, Copy)]
@@ -170,6 +335,114 @@ impl EmailTransport for SmtpTransport {
                 .map_err(|_| TransportError::Delivery)
         })
     }
+
+    fn probe<'a>(
+        &'a self,
+        config: &'a SmtpConfig,
+        message: &'a OutboundMessage,
+        progress: &'a StageTracker,
+    ) -> ProbeFuture<'a> {
+        Box::pin(run_probe(config, message, progress))
+    }
+}
+
+const CONNECT_TIMEOUT: Duration = Duration::from_secs(20);
+
+async fn run_probe(
+    config: &SmtpConfig,
+    message: &OutboundMessage,
+    progress: &StageTracker,
+) -> Result<(), ProbeFailure> {
+    let email = build_message(config, message)
+        .map_err(|_| ProbeFailure::new(Stage::Send, FailureReason::MessageRejected))?;
+    let hello = ClientId::default();
+    let tls = match config.security {
+        SmtpSecurity::None => None,
+        SmtpSecurity::Starttls | SmtpSecurity::Implicit => Some(
+            tls_parameters(config)
+                .map_err(|_| ProbeFailure::new(Stage::Connect, FailureReason::Tls))?,
+        ),
+    };
+
+    progress.enter(Stage::Connect);
+    let wrapper = tls
+        .clone()
+        .filter(|_| config.security == SmtpSecurity::Implicit);
+    let mut connection = AsyncSmtpConnection::connect_tokio1(
+        (config.host.as_str(), config.port),
+        Some(CONNECT_TIMEOUT),
+        &hello,
+        wrapper,
+        None,
+    )
+    .await
+    .map_err(|error| failure(Stage::Connect, &error))?;
+    progress.pass();
+
+    if let Some(parameters) = tls.filter(|_| config.security == SmtpSecurity::Starttls) {
+        progress.enter(Stage::Starttls);
+        connection
+            .starttls(parameters, &hello)
+            .await
+            .map_err(|error| failure(Stage::Starttls, &error))?;
+        progress.pass();
+    }
+
+    if let (false, Some(username), Some(password)) =
+        (config.no_auth, &config.username, &config.password)
+    {
+        progress.enter(Stage::Auth);
+        let credentials = Credentials::new(username.clone(), password.expose_secret().clone());
+        connection
+            .auth(DEFAULT_MECHANISMS, &credentials)
+            .await
+            .map_err(|error| failure(Stage::Auth, &error))?;
+        progress.pass();
+    }
+
+    progress.enter(Stage::Send);
+    connection
+        .send(email.envelope(), &email.formatted())
+        .await
+        .map_err(|error| failure(Stage::Send, &error))?;
+    progress.pass();
+    drop(connection.quit().await);
+    Ok(())
+}
+
+fn failure(stage: Stage, error: &lettre::transport::smtp::Error) -> ProbeFailure {
+    let reason = if error.is_timeout() {
+        FailureReason::TimedOut
+    } else if error.is_tls() || caused_by_tls(error) {
+        FailureReason::Tls
+    } else {
+        match stage {
+            Stage::Connect => FailureReason::Unreachable,
+            Stage::Starttls if error.is_client() => FailureReason::StarttlsUnsupported,
+            Stage::Starttls => FailureReason::Tls,
+            Stage::Auth if error.is_client() => FailureReason::NoAuthMechanism,
+            Stage::Auth if error.is_permanent() => FailureReason::CredentialsRejected,
+            Stage::Auth if error.is_transient() => FailureReason::AuthDeferred,
+            Stage::Send if error.is_permanent() => FailureReason::MessageRejected,
+            Stage::Send if error.is_transient() => FailureReason::MessageDeferred,
+            Stage::Auth | Stage::Send => FailureReason::Protocol,
+        }
+    };
+    ProbeFailure::new(stage, reason)
+}
+
+fn caused_by_tls(error: &(dyn std::error::Error + 'static)) -> bool {
+    let mut current = Some(error);
+    while let Some(cause) = current {
+        let wrapped = cause
+            .downcast_ref::<std::io::Error>()
+            .and_then(std::io::Error::get_ref);
+        if cause.is::<rustls::Error>() || wrapped.is_some_and(|inner| inner.is::<rustls::Error>()) {
+            return true;
+        }
+        current = cause.source();
+    }
+    false
 }
 
 fn mailbox(name: Option<String>, email: &Email) -> Result<Mailbox, TransportError> {
@@ -237,9 +510,18 @@ pub struct CapturedMessage {
     pub message: OutboundMessage,
 }
 
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub enum ProbeScript {
+    #[default]
+    Succeed,
+    Fail(ProbeFailure),
+    Hang,
+}
+
 #[derive(Debug, Default)]
 pub struct CapturingTransport {
     sent: Mutex<Vec<CapturedMessage>>,
+    script: Mutex<ProbeScript>,
 }
 
 impl CapturingTransport {
@@ -253,6 +535,21 @@ impl CapturingTransport {
 
     pub fn count(&self) -> usize {
         self.lock().len()
+    }
+
+    pub fn script_probe(&self, script: ProbeScript) {
+        let mut guard = match self.script.lock() {
+            Ok(guard) => guard,
+            Err(poisoned) => poisoned.into_inner(),
+        };
+        *guard = script;
+    }
+
+    fn scripted(&self) -> ProbeScript {
+        match self.script.lock() {
+            Ok(guard) => *guard,
+            Err(poisoned) => *poisoned.into_inner(),
+        }
     }
 
     fn lock(&self) -> std::sync::MutexGuard<'_, Vec<CapturedMessage>> {
@@ -274,6 +571,40 @@ impl EmailTransport for CapturingTransport {
             message: message.clone(),
         };
         self.lock().push(captured);
+        Box::pin(async { Ok(()) })
+    }
+
+    fn probe<'a>(
+        &'a self,
+        config: &'a SmtpConfig,
+        message: &'a OutboundMessage,
+        progress: &'a StageTracker,
+    ) -> ProbeFuture<'a> {
+        let captured = CapturedMessage {
+            config: config.clone(),
+            message: message.clone(),
+        };
+        self.lock().push(captured);
+        let script = self.scripted();
+        let applicable = [
+            Some(Stage::Connect),
+            (config.security == SmtpSecurity::Starttls).then_some(Stage::Starttls),
+            (!config.no_auth).then_some(Stage::Auth),
+            Some(Stage::Send),
+        ];
+        for stage in applicable.into_iter().flatten() {
+            progress.enter(stage);
+            match script {
+                ProbeScript::Fail(failure) if failure.stage == stage => {
+                    return Box::pin(async move { Err(failure) });
+                }
+                ProbeScript::Hang if stage == Stage::Send => {
+                    return Box::pin(std::future::pending());
+                }
+                ProbeScript::Succeed | ProbeScript::Fail(_) | ProbeScript::Hang => {}
+            }
+            progress.pass();
+        }
         Box::pin(async { Ok(()) })
     }
 }
@@ -350,6 +681,56 @@ mod tests {
         let config = SmtpConfig::from_settings(&no_auth).unwrap();
         assert!(config.no_auth);
         assert!(config.password.is_none());
+    }
+
+    #[test]
+    fn unit_smtp_capability_gap_names_the_missing_requirement() {
+        assert!(settings(true, SmtpSecurity::Starttls).is_available());
+        assert!(!settings(false, SmtpSecurity::Starttls).is_available());
+        assert_eq!(SmtpConfig::gap(&settings(false, SmtpSecurity::None)), None);
+
+        let mut blank_host = settings(true, SmtpSecurity::None);
+        blank_host.host = Some("   ".to_owned());
+        assert_eq!(SmtpConfig::gap(&blank_host), Some(SmtpGap::Host));
+        let mut unusable_sender = settings(true, SmtpSecurity::None);
+        unusable_sender.from_email = Some("a,b@example.test".to_owned());
+        assert!(Email::parse("a,b@example.test").is_ok());
+        assert_eq!(SmtpConfig::gap(&unusable_sender), Some(SmtpGap::FromEmail));
+        assert!(!unusable_sender.is_available());
+        let mut empty_username = settings(true, SmtpSecurity::None);
+        empty_username.username = Some(String::new());
+        assert_eq!(SmtpConfig::gap(&empty_username), Some(SmtpGap::Username));
+        let mut no_password = settings(true, SmtpSecurity::None);
+        no_password.password = None;
+        assert_eq!(SmtpConfig::gap(&no_password), Some(SmtpGap::Password));
+        no_password.no_auth = true;
+        assert_eq!(SmtpConfig::gap(&no_password), None);
+
+        let mut gaps = SmtpSettings::clone(&settings(true, SmtpSecurity::None));
+        gaps.host = None;
+        gaps.from_email = None;
+        gaps.username = None;
+        gaps.password = None;
+        let order: Vec<&str> = [
+            SmtpConfig::gap(&gaps),
+            {
+                gaps.host = Some("smtp.example.test".to_owned());
+                SmtpConfig::gap(&gaps)
+            },
+            {
+                gaps.from_email = Some("palmr@example.test".to_owned());
+                SmtpConfig::gap(&gaps)
+            },
+            {
+                gaps.username = Some("palmr".to_owned());
+                SmtpConfig::gap(&gaps)
+            },
+        ]
+        .into_iter()
+        .flatten()
+        .map(SmtpGap::field)
+        .collect();
+        assert_eq!(order, ["host", "fromEmail", "username", "password"]);
     }
 
     #[test]

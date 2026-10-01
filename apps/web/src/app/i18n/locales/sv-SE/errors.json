@@ -56,6 +56,7 @@
     "settingUnknown": "Den här inställningen finns inte.",
     "settingValueInvalid": "Värdet för den här inställningen är ogiltigt. Kontrollera det och försök igen.",
     "settingBelowFloor": "Värdet ligger under det lägsta tillåtna för den här inställningen.",
+    "smtpTestFailed": "SMTP-testet misslyckades. Kontrollera anslutningsuppgifterna och försök igen.",
     "twoFactorCodeInvalid": "Verifieringskoden är felaktig. Kontrollera din autentiseringsapp och försök igen.",
     "twoFactorCodeReplayed": "Den här koden har redan använts. Vänta tills din autentiseringsapp visar en ny kod.",
     "twoFactorAlreadyEnabled": "Tvåfaktorsautentisering är redan aktiverad för ditt konto.",

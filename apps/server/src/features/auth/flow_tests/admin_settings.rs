@@ -2,16 +2,15 @@ use super::profile::{assert_code, Call};
 use super::*;
 use crate::features::settings::model::AppSettings;
 
-const SETTINGS: &str = "/api/v1/admin/settings";
+pub(super) const SETTINGS: &str = "/api/v1/admin/settings";
 const EFFECTIVE: &str = "/api/v1/settings/effective";
 const PROFILE: &str = "/api/v1/profile";
 const REAUTH: &str = "/api/v1/auth/reauthenticate";
 const NEW_PASSWORD: &str = "a brand new passphrase";
 const MAX_SAFE: i64 = (1 << 53) - 1;
-const AUDIT_ACTIONS: &str =
-    "'SETTING_CHANGED', 'SECURITY_POLICY_CHANGED', 'MANDATORY_2FA_POLICY_CHANGED'";
+const AUDIT_ACTIONS: &str = "'SETTING_CHANGED', 'SECURITY_POLICY_CHANGED', 'MANDATORY_2FA_POLICY_CHANGED', 'SMTP_SETTINGS_CHANGED'";
 
-type AuditRow = (
+pub(super) type AuditRow = (
     String,
     String,
     Option<String>,
@@ -41,7 +40,7 @@ const BOUNDS: [(&str, &str, i64, i64); 13] = [
 ];
 
 impl Stack {
-    async fn settings_call(
+    pub(super) async fn settings_call(
         &self,
         method: Method,
         group: Option<&str>,
@@ -61,7 +60,7 @@ impl Stack {
         self.call(call, host).await
     }
 
-    async fn read_settings(&self, group: &str, creds: &Credentials) -> Value {
+    pub(super) async fn read_settings(&self, group: &str, creds: &Credentials) -> Value {
         let fetched = self
             .settings_call(Method::GET, Some(group), creds, None, 10)
             .await;
@@ -69,24 +68,32 @@ impl Stack {
         fetched.json()
     }
 
-    async fn patch_settings(&self, group: &str, creds: &Credentials, body: &Value) -> Fetched {
+    pub(super) async fn patch_settings(
+        &self,
+        group: &str,
+        creds: &Credentials,
+        body: &Value,
+    ) -> Fetched {
         self.settings_call(Method::PATCH, Some(group), creds, Some(body), 10)
             .await
     }
 
-    async fn patch_ok(&self, group: &str, creds: &Credentials, body: &Value) -> Value {
+    pub(super) async fn patch_ok(&self, group: &str, creds: &Credentials, body: &Value) -> Value {
         let fetched = self.patch_settings(group, creds, body).await;
         assert_eq!(fetched.status, StatusCode::OK, "{}", fetched.text());
         fetched.json()
     }
 
-    async fn effective(&self, creds: &Credentials) -> Value {
+    pub(super) async fn effective(&self, creds: &Credentials) -> Value {
         let fetched = self.get(EFFECTIVE, Some(&creds.session), 11).await;
         assert_eq!(fetched.status, StatusCode::OK, "{}", fetched.text());
         fetched.json()
     }
 
-    async fn stored_setting(&self, key: &str) -> Option<(String, Option<String>, String)> {
+    pub(super) async fn stored_setting(
+        &self,
+        key: &str,
+    ) -> Option<(String, Option<String>, String)> {
         sqlx::query_as("SELECT value_json, updated_by, updated_at FROM app_settings WHERE key = ?1")
             .bind(key)
             .fetch_optional(self.pools.reader().executor())
@@ -94,7 +101,7 @@ impl Stack {
             .unwrap()
     }
 
-    async fn all_stored_settings(&self) -> Vec<(String, String, String)> {
+    pub(super) async fn all_stored_settings(&self) -> Vec<(String, String, String)> {
         sqlx::query_as(
             "SELECT key, COALESCE(value_json, ''), updated_at FROM app_settings ORDER BY key",
         )
@@ -103,7 +110,7 @@ impl Stack {
         .unwrap()
     }
 
-    async fn settings_audit(&self) -> Vec<AuditRow> {
+    pub(super) async fn settings_audit(&self) -> Vec<AuditRow> {
         sqlx::query_as(&format!(
             "SELECT action, actor_type, actor_user_id, target_type, target_id, target_label,
                     result, metadata_json
@@ -114,13 +121,13 @@ impl Stack {
         .unwrap()
     }
 
-    async fn settings_admin(&self) -> (Credentials, String) {
+    pub(super) async fn settings_admin(&self) -> (Credentials, String) {
         let creds = self.operator(10).await;
         let id = self.operator_id("root").await;
         (creds, id)
     }
 
-    async fn settings_user(&self, username: &str, host: u8) -> Credentials {
+    pub(super) async fn settings_user(&self, username: &str, host: u8) -> Credentials {
         let hash = password_hash();
         self.user(UserSpec::local(
             username,
@@ -131,14 +138,14 @@ impl Stack {
         self.signed_in(username, host).await
     }
 
-    async fn reauth_with_password(&self, creds: &Credentials, host: u8) -> Fetched {
+    pub(super) async fn reauth_with_password(&self, creds: &Credentials, host: u8) -> Fetched {
         let body = json!({ "password": PASSWORD, "totpCode": null });
         self.call(Call::new(Method::POST, REAUTH, creds).json(&body), host)
             .await
     }
 }
 
-fn assert_detail(fetched: &Fetched, key: &str, value: &Value) {
+pub(super) fn assert_detail(fetched: &Fetched, key: &str, value: &Value) {
     assert_eq!(
         &fetched.json()["error"]["details"][key],
         value,
@@ -189,6 +196,18 @@ async fn it_settings_admin_get_and_patch_round_trip() {
             },
             "quotas": { "defaultUserQuotaBytes": null, "maxFileSizeBytes": null },
             "public-links": { "maxPublicLinkLifetimeDays": null },
+            "smtp": {
+                "enabled": false,
+                "host": null,
+                "port": 587,
+                "security": "starttls",
+                "username": null,
+                "passwordConfigured": false,
+                "fromName": null,
+                "fromEmail": null,
+                "allowSelfSignedCertificate": false,
+                "noAuth": false,
+            },
         })
     );
 
@@ -375,7 +394,6 @@ async fn it_settings_unknown_group_key_and_body_shape() {
 
     for group in [
         "nope",
-        "smtp",
         "branding",
         "retention",
         "audit",
@@ -1224,10 +1242,11 @@ async fn it_settings_operator_values_are_not_expressible() {
     let stack = Stack::start(root.path(), &TestClock::new(START)).await;
     let (admin, _) = stack.settings_admin().await;
     let before = stack.all_stored_settings().await;
-    let all = stack
+    let mut all = stack
         .settings_call(Method::GET, None, &admin, None, 10)
         .await
         .json();
+    all["smtp"].as_object_mut().unwrap().remove("port");
     let text = all.to_string().to_lowercase();
     for operator in [
         "bind",
@@ -1266,6 +1285,35 @@ async fn it_settings_operator_values_are_not_expressible() {
                 "SETTING_UNKNOWN",
             );
         }
+    }
+    let smtp_members = [
+        "enabled",
+        "host",
+        "port",
+        "security",
+        "username",
+        "password",
+        "fromName",
+        "fromEmail",
+        "allowSelfSignedCertificate",
+        "noAuth",
+    ];
+    for operator in crate::config::Variable::ALL {
+        let name = operator.name();
+        let lowered = name.trim_start_matches("PALMR_").to_lowercase();
+        if smtp_members
+            .iter()
+            .any(|member| member.to_lowercase() == lowered.replace('_', ""))
+        {
+            continue;
+        }
+        let body = json!({ name: "x" });
+        let rejected = stack.patch_settings("smtp", &admin, &body).await;
+        assert_code(
+            &rejected,
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "SETTING_UNKNOWN",
+        );
     }
     assert_eq!(stack.all_stored_settings().await, before);
     stack.stop().await;

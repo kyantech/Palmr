@@ -56,6 +56,7 @@
     "settingUnknown": "To ustawienie nie istnieje.",
     "settingValueInvalid": "Wartość tego ustawienia jest nieprawidłowa. Sprawdź ją i spróbuj ponownie.",
     "settingBelowFloor": "Ta wartość jest niższa niż minimum dozwolone dla tego ustawienia.",
+    "smtpTestFailed": "Test SMTP nie powiódł się. Sprawdź dane połączenia i spróbuj ponownie.",
     "twoFactorCodeInvalid": "Kod weryfikacyjny jest nieprawidłowy. Sprawdź aplikację uwierzytelniającą i spróbuj ponownie.",
     "twoFactorCodeReplayed": "Ten kod został już użyty. Poczekaj, aż aplikacja uwierzytelniająca wyświetli nowy kod.",
     "twoFactorAlreadyEnabled": "Uwierzytelnianie dwuskładnikowe jest już włączone na Twoim koncie.",

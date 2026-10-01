@@ -253,6 +253,11 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "SMTP_TEST_FAILED",
+    "status": 502,
+    "retryable": false
+  },
+  {
     "code": "STORAGE_FULL",
     "status": 507,
     "retryable": true

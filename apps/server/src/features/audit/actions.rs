@@ -148,6 +148,26 @@ pub fn setting_value_changed(
     )
 }
 
+pub fn smtp_settings_changed(
+    key: &SettingKey,
+    from: &SettingValue,
+    to: &SettingValue,
+) -> ActionSpec {
+    ActionSpec::new(
+        AuditAction::SmtpSettingsChanged,
+        setting_value_metadata(key, from, to),
+    )
+}
+
+pub fn smtp_credential_changed(key: &SettingKey, from: Presence, to: Presence) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("key", Value::from(key.as_str())),
+        ("from", Value::from(from.as_str())),
+        ("to", Value::from(to.as_str())),
+    ]);
+    ActionSpec::new(AuditAction::SmtpSettingsChanged, metadata)
+}
+
 pub fn security_policy_changed(
     key: &SettingKey,
     from: &SettingValue,

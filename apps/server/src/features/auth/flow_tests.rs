@@ -49,7 +49,7 @@ use crate::features::auth::totp::TotpService;
 use crate::features::email::transport::CapturingTransport;
 use crate::features::email::EmailService;
 use crate::features::settings::effective::{EffectiveSettingsService, OperatorPolicy};
-use crate::features::settings::{AdminSettingsService, SettingsService};
+use crate::features::settings::{AdminSettingsService, SettingsService, SmtpTestService};
 use crate::features::setup::SetupService;
 use crate::features::users::model::{NewUser, NormalizedIdentifier, QuotaOverride, UserId};
 use crate::features::users::repo as users;
@@ -233,6 +233,10 @@ impl Stack {
             .layer(Extension(invites.clone()))
             .layer(Extension(admin_users.clone()))
             .layer(Extension(admin_settings.clone()))
+            .layer(Extension(SmtpTestService::new(
+                settings.handle(),
+                mail.clone(),
+            )))
             .layer(Extension(email_changes.clone()))
             .layer(Extension(EffectiveSettingsService::new(
                 pools.reader().clone(),
@@ -1765,6 +1769,7 @@ mod admin_email;
 mod admin_lifecycle;
 mod admin_security;
 mod admin_settings;
+mod admin_smtp;
 mod admin_users;
 mod forced_states;
 mod invites;

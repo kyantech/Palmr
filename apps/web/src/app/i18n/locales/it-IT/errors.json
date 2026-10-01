@@ -56,6 +56,7 @@
     "settingUnknown": "Questa impostazione non esiste.",
     "settingValueInvalid": "Il valore di questa impostazione non è valido. Controllalo e riprova.",
     "settingBelowFloor": "Questo valore è inferiore al minimo consentito per questa impostazione.",
+    "smtpTestFailed": "Il test SMTP non è riuscito. Controlla i dati di connessione e riprova.",
     "twoFactorCodeInvalid": "Il codice di verifica non è corretto. Controlla l'app di autenticazione e riprova.",
     "twoFactorCodeReplayed": "Questo codice è già stato usato. Attendi che l'app di autenticazione mostri un nuovo codice.",
     "twoFactorAlreadyEnabled": "L'autenticazione a due fattori è già attiva sul tuo account.",

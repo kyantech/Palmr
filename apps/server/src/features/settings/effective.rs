@@ -5,7 +5,6 @@ use super::model::AppSettings;
 use super::SettingsHandle;
 use crate::domain::alias::Alias;
 use crate::domain::bytes::ByteSize;
-use crate::features::email::transport::SmtpConfig;
 use crate::features::users::error::UserError;
 use crate::features::users::model::UserId;
 use crate::features::users::repo as users;
@@ -90,7 +89,7 @@ impl EffectiveSettings {
             trusted_devices_enabled: security.trusted_devices_enabled,
             trusted_device_duration_days: security.trusted_device_duration_days,
             received_retention_max_days: settings.retention.received_retention_days,
-            smtp_configured: SmtpConfig::from_settings(&settings.smtp).is_ok(),
+            smtp_configured: settings.smtp.is_available(),
             storage_provider: operator.storage_provider,
             max_concurrent_transfers: operator.max_concurrent_transfers,
             alias_pattern: Alias::PATTERN,

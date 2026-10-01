@@ -56,6 +56,7 @@
     "settingUnknown": "Bu ayar mevcut değil.",
     "settingValueInvalid": "Bu ayarın değeri geçerli değil. Kontrol edip tekrar deneyin.",
     "settingBelowFloor": "Bu değer, bu ayar için izin verilen en düşük değerin altında.",
+    "smtpTestFailed": "SMTP testi başarısız oldu. Bağlantı bilgilerini kontrol edip yeniden deneyin.",
     "twoFactorCodeInvalid": "Doğrulama kodu yanlış. Kimlik doğrulama uygulamanızı kontrol edip yeniden deneyin.",
     "twoFactorCodeReplayed": "Bu kod zaten kullanıldı. Kimlik doğrulama uygulamanız yeni bir kod gösterene kadar bekleyin.",
     "twoFactorAlreadyEnabled": "Hesabınızda iki faktörlü kimlik doğrulama zaten açık.",

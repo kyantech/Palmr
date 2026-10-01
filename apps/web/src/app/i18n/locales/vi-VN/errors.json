@@ -56,6 +56,7 @@
     "settingUnknown": "Cài đặt này không tồn tại.",
     "settingValueInvalid": "Giá trị của cài đặt này không hợp lệ. Hãy kiểm tra rồi thử lại.",
     "settingBelowFloor": "Giá trị này thấp hơn mức tối thiểu cho phép của cài đặt này.",
+    "smtpTestFailed": "Kiểm tra SMTP không thành công. Hãy kiểm tra thông tin kết nối rồi thử lại.",
     "twoFactorCodeInvalid": "Mã xác minh không đúng. Hãy kiểm tra ứng dụng xác thực và thử lại.",
     "twoFactorCodeReplayed": "Mã này đã được sử dụng. Hãy đợi ứng dụng xác thực hiển thị mã mới.",
     "twoFactorAlreadyEnabled": "Xác thực hai yếu tố đã được bật cho tài khoản của bạn.",

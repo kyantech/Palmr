@@ -10,10 +10,13 @@ use super::groups::general::{GeneralPatch, GeneralSettings};
 use super::groups::public_links::{PublicLinkPatch, PublicLinkSettings};
 use super::groups::quotas::{QuotaPatch, QuotaSettings};
 use super::groups::security::{SecurityPatch, SecuritySettings};
+use super::groups::smtp::{SmtpPatch, SmtpSettings};
 use super::groups::SettingsGroup;
+use super::smtp_test::{self, SmtpTestError, SmtpTestRequest, SmtpTestResult, SmtpTestService};
 use crate::app::auth_class::AuthClass;
 use crate::app::router::{RateLimitClass, RoutePolicy, Routes, Transport};
 use crate::app::state::AppState;
+use crate::domain::error_code::ErrorCode;
 use crate::features::auth::sessions::routes::client_metadata;
 use crate::features::auth::sessions::AuthenticatedPrincipal;
 use crate::infra::http::error::{ApiError, ApiErrorBody, JSON_CONTENT_TYPE};
@@ -39,6 +42,12 @@ pub const SECURITY_WRITE_ROUTE: RoutePolicy = RoutePolicy::new(
     Transport::ControlPlane,
 );
 
+pub const SMTP_TEST_ROUTE: RoutePolicy = RoutePolicy::new(
+    AuthClass::Admin,
+    RateLimitClass::EmailTest,
+    Transport::ControlPlane,
+);
+
 const NO_STORE: HeaderValue = HeaderValue::from_static("no-store");
 
 pub fn routes() -> Routes<AppState> {
@@ -52,6 +61,9 @@ pub fn routes() -> Routes<AppState> {
         .route(WRITE_ROUTE, routes!(patch_quotas))
         .route(READ_ROUTE, routes!(get_public_links))
         .route(WRITE_ROUTE, routes!(patch_public_links))
+        .route(READ_ROUTE, routes!(get_smtp))
+        .route(SECURITY_WRITE_ROUTE, routes!(patch_smtp))
+        .route(SMTP_TEST_ROUTE, routes!(post_smtp_test))
 }
 
 #[utoipa::path(
@@ -283,6 +295,106 @@ async fn patch_public_links(
         |service| json_value(&service.public_links()),
     )
     .await
+}
+
+#[utoipa::path(
+    get,
+    path = "/api/v1/admin/settings/smtp",
+    tag = "admin-settings",
+    responses(
+        (status = 200, description = "The current `smtp` group. The password is write-only: only `passwordConfigured` is returned.", body = SmtpSettings),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role required.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn get_smtp(
+    Extension(service): Extension<AdminSettingsService>,
+    Admin(_admin): Admin,
+    request: Request,
+) -> Response {
+    json_ok(&service.smtp(), RequestId::of(&request).as_ref())
+}
+
+#[utoipa::path(
+    patch,
+    path = "/api/v1/admin/settings/smtp",
+    tag = "admin-settings",
+    request_body(
+        content = SmtpPatch,
+        content_type = "application/json",
+        description = "Any subset of the `smtp` members. An absent member is left unchanged; an explicit `null` clears `host`, `username`, `fromName`, `fromEmail` and the write-only `password`. A `password` string replaces the stored secret, which is sealed at rest and never returned. A configuration may be saved incomplete while `enabled` is false; the result of a patch that leaves `enabled` true must have a host, a valid `fromEmail` and, unless `noAuth` is true, a username and a password. Every member is validated before anything is written; the changed members are then written and audited as `SMTP_SETTINGS_CHANGED` (the password and username as presence transitions only) in one transaction and take effect on the next request. A member equal to its current value is not written and not audited."
+    ),
+    responses(
+        (status = 200, description = "The group after the change.", body = SmtpSettings),
+        (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role or recent authentication (`AUTH_RECENT_AUTH_REQUIRED`) required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
+        (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
+        (status = 422, description = "`SETTING_UNKNOWN` for a member the group does not define, `SETTING_VALUE_INVALID` (`details.key`) for a wrong type, an invalid value, or a member that the enabled configuration requires (`details.requiredWhenEnabled`), or `VALIDATION_ERROR` when the body is not an object. Nothing is written.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn patch_smtp(
+    Extension(service): Extension<AdminSettingsService>,
+    Admin(admin): Admin,
+    request: Request,
+) -> Response {
+    patch_group(&service, SettingsGroup::Smtp, &admin, request, |service| {
+        json_value(&service.smtp())
+    })
+    .await
+}
+
+#[utoipa::path(
+    post,
+    path = "/api/v1/admin/settings/smtp/test",
+    tag = "admin-settings",
+    request_body(
+        content = SmtpTestRequest,
+        content_type = "application/json",
+        description = "Sends one test message inline, with a hard 20-second total deadline, and reports each transport stage that ran. It is the single synchronous e-mail send in Palmr: it never uses the outbox. Without `useUnsavedSettings` the saved configuration is tested, whether or not it is enabled. With it, only the supplied values are used: they are not persisted, not audited and never combined with the saved password."
+    ),
+    responses(
+        (status = 200, description = "The message was accepted by the SMTP server.", body = SmtpTestResult),
+        (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
+        (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
+        (status = 422, description = "`VALIDATION_ERROR` for an invalid recipient or unsaved value, or for a saved configuration that lacks the host, sender or credentials a send needs.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited (`rl.email.test`, instance-wide).", body = ApiErrorBody),
+        (status = 502, description = "`SMTP_TEST_FAILED`: `details.stage` is one of `connect`, `starttls`, `auth` or `send`, and the message is a fixed sanitized description that never echoes credentials or server text.", body = ApiErrorBody),
+    )
+)]
+async fn post_smtp_test(
+    Extension(service): Extension<SmtpTestService>,
+    Admin(_admin): Admin,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let body = match json::read_value(request.into_body()).await {
+        Ok(body) => body,
+        Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
+    };
+    let input = match smtp_test::parse_request(&body) {
+        Ok(input) => input,
+        Err(fields) => {
+            return tag_error(ApiError::validation(fields), request_id.as_ref()).into_response()
+        }
+    };
+    match service.run(input).await {
+        Ok(report) => json_ok(&SmtpTestResult::from(report), request_id.as_ref()),
+        Err(SmtpTestError::Invalid { field }) => {
+            tag_error(ApiError::validation([field]), request_id.as_ref()).into_response()
+        }
+        Err(SmtpTestError::Failed(failure)) => tag_error(
+            ApiError::new(ErrorCode::SmtpTestFailed)
+                .with_message(failure.reason.message())
+                .with_detail("stage", failure.stage.as_str()),
+            request_id.as_ref(),
+        )
+        .into_response(),
+    }
 }
 
 async fn patch_group(

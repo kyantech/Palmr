@@ -22,7 +22,6 @@ use crate::features::auth::AuthService;
 use crate::features::email::model::{
     public_link, DisplayText, LocalePreference, MailKind, MailLink, MailParams, NewMail, Recipient,
 };
-use crate::features::email::transport::SmtpConfig;
 use crate::features::email::EmailService;
 use crate::features::settings::SettingsHandle;
 use crate::features::users::model::{NewUser, QuotaOverride, User, UserId};
@@ -182,7 +181,7 @@ impl InviteService {
         client: &ClientMetadata,
     ) -> Result<CreateInviteResponse, InviteError> {
         let settings = self.settings.load();
-        let smtp_ready = SmtpConfig::from_settings(&settings.smtp).is_ok();
+        let smtp_ready = settings.smtp.is_available();
         let default_hours = settings
             .security
             .invite_validity_hours
@@ -325,7 +324,7 @@ impl InviteService {
         admin: &AuthenticatedPrincipal,
         id: InviteId,
     ) -> Result<(), InviteError> {
-        let smtp_ready = SmtpConfig::from_settings(&self.settings.load().smtp).is_ok();
+        let smtp_ready = self.settings.load().smtp.is_available();
         let resent = self
             .pools
             .write_tx(self.clock.as_ref(), RESEND_TRANSACTION, async |tx| {

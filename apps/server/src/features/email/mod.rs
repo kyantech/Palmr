@@ -1,4 +1,6 @@
 pub mod error;
+#[cfg(test)]
+pub(crate) mod fake_smtp;
 pub mod model;
 pub mod render;
 pub mod repo;

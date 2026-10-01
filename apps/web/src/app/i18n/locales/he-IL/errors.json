@@ -56,6 +56,7 @@
     "settingUnknown": "הגדרה זו אינה קיימת.",
     "settingValueInvalid": "ערך ההגדרה אינו תקין. בדקו אותו ונסו שוב.",
     "settingBelowFloor": "ערך זה נמוך מהמינימום המותר להגדרה זו.",
+    "smtpTestFailed": "בדיקת ה-SMTP נכשלה. בדקו את פרטי החיבור ונסו שוב.",
     "twoFactorCodeInvalid": "קוד האימות שגוי. בדקו את אפליקציית האימות ונסו שוב.",
     "twoFactorCodeReplayed": "הקוד הזה כבר נוצל. המתינו עד שאפליקציית האימות תציג קוד חדש.",
     "twoFactorAlreadyEnabled": "אימות דו-שלבי כבר מופעל בחשבון שלכם.",

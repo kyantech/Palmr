@@ -1057,8 +1057,13 @@ async fn svc_restricted_session_allowlist() {
             (&password_session, "AUTH_PASSWORD_CHANGE_REQUIRED"),
             (&totp_session, "AUTH_2FA_ENROLLMENT_REQUIRED"),
         ] {
+            let service = if entry.policy().rate_limit() == RateLimitClass::EmailTest {
+                app_service(&harness, crate::app::router::application_routes())
+            } else {
+                application.clone()
+            };
             assert_eq!(
-                restricted_code(application.clone(), entry.method().clone(), &path, token).await,
+                restricted_code(service, entry.method().clone(), &path, token).await,
                 (StatusCode::FORBIDDEN, Some(code.to_owned())),
                 "{} {}",
                 entry.method(),

@@ -56,6 +56,7 @@
     "settingUnknown": "이 설정은 존재하지 않습니다.",
     "settingValueInvalid": "이 설정 값이 올바르지 않습니다. 확인한 후 다시 시도하세요.",
     "settingBelowFloor": "이 값은 이 설정에서 허용되는 최솟값보다 작습니다.",
+    "smtpTestFailed": "SMTP 테스트에 실패했습니다. 연결 정보를 확인한 후 다시 시도하세요.",
     "twoFactorCodeInvalid": "인증 코드가 올바르지 않습니다. 인증 앱을 확인하고 다시 시도하세요.",
     "twoFactorCodeReplayed": "이미 사용된 코드입니다. 인증 앱에 새 코드가 표시될 때까지 기다리세요.",
     "twoFactorAlreadyEnabled": "계정에 2단계 인증이 이미 켜져 있습니다.",

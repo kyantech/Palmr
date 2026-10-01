@@ -25,7 +25,6 @@ use crate::features::auth::sessions::{
 use crate::features::auth::trusted_devices::repo as trusted_devices;
 use crate::features::email::error::EmailError;
 use crate::features::email::model::{LocalePreference, MailKind, MailParams, NewMail, Recipient};
-use crate::features::email::transport::SmtpConfig;
 use crate::features::email::EmailService;
 use crate::features::settings::SettingsHandle;
 use crate::infra::crypto::hash::TokenDigest;
@@ -555,7 +554,7 @@ impl EmailChangeService {
     }
 
     fn smtp_ready(&self) -> bool {
-        SmtpConfig::from_settings(&self.settings.load().smtp).is_ok()
+        self.settings.load().smtp.is_available()
     }
 }
 

@@ -1054,9 +1054,9 @@ fn it_openapi_admin_email_change_routes_declare_typed_contracts() {
 #[test]
 fn unit_admin_settings_routes_are_declared_with_their_classes() {
     let inventory = application_inventory();
-    for group in ["general", "security", "quotas", "public-links"] {
+    for group in ["general", "security", "quotas", "public-links", "smtp"] {
         let path = format!("/api/v1/admin/settings/{group}");
-        let write_class = if group == "security" {
+        let write_class = if matches!(group, "security" | "smtp") {
             AuthClass::AdminRecentAuth
         } else {
             AuthClass::Admin
@@ -1087,6 +1087,18 @@ fn unit_admin_settings_routes_are_declared_with_their_classes() {
     assert_eq!(*aggregate[0].method(), Method::GET);
     assert_eq!(aggregate[0].policy().auth(), AuthClass::Admin);
     assert_eq!(aggregate[0].policy().rate_limit(), RateLimitClass::Read);
+
+    let test: Vec<_> = inventory
+        .entries()
+        .iter()
+        .filter(|entry| entry.path() == "/api/v1/admin/settings/smtp/test")
+        .collect();
+    assert_eq!(test.len(), 1);
+    assert_eq!(*test[0].method(), Method::POST);
+    assert_eq!(test[0].policy().auth(), AuthClass::Admin);
+    assert_eq!(test[0].policy().rate_limit(), RateLimitClass::EmailTest);
+    assert_eq!(test[0].policy().transport(), Transport::ControlPlane);
+    assert_eq!(test[0].policy().idempotency(), IdempotencyMode::None);
 }
 
 #[test]
@@ -1111,6 +1123,7 @@ fn it_openapi_admin_settings_routes_declare_typed_contracts() {
             "PublicLinkSettings",
             "admin",
         ),
+        ("smtp", "SmtpPatch", "SmtpSettings", "admin+recent-auth"),
     ] {
         let item = &paths[format!("/api/v1/admin/settings/{group}")];
         let read = &item["get"];
@@ -1189,7 +1202,10 @@ fn it_openapi_admin_settings_routes_declare_typed_contracts() {
     let properties = schemas["AdminSettings"]["properties"].as_object().unwrap();
     let mut names: Vec<&str> = properties.keys().map(String::as_str).collect();
     names.sort_unstable();
-    assert_eq!(names, ["general", "public-links", "quotas", "security"]);
+    assert_eq!(
+        names,
+        ["general", "public-links", "quotas", "security", "smtp"]
+    );
 
     let general: Vec<&str> = schemas["GeneralPatch"]["properties"]
         .as_object()
@@ -1279,6 +1295,112 @@ fn it_openapi_admin_settings_routes_declare_typed_contracts() {
             }
         }
     }
+}
+
+#[test]
+fn it_openapi_admin_smtp_group_never_declares_a_readable_password() {
+    let document = application_document();
+    let schemas = &document["components"]["schemas"];
+    let settings = schemas["SmtpSettings"]["properties"].as_object().unwrap();
+    assert!(settings.contains_key("passwordConfigured"));
+    assert!(!settings.contains_key("password"));
+    let mut names: Vec<&str> = settings.keys().map(String::as_str).collect();
+    names.sort_unstable();
+    assert_eq!(
+        names,
+        [
+            "allowSelfSignedCertificate",
+            "enabled",
+            "fromEmail",
+            "fromName",
+            "host",
+            "noAuth",
+            "passwordConfigured",
+            "port",
+            "security",
+            "username",
+        ]
+    );
+    assert_eq!(
+        schemas["SmtpSecurity"]["enum"],
+        json!(["starttls", "implicit", "none"])
+    );
+    let patch = &schemas["SmtpPatch"]["properties"];
+    assert_eq!(patch["password"]["writeOnly"], true);
+    let types = patch["password"]["type"].as_array().unwrap();
+    assert!(types.iter().any(|kind| kind == "null"));
+    for member in ["host", "username", "fromName", "fromEmail"] {
+        let types = patch[member]["type"].as_array().unwrap();
+        assert!(types.iter().any(|kind| kind == "null"), "{member}");
+    }
+    for member in [
+        "enabled",
+        "port",
+        "security",
+        "allowSelfSignedCertificate",
+        "noAuth",
+    ] {
+        let nullable = patch[member]["type"]
+            .as_array()
+            .is_some_and(|types| types.iter().any(|kind| kind == "null"));
+        assert!(!nullable, "{member}");
+    }
+    assert_eq!(patch["port"]["minimum"], 1);
+    assert_eq!(patch["port"]["maximum"], 65535);
+    assert_eq!(schemas["SmtpPatch"]["additionalProperties"], false);
+    assert!(schemas["SmtpPatch"]["required"].is_null());
+    for schema in schemas.as_object().unwrap().values() {
+        let text = schema.to_string();
+        assert!(!text.contains("\"example\":\"palmr-smtp"), "{text}");
+    }
+}
+
+#[test]
+fn it_openapi_admin_smtp_test_route_declares_typed_contract() {
+    let document = application_document();
+    let schemas = &document["components"]["schemas"];
+    let operation = &document["paths"]["/api/v1/admin/settings/smtp/test"]["post"];
+    assert_eq!(
+        operation["security"],
+        json!([{ "palmrSession": [], "palmrCsrfCookie": [], "palmrCsrfHeader": [] }])
+    );
+    let tags: Vec<&str> = operation["tags"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(Value::as_str)
+        .collect();
+    assert!(tags.contains(&"admin") && tags.contains(&"admin-settings"));
+    assert!(!tags.contains(&"admin+recent-auth"));
+    assert_eq!(
+        operation["requestBody"]["content"]["application/json"]["schema"]["$ref"],
+        "#/components/schemas/SmtpTestRequest"
+    );
+    assert_eq!(
+        operation["responses"]["200"]["content"]["application/json"]["schema"]["$ref"],
+        "#/components/schemas/SmtpTestResult"
+    );
+    for status in ["400", "401", "403", "415", "422", "429", "502"] {
+        assert!(operation["responses"][status].is_object(), "{status}");
+    }
+    assert!(operation["responses"]["502"]["description"]
+        .as_str()
+        .unwrap()
+        .contains("SMTP_TEST_FAILED"));
+    assert_eq!(schemas["SmtpTestRequest"]["required"], json!(["to"]));
+    assert_eq!(schemas["SmtpTestRequest"]["additionalProperties"], false);
+    assert_eq!(
+        schemas["SmtpUnsavedSettings"]["properties"]["password"]["writeOnly"],
+        true
+    );
+    assert_eq!(
+        schemas["SmtpTestStageName"]["enum"],
+        json!(["connect", "starttls", "auth", "send"])
+    );
+    assert_eq!(
+        schemas["SmtpTestResult"]["required"],
+        json!(["ok", "stages", "durationMs"])
+    );
 }
 
 fn parameter<'a>(operation: &'a Value, name: &str) -> &'a Value {

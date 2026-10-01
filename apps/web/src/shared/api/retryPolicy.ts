@@ -84,6 +84,7 @@ export const RETRY_CLASS: Readonly<Record<ErrorCode, RetryClass>> = {
   SETTING_UNKNOWN: "never",
   SETTING_VALUE_INVALID: "never",
   SETTING_BELOW_FLOOR: "never",
+  SMTP_TEST_FAILED: "never",
 };
 
 const MAX_RETRIES: Readonly<Record<RetryClass, number>> = {

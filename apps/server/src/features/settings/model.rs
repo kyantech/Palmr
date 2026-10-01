@@ -1,9 +1,12 @@
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use utoipa::ToSchema;
 
 use super::error::SettingsError;
 use crate::domain::bytes::ByteSize;
 use crate::domain::locale::LocaleCode;
 use crate::domain::secret::Secret;
+use crate::features::email::transport::SmtpConfig;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Group {
@@ -339,7 +342,8 @@ impl EmailLogoMode {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "lowercase")]
 pub enum SmtpSecurity {
     Starttls,
     Implicit,
@@ -403,7 +407,7 @@ pub struct BrandingSettings {
     pub email_logo_mode: EmailLogoMode,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SmtpSettings {
     pub enabled: bool,
     pub host: Option<String>,
@@ -415,6 +419,12 @@ pub struct SmtpSettings {
     pub from_email: Option<String>,
     pub allow_self_signed_certificate: bool,
     pub no_auth: bool,
+}
+
+impl SmtpSettings {
+    pub fn is_available(&self) -> bool {
+        self.enabled && SmtpConfig::gap(self).is_none()
+    }
 }
 
 #[derive(Debug)]

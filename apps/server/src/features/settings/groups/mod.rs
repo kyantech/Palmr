@@ -2,11 +2,13 @@ pub mod general;
 pub mod public_links;
 pub mod quotas;
 pub mod security;
+pub mod smtp;
 
 use serde_json::{Map, Value};
 
-use super::model::{AppSettings, ThumbnailSourceLimit};
+use super::model::{AppSettings, SmtpSecurity, ThumbnailSourceLimit};
 use crate::domain::locale::LocaleCode;
+use crate::domain::secret::Secret;
 use crate::features::audit::actions::SettingValue;
 use crate::features::users::model::display_text;
 
@@ -20,11 +22,13 @@ pub enum SettingsGroup {
     Security,
     Quotas,
     PublicLinks,
+    Smtp,
 }
 
 impl SettingsGroup {
-    pub const ALL: [Self; 4] = [
+    pub const ALL: [Self; 5] = [
         Self::General,
+        Self::Smtp,
         Self::Security,
         Self::Quotas,
         Self::PublicLinks,
@@ -36,6 +40,7 @@ impl SettingsGroup {
             Self::Security => "security",
             Self::Quotas => "quotas",
             Self::PublicLinks => "public-links",
+            Self::Smtp => "smtp",
         }
     }
 
@@ -45,6 +50,7 @@ impl SettingsGroup {
             Self::Security => "settings.patch.security",
             Self::Quotas => "settings.patch.quotas",
             Self::PublicLinks => "settings.patch.public_links",
+            Self::Smtp => "settings.patch.smtp",
         }
     }
 
@@ -54,6 +60,7 @@ impl SettingsGroup {
             Self::Security => security::FIELDS,
             Self::Quotas => quotas::FIELDS,
             Self::PublicLinks => public_links::FIELDS,
+            Self::Smtp => smtp::FIELDS,
         }
     }
 
@@ -65,6 +72,7 @@ impl SettingsGroup {
             Self::PublicLinks => {
                 serde_json::to_value(public_links::PublicLinkSettings::from(settings))
             }
+            Self::Smtp => serde_json::to_value(smtp::SmtpSettings::from(settings)),
         };
         match value {
             Ok(Value::Object(members)) => members,
@@ -83,6 +91,13 @@ pub enum Kind {
     InvertedFlag,
     Integer(Bounds),
     OptionalInteger(Bounds),
+    SmtpHost,
+    SmtpPort,
+    SmtpSecurity,
+    SmtpUsername,
+    SmtpFromName,
+    SmtpFromEmail,
+    Secret(&'static str),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -113,6 +128,13 @@ impl Field {
         Self { api, key, kind }
     }
 
+    pub const fn view_name(&self) -> &'static str {
+        match self.kind {
+            Kind::Secret(configured) => configured,
+            _ => self.api,
+        }
+    }
+
     pub fn storage_form(&self, api: &Value) -> Stored {
         match api {
             Value::Bool(flag) => Stored::Flag(*flag != matches!(self.kind, Kind::InvertedFlag)),
@@ -128,6 +150,7 @@ pub enum Stored {
     Flag(bool),
     Integer(i64),
     Text(String),
+    Secret(Secret<String>),
     Null,
 }
 
@@ -137,7 +160,7 @@ impl Stored {
             Self::Flag(flag) => Value::from(*flag),
             Self::Integer(number) => Value::from(*number),
             Self::Text(text) => Value::from(text.as_str()),
-            Self::Null => Value::Null,
+            Self::Secret(_) | Self::Null => Value::Null,
         }
     }
 
@@ -146,7 +169,7 @@ impl Stored {
             Self::Flag(flag) => SettingValue::Bool(*flag),
             Self::Integer(number) => SettingValue::Integer(*number),
             Self::Text(text) => SettingValue::Text(text.clone()),
-            Self::Null => SettingValue::Unset,
+            Self::Secret(_) | Self::Null => SettingValue::Unset,
         }
     }
 }
@@ -159,7 +182,10 @@ pub struct Change {
 
 impl Change {
     pub fn stored(&self) -> Stored {
-        self.field.storage_form(&self.requested.json())
+        match &self.requested {
+            Stored::Secret(secret) => Stored::Secret(secret.clone()),
+            requested => self.field.storage_form(&requested.json()),
+        }
     }
 }
 
@@ -168,6 +194,7 @@ pub enum PatchError {
     BodyNotObject,
     Unknown,
     Invalid { field: &'static str },
+    Incomplete { field: &'static str },
     AboveCeiling { field: &'static str, ceiling: i64 },
     BelowFloor { field: &'static str, floor: i64 },
 }
@@ -233,6 +260,39 @@ fn validate(field: &'static Field, value: &Value) -> Result<Stored, PatchError> 
                 bounded(field, value, bounds)
             }
         }
+        Kind::SmtpHost => nullable_text(value, smtp::host, invalid),
+        Kind::SmtpUsername => nullable_text(value, smtp::username, invalid),
+        Kind::SmtpFromName => nullable_text(value, smtp::sender_name, invalid),
+        Kind::SmtpFromEmail => nullable_text(value, smtp::sender_email, invalid),
+        Kind::SmtpPort => value
+            .as_i64()
+            .and_then(smtp::port)
+            .map(|port| Stored::Integer(i64::from(port)))
+            .ok_or(invalid),
+        Kind::SmtpSecurity => value
+            .as_str()
+            .and_then(SmtpSecurity::parse)
+            .map(|security| Stored::Text(security.as_str().to_owned()))
+            .ok_or(invalid),
+        Kind::Secret(_) => match value {
+            Value::Null => Ok(Stored::Null),
+            Value::String(text) => smtp::password(text)
+                .map(|text| Stored::Secret(Secret::new(text.to_owned())))
+                .ok_or(invalid),
+            _ => Err(invalid),
+        },
+    }
+}
+
+fn nullable_text(
+    value: &Value,
+    accept: impl FnOnce(&str) -> Option<String>,
+    invalid: PatchError,
+) -> Result<Stored, PatchError> {
+    match value {
+        Value::Null => Ok(Stored::Null),
+        Value::String(text) => accept(text).map(Stored::Text).ok_or(invalid),
+        _ => Err(invalid),
     }
 }
 
@@ -270,16 +330,24 @@ mod tests {
             SettingsGroup::Security => Group::Security,
             SettingsGroup::Quotas => Group::Quotas,
             SettingsGroup::PublicLinks => Group::PublicLinks,
+            SettingsGroup::Smtp => Group::Smtp,
         }
     }
 
     fn expected_type(kind: Kind) -> ValueType {
         match kind {
-            Kind::Name | Kind::Description | Kind::Locale | Kind::ThumbnailLimit => {
-                ValueType::String
-            }
+            Kind::Name
+            | Kind::Description
+            | Kind::Locale
+            | Kind::ThumbnailLimit
+            | Kind::SmtpHost
+            | Kind::SmtpSecurity
+            | Kind::SmtpUsername
+            | Kind::SmtpFromName
+            | Kind::SmtpFromEmail => ValueType::String,
             Kind::Flag | Kind::InvertedFlag => ValueType::Boolean,
-            Kind::Integer(_) | Kind::OptionalInteger(_) => ValueType::Integer,
+            Kind::Integer(_) | Kind::OptionalInteger(_) | Kind::SmtpPort => ValueType::Integer,
+            Kind::Secret(_) => ValueType::Secret,
         }
     }
 
@@ -297,7 +365,14 @@ mod tests {
                 );
                 assert_eq!(
                     setting.slot.is_nullable(),
-                    matches!(field.kind, Kind::OptionalInteger(_)),
+                    matches!(
+                        field.kind,
+                        Kind::OptionalInteger(_)
+                            | Kind::SmtpHost
+                            | Kind::SmtpUsername
+                            | Kind::SmtpFromName
+                            | Kind::SmtpFromEmail
+                    ),
                     "{}",
                     field.key
                 );
@@ -321,13 +396,30 @@ mod tests {
         for group in SettingsGroup::ALL {
             let view = group.view(&defaults);
             let mut names: Vec<&str> = view.keys().map(String::as_str).collect();
-            let mut declared: Vec<&str> = group.fields().iter().map(|field| field.api).collect();
+            let mut declared: Vec<&str> = group
+                .fields()
+                .iter()
+                .map(|field| field.view_name())
+                .collect();
             names.sort_unstable();
             declared.sort_unstable();
             assert_eq!(names, declared, "{}", group.path_name());
             for field in group.fields() {
+                if matches!(field.kind, Kind::Secret(_)) {
+                    assert_eq!(view[field.view_name()], Value::Bool(false));
+                    continue;
+                }
+                let default = &view[field.view_name()];
+                let unset_optional = default.is_null()
+                    && matches!(
+                        field.kind,
+                        Kind::SmtpHost
+                            | Kind::SmtpUsername
+                            | Kind::SmtpFromName
+                            | Kind::SmtpFromEmail
+                    );
                 assert!(
-                    validate(field, &view[field.api]).is_ok(),
+                    unset_optional || validate(field, default).is_ok(),
                     "the default of {} violates its own rule",
                     field.api
                 );
@@ -347,7 +439,8 @@ mod tests {
                 for forbidden in [
                     "port", "bind", "proxy", "s3", "endpoint", "bucket", "base_url",
                 ] {
-                    assert!(!field.key.contains(forbidden), "{}", field.key);
+                    let smtp_port = forbidden == "port" && field.key == "smtp_port";
+                    assert!(smtp_port || !field.key.contains(forbidden), "{}", field.key);
                 }
             }
         }
@@ -381,6 +474,27 @@ mod tests {
                     Kind::Description => {
                         candidates.extend([Value::from(""), Value::from("d".repeat(300))]);
                     }
+                    Kind::SmtpHost => candidates.extend([
+                        Value::from("smtp.example.com"),
+                        Value::from("127.0.0.1"),
+                        Value::Null,
+                    ]),
+                    Kind::SmtpPort => candidates.extend([Value::from(1), Value::from(65_535)]),
+                    Kind::SmtpSecurity => {
+                        candidates.extend(["starttls", "implicit", "none"].map(Value::from));
+                    }
+                    Kind::SmtpUsername => candidates.extend([
+                        Value::from("mailer"),
+                        Value::from("u".repeat(255)),
+                        Value::Null,
+                    ]),
+                    Kind::SmtpFromName => {
+                        candidates.extend([Value::from("Palmr"), Value::Null]);
+                    }
+                    Kind::SmtpFromEmail => {
+                        candidates.extend([Value::from("palmr@example.com"), Value::Null]);
+                    }
+                    Kind::Secret(_) => {}
                 }
                 for candidate in candidates {
                     let stored = validate(field, &candidate).unwrap();
@@ -396,7 +510,7 @@ mod tests {
                     )
                     .unwrap_or_else(|_| panic!("{} = {candidate}", field.api));
                     let view = group.view(&settings);
-                    assert_eq!(view[field.api], candidate, "{}", field.api);
+                    assert_eq!(view[field.view_name()], candidate, "{}", field.api);
                 }
             }
         }

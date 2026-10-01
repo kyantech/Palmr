@@ -56,6 +56,7 @@
     "settingUnknown": "此设置不存在。",
     "settingValueInvalid": "此设置的值无效。请检查后重试。",
     "settingBelowFloor": "此值低于该设置允许的最小值。",
+    "smtpTestFailed": "SMTP 测试失败。请检查连接信息后重试。",
     "twoFactorCodeInvalid": "验证码不正确。请检查你的身份验证器应用后重试。",
     "twoFactorCodeReplayed": "此验证码已被使用。请等待身份验证器应用显示新的验证码。",
     "twoFactorAlreadyEnabled": "你的账户已启用双重身份验证。",

@@ -176,6 +176,8 @@ error_catalog! {
         "The setting value is below the platform floor";
     BrandingAssetUnknown = "BRANDING_ASSET_UNKNOWN", NOT_FOUND, retryable: false,
         "The branding asset was not found";
+    SmtpTestFailed = "SMTP_TEST_FAILED", BAD_GATEWAY, retryable: false,
+        "The SMTP test failed";
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]

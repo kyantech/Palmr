@@ -56,6 +56,7 @@
     "settingUnknown": "Deze instelling bestaat niet.",
     "settingValueInvalid": "De waarde van deze instelling is ongeldig. Controleer de waarde en probeer het opnieuw.",
     "settingBelowFloor": "Deze waarde ligt onder het toegestane minimum voor deze instelling.",
+    "smtpTestFailed": "De SMTP-test is mislukt. Controleer de verbindingsgegevens en probeer het opnieuw.",
     "twoFactorCodeInvalid": "De verificatiecode is onjuist. Controleer je authenticator-app en probeer het opnieuw.",
     "twoFactorCodeReplayed": "Deze code is al gebruikt. Wacht tot je authenticator-app een nieuwe code toont.",
     "twoFactorAlreadyEnabled": "Tweestapsverificatie is al ingeschakeld voor je account.",

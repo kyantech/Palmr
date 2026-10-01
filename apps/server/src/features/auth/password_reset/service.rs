@@ -17,7 +17,6 @@ use crate::features::auth::sessions::RevokedReason;
 use crate::features::auth::trusted_devices::repo as trusted_devices;
 use crate::features::auth::AuthService;
 use crate::features::email::model::{LocalePreference, MailKind, MailParams, NewMail, Recipient};
-use crate::features::email::transport::SmtpConfig;
 use crate::features::email::EmailService;
 use crate::features::settings::SettingsHandle;
 use crate::features::users::model::{NormalizedIdentifier, User};
@@ -86,7 +85,7 @@ impl PasswordResetService {
         client: &ClientMetadata,
     ) -> Result<(), PasswordResetError> {
         let settings = self.settings.load();
-        if SmtpConfig::from_settings(&settings.smtp).is_err() {
+        if !settings.smtp.is_available() {
             return Err(PasswordResetError::SmtpUnavailable);
         }
         let issuing = password_login_enabled(&settings) && budget == AccountBudget::Available;
