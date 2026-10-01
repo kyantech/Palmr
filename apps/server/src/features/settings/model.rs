@@ -108,6 +108,22 @@ pub enum Slot {
     AuditRetentionDays,
 }
 
+impl Slot {
+    pub const fn is_nullable(self) -> bool {
+        matches!(
+            self,
+            Self::DefaultUserQuotaBytes
+                | Self::MaxFileSizeBytes
+                | Self::MaxPublicLinkLifetimeDays
+                | Self::ReceivedRetentionDays
+                | Self::SmtpHost
+                | Self::SmtpUsername
+                | Self::SmtpFromName
+                | Self::SmtpFromEmail
+        )
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct SettingSpec {
     pub key: &'static str,

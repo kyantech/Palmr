@@ -81,6 +81,9 @@ export const RETRY_CLASS: Readonly<Record<ErrorCode, RetryClass>> = {
   STORAGE_PROVIDER_MISMATCH: "never",
   STORAGE_SIZE_MISMATCH: "never",
   BRANDING_ASSET_UNKNOWN: "never",
+  SETTING_UNKNOWN: "never",
+  SETTING_VALUE_INVALID: "never",
+  SETTING_BELOW_FLOOR: "never",
 };
 
 const MAX_RETRIES: Readonly<Record<RetryClass, number>> = {

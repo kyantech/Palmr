@@ -19,15 +19,17 @@ pub enum SettingValueInput<'a> {
     Integer(i64),
     Boolean(bool),
     Secret(&'a str),
+    Null,
 }
 
 impl SettingValueInput<'_> {
-    const fn value_type(&self) -> ValueType {
+    const fn value_type(&self) -> Option<ValueType> {
         match self {
-            Self::String(_) => ValueType::String,
-            Self::Integer(_) => ValueType::Integer,
-            Self::Boolean(_) => ValueType::Boolean,
-            Self::Secret(_) => ValueType::Secret,
+            Self::String(_) => Some(ValueType::String),
+            Self::Integer(_) => Some(ValueType::Integer),
+            Self::Boolean(_) => Some(ValueType::Boolean),
+            Self::Secret(_) => Some(ValueType::Secret),
+            Self::Null => None,
         }
     }
 }
@@ -39,6 +41,7 @@ pub struct SettingsService {
     keys: Arc<KeyRing>,
     handle: SettingsHandle,
     setup_locale: Option<LocaleCode>,
+    reload_order: Arc<tokio::sync::Mutex<()>>,
 }
 
 impl std::fmt::Debug for SettingsService {
@@ -68,6 +71,7 @@ impl SettingsService {
             keys: Arc::new(KeyRing::new(instance_key)),
             handle: SettingsHandle::new(AppSettings::defaults()),
             setup_locale,
+            reload_order: Arc::new(tokio::sync::Mutex::new(())),
         };
         service.reload().await?;
         Ok(service)
@@ -86,6 +90,7 @@ impl SettingsService {
     }
 
     pub async fn reload(&self) -> Result<(), SettingsError> {
+        let _ordered = self.reload_order.lock().await;
         let rows = repo::load_all(self.pools.reader()).await?;
         let mut settings = snapshot::build(&rows, &self.keys)?;
         if let Some(locale) = self.setup_locale {
@@ -115,13 +120,22 @@ impl SettingsService {
         let spec = model::spec(key).ok_or_else(|| SettingsError::UnknownKey {
             key: key.to_owned(),
         })?;
-        let provided = value.value_type();
-        if spec.value_type != provided {
-            return Err(SettingsError::ValueTypeMismatch {
-                key: key.to_owned(),
-                stored: provided.as_str().to_owned(),
-                expected: spec.value_type.as_str(),
-            });
+        match value.value_type() {
+            Some(provided) if provided != spec.value_type => {
+                return Err(SettingsError::ValueTypeMismatch {
+                    key: key.to_owned(),
+                    stored: provided.as_str().to_owned(),
+                    expected: spec.value_type.as_str(),
+                });
+            }
+            None if !spec.slot.is_nullable() => {
+                return Err(SettingsError::ValueTypeMismatch {
+                    key: key.to_owned(),
+                    stored: "null".to_owned(),
+                    expected: spec.value_type.as_str(),
+                });
+            }
+            _ => {}
         }
         let updated_at = Timestamp::try_from(self.clock.now())?.to_string();
         match value {
@@ -136,6 +150,9 @@ impl SettingsService {
             SettingValueInput::Boolean(flag) => {
                 let json = serde_json::Value::from(flag).to_string();
                 repo::upsert_value(tx, spec, &json, &updated_at, updated_by).await?;
+            }
+            SettingValueInput::Null => {
+                repo::upsert_value(tx, spec, "null", &updated_at, updated_by).await?;
             }
             SettingValueInput::Secret(plaintext) => {
                 let sealed =
@@ -428,6 +445,56 @@ mod tests {
         let reconstructed = harness.service(&key).await.unwrap();
         assert_eq!(reconstructed.current().audit.audit_retention_days, 30);
         assert_eq!(reconstructed.current().app_name(), "Nova");
+    }
+
+    #[tokio::test]
+    async fn it_settings_null_is_written_only_for_nullable_settings() {
+        let harness = Harness::open().await;
+        let key = harness.instance_key();
+        let service = harness.service(&key).await.unwrap();
+
+        service
+            .update_group(SETTINGS_UPDATE_GROUP, async |tx| {
+                service
+                    .write_setting(
+                        tx,
+                        "max_file_size_bytes",
+                        SettingValueInput::Integer(9),
+                        None,
+                    )
+                    .await?;
+                service
+                    .write_setting(tx, "max_file_size_bytes", SettingValueInput::Null, None)
+                    .await
+            })
+            .await
+            .unwrap();
+        assert_eq!(service.current().quotas.max_file_size_bytes, None);
+        let stored: String = sqlx::query_scalar(
+            "SELECT value_json FROM app_settings WHERE key = 'max_file_size_bytes'",
+        )
+        .fetch_one(harness.pools.reader().executor())
+        .await
+        .unwrap();
+        assert_eq!(stored, "null");
+        harness.service(&key).await.unwrap();
+
+        for rejected in ["app_name", "password_min_length", "two_factor_required"] {
+            let error = service
+                .update_group(SETTINGS_UPDATE_GROUP, async |tx| {
+                    service
+                        .write_setting(tx, rejected, SettingValueInput::Null, None)
+                        .await
+                })
+                .await
+                .unwrap_err();
+            assert!(
+                matches!(error, SettingsError::ValueTypeMismatch { .. }),
+                "{rejected}"
+            );
+        }
+        assert_eq!(service.current().app_name(), "Palmr");
+        harness.service(&key).await.unwrap();
     }
 
     #[tokio::test]

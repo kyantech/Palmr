@@ -64,20 +64,26 @@ pub async fn load_all(reader: &ReadPool) -> Result<Vec<SettingRow>, DbError> {
     let rows: Vec<RawRow> = sqlx::query_as(SELECT_ALL)
         .fetch_all(reader.executor())
         .await?;
-    Ok(rows
-        .into_iter()
-        .map(
-            |(key, group, value_type, value_json, ciphertext, nonce, key_version)| SettingRow {
-                key,
-                group,
-                value_type,
-                value_json,
-                ciphertext,
-                nonce,
-                key_version,
-            },
-        )
-        .collect())
+    Ok(rows.into_iter().map(SettingRow::from).collect())
+}
+
+impl From<RawRow> for SettingRow {
+    fn from((key, group, value_type, value_json, ciphertext, nonce, key_version): RawRow) -> Self {
+        Self {
+            key,
+            group,
+            value_type,
+            value_json,
+            ciphertext,
+            nonce,
+            key_version,
+        }
+    }
+}
+
+pub async fn load_all_in_tx(tx: &mut WriteTx<'_>) -> Result<Vec<SettingRow>, DbError> {
+    let rows: Vec<RawRow> = sqlx::query_as(SELECT_ALL).fetch_all(tx.executor()).await?;
+    Ok(rows.into_iter().map(SettingRow::from).collect())
 }
 
 pub async fn upsert_value(

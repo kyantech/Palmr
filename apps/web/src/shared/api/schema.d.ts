@@ -52,6 +52,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_all_settings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings/general": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_general"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["patch_general"];
+        trace?: never;
+    };
+    "/api/v1/admin/settings/public-links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_public_links"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["patch_public_links"];
+        trace?: never;
+    };
+    "/api/v1/admin/settings/quotas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_quotas"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["patch_quotas"];
+        trace?: never;
+    };
+    "/api/v1/admin/settings/security": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_security"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["patch_security"];
+        trace?: never;
+    };
     "/api/v1/admin/users": {
         parameters: {
             query?: never;
@@ -848,6 +928,12 @@ export interface components {
              */
             temporaryPassword: string;
         };
+        AdminSettings: {
+            general: components["schemas"]["GeneralSettings"];
+            "public-links": components["schemas"]["PublicLinkSettings"];
+            quotas: components["schemas"]["QuotaSettings"];
+            security: components["schemas"]["SecuritySettings"];
+        };
         AdminUserCounts: {
             /** Format: int64 */
             files: number;
@@ -1074,10 +1160,38 @@ export interface components {
             enrollmentId: string;
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "BRANDING_ASSET_UNKNOWN";
+        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN";
         ForgotPasswordRequest: {
             /** @example ada@example.com */
             identifier: string;
+        };
+        GeneralPatch: {
+            /** @description Trimmed, at most 300 characters, no control characters. The empty string clears the description. */
+            appDescription?: string;
+            /**
+             * @description Trimmed, 1–100 characters, no control characters.
+             * @example Palmr
+             */
+            appName?: string;
+            /**
+             * @description One of the 23 supported locales.
+             * @example en-US
+             */
+            defaultLocale?: string;
+            hideVersion?: boolean;
+            poweredByVisible?: boolean;
+            thumbnailSourceLimit?: components["schemas"]["ThumbnailSourceLimitName"];
+        };
+        GeneralSettings: {
+            /** @example Self-hosted file transfer */
+            appDescription: string;
+            /** @example Palmr */
+            appName: string;
+            /** @example en-US */
+            defaultLocale: string;
+            hideVersion: boolean;
+            poweredByVisible: boolean;
+            thumbnailSourceLimit: components["schemas"]["ThumbnailSourceLimitName"];
         };
         HealthLive: {
             status: components["schemas"]["HealthLiveStatus"];
@@ -1359,6 +1473,20 @@ export interface components {
             /** @example Lovelace */
             lastName?: string | null;
         };
+        PublicLinkPatch: {
+            /**
+             * Format: int32
+             * @description Absent leaves the value unchanged; explicit `null` removes the maximum.
+             */
+            maxPublicLinkLifetimeDays?: number | null;
+        };
+        PublicLinkSettings: {
+            /**
+             * Format: int32
+             * @description `null` means no maximum.
+             */
+            maxPublicLinkLifetimeDays: number | null;
+        };
         QuotaOverrideRequest: {
             /**
              * @description `inherit` follows the instance default, `unlimited` is an explicit Unlimited override and `bytes` is an explicit cap.
@@ -1371,6 +1499,30 @@ export interface components {
              * @example 107374182400
              */
             quotaBytes?: number | null;
+        };
+        QuotaPatch: {
+            /**
+             * Format: int64
+             * @description Absent leaves the value unchanged; explicit `null` stores Unlimited.
+             */
+            defaultUserQuotaBytes?: number | null;
+            /**
+             * Format: int64
+             * @description Absent leaves the value unchanged; explicit `null` stores Unlimited.
+             */
+            maxFileSizeBytes?: number | null;
+        };
+        QuotaSettings: {
+            /**
+             * Format: int64
+             * @description `null` is Unlimited.
+             */
+            defaultUserQuotaBytes: number | null;
+            /**
+             * Format: int64
+             * @description `null` is Unlimited.
+             */
+            maxFileSizeBytes: number | null;
         };
         ReauthenticateRequest: {
             /** Format: password */
@@ -1406,6 +1558,66 @@ export interface components {
         RestrictionName: "must_change_password" | "mfa_enrollment_required";
         /** @enum {string} */
         SecondFactorMethod: "totp" | "backup_code";
+        SecurityPatch: {
+            /** Format: int32 */
+            inviteValidityHours?: number;
+            /**
+             * Format: int32
+             * @description Platform floor 1.
+             */
+            loginLockoutMinutes?: number;
+            /**
+             * Format: int32
+             * @description Platform floor 3.
+             */
+            maxLoginAttempts?: number;
+            /**
+             * Format: int32
+             * @description Platform floor 8.
+             */
+            passwordMinLength?: number;
+            /** Format: int32 */
+            passwordResetValidityMinutes?: number;
+            /**
+             * Format: int32
+             * @description Platform floor 8.
+             */
+            publicLinkPasswordMinLength?: number;
+            /** Format: int32 */
+            recentAuthMinutes?: number;
+            /** Format: int32 */
+            sessionAbsoluteDays?: number;
+            /** Format: int32 */
+            sessionIdleDays?: number;
+            /** Format: int32 */
+            trustedDeviceDurationDays?: number;
+            trustedDevicesEnabled?: boolean;
+            twoFactorRequired?: boolean;
+        };
+        SecuritySettings: {
+            /** Format: int32 */
+            inviteValidityHours: number;
+            /** Format: int32 */
+            loginLockoutMinutes: number;
+            /** Format: int32 */
+            maxLoginAttempts: number;
+            /** Format: int32 */
+            passwordMinLength: number;
+            /** Format: int32 */
+            passwordResetValidityMinutes: number;
+            /** Format: int32 */
+            publicLinkPasswordMinLength: number;
+            /** Format: int32 */
+            recentAuthMinutes: number;
+            /** Format: int32 */
+            sessionAbsoluteDays: number;
+            /** Format: int32 */
+            sessionIdleDays: number;
+            /** Format: int32 */
+            trustedDeviceDurationDays: number;
+            trustedDevicesEnabled: boolean;
+            twoFactorRequired: boolean;
+        };
         SessionItem: {
             absoluteExpiresAt: string;
             createdAt: string;
@@ -1450,6 +1662,8 @@ export interface components {
         };
         /** @enum {string} */
         StorageHealthStatus: "ok" | "degraded" | "down";
+        /** @enum {string} */
+        ThumbnailSourceLimitName: "64MiB" | "128MiB" | "256MiB" | "512MiB" | "unlimited";
         TrustedDeviceItem: {
             createdAt: string;
             expiresAt: string;
@@ -1806,6 +2020,557 @@ export interface operations {
             };
             /** @description `INVITE_ALREADY_USED`, `INVITE_REVOKED` or `INVITE_EXPIRED`. */
             410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    get_all_settings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Every settings group available at this release, keyed by group name. Secrets are never returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminSettings"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    get_general: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The current `general` group. `hideVersion` is the inverse of the stored version-visibility flag. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GeneralSettings"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    patch_general: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Any subset of the `general` members. An absent member is left unchanged and no member of this group is nullable, so an explicit `null` is rejected. Every member is validated before anything is written; the changed members are then written and audited in one transaction and take effect on the next request. A member equal to its current value is not written and not audited. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GeneralPatch"];
+            };
+        };
+        responses: {
+            /** @description The group after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GeneralSettings"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `SETTING_UNKNOWN` for a member the group does not define, `SETTING_VALUE_INVALID` (`details.key`) for a wrong type, `null` or an invalid value, or `VALIDATION_ERROR` when the body is not an object. Nothing is written. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    get_public_links: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The current `public-links` group; `null` means no maximum. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicLinkSettings"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    patch_public_links: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The `public-links` members. An absent member is left unchanged; an explicit `null` removes the maximum. Validated before anything is written; a changed member is written and audited in one transaction and takes effect on the next request. A member equal to its current value is not written and not audited. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicLinkPatch"];
+            };
+        };
+        responses: {
+            /** @description The group after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicLinkSettings"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `SETTING_UNKNOWN` for a member the group does not define, `SETTING_BELOW_FLOOR` (`details.key`, `details.floor`) below one day, `SETTING_VALUE_INVALID` (`details.key`, and `details.max` above the 32-bit integer limit) for a wrong type or value, or `VALIDATION_ERROR` when the body is not an object. Nothing is written. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    get_quotas: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The current `quotas` group; `null` is Unlimited. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuotaSettings"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    patch_quotas: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Any subset of the `quotas` members. An absent member is left unchanged; an explicit `null` stores Unlimited. Administrators have no quota bypass. Every member is validated before anything is written; the changed members are then written and audited in one transaction and take effect on the next request. A member equal to its current value is not written and not audited. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuotaPatch"];
+            };
+        };
+        responses: {
+            /** @description The group after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuotaSettings"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `SETTING_UNKNOWN` for a member the group does not define, `SETTING_BELOW_FLOOR` (`details.key`, `details.floor`) for a negative count, `SETTING_VALUE_INVALID` (`details.key`, and `details.max` above the safe JSON integer limit) for a wrong type or value, or `VALIDATION_ERROR` when the body is not an object. Nothing is written. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    get_security: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The current `security` group. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SecuritySettings"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    patch_security: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Any subset of the `security` members. An absent member is left unchanged and no member of this group is nullable, so an explicit `null` is rejected. Every member is validated before anything is written; the changed members are then written in one transaction, each audited as `SECURITY_POLICY_CHANGED` (`twoFactorRequired` as `MANDATORY_2FA_POLICY_CHANGED`), and take effect on the next request. A member equal to its current value is not written and not audited. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SecurityPatch"];
+            };
+        };
+        responses: {
+            /** @description The group after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SecuritySettings"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role or recent authentication (`AUTH_RECENT_AUTH_REQUIRED`) required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `SETTING_UNKNOWN` for a member the group does not define, `SETTING_BELOW_FLOOR` (`details.key`, `details.floor`) below the platform floor, `SETTING_VALUE_INVALID` (`details.key`, and `details.max` above a documented range or the 32-bit integer limit) for a wrong type, `null` or an out-of-range value, or `VALIDATION_ERROR` when the body is not an object. Nothing is written. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

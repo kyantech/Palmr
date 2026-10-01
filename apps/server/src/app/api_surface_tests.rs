@@ -824,7 +824,7 @@ fn unit_admin_namespace_is_admin_classed_and_never_public() {
             admin_routes += 1;
         }
     }
-    assert!(admin_routes >= 17);
+    assert!(admin_routes >= 26);
     assert!(!PUBLIC_ROUTES_GOLDEN.contains("/api/v1/admin"));
 }
 
@@ -1049,6 +1049,236 @@ fn it_openapi_admin_email_change_routes_declare_typed_contracts() {
     }
     assert_eq!(schemas["ChangeEmailRequest"]["required"], json!(["email"]));
     assert_eq!(schemas["VerifyEmailRequest"]["required"], json!(["token"]));
+}
+
+#[test]
+fn unit_admin_settings_routes_are_declared_with_their_classes() {
+    let inventory = application_inventory();
+    for group in ["general", "security", "quotas", "public-links"] {
+        let path = format!("/api/v1/admin/settings/{group}");
+        let write_class = if group == "security" {
+            AuthClass::AdminRecentAuth
+        } else {
+            AuthClass::Admin
+        };
+        for (method, auth, rate_limit) in [
+            (Method::GET, AuthClass::Admin, RateLimitClass::Read),
+            (Method::PATCH, write_class, RateLimitClass::AdminWrite),
+        ] {
+            let matching: Vec<_> = inventory
+                .entries()
+                .iter()
+                .filter(|entry| entry.path() == path && *entry.method() == method)
+                .collect();
+            assert_eq!(matching.len(), 1, "{method} {path}");
+            let policy = matching[0].policy();
+            assert_eq!(policy.auth(), auth, "{method} {path}");
+            assert_eq!(policy.rate_limit(), rate_limit, "{method} {path}");
+            assert_eq!(policy.transport(), Transport::ControlPlane);
+            assert_eq!(policy.idempotency(), IdempotencyMode::None);
+        }
+    }
+    let aggregate: Vec<_> = inventory
+        .entries()
+        .iter()
+        .filter(|entry| entry.path() == "/api/v1/admin/settings")
+        .collect();
+    assert_eq!(aggregate.len(), 1);
+    assert_eq!(*aggregate[0].method(), Method::GET);
+    assert_eq!(aggregate[0].policy().auth(), AuthClass::Admin);
+    assert_eq!(aggregate[0].policy().rate_limit(), RateLimitClass::Read);
+}
+
+#[test]
+fn it_openapi_admin_settings_routes_declare_typed_contracts() {
+    let document = application_document();
+    let paths = &document["paths"];
+    let schemas = &document["components"]["schemas"];
+    let security = json!([{ "palmrSession": [], "palmrCsrfCookie": [], "palmrCsrfHeader": [] }]);
+
+    for (group, patch_schema, view_schema, class) in [
+        ("general", "GeneralPatch", "GeneralSettings", "admin"),
+        (
+            "security",
+            "SecurityPatch",
+            "SecuritySettings",
+            "admin+recent-auth",
+        ),
+        ("quotas", "QuotaPatch", "QuotaSettings", "admin"),
+        (
+            "public-links",
+            "PublicLinkPatch",
+            "PublicLinkSettings",
+            "admin",
+        ),
+    ] {
+        let item = &paths[format!("/api/v1/admin/settings/{group}")];
+        let read = &item["get"];
+        let write = &item["patch"];
+        assert_eq!(read["security"], json!([{ "palmrSession": [] }]), "{group}");
+        assert_eq!(write["security"], security, "{group}");
+        for operation in [read, write] {
+            assert!(operation["tags"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|tag| tag == "admin-settings"));
+        }
+        assert!(read["tags"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|tag| tag == "admin"));
+        assert!(
+            write["tags"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|tag| tag == class),
+            "{group}"
+        );
+        assert_eq!(
+            write["requestBody"]["content"]["application/json"]["schema"]["$ref"],
+            format!("#/components/schemas/{patch_schema}")
+        );
+        for operation in [read, write] {
+            assert_eq!(
+                operation["responses"]["200"]["content"]["application/json"]["schema"]["$ref"],
+                format!("#/components/schemas/{view_schema}"),
+                "{group}"
+            );
+            for status in ["401", "403", "429"] {
+                assert!(
+                    operation["responses"][status].is_object(),
+                    "{group} {status}"
+                );
+            }
+        }
+        for status in ["400", "415", "422"] {
+            assert!(write["responses"][status].is_object(), "{group} {status}");
+        }
+        let unprocessable = write["responses"]["422"]["description"].as_str().unwrap();
+        assert!(unprocessable.contains("SETTING_UNKNOWN"), "{group}");
+        assert!(unprocessable.contains("SETTING_VALUE_INVALID"), "{group}");
+        assert_eq!(
+            schemas[patch_schema]["additionalProperties"], false,
+            "{group}"
+        );
+    }
+    let forbidden = paths["/api/v1/admin/settings/security"]["patch"]["responses"]["403"]
+        ["description"]
+        .as_str()
+        .unwrap();
+    assert!(forbidden.contains("AUTH_RECENT_AUTH_REQUIRED"));
+    for group in ["security", "quotas", "public-links"] {
+        let description = paths[format!("/api/v1/admin/settings/{group}")]["patch"]["responses"]
+            ["422"]["description"]
+            .as_str()
+            .unwrap();
+        assert!(
+            description.contains("SETTING_BELOW_FLOOR") && description.contains("details.floor")
+        );
+    }
+
+    let aggregate = &paths["/api/v1/admin/settings"]["get"];
+    assert_eq!(
+        aggregate["responses"]["200"]["content"]["application/json"]["schema"]["$ref"],
+        "#/components/schemas/AdminSettings"
+    );
+    assert!(paths["/api/v1/admin/settings"]["patch"].is_null());
+    let properties = schemas["AdminSettings"]["properties"].as_object().unwrap();
+    let mut names: Vec<&str> = properties.keys().map(String::as_str).collect();
+    names.sort_unstable();
+    assert_eq!(names, ["general", "public-links", "quotas", "security"]);
+
+    let general: Vec<&str> = schemas["GeneralPatch"]["properties"]
+        .as_object()
+        .unwrap()
+        .keys()
+        .map(String::as_str)
+        .collect();
+    for name in [
+        "appName",
+        "appDescription",
+        "defaultLocale",
+        "hideVersion",
+        "poweredByVisible",
+        "thumbnailSourceLimit",
+    ] {
+        assert!(general.contains(&name), "{name}");
+    }
+    assert_eq!(general.len(), 6);
+    assert_eq!(
+        schemas["SecurityPatch"]["properties"]
+            .as_object()
+            .unwrap()
+            .len(),
+        12
+    );
+    assert_eq!(
+        schemas["QuotaPatch"]["properties"]["defaultUserQuotaBytes"]["minimum"],
+        0
+    );
+    assert_eq!(
+        schemas["GeneralPatch"]["properties"]["appName"]["type"],
+        "string"
+    );
+    assert_eq!(
+        schemas["SecurityPatch"]["properties"]["twoFactorRequired"]["type"],
+        "boolean"
+    );
+    assert_eq!(
+        schemas["SecurityPatch"]["properties"]["passwordMinLength"]["type"],
+        "integer"
+    );
+    for (schema, member) in [
+        ("QuotaPatch", "defaultUserQuotaBytes"),
+        ("QuotaPatch", "maxFileSizeBytes"),
+        ("PublicLinkPatch", "maxPublicLinkLifetimeDays"),
+    ] {
+        let types = schemas[schema]["properties"][member]["type"]
+            .as_array()
+            .unwrap();
+        assert!(types.iter().any(|kind| kind == "null"), "{schema}.{member}");
+    }
+    for schema in ["GeneralPatch", "SecurityPatch"] {
+        assert!(schemas[schema]["required"].is_null(), "{schema}");
+    }
+    assert!(
+        schemas["PublicLinkPatch"]["properties"]["maxPublicLinkLifetimeDays"]["maximum"].is_null()
+    );
+    for member in [
+        "passwordMinLength",
+        "publicLinkPasswordMinLength",
+        "maxLoginAttempts",
+        "loginLockoutMinutes",
+    ] {
+        assert!(
+            schemas["SecurityPatch"]["properties"][member]["maximum"].is_null(),
+            "{member}"
+        );
+    }
+    for schema in [
+        "GeneralPatch",
+        "SecurityPatch",
+        "QuotaPatch",
+        "PublicLinkPatch",
+    ] {
+        for name in schemas[schema]["properties"].as_object().unwrap().keys() {
+            let lowered = name.to_lowercase();
+            for operator in [
+                "port",
+                "bind",
+                "baseurl",
+                "proxy",
+                "storageprovider",
+                "s3",
+                "datadir",
+            ] {
+                assert!(!lowered.contains(operator), "{schema}.{name}");
+            }
+        }
+    }
 }
 
 fn parameter<'a>(operation: &'a Value, name: &str) -> &'a Value {

@@ -233,6 +233,21 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "SETTING_BELOW_FLOOR",
+    "status": 422,
+    "retryable": false
+  },
+  {
+    "code": "SETTING_UNKNOWN",
+    "status": 422,
+    "retryable": false
+  },
+  {
+    "code": "SETTING_VALUE_INVALID",
+    "status": 422,
+    "retryable": false
+  },
+  {
     "code": "SETUP_ALREADY_COMPLETED",
     "status": 409,
     "retryable": false

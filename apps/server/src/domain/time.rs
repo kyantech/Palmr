@@ -17,6 +17,8 @@ pub struct Timestamp(OffsetDateTime);
 pub struct InvalidTimestamp;
 
 impl Timestamp {
+    pub const MAX: Self = Self(time::macros::datetime!(9999-12-31 23:59:59.999 UTC));
+
     pub const fn get(self) -> OffsetDateTime {
         self.0
     }

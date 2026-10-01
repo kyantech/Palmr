@@ -112,6 +112,9 @@ export const ERROR_PRESENTATION: Readonly<Record<ErrorCode, ErrorPresentation>> 
   STORAGE_PROVIDER_MISMATCH: entry("message.storageProviderMismatch", modal(false)),
   STORAGE_SIZE_MISMATCH: entry("message.storageSizeMismatch", modal(false)),
   BRANDING_ASSET_UNKNOWN: entry("message.brandingAssetUnknown", inline()),
+  SETTING_UNKNOWN: entry("message.settingUnknown", inline("warning")),
+  SETTING_VALUE_INVALID: entry("message.settingValueInvalid", inline("warning")),
+  SETTING_BELOW_FLOOR: entry("message.settingBelowFloor", inline("warning")),
 
   CLIENT_OFFLINE: entry("message.offline", { ...toast("warning", true), showRequestId: false }),
   CLIENT_NETWORK_ERROR: entry("message.networkError", {

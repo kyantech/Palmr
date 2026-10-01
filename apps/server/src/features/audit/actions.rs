@@ -8,6 +8,7 @@ use super::model::AuditAction;
 pub const MAX_METADATA_BYTES: usize = 4096;
 
 const MAX_SETTING_KEY_CHARS: usize = 64;
+const MAX_SETTING_TEXT_CHARS: usize = 300;
 
 // `Metadata` has no public constructor and no `From`/`Serialize` impl: the
 // only builders are the per-action functions in this module, so a domain
@@ -103,6 +104,68 @@ pub fn setting_changed(key: &SettingKey, from: Presence, to: Presence) -> Action
         ("to", Value::from(to.as_str())),
     ]);
     ActionSpec::new(AuditAction::SettingChanged, metadata)
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SettingValue {
+    Unset,
+    Bool(bool),
+    Integer(i64),
+    Text(String),
+}
+
+impl SettingValue {
+    fn json(&self) -> Value {
+        match self {
+            Self::Unset => Value::Null,
+            Self::Bool(flag) => Value::from(*flag),
+            Self::Integer(number) => Value::from(*number),
+            Self::Text(text) => Value::from(
+                text.chars()
+                    .take(MAX_SETTING_TEXT_CHARS)
+                    .collect::<String>(),
+            ),
+        }
+    }
+}
+
+fn setting_value_metadata(key: &SettingKey, from: &SettingValue, to: &SettingValue) -> Metadata {
+    Metadata::json(&[
+        ("key", Value::from(key.as_str())),
+        ("from", from.json()),
+        ("to", to.json()),
+    ])
+}
+
+pub fn setting_value_changed(
+    key: &SettingKey,
+    from: &SettingValue,
+    to: &SettingValue,
+) -> ActionSpec {
+    ActionSpec::new(
+        AuditAction::SettingChanged,
+        setting_value_metadata(key, from, to),
+    )
+}
+
+pub fn security_policy_changed(
+    key: &SettingKey,
+    from: &SettingValue,
+    to: &SettingValue,
+) -> ActionSpec {
+    ActionSpec::new(
+        AuditAction::SecurityPolicyChanged,
+        setting_value_metadata(key, from, to),
+    )
+}
+
+pub fn mandatory_2fa_policy_changed(from: bool, to: bool) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("key", Value::from("two_factor_required")),
+        ("from", Value::from(from)),
+        ("to", Value::from(to)),
+    ]);
+    ActionSpec::new(AuditAction::Mandatory2faPolicyChanged, metadata)
 }
 
 // The job payload is deliberately absent: it can carry secret-bearing
@@ -615,6 +678,29 @@ mod tests {
             for forbidden in ["token", "hash", "password", "secret", "email"] {
                 assert!(!text.contains(forbidden), "{text}");
             }
+        }
+
+        let key = SettingKey::new("password_min_length").unwrap();
+        let long = SettingValue::Text("é".repeat(10_000));
+        let changed = setting_value_changed(&key, &long, &SettingValue::Unset);
+        assert_eq!(changed.action(), AuditAction::SettingChanged);
+        assert_eq!(fields(&changed), ["from", "key", "to"]);
+        let security =
+            security_policy_changed(&key, &SettingValue::Integer(8), &SettingValue::Integer(12));
+        assert_eq!(security.action(), AuditAction::SecurityPolicyChanged);
+        assert_eq!(
+            security.metadata().as_str(),
+            r#"{"from":8,"key":"password_min_length","to":12}"#
+        );
+        let mandatory = mandatory_2fa_policy_changed(false, true);
+        assert_eq!(mandatory.action(), AuditAction::Mandatory2faPolicyChanged);
+        assert_eq!(
+            mandatory.metadata().as_str(),
+            r#"{"from":false,"key":"two_factor_required","to":true}"#
+        );
+        for spec in [&changed, &security, &mandatory] {
+            assert!(spec.metadata().bytes() <= MAX_METADATA_BYTES);
+            assert_eq!(spec.action().write_path(), WritePath::InTransaction);
         }
 
         for spec in [&requested, &confirmed] {

@@ -268,6 +268,8 @@ impl WritePath {
 pub enum AuditAction {
     JobDeadLettered,
     SettingChanged,
+    SecurityPolicyChanged,
+    Mandatory2faPolicyChanged,
     StorageOrphanDetected,
     SessionRevoked,
     AllSessionsRevoked,
@@ -301,6 +303,8 @@ impl AuditAction {
     pub const ALL: &'static [Self] = &[
         Self::JobDeadLettered,
         Self::SettingChanged,
+        Self::SecurityPolicyChanged,
+        Self::Mandatory2faPolicyChanged,
         Self::StorageOrphanDetected,
         Self::SessionRevoked,
         Self::AllSessionsRevoked,
@@ -334,6 +338,8 @@ impl AuditAction {
         match self {
             Self::JobDeadLettered => "JOB_DEAD_LETTERED",
             Self::SettingChanged => "SETTING_CHANGED",
+            Self::SecurityPolicyChanged => "SECURITY_POLICY_CHANGED",
+            Self::Mandatory2faPolicyChanged => "MANDATORY_2FA_POLICY_CHANGED",
             Self::StorageOrphanDetected => "STORAGE_ORPHAN_DETECTED",
             Self::SessionRevoked => "SESSION_REVOKED",
             Self::AllSessionsRevoked => "ALL_SESSIONS_REVOKED",
@@ -373,6 +379,8 @@ impl AuditAction {
             | Self::LoginLockedOut
             | Self::Logout => WritePath::Enqueued,
             Self::SettingChanged
+            | Self::SecurityPolicyChanged
+            | Self::Mandatory2faPolicyChanged
             | Self::SessionRevoked
             | Self::AllSessionsRevoked
             | Self::TrustedDeviceRevoked

@@ -49,7 +49,7 @@ use crate::features::auth::totp::TotpService;
 use crate::features::email::transport::CapturingTransport;
 use crate::features::email::EmailService;
 use crate::features::settings::effective::{EffectiveSettingsService, OperatorPolicy};
-use crate::features::settings::SettingsService;
+use crate::features::settings::{AdminSettingsService, SettingsService};
 use crate::features::setup::SetupService;
 use crate::features::users::model::{NewUser, NormalizedIdentifier, QuotaOverride, UserId};
 use crate::features::users::repo as users;
@@ -197,6 +197,8 @@ impl Stack {
             email.clone(),
             audit.clone(),
         );
+        let admin_settings =
+            AdminSettingsService::new(settings.clone(), Arc::new(clock.clone()), audit.clone());
         let invites = InviteService::new(InviteServiceParts {
             pools: pools.clone(),
             clock: Arc::new(clock.clone()),
@@ -230,6 +232,7 @@ impl Stack {
             .layer(Extension(resets.clone()))
             .layer(Extension(invites.clone()))
             .layer(Extension(admin_users.clone()))
+            .layer(Extension(admin_settings.clone()))
             .layer(Extension(email_changes.clone()))
             .layer(Extension(EffectiveSettingsService::new(
                 pools.reader().clone(),
@@ -1761,6 +1764,7 @@ async fn it_login_audit_and_attempts_never_store_secrets() {
 mod admin_email;
 mod admin_lifecycle;
 mod admin_security;
+mod admin_settings;
 mod admin_users;
 mod forced_states;
 mod invites;

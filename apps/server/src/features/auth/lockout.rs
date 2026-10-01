@@ -88,10 +88,13 @@ impl LockoutPolicy {
         self.minutes
     }
 
-    fn locked_until(self, now: Timestamp) -> Result<Timestamp, LoginError> {
-        Ok(Timestamp::try_from(
-            now.get() + Duration::minutes(i64::from(self.minutes)),
-        )?)
+    fn locked_until(self, now: Timestamp) -> Timestamp {
+        let until = now
+            .get()
+            .checked_add(Duration::minutes(i64::from(self.minutes)));
+        until
+            .and_then(|at| Timestamp::try_from(at).ok())
+            .unwrap_or(Timestamp::MAX)
     }
 }
 
@@ -224,7 +227,7 @@ pub async fn record_failure(
         .bind(user_id.to_string())
         .bind(now.to_string())
         .bind(i64::from(policy.max_attempts))
-        .bind(policy.locked_until(now)?.to_string())
+        .bind(policy.locked_until(now).to_string())
         .fetch_one(tx.executor())
         .await?;
     let state = state_from(&row)?;
@@ -290,4 +293,24 @@ const fn invariant(column: &'static str) -> LoginError {
 
 fn bounded(value: Option<&str>, max_chars: usize) -> Option<String> {
     value.map(|value| value.chars().take(max_chars).collect())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_lockout_expiry_saturates_instead_of_failing_for_extreme_minutes() {
+        let now = Timestamp::try_from(time::macros::datetime!(2026-01-01 00:00 UTC)).unwrap();
+        let mut settings = AppSettings::defaults();
+        settings.security.login_lockout_minutes = u32::MAX;
+        let policy = LockoutPolicy::from_settings(&settings);
+        assert_eq!(policy.locked_until(now), Timestamp::MAX);
+        settings.security.login_lockout_minutes = 10;
+        let policy = LockoutPolicy::from_settings(&settings);
+        assert_eq!(
+            policy.locked_until(now).get(),
+            time::macros::datetime!(2026-01-01 00:10 UTC)
+        );
+    }
 }

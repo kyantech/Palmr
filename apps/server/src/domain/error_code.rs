@@ -168,6 +168,12 @@ error_catalog! {
         "The stored object belongs to a different storage provider";
     StorageSizeMismatch = "STORAGE_SIZE_MISMATCH", INTERNAL_SERVER_ERROR, retryable: false,
         "The stored object size does not match the expected size";
+    SettingUnknown = "SETTING_UNKNOWN", UNPROCESSABLE_ENTITY, retryable: false,
+        "The settings group has no such setting";
+    SettingValueInvalid = "SETTING_VALUE_INVALID", UNPROCESSABLE_ENTITY, retryable: false,
+        "The setting value is invalid";
+    SettingBelowFloor = "SETTING_BELOW_FLOOR", UNPROCESSABLE_ENTITY, retryable: false,
+        "The setting value is below the platform floor";
     BrandingAssetUnknown = "BRANDING_ASSET_UNKNOWN", NOT_FOUND, retryable: false,
         "The branding asset was not found";
 }
