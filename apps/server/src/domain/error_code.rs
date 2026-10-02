@@ -188,6 +188,12 @@ error_catalog! {
         "The identity provider checks failed";
     ProviderHasLinks = "PROVIDER_HAS_LINKS", CONFLICT, retryable: false,
         "The identity provider still has identity links";
+    ProviderIdTokenInvalid = "PROVIDER_ID_TOKEN_INVALID", UNAUTHORIZED, retryable: false,
+        "The identity provider ID token is invalid";
+    ProviderUserinfoFailed = "PROVIDER_USERINFO_FAILED", BAD_GATEWAY, retryable: true,
+        "The identity provider userinfo request failed";
+    ProviderSubjectMissing = "PROVIDER_SUBJECT_MISSING", UNAUTHORIZED, retryable: false,
+        "The identity provider did not return a usable subject";
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -295,6 +301,7 @@ mod tests {
                 "IDEMPOTENCY_REQUEST_IN_PROGRESS",
                 "INTERNAL_ERROR",
                 "PROVIDER_DISCOVERY_FAILED",
+                "PROVIDER_USERINFO_FAILED",
                 "RATE_LIMITED",
                 "SERVICE_UNAVAILABLE",
                 "STORAGE_FULL",

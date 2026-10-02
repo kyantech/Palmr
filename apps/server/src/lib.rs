@@ -47,4 +47,6 @@ mod storage;
 pub use app::{lifecycle, openapi};
 pub use config::{EnvironmentSource, OperatorConfig};
 pub use domain::clock::{Clock, TestClock};
+pub use domain::error_code::ErrorCode;
+pub use features::identity_providers;
 pub use infra::telemetry::write_startup_failure;

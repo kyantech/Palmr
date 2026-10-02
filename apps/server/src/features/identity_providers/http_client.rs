@@ -7,7 +7,7 @@ use std::task::{Context, Poll};
 use std::time::Duration;
 
 use bytes::Bytes;
-use http::header::{ACCEPT, CONTENT_LENGTH, LOCATION, USER_AGENT};
+use http::header::{ACCEPT, AUTHORIZATION, CONTENT_LENGTH, LOCATION, USER_AGENT};
 use http::{HeaderValue, Method, Request, StatusCode};
 use http_body_util::{BodyExt, Empty, LengthLimitError, Limited};
 use hyper_rustls::HttpsConnector;
@@ -87,7 +87,8 @@ impl ProviderHttpClient {
         }
     }
 
-    #[cfg(test)]
+    /// A total request budget override, used by tests to exercise timeouts
+    /// without waiting the production ten seconds.
     pub fn with_timeout(timeout: Duration) -> Self {
         Self {
             timeout,
@@ -114,6 +115,20 @@ impl ProviderHttpClient {
     pub async fn probe(&self, url: &str) -> Result<StatusCode, FetchFailure> {
         let inner = self.inner.as_ref().ok_or(FetchFailure::Tls)?;
         let exchange = inner.probe(url);
+        tokio::time::timeout(self.timeout, exchange)
+            .await
+            .unwrap_or(Err(FetchFailure::Timeout))
+    }
+
+    /// Fetches a document with `Authorization: Bearer <token>`.
+    ///
+    /// The bearer credential is only ever sent to the original origin: a
+    /// redirect to a different origin is refused rather than followed, so an
+    /// access token can never be replayed to an attacker-controlled host. The
+    /// token is not logged, not stored and never returned in an error.
+    pub async fn bearer_document(&self, url: &str, token: &str) -> Result<Document, FetchFailure> {
+        let inner = self.inner.as_ref().ok_or(FetchFailure::Tls)?;
+        let exchange = inner.bearer(url, token);
         tokio::time::timeout(self.timeout, exchange)
             .await
             .unwrap_or(Err(FetchFailure::Timeout))
@@ -203,25 +218,38 @@ impl Inner {
             if !status.is_success() {
                 return Err(FetchFailure::Status(status.as_u16()));
             }
-            let declared = response
-                .headers()
-                .get(CONTENT_LENGTH)
-                .and_then(|value| value.to_str().ok())
-                .and_then(|value| value.parse::<usize>().ok());
-            if declared.is_some_and(|length| length > RESPONSE_LIMIT_BYTES) {
-                return Err(FetchFailure::TooLarge);
+            let body = capped_body(response).await?;
+            return Ok(Document { status, body });
+        }
+        Err(FetchFailure::TooManyRedirects)
+    }
+
+    async fn bearer(&self, url: &str, token: &str) -> Result<Document, FetchFailure> {
+        let mut current = acceptable_url(url).ok_or(FetchFailure::InvalidUrl)?;
+        let origin = current.origin();
+        for _ in 0..=MAX_REDIRECTS {
+            let response = self.send_bearer(&current, token).await?;
+            let status = response.status();
+            if is_redirect(status) {
+                let target = response
+                    .headers()
+                    .get(LOCATION)
+                    .and_then(|value| value.to_str().ok())
+                    .and_then(|location| current.join(location).ok())
+                    .ok_or(FetchFailure::InvalidUrl)?;
+                if !url_is_acceptable(&target) {
+                    return Err(FetchFailure::InvalidUrl);
+                }
+                if target.origin() != origin {
+                    return Err(FetchFailure::Blocked);
+                }
+                current = target;
+                continue;
             }
-            let body = Limited::new(response.into_body(), RESPONSE_LIMIT_BYTES)
-                .collect()
-                .await
-                .map_err(|error| {
-                    if error.downcast_ref::<LengthLimitError>().is_some() {
-                        FetchFailure::TooLarge
-                    } else {
-                        FetchFailure::Unreachable
-                    }
-                })?
-                .to_bytes();
+            if !status.is_success() {
+                return Err(FetchFailure::Status(status.as_u16()));
+            }
+            let body = capped_body(response).await?;
             return Ok(Document { status, body });
         }
         Err(FetchFailure::TooManyRedirects)
@@ -252,6 +280,54 @@ impl Inner {
         };
         result.map_err(|error| classify(&error))
     }
+
+    async fn send_bearer(
+        &self,
+        url: &Url,
+        token: &str,
+    ) -> Result<http::Response<hyper::body::Incoming>, FetchFailure> {
+        if token.is_empty() {
+            return Err(FetchFailure::InvalidUrl);
+        }
+        let authorization = HeaderValue::from_str(&format!("Bearer {token}"))
+            .map_err(|_| FetchFailure::InvalidUrl)?;
+        let request = Request::builder()
+            .method(Method::GET)
+            .uri(url.as_str())
+            .header(ACCEPT, JSON)
+            .header(USER_AGENT, AGENT)
+            .header(AUTHORIZATION, authorization)
+            .body(Empty::<Bytes>::new())
+            .map_err(|_| FetchFailure::InvalidUrl)?;
+        self.open
+            .request(request)
+            .await
+            .map_err(|error| classify(&error))
+    }
+}
+
+async fn capped_body(
+    response: http::Response<hyper::body::Incoming>,
+) -> Result<Bytes, FetchFailure> {
+    let declared = response
+        .headers()
+        .get(CONTENT_LENGTH)
+        .and_then(|value| value.to_str().ok())
+        .and_then(|value| value.parse::<usize>().ok());
+    if declared.is_some_and(|length| length > RESPONSE_LIMIT_BYTES) {
+        return Err(FetchFailure::TooLarge);
+    }
+    Limited::new(response.into_body(), RESPONSE_LIMIT_BYTES)
+        .collect()
+        .await
+        .map_err(|error| {
+            if error.downcast_ref::<LengthLimitError>().is_some() {
+                FetchFailure::TooLarge
+            } else {
+                FetchFailure::Unreachable
+            }
+        })
+        .map(|collected| collected.to_bytes())
 }
 
 const fn is_redirect(status: StatusCode) -> bool {

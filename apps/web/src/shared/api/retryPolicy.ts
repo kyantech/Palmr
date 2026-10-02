@@ -90,6 +90,9 @@ export const RETRY_CLASS: Readonly<Record<ErrorCode, RetryClass>> = {
   PROVIDER_DISCOVERY_FAILED: "serverFault",
   PROVIDER_VALIDATION_FAILED: "never",
   PROVIDER_HAS_LINKS: "never",
+  PROVIDER_ID_TOKEN_INVALID: "never",
+  PROVIDER_USERINFO_FAILED: "serverFault",
+  PROVIDER_SUBJECT_MISSING: "never",
 };
 
 const MAX_RETRIES: Readonly<Record<RetryClass, number>> = {

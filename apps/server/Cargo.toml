@@ -37,6 +37,7 @@ http = "1"
 http-body = "1"
 getrandom = "0.4"
 http-body-util = "0.1"
+jsonwebtoken = "9.3"
 hyper = { version = "1", default-features = false, features = ["client", "http1", "http2"] }
 hyper-rustls = { version = "0.27", default-features = false, features = ["http1", "http2", "ring", "tls12"] }
 hyper-util = { version = "0.1", default-features = false, features = ["client-legacy", "http1", "http2", "tokio"] }
@@ -96,3 +97,4 @@ tempfile = "3"
 testcontainers = "0.28"
 tl = "0.7"
 tokio = { version = "1", features = ["io-util", "macros", "rt", "test-util"] }
+wiremock = "0.6"

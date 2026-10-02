@@ -198,6 +198,11 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "PROVIDER_ID_TOKEN_INVALID",
+    "status": 401,
+    "retryable": false
+  },
+  {
     "code": "PROVIDER_NOT_FOUND",
     "status": 404,
     "retryable": false
@@ -206,6 +211,16 @@ source: apps/server/src/domain/error_code.rs
     "code": "PROVIDER_SLUG_TAKEN",
     "status": 409,
     "retryable": false
+  },
+  {
+    "code": "PROVIDER_SUBJECT_MISSING",
+    "status": 401,
+    "retryable": false
+  },
+  {
+    "code": "PROVIDER_USERINFO_FAILED",
+    "status": 502,
+    "retryable": true
   },
   {
     "code": "PROVIDER_VALIDATION_FAILED",

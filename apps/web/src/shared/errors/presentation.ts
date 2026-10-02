@@ -124,6 +124,12 @@ export const ERROR_PRESENTATION: Readonly<Record<ErrorCode, ErrorPresentation>> 
   }),
   PROVIDER_VALIDATION_FAILED: entry("message.providerValidationFailed", inline()),
   PROVIDER_HAS_LINKS: entry("message.providerHasLinks", inline("warning")),
+  PROVIDER_ID_TOKEN_INVALID: entry("message.providerIdTokenInvalid", inline()),
+  PROVIDER_USERINFO_FAILED: entry("message.providerUserinfoFailed", {
+    ...inline(),
+    retryable: true,
+  }),
+  PROVIDER_SUBJECT_MISSING: entry("message.providerSubjectMissing", inline()),
 
   CLIENT_OFFLINE: entry("message.offline", { ...toast("warning", true), showRequestId: false }),
   CLIENT_NETWORK_ERROR: entry("message.networkError", {
