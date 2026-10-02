@@ -4,7 +4,7 @@ import type { TFunction } from "i18next";
 import { type ReactNode, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { ApiError, ErrorAlert, presentError } from "../../../shared/errors";
+import { ApiError, detailFields, ErrorAlert, presentError } from "../../../shared/errors";
 import { FormField } from "../../../shared/ui/FormField";
 import { newPasswordSchema, policyMinLength } from "./passwordRules";
 
@@ -73,8 +73,7 @@ export function NewPasswordForm({
       return;
     }
     if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
-      const fields = Array.isArray(error.details.fields) ? error.details.fields : [];
-      if (fields.includes("newPassword")) {
+      if (detailFields(error).includes("newPassword")) {
         setError("newPassword", { type: "server", message: t("password.validation.invalid") });
         setFocus("newPassword");
         return;

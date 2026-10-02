@@ -46,6 +46,7 @@ use crate::features::auth::totp::TotpService;
 use crate::features::auth::AuthService;
 use crate::features::branding::BrandingService;
 use crate::features::email::{self, EmailService, SmtpTransport};
+use crate::features::identity_providers::{IdentityProviderService, ProviderHttpClient};
 use crate::features::settings::{
     AdminSettingsService, EffectiveSettingsService, OperatorPolicy, SettingsError, SettingsHandle,
     SettingsService, SmtpTestService,
@@ -817,6 +818,14 @@ async fn initialize(
         sessions.clone(),
         audit_service.clone(),
     );
+    let identity_providers = IdentityProviderService::new(
+        database.pools().clone(),
+        Arc::clone(&clock),
+        Arc::clone(&email_keys),
+        audit_service.clone(),
+        ProviderHttpClient::new(),
+        config.base_url.clone(),
+    );
     let smtp_test = SmtpTestService::new(settings.clone(), Arc::new(SmtpTransport));
     let totp = TotpService::new(
         database.pools().clone(),
@@ -864,6 +873,7 @@ async fn initialize(
         auth,
         profile,
         admin_users,
+        identity_providers,
         admin_settings: AdminSettingsService::new(
             settings_service.clone(),
             Arc::clone(&clock),
@@ -1114,6 +1124,7 @@ struct RequestServices {
     auth: AuthService,
     profile: ProfileService,
     admin_users: AdminUserService,
+    identity_providers: IdentityProviderService,
     admin_settings: AdminSettingsService,
     smtp_test: SmtpTestService,
     email_change: EmailChangeService,
@@ -1150,6 +1161,7 @@ fn composed_router(
             .layer(axum::Extension(services.auth))
             .layer(axum::Extension(services.profile))
             .layer(axum::Extension(services.admin_users))
+            .layer(axum::Extension(services.identity_providers))
             .layer(axum::Extension(services.admin_settings))
             .layer(axum::Extension(services.smtp_test))
             .layer(axum::Extension(services.email_change))

@@ -1,4 +1,4 @@
-import { ApiError, presentError } from "../../../shared/errors";
+import { ApiError, detailFields, presentError } from "../../../shared/errors";
 
 export function reportable(error: unknown): unknown {
   const presented = presentError(error);
@@ -14,8 +14,7 @@ export function invalidFields<Field extends string>(
   if (!(error instanceof ApiError) || error.code !== "VALIDATION_ERROR") {
     return [];
   }
-  const fields = error.details.fields;
-  return (Array.isArray(fields) ? fields : []).filter((field): field is Field =>
+  return detailFields(error).filter((field): field is Field =>
     (known as readonly string[]).includes(field),
   );
 }

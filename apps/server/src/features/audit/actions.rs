@@ -381,6 +381,76 @@ pub fn operator_cli_password_reset(facts: PasswordResetFacts) -> ActionSpec {
     ActionSpec::new(AuditAction::OperatorCliPasswordReset, metadata)
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct IdentityProviderCreatedFacts {
+    pub protocol: &'static str,
+    pub preset: &'static str,
+    pub enabled: bool,
+    pub auto_provision: bool,
+    pub allow_email_linking: bool,
+    pub client_secret: Presence,
+}
+
+pub fn identity_provider_created(facts: IdentityProviderCreatedFacts) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("protocol", Value::from(facts.protocol)),
+        ("preset", Value::from(facts.preset)),
+        ("enabled", Value::from(facts.enabled)),
+        ("auto_provision", Value::from(facts.auto_provision)),
+        (
+            "allow_email_linking",
+            Value::from(facts.allow_email_linking),
+        ),
+        ("client_secret", Value::from(facts.client_secret.as_str())),
+    ]);
+    ActionSpec::new(AuditAction::IdentityProviderCreated, metadata)
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct IdentityProviderUpdatedFacts {
+    pub changed: Vec<&'static str>,
+    pub client_secret: Option<(Presence, Presence)>,
+    pub validation_reset: bool,
+}
+
+pub fn identity_provider_updated(facts: &IdentityProviderUpdatedFacts) -> ActionSpec {
+    let mut fields = vec![
+        ("changed", Value::from(facts.changed.clone())),
+        ("validation_reset", Value::from(facts.validation_reset)),
+    ];
+    if let Some((from, to)) = facts.client_secret {
+        fields.push((
+            "client_secret",
+            serde_json::json!({ "from": from.as_str(), "to": to.as_str() }),
+        ));
+    }
+    ActionSpec::new(
+        AuditAction::IdentityProviderUpdated,
+        Metadata::json(&fields),
+    )
+}
+
+pub fn identity_provider_fields_updated(fields: &[&'static str]) -> ActionSpec {
+    let metadata = Metadata::json(&[("fields", Value::from(fields.to_vec()))]);
+    ActionSpec::new(AuditAction::IdentityProviderUpdated, metadata)
+}
+
+pub fn identity_provider_enabled() -> ActionSpec {
+    ActionSpec::new(AuditAction::IdentityProviderEnabled, Metadata::json(&[]))
+}
+
+pub fn identity_provider_disabled() -> ActionSpec {
+    ActionSpec::new(AuditAction::IdentityProviderDisabled, Metadata::json(&[]))
+}
+
+pub fn identity_provider_deleted(protocol: &'static str, preset: &'static str) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("protocol", Value::from(protocol)),
+        ("preset", Value::from(preset)),
+    ]);
+    ActionSpec::new(AuditAction::IdentityProviderDeleted, metadata)
+}
+
 pub fn setup_completed() -> ActionSpec {
     ActionSpec::new(AuditAction::SetupCompleted, Metadata::json(&[]))
 }

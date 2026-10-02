@@ -1,0 +1,385 @@
+use axum::extract::{Extension, Path, RawQuery, Request};
+use axum::response::{IntoResponse, Response};
+use http::header::{CACHE_CONTROL, CONTENT_TYPE};
+use http::{HeaderValue, StatusCode};
+use utoipa::openapi::path::Parameter;
+use utoipa_axum::routes;
+
+use super::discovery::Discovered;
+use super::error::ProviderError;
+use super::input::{
+    parse_order, CreateInput, CreateProviderRequest, DiscoverRequest, OrderRequest, UpdateInput,
+    UpdateProviderRequest,
+};
+use super::model::{ProviderId, ProviderItem};
+use super::presets::PresetCatalogue;
+use super::provider_test::ProviderTestResult;
+use super::service::{IdentityProviderService, PROVIDER_SORT};
+use crate::app::auth_class::AuthClass;
+use crate::app::openapi::with_query_parameters;
+use crate::app::router::{RateLimitClass, RoutePolicy, Routes, Transport};
+use crate::app::state::AppState;
+use crate::features::auth::sessions::routes::client_metadata;
+use crate::infra::http::error::{ApiError, ApiErrorBody, JSON_CONTENT_TYPE};
+use crate::infra::http::extractors::Admin;
+use crate::infra::http::json;
+use crate::infra::http::pagination::{cursor_parameter, limit_parameter, Page};
+use crate::infra::http::request_id::{tag_error, RequestId};
+
+pub const READ_ROUTE: RoutePolicy = RoutePolicy::new(
+    AuthClass::Admin,
+    RateLimitClass::Read,
+    Transport::ControlPlane,
+);
+
+pub const SENSITIVE_WRITE_ROUTE: RoutePolicy = RoutePolicy::new(
+    AuthClass::AdminRecentAuth,
+    RateLimitClass::AdminWrite,
+    Transport::ControlPlane,
+);
+
+pub const ORDER_ROUTE: RoutePolicy = RoutePolicy::new(
+    AuthClass::Admin,
+    RateLimitClass::AdminWrite,
+    Transport::ControlPlane,
+);
+
+pub const PROBE_ROUTE: RoutePolicy = RoutePolicy::new(
+    AuthClass::Admin,
+    RateLimitClass::ProviderTest,
+    Transport::ControlPlane,
+);
+
+const NO_STORE: HeaderValue = HeaderValue::from_static("no-store");
+
+pub fn routes() -> Routes<AppState> {
+    Routes::new()
+        .route(
+            READ_ROUTE,
+            with_query_parameters(routes!(list_providers), &list_parameters()),
+        )
+        .route(SENSITIVE_WRITE_ROUTE, routes!(create_provider))
+        .route(SENSITIVE_WRITE_ROUTE, routes!(update_provider))
+        .route(SENSITIVE_WRITE_ROUTE, routes!(delete_provider))
+        .route(ORDER_ROUTE, routes!(reorder_providers))
+        .route(PROBE_ROUTE, routes!(discover_provider))
+        .route(PROBE_ROUTE, routes!(test_provider))
+        .route(READ_ROUTE, routes!(list_presets))
+}
+
+fn list_parameters() -> Vec<Parameter> {
+    vec![
+        PROVIDER_SORT.parameter(),
+        cursor_parameter(),
+        limit_parameter(),
+    ]
+}
+
+#[utoipa::path(
+    get,
+    path = "/api/v1/admin/providers",
+    tag = "admin-providers",
+    responses(
+        (status = 200, description = "External identity providers in `sortOrder` order with a stable tie-breaker. `totalCount` is exact. No response carries a client secret: `clientSecretConfigured` reports only whether one is stored.", body = Page<ProviderItem>),
+        (status = 400, description = "`CURSOR_INVALID`.", body = ApiErrorBody),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role required.", body = ApiErrorBody),
+        (status = 422, description = "Invalid query.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn list_providers(
+    Extension(service): Extension<IdentityProviderService>,
+    Admin(_admin): Admin,
+    RawQuery(raw_query): RawQuery,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let page = match service.query(raw_query.as_deref()) {
+        Ok(page) => page,
+        Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
+    };
+    match service.list(page).await {
+        Ok(page) => json_response(StatusCode::OK, &page, request_id.as_ref()),
+        Err(error) => provider_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    post,
+    path = "/api/v1/admin/providers",
+    tag = "admin-providers",
+    request_body(
+        content = CreateProviderRequest,
+        content_type = "application/json",
+        description = "Creates a provider; nothing is created by choosing a preset. An `oidc` provider runs discovery from `<issuerUrl>/.well-known/openid-configuration` for every endpoint the request does not supply, and the document's `issuer` must equal `issuerUrl` exactly. An `oauth2` provider requires `endpoints.authorization`, `.token` and `.userinfo`. `autoProvision` defaults to `false`; `allowEmailLinking` defaults to `true` for `oidc` and `false` for `oauth2`. The callback URI is derived from `PALMR_BASE_URL` and returned as `redirectUri`; it cannot be supplied."
+    ),
+    responses(
+        (status = 201, description = "The created provider. `clientSecretConfigured` reports only whether a secret is stored.", body = ProviderItem),
+        (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role or recent authentication required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
+        (status = 409, description = "`PROVIDER_SLUG_TAKEN`.", body = ApiErrorBody),
+        (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
+        (status = 422, description = "`VALIDATION_ERROR` for an invalid field, a preset that does not match the protocol, a missing client secret (unless `tokenAuthMethod` is `none`) or a client secret on a public client.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+        (status = 502, description = "`PROVIDER_DISCOVERY_FAILED`: discovery was unreachable, timed out, was too large, malformed or its issuer differed from `issuerUrl`.", body = ApiErrorBody),
+    )
+)]
+async fn create_provider(
+    Extension(service): Extension<IdentityProviderService>,
+    Admin(admin): Admin,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let client = client_metadata(&request);
+    let parsed = match json::read::<CreateProviderRequest>(request.into_body()).await {
+        Ok(body) => match CreateInput::parse(body) {
+            Ok(input) => input,
+            Err(fields) => return invalid(fields, request_id.as_ref()),
+        },
+        Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
+    };
+    match service.create(&admin, parsed, &client).await {
+        Ok(item) => json_response(StatusCode::CREATED, &item, request_id.as_ref()),
+        Err(error) => provider_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    patch,
+    path = "/api/v1/admin/providers/{id}",
+    tag = "admin-providers",
+    params(("id" = String, Path, description = "Provider UUIDv7")),
+    request_body(
+        content = UpdateProviderRequest,
+        content_type = "application/json",
+        description = "Any non-empty subset of the mutable members; `slug` and `redirectUri` are immutable and rejected. An absent member is unchanged, and no member except `issuerUrl`, `clientSecret` and the members of `endpoints` is nullable. A change to the issuer, client id, client secret, endpoints, protocol or token authentication method clears `validatedAt`. A change of issuer, or an incomplete `oidc` endpoint set, runs discovery again."
+    ),
+    responses(
+        (status = 200, description = "The updated provider.", body = ProviderItem),
+        (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role or recent authentication required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
+        (status = 404, description = "`PROVIDER_NOT_FOUND`.", body = ApiErrorBody),
+        (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
+        (status = 422, description = "`VALIDATION_ERROR` for an invalid or immutable member, an empty body or an inconsistent resulting configuration.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+        (status = 502, description = "`PROVIDER_DISCOVERY_FAILED`.", body = ApiErrorBody),
+        (status = 503, description = "`DATABASE_BUSY`, including a provider that changed while discovery was running; retry.", body = ApiErrorBody),
+    )
+)]
+async fn update_provider(
+    Extension(service): Extension<IdentityProviderService>,
+    Admin(admin): Admin,
+    Path(id): Path<String>,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let client = client_metadata(&request);
+    let Ok(id) = id.parse::<ProviderId>() else {
+        return provider_error(&ProviderError::NotFound, request_id.as_ref());
+    };
+    let input = match json::read::<UpdateProviderRequest>(request.into_body()).await {
+        Ok(body) => match UpdateInput::parse(body) {
+            Ok(input) => input,
+            Err(fields) => return invalid(fields, request_id.as_ref()),
+        },
+        Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
+    };
+    match service.update(&admin, id, input, &client).await {
+        Ok(item) => json_response(StatusCode::OK, &item, request_id.as_ref()),
+        Err(error) => provider_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    delete,
+    path = "/api/v1/admin/providers/{id}",
+    tag = "admin-providers",
+    params(("id" = String, Path, description = "Provider UUIDv7")),
+    responses(
+        (status = 204, description = "The provider was deleted and `IDENTITY_PROVIDER_DELETED` was audited in the same transaction."),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role or recent authentication required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
+        (status = 404, description = "`PROVIDER_NOT_FOUND`.", body = ApiErrorBody),
+        (status = 409, description = "`PROVIDER_HAS_LINKS`: identity links still reference the provider. It is never deleted and its links are never removed by this call; unlink those identities or remove the affected accounts first.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn delete_provider(
+    Extension(service): Extension<IdentityProviderService>,
+    Admin(admin): Admin,
+    Path(id): Path<String>,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let client = client_metadata(&request);
+    let Ok(id) = id.parse::<ProviderId>() else {
+        return provider_error(&ProviderError::NotFound, request_id.as_ref());
+    };
+    match service.delete(&admin, id, &client).await {
+        Ok(()) => (StatusCode::NO_CONTENT, [(CACHE_CONTROL, NO_STORE)]).into_response(),
+        Err(error) => provider_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    put,
+    path = "/api/v1/admin/providers/order",
+    tag = "admin-providers",
+    request_body(
+        content = OrderRequest,
+        content_type = "application/json",
+        description = "Every provider id exactly once, in the new order. Unknown, duplicate, malformed and missing ids are rejected and nothing is changed; the order is applied in one transaction, which also writes `IDENTITY_PROVIDER_UPDATED` for each provider whose position changed."
+    ),
+    responses(
+        (status = 204, description = "The order was applied."),
+        (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
+        (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
+        (status = 422, description = "`VALIDATION_ERROR` (`order`).", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn reorder_providers(
+    Extension(service): Extension<IdentityProviderService>,
+    Admin(admin): Admin,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let client = client_metadata(&request);
+    let order = match json::read::<OrderRequest>(request.into_body()).await {
+        Ok(body) => match parse_order(body) {
+            Ok(order) => order,
+            Err(fields) => return invalid(fields, request_id.as_ref()),
+        },
+        Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
+    };
+    match service.reorder(&admin, order, &client).await {
+        Ok(()) => (StatusCode::NO_CONTENT, [(CACHE_CONTROL, NO_STORE)]).into_response(),
+        Err(error) => provider_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    post,
+    path = "/api/v1/admin/providers/discover",
+    tag = "admin-providers",
+    request_body(
+        content = DiscoverRequest,
+        content_type = "application/json",
+        description = "Fetches only `<issuerUrl>/.well-known/openid-configuration` (10 s total, 256 KiB, verified TLS, no cookies or credentials, redirects never followed into non-public addresses) and previews it. Nothing is stored and no provider is changed."
+    ),
+    responses(
+        (status = 200, description = "The relevant fields of the discovery document; its `issuer` equals `issuerUrl` exactly.", body = Discovered),
+        (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
+        (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
+        (status = 422, description = "`VALIDATION_ERROR` for an issuer that is not an https URL (plain http only for loopback) without credentials, query or fragment.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+        (status = 502, description = "`PROVIDER_DISCOVERY_FAILED` with `details.reason`.", body = ApiErrorBody),
+    )
+)]
+async fn discover_provider(
+    Extension(service): Extension<IdentityProviderService>,
+    Admin(_admin): Admin,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let issuer = match json::read::<DiscoverRequest>(request.into_body()).await {
+        Ok(body) => match body.parse() {
+            Ok(issuer) => issuer,
+            Err(fields) => return invalid(fields, request_id.as_ref()),
+        },
+        Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
+    };
+    match service.discover(&issuer).await {
+        Ok(discovered) => json_response(StatusCode::OK, &discovered, request_id.as_ref()),
+        Err(error) => provider_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    post,
+    path = "/api/v1/admin/providers/{id}/test",
+    tag = "admin-providers",
+    params(("id" = String, Path, description = "Provider UUIDv7")),
+    responses(
+        (status = 200, description = "Every check passed and `validatedAt` was stamped; a change of the persisted validation state is audited as `IDENTITY_PROVIDER_UPDATED` in the same transaction. The stored client secret and any token are never sent or returned.", body = ProviderTestResult),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
+        (status = 404, description = "`PROVIDER_NOT_FOUND`.", body = ApiErrorBody),
+        (status = 422, description = "`PROVIDER_VALIDATION_FAILED` with the failing `details.checks[]`; the provider is left without a current `validatedAt`.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+        (status = 503, description = "`DATABASE_BUSY`, including a provider that changed while its test was running; retry.", body = ApiErrorBody),
+    )
+)]
+async fn test_provider(
+    Extension(service): Extension<IdentityProviderService>,
+    Admin(admin): Admin,
+    Path(id): Path<String>,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let client = client_metadata(&request);
+    let Ok(id) = id.parse::<ProviderId>() else {
+        return provider_error(&ProviderError::NotFound, request_id.as_ref());
+    };
+    match service.test(&admin, id, &client).await {
+        Ok(result) => json_response(StatusCode::OK, &result, request_id.as_ref()),
+        Err(error) => provider_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    get,
+    path = "/api/v1/admin/providers/presets",
+    tag = "admin-providers",
+    responses(
+        (status = 200, description = "The bundled preset catalogue: Google, GitHub, Discord, Pocket ID, Authentik, Zitadel, Auth0, Kinde, Frontegg, Custom OIDC and Custom OAuth2. Static data; no network call is made and no provider is created.", body = PresetCatalogue),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role required.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn list_presets(Admin(_admin): Admin, request: Request) -> Response {
+    json_response(
+        StatusCode::OK,
+        &PresetCatalogue::bundled(),
+        RequestId::of(&request).as_ref(),
+    )
+}
+
+fn invalid(fields: Vec<&'static str>, request_id: Option<&RequestId>) -> Response {
+    provider_error(&ProviderError::Invalid { fields }, request_id)
+}
+
+fn provider_error(error: &ProviderError, request_id: Option<&RequestId>) -> Response {
+    let api_error = error.api_error();
+    if api_error.status().is_server_error() && !matches!(error, ProviderError::DiscoveryFailed(_)) {
+        tracing::error!(kind = error.kind(), "identity provider request failed");
+    }
+    tag_error(api_error, request_id).into_response()
+}
+
+fn json_response<T: serde::Serialize>(
+    status: StatusCode,
+    body: &T,
+    request_id: Option<&RequestId>,
+) -> Response {
+    match serde_json::to_vec(body) {
+        Ok(body) => (
+            status,
+            [
+                (CONTENT_TYPE, HeaderValue::from_static(JSON_CONTENT_TYPE)),
+                (CACHE_CONTROL, NO_STORE),
+            ],
+            body,
+        )
+            .into_response(),
+        Err(_) => tag_error(ApiError::internal(), request_id).into_response(),
+    }
+}

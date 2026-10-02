@@ -5,7 +5,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Controller, type FieldPath, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
-import { ApiError, ErrorAlert, presentError } from "../../../shared/errors";
+import { ApiError, detailFields, ErrorAlert, presentError } from "../../../shared/errors";
 import { formatDateTime } from "../../../shared/format/dateTime";
 import { localeOptions } from "../../../shared/format/locale";
 import { FormField } from "../../../shared/ui/FormField";
@@ -155,8 +155,7 @@ export function InviteAcceptForm({
         return;
       }
       case "VALIDATION_ERROR": {
-        const fields = Array.isArray(error.details.fields) ? error.details.fields : [];
-        const invalid = fields.filter(isServerField);
+        const invalid = detailFields(error).filter(isServerField);
         if (invalid.length === 0) {
           setFailure(error);
           return;

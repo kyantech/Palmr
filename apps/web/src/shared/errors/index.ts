@@ -1,4 +1,4 @@
-export { ApiError, type ApiErrorInit, type ApiRequestDescription } from "./ApiError";
+export { ApiError, type ApiErrorInit, type ApiRequestDescription, detailFields } from "./ApiError";
 export type { ClientErrorCode, ErrorCode, ErrorDetails, ServerErrorCode } from "./codes";
 export { ErrorAlert, ErrorTechnicalDetails, RequestId, useErrorMessage } from "./ErrorView";
 export {

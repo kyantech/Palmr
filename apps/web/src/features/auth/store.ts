@@ -69,8 +69,8 @@ interface MfaChallengeState {
 
 export const mfaChallengeStore = create<MfaChallengeState>()(() => ({ challenge: null }));
 
-function isSecondFactorMethod(value: string): value is SecondFactorMethod {
-  return (SECOND_FACTOR_METHODS as readonly string[]).includes(value);
+function isSecondFactorMethod(value: unknown): value is SecondFactorMethod {
+  return typeof value === "string" && (SECOND_FACTOR_METHODS as readonly string[]).includes(value);
 }
 
 export function beginMfaChallenge(details: ErrorDetails): boolean {

@@ -116,6 +116,14 @@ export const ERROR_PRESENTATION: Readonly<Record<ErrorCode, ErrorPresentation>> 
   SETTING_VALUE_INVALID: entry("message.settingValueInvalid", inline("warning")),
   SETTING_BELOW_FLOOR: entry("message.settingBelowFloor", inline("warning")),
   SMTP_TEST_FAILED: entry("message.smtpTestFailed", inline()),
+  PROVIDER_NOT_FOUND: entry("message.providerNotFound", inline("warning")),
+  PROVIDER_SLUG_TAKEN: entry("message.providerSlugTaken", inline()),
+  PROVIDER_DISCOVERY_FAILED: entry("message.providerDiscoveryFailed", {
+    ...inline(),
+    retryable: true,
+  }),
+  PROVIDER_VALIDATION_FAILED: entry("message.providerValidationFailed", inline()),
+  PROVIDER_HAS_LINKS: entry("message.providerHasLinks", inline("warning")),
 
   CLIENT_OFFLINE: entry("message.offline", { ...toast("warning", true), showRequestId: false }),
   CLIENT_NETWORK_ERROR: entry("message.networkError", {

@@ -336,7 +336,7 @@ CREATE TABLE identity_providers (
     validation_error        TEXT    NULL CHECK (validation_error IS NULL OR length(validation_error) <= 512),
     created_at              TEXT    NOT NULL,
     updated_at              TEXT    NOT NULL,
-    updated_by              TEXT    NULL,
+    updated_by              TEXT    NULL, allow_email_linking INTEGER NOT NULL DEFAULT 0 CHECK (allow_email_linking IN (0,1)),
 
     CHECK ( (client_secret_ciphertext IS NULL     AND client_secret_nonce IS NULL)
          OR (client_secret_ciphertext IS NOT NULL AND client_secret_nonce IS NOT NULL) ),

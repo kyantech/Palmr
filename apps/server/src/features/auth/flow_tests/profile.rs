@@ -70,7 +70,7 @@ impl<'a> Call<'a> {
         self
     }
 
-    fn raw(mut self, body: &str) -> Self {
+    pub(super) fn raw(mut self, body: &str) -> Self {
         self.body = Some(body.to_owned());
         self
     }
@@ -210,7 +210,7 @@ impl Stack {
         .unwrap()
     }
 
-    async fn principal(
+    pub(super) async fn principal(
         &self,
         raw: &str,
     ) -> crate::features::auth::sessions::AuthenticatedPrincipal {

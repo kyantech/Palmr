@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import {
   ApiError,
+  detailFields,
   ErrorAlert,
   type ErrorCode,
   isApiErrorCode,
@@ -148,8 +149,7 @@ export function SetupForm({
       return true;
     }
     if (error.code === "VALIDATION_ERROR") {
-      const fields = error.details.fields;
-      const invalid = (Array.isArray(fields) ? fields : []).filter(isSetupField);
+      const invalid = detailFields(error).filter(isSetupField);
       invalid.forEach((name) => {
         setError(name, { type: "server", message: t("validation.invalid") });
       });

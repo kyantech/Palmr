@@ -12,6 +12,8 @@ pub enum JsonKind {
     String,
     Integer,
     Boolean,
+    Array,
+    Object,
 }
 
 impl JsonKind {
@@ -20,6 +22,8 @@ impl JsonKind {
             Self::String => value.is_string(),
             Self::Integer => value.is_i64() || value.is_u64(),
             Self::Boolean => value.is_boolean(),
+            Self::Array => value.is_array(),
+            Self::Object => value.is_object(),
         }
     }
 }

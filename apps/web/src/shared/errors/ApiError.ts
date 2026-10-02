@@ -44,3 +44,10 @@ export class ApiError extends Error {
     this.retryAfterSeconds = retryAfterSeconds;
   }
 }
+
+export function detailFields(error: ApiError): string[] {
+  const fields = error.details.fields;
+  return (Array.isArray(fields) ? fields : []).filter(
+    (field): field is string => typeof field === "string",
+  );
+}

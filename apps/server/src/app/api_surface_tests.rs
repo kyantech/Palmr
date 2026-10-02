@@ -665,7 +665,7 @@ const AUTHORIZATION_MARKERS: [&str; 4] = [
     "extractors::",
 ];
 
-const REQUIRED_AUTHORIZATION_FILES: [&str; 7] = [
+const REQUIRED_AUTHORIZATION_FILES: [&str; 8] = [
     "app/auth_class.rs",
     "app/router.rs",
     "infra/http/extractors.rs",
@@ -673,6 +673,7 @@ const REQUIRED_AUTHORIZATION_FILES: [&str; 7] = [
     "features/auth/sessions/service.rs",
     "features/users/admin_routes.rs",
     "features/users/admin_service.rs",
+    "features/identity_providers/routes.rs",
 ];
 
 const SOURCE_SCAN_CAP: u64 = 1024 * 1024;
@@ -929,6 +930,159 @@ fn unit_admin_user_write_routes_are_declared_admin_write_limited() {
         assert_eq!(entry.policy().transport(), Transport::ControlPlane);
         assert_eq!(entry.policy().idempotency(), idempotency, "{method} {path}");
     }
+}
+
+#[test]
+fn unit_admin_provider_routes_are_declared_with_their_classes_and_limits() {
+    let inventory = application_inventory();
+    let routes = [
+        (
+            Method::GET,
+            "/api/v1/admin/providers",
+            AuthClass::Admin,
+            RateLimitClass::Read,
+        ),
+        (
+            Method::POST,
+            "/api/v1/admin/providers",
+            AuthClass::AdminRecentAuth,
+            RateLimitClass::AdminWrite,
+        ),
+        (
+            Method::PATCH,
+            "/api/v1/admin/providers/{id}",
+            AuthClass::AdminRecentAuth,
+            RateLimitClass::AdminWrite,
+        ),
+        (
+            Method::DELETE,
+            "/api/v1/admin/providers/{id}",
+            AuthClass::AdminRecentAuth,
+            RateLimitClass::AdminWrite,
+        ),
+        (
+            Method::PUT,
+            "/api/v1/admin/providers/order",
+            AuthClass::Admin,
+            RateLimitClass::AdminWrite,
+        ),
+        (
+            Method::POST,
+            "/api/v1/admin/providers/discover",
+            AuthClass::Admin,
+            RateLimitClass::ProviderTest,
+        ),
+        (
+            Method::POST,
+            "/api/v1/admin/providers/{id}/test",
+            AuthClass::Admin,
+            RateLimitClass::ProviderTest,
+        ),
+        (
+            Method::GET,
+            "/api/v1/admin/providers/presets",
+            AuthClass::Admin,
+            RateLimitClass::Read,
+        ),
+    ];
+    let declared = inventory
+        .entries()
+        .iter()
+        .filter(|entry| entry.path().starts_with("/api/v1/admin/providers"))
+        .count();
+    assert_eq!(declared, routes.len());
+    for (method, path, auth, rate_limit) in routes {
+        let matching: Vec<_> = inventory
+            .entries()
+            .iter()
+            .filter(|entry| entry.path() == path && *entry.method() == method)
+            .collect();
+        assert_eq!(matching.len(), 1, "{method} {path}");
+        let policy = matching[0].policy();
+        assert_eq!(policy.auth(), auth, "{method} {path}");
+        assert_eq!(policy.rate_limit(), rate_limit, "{method} {path}");
+        assert_eq!(policy.transport(), Transport::ControlPlane);
+        assert_eq!(policy.idempotency(), IdempotencyMode::None);
+    }
+}
+
+#[test]
+fn it_openapi_admin_provider_routes_never_expose_secrets_or_a_writable_redirect() {
+    let document = application_document();
+    let schemas = &document["components"]["schemas"];
+    let item = &schemas["ProviderItem"]["properties"];
+    for member in [
+        "clientSecretConfigured",
+        "allowEmailLinking",
+        "autoProvision",
+        "redirectUri",
+        "linkedUserCount",
+        "validatedAt",
+        "preset",
+        "tokenAuthMethod",
+    ] {
+        assert!(item.get(member).is_some(), "ProviderItem.{member}");
+    }
+    for forbidden in [
+        "clientSecret",
+        "clientSecretCiphertext",
+        "clientSecretNonce",
+        "keyVersion",
+        "adminEmailDomains",
+        "autoProvisionRole",
+        "defaultRole",
+    ] {
+        for schema in [
+            "ProviderItem",
+            "PresetItem",
+            "Discovered",
+            "ProviderTestResult",
+        ] {
+            assert!(
+                schemas[schema]["properties"].get(forbidden).is_none(),
+                "{schema}.{forbidden}"
+            );
+        }
+        for schema in ["CreateProviderRequest", "UpdateProviderRequest"] {
+            if forbidden != "clientSecret" {
+                assert!(
+                    schemas[schema]["properties"].get(forbidden).is_none(),
+                    "{schema}.{forbidden}"
+                );
+            }
+        }
+    }
+    for schema in ["CreateProviderRequest", "UpdateProviderRequest"] {
+        let properties = &schemas[schema]["properties"];
+        assert!(
+            properties.get("redirectUri").is_none(),
+            "{schema}.redirectUri"
+        );
+        assert_eq!(
+            properties["clientSecret"]["writeOnly"],
+            json!(true),
+            "{schema}"
+        );
+    }
+    assert!(schemas["UpdateProviderRequest"]["properties"]
+        .get("slug")
+        .is_none());
+    assert!(schemas["CreateProviderRequest"]["properties"]
+        .get("slug")
+        .is_some());
+    assert_eq!(
+        schemas["ProviderItem"]["properties"]["redirectUri"]["readOnly"],
+        json!(true)
+    );
+    let delete = &document["paths"]["/api/v1/admin/providers/{id}"]["delete"]["responses"];
+    assert!(delete["409"]["description"]
+        .as_str()
+        .unwrap()
+        .contains("PROVIDER_HAS_LINKS"));
+    assert!(delete["404"]["description"]
+        .as_str()
+        .unwrap()
+        .contains("PROVIDER_NOT_FOUND"));
 }
 
 #[test]

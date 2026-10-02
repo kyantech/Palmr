@@ -23,6 +23,16 @@ pub enum DetailValue {
     Integer(i64),
     Text(&'static str),
     TextList(Vec<&'static str>),
+    Checks(Vec<CheckDetail>),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+pub struct CheckDetail {
+    #[schema(value_type = String)]
+    pub name: &'static str,
+    pub ok: bool,
+    #[schema(value_type = Option<String>)]
+    pub detail: Option<&'static str>,
 }
 
 impl From<bool> for DetailValue {
@@ -40,6 +50,12 @@ impl From<i64> for DetailValue {
 impl From<&'static str> for DetailValue {
     fn from(value: &'static str) -> Self {
         Self::Text(value)
+    }
+}
+
+impl From<Vec<CheckDetail>> for DetailValue {
+    fn from(value: Vec<CheckDetail>) -> Self {
+        Self::Checks(value)
     }
 }
 
@@ -523,8 +539,14 @@ mod tests {
                 { "type": "integer", "format": "int64" },
                 { "type": "string" },
                 { "type": "array", "items": { "type": "string" } },
+                { "type": "array", "items": { "$ref": "#/components/schemas/CheckDetail" } },
             ])
         );
+        let check = &schemas["CheckDetail"];
+        assert_eq!(check["type"], "object");
+        assert_eq!(check["required"], json!(["name", "ok"]));
+        assert_eq!(check["properties"]["name"]["type"], "string");
+        assert_eq!(check["properties"]["ok"]["type"], "boolean");
 
         let mut codes: Vec<&str> = schemas["ErrorCode"]["enum"]
             .as_array()

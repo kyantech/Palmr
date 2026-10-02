@@ -19,6 +19,11 @@ pub mod branding;
 pub mod email;
 #[allow(
     dead_code,
+    reason = "the provider domain model, presets and test primitives are consumed as the external login flow and Admin providers page are wired"
+)]
+pub mod identity_providers;
+#[allow(
+    dead_code,
     reason = "typed settings, the default registry and the write primitive are consumed as admin settings routes and features are wired"
 )]
 pub mod settings;

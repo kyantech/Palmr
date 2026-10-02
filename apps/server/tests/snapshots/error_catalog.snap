@@ -188,6 +188,31 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "PROVIDER_DISCOVERY_FAILED",
+    "status": 502,
+    "retryable": true
+  },
+  {
+    "code": "PROVIDER_HAS_LINKS",
+    "status": 409,
+    "retryable": false
+  },
+  {
+    "code": "PROVIDER_NOT_FOUND",
+    "status": 404,
+    "retryable": false
+  },
+  {
+    "code": "PROVIDER_SLUG_TAKEN",
+    "status": 409,
+    "retryable": false
+  },
+  {
+    "code": "PROVIDER_VALIDATION_FAILED",
+    "status": 422,
+    "retryable": false
+  },
+  {
     "code": "RANGE_NOT_SATISFIABLE",
     "status": 416,
     "retryable": false

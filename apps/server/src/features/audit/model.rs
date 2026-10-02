@@ -298,6 +298,11 @@ pub enum AuditAction {
     TwoFactorBackupCodesRegenerated,
     OperatorCliAdminRecover,
     OperatorCliPasswordReset,
+    IdentityProviderCreated,
+    IdentityProviderUpdated,
+    IdentityProviderDeleted,
+    IdentityProviderEnabled,
+    IdentityProviderDisabled,
 }
 
 impl AuditAction {
@@ -334,6 +339,11 @@ impl AuditAction {
         Self::TwoFactorBackupCodesRegenerated,
         Self::OperatorCliAdminRecover,
         Self::OperatorCliPasswordReset,
+        Self::IdentityProviderCreated,
+        Self::IdentityProviderUpdated,
+        Self::IdentityProviderDeleted,
+        Self::IdentityProviderEnabled,
+        Self::IdentityProviderDisabled,
     ];
 
     pub const fn as_str(self) -> &'static str {
@@ -370,6 +380,11 @@ impl AuditAction {
             Self::TwoFactorBackupCodesRegenerated => "TWO_FACTOR_BACKUP_CODES_REGENERATED",
             Self::OperatorCliAdminRecover => "OPERATOR_CLI_ADMIN_RECOVER",
             Self::OperatorCliPasswordReset => "OPERATOR_CLI_PASSWORD_RESET",
+            Self::IdentityProviderCreated => "IDENTITY_PROVIDER_CREATED",
+            Self::IdentityProviderUpdated => "IDENTITY_PROVIDER_UPDATED",
+            Self::IdentityProviderDeleted => "IDENTITY_PROVIDER_DELETED",
+            Self::IdentityProviderEnabled => "IDENTITY_PROVIDER_ENABLED",
+            Self::IdentityProviderDisabled => "IDENTITY_PROVIDER_DISABLED",
         }
     }
 
@@ -406,7 +421,12 @@ impl AuditAction {
             | Self::TwoFactorDisabled
             | Self::TwoFactorBackupCodesRegenerated
             | Self::OperatorCliAdminRecover
-            | Self::OperatorCliPasswordReset => WritePath::InTransaction,
+            | Self::OperatorCliPasswordReset
+            | Self::IdentityProviderCreated
+            | Self::IdentityProviderUpdated
+            | Self::IdentityProviderDeleted
+            | Self::IdentityProviderEnabled
+            | Self::IdentityProviderDisabled => WritePath::InTransaction,
         }
     }
 }

@@ -178,6 +178,16 @@ error_catalog! {
         "The branding asset was not found";
     SmtpTestFailed = "SMTP_TEST_FAILED", BAD_GATEWAY, retryable: false,
         "The SMTP test failed";
+    ProviderNotFound = "PROVIDER_NOT_FOUND", NOT_FOUND, retryable: false,
+        "The identity provider was not found";
+    ProviderSlugTaken = "PROVIDER_SLUG_TAKEN", CONFLICT, retryable: false,
+        "An identity provider with that slug already exists";
+    ProviderDiscoveryFailed = "PROVIDER_DISCOVERY_FAILED", BAD_GATEWAY, retryable: true,
+        "OIDC discovery failed";
+    ProviderValidationFailed = "PROVIDER_VALIDATION_FAILED", UNPROCESSABLE_ENTITY, retryable: false,
+        "The identity provider checks failed";
+    ProviderHasLinks = "PROVIDER_HAS_LINKS", CONFLICT, retryable: false,
+        "The identity provider still has identity links";
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -284,6 +294,7 @@ mod tests {
                 "DATABASE_BUSY",
                 "IDEMPOTENCY_REQUEST_IN_PROGRESS",
                 "INTERNAL_ERROR",
+                "PROVIDER_DISCOVERY_FAILED",
                 "RATE_LIMITED",
                 "SERVICE_UNAVAILABLE",
                 "STORAGE_FULL",

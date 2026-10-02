@@ -14,12 +14,13 @@ const RESTRICT: &str = "RESTRICT";
 const CASCADE: &str = "CASCADE";
 const EXPLICIT_DELETE_ACTIONS: [&str; 3] = [RESTRICT, CASCADE, "SET NULL"];
 
-pub const BOOLEAN_COLUMNS: [(&str, &str); 16] = [
+pub const BOOLEAN_COLUMNS: [(&str, &str); 17] = [
     ("users", "must_change_password"),
     ("users", "is_active"),
     ("users", "totp_enabled"),
     ("identity_providers", "is_enabled"),
     ("identity_providers", "auto_provision"),
+    ("identity_providers", "allow_email_linking"),
     ("identity_links", "email_verified_at_link"),
     ("shares", "is_active"),
     ("shares", "notify_recipients"),

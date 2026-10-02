@@ -21,6 +21,12 @@ Every schema change after the freeze is a new forward-only migration with a four
 ...
 ```
 
+Post-freeze migrations so far:
+
+| Migration | Change |
+|---|---|
+| `0002_add_identity_provider_email_linking.sql` | `identity_providers.allow_email_linking` (ADR 0012 rule 3): existing `oidc` rows `1`, `oauth2` rows `0`, column default `0` |
+
 A new migration must keep both of these producing the same normalized schema:
 
 ```text

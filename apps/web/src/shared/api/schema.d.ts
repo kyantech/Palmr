@@ -52,6 +52,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_providers"];
+        put?: never;
+        post: operations["create_provider"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/providers/discover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["discover_provider"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/providers/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["reorder_providers"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/providers/presets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_presets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/providers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["delete_provider"];
+        options?: never;
+        head?: never;
+        patch: operations["update_provider"];
+        trace?: never;
+    };
+    "/api/v1/admin/providers/{id}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["test_provider"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/settings": {
         parameters: {
             query?: never;
@@ -1086,6 +1182,39 @@ export interface components {
             /** @example user */
             role: string;
         };
+        CheckDetail: {
+            detail?: string | null;
+            name: string;
+            ok: boolean;
+        };
+        ClaimMapping: {
+            /** @example email */
+            email: string;
+            /** @example email_verified */
+            emailVerified: string;
+            /** @example name */
+            name: string;
+            /** @example picture */
+            picture: string;
+            /** @example sub */
+            subject: string;
+            /** @example preferred_username */
+            username: string;
+        };
+        ClaimMappingRequest: {
+            /** @example email */
+            email?: string | null;
+            /** @example email_verified */
+            emailVerified?: string | null;
+            /** @example name */
+            name?: string | null;
+            /** @example picture */
+            picture?: string | null;
+            /** @example sub */
+            subject?: string | null;
+            /** @example preferred_username */
+            username?: string | null;
+        };
         CreateInviteRequest: {
             /**
              * @description The address the invite is bound to; the account is created with it.
@@ -1118,6 +1247,51 @@ export interface components {
              * @example https://palmr.example.com/invite/9f3c…
              */
             inviteUrl: string;
+        };
+        CreateProviderRequest: {
+            /** @description Defaults to `true` for `oidc` and `false` for `oauth2`. */
+            allowEmailLinking?: boolean | null;
+            /** @description Defaults to `false`. Auto-provisioned accounts are always role `user`. */
+            autoProvision?: boolean | null;
+            claimMapping?: null | components["schemas"]["ClaimMappingRequest"];
+            clientId: string;
+            /**
+             * Format: password
+             * @description Write-only. Required unless `tokenAuthMethod` is `none`, which is for public clients only.
+             */
+            clientSecret?: string | null;
+            /** @example Company SSO */
+            displayName: string;
+            /** @description Defaults to `false`. */
+            enabled?: boolean | null;
+            endpoints?: null | components["schemas"]["EndpointsRequest"];
+            /**
+             * @description OIDC only. Discovery runs from `<issuerUrl>/.well-known/openid-configuration`, and the document's `issuer` must equal this value exactly.
+             * @example https://sso.example.com/application/o/palmr/
+             */
+            issuerUrl?: string | null;
+            preset?: null | components["schemas"]["Preset"];
+            protocol: components["schemas"]["Protocol"];
+            /**
+             * @description An OIDC provider must request `openid`.
+             * @example [
+             *       "openid",
+             *       "email",
+             *       "profile"
+             *     ]
+             */
+            scopes?: string[] | null;
+            /**
+             * @description Lowercase `[a-z0-9_-]`, 2–40 characters, unique and immutable: it is part of the callback URI registered at the identity provider.
+             * @example authentik
+             */
+            slug: string;
+            /**
+             * Format: int64
+             * @description Defaults to the end of the list.
+             */
+            sortOrder?: number | null;
+            tokenAuthMethod?: null | components["schemas"]["TokenAuthMethod"];
         };
         CreateUserRequest: {
             /** @example grace@example.com */
@@ -1153,7 +1327,23 @@ export interface components {
         };
         /** @enum {string} */
         DatabaseHealthStatus: "ok";
-        DetailValue: boolean | number | string | string[];
+        DetailValue: boolean | number | string | string[] | components["schemas"]["CheckDetail"][];
+        DiscoverRequest: {
+            /** @example https://sso.example.com/application/o/palmr/ */
+            issuerUrl: string;
+        };
+        Discovered: {
+            endpoints: components["schemas"]["Endpoints"];
+            /**
+             * @description The `issuer` of the discovery document; it always equals the requested issuer exactly.
+             * @example https://sso.example.com/application/o/palmr/
+             */
+            issuerUrl: string;
+            /** @description `scopes_supported`, bounded; empty when the document omits it. */
+            scopesSupported: string[];
+            /** @description `token_endpoint_auth_methods_supported`, bounded; empty when the document omits it. */
+            tokenEndpointAuthMethodsSupported: string[];
+        };
         EffectiveSettings: {
             aliasPattern: string;
             /** Format: int32 */
@@ -1178,6 +1368,32 @@ export interface components {
             trustedDevicesEnabled: boolean;
             twoFactorRequired: boolean;
         };
+        Endpoints: {
+            /** @example https://sso.example.com/authorize */
+            authorization: string | null;
+            /** @example https://sso.example.com/jwks */
+            jwks: string | null;
+            /** @example https://sso.example.com/token */
+            token: string | null;
+            /** @example https://sso.example.com/userinfo */
+            userinfo: string | null;
+        };
+        EndpointsRequest: {
+            /**
+             * @description Absolute https URL (plain http only for a loopback host). An OAuth2 provider requires `authorization`, `token` and `userinfo`; an OIDC provider takes the members it lacks from discovery.
+             * @example https://sso.example.com/authorize
+             */
+            authorization?: string | null;
+            /**
+             * @description OIDC only.
+             * @example https://sso.example.com/jwks
+             */
+            jwks?: string | null;
+            /** @example https://sso.example.com/token */
+            token?: string | null;
+            /** @example https://sso.example.com/userinfo */
+            userinfo?: string | null;
+        };
         EnrollmentResponse: {
             /** @example 3f9c1d2ab47e5f60718293a4b5c6d7e8 */
             enrollmentId: string;
@@ -1198,7 +1414,7 @@ export interface components {
             enrollmentId: string;
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN" | "SMTP_TEST_FAILED";
+        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN" | "SMTP_TEST_FAILED" | "PROVIDER_NOT_FOUND" | "PROVIDER_SLUG_TAKEN" | "PROVIDER_DISCOVERY_FAILED" | "PROVIDER_VALIDATION_FAILED" | "PROVIDER_HAS_LINKS";
         ForgotPasswordRequest: {
             /** @example ada@example.com */
             identifier: string;
@@ -1404,6 +1620,10 @@ export interface components {
         };
         /** @enum {string} */
         MigrationHealthStatus: "current";
+        OrderRequest: {
+            /** @description Every provider id exactly once, in the new display order. */
+            order: string[];
+        };
         Page_AdminUserItem: {
             items: {
                 counts: components["schemas"]["AdminUserCounts"];
@@ -1460,6 +1680,49 @@ export interface components {
              */
             totalCount: number | null;
         };
+        Page_ProviderItem: {
+            items: {
+                allowEmailLinking: boolean;
+                autoProvision: boolean;
+                claimMapping: components["schemas"]["ClaimMapping"];
+                clientId: string;
+                /** @description Whether a client secret is stored. The secret itself is write-only and never returned. */
+                clientSecretConfigured: boolean;
+                createdAt: string;
+                displayName: string;
+                enabled: boolean;
+                endpoints: components["schemas"]["Endpoints"];
+                /** @example 0192fc3a-5c4b-7e21-9a02-3f8c1d6e4b90 */
+                id: string;
+                issuerUrl: string | null;
+                /**
+                 * Format: int64
+                 * @description Number of users with an identity link to this provider.
+                 */
+                linkedUserCount: number;
+                preset: components["schemas"]["Preset"];
+                protocol: components["schemas"]["Protocol"];
+                /** @description Derived from `PALMR_BASE_URL`; register exactly this value at the identity provider. */
+                readonly redirectUri: string;
+                scopes: string[];
+                slug: string;
+                /** Format: int64 */
+                sortOrder: number;
+                tokenAuthMethod: components["schemas"]["TokenAuthMethod"];
+                updatedAt: string;
+                /** @description Set by a successful `POST /api/v1/admin/providers/{id}/test` and cleared by any connection-critical change. */
+                validatedAt: string | null;
+                /** @description A sanitized list of the failing checks of the last test, `null` when there is none. */
+                validationError: string | null;
+            }[];
+            /** @description Opaque cursor for the next page; `null` on the last page. */
+            nextCursor: string | null;
+            /**
+             * Format: int64
+             * @description Matching items overall; `null` where counting would require a scan.
+             */
+            totalCount: number | null;
+        };
         Page_SessionItem: {
             items: {
                 absoluteExpiresAt: string;
@@ -1505,11 +1768,71 @@ export interface components {
             /** @example system */
             theme?: string | null;
         };
+        /** @enum {string} */
+        Preset: "google" | "github" | "discord" | "auth0" | "kinde" | "zitadel" | "authentik" | "frontegg" | "pocket_id" | "generic";
+        PresetCatalogue: {
+            items: components["schemas"]["PresetItem"][];
+        };
+        PresetItem: {
+            allowEmailLinking: boolean;
+            claimMapping: components["schemas"]["ClaimMapping"];
+            /** @example Google */
+            displayName: string;
+            endpoints: components["schemas"]["Endpoints"];
+            /** @description The fixed issuer where one is the same for every tenant; `null` when the admin supplies an instance-specific issuer. */
+            issuerUrl: string | null;
+            preset: components["schemas"]["Preset"];
+            protocol: components["schemas"]["Protocol"];
+            scopes: string[];
+            tokenAuthMethod: components["schemas"]["TokenAuthMethod"];
+        };
         ProfileRequest: {
             /** @example Ada */
             firstName?: string | null;
             /** @example Lovelace */
             lastName?: string | null;
+        };
+        /** @enum {string} */
+        Protocol: "oidc" | "oauth2";
+        ProviderItem: {
+            allowEmailLinking: boolean;
+            autoProvision: boolean;
+            claimMapping: components["schemas"]["ClaimMapping"];
+            clientId: string;
+            /** @description Whether a client secret is stored. The secret itself is write-only and never returned. */
+            clientSecretConfigured: boolean;
+            createdAt: string;
+            displayName: string;
+            enabled: boolean;
+            endpoints: components["schemas"]["Endpoints"];
+            /** @example 0192fc3a-5c4b-7e21-9a02-3f8c1d6e4b90 */
+            id: string;
+            issuerUrl: string | null;
+            /**
+             * Format: int64
+             * @description Number of users with an identity link to this provider.
+             */
+            linkedUserCount: number;
+            preset: components["schemas"]["Preset"];
+            protocol: components["schemas"]["Protocol"];
+            /** @description Derived from `PALMR_BASE_URL`; register exactly this value at the identity provider. */
+            readonly redirectUri: string;
+            scopes: string[];
+            slug: string;
+            /** Format: int64 */
+            sortOrder: number;
+            tokenAuthMethod: components["schemas"]["TokenAuthMethod"];
+            updatedAt: string;
+            /** @description Set by a successful `POST /api/v1/admin/providers/{id}/test` and cleared by any connection-critical change. */
+            validatedAt: string | null;
+            /** @description A sanitized list of the failing checks of the last test, `null` when there is none. */
+            validationError: string | null;
+        };
+        ProviderTestResult: {
+            checks: components["schemas"]["CheckDetail"][];
+            ok: boolean;
+            /** @example 2026-09-22T14:20:00.000Z */
+            validatedAt: string;
         };
         PublicLinkPatch: {
             /**
@@ -1787,6 +2110,8 @@ export interface components {
         StorageHealthStatus: "ok" | "degraded" | "down";
         /** @enum {string} */
         ThumbnailSourceLimitName: "64MiB" | "128MiB" | "256MiB" | "512MiB" | "unlimited";
+        /** @enum {string} */
+        TokenAuthMethod: "client_secret_basic" | "client_secret_post" | "none";
         TrustedDeviceItem: {
             createdAt: string;
             expiresAt: string;
@@ -1826,6 +2151,31 @@ export interface components {
              */
             enrolledAt: string | null;
             requiredByPolicy: boolean;
+        };
+        UpdateProviderRequest: {
+            allowEmailLinking?: boolean;
+            autoProvision?: boolean;
+            claimMapping?: components["schemas"]["ClaimMappingRequest"];
+            clientId?: string;
+            /**
+             * Format: password
+             * @description Write-only. Absent leaves the stored secret unchanged, a string replaces it and explicit `null` clears it.
+             */
+            clientSecret?: string | null;
+            /** @description The slug is immutable and is rejected here, like every member not listed. */
+            displayName?: string;
+            enabled?: boolean;
+            /** @description Per member: absent leaves it unchanged, a URL sets it and `null` clears it. */
+            endpoints?: components["schemas"]["EndpointsRequest"];
+            /** @description Changing the issuer discards the cached endpoints, runs discovery again and invalidates `validatedAt`. `null` is valid only for `oauth2`. */
+            issuerUrl?: string | null;
+            preset?: components["schemas"]["Preset"];
+            /** @description Changing the protocol clears the endpoints discovered or entered for the previous one and invalidates `validatedAt`. */
+            protocol?: components["schemas"]["Protocol"];
+            scopes?: string[];
+            /** Format: int64 */
+            sortOrder?: number;
+            tokenAuthMethod?: components["schemas"]["TokenAuthMethod"];
         };
         UpdateUserRequest: {
             /** @example Grace */
@@ -2152,6 +2502,636 @@ export interface operations {
             };
             /** @description Rate limited. */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    list_providers: {
+        parameters: {
+            query?: {
+                sort?: "sortOrder:asc" | "sortOrder:desc";
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description External identity providers in `sortOrder` order with a stable tie-breaker. `totalCount` is exact. No response carries a client secret: `clientSecretConfigured` reports only whether one is stored. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_ProviderItem"];
+                };
+            };
+            /** @description `CURSOR_INVALID`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Invalid query. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    create_provider: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Creates a provider; nothing is created by choosing a preset. An `oidc` provider runs discovery from `<issuerUrl>/.well-known/openid-configuration` for every endpoint the request does not supply, and the document's `issuer` must equal `issuerUrl` exactly. An `oauth2` provider requires `endpoints.authorization`, `.token` and `.userinfo`. `autoProvision` defaults to `false`; `allowEmailLinking` defaults to `true` for `oidc` and `false` for `oauth2`. The callback URI is derived from `PALMR_BASE_URL` and returned as `redirectUri`; it cannot be supplied. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateProviderRequest"];
+            };
+        };
+        responses: {
+            /** @description The created provider. `clientSecretConfigured` reports only whether a secret is stored. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderItem"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role or recent authentication required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PROVIDER_SLUG_TAKEN`. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `VALIDATION_ERROR` for an invalid field, a preset that does not match the protocol, a missing client secret (unless `tokenAuthMethod` is `none`) or a client secret on a public client. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PROVIDER_DISCOVERY_FAILED`: discovery was unreachable, timed out, was too large, malformed or its issuer differed from `issuerUrl`. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    discover_provider: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Fetches only `<issuerUrl>/.well-known/openid-configuration` (10 s total, 256 KiB, verified TLS, no cookies or credentials, redirects never followed into non-public addresses) and previews it. Nothing is stored and no provider is changed. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DiscoverRequest"];
+            };
+        };
+        responses: {
+            /** @description The relevant fields of the discovery document; its `issuer` equals `issuerUrl` exactly. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Discovered"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `VALIDATION_ERROR` for an issuer that is not an https URL (plain http only for loopback) without credentials, query or fragment. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PROVIDER_DISCOVERY_FAILED` with `details.reason`. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    reorder_providers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Every provider id exactly once, in the new order. Unknown, duplicate, malformed and missing ids are rejected and nothing is changed; the order is applied in one transaction, which also writes `IDENTITY_PROVIDER_UPDATED` for each provider whose position changed. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderRequest"];
+            };
+        };
+        responses: {
+            /** @description The order was applied. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `VALIDATION_ERROR` (`order`). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    list_presets: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The bundled preset catalogue: Google, GitHub, Discord, Pocket ID, Authentik, Zitadel, Auth0, Kinde, Frontegg, Custom OIDC and Custom OAuth2. Static data; no network call is made and no provider is created. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PresetCatalogue"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    delete_provider: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Provider UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The provider was deleted and `IDENTITY_PROVIDER_DELETED` was audited in the same transaction. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role or recent authentication required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PROVIDER_NOT_FOUND`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PROVIDER_HAS_LINKS`: identity links still reference the provider. It is never deleted and its links are never removed by this call; unlink those identities or remove the affected accounts first. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    update_provider: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Provider UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description Any non-empty subset of the mutable members; `slug` and `redirectUri` are immutable and rejected. An absent member is unchanged, and no member except `issuerUrl`, `clientSecret` and the members of `endpoints` is nullable. A change to the issuer, client id, client secret, endpoints, protocol or token authentication method clears `validatedAt`. A change of issuer, or an incomplete `oidc` endpoint set, runs discovery again. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProviderRequest"];
+            };
+        };
+        responses: {
+            /** @description The updated provider. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderItem"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role or recent authentication required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PROVIDER_NOT_FOUND`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `VALIDATION_ERROR` for an invalid or immutable member, an empty body or an inconsistent resulting configuration. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PROVIDER_DISCOVERY_FAILED`. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `DATABASE_BUSY`, including a provider that changed while discovery was running; retry. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    test_provider: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Provider UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Every check passed and `validatedAt` was stamped; a change of the persisted validation state is audited as `IDENTITY_PROVIDER_UPDATED` in the same transaction. The stored client secret and any token are never sent or returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderTestResult"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PROVIDER_NOT_FOUND`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PROVIDER_VALIDATION_FAILED` with the failing `details.checks[]`; the provider is left without a current `validatedAt`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `DATABASE_BUSY`, including a provider that changed while its test was running; retry. */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
