@@ -273,6 +273,7 @@ fn unit_admin_user_detail_extends_the_row_without_secret_material() {
         "identityLinks",
         "lockout",
         "overQuota",
+        "quotaOverrideMode",
         "sessionCount",
         "trustedDeviceCount",
     ]);
@@ -282,6 +283,7 @@ fn unit_admin_user_detail_extends_the_row_without_secret_material() {
         object_keys(&value["lockout"]),
         ["failedCount", "lockCount", "lockedUntil"]
     );
+    assert_eq!(value["quotaOverrideMode"], "inherit");
     assert_eq!(value["identityLinkCount"], 1);
     assert_eq!(value["counts"]["receivedFiles"], 4);
     assert_eq!(value["sessionCount"], 6);

@@ -1,8 +1,9 @@
 import { Avatar, Button, Dropdown, Flex, theme, Typography, type MenuProps } from "antd";
+import ArrowLeftFromLine from "@gravity-ui/icons/ArrowLeftFromLine";
+import ChevronDown from "@gravity-ui/icons/ChevronDown";
 import { useTranslation } from "react-i18next";
 import { resolveApiUrl } from "../../shared/api/basePath";
 import type { Me } from "../bootstrap/queries";
-import { ChevronDownIcon, SignOutIcon } from "./navigation/icons";
 
 export function userDisplayName(user: Me["user"]): string {
   const name = [user.firstName, user.lastName]
@@ -57,7 +58,7 @@ export function UserMenu({ user, onSignOut, signingOut, compact = false }: UserM
       label: t("user.menu.signOut"),
       icon: (
         <span className="anticon">
-          <SignOutIcon />
+          <ArrowLeftFromLine aria-hidden="true" focusable="false" width="1em" height="1em" />
         </span>
       ),
       danger: true,
@@ -135,7 +136,7 @@ export function UserMenu({ user, onSignOut, signingOut, compact = false }: UserM
           )}
           {compact ? null : (
             <span style={{ display: "inline-flex", color: token.colorTextTertiary, fontSize: 16 }}>
-              <ChevronDownIcon />
+              <ChevronDown aria-hidden="true" focusable="false" width="1em" height="1em" />
             </span>
           )}
         </Flex>

@@ -1,1 +1,541 @@
-{}
+{
+  "title": "Administration",
+  "sections": {
+    "label": "Administrationsavsnitt",
+    "users": "Användare",
+    "security": "Säkerhet",
+    "smtp": "SMTP"
+  },
+  "common": {
+    "cancel": "Avbryt",
+    "none": "Ingen",
+    "yes": "Ja",
+    "no": "Nej",
+    "retry": "Försök igen",
+    "unknown": "Inte tillgängligt"
+  },
+  "roles": {
+    "admin": "Administratör",
+    "user": "Användare"
+  },
+  "status": {
+    "active": "Aktiv",
+    "inactive": "Inaktiv"
+  },
+  "tags": {
+    "locked": "Låst",
+    "mustChangePassword": "Måste byta lösenord",
+    "ssoOnly": "Endast SSO",
+    "twoFactor": "2FA på"
+  },
+  "secret": {
+    "done": "Klar",
+    "notShownAgain": "Detta visas inte igen. Kopiera det nu och förvara det säkert.",
+    "copy": "Kopiera",
+    "copied": "Kopierat till urklipp.",
+    "copyFailed": "Det gick inte att kopiera automatiskt. Markera texten och kopiera den manuellt."
+  },
+  "bytes": {
+    "unit": "Enhet"
+  },
+  "units": {
+    "characters": "tecken",
+    "attempts": "försök",
+    "minutes": "minuter",
+    "hours": "timmar",
+    "days": "dagar"
+  },
+  "quota": {
+    "unlimited": "Obegränsad"
+  },
+  "storage": {
+    "usedOf": "{{used}} av {{quota}}",
+    "usedOfUnlimited": "{{used}} · Obegränsad",
+    "overQuota": "Över kvoten",
+    "usageLabel": "Lagringsanvändning"
+  },
+  "validation": {
+    "required": "Det här fältet är obligatoriskt.",
+    "email": "Ange en giltig e-postadress.",
+    "integer": "Ange ett heltal.",
+    "quota": "Ange ett värde mellan 0 och den största storlek som stöds.",
+    "invalid": "Värdet är inte giltigt.",
+    "passwordTooShort": "Använd minst {{minLength}} tecken."
+  },
+  "pager": {
+    "showing": "Visar {{shown}}",
+    "showingOf": "Visar {{shown}} av {{total}}",
+    "pageSize": "Rader per sida",
+    "perPage": "{{size}} per sida",
+    "first": "Första sidan",
+    "previous": "Föregående",
+    "next": "Nästa"
+  },
+  "users": {
+    "title": "Användare",
+    "description": "Skapa konton, hantera åtkomst och följ lagringen i den här instansen.",
+    "views": {
+      "label": "Användare eller inbjudningar",
+      "users": "Användare",
+      "invites": "Inbjudningar"
+    },
+    "tableLabel": "Användare",
+    "usernameLine": "@{{username}}",
+    "pendingEmail": "Väntande ändring till {{email}}",
+    "neverSignedIn": "Aldrig",
+    "columns": {
+      "user": "Användare",
+      "role": "Roll",
+      "status": "Status",
+      "security": "Konto",
+      "storage": "Lagring",
+      "lastSignIn": "Senaste inloggning",
+      "actions": "Åtgärder"
+    },
+    "actions": {
+      "label": "Åtgärder för {{name}}",
+      "view": "Visa detaljer",
+      "activate": "Återaktivera",
+      "deactivate": "Inaktivera",
+      "unlock": "Lås upp"
+    },
+    "deactivate": {
+      "title": "Inaktivera {{name}}?",
+      "description": "Personen loggas ut överallt och kan inte logga in förrän du återaktiverar kontot. Filer och delningar behålls.",
+      "confirm": "Inaktivera"
+    },
+    "notice": {
+      "activated": "Användaren har återaktiverats.",
+      "deactivated": "Användaren har inaktiverats.",
+      "unlocked": "Kontot har låsts upp."
+    },
+    "empty": {
+      "filtered": "Inga användare matchar de här filtren.",
+      "none": "Det finns inga användare ännu.",
+      "clear": "Rensa filter"
+    },
+    "filters": {
+      "label": "Filtrera användare",
+      "search": "Sök användare",
+      "searchPlaceholder": "Sök på namn, användarnamn eller e-post",
+      "role": "Roll",
+      "status": "Status",
+      "sort": "Sortera användare",
+      "allRoles": "Alla roller",
+      "allStatuses": "Alla statusar"
+    },
+    "sorts": {
+      "newest": "Nyast först",
+      "oldest": "Äldst först",
+      "usernameAsc": "Användarnamn A–Ö",
+      "usernameDesc": "Användarnamn Ö–A",
+      "emailAsc": "E-post A–Ö",
+      "emailDesc": "E-post Ö–A",
+      "storageDesc": "Mest lagring använd",
+      "storageAsc": "Minst lagring använd"
+    },
+    "create": {
+      "open": "Skapa användare",
+      "title": "Skapa användare",
+      "firstName": "Förnamn",
+      "lastName": "Efternamn",
+      "username": "Användarnamn",
+      "email": "E-postadress",
+      "role": "Roll",
+      "locale": "Språk",
+      "instanceLocale": "Instansens standard",
+      "password": "Tillfälligt lösenord",
+      "passwordHintLocal": "Användaren loggar in med det här lösenordet. Dela det via en säker kanal.",
+      "passwordHintSso": "Valfritt. Lämna tomt för att skapa ett konto utan lokalt lösenord, för inloggning via en extern leverantör.",
+      "requirePasswordChange": "Kräv nytt lösenord vid första inloggningen",
+      "active": "Kontot är aktivt",
+      "quota": "Lagringskvot",
+      "quotaInherit": "Instansens standard",
+      "quotaCustom": "Eget värde",
+      "quotaAmount": "Kvot",
+      "submit": "Skapa användare",
+      "created": "{{name}} har skapats.",
+      "view": "Visa användare"
+    }
+  },
+  "invites": {
+    "tableLabel": "Inbjudningar",
+    "columns": {
+      "email": "E-post",
+      "role": "Roll",
+      "status": "Status",
+      "createdBy": "Skapad av",
+      "created": "Skapad",
+      "expires": "Går ut",
+      "lastSent": "Senast mejlad",
+      "actions": "Åtgärder"
+    },
+    "status": {
+      "pending": "Väntar",
+      "accepted": "Accepterad",
+      "revoked": "Återkallad",
+      "expired": "Utgången"
+    },
+    "neverSent": "Aldrig",
+    "actions": {
+      "resend": "Skicka igen",
+      "revoke": "Återkalla"
+    },
+    "filters": {
+      "status": "Filtrera inbjudningar efter status",
+      "allStatuses": "Alla statusar"
+    },
+    "notice": {
+      "resent": "Inbjudningsmejlet har lagts i kö för leverans.",
+      "revoked": "Inbjudan har återkallats."
+    },
+    "empty": {
+      "none": "Inga inbjudningar ännu. Bjud in någon för att ge åtkomst.",
+      "filtered": "Inga inbjudningar har den här statusen."
+    },
+    "revoke": {
+      "title": "Återkalla den här inbjudan?",
+      "description": "Inbjudningslänken för {{email}} slutar fungera direkt.",
+      "confirm": "Återkalla inbjudan"
+    },
+    "create": {
+      "open": "Bjud in användare",
+      "title": "Bjud in en användare",
+      "email": "E-postadress",
+      "role": "Roll",
+      "expiry": "Giltig i",
+      "expiryHint": "Lämna tomt för att använda instansens giltighetstid för inbjudningar.",
+      "sendEmail": "Skicka inbjudan via e-post",
+      "sendEmailHint": "Palmr mejlar länken till adressen ovan.",
+      "sendEmailOff": "E-post är inte konfigurerat, så du får en länk att dela själv.",
+      "submit": "Skapa inbjudan"
+    },
+    "link": {
+      "title": "Inbjudningslänk",
+      "description": "Skicka den här länken till personen du bjuder in. Alla med länken kan skapa kontot.",
+      "label": "Inbjudningslänk"
+    }
+  },
+  "detail": {
+    "back": "← Alla användare",
+    "loading": "Läser in användare …",
+    "notFound": "Användaren hittades inte",
+    "failed": "Det gick inte att läsa in användaren",
+    "subtitle": "@{{username}} · {{email}}",
+    "inactiveNotice": "Det här kontot är inaktiverat. Användaren kan inte logga in förrän det återaktiveras.",
+    "identity": {
+      "title": "Identitet",
+      "description": "Namn och användarnamn. E-postadress och roll hanteras separat.",
+      "firstName": "Förnamn",
+      "lastName": "Efternamn",
+      "username": "Användarnamn",
+      "memberSince": "Medlem sedan {{date}}",
+      "save": "Spara ändringar",
+      "saved": "Identiteten sparades."
+    },
+    "email": {
+      "title": "E-postadress",
+      "description": "Att byta adress kräver verifiering. Tills dess fortsätter den nuvarande adressen att fungera.",
+      "current": "Nuvarande adress",
+      "newLabel": "Ny e-postadress",
+      "hint": "En verifieringslänk skickas till den nya adressen. Inget ändras förrän den bekräftas.",
+      "request": "Starta e-poständring",
+      "resend": "Skicka verifiering igen",
+      "cancel": "Avbryt ändring",
+      "pendingTitle": "Väntar på verifiering av {{email}}",
+      "pendingDescription": "{{email}} förblir den aktiva adressen tills den nya har verifierats.",
+      "notice": {
+        "requested": "Verifiering begärd. Adressen ändras först när den har bekräftats.",
+        "resent": "Ett nytt verifieringsmeddelande har lagts i kö.",
+        "cancelled": "Den väntande e-poständringen har avbrutits."
+      },
+      "cancelDialog": {
+        "title": "Avbryta den väntande ändringen?",
+        "description": "Verifieringslänken för {{email}} slutar fungera. Den nuvarande adressen ändras inte.",
+        "confirm": "Avbryt ändring"
+      }
+    },
+    "account": {
+      "title": "Konto och säkerhet",
+      "description": "Roll, inloggningsstatus och länkade identiteter.",
+      "role": "Roll",
+      "roleSelect": "Ny roll",
+      "roleSave": "Ändra roll",
+      "status": "Status",
+      "localPassword": "Lösenord",
+      "passwordLocal": "Lokalt lösenord inställt",
+      "passwordSso": "Inget lokalt lösenord (endast SSO)",
+      "mustChange": "Måste byta lösenord",
+      "twoFactor": "Tvåfaktorsautentisering",
+      "twoFactorOn": "På",
+      "twoFactorOff": "Av",
+      "lockout": "Inloggningsspärr",
+      "locked": "Låst",
+      "lockedUntil": "Låst till {{date}}",
+      "notLocked": "Inte låst",
+      "unlock": "Lås upp",
+      "lockoutCounters": "{{failed}} misslyckade försök · {{locks}} spärrar hittills",
+      "sessions": "Aktiva sessioner",
+      "trustedDevices": "Betrodda enheter",
+      "identityLinks": "Länkade identiteter ({{links}})",
+      "linkState": {
+        "active": "Aktiv",
+        "suspended": "Pausad"
+      },
+      "linkMethod": {
+        "auto_verified_email": "Länkad via verifierad e-post",
+        "manual": "Länkad manuellt",
+        "auto_provision": "Skapad vid första inloggningen"
+      },
+      "linkLastLogin": "senaste inloggning {{date}}",
+      "resetPassword": "Återställ lösenord",
+      "noLocalPasswordHint": "Det här kontot loggar in via en extern leverantör och har inget lokalt lösenord att återställa.",
+      "notice": {
+        "roleChanged": "Rollen har ändrats. Användaren loggades ut överallt.",
+        "unlocked": "Kontot har låsts upp."
+      },
+      "roleDialog": {
+        "title": "Ändra rollen för {{name}}?",
+        "description": "Den nya rollen är {{role}}. När rollen ändras loggas användaren ut från alla sessioner.",
+        "confirm": "Ändra roll"
+      },
+      "resetDialog": {
+        "title": "Återställa lösenordet för {{name}}?",
+        "description": "Ett tillfälligt lösenord skapas och visas en gång. Användaren loggas ut överallt och måste välja ett nytt lösenord vid nästa inloggning.",
+        "confirm": "Återställ lösenord"
+      },
+      "resetResult": {
+        "title": "Tillfälligt lösenord",
+        "description": "Dela det här lösenordet med {{name}} via en säker kanal. Det måste bytas vid inloggningen.",
+        "label": "Tillfälligt lösenord"
+      }
+    },
+    "storage": {
+      "title": "Lagring och kvot",
+      "description": "Användning i Mina filer och Mottaget samt den kvot som gäller för den här användaren.",
+      "used": "Använd lagring",
+      "effective": "Gällande kvot",
+      "instanceDefault": "Instansens standard",
+      "files": "Filer",
+      "receivedFiles": "Mottagna filer",
+      "shares": "Delningar",
+      "reverseShares": "Omvända delningar",
+      "overrideTitle": "Kvotåsidosättning",
+      "saved": "Kvoten har uppdaterats.",
+      "belowUsage": {
+        "title": "Kvoten är lägre än den lagring som redan används",
+        "description": "Inget raderas. Användaren kan inte lägga till nya filer förrän användningen understiger kvoten."
+      },
+      "modes": {
+        "inherit": "Använd instansens standard ({{value}})",
+        "unlimited": "Obegränsad",
+        "bytes": "Eget värde"
+      },
+      "amount": "Kvot",
+      "noBypass": "Administratörer får inget undantag från kvoten: samma gränser gäller för alla konton.",
+      "save": "Spara kvot"
+    },
+    "sessions": {
+      "title": "Sessioner",
+      "description": "Var användaren är inloggad just nu.",
+      "none": "Användaren har inga aktiva sessioner.",
+      "listLabel": "Aktiva sessioner",
+      "more": "Och {{more}} sessioner till.",
+      "unknownDevice": "Okänd enhet",
+      "origin": {
+        "password": "Lösenord",
+        "external": "Extern leverantör"
+      },
+      "ip": "IP {{ip}}",
+      "ipUnavailable": "IP inte tillgänglig",
+      "lastActive": "Senast aktiv {{date}}",
+      "signedIn": "Inloggad {{date}}"
+    },
+    "danger": {
+      "title": "Åtgärder med stor påverkan",
+      "description": "De här åtgärderna får effekt direkt.",
+      "notice": {
+        "deactivated": "Användaren har inaktiverats och loggats ut överallt.",
+        "activated": "Användaren har återaktiverats.",
+        "sessionsRevoked": "Alla användarens sessioner har loggats ut."
+      },
+      "deactivate": {
+        "title": "Inaktivera den här användaren",
+        "description": "Loggar ut användaren överallt och blockerar inloggning. Filer och delningar behålls.",
+        "action": "Inaktivera användare",
+        "dialogTitle": "Inaktivera {{name}}?",
+        "dialogDescription": "Personen loggas ut överallt och kan inte logga in förrän du återaktiverar kontot.",
+        "confirm": "Inaktivera"
+      },
+      "activate": {
+        "title": "Återaktivera den här användaren",
+        "description": "Låter användaren logga in igen. Tidigare återkallade sessioner förblir återkallade.",
+        "action": "Återaktivera användare"
+      },
+      "revoke": {
+        "title": "Logga ut från alla sessioner",
+        "description": "Avslutar alla sessioner för användaren. Betrodda enheter behålls.",
+        "action": "Logga ut överallt",
+        "dialogTitle": "Logga ut {{name}} överallt?",
+        "dialogDescription": "Alla användarens sessioner avslutas direkt och hen måste logga in igen.",
+        "confirm": "Logga ut överallt"
+      }
+    }
+  },
+  "settings": {
+    "title": "Säkerhet och policyer",
+    "description": "Policyer för hela instansen. Varje avsnitt sparas för sig.",
+    "save": "Spara ändringar",
+    "saved": "Inställningarna sparades.",
+    "errors": {
+      "belowFloor": "Måste vara minst {{floor}}.",
+      "belowFloorUnknown": "Värdet är under det tillåtna minimivärdet.",
+      "aboveMax": "Får vara högst {{max}}.",
+      "invalid": "Värdet är inte giltigt.",
+      "requiredWhenEnabled": "Krävs så länge den här funktionen är aktiverad."
+    },
+    "general": {
+      "title": "Allmänt",
+      "description": "Instansens namn, standardspråk och vad besökare ser i sidfoten.",
+      "appName": "Instansens namn",
+      "appDescription": "Beskrivning",
+      "defaultLocale": "Standardspråk",
+      "thumbnailSourceLimit": "Källgräns för miniatyrer",
+      "thumbnailSourceLimitHint": "Den största bilden som Palmr skapar en miniatyr för.",
+      "thumbnailLimits": {
+        "64MiB": "64 MiB",
+        "128MiB": "128 MiB",
+        "256MiB": "256 MiB",
+        "512MiB": "512 MiB",
+        "unlimited": "Ingen gräns"
+      },
+      "showVersion": "Visa Palmrs versionsnummer",
+      "poweredByVisible": "Visa ”Powered by Palmr”"
+    },
+    "security": {
+      "title": "Inloggning och sessioner",
+      "description": "Lösenordsregler, spärr, sessionslängd och policy för tvåfaktorsautentisering.",
+      "groups": {
+        "passwords": "Lösenord",
+        "signIn": "Inloggningsskydd",
+        "sessions": "Sessioner",
+        "links": "Länkar och inbjudningar",
+        "twoFactor": "Tvåfaktorsautentisering",
+        "trustedDevices": "Betrodda enheter"
+      },
+      "fields": {
+        "passwordMinLength": "Minsta längd på kontolösenord",
+        "publicLinkPasswordMinLength": "Minsta längd på lösenord för publika länkar",
+        "maxLoginAttempts": "Misslyckade inloggningar före spärr",
+        "loginLockoutMinutes": "Spärrens längd",
+        "sessionIdleDays": "Tidsgräns vid inaktivitet",
+        "sessionAbsoluteDays": "Längsta sessionstid",
+        "recentAuthMinutes": "Fönster för ny verifiering",
+        "passwordResetValidityMinutes": "Giltighet för länk för lösenordsåterställning",
+        "inviteValidityHours": "Standardgiltighet för inbjudningar",
+        "trustedDeviceDurationDays": "Giltighet för betrodda enheter",
+        "twoFactorRequired": "Kräv tvåfaktorsautentisering för lokala konton",
+        "trustedDevicesEnabled": "Tillåt betrodda enheter"
+      },
+      "hints": {
+        "passwordMinLength": "Gäller nya lösenord.",
+        "publicLinkPasswordMinLength": "Gäller lösenord på delningar och omvända delningar.",
+        "maxLoginAttempts": "Antal misslyckanden i följd innan kontot spärras.",
+        "loginLockoutMinutes": "Hur länge ett spärrat konto förblir spärrat.",
+        "sessionIdleDays": "Sessioner avslutas efter så här lång inaktivitet.",
+        "sessionAbsoluteDays": "Sessioner avslutas efter så här lång tid, oavsett aktivitet.",
+        "recentAuthMinutes": "Hur länge ett bekräftat lösenord räknas för känsliga åtgärder.",
+        "passwordResetValidityMinutes": "Hur länge en mejlad återställningslänk fungerar.",
+        "inviteValidityHours": "Används när en inbjudan inte anger egen giltighetstid.",
+        "trustedDeviceDurationDays": "Hur länge en betrodd enhet hoppar över den andra faktorn.",
+        "twoFactorRequired": "Lokala konton måste ställa in det innan de kan använda Palmr.",
+        "trustedDevicesEnabled": "Låter människor hoppa över den andra faktorn på enheter de litar på."
+      }
+    },
+    "quotas": {
+      "title": "Kvoter",
+      "description": "Gränser för lagring och uppladdning. Obegränsad är något annat än noll.",
+      "fields": {
+        "defaultUserQuotaBytes": "Standardkvot för lagring per användare",
+        "maxFileSizeBytes": "Största filstorlek"
+      },
+      "hints": {
+        "defaultUserQuotaBytes": "Gäller användare utan egen åsidosättning. Noll betyder ingen lagring alls.",
+        "maxFileSizeBytes": "Den största enskilda fil som får laddas upp. Noll blockerar alla uppladdningar."
+      }
+    },
+    "publicLinks": {
+      "title": "Publika länkar",
+      "description": "Hur länge delningar och omvända delningar får vara tillgängliga.",
+      "noMaximum": "Ingen längsta livslängd",
+      "maxLifetime": "Längsta livslängd för länkar",
+      "hint": "Länkar kan inte skapas med ett senare utgångsdatum."
+    }
+  },
+  "smtp": {
+    "pageTitle": "SMTP",
+    "pageDescription": "Utgående e-post för inbjudningar, lösenordsåterställningar och aviseringar.",
+    "title": "E-postserver",
+    "description": "Palmr fungerar utan e-post. Funktioner som kräver e-post är otillgängliga tills den har konfigurerats.",
+    "enabledTag": "Aktiverad",
+    "disabledTag": "Inaktiverad",
+    "fields": {
+      "enabled": "Skicka e-post via den här servern",
+      "host": "Värd",
+      "port": "Port",
+      "security": "Anslutningssäkerhet",
+      "noAuth": "Servern kräver ingen autentisering",
+      "username": "Användarnamn",
+      "password": "Lösenord",
+      "passwordPlaceholder": "Ange ett nytt lösenord för att ersätta det",
+      "fromName": "Avsändarnamn",
+      "fromEmail": "Avsändaradress",
+      "allowSelfSigned": "Tillåt självsignerat certifikat",
+      "allowSelfSignedHint": "Endast för servrar du själv kontrollerar. Försvagar certifikatkontrollen."
+    },
+    "security": {
+      "starttls": "STARTTLS",
+      "implicit": "Implicit TLS",
+      "none": "Ingen"
+    },
+    "password": {
+      "configured": "Lösenord konfigurerat",
+      "notConfigured": "Inget lösenord sparat",
+      "willClear": "Tas bort när du sparar",
+      "willReplace": "Ersätts när du sparar",
+      "clear": "Rensa sparat lösenord",
+      "undoClear": "Behåll sparat lösenord",
+      "clearDialog": {
+        "title": "Rensa det sparade lösenordet?",
+        "description": "Lösenordet tas bort när du sparar. E-post som kräver autentisering slutar fungera tills du anger ett nytt.",
+        "confirm": "Rensa lösenord"
+      }
+    },
+    "test": {
+      "title": "Skicka ett test-mejl",
+      "description": "Kontrollerar anslutning, TLS, inloggning och leverans.",
+      "recipient": "Skicka testet till",
+      "saved": "Testa sparade inställningar",
+      "unsaved": "Testa aktuella formulärvärden",
+      "unsavedHint": "Att testa formulärvärdena sparar dem inte och använder aldrig det sparade lösenordet. Ange lösenordet ovan om servern kräver ett.",
+      "unsavedIncomplete": "Ange värd, port och avsändaradress för att testa formulärvärdena.",
+      "mode": {
+        "saved": "sparade inställningar",
+        "unsaved": "formulärvärden"
+      },
+      "stages": {
+        "connect": "Anslut",
+        "starttls": "Starta TLS",
+        "auth": "Autentisera",
+        "send": "Skicka meddelande"
+      },
+      "stagesLabel": "Teststeg",
+      "stageOk": "Godkänd",
+      "stageFailed": "Misslyckades",
+      "succeeded": "Test-mejlet skickades (test med {{mode}}).",
+      "incomplete": "Testet slutfördes inte (test med {{mode}}).",
+      "duration": "Klart på {{ms}} ms.",
+      "failedAt": "Stoppade vid: {{stage}} (test med {{mode}})."
+    }
+  }
+}

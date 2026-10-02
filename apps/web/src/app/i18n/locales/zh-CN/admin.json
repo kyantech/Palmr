@@ -1,1 +1,541 @@
-{}
+{
+  "title": "管理",
+  "sections": {
+    "label": "管理分区",
+    "users": "用户",
+    "security": "安全",
+    "smtp": "SMTP"
+  },
+  "common": {
+    "cancel": "取消",
+    "none": "无",
+    "yes": "是",
+    "no": "否",
+    "retry": "重试",
+    "unknown": "不可用"
+  },
+  "roles": {
+    "admin": "管理员",
+    "user": "用户"
+  },
+  "status": {
+    "active": "启用",
+    "inactive": "停用"
+  },
+  "tags": {
+    "locked": "已锁定",
+    "mustChangePassword": "须修改密码",
+    "ssoOnly": "仅限 SSO",
+    "twoFactor": "已开启 2FA"
+  },
+  "secret": {
+    "done": "完成",
+    "notShownAgain": "此内容不会再次显示。请立即复制并妥善保管。",
+    "copy": "复制",
+    "copied": "已复制到剪贴板。",
+    "copyFailed": "无法自动复制。请选中文本后手动复制。"
+  },
+  "bytes": {
+    "unit": "单位"
+  },
+  "units": {
+    "characters": "个字符",
+    "attempts": "次",
+    "minutes": "分钟",
+    "hours": "小时",
+    "days": "天"
+  },
+  "quota": {
+    "unlimited": "无限制"
+  },
+  "storage": {
+    "usedOf": "已用 {{used}}，共 {{quota}}",
+    "usedOfUnlimited": "已用 {{used}} · 无限制",
+    "overQuota": "已超出配额",
+    "usageLabel": "存储用量"
+  },
+  "validation": {
+    "required": "此项为必填。",
+    "email": "请输入有效的电子邮件地址。",
+    "integer": "请输入整数。",
+    "quota": "请输入 0 到支持的最大容量之间的值。",
+    "invalid": "此值无效。",
+    "passwordTooShort": "请至少使用 {{minLength}} 个字符。"
+  },
+  "pager": {
+    "showing": "显示 {{shown}} 项",
+    "showingOf": "显示 {{shown}} / {{total}} 项",
+    "pageSize": "每页行数",
+    "perPage": "每页 {{size}} 项",
+    "first": "第一页",
+    "previous": "上一页",
+    "next": "下一页"
+  },
+  "users": {
+    "title": "用户",
+    "description": "创建账户、管理访问权限，并查看此实例的存储使用情况。",
+    "views": {
+      "label": "用户或邀请",
+      "users": "用户",
+      "invites": "邀请"
+    },
+    "tableLabel": "用户",
+    "usernameLine": "@{{username}}",
+    "pendingEmail": "待更改为 {{email}}",
+    "neverSignedIn": "从未",
+    "columns": {
+      "user": "用户",
+      "role": "角色",
+      "status": "状态",
+      "security": "账户",
+      "storage": "存储",
+      "lastSignIn": "上次登录",
+      "actions": "操作"
+    },
+    "actions": {
+      "label": "{{name}} 的操作",
+      "view": "查看详情",
+      "activate": "重新启用",
+      "deactivate": "停用",
+      "unlock": "解锁"
+    },
+    "deactivate": {
+      "title": "停用 {{name}}？",
+      "description": "对方将在所有位置退出登录，并且在你重新启用账户之前无法登录。其文件和共享会保留。",
+      "confirm": "停用"
+    },
+    "notice": {
+      "activated": "用户已重新启用。",
+      "deactivated": "用户已停用。",
+      "unlocked": "账户已解锁。"
+    },
+    "empty": {
+      "filtered": "没有符合这些筛选条件的用户。",
+      "none": "还没有用户。",
+      "clear": "清除筛选"
+    },
+    "filters": {
+      "label": "筛选用户",
+      "search": "搜索用户",
+      "searchPlaceholder": "按姓名、用户名或电子邮件搜索",
+      "role": "角色",
+      "status": "状态",
+      "sort": "用户排序",
+      "allRoles": "所有角色",
+      "allStatuses": "所有状态"
+    },
+    "sorts": {
+      "newest": "最新优先",
+      "oldest": "最早优先",
+      "usernameAsc": "用户名 A–Z",
+      "usernameDesc": "用户名 Z–A",
+      "emailAsc": "电子邮件 A–Z",
+      "emailDesc": "电子邮件 Z–A",
+      "storageDesc": "存储用量从多到少",
+      "storageAsc": "存储用量从少到多"
+    },
+    "create": {
+      "open": "创建用户",
+      "title": "创建用户",
+      "firstName": "名",
+      "lastName": "姓",
+      "username": "用户名",
+      "email": "电子邮件地址",
+      "role": "角色",
+      "locale": "语言",
+      "instanceLocale": "实例默认",
+      "password": "临时密码",
+      "passwordHintLocal": "用户将使用此密码登录。请通过安全渠道转交。",
+      "passwordHintSso": "可选。留空将创建没有本地密码的账户，用于通过外部提供方登录。",
+      "requirePasswordChange": "首次登录时要求设置新密码",
+      "active": "账户已启用",
+      "quota": "存储配额",
+      "quotaInherit": "实例默认",
+      "quotaCustom": "自定义容量",
+      "quotaAmount": "配额",
+      "submit": "创建用户",
+      "created": "已创建 {{name}}。",
+      "view": "查看用户"
+    }
+  },
+  "invites": {
+    "tableLabel": "邀请",
+    "columns": {
+      "email": "电子邮件",
+      "role": "角色",
+      "status": "状态",
+      "createdBy": "创建者",
+      "created": "创建时间",
+      "expires": "到期时间",
+      "lastSent": "上次发送",
+      "actions": "操作"
+    },
+    "status": {
+      "pending": "待处理",
+      "accepted": "已接受",
+      "revoked": "已撤销",
+      "expired": "已过期"
+    },
+    "neverSent": "从未",
+    "actions": {
+      "resend": "重新发送",
+      "revoke": "撤销"
+    },
+    "filters": {
+      "status": "按状态筛选邀请",
+      "allStatuses": "所有状态"
+    },
+    "notice": {
+      "resent": "邀请邮件已加入发送队列。",
+      "revoked": "邀请已撤销。"
+    },
+    "empty": {
+      "none": "还没有邀请。邀请某人以授予访问权限。",
+      "filtered": "没有处于此状态的邀请。"
+    },
+    "revoke": {
+      "title": "撤销此邀请？",
+      "description": "发给 {{email}} 的邀请链接将立即失效。",
+      "confirm": "撤销邀请"
+    },
+    "create": {
+      "open": "邀请用户",
+      "title": "邀请用户",
+      "email": "电子邮件地址",
+      "role": "角色",
+      "expiry": "有效期",
+      "expiryHint": "留空则使用实例的邀请有效期。",
+      "sendEmail": "通过电子邮件发送邀请",
+      "sendEmailHint": "Palmr 会将链接发送到上方的地址。",
+      "sendEmailOff": "尚未配置电子邮件，因此你将获得一个需要自行分享的链接。",
+      "submit": "创建邀请"
+    },
+    "link": {
+      "title": "邀请链接",
+      "description": "将此链接发送给被邀请的人。任何拥有该链接的人都可以创建账户。",
+      "label": "邀请链接"
+    }
+  },
+  "detail": {
+    "back": "← 所有用户",
+    "loading": "正在加载用户…",
+    "notFound": "未找到用户",
+    "failed": "无法加载此用户",
+    "subtitle": "@{{username}} · {{email}}",
+    "inactiveNotice": "此账户已停用。重新启用之前，用户无法登录。",
+    "identity": {
+      "title": "身份信息",
+      "description": "姓名和用户名。电子邮件地址和角色单独管理。",
+      "firstName": "名",
+      "lastName": "姓",
+      "username": "用户名",
+      "memberSince": "自 {{date}} 起为成员",
+      "save": "保存更改",
+      "saved": "身份信息已保存。"
+    },
+    "email": {
+      "title": "电子邮件地址",
+      "description": "更改地址需要验证。在此之前，当前地址继续有效。",
+      "current": "当前地址",
+      "newLabel": "新电子邮件地址",
+      "hint": "验证链接会发送到新地址。确认之前不会有任何更改。",
+      "request": "开始更改电子邮件",
+      "resend": "重新发送验证",
+      "cancel": "取消更改",
+      "pendingTitle": "正在等待验证 {{email}}",
+      "pendingDescription": "在新地址通过验证之前，{{email}} 仍是当前有效地址。",
+      "notice": {
+        "requested": "已请求验证。地址仅在确认后才会更改。",
+        "resent": "新的验证邮件已加入发送队列。",
+        "cancelled": "待处理的电子邮件更改已取消。"
+      },
+      "cancelDialog": {
+        "title": "取消待处理的更改？",
+        "description": "{{email}} 的验证链接将失效。当前地址保持不变。",
+        "confirm": "取消更改"
+      }
+    },
+    "account": {
+      "title": "账户与安全",
+      "description": "角色、登录状态和已关联的身份。",
+      "role": "角色",
+      "roleSelect": "新角色",
+      "roleSave": "更改角色",
+      "status": "状态",
+      "localPassword": "密码",
+      "passwordLocal": "已设置本地密码",
+      "passwordSso": "无本地密码（仅限 SSO）",
+      "mustChange": "须修改密码",
+      "twoFactor": "双重身份验证",
+      "twoFactorOn": "开启",
+      "twoFactorOff": "关闭",
+      "lockout": "登录锁定",
+      "locked": "已锁定",
+      "lockedUntil": "锁定至 {{date}}",
+      "notLocked": "未锁定",
+      "unlock": "解锁",
+      "lockoutCounters": "失败 {{failed}} 次 · 目前已锁定 {{locks}} 次",
+      "sessions": "活动会话",
+      "trustedDevices": "受信任设备",
+      "identityLinks": "已关联的身份（{{links}}）",
+      "linkState": {
+        "active": "有效",
+        "suspended": "已暂停"
+      },
+      "linkMethod": {
+        "auto_verified_email": "通过已验证的电子邮件关联",
+        "manual": "手动关联",
+        "auto_provision": "首次登录时创建"
+      },
+      "linkLastLogin": "上次登录 {{date}}",
+      "resetPassword": "重置密码",
+      "noLocalPasswordHint": "此账户通过外部提供方登录，没有可重置的本地密码。",
+      "notice": {
+        "roleChanged": "角色已更改。用户已在所有位置退出登录。",
+        "unlocked": "账户已解锁。"
+      },
+      "roleDialog": {
+        "title": "更改 {{name}} 的角色？",
+        "description": "新角色为{{role}}。更改角色会使用户退出所有会话。",
+        "confirm": "更改角色"
+      },
+      "resetDialog": {
+        "title": "重置 {{name}} 的密码？",
+        "description": "将生成一个仅显示一次的临时密码。用户会在所有位置退出登录，并须在下次登录时选择新密码。",
+        "confirm": "重置密码"
+      },
+      "resetResult": {
+        "title": "临时密码",
+        "description": "请通过安全渠道将此密码转交给 {{name}}。登录时须更改此密码。",
+        "label": "临时密码"
+      }
+    },
+    "storage": {
+      "title": "存储与配额",
+      "description": "“我的文件”和“已接收”中的用量，以及适用于此用户的配额。",
+      "used": "已用存储",
+      "effective": "生效配额",
+      "instanceDefault": "实例默认",
+      "files": "文件",
+      "receivedFiles": "已接收文件",
+      "shares": "共享",
+      "reverseShares": "反向共享",
+      "overrideTitle": "覆盖配额",
+      "saved": "配额已更新。",
+      "belowUsage": {
+        "title": "此配额低于已使用的存储量",
+        "description": "不会删除任何内容。在用量降至配额以下之前，用户无法添加新文件。"
+      },
+      "modes": {
+        "inherit": "使用实例默认值（{{value}}）",
+        "unlimited": "无限制",
+        "bytes": "自定义容量"
+      },
+      "amount": "配额",
+      "noBypass": "管理员没有配额例外：所有账户适用相同的限制。",
+      "save": "保存配额"
+    },
+    "sessions": {
+      "title": "会话",
+      "description": "此用户当前登录的位置。",
+      "none": "此用户没有活动会话。",
+      "listLabel": "活动会话",
+      "more": "另有 {{more}} 个会话。",
+      "unknownDevice": "未知设备",
+      "origin": {
+        "password": "密码",
+        "external": "外部提供方"
+      },
+      "ip": "IP {{ip}}",
+      "ipUnavailable": "IP 不可用",
+      "lastActive": "上次活动 {{date}}",
+      "signedIn": "登录于 {{date}}"
+    },
+    "danger": {
+      "title": "高影响操作",
+      "description": "这些操作会立即生效。",
+      "notice": {
+        "deactivated": "用户已停用，并已在所有位置退出登录。",
+        "activated": "用户已重新启用。",
+        "sessionsRevoked": "此用户的所有会话均已退出登录。"
+      },
+      "deactivate": {
+        "title": "停用此用户",
+        "description": "使用户在所有位置退出登录并阻止登录。文件和共享会保留。",
+        "action": "停用用户",
+        "dialogTitle": "停用 {{name}}？",
+        "dialogDescription": "对方将在所有位置退出登录，并且在你重新启用账户之前无法登录。",
+        "confirm": "停用"
+      },
+      "activate": {
+        "title": "重新启用此用户",
+        "description": "允许用户再次登录。之前已撤销的会话仍保持撤销状态。",
+        "action": "重新启用用户"
+      },
+      "revoke": {
+        "title": "退出所有会话",
+        "description": "结束此用户的所有会话。受信任设备会保留。",
+        "action": "在所有位置退出登录",
+        "dialogTitle": "使 {{name}} 在所有位置退出登录？",
+        "dialogDescription": "此用户的所有会话将立即结束，需要重新登录。",
+        "confirm": "在所有位置退出登录"
+      }
+    }
+  },
+  "settings": {
+    "title": "安全与策略",
+    "description": "适用于整个实例的策略。每个分区单独保存。",
+    "save": "保存更改",
+    "saved": "设置已保存。",
+    "errors": {
+      "belowFloor": "不得小于 {{floor}}。",
+      "belowFloorUnknown": "此值低于允许的最小值。",
+      "aboveMax": "不得大于 {{max}}。",
+      "invalid": "此值无效。",
+      "requiredWhenEnabled": "启用此功能时为必填。"
+    },
+    "general": {
+      "title": "常规",
+      "description": "实例名称、默认语言，以及访客在页脚看到的内容。",
+      "appName": "实例名称",
+      "appDescription": "描述",
+      "defaultLocale": "默认语言",
+      "thumbnailSourceLimit": "缩略图源文件上限",
+      "thumbnailSourceLimitHint": "Palmr 会为其生成缩略图的最大图片。",
+      "thumbnailLimits": {
+        "64MiB": "64 MiB",
+        "128MiB": "128 MiB",
+        "256MiB": "256 MiB",
+        "512MiB": "512 MiB",
+        "unlimited": "无限制"
+      },
+      "showVersion": "显示 Palmr 版本号",
+      "poweredByVisible": "显示“Powered by Palmr”"
+    },
+    "security": {
+      "title": "登录与会话",
+      "description": "密码规则、锁定、会话时长以及双重身份验证策略。",
+      "groups": {
+        "passwords": "密码",
+        "signIn": "登录保护",
+        "sessions": "会话",
+        "links": "链接与邀请",
+        "twoFactor": "双重身份验证",
+        "trustedDevices": "受信任设备"
+      },
+      "fields": {
+        "passwordMinLength": "账户密码最小长度",
+        "publicLinkPasswordMinLength": "公开链接密码最小长度",
+        "maxLoginAttempts": "锁定前允许的登录失败次数",
+        "loginLockoutMinutes": "锁定时长",
+        "sessionIdleDays": "空闲会话超时",
+        "sessionAbsoluteDays": "会话最长时长",
+        "recentAuthMinutes": "重新验证有效时间",
+        "passwordResetValidityMinutes": "密码重置链接有效期",
+        "inviteValidityHours": "默认邀请有效期",
+        "trustedDeviceDurationDays": "受信任设备有效期",
+        "twoFactorRequired": "要求本地账户使用双重身份验证",
+        "trustedDevicesEnabled": "允许受信任设备"
+      },
+      "hints": {
+        "passwordMinLength": "适用于新密码。",
+        "publicLinkPasswordMinLength": "适用于共享和反向共享的密码。",
+        "maxLoginAttempts": "账户被锁定之前允许连续失败的次数。",
+        "loginLockoutMinutes": "被锁定的账户保持锁定的时间。",
+        "sessionIdleDays": "会话在无活动这么久之后结束。",
+        "sessionAbsoluteDays": "无论是否活跃，会话在这么久之后结束。",
+        "recentAuthMinutes": "已确认的密码在执行敏感操作时的有效时间。",
+        "passwordResetValidityMinutes": "通过电子邮件发送的重置链接的有效时间。",
+        "inviteValidityHours": "邀请未设置自己的到期时间时使用。",
+        "trustedDeviceDurationDays": "受信任设备免于验证第二因素的时长。",
+        "twoFactorRequired": "本地账户必须先完成设置才能使用 Palmr。",
+        "trustedDevicesEnabled": "允许在信任的设备上跳过第二因素验证。"
+      }
+    },
+    "quotas": {
+      "title": "配额",
+      "description": "存储和上传限制。无限制不同于零。",
+      "fields": {
+        "defaultUserQuotaBytes": "每位用户的默认存储配额",
+        "maxFileSizeBytes": "最大文件大小"
+      },
+      "hints": {
+        "defaultUserQuotaBytes": "适用于没有单独覆盖的用户。零表示完全没有存储空间。",
+        "maxFileSizeBytes": "允许上传的单个文件的最大大小。零会阻止所有上传。"
+      }
+    },
+    "publicLinks": {
+      "title": "公开链接",
+      "description": "共享和反向共享可以保持可用的时长。",
+      "noMaximum": "无最长有效期",
+      "maxLifetime": "链接最长有效期",
+      "hint": "无法创建到期时间更晚的链接。"
+    }
+  },
+  "smtp": {
+    "pageTitle": "SMTP",
+    "pageDescription": "用于邀请、密码重置和通知的发信服务。",
+    "title": "邮件服务器",
+    "description": "没有电子邮件，Palmr 也能运行。需要电子邮件的功能在配置之前将不可用。",
+    "enabledTag": "已启用",
+    "disabledTag": "已停用",
+    "fields": {
+      "enabled": "通过此服务器发送电子邮件",
+      "host": "主机",
+      "port": "端口",
+      "security": "连接安全",
+      "noAuth": "服务器不需要身份验证",
+      "username": "用户名",
+      "password": "密码",
+      "passwordPlaceholder": "输入新密码以替换",
+      "fromName": "发件人名称",
+      "fromEmail": "发件人地址",
+      "allowSelfSigned": "允许自签名证书",
+      "allowSelfSignedHint": "仅用于你自己控制的服务器。会削弱证书检查。"
+    },
+    "security": {
+      "starttls": "STARTTLS",
+      "implicit": "隐式 TLS",
+      "none": "无"
+    },
+    "password": {
+      "configured": "已配置密码",
+      "notConfigured": "未保存密码",
+      "willClear": "保存时将被移除",
+      "willReplace": "保存时将被替换",
+      "clear": "清除已保存的密码",
+      "undoClear": "保留已保存的密码",
+      "clearDialog": {
+        "title": "清除已保存的密码？",
+        "description": "保存时将移除该密码。在输入新密码之前，需要身份验证的电子邮件将无法发送。",
+        "confirm": "清除密码"
+      }
+    },
+    "test": {
+      "title": "发送测试邮件",
+      "description": "检查连接、TLS、登录和投递。",
+      "recipient": "测试邮件收件人",
+      "saved": "测试已保存的设置",
+      "unsaved": "测试当前表单值",
+      "unsavedHint": "测试表单值不会保存它们，也绝不会使用已保存的密码。如果服务器需要密码，请在上方输入。",
+      "unsavedIncomplete": "请输入主机、端口和发件人地址，以测试表单值。",
+      "mode": {
+        "saved": "已保存的设置",
+        "unsaved": "表单值"
+      },
+      "stages": {
+        "connect": "连接",
+        "starttls": "启动 TLS",
+        "auth": "身份验证",
+        "send": "发送邮件"
+      },
+      "stagesLabel": "测试阶段",
+      "stageOk": "通过",
+      "stageFailed": "失败",
+      "succeeded": "测试邮件已发送（测试对象：{{mode}}）。",
+      "incomplete": "测试未完成（测试对象：{{mode}}）。",
+      "duration": "用时 {{ms}} 毫秒。",
+      "failedAt": "停在：{{stage}}（测试对象：{{mode}}）。"
+    }
+  }
+}

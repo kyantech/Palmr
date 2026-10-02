@@ -981,6 +981,11 @@ export interface components {
             identityLinks: components["schemas"]["AdminIdentityLink"][];
             lockout: components["schemas"]["AdminLockout"];
             overQuota: boolean;
+            /**
+             * @description The persisted quota override policy, read directly from the stored mode. `quotaBytes`
+             *     and `effectiveQuotaBytes` cannot tell `inherit` from `unlimited` when both are Unlimited.
+             */
+            quotaOverrideMode: components["schemas"]["QuotaOverrideModeName"];
             /** Format: int64 */
             sessionCount: number;
             /** Format: int64 */
@@ -1520,6 +1525,8 @@ export interface components {
              */
             maxPublicLinkLifetimeDays: number | null;
         };
+        /** @enum {string} */
+        QuotaOverrideModeName: "inherit" | "unlimited" | "bytes";
         QuotaOverrideRequest: {
             /**
              * @description `inherit` follows the instance default, `unlimited` is an explicit Unlimited override and `bytes` is an explicit cap.

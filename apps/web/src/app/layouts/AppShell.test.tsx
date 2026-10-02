@@ -10,19 +10,9 @@ import { server } from "../../test/server";
 import type { BootState } from "../bootstrap/bootState";
 import { authenticatedRoutes } from "../guards/chain";
 import { AppShell, type AppShellProps } from "./AppShell";
-import { NAV_ENTRIES, type NavigationEntry } from "./navigation/registry";
 import { PALMR_REPOSITORY_URL, POWERED_BY_TEXT } from "./ShellFooter";
 
 const LOGOUT_URL = "*/api/v1/auth/logout";
-
-const ADMIN_ENTRY: NavigationEntry = {
-  key: "admin",
-  path: "/admin",
-  labelKey: "nav.more",
-  icon: null,
-  order: 60,
-  requiredRole: "admin",
-};
 
 const FORBIDDEN_LABELS = ["Files", "Shared", "Received", "Transfers", "Admin"];
 
@@ -137,22 +127,20 @@ test("component_appshell_xs_bottom_tabs_use_the_same_registry", async () => {
 
 test("component_nav_admin_only_for_admin", async () => {
   stubViewportWidth(1280);
-  const entries = [...NAV_ENTRIES, ADMIN_ENTRY];
-
-  const asUser = await renderRouter(shellRoutes({ entries }), {
+  const asUser = await renderRouter(shellRoutes(), {
     state: bootState("user"),
     initialEntries: ["/overview"],
   });
   await screen.findByTestId("app-sider");
-  expect(screen.queryByRole("link", { name: "More" })).toBeNull();
+  expect(screen.queryByRole("link", { name: "Admin" })).toBeNull();
   asUser.view.unmount();
 
-  await renderRouter(shellRoutes({ entries }), {
+  await renderRouter(shellRoutes(), {
     state: bootState("admin"),
     initialEntries: ["/overview"],
   });
   const sider = await screen.findByTestId("app-sider");
-  expect(within(sider).getByRole("link", { name: "More" }).getAttribute("href")).toBe("/admin");
+  expect(within(sider).getByRole("link", { name: "Admin" }).getAttribute("href")).toBe("/admin");
 });
 
 test("component_role_comes_from_auth_me_never_bootstrap", async () => {
@@ -160,13 +148,13 @@ test("component_role_comes_from_auth_me_never_bootstrap", async () => {
   const strayBootstrap = { ...bootstrapFixture() };
   Object.assign(strayBootstrap, { role: "admin", session: { user: { role: "admin" } } });
 
-  await renderRouter(shellRoutes({ entries: [...NAV_ENTRIES, ADMIN_ENTRY] }), {
+  await renderRouter(shellRoutes(), {
     state: { bootstrap: strayBootstrap, me: meFixture({ role: "user" }) },
     initialEntries: ["/overview"],
   });
 
   await screen.findByTestId("app-sider");
-  expect(screen.queryByRole("link", { name: "More" })).toBeNull();
+  expect(screen.queryByRole("link", { name: "Admin" })).toBeNull();
 });
 
 test("component_footer_version_and_powered_by_toggles", async () => {

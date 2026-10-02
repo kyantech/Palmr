@@ -1,12 +1,15 @@
+import type { QueryClient } from "@tanstack/react-query";
 import { createBrowserRouter, type RouteObject, useRouteError } from "react-router";
 import { OverviewPage } from "../../features/overview";
 import { RouteErrorView } from "../error/RouteErrorBoundary";
 import { authenticatedRoutes } from "../guards/chain";
 import { AppShell } from "../layouts/AppShell";
+import { adminAreaRoutes } from "./adminRoutes";
 import { authRoutes } from "./authRoutes";
 import { resolveBasename } from "./basename";
 import { PATHS } from "./paths";
 import { RootRedirect } from "./RootRedirect";
+import { routerContextFor } from "./routeContext";
 import { settingsRoutes } from "./settingsRoutes";
 import { NotFoundPanel } from "./StatusPanel";
 
@@ -26,13 +29,17 @@ export const appRoutes: RouteObject[] = [
           children: [{ path: PATHS.overview, element: <OverviewPage /> }, ...settingsRoutes],
         },
       ]),
+      ...adminAreaRoutes,
       { path: "*", element: <NotFoundPanel /> },
     ],
   },
 ];
 
-export function createAppRouter(basename: string = resolveBasename()) {
-  return createBrowserRouter(appRoutes, { basename });
+export function createAppRouter(queryClient: QueryClient, basename: string = resolveBasename()) {
+  return createBrowserRouter(appRoutes, {
+    basename,
+    getContext: routerContextFor(queryClient),
+  });
 }
 
 export type AppRouter = ReturnType<typeof createAppRouter>;

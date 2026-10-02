@@ -1,1 +1,541 @@
-{}
+{
+  "title": "Yönetim",
+  "sections": {
+    "label": "Yönetim bölümleri",
+    "users": "Kullanıcılar",
+    "security": "Güvenlik",
+    "smtp": "SMTP"
+  },
+  "common": {
+    "cancel": "İptal",
+    "none": "Yok",
+    "yes": "Evet",
+    "no": "Hayır",
+    "retry": "Tekrar dene",
+    "unknown": "Kullanılamıyor"
+  },
+  "roles": {
+    "admin": "Yönetici",
+    "user": "Kullanıcı"
+  },
+  "status": {
+    "active": "Etkin",
+    "inactive": "Devre dışı"
+  },
+  "tags": {
+    "locked": "Kilitli",
+    "mustChangePassword": "Parolayı değiştirmeli",
+    "ssoOnly": "Yalnızca SSO",
+    "twoFactor": "2FA açık"
+  },
+  "secret": {
+    "done": "Bitti",
+    "notShownAgain": "Bu bir daha gösterilmeyecek. Şimdi kopyalayın ve güvenli bir yerde saklayın.",
+    "copy": "Kopyala",
+    "copied": "Panoya kopyalandı.",
+    "copyFailed": "Otomatik kopyalanamadı. Metni seçip elle kopyalayın."
+  },
+  "bytes": {
+    "unit": "Birim"
+  },
+  "units": {
+    "characters": "karakter",
+    "attempts": "deneme",
+    "minutes": "dakika",
+    "hours": "saat",
+    "days": "gün"
+  },
+  "quota": {
+    "unlimited": "Sınırsız"
+  },
+  "storage": {
+    "usedOf": "{{quota}} içinde {{used}}",
+    "usedOfUnlimited": "{{used}} · Sınırsız",
+    "overQuota": "Kota aşıldı",
+    "usageLabel": "Depolama kullanımı"
+  },
+  "validation": {
+    "required": "Bu alan zorunludur.",
+    "email": "Geçerli bir e-posta adresi girin.",
+    "integer": "Tam sayı girin.",
+    "quota": "0 ile desteklenen en büyük boyut arasında bir değer girin.",
+    "invalid": "Bu değer geçerli değil.",
+    "passwordTooShort": "En az {{minLength}} karakter kullanın."
+  },
+  "pager": {
+    "showing": "{{shown}} gösteriliyor",
+    "showingOf": "{{total}} içinden {{shown}} gösteriliyor",
+    "pageSize": "Sayfa başına satır",
+    "perPage": "Sayfa başına {{size}}",
+    "first": "İlk sayfa",
+    "previous": "Önceki",
+    "next": "Sonraki"
+  },
+  "users": {
+    "title": "Kullanıcılar",
+    "description": "Hesap oluşturun, erişimi yönetin ve bu örneğin depolamasını izleyin.",
+    "views": {
+      "label": "Kullanıcılar veya davetler",
+      "users": "Kullanıcılar",
+      "invites": "Davetler"
+    },
+    "tableLabel": "Kullanıcılar",
+    "usernameLine": "@{{username}}",
+    "pendingEmail": "{{email}} adresine değişiklik bekliyor",
+    "neverSignedIn": "Hiç",
+    "columns": {
+      "user": "Kullanıcı",
+      "role": "Rol",
+      "status": "Durum",
+      "security": "Hesap",
+      "storage": "Depolama",
+      "lastSignIn": "Son oturum açma",
+      "actions": "İşlemler"
+    },
+    "actions": {
+      "label": "{{name}} için işlemler",
+      "view": "Ayrıntıları göster",
+      "activate": "Yeniden etkinleştir",
+      "deactivate": "Devre dışı bırak",
+      "unlock": "Kilidi aç"
+    },
+    "deactivate": {
+      "title": "{{name}} devre dışı bırakılsın mı?",
+      "description": "Kişinin her yerdeki oturumu kapatılır ve hesabı yeniden etkinleştirene kadar oturum açamaz. Dosyaları ve paylaşımları korunur.",
+      "confirm": "Devre dışı bırak"
+    },
+    "notice": {
+      "activated": "Kullanıcı yeniden etkinleştirildi.",
+      "deactivated": "Kullanıcı devre dışı bırakıldı.",
+      "unlocked": "Hesabın kilidi açıldı."
+    },
+    "empty": {
+      "filtered": "Bu filtrelere uyan kullanıcı yok.",
+      "none": "Henüz kullanıcı yok.",
+      "clear": "Filtreleri temizle"
+    },
+    "filters": {
+      "label": "Kullanıcıları filtrele",
+      "search": "Kullanıcı ara",
+      "searchPlaceholder": "Ad, kullanıcı adı veya e-posta ile ara",
+      "role": "Rol",
+      "status": "Durum",
+      "sort": "Kullanıcıları sırala",
+      "allRoles": "Tüm roller",
+      "allStatuses": "Tüm durumlar"
+    },
+    "sorts": {
+      "newest": "Önce en yeniler",
+      "oldest": "Önce en eskiler",
+      "usernameAsc": "Kullanıcı adı A–Z",
+      "usernameDesc": "Kullanıcı adı Z–A",
+      "emailAsc": "E-posta A–Z",
+      "emailDesc": "E-posta Z–A",
+      "storageDesc": "En çok depolama kullanan",
+      "storageAsc": "En az depolama kullanan"
+    },
+    "create": {
+      "open": "Kullanıcı oluştur",
+      "title": "Kullanıcı oluştur",
+      "firstName": "Ad",
+      "lastName": "Soyad",
+      "username": "Kullanıcı adı",
+      "email": "E-posta adresi",
+      "role": "Rol",
+      "locale": "Dil",
+      "instanceLocale": "Örnek varsayılanı",
+      "password": "Geçici parola",
+      "passwordHintLocal": "Kullanıcı bu parolayla oturum açar. Güvenli bir kanaldan paylaşın.",
+      "passwordHintSso": "İsteğe bağlı. Harici bir sağlayıcıyla oturum açmak üzere yerel parolası olmayan bir hesap oluşturmak için boş bırakın.",
+      "requirePasswordChange": "İlk oturum açmada yeni parola iste",
+      "active": "Hesap etkin",
+      "quota": "Depolama kotası",
+      "quotaInherit": "Örnek varsayılanı",
+      "quotaCustom": "Özel miktar",
+      "quotaAmount": "Kota",
+      "submit": "Kullanıcı oluştur",
+      "created": "{{name}} oluşturuldu.",
+      "view": "Kullanıcıyı göster"
+    }
+  },
+  "invites": {
+    "tableLabel": "Davetler",
+    "columns": {
+      "email": "E-posta",
+      "role": "Rol",
+      "status": "Durum",
+      "createdBy": "Oluşturan",
+      "created": "Oluşturulma",
+      "expires": "Bitiş",
+      "lastSent": "Son gönderim",
+      "actions": "İşlemler"
+    },
+    "status": {
+      "pending": "Bekliyor",
+      "accepted": "Kabul edildi",
+      "revoked": "İptal edildi",
+      "expired": "Süresi doldu"
+    },
+    "neverSent": "Hiç",
+    "actions": {
+      "resend": "Yeniden gönder",
+      "revoke": "İptal et"
+    },
+    "filters": {
+      "status": "Davetleri duruma göre filtrele",
+      "allStatuses": "Tüm durumlar"
+    },
+    "notice": {
+      "resent": "Davet e-postası gönderim kuyruğuna alındı.",
+      "revoked": "Davet iptal edildi."
+    },
+    "empty": {
+      "none": "Henüz davet yok. Erişim vermek için birini davet edin.",
+      "filtered": "Bu durumda davet yok."
+    },
+    "revoke": {
+      "title": "Bu davet iptal edilsin mi?",
+      "description": "{{email}} için davet bağlantısı hemen çalışmayı bırakır.",
+      "confirm": "Daveti iptal et"
+    },
+    "create": {
+      "open": "Kullanıcı davet et",
+      "title": "Kullanıcı davet et",
+      "email": "E-posta adresi",
+      "role": "Rol",
+      "expiry": "Geçerlilik süresi",
+      "expiryHint": "Örneğin davet geçerlilik süresini kullanmak için boş bırakın.",
+      "sendEmail": "Daveti e-postayla gönder",
+      "sendEmailHint": "Palmr bağlantıyı yukarıdaki adrese e-postayla gönderir.",
+      "sendEmailOff": "E-posta yapılandırılmadığı için kendiniz paylaşacağınız bir bağlantı alacaksınız.",
+      "submit": "Davet oluştur"
+    },
+    "link": {
+      "title": "Davet bağlantısı",
+      "description": "Bu bağlantıyı davet ettiğiniz kişiye gönderin. Bağlantıya sahip herkes hesabı oluşturabilir.",
+      "label": "Davet bağlantısı"
+    }
+  },
+  "detail": {
+    "back": "← Tüm kullanıcılar",
+    "loading": "Kullanıcı yükleniyor…",
+    "notFound": "Kullanıcı bulunamadı",
+    "failed": "Bu kullanıcı yüklenemedi",
+    "subtitle": "@{{username}} · {{email}}",
+    "inactiveNotice": "Bu hesap devre dışı. Yeniden etkinleştirilene kadar kullanıcı oturum açamaz.",
+    "identity": {
+      "title": "Kimlik",
+      "description": "Ad ve kullanıcı adı. E-posta adresi ve rol ayrı yönetilir.",
+      "firstName": "Ad",
+      "lastName": "Soyad",
+      "username": "Kullanıcı adı",
+      "memberSince": "{{date}} tarihinden beri üye",
+      "save": "Değişiklikleri kaydet",
+      "saved": "Kimlik kaydedildi."
+    },
+    "email": {
+      "title": "E-posta adresi",
+      "description": "Adres değişikliği doğrulama gerektirir. O zamana kadar mevcut adres çalışmaya devam eder.",
+      "current": "Mevcut adres",
+      "newLabel": "Yeni e-posta adresi",
+      "hint": "Yeni adrese bir doğrulama bağlantısı gönderilir. Onaylanana kadar hiçbir şey değişmez.",
+      "request": "E-posta değişikliğini başlat",
+      "resend": "Doğrulamayı yeniden gönder",
+      "cancel": "Değişikliği iptal et",
+      "pendingTitle": "{{email}} doğrulaması bekleniyor",
+      "pendingDescription": "Yeni adres doğrulanana kadar {{email}} etkin adres olarak kalır.",
+      "notice": {
+        "requested": "Doğrulama istendi. Adres yalnızca onaylandıktan sonra değişir.",
+        "resent": "Yeni bir doğrulama iletisi kuyruğa alındı.",
+        "cancelled": "Bekleyen e-posta değişikliği iptal edildi."
+      },
+      "cancelDialog": {
+        "title": "Bekleyen değişiklik iptal edilsin mi?",
+        "description": "{{email}} için doğrulama bağlantısı çalışmayı bırakır. Mevcut adres değişmez.",
+        "confirm": "Değişikliği iptal et"
+      }
+    },
+    "account": {
+      "title": "Hesap ve güvenlik",
+      "description": "Rol, oturum açma durumu ve bağlı kimlikler.",
+      "role": "Rol",
+      "roleSelect": "Yeni rol",
+      "roleSave": "Rolü değiştir",
+      "status": "Durum",
+      "localPassword": "Parola",
+      "passwordLocal": "Yerel parola ayarlı",
+      "passwordSso": "Yerel parola yok (yalnızca SSO)",
+      "mustChange": "Parolayı değiştirmeli",
+      "twoFactor": "İki adımlı doğrulama",
+      "twoFactorOn": "Açık",
+      "twoFactorOff": "Kapalı",
+      "lockout": "Oturum açma kilidi",
+      "locked": "Kilitli",
+      "lockedUntil": "{{date}} tarihine kadar kilitli",
+      "notLocked": "Kilitli değil",
+      "unlock": "Kilidi aç",
+      "lockoutCounters": "{{failed}} başarısız deneme · şimdiye kadar {{locks}} kilit",
+      "sessions": "Etkin oturumlar",
+      "trustedDevices": "Güvenilen cihazlar",
+      "identityLinks": "Bağlı kimlikler ({{links}})",
+      "linkState": {
+        "active": "Etkin",
+        "suspended": "Askıda"
+      },
+      "linkMethod": {
+        "auto_verified_email": "Doğrulanmış e-postayla bağlandı",
+        "manual": "Elle bağlandı",
+        "auto_provision": "İlk oturum açmada oluşturuldu"
+      },
+      "linkLastLogin": "son oturum açma {{date}}",
+      "resetPassword": "Parolayı sıfırla",
+      "noLocalPasswordHint": "Bu hesap harici bir sağlayıcıyla oturum açar ve sıfırlanacak yerel parolası yoktur.",
+      "notice": {
+        "roleChanged": "Rol değiştirildi. Kullanıcının her yerdeki oturumu kapatıldı.",
+        "unlocked": "Hesabın kilidi açıldı."
+      },
+      "roleDialog": {
+        "title": "{{name}} kullanıcısının rolü değiştirilsin mi?",
+        "description": "Yeni rol: {{role}}. Rol değişikliği kullanıcının tüm oturumlarını kapatır.",
+        "confirm": "Rolü değiştir"
+      },
+      "resetDialog": {
+        "title": "{{name}} kullanıcısının parolası sıfırlansın mı?",
+        "description": "Bir kez gösterilecek geçici bir parola oluşturulur. Kullanıcının her yerdeki oturumu kapatılır ve bir sonraki oturum açışında yeni parola seçmesi gerekir.",
+        "confirm": "Parolayı sıfırla"
+      },
+      "resetResult": {
+        "title": "Geçici parola",
+        "description": "Bu parolayı {{name}} ile güvenli bir kanaldan paylaşın. Oturum açarken değiştirmesi gerekir.",
+        "label": "Geçici parola"
+      }
+    },
+    "storage": {
+      "title": "Depolama ve kota",
+      "description": "Dosyalarım ve Alınanlar'daki kullanım ile bu kullanıcıya uygulanan kota.",
+      "used": "Kullanılan depolama",
+      "effective": "Geçerli kota",
+      "instanceDefault": "Örnek varsayılanı",
+      "files": "Dosyalar",
+      "receivedFiles": "Alınan dosyalar",
+      "shares": "Paylaşımlar",
+      "reverseShares": "Ters paylaşımlar",
+      "overrideTitle": "Kota geçersiz kılma",
+      "saved": "Kota güncellendi.",
+      "belowUsage": {
+        "title": "Bu kota, zaten kullanılan depolamanın altında",
+        "description": "Hiçbir şey silinmez. Kullanım kotanın altına düşene kadar kullanıcı yeni dosya ekleyemez."
+      },
+      "modes": {
+        "inherit": "Örnek varsayılanını kullan ({{value}})",
+        "unlimited": "Sınırsız",
+        "bytes": "Özel miktar"
+      },
+      "amount": "Kota",
+      "noBypass": "Yöneticilere kota muafiyeti yoktur: tüm hesaplar için aynı sınırlar geçerlidir.",
+      "save": "Kotayı kaydet"
+    },
+    "sessions": {
+      "title": "Oturumlar",
+      "description": "Bu kullanıcının şu anda oturum açtığı yerler.",
+      "none": "Bu kullanıcının etkin oturumu yok.",
+      "listLabel": "Etkin oturumlar",
+      "more": "Ve {{more}} oturum daha.",
+      "unknownDevice": "Bilinmeyen cihaz",
+      "origin": {
+        "password": "Parola",
+        "external": "Harici sağlayıcı"
+      },
+      "ip": "IP {{ip}}",
+      "ipUnavailable": "IP kullanılamıyor",
+      "lastActive": "Son etkinlik {{date}}",
+      "signedIn": "Oturum açıldı {{date}}"
+    },
+    "danger": {
+      "title": "Etkisi yüksek işlemler",
+      "description": "Bu işlemler hemen yürürlüğe girer.",
+      "notice": {
+        "deactivated": "Kullanıcı devre dışı bırakıldı ve her yerden çıkış yaptırıldı.",
+        "activated": "Kullanıcı yeniden etkinleştirildi.",
+        "sessionsRevoked": "Bu kullanıcının tüm oturumları kapatıldı."
+      },
+      "deactivate": {
+        "title": "Bu kullanıcıyı devre dışı bırak",
+        "description": "Kullanıcının her yerdeki oturumunu kapatır ve oturum açmayı engeller. Dosyalar ve paylaşımlar korunur.",
+        "action": "Kullanıcıyı devre dışı bırak",
+        "dialogTitle": "{{name}} devre dışı bırakılsın mı?",
+        "dialogDescription": "Kişinin her yerdeki oturumu kapatılır ve hesabı yeniden etkinleştirene kadar oturum açamaz.",
+        "confirm": "Devre dışı bırak"
+      },
+      "activate": {
+        "title": "Bu kullanıcıyı yeniden etkinleştir",
+        "description": "Kullanıcının yeniden oturum açmasına izin verir. Daha önce iptal edilen oturumlar iptal kalır.",
+        "action": "Kullanıcıyı yeniden etkinleştir"
+      },
+      "revoke": {
+        "title": "Tüm oturumları kapat",
+        "description": "Bu kullanıcının her oturumunu sonlandırır. Güvenilen cihazlar korunur.",
+        "action": "Her yerden çıkış yaptır",
+        "dialogTitle": "{{name}} her yerden çıkış yaptırılsın mı?",
+        "dialogDescription": "Bu kullanıcının her oturumu hemen sona erer ve yeniden oturum açması gerekir.",
+        "confirm": "Her yerden çıkış yaptır"
+      }
+    }
+  },
+  "settings": {
+    "title": "Güvenlik ve ilkeler",
+    "description": "Tüm örneği kapsayan ilkeler. Her bölüm ayrı kaydedilir.",
+    "save": "Değişiklikleri kaydet",
+    "saved": "Ayarlar kaydedildi.",
+    "errors": {
+      "belowFloor": "En az {{floor}} olmalıdır.",
+      "belowFloorUnknown": "Bu değer izin verilen en düşük değerin altında.",
+      "aboveMax": "En fazla {{max}} olabilir.",
+      "invalid": "Bu değer geçerli değil.",
+      "requiredWhenEnabled": "Bu özellik etkin olduğu sürece zorunludur."
+    },
+    "general": {
+      "title": "Genel",
+      "description": "Örnek adı, varsayılan dil ve ziyaretçilerin alt bilgide gördükleri.",
+      "appName": "Örnek adı",
+      "appDescription": "Açıklama",
+      "defaultLocale": "Varsayılan dil",
+      "thumbnailSourceLimit": "Küçük resim kaynak sınırı",
+      "thumbnailSourceLimitHint": "Palmr'ın küçük resim oluşturduğu en büyük görsel.",
+      "thumbnailLimits": {
+        "64MiB": "64 MiB",
+        "128MiB": "128 MiB",
+        "256MiB": "256 MiB",
+        "512MiB": "512 MiB",
+        "unlimited": "Sınır yok"
+      },
+      "showVersion": "Palmr sürüm numarasını göster",
+      "poweredByVisible": "“Powered by Palmr” ibaresini göster"
+    },
+    "security": {
+      "title": "Oturum açma ve oturumlar",
+      "description": "Parola kuralları, kilitleme, oturum süresi ve iki adımlı doğrulama ilkesi.",
+      "groups": {
+        "passwords": "Parolalar",
+        "signIn": "Oturum açma koruması",
+        "sessions": "Oturumlar",
+        "links": "Bağlantılar ve davetler",
+        "twoFactor": "İki adımlı doğrulama",
+        "trustedDevices": "Güvenilen cihazlar"
+      },
+      "fields": {
+        "passwordMinLength": "Hesap parolası en az uzunluğu",
+        "publicLinkPasswordMinLength": "Herkese açık bağlantı parolası en az uzunluğu",
+        "maxLoginAttempts": "Kilitlenmeden önceki başarısız oturum açma",
+        "loginLockoutMinutes": "Kilit süresi",
+        "sessionIdleDays": "Oturum boşta kalma süresi",
+        "sessionAbsoluteDays": "En uzun oturum süresi",
+        "recentAuthMinutes": "Yeniden doğrulama penceresi",
+        "passwordResetValidityMinutes": "Parola sıfırlama bağlantısı geçerliliği",
+        "inviteValidityHours": "Varsayılan davet geçerliliği",
+        "trustedDeviceDurationDays": "Güvenilen cihaz süresi",
+        "twoFactorRequired": "Yerel hesaplar için iki adımlı doğrulamayı zorunlu kıl",
+        "trustedDevicesEnabled": "Güvenilen cihazlara izin ver"
+      },
+      "hints": {
+        "passwordMinLength": "Yeni parolalar için geçerlidir.",
+        "publicLinkPasswordMinLength": "Paylaşımların ve ters paylaşımların parolaları için geçerlidir.",
+        "maxLoginAttempts": "Hesap kilitlenmeden önceki art arda başarısız deneme sayısı.",
+        "loginLockoutMinutes": "Kilitlenen bir hesabın ne kadar süre kilitli kalacağı.",
+        "sessionIdleDays": "Oturumlar bu kadar etkinlik olmadan sona erer.",
+        "sessionAbsoluteDays": "Oturumlar ne kadar etkin olursa olsun bu süre sonunda biter.",
+        "recentAuthMinutes": "Doğrulanan bir parolanın hassas işlemler için ne kadar geçerli sayılacağı.",
+        "passwordResetValidityMinutes": "E-postayla gönderilen sıfırlama bağlantısının ne kadar çalışacağı.",
+        "inviteValidityHours": "Bir davetin kendi bitiş zamanı yoksa kullanılır.",
+        "trustedDeviceDurationDays": "Güvenilen bir cihazın ikinci adımı ne kadar atlayacağı.",
+        "twoFactorRequired": "Yerel hesapların Palmr'ı kullanabilmek için önce kurulum yapması gerekir.",
+        "trustedDevicesEnabled": "İnsanların güvendikleri cihazlarda ikinci adımı atlamasına izin verir."
+      }
+    },
+    "quotas": {
+      "title": "Kotalar",
+      "description": "Depolama ve yükleme sınırları. Sınırsız ile sıfır farklı şeylerdir.",
+      "fields": {
+        "defaultUserQuotaBytes": "Kullanıcı başına varsayılan depolama kotası",
+        "maxFileSizeBytes": "En büyük dosya boyutu"
+      },
+      "hints": {
+        "defaultUserQuotaBytes": "Kendi kotası olmayan kullanıcılar için geçerlidir. Sıfır hiç depolama olmaması demektir.",
+        "maxFileSizeBytes": "Yüklenebilecek en büyük tek dosya. Sıfır tüm yüklemeleri engeller."
+      }
+    },
+    "publicLinks": {
+      "title": "Herkese açık bağlantılar",
+      "description": "Paylaşımların ve ters paylaşımların ne kadar süre erişilebilir kalabileceği.",
+      "noMaximum": "En uzun ömür yok",
+      "maxLifetime": "Bağlantının en uzun ömrü",
+      "hint": "Daha uzun bitiş süresine sahip bağlantılar oluşturulamaz."
+    }
+  },
+  "smtp": {
+    "pageTitle": "SMTP",
+    "pageDescription": "Davetler, parola sıfırlamaları ve bildirimler için giden e-posta.",
+    "title": "E-posta sunucusu",
+    "description": "Palmr e-posta olmadan da çalışır. E-posta gerektiren özellikler yapılandırılana kadar kullanılamaz.",
+    "enabledTag": "Etkin",
+    "disabledTag": "Devre dışı",
+    "fields": {
+      "enabled": "E-postayı bu sunucu üzerinden gönder",
+      "host": "Ana bilgisayar",
+      "port": "Bağlantı noktası",
+      "security": "Bağlantı güvenliği",
+      "noAuth": "Sunucu kimlik doğrulaması gerektirmiyor",
+      "username": "Kullanıcı adı",
+      "password": "Parola",
+      "passwordPlaceholder": "Değiştirmek için yeni bir parola girin",
+      "fromName": "Gönderen adı",
+      "fromEmail": "Gönderen adresi",
+      "allowSelfSigned": "Kendinden imzalı sertifikaya izin ver",
+      "allowSelfSignedHint": "Yalnızca kendi denetiminizdeki sunucular için. Sertifika denetimini zayıflatır."
+    },
+    "security": {
+      "starttls": "STARTTLS",
+      "implicit": "Örtük TLS",
+      "none": "Yok"
+    },
+    "password": {
+      "configured": "Parola yapılandırıldı",
+      "notConfigured": "Kayıtlı parola yok",
+      "willClear": "Kaydettiğinizde kaldırılacak",
+      "willReplace": "Kaydettiğinizde değiştirilecek",
+      "clear": "Kayıtlı parolayı temizle",
+      "undoClear": "Kayıtlı parolayı koru",
+      "clearDialog": {
+        "title": "Kayıtlı parola temizlensin mi?",
+        "description": "Parola kaydettiğinizde kaldırılır. Kimlik doğrulaması gerektiren e-postalar, yenisini girene kadar çalışmaz.",
+        "confirm": "Parolayı temizle"
+      }
+    },
+    "test": {
+      "title": "Test e-postası gönder",
+      "description": "Bağlantıyı, TLS'yi, oturum açmayı ve teslimi denetler.",
+      "recipient": "Testin gönderileceği adres",
+      "saved": "Kayıtlı ayarları test et",
+      "unsaved": "Formdaki güncel değerleri test et",
+      "unsavedHint": "Form değerlerini test etmek onları kaydetmez ve kayıtlı parolayı asla kullanmaz. Sunucu parola gerektiriyorsa parolayı yukarıya girin.",
+      "unsavedIncomplete": "Form değerlerini test etmek için ana bilgisayar, bağlantı noktası ve gönderen adresi girin.",
+      "mode": {
+        "saved": "kayıtlı ayarlar",
+        "unsaved": "form değerleri"
+      },
+      "stages": {
+        "connect": "Bağlan",
+        "starttls": "TLS başlat",
+        "auth": "Kimlik doğrula",
+        "send": "İletiyi gönder"
+      },
+      "stagesLabel": "Test aşamaları",
+      "stageOk": "Başarılı",
+      "stageFailed": "Başarısız",
+      "succeeded": "Test e-postası gönderildi (test: {{mode}}).",
+      "incomplete": "Test tamamlanmadı (test: {{mode}}).",
+      "duration": "{{ms}} ms içinde tamamlandı.",
+      "failedAt": "Şu aşamada durdu: {{stage}} (test: {{mode}})."
+    }
+  }
+}

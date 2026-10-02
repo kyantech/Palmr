@@ -208,11 +208,32 @@ pub struct AdminIdentityLink {
     pub last_login_at: Option<String>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, ToSchema)]
+#[serde(rename_all = "lowercase")]
+pub enum QuotaOverrideModeName {
+    Inherit,
+    Unlimited,
+    Bytes,
+}
+
+impl From<QuotaOverride> for QuotaOverrideModeName {
+    fn from(quota: QuotaOverride) -> Self {
+        match quota {
+            QuotaOverride::Inherit => Self::Inherit,
+            QuotaOverride::Unlimited => Self::Unlimited,
+            QuotaOverride::Bytes(_) => Self::Bytes,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct AdminUserDetail {
     #[serde(flatten)]
     pub user: AdminUserItem,
+    /// The persisted quota override policy, read directly from the stored mode. `quotaBytes`
+    /// and `effectiveQuotaBytes` cannot tell `inherit` from `unlimited` when both are Unlimited.
+    pub quota_override_mode: QuotaOverrideModeName,
     pub over_quota: bool,
     #[schema(minimum = 0)]
     pub session_count: u64,
@@ -358,6 +379,7 @@ impl AdminUserDetail {
             lock_count: record.lock.map_or(0, |lock| lock.lock_count),
         };
         Self {
+            quota_override_mode: record.quota.into(),
             over_quota: is_over_quota(record.used_bytes, effective),
             user: AdminUserItem::new(&record, counts, instance_default, now),
             session_count,

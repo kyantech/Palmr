@@ -1,5 +1,9 @@
 import type { QueryKey } from "@tanstack/react-query";
 
+export type AdminSettingsGroup = "general" | "security" | "quotas" | "public-links" | "smtp";
+
+export type ListParams = Readonly<Record<string, string | number | null>>;
+
 export const qk = {
   bootstrap: () => ["bootstrap"] as const,
 
@@ -12,6 +16,18 @@ export const qk = {
     effectiveSettings: () => ["me", "effective-settings"] as const,
     twoFactor: () => ["me", "two-factor"] as const,
     trustedDevices: () => ["me", "trusted-devices"] as const,
+  },
+
+  admin: {
+    all: () => ["admin"] as const,
+    usersAll: () => ["admin", "users"] as const,
+    users: (params: ListParams) => ["admin", "users", params] as const,
+    userAll: () => ["admin", "user"] as const,
+    user: (id: string) => ["admin", "user", id] as const,
+    userSessions: (id: string) => ["admin", "user", id, "sessions"] as const,
+    invitesAll: () => ["admin", "invites"] as const,
+    invites: (params: ListParams) => ["admin", "invites", params] as const,
+    settings: (group: AdminSettingsGroup) => ["admin", "settings", group] as const,
   },
 
   public: {

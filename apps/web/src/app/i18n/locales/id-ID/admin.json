@@ -1,1 +1,541 @@
-{}
+{
+  "title": "Administrasi",
+  "sections": {
+    "label": "Bagian administrasi",
+    "users": "Pengguna",
+    "security": "Keamanan",
+    "smtp": "SMTP"
+  },
+  "common": {
+    "cancel": "Batal",
+    "none": "Tidak ada",
+    "yes": "Ya",
+    "no": "Tidak",
+    "retry": "Coba lagi",
+    "unknown": "Tidak tersedia"
+  },
+  "roles": {
+    "admin": "Admin",
+    "user": "Pengguna"
+  },
+  "status": {
+    "active": "Aktif",
+    "inactive": "Nonaktif"
+  },
+  "tags": {
+    "locked": "Terkunci",
+    "mustChangePassword": "Harus ganti kata sandi",
+    "ssoOnly": "Hanya SSO",
+    "twoFactor": "2FA aktif"
+  },
+  "secret": {
+    "done": "Selesai",
+    "notShownAgain": "Ini tidak akan ditampilkan lagi. Salin sekarang dan simpan dengan aman.",
+    "copy": "Salin",
+    "copied": "Disalin ke papan klip.",
+    "copyFailed": "Tidak dapat menyalin otomatis. Pilih teksnya dan salin secara manual."
+  },
+  "bytes": {
+    "unit": "Satuan"
+  },
+  "units": {
+    "characters": "karakter",
+    "attempts": "percobaan",
+    "minutes": "menit",
+    "hours": "jam",
+    "days": "hari"
+  },
+  "quota": {
+    "unlimited": "Tanpa batas"
+  },
+  "storage": {
+    "usedOf": "{{used}} dari {{quota}}",
+    "usedOfUnlimited": "{{used}} · Tanpa batas",
+    "overQuota": "Melebihi kuota",
+    "usageLabel": "Penggunaan penyimpanan"
+  },
+  "validation": {
+    "required": "Kolom ini wajib diisi.",
+    "email": "Masukkan alamat e-mail yang valid.",
+    "integer": "Masukkan bilangan bulat.",
+    "quota": "Masukkan jumlah antara 0 dan ukuran maksimum yang didukung.",
+    "invalid": "Nilai ini tidak valid.",
+    "passwordTooShort": "Gunakan minimal {{minLength}} karakter."
+  },
+  "pager": {
+    "showing": "Menampilkan {{shown}}",
+    "showingOf": "Menampilkan {{shown}} dari {{total}}",
+    "pageSize": "Baris per halaman",
+    "perPage": "{{size}} per halaman",
+    "first": "Halaman pertama",
+    "previous": "Sebelumnya",
+    "next": "Berikutnya"
+  },
+  "users": {
+    "title": "Pengguna",
+    "description": "Buat akun, kelola akses, dan pantau penyimpanan di instans ini.",
+    "views": {
+      "label": "Pengguna atau undangan",
+      "users": "Pengguna",
+      "invites": "Undangan"
+    },
+    "tableLabel": "Pengguna",
+    "usernameLine": "@{{username}}",
+    "pendingEmail": "Perubahan ke {{email}} tertunda",
+    "neverSignedIn": "Belum pernah",
+    "columns": {
+      "user": "Pengguna",
+      "role": "Peran",
+      "status": "Status",
+      "security": "Akun",
+      "storage": "Penyimpanan",
+      "lastSignIn": "Masuk terakhir",
+      "actions": "Tindakan"
+    },
+    "actions": {
+      "label": "Tindakan untuk {{name}}",
+      "view": "Lihat detail",
+      "activate": "Aktifkan kembali",
+      "deactivate": "Nonaktifkan",
+      "unlock": "Buka kunci"
+    },
+    "deactivate": {
+      "title": "Nonaktifkan {{name}}?",
+      "description": "Orang ini dikeluarkan dari semua tempat dan tidak dapat masuk sampai Anda mengaktifkan akun kembali. File dan berbagi tetap tersimpan.",
+      "confirm": "Nonaktifkan"
+    },
+    "notice": {
+      "activated": "Pengguna diaktifkan kembali.",
+      "deactivated": "Pengguna dinonaktifkan.",
+      "unlocked": "Kunci akun dibuka."
+    },
+    "empty": {
+      "filtered": "Tidak ada pengguna yang cocok dengan filter ini.",
+      "none": "Belum ada pengguna.",
+      "clear": "Hapus filter"
+    },
+    "filters": {
+      "label": "Filter pengguna",
+      "search": "Cari pengguna",
+      "searchPlaceholder": "Cari berdasarkan nama, nama pengguna, atau e-mail",
+      "role": "Peran",
+      "status": "Status",
+      "sort": "Urutkan pengguna",
+      "allRoles": "Semua peran",
+      "allStatuses": "Semua status"
+    },
+    "sorts": {
+      "newest": "Terbaru dulu",
+      "oldest": "Terlama dulu",
+      "usernameAsc": "Nama pengguna A–Z",
+      "usernameDesc": "Nama pengguna Z–A",
+      "emailAsc": "E-mail A–Z",
+      "emailDesc": "E-mail Z–A",
+      "storageDesc": "Penyimpanan terbanyak",
+      "storageAsc": "Penyimpanan tersedikit"
+    },
+    "create": {
+      "open": "Buat pengguna",
+      "title": "Buat pengguna",
+      "firstName": "Nama depan",
+      "lastName": "Nama belakang",
+      "username": "Nama pengguna",
+      "email": "Alamat e-mail",
+      "role": "Peran",
+      "locale": "Bahasa",
+      "instanceLocale": "Default instans",
+      "password": "Kata sandi sementara",
+      "passwordHintLocal": "Pengguna masuk dengan kata sandi ini. Bagikan melalui saluran yang aman.",
+      "passwordHintSso": "Opsional. Biarkan kosong untuk membuat akun tanpa kata sandi lokal, untuk masuk melalui penyedia eksternal.",
+      "requirePasswordChange": "Wajibkan kata sandi baru saat masuk pertama kali",
+      "active": "Akun aktif",
+      "quota": "Kuota penyimpanan",
+      "quotaInherit": "Default instans",
+      "quotaCustom": "Jumlah khusus",
+      "quotaAmount": "Kuota",
+      "submit": "Buat pengguna",
+      "created": "{{name}} telah dibuat.",
+      "view": "Lihat pengguna"
+    }
+  },
+  "invites": {
+    "tableLabel": "Undangan",
+    "columns": {
+      "email": "E-mail",
+      "role": "Peran",
+      "status": "Status",
+      "createdBy": "Dibuat oleh",
+      "created": "Dibuat",
+      "expires": "Kedaluwarsa",
+      "lastSent": "Terakhir dikirim",
+      "actions": "Tindakan"
+    },
+    "status": {
+      "pending": "Tertunda",
+      "accepted": "Diterima",
+      "revoked": "Dicabut",
+      "expired": "Kedaluwarsa"
+    },
+    "neverSent": "Belum pernah",
+    "actions": {
+      "resend": "Kirim ulang",
+      "revoke": "Cabut"
+    },
+    "filters": {
+      "status": "Filter undangan menurut status",
+      "allStatuses": "Semua status"
+    },
+    "notice": {
+      "resent": "E-mail undangan telah dimasukkan ke antrean pengiriman.",
+      "revoked": "Undangan dicabut."
+    },
+    "empty": {
+      "none": "Belum ada undangan. Undang seseorang untuk memberi akses.",
+      "filtered": "Tidak ada undangan dengan status ini."
+    },
+    "revoke": {
+      "title": "Cabut undangan ini?",
+      "description": "Tautan undangan untuk {{email}} langsung berhenti berfungsi.",
+      "confirm": "Cabut undangan"
+    },
+    "create": {
+      "open": "Undang pengguna",
+      "title": "Undang pengguna",
+      "email": "Alamat e-mail",
+      "role": "Peran",
+      "expiry": "Berlaku selama",
+      "expiryHint": "Biarkan kosong untuk memakai masa berlaku undangan instans.",
+      "sendEmail": "Kirim undangan lewat e-mail",
+      "sendEmailHint": "Palmr mengirim tautan ke alamat di atas.",
+      "sendEmailOff": "E-mail belum dikonfigurasi, jadi Anda akan mendapat tautan untuk dibagikan sendiri.",
+      "submit": "Buat undangan"
+    },
+    "link": {
+      "title": "Tautan undangan",
+      "description": "Kirim tautan ini kepada orang yang Anda undang. Siapa pun yang memiliki tautan dapat membuat akun.",
+      "label": "Tautan undangan"
+    }
+  },
+  "detail": {
+    "back": "← Semua pengguna",
+    "loading": "Memuat pengguna…",
+    "notFound": "Pengguna tidak ditemukan",
+    "failed": "Tidak dapat memuat pengguna ini",
+    "subtitle": "@{{username}} · {{email}}",
+    "inactiveNotice": "Akun ini dinonaktifkan. Pengguna tidak dapat masuk sampai akun diaktifkan kembali.",
+    "identity": {
+      "title": "Identitas",
+      "description": "Nama dan nama pengguna. Alamat e-mail dan peran dikelola terpisah.",
+      "firstName": "Nama depan",
+      "lastName": "Nama belakang",
+      "username": "Nama pengguna",
+      "memberSince": "Anggota sejak {{date}}",
+      "save": "Simpan perubahan",
+      "saved": "Identitas disimpan."
+    },
+    "email": {
+      "title": "Alamat e-mail",
+      "description": "Mengubah alamat memerlukan verifikasi. Sampai saat itu, alamat saat ini tetap berfungsi.",
+      "current": "Alamat saat ini",
+      "newLabel": "Alamat e-mail baru",
+      "hint": "Tautan verifikasi dikirim ke alamat baru. Tidak ada yang berubah sampai dikonfirmasi.",
+      "request": "Mulai perubahan e-mail",
+      "resend": "Kirim ulang verifikasi",
+      "cancel": "Batalkan perubahan",
+      "pendingTitle": "Menunggu verifikasi {{email}}",
+      "pendingDescription": "{{email}} tetap menjadi alamat aktif sampai alamat baru diverifikasi.",
+      "notice": {
+        "requested": "Verifikasi diminta. Alamat baru berubah hanya setelah dikonfirmasi.",
+        "resent": "Pesan verifikasi baru telah dimasukkan ke antrean.",
+        "cancelled": "Perubahan e-mail yang tertunda dibatalkan."
+      },
+      "cancelDialog": {
+        "title": "Batalkan perubahan yang tertunda?",
+        "description": "Tautan verifikasi untuk {{email}} berhenti berfungsi. Alamat saat ini tidak berubah.",
+        "confirm": "Batalkan perubahan"
+      }
+    },
+    "account": {
+      "title": "Akun dan keamanan",
+      "description": "Peran, status masuk, dan identitas yang terhubung.",
+      "role": "Peran",
+      "roleSelect": "Peran baru",
+      "roleSave": "Ubah peran",
+      "status": "Status",
+      "localPassword": "Kata sandi",
+      "passwordLocal": "Kata sandi lokal sudah diatur",
+      "passwordSso": "Tanpa kata sandi lokal (hanya SSO)",
+      "mustChange": "Harus ganti kata sandi",
+      "twoFactor": "Autentikasi dua faktor",
+      "twoFactorOn": "Aktif",
+      "twoFactorOff": "Nonaktif",
+      "lockout": "Kunci masuk",
+      "locked": "Terkunci",
+      "lockedUntil": "Terkunci sampai {{date}}",
+      "notLocked": "Tidak terkunci",
+      "unlock": "Buka kunci",
+      "lockoutCounters": "{{failed}} percobaan gagal · {{locks}} kali terkunci sejauh ini",
+      "sessions": "Sesi aktif",
+      "trustedDevices": "Perangkat tepercaya",
+      "identityLinks": "Identitas terhubung ({{links}})",
+      "linkState": {
+        "active": "Aktif",
+        "suspended": "Ditangguhkan"
+      },
+      "linkMethod": {
+        "auto_verified_email": "Dihubungkan lewat e-mail terverifikasi",
+        "manual": "Dihubungkan manual",
+        "auto_provision": "Dibuat saat masuk pertama kali"
+      },
+      "linkLastLogin": "masuk terakhir {{date}}",
+      "resetPassword": "Atur ulang kata sandi",
+      "noLocalPasswordHint": "Akun ini masuk melalui penyedia eksternal dan tidak memiliki kata sandi lokal untuk diatur ulang.",
+      "notice": {
+        "roleChanged": "Peran diubah. Pengguna dikeluarkan dari semua tempat.",
+        "unlocked": "Kunci akun dibuka."
+      },
+      "roleDialog": {
+        "title": "Ubah peran {{name}}?",
+        "description": "Peran barunya adalah {{role}}. Mengubah peran mengeluarkan pengguna dari semua sesi.",
+        "confirm": "Ubah peran"
+      },
+      "resetDialog": {
+        "title": "Atur ulang kata sandi {{name}}?",
+        "description": "Kata sandi sementara dibuat dan ditampilkan satu kali. Pengguna dikeluarkan dari semua tempat dan harus memilih kata sandi baru saat masuk berikutnya.",
+        "confirm": "Atur ulang kata sandi"
+      },
+      "resetResult": {
+        "title": "Kata sandi sementara",
+        "description": "Bagikan kata sandi ini kepada {{name}} melalui saluran yang aman. Kata sandi harus diganti saat masuk.",
+        "label": "Kata sandi sementara"
+      }
+    },
+    "storage": {
+      "title": "Penyimpanan dan kuota",
+      "description": "Penggunaan di File Saya dan Diterima, serta kuota yang berlaku untuk pengguna ini.",
+      "used": "Penyimpanan terpakai",
+      "effective": "Kuota efektif",
+      "instanceDefault": "Default instans",
+      "files": "File",
+      "receivedFiles": "File diterima",
+      "shares": "Berbagi",
+      "reverseShares": "Berbagi terbalik",
+      "overrideTitle": "Penggantian kuota",
+      "saved": "Kuota diperbarui.",
+      "belowUsage": {
+        "title": "Kuota ini lebih rendah dari penyimpanan yang sudah terpakai",
+        "description": "Tidak ada yang dihapus. Pengguna tidak dapat menambah file baru sampai penggunaan turun di bawah kuota."
+      },
+      "modes": {
+        "inherit": "Gunakan default instans ({{value}})",
+        "unlimited": "Tanpa batas",
+        "bytes": "Jumlah khusus"
+      },
+      "amount": "Kuota",
+      "noBypass": "Admin tidak mendapat pengecualian kuota: batas yang sama berlaku untuk semua akun.",
+      "save": "Simpan kuota"
+    },
+    "sessions": {
+      "title": "Sesi",
+      "description": "Tempat pengguna ini sedang masuk saat ini.",
+      "none": "Pengguna ini tidak memiliki sesi aktif.",
+      "listLabel": "Sesi aktif",
+      "more": "Dan {{more}} sesi lainnya.",
+      "unknownDevice": "Perangkat tidak dikenal",
+      "origin": {
+        "password": "Kata sandi",
+        "external": "Penyedia eksternal"
+      },
+      "ip": "IP {{ip}}",
+      "ipUnavailable": "IP tidak tersedia",
+      "lastActive": "Aktif terakhir {{date}}",
+      "signedIn": "Masuk {{date}}"
+    },
+    "danger": {
+      "title": "Tindakan berdampak besar",
+      "description": "Tindakan ini langsung berlaku.",
+      "notice": {
+        "deactivated": "Pengguna dinonaktifkan dan dikeluarkan dari semua tempat.",
+        "activated": "Pengguna diaktifkan kembali.",
+        "sessionsRevoked": "Semua sesi pengguna ini telah diakhiri."
+      },
+      "deactivate": {
+        "title": "Nonaktifkan pengguna ini",
+        "description": "Mengeluarkan pengguna dari semua tempat dan memblokir masuk. File dan berbagi tetap tersimpan.",
+        "action": "Nonaktifkan pengguna",
+        "dialogTitle": "Nonaktifkan {{name}}?",
+        "dialogDescription": "Orang ini dikeluarkan dari semua tempat dan tidak dapat masuk sampai Anda mengaktifkan akun kembali.",
+        "confirm": "Nonaktifkan"
+      },
+      "activate": {
+        "title": "Aktifkan kembali pengguna ini",
+        "description": "Mengizinkan pengguna masuk lagi. Sesi yang dicabut sebelumnya tetap dicabut.",
+        "action": "Aktifkan kembali pengguna"
+      },
+      "revoke": {
+        "title": "Keluarkan dari semua sesi",
+        "description": "Mengakhiri setiap sesi pengguna ini. Perangkat tepercaya tetap tersimpan.",
+        "action": "Keluarkan dari mana saja",
+        "dialogTitle": "Keluarkan {{name}} dari mana saja?",
+        "dialogDescription": "Setiap sesi pengguna ini berakhir seketika dan ia harus masuk lagi.",
+        "confirm": "Keluarkan dari mana saja"
+      }
+    }
+  },
+  "settings": {
+    "title": "Keamanan dan kebijakan",
+    "description": "Kebijakan untuk seluruh instans. Setiap bagian disimpan sendiri-sendiri.",
+    "save": "Simpan perubahan",
+    "saved": "Pengaturan disimpan.",
+    "errors": {
+      "belowFloor": "Minimal {{floor}}.",
+      "belowFloorUnknown": "Nilai ini di bawah batas minimum yang diizinkan.",
+      "aboveMax": "Maksimal {{max}}.",
+      "invalid": "Nilai ini tidak valid.",
+      "requiredWhenEnabled": "Wajib selama fitur ini diaktifkan."
+    },
+    "general": {
+      "title": "Umum",
+      "description": "Nama instans, bahasa default, dan apa yang dilihat pengunjung di footer.",
+      "appName": "Nama instans",
+      "appDescription": "Deskripsi",
+      "defaultLocale": "Bahasa default",
+      "thumbnailSourceLimit": "Batas sumber thumbnail",
+      "thumbnailSourceLimitHint": "Gambar terbesar yang dibuatkan thumbnail oleh Palmr.",
+      "thumbnailLimits": {
+        "64MiB": "64 MiB",
+        "128MiB": "128 MiB",
+        "256MiB": "256 MiB",
+        "512MiB": "512 MiB",
+        "unlimited": "Tanpa batas"
+      },
+      "showVersion": "Tampilkan nomor versi Palmr",
+      "poweredByVisible": "Tampilkan “Powered by Palmr”"
+    },
+    "security": {
+      "title": "Masuk dan sesi",
+      "description": "Aturan kata sandi, penguncian, masa sesi, dan kebijakan autentikasi dua faktor.",
+      "groups": {
+        "passwords": "Kata sandi",
+        "signIn": "Perlindungan masuk",
+        "sessions": "Sesi",
+        "links": "Tautan dan undangan",
+        "twoFactor": "Autentikasi dua faktor",
+        "trustedDevices": "Perangkat tepercaya"
+      },
+      "fields": {
+        "passwordMinLength": "Panjang minimum kata sandi akun",
+        "publicLinkPasswordMinLength": "Panjang minimum kata sandi tautan publik",
+        "maxLoginAttempts": "Gagal masuk sebelum dikunci",
+        "loginLockoutMinutes": "Durasi penguncian",
+        "sessionIdleDays": "Batas waktu sesi tidak aktif",
+        "sessionAbsoluteDays": "Masa sesi maksimum",
+        "recentAuthMinutes": "Jendela autentikasi ulang",
+        "passwordResetValidityMinutes": "Masa berlaku tautan atur ulang kata sandi",
+        "inviteValidityHours": "Masa berlaku undangan default",
+        "trustedDeviceDurationDays": "Durasi perangkat tepercaya",
+        "twoFactorRequired": "Wajibkan autentikasi dua faktor untuk akun lokal",
+        "trustedDevicesEnabled": "Izinkan perangkat tepercaya"
+      },
+      "hints": {
+        "passwordMinLength": "Berlaku untuk kata sandi baru.",
+        "publicLinkPasswordMinLength": "Berlaku untuk kata sandi Berbagi dan Berbagi Terbalik.",
+        "maxLoginAttempts": "Kegagalan berturut-turut sebelum akun dikunci.",
+        "loginLockoutMinutes": "Berapa lama akun yang terkunci tetap terkunci.",
+        "sessionIdleDays": "Sesi berakhir setelah selama ini tanpa aktivitas.",
+        "sessionAbsoluteDays": "Sesi berakhir setelah selama ini, seaktif apa pun.",
+        "recentAuthMinutes": "Berapa lama kata sandi yang dikonfirmasi dianggap sah untuk tindakan sensitif.",
+        "passwordResetValidityMinutes": "Berapa lama tautan atur ulang yang dikirim lewat e-mail berfungsi.",
+        "inviteValidityHours": "Dipakai saat undangan tidak menetapkan masa berlakunya sendiri.",
+        "trustedDeviceDurationDays": "Berapa lama perangkat tepercaya melewati faktor kedua.",
+        "twoFactorRequired": "Akun lokal harus menyiapkannya sebelum dapat memakai Palmr.",
+        "trustedDevicesEnabled": "Memungkinkan orang melewati faktor kedua di perangkat yang mereka percayai."
+      }
+    },
+    "quotas": {
+      "title": "Kuota",
+      "description": "Batas penyimpanan dan unggahan. Tanpa batas berbeda dengan nol.",
+      "fields": {
+        "defaultUserQuotaBytes": "Kuota penyimpanan default per pengguna",
+        "maxFileSizeBytes": "Ukuran file maksimum"
+      },
+      "hints": {
+        "defaultUserQuotaBytes": "Berlaku untuk pengguna tanpa penggantian sendiri. Nol berarti tidak ada penyimpanan sama sekali.",
+        "maxFileSizeBytes": "File tunggal terbesar yang boleh diunggah. Nol memblokir semua unggahan."
+      }
+    },
+    "publicLinks": {
+      "title": "Tautan publik",
+      "description": "Berapa lama Berbagi dan Berbagi Terbalik boleh tetap tersedia.",
+      "noMaximum": "Tanpa masa aktif maksimum",
+      "maxLifetime": "Masa aktif tautan maksimum",
+      "hint": "Tautan tidak dapat dibuat dengan kedaluwarsa yang lebih lama."
+    }
+  },
+  "smtp": {
+    "pageTitle": "SMTP",
+    "pageDescription": "E-mail keluar untuk undangan, atur ulang kata sandi, dan notifikasi.",
+    "title": "Server e-mail",
+    "description": "Palmr tetap berfungsi tanpa e-mail. Fitur yang membutuhkannya tidak tersedia sampai dikonfigurasi.",
+    "enabledTag": "Aktif",
+    "disabledTag": "Nonaktif",
+    "fields": {
+      "enabled": "Kirim e-mail melalui server ini",
+      "host": "Host",
+      "port": "Port",
+      "security": "Keamanan koneksi",
+      "noAuth": "Server tidak memerlukan autentikasi",
+      "username": "Nama pengguna",
+      "password": "Kata sandi",
+      "passwordPlaceholder": "Masukkan kata sandi baru untuk menggantinya",
+      "fromName": "Nama pengirim",
+      "fromEmail": "Alamat pengirim",
+      "allowSelfSigned": "Izinkan sertifikat yang ditandatangani sendiri",
+      "allowSelfSignedHint": "Hanya untuk server yang Anda kendalikan. Melemahkan pemeriksaan sertifikat."
+    },
+    "security": {
+      "starttls": "STARTTLS",
+      "implicit": "TLS implisit",
+      "none": "Tidak ada"
+    },
+    "password": {
+      "configured": "Kata sandi sudah dikonfigurasi",
+      "notConfigured": "Tidak ada kata sandi tersimpan",
+      "willClear": "Akan dihapus saat Anda menyimpan",
+      "willReplace": "Akan diganti saat Anda menyimpan",
+      "clear": "Hapus kata sandi tersimpan",
+      "undoClear": "Pertahankan kata sandi tersimpan",
+      "clearDialog": {
+        "title": "Hapus kata sandi tersimpan?",
+        "description": "Kata sandi dihapus saat Anda menyimpan. E-mail yang memerlukan autentikasi berhenti berfungsi sampai Anda memasukkan yang baru.",
+        "confirm": "Hapus kata sandi"
+      }
+    },
+    "test": {
+      "title": "Kirim e-mail uji",
+      "description": "Memeriksa koneksi, TLS, proses masuk, dan pengiriman.",
+      "recipient": "Kirim uji ke",
+      "saved": "Uji pengaturan tersimpan",
+      "unsaved": "Uji nilai formulir saat ini",
+      "unsavedHint": "Menguji nilai formulir tidak menyimpannya dan tidak pernah memakai kata sandi tersimpan. Masukkan kata sandi di atas jika server memerlukannya.",
+      "unsavedIncomplete": "Masukkan host, port, dan alamat pengirim untuk menguji nilai formulir.",
+      "mode": {
+        "saved": "pengaturan tersimpan",
+        "unsaved": "nilai formulir"
+      },
+      "stages": {
+        "connect": "Menyambung",
+        "starttls": "Memulai TLS",
+        "auth": "Mengautentikasi",
+        "send": "Mengirim pesan"
+      },
+      "stagesLabel": "Tahap pengujian",
+      "stageOk": "Lolos",
+      "stageFailed": "Gagal",
+      "succeeded": "E-mail uji terkirim (uji dengan {{mode}}).",
+      "incomplete": "Pengujian tidak selesai (uji dengan {{mode}}).",
+      "duration": "Selesai dalam {{ms}} md.",
+      "failedAt": "Berhenti di: {{stage}} (uji dengan {{mode}})."
+    }
+  }
+}

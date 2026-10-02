@@ -1,4 +1,6 @@
 import { Button, ConfigProvider, Drawer, Flex, Grid, Layout, theme, Tooltip } from "antd";
+import Bars from "@gravity-ui/icons/Bars";
+import LayoutSideContentLeft from "@gravity-ui/icons/LayoutSideContentLeft";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Outlet, useLocation } from "react-router";
@@ -8,7 +10,6 @@ import { useSignOut } from "../session/useSignOut";
 import { AppBrand } from "./AppBrand";
 import { BottomTabs } from "./navigation/BottomTabs";
 import { useTextDirection } from "./navigation/direction";
-import { MenuIcon, PanelIcon } from "./navigation/icons";
 import { NavigationMenu } from "./navigation/NavigationMenu";
 import {
   NAV_ENTRIES,
@@ -109,7 +110,14 @@ export function AppShell({ entries = NAV_ENTRIES }: AppShellProps) {
               <Tooltip title={collapseLabel} placement={direction === "rtl" ? "left" : "right"}>
                 <Button
                   type="text"
-                  icon={<PanelIcon />}
+                  icon={
+                    <LayoutSideContentLeft
+                      aria-hidden="true"
+                      focusable="false"
+                      width="1em"
+                      height="1em"
+                    />
+                  }
                   aria-label={collapseLabel}
                   aria-expanded={!navigationCollapsed}
                   onClick={() => {
@@ -169,7 +177,7 @@ export function AppShell({ entries = NAV_ENTRIES }: AppShellProps) {
                 type="text"
                 aria-label={t("nav.open")}
                 aria-expanded={navigationOpen}
-                icon={<MenuIcon />}
+                icon={<Bars aria-hidden="true" focusable="false" width="1em" height="1em" />}
                 onClick={() => {
                   setNavigationOpen(true);
                 }}

@@ -1,1 +1,541 @@
-{}
+{
+  "title": "管理",
+  "sections": {
+    "label": "管理セクション",
+    "users": "ユーザー",
+    "security": "セキュリティ",
+    "smtp": "SMTP"
+  },
+  "common": {
+    "cancel": "キャンセル",
+    "none": "なし",
+    "yes": "はい",
+    "no": "いいえ",
+    "retry": "もう一度試す",
+    "unknown": "利用できません"
+  },
+  "roles": {
+    "admin": "管理者",
+    "user": "ユーザー"
+  },
+  "status": {
+    "active": "有効",
+    "inactive": "無効"
+  },
+  "tags": {
+    "locked": "ロック中",
+    "mustChangePassword": "パスワード変更が必要",
+    "ssoOnly": "SSO のみ",
+    "twoFactor": "2FA オン"
+  },
+  "secret": {
+    "done": "完了",
+    "notShownAgain": "この内容は二度と表示されません。今すぐコピーして安全に保管してください。",
+    "copy": "コピー",
+    "copied": "クリップボードにコピーしました。",
+    "copyFailed": "自動でコピーできませんでした。テキストを選択して手動でコピーしてください。"
+  },
+  "bytes": {
+    "unit": "単位"
+  },
+  "units": {
+    "characters": "文字",
+    "attempts": "回",
+    "minutes": "分",
+    "hours": "時間",
+    "days": "日"
+  },
+  "quota": {
+    "unlimited": "無制限"
+  },
+  "storage": {
+    "usedOf": "{{quota}} 中 {{used}}",
+    "usedOfUnlimited": "{{used}} · 無制限",
+    "overQuota": "上限超過",
+    "usageLabel": "ストレージ使用量"
+  },
+  "validation": {
+    "required": "この項目は必須です。",
+    "email": "有効なメールアドレスを入力してください。",
+    "integer": "整数を入力してください。",
+    "quota": "0 から対応している最大サイズまでの値を入力してください。",
+    "invalid": "この値は無効です。",
+    "passwordTooShort": "{{minLength}} 文字以上にしてください。"
+  },
+  "pager": {
+    "showing": "{{shown}} 件を表示中",
+    "showingOf": "{{total}} 件中 {{shown}} 件を表示中",
+    "pageSize": "1 ページあたりの行数",
+    "perPage": "1 ページ {{size}} 件",
+    "first": "最初のページ",
+    "previous": "前へ",
+    "next": "次へ"
+  },
+  "users": {
+    "title": "ユーザー",
+    "description": "アカウントの作成、アクセスの管理、このインスタンスのストレージ使用状況の確認ができます。",
+    "views": {
+      "label": "ユーザーまたは招待",
+      "users": "ユーザー",
+      "invites": "招待"
+    },
+    "tableLabel": "ユーザー",
+    "usernameLine": "@{{username}}",
+    "pendingEmail": "{{email}} への変更を保留中",
+    "neverSignedIn": "なし",
+    "columns": {
+      "user": "ユーザー",
+      "role": "ロール",
+      "status": "状態",
+      "security": "アカウント",
+      "storage": "ストレージ",
+      "lastSignIn": "最終サインイン",
+      "actions": "操作"
+    },
+    "actions": {
+      "label": "{{name}} の操作",
+      "view": "詳細を表示",
+      "activate": "再び有効にする",
+      "deactivate": "無効にする",
+      "unlock": "ロック解除"
+    },
+    "deactivate": {
+      "title": "{{name}} を無効にしますか？",
+      "description": "すべての場所でサインアウトされ、アカウントを再び有効にするまでサインインできません。ファイルと共有は保持されます。",
+      "confirm": "無効にする"
+    },
+    "notice": {
+      "activated": "ユーザーを再び有効にしました。",
+      "deactivated": "ユーザーを無効にしました。",
+      "unlocked": "アカウントのロックを解除しました。"
+    },
+    "empty": {
+      "filtered": "これらの条件に一致するユーザーはいません。",
+      "none": "ユーザーはまだいません。",
+      "clear": "フィルターをクリア"
+    },
+    "filters": {
+      "label": "ユーザーを絞り込む",
+      "search": "ユーザーを検索",
+      "searchPlaceholder": "名前、ユーザー名、メールで検索",
+      "role": "ロール",
+      "status": "状態",
+      "sort": "ユーザーの並べ替え",
+      "allRoles": "すべてのロール",
+      "allStatuses": "すべての状態"
+    },
+    "sorts": {
+      "newest": "新しい順",
+      "oldest": "古い順",
+      "usernameAsc": "ユーザー名 A–Z",
+      "usernameDesc": "ユーザー名 Z–A",
+      "emailAsc": "メール A–Z",
+      "emailDesc": "メール Z–A",
+      "storageDesc": "ストレージ使用量が多い順",
+      "storageAsc": "ストレージ使用量が少ない順"
+    },
+    "create": {
+      "open": "ユーザーを作成",
+      "title": "ユーザーを作成",
+      "firstName": "名",
+      "lastName": "姓",
+      "username": "ユーザー名",
+      "email": "メールアドレス",
+      "role": "ロール",
+      "locale": "言語",
+      "instanceLocale": "インスタンスの既定",
+      "password": "一時パスワード",
+      "passwordHintLocal": "ユーザーはこのパスワードでサインインします。安全な方法で共有してください。",
+      "passwordHintSso": "任意です。空のままにすると、外部プロバイダー経由でサインインするためのローカルパスワードなしのアカウントを作成します。",
+      "requirePasswordChange": "初回サインイン時に新しいパスワードを必須にする",
+      "active": "アカウントを有効にする",
+      "quota": "ストレージの上限",
+      "quotaInherit": "インスタンスの既定",
+      "quotaCustom": "任意の容量",
+      "quotaAmount": "上限",
+      "submit": "ユーザーを作成",
+      "created": "{{name}} を作成しました。",
+      "view": "ユーザーを表示"
+    }
+  },
+  "invites": {
+    "tableLabel": "招待",
+    "columns": {
+      "email": "メール",
+      "role": "ロール",
+      "status": "状態",
+      "createdBy": "作成者",
+      "created": "作成日",
+      "expires": "有効期限",
+      "lastSent": "最終送信",
+      "actions": "操作"
+    },
+    "status": {
+      "pending": "保留中",
+      "accepted": "承諾済み",
+      "revoked": "取り消し済み",
+      "expired": "期限切れ"
+    },
+    "neverSent": "なし",
+    "actions": {
+      "resend": "再送信",
+      "revoke": "取り消す"
+    },
+    "filters": {
+      "status": "招待を状態で絞り込む",
+      "allStatuses": "すべての状態"
+    },
+    "notice": {
+      "resent": "招待メールを送信キューに入れました。",
+      "revoked": "招待を取り消しました。"
+    },
+    "empty": {
+      "none": "招待はまだありません。アクセスを許可するには誰かを招待してください。",
+      "filtered": "この状態の招待はありません。"
+    },
+    "revoke": {
+      "title": "この招待を取り消しますか？",
+      "description": "{{email}} 宛ての招待リンクはすぐに使えなくなります。",
+      "confirm": "招待を取り消す"
+    },
+    "create": {
+      "open": "ユーザーを招待",
+      "title": "ユーザーを招待",
+      "email": "メールアドレス",
+      "role": "ロール",
+      "expiry": "有効期間",
+      "expiryHint": "空のままにすると、インスタンスの招待有効期間を使用します。",
+      "sendEmail": "招待をメールで送信する",
+      "sendEmailHint": "Palmr が上記のアドレスにリンクをメールで送ります。",
+      "sendEmailOff": "メールが設定されていないため、ご自身で共有するリンクが発行されます。",
+      "submit": "招待を作成"
+    },
+    "link": {
+      "title": "招待リンク",
+      "description": "このリンクを招待する相手に送ってください。リンクを知っている人は誰でもアカウントを作成できます。",
+      "label": "招待リンク"
+    }
+  },
+  "detail": {
+    "back": "← すべてのユーザー",
+    "loading": "ユーザーを読み込み中…",
+    "notFound": "ユーザーが見つかりません",
+    "failed": "このユーザーを読み込めませんでした",
+    "subtitle": "@{{username}} · {{email}}",
+    "inactiveNotice": "このアカウントは無効です。再び有効にするまで、ユーザーはサインインできません。",
+    "identity": {
+      "title": "ID 情報",
+      "description": "名前とユーザー名です。メールアドレスとロールは別に管理します。",
+      "firstName": "名",
+      "lastName": "姓",
+      "username": "ユーザー名",
+      "memberSince": "{{date}} から利用",
+      "save": "変更を保存",
+      "saved": "ID 情報を保存しました。"
+    },
+    "email": {
+      "title": "メールアドレス",
+      "description": "アドレスの変更には確認が必要です。それまでは現在のアドレスが引き続き有効です。",
+      "current": "現在のアドレス",
+      "newLabel": "新しいメールアドレス",
+      "hint": "新しいアドレスに確認リンクが送られます。確認されるまで何も変わりません。",
+      "request": "メール変更を開始",
+      "resend": "確認を再送信",
+      "cancel": "変更をキャンセル",
+      "pendingTitle": "{{email}} の確認待ち",
+      "pendingDescription": "新しいアドレスが確認されるまで、{{email}} が有効なアドレスのままです。",
+      "notice": {
+        "requested": "確認をリクエストしました。アドレスは確認後にのみ変わります。",
+        "resent": "新しい確認メッセージを送信キューに入れました。",
+        "cancelled": "保留中のメール変更をキャンセルしました。"
+      },
+      "cancelDialog": {
+        "title": "保留中の変更をキャンセルしますか？",
+        "description": "{{email}} の確認リンクは使えなくなります。現在のアドレスは変わりません。",
+        "confirm": "変更をキャンセル"
+      }
+    },
+    "account": {
+      "title": "アカウントとセキュリティ",
+      "description": "ロール、サインイン状態、連携済みの ID です。",
+      "role": "ロール",
+      "roleSelect": "新しいロール",
+      "roleSave": "ロールを変更",
+      "status": "状態",
+      "localPassword": "パスワード",
+      "passwordLocal": "ローカルパスワード設定済み",
+      "passwordSso": "ローカルパスワードなし（SSO のみ）",
+      "mustChange": "パスワード変更が必要",
+      "twoFactor": "2 要素認証",
+      "twoFactorOn": "オン",
+      "twoFactorOff": "オフ",
+      "lockout": "サインインロック",
+      "locked": "ロック中",
+      "lockedUntil": "{{date}} までロック中",
+      "notLocked": "ロックされていません",
+      "unlock": "ロック解除",
+      "lockoutCounters": "失敗 {{failed}} 回 · これまでのロック {{locks}} 回",
+      "sessions": "有効なセッション",
+      "trustedDevices": "信頼済みデバイス",
+      "identityLinks": "連携済みの ID（{{links}}）",
+      "linkState": {
+        "active": "有効",
+        "suspended": "停止中"
+      },
+      "linkMethod": {
+        "auto_verified_email": "確認済みメールで連携",
+        "manual": "手動で連携",
+        "auto_provision": "初回サインイン時に作成"
+      },
+      "linkLastLogin": "最終サインイン {{date}}",
+      "resetPassword": "パスワードをリセット",
+      "noLocalPasswordHint": "このアカウントは外部プロバイダー経由でサインインするため、リセットできるローカルパスワードがありません。",
+      "notice": {
+        "roleChanged": "ロールを変更しました。ユーザーはすべての場所でサインアウトされました。",
+        "unlocked": "アカウントのロックを解除しました。"
+      },
+      "roleDialog": {
+        "title": "{{name}} のロールを変更しますか？",
+        "description": "新しいロールは {{role}} です。ロールを変更すると、ユーザーはすべてのセッションからサインアウトされます。",
+        "confirm": "ロールを変更"
+      },
+      "resetDialog": {
+        "title": "{{name}} のパスワードをリセットしますか？",
+        "description": "一度だけ表示される一時パスワードが生成されます。ユーザーはすべての場所でサインアウトされ、次回サインイン時に新しいパスワードを設定する必要があります。",
+        "confirm": "パスワードをリセット"
+      },
+      "resetResult": {
+        "title": "一時パスワード",
+        "description": "このパスワードを安全な方法で {{name}} に共有してください。サインイン時に変更が必要です。",
+        "label": "一時パスワード"
+      }
+    },
+    "storage": {
+      "title": "ストレージと上限",
+      "description": "マイファイルと受信の使用量、およびこのユーザーに適用される上限です。",
+      "used": "使用中のストレージ",
+      "effective": "適用中の上限",
+      "instanceDefault": "インスタンスの既定",
+      "files": "ファイル",
+      "receivedFiles": "受信ファイル",
+      "shares": "共有",
+      "reverseShares": "逆共有",
+      "overrideTitle": "上限の上書き",
+      "saved": "上限を更新しました。",
+      "belowUsage": {
+        "title": "この上限は現在の使用量を下回っています",
+        "description": "何も削除されません。使用量が上限を下回るまで、ユーザーは新しいファイルを追加できません。"
+      },
+      "modes": {
+        "inherit": "インスタンスの既定を使う（{{value}}）",
+        "unlimited": "無制限",
+        "bytes": "任意の容量"
+      },
+      "amount": "上限",
+      "noBypass": "管理者にも上限の例外はありません。すべてのアカウントに同じ制限が適用されます。",
+      "save": "上限を保存"
+    },
+    "sessions": {
+      "title": "セッション",
+      "description": "このユーザーが現在サインインしている場所です。",
+      "none": "このユーザーには有効なセッションがありません。",
+      "listLabel": "有効なセッション",
+      "more": "ほか {{more}} 件のセッション。",
+      "unknownDevice": "不明なデバイス",
+      "origin": {
+        "password": "パスワード",
+        "external": "外部プロバイダー"
+      },
+      "ip": "IP {{ip}}",
+      "ipUnavailable": "IP は利用できません",
+      "lastActive": "最終アクティビティ {{date}}",
+      "signedIn": "サインイン {{date}}"
+    },
+    "danger": {
+      "title": "影響の大きい操作",
+      "description": "これらの操作はすぐに反映されます。",
+      "notice": {
+        "deactivated": "ユーザーを無効にし、すべての場所でサインアウトしました。",
+        "activated": "ユーザーを再び有効にしました。",
+        "sessionsRevoked": "このユーザーのすべてのセッションをサインアウトしました。"
+      },
+      "deactivate": {
+        "title": "このユーザーを無効にする",
+        "description": "ユーザーをすべての場所でサインアウトし、サインインを禁止します。ファイルと共有は保持されます。",
+        "action": "ユーザーを無効にする",
+        "dialogTitle": "{{name}} を無効にしますか？",
+        "dialogDescription": "すべての場所でサインアウトされ、アカウントを再び有効にするまでサインインできません。",
+        "confirm": "無効にする"
+      },
+      "activate": {
+        "title": "このユーザーを再び有効にする",
+        "description": "ユーザーが再びサインインできるようになります。以前に取り消されたセッションは取り消されたままです。",
+        "action": "ユーザーを再び有効にする"
+      },
+      "revoke": {
+        "title": "すべてのセッションからサインアウト",
+        "description": "このユーザーのすべてのセッションを終了します。信頼済みデバイスは保持されます。",
+        "action": "すべての場所でサインアウト",
+        "dialogTitle": "{{name}} をすべての場所でサインアウトしますか？",
+        "dialogDescription": "このユーザーのすべてのセッションがすぐに終了し、再度サインインが必要になります。",
+        "confirm": "すべての場所でサインアウト"
+      }
+    }
+  },
+  "settings": {
+    "title": "セキュリティとポリシー",
+    "description": "インスタンス全体のポリシーです。各セクションは個別に保存されます。",
+    "save": "変更を保存",
+    "saved": "設定を保存しました。",
+    "errors": {
+      "belowFloor": "{{floor}} 以上にしてください。",
+      "belowFloorUnknown": "この値は許可されている最小値を下回っています。",
+      "aboveMax": "{{max}} 以下にしてください。",
+      "invalid": "この値は無効です。",
+      "requiredWhenEnabled": "この機能が有効な間は必須です。"
+    },
+    "general": {
+      "title": "一般",
+      "description": "インスタンス名、既定の言語、フッターに表示される内容です。",
+      "appName": "インスタンス名",
+      "appDescription": "説明",
+      "defaultLocale": "既定の言語",
+      "thumbnailSourceLimit": "サムネイル元画像の上限",
+      "thumbnailSourceLimitHint": "Palmr がサムネイルを生成する最大の画像サイズです。",
+      "thumbnailLimits": {
+        "64MiB": "64 MiB",
+        "128MiB": "128 MiB",
+        "256MiB": "256 MiB",
+        "512MiB": "512 MiB",
+        "unlimited": "制限なし"
+      },
+      "showVersion": "Palmr のバージョン番号を表示する",
+      "poweredByVisible": "「Powered by Palmr」を表示する"
+    },
+    "security": {
+      "title": "サインインとセッション",
+      "description": "パスワードのルール、ロックアウト、セッションの期間、2 要素認証のポリシーです。",
+      "groups": {
+        "passwords": "パスワード",
+        "signIn": "サインイン保護",
+        "sessions": "セッション",
+        "links": "リンクと招待",
+        "twoFactor": "2 要素認証",
+        "trustedDevices": "信頼済みデバイス"
+      },
+      "fields": {
+        "passwordMinLength": "アカウントパスワードの最小文字数",
+        "publicLinkPasswordMinLength": "公開リンクパスワードの最小文字数",
+        "maxLoginAttempts": "ロックアウトまでのサインイン失敗回数",
+        "loginLockoutMinutes": "ロックアウト時間",
+        "sessionIdleDays": "アイドルセッションのタイムアウト",
+        "sessionAbsoluteDays": "セッションの最大期間",
+        "recentAuthMinutes": "再認証の有効時間",
+        "passwordResetValidityMinutes": "パスワードリセットリンクの有効期間",
+        "inviteValidityHours": "招待の既定の有効期間",
+        "trustedDeviceDurationDays": "信頼済みデバイスの期間",
+        "twoFactorRequired": "ローカルアカウントに 2 要素認証を必須にする",
+        "trustedDevicesEnabled": "信頼済みデバイスを許可する"
+      },
+      "hints": {
+        "passwordMinLength": "新しいパスワードに適用されます。",
+        "publicLinkPasswordMinLength": "共有と逆共有のパスワードに適用されます。",
+        "maxLoginAttempts": "アカウントがロックされるまでの連続失敗回数です。",
+        "loginLockoutMinutes": "ロックされたアカウントがロックされたままになる時間です。",
+        "sessionIdleDays": "この期間操作がないとセッションが終了します。",
+        "sessionAbsoluteDays": "操作の有無にかかわらず、この期間でセッションが終了します。",
+        "recentAuthMinutes": "確認済みのパスワードが重要な操作に有効とみなされる時間です。",
+        "passwordResetValidityMinutes": "メールで送られるリセットリンクが使える時間です。",
+        "inviteValidityHours": "招待に独自の有効期限がない場合に使われます。",
+        "trustedDeviceDurationDays": "信頼済みデバイスが第 2 要素を省略できる期間です。",
+        "twoFactorRequired": "ローカルアカウントは、Palmr を使う前に設定が必要になります。",
+        "trustedDevicesEnabled": "信頼するデバイスで第 2 要素を省略できるようにします。"
+      }
+    },
+    "quotas": {
+      "title": "上限",
+      "description": "ストレージとアップロードの上限です。無制限と 0 は別物です。",
+      "fields": {
+        "defaultUserQuotaBytes": "ユーザーあたりの既定のストレージ上限",
+        "maxFileSizeBytes": "最大ファイルサイズ"
+      },
+      "hints": {
+        "defaultUserQuotaBytes": "個別の上書きがないユーザーに適用されます。0 はストレージなしを意味します。",
+        "maxFileSizeBytes": "アップロードできる単一ファイルの最大サイズです。0 にするとすべてのアップロードが止まります。"
+      }
+    },
+    "publicLinks": {
+      "title": "公開リンク",
+      "description": "共有と逆共有を利用可能なまま保てる期間です。",
+      "noMaximum": "最大有効期間なし",
+      "maxLifetime": "リンクの最大有効期間",
+      "hint": "これより長い有効期限のリンクは作成できません。"
+    }
+  },
+  "smtp": {
+    "pageTitle": "SMTP",
+    "pageDescription": "招待、パスワードリセット、通知のための送信メールです。",
+    "title": "メールサーバー",
+    "description": "Palmr はメールなしでも動作します。メールが必要な機能は、設定するまで利用できません。",
+    "enabledTag": "有効",
+    "disabledTag": "無効",
+    "fields": {
+      "enabled": "このサーバー経由でメールを送信する",
+      "host": "ホスト",
+      "port": "ポート",
+      "security": "接続のセキュリティ",
+      "noAuth": "サーバーは認証を必要としない",
+      "username": "ユーザー名",
+      "password": "パスワード",
+      "passwordPlaceholder": "置き換えるには新しいパスワードを入力",
+      "fromName": "送信者名",
+      "fromEmail": "送信者アドレス",
+      "allowSelfSigned": "自己署名証明書を許可する",
+      "allowSelfSignedHint": "ご自身で管理しているサーバーにのみ使用してください。証明書の検証が弱くなります。"
+    },
+    "security": {
+      "starttls": "STARTTLS",
+      "implicit": "暗黙の TLS",
+      "none": "なし"
+    },
+    "password": {
+      "configured": "パスワード設定済み",
+      "notConfigured": "保存されたパスワードなし",
+      "willClear": "保存時に削除されます",
+      "willReplace": "保存時に置き換えられます",
+      "clear": "保存済みパスワードを削除",
+      "undoClear": "保存済みパスワードを維持",
+      "clearDialog": {
+        "title": "保存済みパスワードを削除しますか？",
+        "description": "保存するとパスワードが削除されます。認証が必要なメールは、新しいパスワードを入力するまで動作しません。",
+        "confirm": "パスワードを削除"
+      }
+    },
+    "test": {
+      "title": "テストメールを送信",
+      "description": "接続、TLS、サインイン、配信を確認します。",
+      "recipient": "テストの送信先",
+      "saved": "保存済みの設定をテスト",
+      "unsaved": "現在のフォームの値をテスト",
+      "unsavedHint": "フォームの値のテストでは、値は保存されず、保存済みパスワードも使われません。サーバーが必要とする場合は、上にパスワードを入力してください。",
+      "unsavedIncomplete": "フォームの値をテストするには、ホスト、ポート、送信者アドレスを入力してください。",
+      "mode": {
+        "saved": "保存済みの設定",
+        "unsaved": "フォームの値"
+      },
+      "stages": {
+        "connect": "接続",
+        "starttls": "TLS 開始",
+        "auth": "認証",
+        "send": "メッセージ送信"
+      },
+      "stagesLabel": "テストの段階",
+      "stageOk": "成功",
+      "stageFailed": "失敗",
+      "succeeded": "テストメールを送信しました（テスト対象: {{mode}}）。",
+      "incomplete": "テストは完了しませんでした（テスト対象: {{mode}}）。",
+      "duration": "{{ms}} ミリ秒で完了しました。",
+      "failedAt": "次の段階で停止しました: {{stage}}（テスト対象: {{mode}}）。"
+    }
+  }
+}

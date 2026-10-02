@@ -1,1 +1,541 @@
-{}
+{
+  "title": "Beheer",
+  "sections": {
+    "label": "Beheersecties",
+    "users": "Gebruikers",
+    "security": "Beveiliging",
+    "smtp": "SMTP"
+  },
+  "common": {
+    "cancel": "Annuleren",
+    "none": "Geen",
+    "yes": "Ja",
+    "no": "Nee",
+    "retry": "Opnieuw proberen",
+    "unknown": "Niet beschikbaar"
+  },
+  "roles": {
+    "admin": "Beheerder",
+    "user": "Gebruiker"
+  },
+  "status": {
+    "active": "Actief",
+    "inactive": "Inactief"
+  },
+  "tags": {
+    "locked": "Vergrendeld",
+    "mustChangePassword": "Moet wachtwoord wijzigen",
+    "ssoOnly": "Alleen SSO",
+    "twoFactor": "2FA aan"
+  },
+  "secret": {
+    "done": "Klaar",
+    "notShownAgain": "Dit wordt niet opnieuw getoond. Kopieer het nu en bewaar het veilig.",
+    "copy": "Kopiëren",
+    "copied": "Gekopieerd naar het klembord.",
+    "copyFailed": "Automatisch kopiëren is mislukt. Selecteer de tekst en kopieer deze handmatig."
+  },
+  "bytes": {
+    "unit": "Eenheid"
+  },
+  "units": {
+    "characters": "tekens",
+    "attempts": "pogingen",
+    "minutes": "minuten",
+    "hours": "uur",
+    "days": "dagen"
+  },
+  "quota": {
+    "unlimited": "Onbeperkt"
+  },
+  "storage": {
+    "usedOf": "{{used}} van {{quota}}",
+    "usedOfUnlimited": "{{used}} · Onbeperkt",
+    "overQuota": "Quotum overschreden",
+    "usageLabel": "Opslaggebruik"
+  },
+  "validation": {
+    "required": "Dit veld is verplicht.",
+    "email": "Voer een geldig e-mailadres in.",
+    "integer": "Voer een geheel getal in.",
+    "quota": "Voer een waarde in tussen 0 en de maximaal ondersteunde grootte.",
+    "invalid": "Deze waarde is ongeldig.",
+    "passwordTooShort": "Gebruik minstens {{minLength}} tekens."
+  },
+  "pager": {
+    "showing": "{{shown}} getoond",
+    "showingOf": "{{shown}} van {{total}} getoond",
+    "pageSize": "Rijen per pagina",
+    "perPage": "{{size}} per pagina",
+    "first": "Eerste pagina",
+    "previous": "Vorige",
+    "next": "Volgende"
+  },
+  "users": {
+    "title": "Gebruikers",
+    "description": "Maak accounts aan, beheer toegang en houd de opslag van deze instantie in de gaten.",
+    "views": {
+      "label": "Gebruikers of uitnodigingen",
+      "users": "Gebruikers",
+      "invites": "Uitnodigingen"
+    },
+    "tableLabel": "Gebruikers",
+    "usernameLine": "@{{username}}",
+    "pendingEmail": "Wijziging naar {{email}} in behandeling",
+    "neverSignedIn": "Nooit",
+    "columns": {
+      "user": "Gebruiker",
+      "role": "Rol",
+      "status": "Status",
+      "security": "Account",
+      "storage": "Opslag",
+      "lastSignIn": "Laatste aanmelding",
+      "actions": "Acties"
+    },
+    "actions": {
+      "label": "Acties voor {{name}}",
+      "view": "Details bekijken",
+      "activate": "Opnieuw activeren",
+      "deactivate": "Deactiveren",
+      "unlock": "Ontgrendelen"
+    },
+    "deactivate": {
+      "title": "{{name}} deactiveren?",
+      "description": "Deze persoon wordt overal afgemeld en kan niet meer aanmelden totdat je het account opnieuw activeert. Bestanden en shares blijven bewaard.",
+      "confirm": "Deactiveren"
+    },
+    "notice": {
+      "activated": "De gebruiker is opnieuw geactiveerd.",
+      "deactivated": "De gebruiker is gedeactiveerd.",
+      "unlocked": "Het account is ontgrendeld."
+    },
+    "empty": {
+      "filtered": "Geen gebruikers voldoen aan deze filters.",
+      "none": "Er zijn nog geen gebruikers.",
+      "clear": "Filters wissen"
+    },
+    "filters": {
+      "label": "Gebruikers filteren",
+      "search": "Gebruikers zoeken",
+      "searchPlaceholder": "Zoek op naam, gebruikersnaam of e-mail",
+      "role": "Rol",
+      "status": "Status",
+      "sort": "Gebruikers sorteren",
+      "allRoles": "Alle rollen",
+      "allStatuses": "Alle statussen"
+    },
+    "sorts": {
+      "newest": "Nieuwste eerst",
+      "oldest": "Oudste eerst",
+      "usernameAsc": "Gebruikersnaam A–Z",
+      "usernameDesc": "Gebruikersnaam Z–A",
+      "emailAsc": "E-mail A–Z",
+      "emailDesc": "E-mail Z–A",
+      "storageDesc": "Meeste opslag gebruikt",
+      "storageAsc": "Minste opslag gebruikt"
+    },
+    "create": {
+      "open": "Gebruiker aanmaken",
+      "title": "Gebruiker aanmaken",
+      "firstName": "Voornaam",
+      "lastName": "Achternaam",
+      "username": "Gebruikersnaam",
+      "email": "E-mailadres",
+      "role": "Rol",
+      "locale": "Taal",
+      "instanceLocale": "Standaard van de instantie",
+      "password": "Tijdelijk wachtwoord",
+      "passwordHintLocal": "De gebruiker meldt zich met dit wachtwoord aan. Deel het via een veilig kanaal.",
+      "passwordHintSso": "Optioneel. Laat leeg om een account zonder lokaal wachtwoord aan te maken, voor aanmelden via een externe provider.",
+      "requirePasswordChange": "Nieuw wachtwoord vereisen bij de eerste aanmelding",
+      "active": "Account is actief",
+      "quota": "Opslagquotum",
+      "quotaInherit": "Standaard van de instantie",
+      "quotaCustom": "Aangepaste hoeveelheid",
+      "quotaAmount": "Quotum",
+      "submit": "Gebruiker aanmaken",
+      "created": "{{name}} is aangemaakt.",
+      "view": "Gebruiker bekijken"
+    }
+  },
+  "invites": {
+    "tableLabel": "Uitnodigingen",
+    "columns": {
+      "email": "E-mail",
+      "role": "Rol",
+      "status": "Status",
+      "createdBy": "Aangemaakt door",
+      "created": "Aangemaakt",
+      "expires": "Verloopt",
+      "lastSent": "Laatst gemaild",
+      "actions": "Acties"
+    },
+    "status": {
+      "pending": "In afwachting",
+      "accepted": "Geaccepteerd",
+      "revoked": "Ingetrokken",
+      "expired": "Verlopen"
+    },
+    "neverSent": "Nooit",
+    "actions": {
+      "resend": "Opnieuw verzenden",
+      "revoke": "Intrekken"
+    },
+    "filters": {
+      "status": "Uitnodigingen filteren op status",
+      "allStatuses": "Alle statussen"
+    },
+    "notice": {
+      "resent": "De uitnodigingsmail is in de wachtrij geplaatst.",
+      "revoked": "De uitnodiging is ingetrokken."
+    },
+    "empty": {
+      "none": "Nog geen uitnodigingen. Nodig iemand uit om toegang te geven.",
+      "filtered": "Geen uitnodigingen met deze status."
+    },
+    "revoke": {
+      "title": "Deze uitnodiging intrekken?",
+      "description": "De uitnodigingslink voor {{email}} werkt direct niet meer.",
+      "confirm": "Uitnodiging intrekken"
+    },
+    "create": {
+      "open": "Gebruiker uitnodigen",
+      "title": "Een gebruiker uitnodigen",
+      "email": "E-mailadres",
+      "role": "Rol",
+      "expiry": "Geldig voor",
+      "expiryHint": "Laat leeg om de geldigheid van uitnodigingen van de instantie te gebruiken.",
+      "sendEmail": "Uitnodiging per e-mail versturen",
+      "sendEmailHint": "Palmr mailt de link naar het adres hierboven.",
+      "sendEmailOff": "E-mail is niet ingesteld, dus je krijgt een link om zelf te delen.",
+      "submit": "Uitnodiging aanmaken"
+    },
+    "link": {
+      "title": "Uitnodigingslink",
+      "description": "Stuur deze link naar de persoon die je uitnodigt. Iedereen met de link kan het account aanmaken.",
+      "label": "Uitnodigingslink"
+    }
+  },
+  "detail": {
+    "back": "← Alle gebruikers",
+    "loading": "Gebruiker laden…",
+    "notFound": "Gebruiker niet gevonden",
+    "failed": "Deze gebruiker kan niet worden geladen",
+    "subtitle": "@{{username}} · {{email}}",
+    "inactiveNotice": "Dit account is gedeactiveerd. De gebruiker kan pas weer aanmelden na heractivering.",
+    "identity": {
+      "title": "Identiteit",
+      "description": "Naam en gebruikersnaam. E-mailadres en rol worden apart beheerd.",
+      "firstName": "Voornaam",
+      "lastName": "Achternaam",
+      "username": "Gebruikersnaam",
+      "memberSince": "Lid sinds {{date}}",
+      "save": "Wijzigingen opslaan",
+      "saved": "Identiteit opgeslagen."
+    },
+    "email": {
+      "title": "E-mailadres",
+      "description": "Een adreswijziging moet worden geverifieerd. Tot die tijd blijft het huidige adres werken.",
+      "current": "Huidig adres",
+      "newLabel": "Nieuw e-mailadres",
+      "hint": "Er wordt een verificatielink naar het nieuwe adres gestuurd. Er verandert niets totdat die is bevestigd.",
+      "request": "E-mailwijziging starten",
+      "resend": "Verificatie opnieuw verzenden",
+      "cancel": "Wijziging annuleren",
+      "pendingTitle": "Wachten op verificatie van {{email}}",
+      "pendingDescription": "{{email}} blijft het actieve adres totdat het nieuwe is geverifieerd.",
+      "notice": {
+        "requested": "Verificatie aangevraagd. Het adres verandert pas na bevestiging.",
+        "resent": "Er is een nieuw verificatiebericht in de wachtrij geplaatst.",
+        "cancelled": "De openstaande e-mailwijziging is geannuleerd."
+      },
+      "cancelDialog": {
+        "title": "De openstaande wijziging annuleren?",
+        "description": "De verificatielink voor {{email}} werkt niet meer. Het huidige adres blijft ongewijzigd.",
+        "confirm": "Wijziging annuleren"
+      }
+    },
+    "account": {
+      "title": "Account en beveiliging",
+      "description": "Rol, aanmeldstatus en gekoppelde identiteiten.",
+      "role": "Rol",
+      "roleSelect": "Nieuwe rol",
+      "roleSave": "Rol wijzigen",
+      "status": "Status",
+      "localPassword": "Wachtwoord",
+      "passwordLocal": "Lokaal wachtwoord ingesteld",
+      "passwordSso": "Geen lokaal wachtwoord (alleen SSO)",
+      "mustChange": "Moet wachtwoord wijzigen",
+      "twoFactor": "Tweestapsverificatie",
+      "twoFactorOn": "Aan",
+      "twoFactorOff": "Uit",
+      "lockout": "Aanmeldblokkade",
+      "locked": "Vergrendeld",
+      "lockedUntil": "Vergrendeld tot {{date}}",
+      "notLocked": "Niet vergrendeld",
+      "unlock": "Ontgrendelen",
+      "lockoutCounters": "{{failed}} mislukte pogingen · tot nu toe {{locks}} blokkades",
+      "sessions": "Actieve sessies",
+      "trustedDevices": "Vertrouwde apparaten",
+      "identityLinks": "Gekoppelde identiteiten ({{links}})",
+      "linkState": {
+        "active": "Actief",
+        "suspended": "Opgeschort"
+      },
+      "linkMethod": {
+        "auto_verified_email": "Gekoppeld via geverifieerd e-mailadres",
+        "manual": "Handmatig gekoppeld",
+        "auto_provision": "Aangemaakt bij eerste aanmelding"
+      },
+      "linkLastLogin": "laatste aanmelding {{date}}",
+      "resetPassword": "Wachtwoord resetten",
+      "noLocalPasswordHint": "Dit account meldt zich aan via een externe provider en heeft geen lokaal wachtwoord om te resetten.",
+      "notice": {
+        "roleChanged": "De rol is gewijzigd. De gebruiker is overal afgemeld.",
+        "unlocked": "Het account is ontgrendeld."
+      },
+      "roleDialog": {
+        "title": "De rol van {{name}} wijzigen?",
+        "description": "De nieuwe rol is {{role}}. Bij een rolwijziging wordt de gebruiker uit alle sessies afgemeld.",
+        "confirm": "Rol wijzigen"
+      },
+      "resetDialog": {
+        "title": "Het wachtwoord van {{name}} resetten?",
+        "description": "Er wordt een tijdelijk wachtwoord gegenereerd dat één keer wordt getoond. De gebruiker wordt overal afgemeld en moet bij de volgende aanmelding een nieuw wachtwoord kiezen.",
+        "confirm": "Wachtwoord resetten"
+      },
+      "resetResult": {
+        "title": "Tijdelijk wachtwoord",
+        "description": "Deel dit wachtwoord via een veilig kanaal met {{name}}. Het moet bij het aanmelden worden gewijzigd.",
+        "label": "Tijdelijk wachtwoord"
+      }
+    },
+    "storage": {
+      "title": "Opslag en quotum",
+      "description": "Gebruik in Mijn bestanden en Ontvangen, en het quotum dat voor deze gebruiker geldt.",
+      "used": "Gebruikte opslag",
+      "effective": "Geldend quotum",
+      "instanceDefault": "Standaard van de instantie",
+      "files": "Bestanden",
+      "receivedFiles": "Ontvangen bestanden",
+      "shares": "Shares",
+      "reverseShares": "Omgekeerde shares",
+      "overrideTitle": "Quotum overschrijven",
+      "saved": "Het quotum is bijgewerkt.",
+      "belowUsage": {
+        "title": "Dit quotum is lager dan de al gebruikte opslag",
+        "description": "Er wordt niets verwijderd. De gebruiker kan geen nieuwe bestanden toevoegen totdat het gebruik onder het quotum komt."
+      },
+      "modes": {
+        "inherit": "Standaard van de instantie gebruiken ({{value}})",
+        "unlimited": "Onbeperkt",
+        "bytes": "Aangepaste hoeveelheid"
+      },
+      "amount": "Quotum",
+      "noBypass": "Beheerders krijgen geen uitzondering op het quotum: voor alle accounts gelden dezelfde limieten.",
+      "save": "Quotum opslaan"
+    },
+    "sessions": {
+      "title": "Sessies",
+      "description": "Waar deze gebruiker momenteel is aangemeld.",
+      "none": "Deze gebruiker heeft geen actieve sessies.",
+      "listLabel": "Actieve sessies",
+      "more": "En nog {{more}} sessies.",
+      "unknownDevice": "Onbekend apparaat",
+      "origin": {
+        "password": "Wachtwoord",
+        "external": "Externe provider"
+      },
+      "ip": "IP {{ip}}",
+      "ipUnavailable": "IP niet beschikbaar",
+      "lastActive": "Laatst actief {{date}}",
+      "signedIn": "Aangemeld {{date}}"
+    },
+    "danger": {
+      "title": "Acties met grote impact",
+      "description": "Deze acties gaan direct in.",
+      "notice": {
+        "deactivated": "De gebruiker is gedeactiveerd en overal afgemeld.",
+        "activated": "De gebruiker is opnieuw geactiveerd.",
+        "sessionsRevoked": "Alle sessies van deze gebruiker zijn beëindigd."
+      },
+      "deactivate": {
+        "title": "Deze gebruiker deactiveren",
+        "description": "Meldt de gebruiker overal af en blokkeert aanmelden. Bestanden en shares blijven bewaard.",
+        "action": "Gebruiker deactiveren",
+        "dialogTitle": "{{name}} deactiveren?",
+        "dialogDescription": "Deze persoon wordt overal afgemeld en kan niet meer aanmelden totdat je het account opnieuw activeert.",
+        "confirm": "Deactiveren"
+      },
+      "activate": {
+        "title": "Deze gebruiker opnieuw activeren",
+        "description": "Laat de gebruiker weer aanmelden. Eerder ingetrokken sessies blijven ingetrokken.",
+        "action": "Gebruiker opnieuw activeren"
+      },
+      "revoke": {
+        "title": "Uit alle sessies afmelden",
+        "description": "Beëindigt elke sessie van deze gebruiker. Vertrouwde apparaten blijven bewaard.",
+        "action": "Overal afmelden",
+        "dialogTitle": "{{name}} overal afmelden?",
+        "dialogDescription": "Elke sessie van deze gebruiker eindigt direct en de gebruiker moet opnieuw aanmelden.",
+        "confirm": "Overal afmelden"
+      }
+    }
+  },
+  "settings": {
+    "title": "Beveiliging en beleid",
+    "description": "Beleid voor de hele instantie. Elke sectie wordt apart opgeslagen.",
+    "save": "Wijzigingen opslaan",
+    "saved": "Instellingen opgeslagen.",
+    "errors": {
+      "belowFloor": "Moet minstens {{floor}} zijn.",
+      "belowFloorUnknown": "Deze waarde ligt onder het toegestane minimum.",
+      "aboveMax": "Mag hoogstens {{max}} zijn.",
+      "invalid": "Deze waarde is ongeldig.",
+      "requiredWhenEnabled": "Verplicht zolang deze functie is ingeschakeld."
+    },
+    "general": {
+      "title": "Algemeen",
+      "description": "Naam van de instantie, standaardtaal en wat bezoekers in de voettekst zien.",
+      "appName": "Naam van de instantie",
+      "appDescription": "Beschrijving",
+      "defaultLocale": "Standaardtaal",
+      "thumbnailSourceLimit": "Bronlimiet voor miniaturen",
+      "thumbnailSourceLimitHint": "De grootste afbeelding waarvoor Palmr een miniatuur maakt.",
+      "thumbnailLimits": {
+        "64MiB": "64 MiB",
+        "128MiB": "128 MiB",
+        "256MiB": "256 MiB",
+        "512MiB": "512 MiB",
+        "unlimited": "Geen limiet"
+      },
+      "showVersion": "Het Palmr-versienummer tonen",
+      "poweredByVisible": "“Powered by Palmr” tonen"
+    },
+    "security": {
+      "title": "Aanmelden en sessies",
+      "description": "Wachtwoordregels, blokkade, sessieduur en beleid voor tweestapsverificatie.",
+      "groups": {
+        "passwords": "Wachtwoorden",
+        "signIn": "Aanmeldbeveiliging",
+        "sessions": "Sessies",
+        "links": "Links en uitnodigingen",
+        "twoFactor": "Tweestapsverificatie",
+        "trustedDevices": "Vertrouwde apparaten"
+      },
+      "fields": {
+        "passwordMinLength": "Minimale lengte van accountwachtwoord",
+        "publicLinkPasswordMinLength": "Minimale lengte van wachtwoord voor openbare links",
+        "maxLoginAttempts": "Mislukte aanmeldingen vóór blokkade",
+        "loginLockoutMinutes": "Duur van de blokkade",
+        "sessionIdleDays": "Time-out bij inactiviteit",
+        "sessionAbsoluteDays": "Maximale sessieduur",
+        "recentAuthMinutes": "Venster voor herauthenticatie",
+        "passwordResetValidityMinutes": "Geldigheid van de resetlink voor wachtwoorden",
+        "inviteValidityHours": "Standaardgeldigheid van uitnodigingen",
+        "trustedDeviceDurationDays": "Duur van vertrouwde apparaten",
+        "twoFactorRequired": "Tweestapsverificatie verplichten voor lokale accounts",
+        "trustedDevicesEnabled": "Vertrouwde apparaten toestaan"
+      },
+      "hints": {
+        "passwordMinLength": "Geldt voor nieuwe wachtwoorden.",
+        "publicLinkPasswordMinLength": "Geldt voor wachtwoorden van shares en omgekeerde shares.",
+        "maxLoginAttempts": "Opeenvolgende mislukkingen voordat het account wordt geblokkeerd.",
+        "loginLockoutMinutes": "Hoe lang een geblokkeerd account geblokkeerd blijft.",
+        "sessionIdleDays": "Sessies eindigen na zoveel tijd zonder activiteit.",
+        "sessionAbsoluteDays": "Sessies eindigen na zoveel tijd, hoe actief ook.",
+        "recentAuthMinutes": "Hoe lang een bevestigd wachtwoord telt voor gevoelige acties.",
+        "passwordResetValidityMinutes": "Hoe lang een gemailde resetlink werkt.",
+        "inviteValidityHours": "Wordt gebruikt als een uitnodiging geen eigen vervaldatum heeft.",
+        "trustedDeviceDurationDays": "Hoe lang een vertrouwd apparaat de tweede stap overslaat.",
+        "twoFactorRequired": "Lokale accounts moeten dit instellen voordat ze Palmr kunnen gebruiken.",
+        "trustedDevicesEnabled": "Laat mensen de tweede stap overslaan op apparaten die ze vertrouwen."
+      }
+    },
+    "quotas": {
+      "title": "Quota",
+      "description": "Limieten voor opslag en uploads. Onbeperkt is iets anders dan nul.",
+      "fields": {
+        "defaultUserQuotaBytes": "Standaard opslagquotum per gebruiker",
+        "maxFileSizeBytes": "Maximale bestandsgrootte"
+      },
+      "hints": {
+        "defaultUserQuotaBytes": "Geldt voor gebruikers zonder eigen overschrijving. Nul betekent helemaal geen opslag.",
+        "maxFileSizeBytes": "Het grootste afzonderlijke bestand dat iemand mag uploaden. Nul blokkeert elke upload."
+      }
+    },
+    "publicLinks": {
+      "title": "Openbare links",
+      "description": "Hoe lang shares en omgekeerde shares beschikbaar mogen blijven.",
+      "noMaximum": "Geen maximale levensduur",
+      "maxLifetime": "Maximale levensduur van links",
+      "hint": "Links kunnen niet met een latere vervaldatum worden aangemaakt."
+    }
+  },
+  "smtp": {
+    "pageTitle": "SMTP",
+    "pageDescription": "Uitgaande e-mail voor uitnodigingen, wachtwoordresets en meldingen.",
+    "title": "Mailserver",
+    "description": "Palmr werkt ook zonder e-mail. Functies die e-mail nodig hebben blijven niet beschikbaar totdat het is ingesteld.",
+    "enabledTag": "Ingeschakeld",
+    "disabledTag": "Uitgeschakeld",
+    "fields": {
+      "enabled": "E-mail verzenden via deze server",
+      "host": "Host",
+      "port": "Poort",
+      "security": "Verbindingsbeveiliging",
+      "noAuth": "De server vereist geen authenticatie",
+      "username": "Gebruikersnaam",
+      "password": "Wachtwoord",
+      "passwordPlaceholder": "Voer een nieuw wachtwoord in om het te vervangen",
+      "fromName": "Naam van afzender",
+      "fromEmail": "Afzenderadres",
+      "allowSelfSigned": "Zelfondertekend certificaat toestaan",
+      "allowSelfSignedHint": "Alleen voor servers die je zelf beheert. Verzwakt de certificaatcontrole."
+    },
+    "security": {
+      "starttls": "STARTTLS",
+      "implicit": "Impliciete TLS",
+      "none": "Geen"
+    },
+    "password": {
+      "configured": "Wachtwoord ingesteld",
+      "notConfigured": "Geen wachtwoord opgeslagen",
+      "willClear": "Wordt verwijderd bij opslaan",
+      "willReplace": "Wordt vervangen bij opslaan",
+      "clear": "Opgeslagen wachtwoord wissen",
+      "undoClear": "Opgeslagen wachtwoord behouden",
+      "clearDialog": {
+        "title": "Het opgeslagen wachtwoord wissen?",
+        "description": "Het wachtwoord wordt verwijderd bij het opslaan. E-mail die authenticatie vereist werkt niet meer totdat je een nieuw wachtwoord invoert.",
+        "confirm": "Wachtwoord wissen"
+      }
+    },
+    "test": {
+      "title": "Een test-e-mail verzenden",
+      "description": "Controleert de verbinding, TLS, aanmelding en bezorging.",
+      "recipient": "Test verzenden naar",
+      "saved": "Opgeslagen instellingen testen",
+      "unsaved": "Huidige formulierwaarden testen",
+      "unsavedHint": "Het testen van de formulierwaarden slaat ze niet op en gebruikt nooit het opgeslagen wachtwoord. Voer hierboven het wachtwoord in als de server er een vereist.",
+      "unsavedIncomplete": "Voer een host, poort en afzenderadres in om de formulierwaarden te testen.",
+      "mode": {
+        "saved": "opgeslagen instellingen",
+        "unsaved": "formulierwaarden"
+      },
+      "stages": {
+        "connect": "Verbinden",
+        "starttls": "TLS starten",
+        "auth": "Authenticeren",
+        "send": "Bericht verzenden"
+      },
+      "stagesLabel": "Teststappen",
+      "stageOk": "Geslaagd",
+      "stageFailed": "Mislukt",
+      "succeeded": "De test-e-mail is verzonden (test met {{mode}}).",
+      "incomplete": "De test is niet voltooid (test met {{mode}}).",
+      "duration": "Voltooid in {{ms}} ms.",
+      "failedAt": "Gestopt bij: {{stage}} (test met {{mode}})."
+    }
+  }
+}

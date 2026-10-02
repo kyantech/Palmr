@@ -6,6 +6,7 @@ import type { RouteObject } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { bootstrapFixture, meFixture } from "../../test/bootFixtures";
+import { createQueryClient } from "../../shared/api/queryClient";
 import { loadedI18n, renderRouter } from "../../test/renderRouter";
 import { type BootState, BootStateContext } from "../bootstrap/bootState";
 import { PATHS } from "./paths";
@@ -38,6 +39,8 @@ describe("production route table", () => {
     expect(collectPaths(appRoutes).filter((path) => path !== undefined)).toEqual([
       "/",
       "/setup",
+      "/verify-email/:token",
+      "/verify-email",
       "/login",
       "/login/2fa",
       "/reset-password/:token",
@@ -50,6 +53,11 @@ describe("production route table", () => {
       "appearance",
       "security",
       "sessions",
+      "/admin",
+      "users",
+      "users/:userId",
+      "security",
+      "smtp",
       "*",
     ]);
   });
@@ -63,7 +71,11 @@ describe("production route table", () => {
       "/r",
       "/register",
       "/signup",
-      "/admin",
+      "/admin/storage",
+      "/admin/branding",
+      "/admin/audit",
+      "/admin/providers",
+      "/admin/invites",
       "/files",
       "/shared",
       "/received",
@@ -214,7 +226,7 @@ describe("sub-path deployment (R-072)", () => {
     document.head.append(base);
     window.history.replaceState(null, "", `${prefix}${path.replace(/^\//, "")}`);
     const i18n = await loadedI18n();
-    const router = createAppRouter();
+    const router = createAppRouter(createQueryClient());
     render(
       <I18nextProvider i18n={i18n}>
         <ConfigProvider>

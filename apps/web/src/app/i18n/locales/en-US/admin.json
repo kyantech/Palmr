@@ -1,1 +1,541 @@
-{}
+{
+  "title": "Administration",
+  "sections": {
+    "label": "Administration sections",
+    "users": "Users",
+    "security": "Security",
+    "smtp": "SMTP"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "none": "None",
+    "yes": "Yes",
+    "no": "No",
+    "retry": "Try again",
+    "unknown": "Unavailable"
+  },
+  "roles": {
+    "admin": "Admin",
+    "user": "User"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "tags": {
+    "locked": "Locked",
+    "mustChangePassword": "Must change password",
+    "ssoOnly": "SSO only",
+    "twoFactor": "2FA on"
+  },
+  "secret": {
+    "done": "Done",
+    "notShownAgain": "This will not be shown again. Copy it now and store it safely.",
+    "copy": "Copy",
+    "copied": "Copied to the clipboard.",
+    "copyFailed": "Couldn't copy automatically. Select the text and copy it manually."
+  },
+  "bytes": {
+    "unit": "Unit"
+  },
+  "units": {
+    "characters": "characters",
+    "attempts": "attempts",
+    "minutes": "minutes",
+    "hours": "hours",
+    "days": "days"
+  },
+  "quota": {
+    "unlimited": "Unlimited"
+  },
+  "storage": {
+    "usedOf": "{{used}} of {{quota}}",
+    "usedOfUnlimited": "{{used}} · Unlimited",
+    "overQuota": "Over quota",
+    "usageLabel": "Storage usage"
+  },
+  "validation": {
+    "required": "This field is required.",
+    "email": "Enter a valid e-mail address.",
+    "integer": "Enter a whole number.",
+    "quota": "Enter an amount between 0 and the maximum supported size.",
+    "invalid": "This value isn't valid.",
+    "passwordTooShort": "Use at least {{minLength}} characters."
+  },
+  "pager": {
+    "showing": "Showing {{shown}}",
+    "showingOf": "Showing {{shown}} of {{total}}",
+    "pageSize": "Rows per page",
+    "perPage": "{{size}} per page",
+    "first": "First page",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "users": {
+    "title": "Users",
+    "description": "Create accounts, manage access and review storage across this instance.",
+    "views": {
+      "label": "Users or invites",
+      "users": "Users",
+      "invites": "Invites"
+    },
+    "tableLabel": "Users",
+    "usernameLine": "@{{username}}",
+    "pendingEmail": "Pending change to {{email}}",
+    "neverSignedIn": "Never",
+    "columns": {
+      "user": "User",
+      "role": "Role",
+      "status": "Status",
+      "security": "Account",
+      "storage": "Storage",
+      "lastSignIn": "Last sign-in",
+      "actions": "Actions"
+    },
+    "actions": {
+      "label": "Actions for {{name}}",
+      "view": "View details",
+      "activate": "Reactivate",
+      "deactivate": "Deactivate",
+      "unlock": "Unlock"
+    },
+    "deactivate": {
+      "title": "Deactivate {{name}}?",
+      "description": "They are signed out everywhere and can't sign in until you reactivate the account. Their files and shares are kept.",
+      "confirm": "Deactivate"
+    },
+    "notice": {
+      "activated": "The user was reactivated.",
+      "deactivated": "The user was deactivated.",
+      "unlocked": "The account was unlocked."
+    },
+    "empty": {
+      "filtered": "No users match these filters.",
+      "none": "There are no users yet.",
+      "clear": "Clear filters"
+    },
+    "filters": {
+      "label": "Filter users",
+      "search": "Search users",
+      "searchPlaceholder": "Search by name, username or e-mail",
+      "role": "Role",
+      "status": "Status",
+      "sort": "Sort users",
+      "allRoles": "All roles",
+      "allStatuses": "All statuses"
+    },
+    "sorts": {
+      "newest": "Newest first",
+      "oldest": "Oldest first",
+      "usernameAsc": "Username A–Z",
+      "usernameDesc": "Username Z–A",
+      "emailAsc": "E-mail A–Z",
+      "emailDesc": "E-mail Z–A",
+      "storageDesc": "Most storage used",
+      "storageAsc": "Least storage used"
+    },
+    "create": {
+      "open": "Create user",
+      "title": "Create user",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "username": "Username",
+      "email": "E-mail address",
+      "role": "Role",
+      "locale": "Language",
+      "instanceLocale": "Instance default",
+      "password": "Temporary password",
+      "passwordHintLocal": "The user signs in with this password. Share it through a secure channel.",
+      "passwordHintSso": "Optional. Leave empty to create an account without a local password, for sign-in through an external provider.",
+      "requirePasswordChange": "Require a new password at first sign-in",
+      "active": "Account is active",
+      "quota": "Storage quota",
+      "quotaInherit": "Instance default",
+      "quotaCustom": "Custom amount",
+      "quotaAmount": "Quota",
+      "submit": "Create user",
+      "created": "{{name}} was created.",
+      "view": "View user"
+    }
+  },
+  "invites": {
+    "tableLabel": "Invites",
+    "columns": {
+      "email": "E-mail",
+      "role": "Role",
+      "status": "Status",
+      "createdBy": "Created by",
+      "created": "Created",
+      "expires": "Expires",
+      "lastSent": "Last e-mailed",
+      "actions": "Actions"
+    },
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "revoked": "Revoked",
+      "expired": "Expired"
+    },
+    "neverSent": "Never",
+    "actions": {
+      "resend": "Resend",
+      "revoke": "Revoke"
+    },
+    "filters": {
+      "status": "Filter invites by status",
+      "allStatuses": "All statuses"
+    },
+    "notice": {
+      "resent": "The invite e-mail was queued for delivery.",
+      "revoked": "The invite was revoked."
+    },
+    "empty": {
+      "none": "No invites yet. Invite someone to give them access.",
+      "filtered": "No invites match this status."
+    },
+    "revoke": {
+      "title": "Revoke this invite?",
+      "description": "The invite link for {{email}} stops working immediately.",
+      "confirm": "Revoke invite"
+    },
+    "create": {
+      "open": "Invite user",
+      "title": "Invite a user",
+      "email": "E-mail address",
+      "role": "Role",
+      "expiry": "Valid for",
+      "expiryHint": "Leave empty to use the instance's invite validity.",
+      "sendEmail": "Send the invite by e-mail",
+      "sendEmailHint": "Palmr e-mails the link to the address above.",
+      "sendEmailOff": "E-mail isn't configured, so you'll get a link to share yourself.",
+      "submit": "Create invite"
+    },
+    "link": {
+      "title": "Invite link",
+      "description": "Send this link to the person you're inviting. Anyone with the link can create the account.",
+      "label": "Invite link"
+    }
+  },
+  "detail": {
+    "back": "← All users",
+    "loading": "Loading user…",
+    "notFound": "User not found",
+    "failed": "Couldn't load this user",
+    "subtitle": "@{{username}} · {{email}}",
+    "inactiveNotice": "This account is deactivated. The user can't sign in until it is reactivated.",
+    "identity": {
+      "title": "Identity",
+      "description": "Name and username. The e-mail address and role are managed separately.",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "username": "Username",
+      "memberSince": "Member since {{date}}",
+      "save": "Save changes",
+      "saved": "Identity saved."
+    },
+    "email": {
+      "title": "E-mail address",
+      "description": "Changing the address requires verification. The current address keeps working until then.",
+      "current": "Current address",
+      "newLabel": "New e-mail address",
+      "hint": "A verification link is sent to the new address. Nothing changes until it is confirmed.",
+      "request": "Start e-mail change",
+      "resend": "Resend verification",
+      "cancel": "Cancel change",
+      "pendingTitle": "Waiting for verification of {{email}}",
+      "pendingDescription": "{{email}} stays the active address until the new one is verified.",
+      "notice": {
+        "requested": "Verification requested. The address changes only after it is confirmed.",
+        "resent": "A new verification message was queued.",
+        "cancelled": "The pending e-mail change was cancelled."
+      },
+      "cancelDialog": {
+        "title": "Cancel the pending change?",
+        "description": "The verification link for {{email}} stops working. The current address is unchanged.",
+        "confirm": "Cancel change"
+      }
+    },
+    "account": {
+      "title": "Account and security",
+      "description": "Role, sign-in state and linked identities.",
+      "role": "Role",
+      "roleSelect": "New role",
+      "roleSave": "Change role",
+      "status": "Status",
+      "localPassword": "Password",
+      "passwordLocal": "Local password set",
+      "passwordSso": "No local password (SSO only)",
+      "mustChange": "Must change password",
+      "twoFactor": "Two-factor authentication",
+      "twoFactorOn": "On",
+      "twoFactorOff": "Off",
+      "lockout": "Sign-in lock",
+      "locked": "Locked",
+      "lockedUntil": "Locked until {{date}}",
+      "notLocked": "Not locked",
+      "unlock": "Unlock",
+      "lockoutCounters": "{{failed}} failed attempts · {{locks}} locks so far",
+      "sessions": "Active sessions",
+      "trustedDevices": "Trusted devices",
+      "identityLinks": "Linked identities ({{links}})",
+      "linkState": {
+        "active": "Active",
+        "suspended": "Suspended"
+      },
+      "linkMethod": {
+        "auto_verified_email": "Linked by verified e-mail",
+        "manual": "Linked manually",
+        "auto_provision": "Created at first sign-in"
+      },
+      "linkLastLogin": "last sign-in {{date}}",
+      "resetPassword": "Reset password",
+      "noLocalPasswordHint": "This account signs in through an external provider and has no local password to reset.",
+      "notice": {
+        "roleChanged": "The role was changed. The user was signed out everywhere.",
+        "unlocked": "The account was unlocked."
+      },
+      "roleDialog": {
+        "title": "Change the role of {{name}}?",
+        "description": "The new role is {{role}}. Changing the role signs the user out of every session.",
+        "confirm": "Change role"
+      },
+      "resetDialog": {
+        "title": "Reset the password of {{name}}?",
+        "description": "A temporary password is generated and shown once. The user is signed out everywhere and must choose a new password at the next sign-in.",
+        "confirm": "Reset password"
+      },
+      "resetResult": {
+        "title": "Temporary password",
+        "description": "Share this password with {{name}} through a secure channel. They must change it when they sign in.",
+        "label": "Temporary password"
+      }
+    },
+    "storage": {
+      "title": "Storage and quota",
+      "description": "Usage across My Files and Received, and the quota that applies to this user.",
+      "used": "Storage used",
+      "effective": "Effective quota",
+      "instanceDefault": "Instance default",
+      "files": "Files",
+      "receivedFiles": "Received files",
+      "shares": "Shares",
+      "reverseShares": "Reverse Shares",
+      "overrideTitle": "Quota override",
+      "saved": "The quota was updated.",
+      "belowUsage": {
+        "title": "This quota is below the storage already in use",
+        "description": "Nothing is deleted. The user can't add new files until usage falls under the quota."
+      },
+      "modes": {
+        "inherit": "Use the instance default ({{value}})",
+        "unlimited": "Unlimited",
+        "bytes": "Custom amount"
+      },
+      "amount": "Quota",
+      "noBypass": "Administrators get no quota bypass: the same limits apply to every account.",
+      "save": "Save quota"
+    },
+    "sessions": {
+      "title": "Sessions",
+      "description": "Where this user is currently signed in.",
+      "none": "This user has no active sessions.",
+      "listLabel": "Active sessions",
+      "more": "And {{more}} more sessions.",
+      "unknownDevice": "Unknown device",
+      "origin": {
+        "password": "Password",
+        "external": "External provider"
+      },
+      "ip": "IP {{ip}}",
+      "ipUnavailable": "IP unavailable",
+      "lastActive": "Last active {{date}}",
+      "signedIn": "Signed in {{date}}"
+    },
+    "danger": {
+      "title": "High-impact actions",
+      "description": "These actions take effect immediately.",
+      "notice": {
+        "deactivated": "The user was deactivated and signed out everywhere.",
+        "activated": "The user was reactivated.",
+        "sessionsRevoked": "Every session of this user was signed out."
+      },
+      "deactivate": {
+        "title": "Deactivate this user",
+        "description": "Signs the user out everywhere and blocks sign-in. Files and shares are kept.",
+        "action": "Deactivate user",
+        "dialogTitle": "Deactivate {{name}}?",
+        "dialogDescription": "They are signed out everywhere and can't sign in until you reactivate the account.",
+        "confirm": "Deactivate"
+      },
+      "activate": {
+        "title": "Reactivate this user",
+        "description": "Lets the user sign in again. Previously revoked sessions stay revoked.",
+        "action": "Reactivate user"
+      },
+      "revoke": {
+        "title": "Sign out of all sessions",
+        "description": "Ends every session of this user. Trusted devices are kept.",
+        "action": "Sign out everywhere",
+        "dialogTitle": "Sign {{name}} out everywhere?",
+        "dialogDescription": "Every session of this user ends immediately and they must sign in again.",
+        "confirm": "Sign out everywhere"
+      }
+    }
+  },
+  "settings": {
+    "title": "Security and policy",
+    "description": "Instance-wide policy. Each section saves on its own.",
+    "save": "Save changes",
+    "saved": "Settings saved.",
+    "errors": {
+      "belowFloor": "Must be at least {{floor}}.",
+      "belowFloorUnknown": "This value is below the minimum allowed.",
+      "aboveMax": "Must be at most {{max}}.",
+      "invalid": "This value isn't valid.",
+      "requiredWhenEnabled": "Required while this feature is enabled."
+    },
+    "general": {
+      "title": "General",
+      "description": "Instance name, default language and what visitors see in the footer.",
+      "appName": "Instance name",
+      "appDescription": "Description",
+      "defaultLocale": "Default language",
+      "thumbnailSourceLimit": "Thumbnail source limit",
+      "thumbnailSourceLimitHint": "Largest image Palmr generates a thumbnail for.",
+      "thumbnailLimits": {
+        "64MiB": "64 MiB",
+        "128MiB": "128 MiB",
+        "256MiB": "256 MiB",
+        "512MiB": "512 MiB",
+        "unlimited": "No limit"
+      },
+      "showVersion": "Show the Palmr version number",
+      "poweredByVisible": "Show “Powered by Palmr”"
+    },
+    "security": {
+      "title": "Sign-in and sessions",
+      "description": "Password rules, lockout, session lifetime and two-factor policy.",
+      "groups": {
+        "passwords": "Passwords",
+        "signIn": "Sign-in protection",
+        "sessions": "Sessions",
+        "links": "Links and invitations",
+        "twoFactor": "Two-factor authentication",
+        "trustedDevices": "Trusted devices"
+      },
+      "fields": {
+        "passwordMinLength": "Account password minimum length",
+        "publicLinkPasswordMinLength": "Public link password minimum length",
+        "maxLoginAttempts": "Failed sign-ins before lockout",
+        "loginLockoutMinutes": "Lockout duration",
+        "sessionIdleDays": "Idle session timeout",
+        "sessionAbsoluteDays": "Maximum session lifetime",
+        "recentAuthMinutes": "Re-authentication window",
+        "passwordResetValidityMinutes": "Password reset link validity",
+        "inviteValidityHours": "Default invite validity",
+        "trustedDeviceDurationDays": "Trusted device duration",
+        "twoFactorRequired": "Require two-factor authentication for local accounts",
+        "trustedDevicesEnabled": "Allow trusted devices"
+      },
+      "hints": {
+        "passwordMinLength": "Applies to new passwords.",
+        "publicLinkPasswordMinLength": "Applies to passwords on Shares and Reverse Shares.",
+        "maxLoginAttempts": "Consecutive failures before the account is locked.",
+        "loginLockoutMinutes": "How long a locked account stays locked.",
+        "sessionIdleDays": "Sessions end after this much inactivity.",
+        "sessionAbsoluteDays": "Sessions end after this long, however active.",
+        "recentAuthMinutes": "How long a confirmed password counts for sensitive actions.",
+        "passwordResetValidityMinutes": "How long an e-mailed reset link works.",
+        "inviteValidityHours": "Used when an invite doesn't set its own expiry.",
+        "trustedDeviceDurationDays": "How long a trusted device skips the second factor.",
+        "twoFactorRequired": "Local accounts must enroll before they can use Palmr.",
+        "trustedDevicesEnabled": "Lets people skip the second factor on devices they trust."
+      }
+    },
+    "quotas": {
+      "title": "Quotas",
+      "description": "Storage and upload limits. Unlimited is different from zero.",
+      "fields": {
+        "defaultUserQuotaBytes": "Default storage quota per user",
+        "maxFileSizeBytes": "Maximum file size"
+      },
+      "hints": {
+        "defaultUserQuotaBytes": "Applies to users without their own override. Zero means no storage at all.",
+        "maxFileSizeBytes": "The largest single file anyone can upload. Zero blocks every upload."
+      }
+    },
+    "publicLinks": {
+      "title": "Public links",
+      "description": "How long Shares and Reverse Shares may stay available.",
+      "noMaximum": "No maximum lifetime",
+      "maxLifetime": "Maximum link lifetime",
+      "hint": "Links can't be created with a longer expiry."
+    }
+  },
+  "smtp": {
+    "pageTitle": "SMTP",
+    "pageDescription": "Outgoing e-mail for invitations, password resets and notifications.",
+    "title": "Mail server",
+    "description": "Palmr works without e-mail. Features that need it stay unavailable until it is configured.",
+    "enabledTag": "Enabled",
+    "disabledTag": "Disabled",
+    "fields": {
+      "enabled": "Send e-mail through this server",
+      "host": "Host",
+      "port": "Port",
+      "security": "Connection security",
+      "noAuth": "The server doesn't require authentication",
+      "username": "Username",
+      "password": "Password",
+      "passwordPlaceholder": "Enter a new password to replace it",
+      "fromName": "Sender name",
+      "fromEmail": "Sender address",
+      "allowSelfSigned": "Allow a self-signed certificate",
+      "allowSelfSignedHint": "Only for servers you control. Weakens certificate checking."
+    },
+    "security": {
+      "starttls": "STARTTLS",
+      "implicit": "Implicit TLS",
+      "none": "None"
+    },
+    "password": {
+      "configured": "Password configured",
+      "notConfigured": "No password saved",
+      "willClear": "Will be removed when you save",
+      "willReplace": "Will be replaced when you save",
+      "clear": "Clear saved password",
+      "undoClear": "Keep saved password",
+      "clearDialog": {
+        "title": "Clear the saved password?",
+        "description": "The password is removed when you save. E-mail that needs authentication stops working until you enter a new one.",
+        "confirm": "Clear password"
+      }
+    },
+    "test": {
+      "title": "Send a test e-mail",
+      "description": "Checks the connection, TLS, sign-in and delivery.",
+      "recipient": "Send the test to",
+      "saved": "Test saved settings",
+      "unsaved": "Test current form values",
+      "unsavedHint": "Testing the form values doesn't save them and never uses the saved password. Enter the password above if the server requires one.",
+      "unsavedIncomplete": "Enter a host, port and sender address to test the form values.",
+      "mode": {
+        "saved": "saved settings",
+        "unsaved": "form values"
+      },
+      "stages": {
+        "connect": "Connect",
+        "starttls": "Start TLS",
+        "auth": "Authenticate",
+        "send": "Send message"
+      },
+      "stagesLabel": "Test stages",
+      "stageOk": "Passed",
+      "stageFailed": "Failed",
+      "succeeded": "The test e-mail was sent using the {{mode}}.",
+      "incomplete": "The test did not complete using the {{mode}}.",
+      "duration": "Finished in {{ms}} ms.",
+      "failedAt": "Stopped at: {{stage}} (testing the {{mode}})."
+    }
+  }
+}

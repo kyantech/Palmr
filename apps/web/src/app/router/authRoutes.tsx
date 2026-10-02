@@ -11,6 +11,7 @@ import {
   LoginPage,
   ResetPasswordPage,
   SecondFactorPage,
+  VerifyEmailPage,
 } from "../../features/auth";
 import { useEffectiveSettings } from "../../features/settings";
 import { SetupPage } from "../../features/setup";
@@ -29,7 +30,7 @@ import {
   reconcileSetupFinished,
   reconcileSignedIn,
 } from "../session/authReconciliation";
-import { useSignOut } from "../session/useSignOut";
+import { reconcileSessionRevoked, useSignOut } from "../session/useSignOut";
 import { keepNext } from "./next";
 import { PATHS } from "./paths";
 
@@ -138,6 +139,26 @@ function InviteRoute() {
   );
 }
 
+function VerifyEmailRoute() {
+  const client = useQueryClient();
+  const navigate = useNavigate();
+  const { token = "" } = useParams();
+  const { me } = useBootState();
+  const signedIn = me !== null;
+  const onVerified = useCallback(() => reconcileSessionRevoked(client), [client]);
+  return (
+    <VerifyEmailPage
+      key={token}
+      token={token}
+      signedIn={signedIn}
+      onVerified={onVerified}
+      onContinue={() => {
+        void navigate(signedIn ? PATHS.overview : PATHS.login, { replace: true });
+      }}
+    />
+  );
+}
+
 function useRestrictedSession() {
   const client = useQueryClient();
   const { me } = useBootState();
@@ -187,6 +208,13 @@ export const authRoutes: RouteObject[] = [
   {
     element: <RequireSetup />,
     children: [
+      {
+        element: <AuthLayout />,
+        children: [
+          { path: PATHS.verifyEmail, element: <VerifyEmailRoute /> },
+          { path: PATHS.verifyEmailMissing, element: <VerifyEmailRoute /> },
+        ],
+      },
       {
         element: <RequireAnonymous />,
         children: [

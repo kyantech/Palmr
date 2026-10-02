@@ -18,7 +18,8 @@
     "open": "Ouvrir la navigation",
     "more": "Plus",
     "collapse": "Réduire la navigation",
-    "expand": "Développer la navigation"
+    "expand": "Développer la navigation",
+    "admin": "Administration"
   },
   "user": {
     "menu": {

@@ -351,6 +351,12 @@ describe("responses", () => {
     expect(parse).not.toHaveBeenCalled();
   });
 
+  test("a success with no content type and no body resolves to undefined", async () => {
+    stubFetch(() => new Response(null, { status: 202 }));
+
+    await expect(fixtureFetch("delete", "/items")).resolves.toBeUndefined();
+  });
+
   test("HEAD resolves to undefined", async () => {
     stubFetch(() => new Response(null, { status: 200 }));
 

@@ -5,6 +5,7 @@ import { createMemoryRouter, type RouteObject } from "react-router";
 import { vi } from "vitest";
 import { AppTree } from "../app/AppTree";
 import { createI18n } from "../app/i18n/i18n";
+import { routerContextFor } from "../app/router/routeContext";
 import { createSessionCoordinator } from "../app/session/sessionCoordinator";
 import { discardRecentAuthChallenge } from "../features/auth";
 import { createQueryClient } from "../shared/api/queryClient";
@@ -41,7 +42,10 @@ export function renderSession({ routes, initialEntries, seed }: RenderSessionOpt
     },
   });
   seed?.(queryClient);
-  const router = createMemoryRouter(routes, { initialEntries });
+  const router = createMemoryRouter(routes, {
+    initialEntries,
+    getContext: routerContextFor(queryClient),
+  });
   disconnects.push(session.connect(router));
 
   const locations: string[] = [];

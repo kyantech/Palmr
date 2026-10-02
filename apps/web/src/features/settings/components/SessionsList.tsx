@@ -1,4 +1,5 @@
 import { Alert, Button, Flex, Popconfirm, Skeleton, Tag, theme, Typography } from "antd";
+import Display from "@gravity-ui/icons/Display";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ApiError, ErrorAlert } from "../../../shared/errors";
@@ -11,26 +12,6 @@ import { summarizeUserAgent } from "./userAgent";
 
 function earliest(first: string, second: string): string {
   return Date.parse(second) < Date.parse(first) ? second : first;
-}
-
-function DeviceIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      focusable="false"
-      width="1em"
-      height="1em"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="4.5" width="18" height="12" rx="2" />
-      <path d="M8.5 20h7M12 16.5V20" />
-    </svg>
-  );
 }
 
 function useDeviceLabel(userAgent: string | null): string {
@@ -89,7 +70,7 @@ function SessionRow({ session, revoking, onRevoke }: SessionRowProps) {
             background: token.colorFillTertiary,
           }}
         >
-          <DeviceIcon />
+          <Display aria-hidden="true" focusable="false" width="1em" height="1em" />
         </span>
         <Flex vertical gap={token.marginXXS} style={{ flex: "1 1 240px", minWidth: 0 }}>
           <Flex align="center" gap={token.marginXS} wrap>

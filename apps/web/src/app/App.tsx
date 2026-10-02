@@ -10,7 +10,7 @@ const cspNonce = readCspNonce();
 const session = createSessionCoordinator();
 const queryClient = createQueryClient({ onError: session.handleError });
 const i18n = createI18n();
-const router = createAppRouter();
+const router = createAppRouter(queryClient);
 session.connect(router);
 const languages = browserLanguages();
 

@@ -1,4 +1,5 @@
 import { Alert, Button, Flex, Popconfirm, Skeleton, Tag, theme, Typography } from "antd";
+import ShieldCheck from "@gravity-ui/icons/ShieldCheck";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ErrorAlert, presentError } from "../../../shared/errors";
@@ -6,26 +7,6 @@ import { formatDateTime } from "../../../shared/format/dateTime";
 import { SettingsSection } from "../../../shared/ui/SettingsSection";
 import { useRevokeAllTrustedDevices, useRevokeTrustedDevice } from "../api/mutations";
 import { type TrustedDeviceItem, useTrustedDevices } from "../api/queries";
-
-function DeviceIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      focusable="false"
-      width="1em"
-      height="1em"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 3 5 6v5c0 4.4 3 8.3 7 9.5 4-1.2 7-5.1 7-9.5V6l-7-3Z" />
-      <path d="m9 12 2 2 4-4" />
-    </svg>
-  );
-}
 
 function formatDays(days: number, locale: string): string {
   try {
@@ -92,7 +73,7 @@ function DeviceRow({ device, revoking, onRevoke }: DeviceRowProps) {
             background: token.colorFillTertiary,
           }}
         >
-          <DeviceIcon />
+          <ShieldCheck aria-hidden="true" focusable="false" width="1em" height="1em" />
         </span>
         <Flex vertical gap={token.marginXXS} style={{ flex: "1 1 240px", minWidth: 0 }}>
           <Flex align="center" gap={token.marginXS} wrap>

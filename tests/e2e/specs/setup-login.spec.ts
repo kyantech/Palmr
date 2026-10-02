@@ -112,7 +112,7 @@ test("e2e_setup_login_overview_smoke", async ({ page, browser }) => {
   await expect(login).toHaveURL(/\/login$/);
 
   await login.getByLabel("Password", { exact: true }).fill(ADMIN.password);
-  await login.getByRole("button", { name: "Sign in", exact: true }).click();
+  await login.getByRole("button", { name: /^(?:loading\s+)?Sign in$/ }).click();
   await expectShellOverview(login);
   expect((await login.request.get("/api/v1/auth/me")).status()).toBe(200);
 
@@ -1013,6 +1013,301 @@ test("e2e_password_reset_via_smtp_sink", async ({ browser, baseURL }) => {
 
   expect(pageErrors).toEqual([]);
   await Promise.all([context.close(), fresh.close()]);
+});
+
+const MARGARET = {
+  firstName: "Margaret",
+  lastName: "Hamilton",
+  username: "margaret",
+  email: "margaret@example.test",
+  temporaryPassword: "a temporary passphrase 1",
+  chosenPassword: "the passphrase margaret chose",
+};
+
+test("e2e_admin_create_user_and_forced_change", async ({ browser }) => {
+  test.setTimeout(120_000);
+  const adminContext = await browser.newContext();
+  const adminPage = await adminContext.newPage();
+  const adminErrors = collectPageErrors(adminPage);
+  await signIn(adminPage, ADMIN.username, NEW_PASSWORD);
+
+  await adminPage.getByRole("link", { name: "Admin", exact: true }).click();
+  await expect(adminPage).toHaveURL(/\/admin\/users$/);
+  await expect(
+    adminPage.getByRole("heading", { level: 1, name: "Administration" }),
+  ).toBeVisible();
+  const sections = adminPage.getByRole("navigation", {
+    name: "Administration sections",
+  });
+  await expect(sections.getByRole("link")).toHaveText([
+    "Users",
+    "Security",
+    "SMTP",
+  ]);
+
+  await adminPage.getByRole("button", { name: "Create user" }).click();
+  const dialog = adminPage
+    .getByRole("dialog")
+    .filter({ hasText: "Create user" });
+  await expect(dialog).toBeVisible();
+  await dialog.getByLabel("First name").fill(MARGARET.firstName);
+  await dialog.getByLabel("Last name").fill(MARGARET.lastName);
+  await dialog.getByLabel("Username").fill(MARGARET.username);
+  await dialog.getByLabel("E-mail address").fill(MARGARET.email);
+  await dialog
+    .getByLabel("Temporary password")
+    .fill(MARGARET.temporaryPassword);
+  await expect(
+    dialog.getByRole("switch", { name: /Require a new password/ }),
+  ).toBeChecked();
+  const language = dialog.getByRole("combobox", { name: "Language" });
+  await language.click();
+  await language.fill("English");
+  await adminPage
+    .getByTitle("English (United States)", { exact: true })
+    .filter({ visible: true })
+    .click();
+
+  const createBodies: unknown[] = [];
+  adminPage.on("request", (request) => {
+    if (
+      request.method() === "POST" &&
+      new URL(request.url()).pathname === "/api/v1/admin/users"
+    ) {
+      createBodies.push(request.postDataJSON());
+    }
+  });
+  await dialog.getByRole("button", { name: "Create user" }).click();
+  await completeRecentAuthIfAsked(
+    adminPage,
+    adminPage.getByText("Margaret Hamilton was created."),
+    NEW_PASSWORD,
+  );
+  expect(createBodies).toHaveLength(1);
+  expect(createBodies[0]).toMatchObject({
+    username: MARGARET.username,
+    email: MARGARET.email,
+    role: "user",
+    locale: "en-US",
+    requirePasswordChange: true,
+  });
+  await expect(
+    adminPage.getByRole("link", { name: "Margaret Hamilton" }),
+  ).toBeVisible();
+  const listed = (await (
+    await adminPage.request.get("/api/v1/admin/users?q=margaret")
+  ).json()) as {
+    items: { username: string; mustChangePassword: boolean; role: string }[];
+  };
+  expect(listed.items).toMatchObject([
+    { username: MARGARET.username, mustChangePassword: true, role: "user" },
+  ]);
+  expect(JSON.stringify(listed)).not.toContain(MARGARET.temporaryPassword);
+
+  await adminPage.getByRole("button", { name: "Account menu" }).click();
+  await adminPage.getByRole("menuitem", { name: "Sign out" }).click();
+  await expect(adminPage).toHaveURL(/\/login(\?|$)/);
+  expect(await sessionStatus(adminPage)).toBe(401);
+
+  const userContext = await browser.newContext();
+  const page = await userContext.newPage();
+  const userErrors = collectPageErrors(page);
+  expect(
+    (
+      await submitPasswordLogin(
+        page,
+        MARGARET.username,
+        MARGARET.temporaryPassword,
+      )
+    ).status(),
+  ).toBe(200);
+  await expect(page).toHaveURL(/\/login\/forced-password-change/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Set a new password" }),
+  ).toBeVisible();
+  await expect(page.getByTestId("app-shell")).toHaveCount(0);
+  expect(
+    (
+      (await (await page.request.get("/api/v1/profile")).json()) as {
+        error: { code: string };
+      }
+    ).error.code,
+  ).toBe("AUTH_PASSWORD_CHANGE_REQUIRED");
+
+  await page
+    .getByLabel("New password", { exact: true })
+    .fill(MARGARET.chosenPassword);
+  await page.getByLabel("Confirm new password").fill(MARGARET.chosenPassword);
+  await page.getByRole("button", { name: "Set new password" }).click();
+
+  await expect(page).toHaveURL(/\/overview$/);
+  await expect(page.getByTestId("app-shell")).toBeVisible();
+  expect(
+    await (await page.request.get("/api/v1/auth/me")).json(),
+  ).toMatchObject({
+    user: { username: MARGARET.username, role: "user" },
+    restriction: null,
+  });
+  expect((await page.request.get("/api/v1/profile")).status()).toBe(200);
+  expect((await page.request.get("/api/v1/admin/users")).status()).toBe(403);
+  await expect(
+    page.getByRole("link", { name: "Admin", exact: true }),
+  ).toHaveCount(0);
+  await page.goto("/admin/users");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Access denied" }),
+  ).toBeVisible();
+
+  const fresh = await browser.newContext();
+  expect(
+    (
+      await apiLogin(fresh, MARGARET.username, MARGARET.temporaryPassword)
+    ).status(),
+  ).toBe(401);
+  expect(
+    (
+      await apiLogin(fresh, MARGARET.username, MARGARET.chosenPassword)
+    ).status(),
+  ).toBe(200);
+
+  expect(adminErrors).toEqual([]);
+  expect(userErrors).toEqual([]);
+  await Promise.all([adminContext.close(), userContext.close(), fresh.close()]);
+});
+
+const MARGARET_NEW_EMAIL = "margaret.hamilton@example.test";
+
+test("e2e_admin_email_change_verification_link", async ({
+  browser,
+  baseURL,
+}) => {
+  test.setTimeout(180_000);
+  const origin = baseURL ?? APP_ORIGIN;
+  await configureSmtpSink(origin);
+  await clearSink();
+
+  const adminContext = await browser.newContext();
+  const adminPage = await adminContext.newPage();
+  const adminErrors = collectPageErrors(adminPage);
+  await signIn(adminPage, ADMIN.username, NEW_PASSWORD);
+  await adminPage.goto("/admin/users");
+  await adminPage.getByRole("link", { name: "Margaret Hamilton" }).click();
+  const email = adminPage.getByTestId("user-email");
+  await expect(email.getByTestId("canonical-email")).toHaveText(MARGARET.email);
+  await email.getByLabel("New e-mail address").fill(MARGARET_NEW_EMAIL);
+  await email.getByRole("button", { name: "Start e-mail change" }).click();
+  await completeRecentAuthIfAsked(
+    adminPage,
+    adminPage.getByText(
+      "Verification requested. The address changes only after it is confirmed.",
+    ),
+    NEW_PASSWORD,
+  );
+  await expect(email.getByTestId("pending-email-notice")).toContainText(
+    MARGARET_NEW_EMAIL,
+  );
+  await expect(email.getByTestId("canonical-email")).toHaveText(MARGARET.email);
+
+  await runJobsOnce(origin, "email.send");
+  await expect
+    .poll(async () => (await messagesTo(MARGARET_NEW_EMAIL)).length)
+    .toBe(1);
+  const [message] = await messagesTo(MARGARET_NEW_EMAIL);
+  const link = /https?:\/\/[^\s"'<>]+\/verify-email\/[A-Za-z0-9_%-]+/.exec(
+    message?.Text ?? "",
+  )?.[0];
+  expect(link).toBeDefined();
+  const verifyUrl = new URL(link ?? "");
+  expect(verifyUrl.origin).toBe(new URL(origin).origin);
+  expect(verifyUrl.search).toBe("");
+  expect(verifyUrl.pathname).toMatch(/^\/verify-email\/[A-Za-z0-9_%-]+$/);
+
+  const userContext = await browser.newContext();
+  const page = await userContext.newPage();
+  const pageErrors = collectPageErrors(page);
+  await signIn(page, MARGARET.username, MARGARET.chosenPassword);
+  expect(await sessionStatus(page)).toBe(200);
+
+  const verifyPosts: unknown[] = [];
+  page.on("request", (request) => {
+    if (
+      request.method() === "POST" &&
+      new URL(request.url()).pathname === "/api/v1/auth/email/verify"
+    ) {
+      verifyPosts.push(request.postDataJSON());
+    }
+  });
+  await page.goto(link ?? "");
+  await expect(
+    page.getByRole("heading", {
+      level: 1,
+      name: "Confirm your new e-mail address",
+    }),
+  ).toBeVisible();
+  await expect(page.getByText("Page not found")).toHaveCount(0);
+  expect(verifyPosts).toEqual([]);
+  await page.getByRole("button", { name: "Confirm new address" }).click();
+
+  await expect(page.getByTestId("verify-email-success")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "E-mail address confirmed" }),
+  ).toBeVisible();
+  const token = verifyUrl.pathname.split("/").pop() ?? "";
+  expect(verifyPosts).toEqual([{ token: decodeURIComponent(token) }]);
+  await expect(page.locator("body")).not.toContainText(
+    decodeURIComponent(token),
+  );
+  expect(await sessionStatus(page)).toBe(401);
+  const storage = await page.evaluate(() => ({
+    local: JSON.stringify(window.localStorage),
+    session: JSON.stringify(window.sessionStorage),
+    cookie: document.cookie,
+  }));
+  expect(JSON.stringify(storage)).not.toContain(decodeURIComponent(token));
+
+  await page.getByRole("button", { name: "Go to sign in" }).click();
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Sign in" }),
+  ).toBeVisible();
+
+  const fresh = await browser.newContext();
+  expect(
+    (await apiLogin(fresh, MARGARET.email, MARGARET.chosenPassword)).status(),
+  ).toBe(401);
+  expect(
+    (
+      await apiLogin(fresh, MARGARET.username, MARGARET.chosenPassword)
+    ).status(),
+  ).toBe(200);
+  const me = (await (await fresh.request.get("/api/v1/auth/me")).json()) as {
+    user: { email: string; pendingEmail: string | null };
+  };
+  expect(me.user.email).toBe(MARGARET_NEW_EMAIL);
+  expect(me.user.pendingEmail).toBeNull();
+  const byNewAddress = await browser.newContext();
+  expect(
+    (
+      await apiLogin(byNewAddress, MARGARET_NEW_EMAIL, MARGARET.chosenPassword)
+    ).status(),
+  ).toBe(200);
+
+  await adminPage.reload();
+  await expect(
+    adminPage.getByTestId("user-email").getByTestId("canonical-email"),
+  ).toHaveText(MARGARET_NEW_EMAIL);
+  await expect(
+    adminPage.getByTestId("user-email").getByTestId("pending-email-notice"),
+  ).toHaveCount(0);
+
+  expect(adminErrors).toEqual([]);
+  expect(pageErrors).toEqual([]);
+  await Promise.all([
+    adminContext.close(),
+    userContext.close(),
+    fresh.close(),
+    byNewAddress.close(),
+  ]);
 });
 
 test("e2e_forced_password_change", async ({ browser, baseURL }) => {

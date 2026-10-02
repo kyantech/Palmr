@@ -142,6 +142,15 @@ export function useResetPassword(token: string) {
   });
 }
 
+export function useVerifyEmail(token: string) {
+  return useMutation({
+    mutationKey: ["auth", "email", "verify"],
+    mutationFn: () => apiFetch("post", "/auth/email/verify", { body: { token } }),
+    retry: false,
+    gcTime: 0,
+  });
+}
+
 export function useAcceptInvite(token: string) {
   return useMutation({
     mutationKey: ["auth", "invite", "accept"],

@@ -209,6 +209,9 @@ async function readSuccess(
     return undefined;
   }
   if (!isJsonResponse(response)) {
+    if (await isBodyless(response)) {
+      return undefined;
+    }
     await discardBody(response);
     throw clientError("CLIENT_UNEXPECTED_RESPONSE", response.status, context);
   }
@@ -351,6 +354,17 @@ function isJsonResponse(response: Response): boolean {
     ?.trim()
     .toLowerCase();
   return mediaType === JSON_MEDIA_TYPE || (mediaType?.endsWith("+json") ?? false);
+}
+
+async function isBodyless(response: Response): Promise<boolean> {
+  if (response.headers.get("Content-Type") !== null) {
+    return false;
+  }
+  try {
+    return (await response.text()) === "";
+  } catch {
+    return false;
+  }
 }
 
 async function discardBody(response: Response): Promise<void> {

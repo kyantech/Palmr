@@ -11,6 +11,7 @@ export { InvitePage, type InvitePageProps } from "./routes/InvitePage";
 export { LoginPage, type LoginMode, type LoginPageProps } from "./routes/LoginPage";
 export { ResetPasswordPage, type ResetPasswordPageProps } from "./routes/ResetPasswordPage";
 export { SecondFactorPage, type SecondFactorPageProps } from "./routes/SecondFactorPage";
+export { VerifyEmailPage, type VerifyEmailPageProps } from "./routes/VerifyEmailPage";
 export {
   clearMfaChallenge,
   discardRecentAuthChallenge,

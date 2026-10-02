@@ -1,1 +1,541 @@
-{}
+{
+  "title": "Quản trị",
+  "sections": {
+    "label": "Các mục quản trị",
+    "users": "Người dùng",
+    "security": "Bảo mật",
+    "smtp": "SMTP"
+  },
+  "common": {
+    "cancel": "Hủy",
+    "none": "Không có",
+    "yes": "Có",
+    "no": "Không",
+    "retry": "Thử lại",
+    "unknown": "Không khả dụng"
+  },
+  "roles": {
+    "admin": "Quản trị viên",
+    "user": "Người dùng"
+  },
+  "status": {
+    "active": "Đang hoạt động",
+    "inactive": "Không hoạt động"
+  },
+  "tags": {
+    "locked": "Đã khóa",
+    "mustChangePassword": "Phải đổi mật khẩu",
+    "ssoOnly": "Chỉ SSO",
+    "twoFactor": "Đã bật 2FA"
+  },
+  "secret": {
+    "done": "Xong",
+    "notShownAgain": "Thông tin này sẽ không hiển thị lại. Hãy sao chép ngay và lưu giữ an toàn.",
+    "copy": "Sao chép",
+    "copied": "Đã sao chép vào bộ nhớ tạm.",
+    "copyFailed": "Không thể sao chép tự động. Hãy chọn văn bản và sao chép thủ công."
+  },
+  "bytes": {
+    "unit": "Đơn vị"
+  },
+  "units": {
+    "characters": "ký tự",
+    "attempts": "lần thử",
+    "minutes": "phút",
+    "hours": "giờ",
+    "days": "ngày"
+  },
+  "quota": {
+    "unlimited": "Không giới hạn"
+  },
+  "storage": {
+    "usedOf": "{{used}} trên {{quota}}",
+    "usedOfUnlimited": "{{used}} · Không giới hạn",
+    "overQuota": "Vượt hạn mức",
+    "usageLabel": "Mức sử dụng dung lượng"
+  },
+  "validation": {
+    "required": "Trường này là bắt buộc.",
+    "email": "Nhập địa chỉ e-mail hợp lệ.",
+    "integer": "Nhập một số nguyên.",
+    "quota": "Nhập giá trị từ 0 đến kích thước tối đa được hỗ trợ.",
+    "invalid": "Giá trị này không hợp lệ.",
+    "passwordTooShort": "Dùng ít nhất {{minLength}} ký tự."
+  },
+  "pager": {
+    "showing": "Đang hiển thị {{shown}}",
+    "showingOf": "Đang hiển thị {{shown}} trên {{total}}",
+    "pageSize": "Số dòng mỗi trang",
+    "perPage": "{{size}} mỗi trang",
+    "first": "Trang đầu",
+    "previous": "Trước",
+    "next": "Sau"
+  },
+  "users": {
+    "title": "Người dùng",
+    "description": "Tạo tài khoản, quản lý quyền truy cập và theo dõi dung lượng lưu trữ của phiên bản này.",
+    "views": {
+      "label": "Người dùng hoặc lời mời",
+      "users": "Người dùng",
+      "invites": "Lời mời"
+    },
+    "tableLabel": "Người dùng",
+    "usernameLine": "@{{username}}",
+    "pendingEmail": "Đang chờ đổi sang {{email}}",
+    "neverSignedIn": "Chưa bao giờ",
+    "columns": {
+      "user": "Người dùng",
+      "role": "Vai trò",
+      "status": "Trạng thái",
+      "security": "Tài khoản",
+      "storage": "Dung lượng",
+      "lastSignIn": "Đăng nhập gần nhất",
+      "actions": "Thao tác"
+    },
+    "actions": {
+      "label": "Thao tác cho {{name}}",
+      "view": "Xem chi tiết",
+      "activate": "Kích hoạt lại",
+      "deactivate": "Vô hiệu hóa",
+      "unlock": "Mở khóa"
+    },
+    "deactivate": {
+      "title": "Vô hiệu hóa {{name}}?",
+      "description": "Họ sẽ bị đăng xuất khỏi mọi nơi và không thể đăng nhập cho đến khi bạn kích hoạt lại tài khoản. Tệp và liên kết chia sẻ vẫn được giữ lại.",
+      "confirm": "Vô hiệu hóa"
+    },
+    "notice": {
+      "activated": "Đã kích hoạt lại người dùng.",
+      "deactivated": "Đã vô hiệu hóa người dùng.",
+      "unlocked": "Đã mở khóa tài khoản."
+    },
+    "empty": {
+      "filtered": "Không có người dùng nào khớp với bộ lọc này.",
+      "none": "Chưa có người dùng nào.",
+      "clear": "Xóa bộ lọc"
+    },
+    "filters": {
+      "label": "Lọc người dùng",
+      "search": "Tìm người dùng",
+      "searchPlaceholder": "Tìm theo tên, tên người dùng hoặc e-mail",
+      "role": "Vai trò",
+      "status": "Trạng thái",
+      "sort": "Sắp xếp người dùng",
+      "allRoles": "Tất cả vai trò",
+      "allStatuses": "Tất cả trạng thái"
+    },
+    "sorts": {
+      "newest": "Mới nhất trước",
+      "oldest": "Cũ nhất trước",
+      "usernameAsc": "Tên người dùng A–Z",
+      "usernameDesc": "Tên người dùng Z–A",
+      "emailAsc": "E-mail A–Z",
+      "emailDesc": "E-mail Z–A",
+      "storageDesc": "Dùng nhiều dung lượng nhất",
+      "storageAsc": "Dùng ít dung lượng nhất"
+    },
+    "create": {
+      "open": "Tạo người dùng",
+      "title": "Tạo người dùng",
+      "firstName": "Tên",
+      "lastName": "Họ",
+      "username": "Tên người dùng",
+      "email": "Địa chỉ e-mail",
+      "role": "Vai trò",
+      "locale": "Ngôn ngữ",
+      "instanceLocale": "Mặc định của phiên bản",
+      "password": "Mật khẩu tạm thời",
+      "passwordHintLocal": "Người dùng đăng nhập bằng mật khẩu này. Hãy chia sẻ qua kênh an toàn.",
+      "passwordHintSso": "Không bắt buộc. Để trống để tạo tài khoản không có mật khẩu cục bộ, dùng để đăng nhập qua nhà cung cấp bên ngoài.",
+      "requirePasswordChange": "Yêu cầu mật khẩu mới ở lần đăng nhập đầu tiên",
+      "active": "Tài khoản đang hoạt động",
+      "quota": "Hạn mức dung lượng",
+      "quotaInherit": "Mặc định của phiên bản",
+      "quotaCustom": "Giá trị tùy chỉnh",
+      "quotaAmount": "Hạn mức",
+      "submit": "Tạo người dùng",
+      "created": "Đã tạo {{name}}.",
+      "view": "Xem người dùng"
+    }
+  },
+  "invites": {
+    "tableLabel": "Lời mời",
+    "columns": {
+      "email": "E-mail",
+      "role": "Vai trò",
+      "status": "Trạng thái",
+      "createdBy": "Người tạo",
+      "created": "Ngày tạo",
+      "expires": "Hết hạn",
+      "lastSent": "Gửi gần nhất",
+      "actions": "Thao tác"
+    },
+    "status": {
+      "pending": "Đang chờ",
+      "accepted": "Đã chấp nhận",
+      "revoked": "Đã thu hồi",
+      "expired": "Đã hết hạn"
+    },
+    "neverSent": "Chưa bao giờ",
+    "actions": {
+      "resend": "Gửi lại",
+      "revoke": "Thu hồi"
+    },
+    "filters": {
+      "status": "Lọc lời mời theo trạng thái",
+      "allStatuses": "Tất cả trạng thái"
+    },
+    "notice": {
+      "resent": "E-mail lời mời đã được đưa vào hàng đợi gửi.",
+      "revoked": "Đã thu hồi lời mời."
+    },
+    "empty": {
+      "none": "Chưa có lời mời nào. Hãy mời ai đó để cấp quyền truy cập.",
+      "filtered": "Không có lời mời nào ở trạng thái này."
+    },
+    "revoke": {
+      "title": "Thu hồi lời mời này?",
+      "description": "Liên kết mời dành cho {{email}} sẽ ngừng hoạt động ngay lập tức.",
+      "confirm": "Thu hồi lời mời"
+    },
+    "create": {
+      "open": "Mời người dùng",
+      "title": "Mời một người dùng",
+      "email": "Địa chỉ e-mail",
+      "role": "Vai trò",
+      "expiry": "Có hiệu lực trong",
+      "expiryHint": "Để trống để dùng thời hạn lời mời của phiên bản.",
+      "sendEmail": "Gửi lời mời qua e-mail",
+      "sendEmailHint": "Palmr gửi liên kết đến địa chỉ ở trên.",
+      "sendEmailOff": "E-mail chưa được cấu hình, nên bạn sẽ nhận một liên kết để tự chia sẻ.",
+      "submit": "Tạo lời mời"
+    },
+    "link": {
+      "title": "Liên kết lời mời",
+      "description": "Gửi liên kết này cho người bạn mời. Bất kỳ ai có liên kết đều có thể tạo tài khoản.",
+      "label": "Liên kết lời mời"
+    }
+  },
+  "detail": {
+    "back": "← Tất cả người dùng",
+    "loading": "Đang tải người dùng…",
+    "notFound": "Không tìm thấy người dùng",
+    "failed": "Không thể tải người dùng này",
+    "subtitle": "@{{username}} · {{email}}",
+    "inactiveNotice": "Tài khoản này đã bị vô hiệu hóa. Người dùng không thể đăng nhập cho đến khi được kích hoạt lại.",
+    "identity": {
+      "title": "Danh tính",
+      "description": "Tên và tên người dùng. Địa chỉ e-mail và vai trò được quản lý riêng.",
+      "firstName": "Tên",
+      "lastName": "Họ",
+      "username": "Tên người dùng",
+      "memberSince": "Thành viên từ {{date}}",
+      "save": "Lưu thay đổi",
+      "saved": "Đã lưu danh tính."
+    },
+    "email": {
+      "title": "Địa chỉ e-mail",
+      "description": "Đổi địa chỉ cần xác minh. Cho đến lúc đó, địa chỉ hiện tại vẫn hoạt động.",
+      "current": "Địa chỉ hiện tại",
+      "newLabel": "Địa chỉ e-mail mới",
+      "hint": "Một liên kết xác minh được gửi đến địa chỉ mới. Không có gì thay đổi cho đến khi được xác nhận.",
+      "request": "Bắt đầu đổi e-mail",
+      "resend": "Gửi lại xác minh",
+      "cancel": "Hủy thay đổi",
+      "pendingTitle": "Đang chờ xác minh {{email}}",
+      "pendingDescription": "{{email}} vẫn là địa chỉ đang dùng cho đến khi địa chỉ mới được xác minh.",
+      "notice": {
+        "requested": "Đã yêu cầu xác minh. Địa chỉ chỉ đổi sau khi được xác nhận.",
+        "resent": "Một thư xác minh mới đã được đưa vào hàng đợi.",
+        "cancelled": "Đã hủy thay đổi e-mail đang chờ."
+      },
+      "cancelDialog": {
+        "title": "Hủy thay đổi đang chờ?",
+        "description": "Liên kết xác minh cho {{email}} sẽ ngừng hoạt động. Địa chỉ hiện tại không thay đổi.",
+        "confirm": "Hủy thay đổi"
+      }
+    },
+    "account": {
+      "title": "Tài khoản và bảo mật",
+      "description": "Vai trò, trạng thái đăng nhập và các danh tính được liên kết.",
+      "role": "Vai trò",
+      "roleSelect": "Vai trò mới",
+      "roleSave": "Đổi vai trò",
+      "status": "Trạng thái",
+      "localPassword": "Mật khẩu",
+      "passwordLocal": "Đã đặt mật khẩu cục bộ",
+      "passwordSso": "Không có mật khẩu cục bộ (chỉ SSO)",
+      "mustChange": "Phải đổi mật khẩu",
+      "twoFactor": "Xác thực hai yếu tố",
+      "twoFactorOn": "Bật",
+      "twoFactorOff": "Tắt",
+      "lockout": "Khóa đăng nhập",
+      "locked": "Đã khóa",
+      "lockedUntil": "Khóa đến {{date}}",
+      "notLocked": "Không bị khóa",
+      "unlock": "Mở khóa",
+      "lockoutCounters": "{{failed}} lần thử thất bại · đã khóa {{locks}} lần",
+      "sessions": "Phiên đang hoạt động",
+      "trustedDevices": "Thiết bị tin cậy",
+      "identityLinks": "Danh tính đã liên kết ({{links}})",
+      "linkState": {
+        "active": "Đang hoạt động",
+        "suspended": "Tạm ngưng"
+      },
+      "linkMethod": {
+        "auto_verified_email": "Liên kết qua e-mail đã xác minh",
+        "manual": "Liên kết thủ công",
+        "auto_provision": "Tạo khi đăng nhập lần đầu"
+      },
+      "linkLastLogin": "đăng nhập gần nhất {{date}}",
+      "resetPassword": "Đặt lại mật khẩu",
+      "noLocalPasswordHint": "Tài khoản này đăng nhập qua nhà cung cấp bên ngoài và không có mật khẩu cục bộ để đặt lại.",
+      "notice": {
+        "roleChanged": "Đã đổi vai trò. Người dùng đã bị đăng xuất khỏi mọi nơi.",
+        "unlocked": "Đã mở khóa tài khoản."
+      },
+      "roleDialog": {
+        "title": "Đổi vai trò của {{name}}?",
+        "description": "Vai trò mới là {{role}}. Đổi vai trò sẽ đăng xuất người dùng khỏi mọi phiên.",
+        "confirm": "Đổi vai trò"
+      },
+      "resetDialog": {
+        "title": "Đặt lại mật khẩu của {{name}}?",
+        "description": "Một mật khẩu tạm thời được tạo và chỉ hiển thị một lần. Người dùng bị đăng xuất khỏi mọi nơi và phải chọn mật khẩu mới ở lần đăng nhập tiếp theo.",
+        "confirm": "Đặt lại mật khẩu"
+      },
+      "resetResult": {
+        "title": "Mật khẩu tạm thời",
+        "description": "Chia sẻ mật khẩu này với {{name}} qua kênh an toàn. Họ phải đổi mật khẩu khi đăng nhập.",
+        "label": "Mật khẩu tạm thời"
+      }
+    },
+    "storage": {
+      "title": "Dung lượng và hạn mức",
+      "description": "Mức sử dụng trong Tệp của tôi và Đã nhận, cùng hạn mức áp dụng cho người dùng này.",
+      "used": "Dung lượng đã dùng",
+      "effective": "Hạn mức hiệu lực",
+      "instanceDefault": "Mặc định của phiên bản",
+      "files": "Tệp",
+      "receivedFiles": "Tệp đã nhận",
+      "shares": "Chia sẻ",
+      "reverseShares": "Chia sẻ ngược",
+      "overrideTitle": "Ghi đè hạn mức",
+      "saved": "Đã cập nhật hạn mức.",
+      "belowUsage": {
+        "title": "Hạn mức này thấp hơn dung lượng đã dùng",
+        "description": "Không có gì bị xóa. Người dùng không thể thêm tệp mới cho đến khi mức dùng xuống dưới hạn mức."
+      },
+      "modes": {
+        "inherit": "Dùng mặc định của phiên bản ({{value}})",
+        "unlimited": "Không giới hạn",
+        "bytes": "Giá trị tùy chỉnh"
+      },
+      "amount": "Hạn mức",
+      "noBypass": "Quản trị viên không được miễn hạn mức: mọi tài khoản chịu cùng giới hạn.",
+      "save": "Lưu hạn mức"
+    },
+    "sessions": {
+      "title": "Phiên",
+      "description": "Nơi người dùng này hiện đang đăng nhập.",
+      "none": "Người dùng này không có phiên đang hoạt động.",
+      "listLabel": "Phiên đang hoạt động",
+      "more": "Và {{more}} phiên khác.",
+      "unknownDevice": "Thiết bị không xác định",
+      "origin": {
+        "password": "Mật khẩu",
+        "external": "Nhà cung cấp bên ngoài"
+      },
+      "ip": "IP {{ip}}",
+      "ipUnavailable": "Không có IP",
+      "lastActive": "Hoạt động gần nhất {{date}}",
+      "signedIn": "Đăng nhập {{date}}"
+    },
+    "danger": {
+      "title": "Thao tác có tác động lớn",
+      "description": "Các thao tác này có hiệu lực ngay lập tức.",
+      "notice": {
+        "deactivated": "Đã vô hiệu hóa người dùng và đăng xuất khỏi mọi nơi.",
+        "activated": "Đã kích hoạt lại người dùng.",
+        "sessionsRevoked": "Đã đăng xuất mọi phiên của người dùng này."
+      },
+      "deactivate": {
+        "title": "Vô hiệu hóa người dùng này",
+        "description": "Đăng xuất người dùng khỏi mọi nơi và chặn đăng nhập. Tệp và liên kết chia sẻ vẫn được giữ lại.",
+        "action": "Vô hiệu hóa người dùng",
+        "dialogTitle": "Vô hiệu hóa {{name}}?",
+        "dialogDescription": "Họ sẽ bị đăng xuất khỏi mọi nơi và không thể đăng nhập cho đến khi bạn kích hoạt lại tài khoản.",
+        "confirm": "Vô hiệu hóa"
+      },
+      "activate": {
+        "title": "Kích hoạt lại người dùng này",
+        "description": "Cho phép người dùng đăng nhập lại. Các phiên đã thu hồi trước đó vẫn bị thu hồi.",
+        "action": "Kích hoạt lại người dùng"
+      },
+      "revoke": {
+        "title": "Đăng xuất khỏi mọi phiên",
+        "description": "Kết thúc mọi phiên của người dùng này. Thiết bị tin cậy vẫn được giữ lại.",
+        "action": "Đăng xuất khỏi mọi nơi",
+        "dialogTitle": "Đăng xuất {{name}} khỏi mọi nơi?",
+        "dialogDescription": "Mọi phiên của người dùng này kết thúc ngay và họ phải đăng nhập lại.",
+        "confirm": "Đăng xuất khỏi mọi nơi"
+      }
+    }
+  },
+  "settings": {
+    "title": "Bảo mật và chính sách",
+    "description": "Chính sách áp dụng cho toàn bộ phiên bản. Mỗi mục được lưu riêng.",
+    "save": "Lưu thay đổi",
+    "saved": "Đã lưu cài đặt.",
+    "errors": {
+      "belowFloor": "Phải ít nhất là {{floor}}.",
+      "belowFloorUnknown": "Giá trị này thấp hơn mức tối thiểu cho phép.",
+      "aboveMax": "Tối đa là {{max}}.",
+      "invalid": "Giá trị này không hợp lệ.",
+      "requiredWhenEnabled": "Bắt buộc khi tính năng này được bật."
+    },
+    "general": {
+      "title": "Chung",
+      "description": "Tên phiên bản, ngôn ngữ mặc định và những gì khách truy cập thấy ở chân trang.",
+      "appName": "Tên phiên bản",
+      "appDescription": "Mô tả",
+      "defaultLocale": "Ngôn ngữ mặc định",
+      "thumbnailSourceLimit": "Giới hạn nguồn ảnh thu nhỏ",
+      "thumbnailSourceLimitHint": "Ảnh lớn nhất mà Palmr tạo ảnh thu nhỏ.",
+      "thumbnailLimits": {
+        "64MiB": "64 MiB",
+        "128MiB": "128 MiB",
+        "256MiB": "256 MiB",
+        "512MiB": "512 MiB",
+        "unlimited": "Không giới hạn"
+      },
+      "showVersion": "Hiển thị số phiên bản Palmr",
+      "poweredByVisible": "Hiển thị “Powered by Palmr”"
+    },
+    "security": {
+      "title": "Đăng nhập và phiên",
+      "description": "Quy tắc mật khẩu, khóa tài khoản, thời gian phiên và chính sách xác thực hai yếu tố.",
+      "groups": {
+        "passwords": "Mật khẩu",
+        "signIn": "Bảo vệ đăng nhập",
+        "sessions": "Phiên",
+        "links": "Liên kết và lời mời",
+        "twoFactor": "Xác thực hai yếu tố",
+        "trustedDevices": "Thiết bị tin cậy"
+      },
+      "fields": {
+        "passwordMinLength": "Độ dài tối thiểu của mật khẩu tài khoản",
+        "publicLinkPasswordMinLength": "Độ dài tối thiểu của mật khẩu liên kết công khai",
+        "maxLoginAttempts": "Số lần đăng nhập sai trước khi khóa",
+        "loginLockoutMinutes": "Thời gian khóa",
+        "sessionIdleDays": "Thời gian chờ khi không hoạt động",
+        "sessionAbsoluteDays": "Thời gian phiên tối đa",
+        "recentAuthMinutes": "Khoảng thời gian xác thực lại",
+        "passwordResetValidityMinutes": "Thời hạn liên kết đặt lại mật khẩu",
+        "inviteValidityHours": "Thời hạn lời mời mặc định",
+        "trustedDeviceDurationDays": "Thời gian thiết bị tin cậy",
+        "twoFactorRequired": "Bắt buộc xác thực hai yếu tố cho tài khoản cục bộ",
+        "trustedDevicesEnabled": "Cho phép thiết bị tin cậy"
+      },
+      "hints": {
+        "passwordMinLength": "Áp dụng cho mật khẩu mới.",
+        "publicLinkPasswordMinLength": "Áp dụng cho mật khẩu của Chia sẻ và Chia sẻ ngược.",
+        "maxLoginAttempts": "Số lần thất bại liên tiếp trước khi tài khoản bị khóa.",
+        "loginLockoutMinutes": "Tài khoản bị khóa sẽ giữ trạng thái khóa bao lâu.",
+        "sessionIdleDays": "Phiên kết thúc sau khoảng thời gian không hoạt động này.",
+        "sessionAbsoluteDays": "Phiên kết thúc sau khoảng thời gian này, dù hoạt động đến đâu.",
+        "recentAuthMinutes": "Mật khẩu đã xác nhận được tính hợp lệ cho các thao tác nhạy cảm trong bao lâu.",
+        "passwordResetValidityMinutes": "Liên kết đặt lại gửi qua e-mail hoạt động trong bao lâu.",
+        "inviteValidityHours": "Dùng khi lời mời không tự đặt thời hạn.",
+        "trustedDeviceDurationDays": "Thiết bị tin cậy bỏ qua yếu tố thứ hai trong bao lâu.",
+        "twoFactorRequired": "Tài khoản cục bộ phải thiết lập trước khi có thể dùng Palmr.",
+        "trustedDevicesEnabled": "Cho phép bỏ qua yếu tố thứ hai trên các thiết bị mà họ tin cậy."
+      }
+    },
+    "quotas": {
+      "title": "Hạn mức",
+      "description": "Giới hạn dung lượng và tải lên. Không giới hạn khác với số không.",
+      "fields": {
+        "defaultUserQuotaBytes": "Hạn mức dung lượng mặc định cho mỗi người dùng",
+        "maxFileSizeBytes": "Kích thước tệp tối đa"
+      },
+      "hints": {
+        "defaultUserQuotaBytes": "Áp dụng cho người dùng không có hạn mức riêng. Số không nghĩa là không có dung lượng nào.",
+        "maxFileSizeBytes": "Tệp đơn lẻ lớn nhất được phép tải lên. Số không chặn mọi lượt tải lên."
+      }
+    },
+    "publicLinks": {
+      "title": "Liên kết công khai",
+      "description": "Chia sẻ và Chia sẻ ngược được phép tồn tại bao lâu.",
+      "noMaximum": "Không giới hạn thời gian tồn tại",
+      "maxLifetime": "Thời gian tồn tại tối đa của liên kết",
+      "hint": "Không thể tạo liên kết có thời hạn dài hơn."
+    }
+  },
+  "smtp": {
+    "pageTitle": "SMTP",
+    "pageDescription": "E-mail gửi đi cho lời mời, đặt lại mật khẩu và thông báo.",
+    "title": "Máy chủ thư",
+    "description": "Palmr vẫn hoạt động khi không có e-mail. Các tính năng cần e-mail sẽ không khả dụng cho đến khi được cấu hình.",
+    "enabledTag": "Đã bật",
+    "disabledTag": "Đã tắt",
+    "fields": {
+      "enabled": "Gửi e-mail qua máy chủ này",
+      "host": "Máy chủ",
+      "port": "Cổng",
+      "security": "Bảo mật kết nối",
+      "noAuth": "Máy chủ không yêu cầu xác thực",
+      "username": "Tên người dùng",
+      "password": "Mật khẩu",
+      "passwordPlaceholder": "Nhập mật khẩu mới để thay thế",
+      "fromName": "Tên người gửi",
+      "fromEmail": "Địa chỉ người gửi",
+      "allowSelfSigned": "Cho phép chứng chỉ tự ký",
+      "allowSelfSignedHint": "Chỉ dành cho máy chủ do bạn kiểm soát. Làm yếu việc kiểm tra chứng chỉ."
+    },
+    "security": {
+      "starttls": "STARTTLS",
+      "implicit": "TLS ngầm định",
+      "none": "Không"
+    },
+    "password": {
+      "configured": "Đã cấu hình mật khẩu",
+      "notConfigured": "Chưa lưu mật khẩu",
+      "willClear": "Sẽ bị xóa khi bạn lưu",
+      "willReplace": "Sẽ được thay thế khi bạn lưu",
+      "clear": "Xóa mật khẩu đã lưu",
+      "undoClear": "Giữ mật khẩu đã lưu",
+      "clearDialog": {
+        "title": "Xóa mật khẩu đã lưu?",
+        "description": "Mật khẩu bị xóa khi bạn lưu. E-mail cần xác thực sẽ ngừng hoạt động cho đến khi bạn nhập mật khẩu mới.",
+        "confirm": "Xóa mật khẩu"
+      }
+    },
+    "test": {
+      "title": "Gửi e-mail thử",
+      "description": "Kiểm tra kết nối, TLS, đăng nhập và việc gửi thư.",
+      "recipient": "Gửi thử đến",
+      "saved": "Thử cài đặt đã lưu",
+      "unsaved": "Thử giá trị hiện tại trong biểu mẫu",
+      "unsavedHint": "Thử giá trị biểu mẫu sẽ không lưu chúng và không bao giờ dùng mật khẩu đã lưu. Hãy nhập mật khẩu ở trên nếu máy chủ yêu cầu.",
+      "unsavedIncomplete": "Nhập máy chủ, cổng và địa chỉ người gửi để thử các giá trị trong biểu mẫu.",
+      "mode": {
+        "saved": "cài đặt đã lưu",
+        "unsaved": "giá trị biểu mẫu"
+      },
+      "stages": {
+        "connect": "Kết nối",
+        "starttls": "Bắt đầu TLS",
+        "auth": "Xác thực",
+        "send": "Gửi thư"
+      },
+      "stagesLabel": "Các giai đoạn thử nghiệm",
+      "stageOk": "Đạt",
+      "stageFailed": "Thất bại",
+      "succeeded": "Đã gửi e-mail thử (thử với {{mode}}).",
+      "incomplete": "Bài thử chưa hoàn tất (thử với {{mode}}).",
+      "duration": "Hoàn tất trong {{ms}} ms.",
+      "failedAt": "Dừng ở: {{stage}} (thử với {{mode}})."
+    }
+  }
+}

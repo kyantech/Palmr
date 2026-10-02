@@ -80,10 +80,18 @@ export function errorEnvelope(
   code: string,
   status: number,
   requestId: string,
-  { message = code, headers = {} }: { message?: string; headers?: Record<string, string> } = {},
+  {
+    message = code,
+    headers = {},
+    details = {},
+  }: {
+    message?: string;
+    headers?: Record<string, string>;
+    details?: Record<string, boolean | number | string | string[]>;
+  } = {},
 ) {
   return HttpResponse.json(
-    { error: { code, message, requestId, details: {} } },
+    { error: { code, message, requestId, details } },
     { status, headers: { "X-Request-Id": requestId, ...headers } },
   );
 }

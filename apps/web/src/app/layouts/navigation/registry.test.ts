@@ -31,10 +31,14 @@ const OVERVIEW_ENTRY = entry({ key: "overview", order: 10 });
 
 describe("navigation registry", () => {
   test("lists only the concepts whose feature and route exist", () => {
-    expect(NAV_ENTRIES.map((item) => item.path)).toEqual([PATHS.overview, PATHS.settings]);
+    expect(NAV_ENTRIES.map((item) => item.path)).toEqual([
+      PATHS.overview,
+      PATHS.admin,
+      PATHS.settings,
+    ]);
 
     const registered = new Set(NAV_ENTRIES.map((item) => item.key));
-    for (const concept of ["files", "shared", "received", "transfers", "admin"]) {
+    for (const concept of ["files", "shared", "received", "transfers"]) {
       expect(registered.has(concept)).toBe(false);
     }
   });
@@ -50,9 +54,11 @@ describe("navigation registry", () => {
     ]);
     expect(visibleNavigation(NAV_ENTRIES, "admin").map((item) => item.key)).toEqual([
       "overview",
+      "admin",
       "settings",
     ]);
     expect(selectedNavigationKey(NAV_ENTRIES, PATHS.settingsSessions)).toBe("settings");
+    expect(selectedNavigationKey(NAV_ENTRIES, PATHS.adminUsers)).toBe("admin");
   });
 
   test("every entry carries the metadata the desktop, drawer and bottom surfaces need", () => {

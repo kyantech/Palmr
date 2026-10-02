@@ -1,1 +1,541 @@
-{}
+{
+  "title": "ניהול",
+  "sections": {
+    "label": "אזורי ניהול",
+    "users": "משתמשים",
+    "security": "אבטחה",
+    "smtp": "SMTP"
+  },
+  "common": {
+    "cancel": "ביטול",
+    "none": "אין",
+    "yes": "כן",
+    "no": "לא",
+    "retry": "נסו שוב",
+    "unknown": "לא זמין"
+  },
+  "roles": {
+    "admin": "מנהל",
+    "user": "משתמש"
+  },
+  "status": {
+    "active": "פעיל",
+    "inactive": "לא פעיל"
+  },
+  "tags": {
+    "locked": "נעול",
+    "mustChangePassword": "נדרש שינוי סיסמה",
+    "ssoOnly": "SSO בלבד",
+    "twoFactor": "אימות דו-שלבי פעיל"
+  },
+  "secret": {
+    "done": "סיום",
+    "notShownAgain": "הערך הזה לא יוצג שוב. העתיקו אותו עכשיו ושמרו אותו במקום בטוח.",
+    "copy": "העתקה",
+    "copied": "הועתק ללוח.",
+    "copyFailed": "ההעתקה האוטומטית נכשלה. סמנו את הטקסט והעתיקו אותו ידנית."
+  },
+  "bytes": {
+    "unit": "יחידה"
+  },
+  "units": {
+    "characters": "תווים",
+    "attempts": "ניסיונות",
+    "minutes": "דקות",
+    "hours": "שעות",
+    "days": "ימים"
+  },
+  "quota": {
+    "unlimited": "ללא הגבלה"
+  },
+  "storage": {
+    "usedOf": "{{used}} מתוך {{quota}}",
+    "usedOfUnlimited": "{{used}} · ללא הגבלה",
+    "overQuota": "חריגה מהמכסה",
+    "usageLabel": "שימוש באחסון"
+  },
+  "validation": {
+    "required": "שדה חובה.",
+    "email": "הזינו כתובת אימייל תקינה.",
+    "integer": "הזינו מספר שלם.",
+    "quota": "הזינו ערך בין 0 לגודל המרבי הנתמך.",
+    "invalid": "הערך אינו תקין.",
+    "passwordTooShort": "השתמשו בלפחות {{minLength}} תווים."
+  },
+  "pager": {
+    "showing": "מוצגים {{shown}}",
+    "showingOf": "מוצגים {{shown}} מתוך {{total}}",
+    "pageSize": "שורות בעמוד",
+    "perPage": "{{size}} בעמוד",
+    "first": "העמוד הראשון",
+    "previous": "הקודם",
+    "next": "הבא"
+  },
+  "users": {
+    "title": "משתמשים",
+    "description": "צרו חשבונות, נהלו גישה ועקבו אחר האחסון במופע הזה.",
+    "views": {
+      "label": "משתמשים או הזמנות",
+      "users": "משתמשים",
+      "invites": "הזמנות"
+    },
+    "tableLabel": "משתמשים",
+    "usernameLine": "@{{username}}",
+    "pendingEmail": "שינוי ל-{{email}} ממתין",
+    "neverSignedIn": "אף פעם",
+    "columns": {
+      "user": "משתמש",
+      "role": "תפקיד",
+      "status": "מצב",
+      "security": "חשבון",
+      "storage": "אחסון",
+      "lastSignIn": "כניסה אחרונה",
+      "actions": "פעולות"
+    },
+    "actions": {
+      "label": "פעולות עבור {{name}}",
+      "view": "הצגת פרטים",
+      "activate": "הפעלה מחדש",
+      "deactivate": "השבתה",
+      "unlock": "שחרור נעילה"
+    },
+    "deactivate": {
+      "title": "להשבית את {{name}}?",
+      "description": "המשתמש יתנתק מכל מקום ולא יוכל להיכנס עד שתפעילו את החשבון מחדש. הקבצים והשיתופים נשמרים.",
+      "confirm": "השבתה"
+    },
+    "notice": {
+      "activated": "המשתמש הופעל מחדש.",
+      "deactivated": "המשתמש הושבת.",
+      "unlocked": "הנעילה של החשבון שוחררה."
+    },
+    "empty": {
+      "filtered": "אין משתמשים שתואמים למסננים האלה.",
+      "none": "עדיין אין משתמשים.",
+      "clear": "ניקוי מסננים"
+    },
+    "filters": {
+      "label": "סינון משתמשים",
+      "search": "חיפוש משתמשים",
+      "searchPlaceholder": "חיפוש לפי שם, שם משתמש או אימייל",
+      "role": "תפקיד",
+      "status": "מצב",
+      "sort": "מיון משתמשים",
+      "allRoles": "כל התפקידים",
+      "allStatuses": "כל המצבים"
+    },
+    "sorts": {
+      "newest": "החדשים קודם",
+      "oldest": "הישנים קודם",
+      "usernameAsc": "שם משתמש א–ת",
+      "usernameDesc": "שם משתמש ת–א",
+      "emailAsc": "אימייל א–ת",
+      "emailDesc": "אימייל ת–א",
+      "storageDesc": "הכי הרבה אחסון בשימוש",
+      "storageAsc": "הכי מעט אחסון בשימוש"
+    },
+    "create": {
+      "open": "יצירת משתמש",
+      "title": "יצירת משתמש",
+      "firstName": "שם פרטי",
+      "lastName": "שם משפחה",
+      "username": "שם משתמש",
+      "email": "כתובת אימייל",
+      "role": "תפקיד",
+      "locale": "שפה",
+      "instanceLocale": "ברירת המחדל של המופע",
+      "password": "סיסמה זמנית",
+      "passwordHintLocal": "המשתמש נכנס עם הסיסמה הזו. שתפו אותה בערוץ מאובטח.",
+      "passwordHintSso": "אופציונלי. השאירו ריק כדי ליצור חשבון בלי סיסמה מקומית, לכניסה דרך ספק חיצוני.",
+      "requirePasswordChange": "לדרוש סיסמה חדשה בכניסה הראשונה",
+      "active": "החשבון פעיל",
+      "quota": "מכסת אחסון",
+      "quotaInherit": "ברירת המחדל של המופע",
+      "quotaCustom": "כמות מותאמת",
+      "quotaAmount": "מכסה",
+      "submit": "יצירת משתמש",
+      "created": "{{name}} נוצר.",
+      "view": "הצגת המשתמש"
+    }
+  },
+  "invites": {
+    "tableLabel": "הזמנות",
+    "columns": {
+      "email": "אימייל",
+      "role": "תפקיד",
+      "status": "מצב",
+      "createdBy": "נוצר על ידי",
+      "created": "נוצר",
+      "expires": "תוקף עד",
+      "lastSent": "נשלח לאחרונה",
+      "actions": "פעולות"
+    },
+    "status": {
+      "pending": "ממתינה",
+      "accepted": "התקבלה",
+      "revoked": "בוטלה",
+      "expired": "פגה"
+    },
+    "neverSent": "אף פעם",
+    "actions": {
+      "resend": "שליחה מחדש",
+      "revoke": "ביטול"
+    },
+    "filters": {
+      "status": "סינון הזמנות לפי מצב",
+      "allStatuses": "כל המצבים"
+    },
+    "notice": {
+      "resent": "אימייל ההזמנה הוכנס לתור השליחה.",
+      "revoked": "ההזמנה בוטלה."
+    },
+    "empty": {
+      "none": "עדיין אין הזמנות. הזמינו מישהו כדי לתת לו גישה.",
+      "filtered": "אין הזמנות במצב הזה."
+    },
+    "revoke": {
+      "title": "לבטל את ההזמנה?",
+      "description": "קישור ההזמנה עבור {{email}} יפסיק לעבוד מיד.",
+      "confirm": "ביטול ההזמנה"
+    },
+    "create": {
+      "open": "הזמנת משתמש",
+      "title": "הזמנת משתמש",
+      "email": "כתובת אימייל",
+      "role": "תפקיד",
+      "expiry": "בתוקף למשך",
+      "expiryHint": "השאירו ריק כדי להשתמש בתוקף ההזמנות של המופע.",
+      "sendEmail": "שליחת ההזמנה באימייל",
+      "sendEmailHint": "Palmr שולח את הקישור לכתובת שלמעלה.",
+      "sendEmailOff": "האימייל לא מוגדר, ולכן תקבלו קישור לשתף בעצמכם.",
+      "submit": "יצירת הזמנה"
+    },
+    "link": {
+      "title": "קישור הזמנה",
+      "description": "שלחו את הקישור לאדם שהזמנתם. כל מי שיש לו את הקישור יכול ליצור את החשבון.",
+      "label": "קישור הזמנה"
+    }
+  },
+  "detail": {
+    "back": "← כל המשתמשים",
+    "loading": "טוען משתמש…",
+    "notFound": "המשתמש לא נמצא",
+    "failed": "לא ניתן לטעון את המשתמש הזה",
+    "subtitle": "@{{username}} · {{email}}",
+    "inactiveNotice": "החשבון הזה מושבת. המשתמש לא יכול להיכנס עד שיופעל מחדש.",
+    "identity": {
+      "title": "זהות",
+      "description": "שם ושם משתמש. כתובת האימייל והתפקיד מנוהלים בנפרד.",
+      "firstName": "שם פרטי",
+      "lastName": "שם משפחה",
+      "username": "שם משתמש",
+      "memberSince": "חבר מאז {{date}}",
+      "save": "שמירת שינויים",
+      "saved": "הזהות נשמרה."
+    },
+    "email": {
+      "title": "כתובת אימייל",
+      "description": "שינוי כתובת דורש אימות. עד אז הכתובת הנוכחית ממשיכה לפעול.",
+      "current": "כתובת נוכחית",
+      "newLabel": "כתובת אימייל חדשה",
+      "hint": "קישור אימות נשלח לכתובת החדשה. שום דבר לא משתנה עד שהיא מאומתת.",
+      "request": "התחלת שינוי אימייל",
+      "resend": "שליחת אימות מחדש",
+      "cancel": "ביטול השינוי",
+      "pendingTitle": "ממתין לאימות של {{email}}",
+      "pendingDescription": "{{email}} נשארת הכתובת הפעילה עד שהכתובת החדשה תאומת.",
+      "notice": {
+        "requested": "האימות התבקש. הכתובת תשתנה רק לאחר האישור.",
+        "resent": "הודעת אימות חדשה הוכנסה לתור.",
+        "cancelled": "שינוי האימייל הממתין בוטל."
+      },
+      "cancelDialog": {
+        "title": "לבטל את השינוי הממתין?",
+        "description": "קישור האימות עבור {{email}} יפסיק לעבוד. הכתובת הנוכחית לא תשתנה.",
+        "confirm": "ביטול השינוי"
+      }
+    },
+    "account": {
+      "title": "חשבון ואבטחה",
+      "description": "תפקיד, מצב כניסה וזהויות מקושרות.",
+      "role": "תפקיד",
+      "roleSelect": "תפקיד חדש",
+      "roleSave": "שינוי תפקיד",
+      "status": "מצב",
+      "localPassword": "סיסמה",
+      "passwordLocal": "סיסמה מקומית מוגדרת",
+      "passwordSso": "אין סיסמה מקומית (SSO בלבד)",
+      "mustChange": "נדרש שינוי סיסמה",
+      "twoFactor": "אימות דו-שלבי",
+      "twoFactorOn": "פעיל",
+      "twoFactorOff": "כבוי",
+      "lockout": "נעילת כניסה",
+      "locked": "נעול",
+      "lockedUntil": "נעול עד {{date}}",
+      "notLocked": "לא נעול",
+      "unlock": "שחרור נעילה",
+      "lockoutCounters": "{{failed}} ניסיונות כושלים · {{locks}} נעילות עד כה",
+      "sessions": "הפעלות פעילות",
+      "trustedDevices": "מכשירים מהימנים",
+      "identityLinks": "זהויות מקושרות ({{links}})",
+      "linkState": {
+        "active": "פעילה",
+        "suspended": "מושעית"
+      },
+      "linkMethod": {
+        "auto_verified_email": "קושרה דרך אימייל מאומת",
+        "manual": "קושרה ידנית",
+        "auto_provision": "נוצרה בכניסה הראשונה"
+      },
+      "linkLastLogin": "כניסה אחרונה {{date}}",
+      "resetPassword": "איפוס סיסמה",
+      "noLocalPasswordHint": "החשבון הזה נכנס דרך ספק חיצוני ואין לו סיסמה מקומית לאיפוס.",
+      "notice": {
+        "roleChanged": "התפקיד שונה. המשתמש נותק מכל מקום.",
+        "unlocked": "הנעילה של החשבון שוחררה."
+      },
+      "roleDialog": {
+        "title": "לשנות את התפקיד של {{name}}?",
+        "description": "התפקיד החדש הוא {{role}}. שינוי התפקיד מנתק את המשתמש מכל ההפעלות.",
+        "confirm": "שינוי תפקיד"
+      },
+      "resetDialog": {
+        "title": "לאפס את הסיסמה של {{name}}?",
+        "description": "תיווצר סיסמה זמנית שתוצג פעם אחת. המשתמש ינותק מכל מקום ויצטרך לבחור סיסמה חדשה בכניסה הבאה.",
+        "confirm": "איפוס סיסמה"
+      },
+      "resetResult": {
+        "title": "סיסמה זמנית",
+        "description": "שתפו את הסיסמה הזו עם {{name}} בערוץ מאובטח. יהיה צורך לשנות אותה בכניסה.",
+        "label": "סיסמה זמנית"
+      }
+    },
+    "storage": {
+      "title": "אחסון ומכסה",
+      "description": "שימוש ב״הקבצים שלי״ וב״התקבלו״, והמכסה החלה על המשתמש הזה.",
+      "used": "אחסון בשימוש",
+      "effective": "מכסה בתוקף",
+      "instanceDefault": "ברירת המחדל של המופע",
+      "files": "קבצים",
+      "receivedFiles": "קבצים שהתקבלו",
+      "shares": "שיתופים",
+      "reverseShares": "שיתופים הפוכים",
+      "overrideTitle": "עקיפת מכסה",
+      "saved": "המכסה עודכנה.",
+      "belowUsage": {
+        "title": "המכסה הזו נמוכה מהאחסון שכבר בשימוש",
+        "description": "שום דבר לא נמחק. המשתמש לא יוכל להוסיף קבצים חדשים עד שהשימוש ירד מתחת למכסה."
+      },
+      "modes": {
+        "inherit": "שימוש בברירת המחדל של המופע ({{value}})",
+        "unlimited": "ללא הגבלה",
+        "bytes": "כמות מותאמת"
+      },
+      "amount": "מכסה",
+      "noBypass": "למנהלים אין פטור מהמכסה: אותן מגבלות חלות על כל החשבונות.",
+      "save": "שמירת מכסה"
+    },
+    "sessions": {
+      "title": "הפעלות",
+      "description": "המקומות שבהם המשתמש הזה מחובר כרגע.",
+      "none": "למשתמש הזה אין הפעלות פעילות.",
+      "listLabel": "הפעלות פעילות",
+      "more": "ועוד {{more}} הפעלות.",
+      "unknownDevice": "מכשיר לא ידוע",
+      "origin": {
+        "password": "סיסמה",
+        "external": "ספק חיצוני"
+      },
+      "ip": "IP {{ip}}",
+      "ipUnavailable": "כתובת IP לא זמינה",
+      "lastActive": "פעילות אחרונה {{date}}",
+      "signedIn": "כניסה {{date}}"
+    },
+    "danger": {
+      "title": "פעולות בעלות השפעה רבה",
+      "description": "הפעולות האלה נכנסות לתוקף מיד.",
+      "notice": {
+        "deactivated": "המשתמש הושבת ונותק מכל מקום.",
+        "activated": "המשתמש הופעל מחדש.",
+        "sessionsRevoked": "כל ההפעלות של המשתמש הזה נותקו."
+      },
+      "deactivate": {
+        "title": "השבתת המשתמש הזה",
+        "description": "מנתקת את המשתמש מכל מקום וחוסמת כניסה. קבצים ושיתופים נשמרים.",
+        "action": "השבתת משתמש",
+        "dialogTitle": "להשבית את {{name}}?",
+        "dialogDescription": "המשתמש יתנתק מכל מקום ולא יוכל להיכנס עד שתפעילו את החשבון מחדש.",
+        "confirm": "השבתה"
+      },
+      "activate": {
+        "title": "הפעלה מחדש של המשתמש הזה",
+        "description": "מאפשרת למשתמש להיכנס שוב. הפעלות שבוטלו קודם נשארות מבוטלות.",
+        "action": "הפעלה מחדש של משתמש"
+      },
+      "revoke": {
+        "title": "ניתוק מכל ההפעלות",
+        "description": "מסיימת כל הפעלה של המשתמש הזה. מכשירים מהימנים נשמרים.",
+        "action": "ניתוק מכל מקום",
+        "dialogTitle": "לנתק את {{name}} מכל מקום?",
+        "dialogDescription": "כל ההפעלות של המשתמש הזה יסתיימו מיד והוא יצטרך להיכנס מחדש.",
+        "confirm": "ניתוק מכל מקום"
+      }
+    }
+  },
+  "settings": {
+    "title": "אבטחה ומדיניות",
+    "description": "מדיניות לכל המופע. כל אזור נשמר בנפרד.",
+    "save": "שמירת שינויים",
+    "saved": "ההגדרות נשמרו.",
+    "errors": {
+      "belowFloor": "חייב להיות לפחות {{floor}}.",
+      "belowFloorUnknown": "הערך נמוך מהמינימום המותר.",
+      "aboveMax": "חייב להיות לכל היותר {{max}}.",
+      "invalid": "הערך אינו תקין.",
+      "requiredWhenEnabled": "חובה כל עוד התכונה הזו מופעלת."
+    },
+    "general": {
+      "title": "כללי",
+      "description": "שם המופע, שפת ברירת מחדל ומה שמבקרים רואים בכותרת התחתונה.",
+      "appName": "שם המופע",
+      "appDescription": "תיאור",
+      "defaultLocale": "שפת ברירת מחדל",
+      "thumbnailSourceLimit": "מגבלת מקור לתמונות ממוזערות",
+      "thumbnailSourceLimitHint": "התמונה הגדולה ביותר ש-Palmr יוצר לה תמונה ממוזערת.",
+      "thumbnailLimits": {
+        "64MiB": "64 MiB",
+        "128MiB": "128 MiB",
+        "256MiB": "256 MiB",
+        "512MiB": "512 MiB",
+        "unlimited": "ללא מגבלה"
+      },
+      "showVersion": "הצגת מספר הגרסה של Palmr",
+      "poweredByVisible": "הצגת ״Powered by Palmr״"
+    },
+    "security": {
+      "title": "כניסה והפעלות",
+      "description": "כללי סיסמה, נעילה, משך הפעלות ומדיניות אימות דו-שלבי.",
+      "groups": {
+        "passwords": "סיסמאות",
+        "signIn": "הגנת כניסה",
+        "sessions": "הפעלות",
+        "links": "קישורים והזמנות",
+        "twoFactor": "אימות דו-שלבי",
+        "trustedDevices": "מכשירים מהימנים"
+      },
+      "fields": {
+        "passwordMinLength": "אורך מינימלי של סיסמת חשבון",
+        "publicLinkPasswordMinLength": "אורך מינימלי של סיסמת קישור ציבורי",
+        "maxLoginAttempts": "כניסות כושלות לפני נעילה",
+        "loginLockoutMinutes": "משך הנעילה",
+        "sessionIdleDays": "זמן קצוב להפעלה לא פעילה",
+        "sessionAbsoluteDays": "משך הפעלה מרבי",
+        "recentAuthMinutes": "חלון אימות מחדש",
+        "passwordResetValidityMinutes": "תוקף קישור איפוס סיסמה",
+        "inviteValidityHours": "תוקף הזמנה כברירת מחדל",
+        "trustedDeviceDurationDays": "משך מכשיר מהימן",
+        "twoFactorRequired": "דרישת אימות דו-שלבי לחשבונות מקומיים",
+        "trustedDevicesEnabled": "אפשור מכשירים מהימנים"
+      },
+      "hints": {
+        "passwordMinLength": "חל על סיסמאות חדשות.",
+        "publicLinkPasswordMinLength": "חל על סיסמאות של שיתופים ושיתופים הפוכים.",
+        "maxLoginAttempts": "כשלונות רצופים לפני שהחשבון ננעל.",
+        "loginLockoutMinutes": "כמה זמן חשבון נעול נשאר נעול.",
+        "sessionIdleDays": "הפעלות מסתיימות אחרי פרק זמן כזה ללא פעילות.",
+        "sessionAbsoluteDays": "הפעלות מסתיימות אחרי פרק זמן כזה, לא משנה כמה הן פעילות.",
+        "recentAuthMinutes": "כמה זמן סיסמה שאושרה נחשבת תקפה לפעולות רגישות.",
+        "passwordResetValidityMinutes": "כמה זמן קישור איפוס שנשלח באימייל פועל.",
+        "inviteValidityHours": "בשימוש כשלהזמנה אין תפוגה משלה.",
+        "trustedDeviceDurationDays": "כמה זמן מכשיר מהימן מדלג על הגורם השני.",
+        "twoFactorRequired": "חשבונות מקומיים חייבים להגדיר זאת לפני שיוכלו להשתמש ב-Palmr.",
+        "trustedDevicesEnabled": "מאפשר לדלג על הגורם השני במכשירים שבהם בוטחים."
+      }
+    },
+    "quotas": {
+      "title": "מכסות",
+      "description": "מגבלות אחסון והעלאה. ללא הגבלה שונה מאפס.",
+      "fields": {
+        "defaultUserQuotaBytes": "מכסת אחסון ברירת מחדל למשתמש",
+        "maxFileSizeBytes": "גודל קובץ מרבי"
+      },
+      "hints": {
+        "defaultUserQuotaBytes": "חלה על משתמשים ללא עקיפה משלהם. אפס פירושו בלי אחסון בכלל.",
+        "maxFileSizeBytes": "הקובץ הבודד הגדול ביותר שאפשר להעלות. אפס חוסם כל העלאה."
+      }
+    },
+    "publicLinks": {
+      "title": "קישורים ציבוריים",
+      "description": "כמה זמן שיתופים ושיתופים הפוכים יכולים להישאר זמינים.",
+      "noMaximum": "ללא משך חיים מרבי",
+      "maxLifetime": "משך חיים מרבי של קישור",
+      "hint": "לא ניתן ליצור קישורים עם תפוגה רחוקה יותר."
+    }
+  },
+  "smtp": {
+    "pageTitle": "SMTP",
+    "pageDescription": "דואר יוצא להזמנות, איפוסי סיסמה והתראות.",
+    "title": "שרת דואר",
+    "description": "Palmr פועל גם בלי אימייל. תכונות שזקוקות לו נשארות לא זמינות עד שיוגדר.",
+    "enabledTag": "מופעל",
+    "disabledTag": "מושבת",
+    "fields": {
+      "enabled": "שליחת אימייל דרך השרת הזה",
+      "host": "מארח",
+      "port": "פורט",
+      "security": "אבטחת החיבור",
+      "noAuth": "השרת אינו דורש אימות",
+      "username": "שם משתמש",
+      "password": "סיסמה",
+      "passwordPlaceholder": "הזינו סיסמה חדשה כדי להחליף",
+      "fromName": "שם השולח",
+      "fromEmail": "כתובת השולח",
+      "allowSelfSigned": "אישור תעודה בחתימה עצמית",
+      "allowSelfSignedHint": "רק לשרתים שבשליטתכם. מחליש את בדיקת התעודות."
+    },
+    "security": {
+      "starttls": "STARTTLS",
+      "implicit": "TLS מרומז",
+      "none": "ללא"
+    },
+    "password": {
+      "configured": "הסיסמה מוגדרת",
+      "notConfigured": "אין סיסמה שמורה",
+      "willClear": "תוסר בעת השמירה",
+      "willReplace": "תוחלף בעת השמירה",
+      "clear": "ניקוי הסיסמה השמורה",
+      "undoClear": "שמירת הסיסמה השמורה",
+      "clearDialog": {
+        "title": "לנקות את הסיסמה השמורה?",
+        "description": "הסיסמה תוסר בעת השמירה. אימייל שדורש אימות יפסיק לעבוד עד שתזינו סיסמה חדשה.",
+        "confirm": "ניקוי הסיסמה"
+      }
+    },
+    "test": {
+      "title": "שליחת אימייל בדיקה",
+      "description": "בודק חיבור, TLS, כניסה ומסירה.",
+      "recipient": "שליחת הבדיקה אל",
+      "saved": "בדיקת ההגדרות השמורות",
+      "unsaved": "בדיקת הערכים הנוכחיים בטופס",
+      "unsavedHint": "בדיקת ערכי הטופס לא שומרת אותם ולעולם לא משתמשת בסיסמה השמורה. הזינו את הסיסמה למעלה אם השרת דורש אותה.",
+      "unsavedIncomplete": "הזינו מארח, פורט וכתובת שולח כדי לבדוק את ערכי הטופס.",
+      "mode": {
+        "saved": "ההגדרות השמורות",
+        "unsaved": "ערכי הטופס"
+      },
+      "stages": {
+        "connect": "התחברות",
+        "starttls": "התחלת TLS",
+        "auth": "אימות",
+        "send": "שליחת הודעה"
+      },
+      "stagesLabel": "שלבי הבדיקה",
+      "stageOk": "עבר",
+      "stageFailed": "נכשל",
+      "succeeded": "אימייל הבדיקה נשלח (בדיקה עם: {{mode}}).",
+      "incomplete": "הבדיקה לא הושלמה (בדיקה עם: {{mode}}).",
+      "duration": "הסתיים תוך {{ms}} אלפיות שנייה.",
+      "failedAt": "נעצר בשלב: {{stage}} (בדיקה עם: {{mode}})."
+    }
+  }
+}

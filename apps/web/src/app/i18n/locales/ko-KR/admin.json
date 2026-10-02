@@ -1,1 +1,541 @@
-{}
+{
+  "title": "관리",
+  "sections": {
+    "label": "관리 섹션",
+    "users": "사용자",
+    "security": "보안",
+    "smtp": "SMTP"
+  },
+  "common": {
+    "cancel": "취소",
+    "none": "없음",
+    "yes": "예",
+    "no": "아니요",
+    "retry": "다시 시도",
+    "unknown": "사용할 수 없음"
+  },
+  "roles": {
+    "admin": "관리자",
+    "user": "사용자"
+  },
+  "status": {
+    "active": "활성",
+    "inactive": "비활성"
+  },
+  "tags": {
+    "locked": "잠김",
+    "mustChangePassword": "비밀번호 변경 필요",
+    "ssoOnly": "SSO 전용",
+    "twoFactor": "2FA 사용 중"
+  },
+  "secret": {
+    "done": "완료",
+    "notShownAgain": "이 내용은 다시 표시되지 않습니다. 지금 복사해서 안전하게 보관하세요.",
+    "copy": "복사",
+    "copied": "클립보드에 복사했습니다.",
+    "copyFailed": "자동으로 복사하지 못했습니다. 텍스트를 선택해 직접 복사하세요."
+  },
+  "bytes": {
+    "unit": "단위"
+  },
+  "units": {
+    "characters": "자",
+    "attempts": "회",
+    "minutes": "분",
+    "hours": "시간",
+    "days": "일"
+  },
+  "quota": {
+    "unlimited": "무제한"
+  },
+  "storage": {
+    "usedOf": "{{quota}} 중 {{used}}",
+    "usedOfUnlimited": "{{used}} · 무제한",
+    "overQuota": "할당량 초과",
+    "usageLabel": "저장 공간 사용량"
+  },
+  "validation": {
+    "required": "필수 항목입니다.",
+    "email": "올바른 이메일 주소를 입력하세요.",
+    "integer": "정수를 입력하세요.",
+    "quota": "0부터 지원되는 최대 크기 사이의 값을 입력하세요.",
+    "invalid": "올바르지 않은 값입니다.",
+    "passwordTooShort": "{{minLength}}자 이상으로 입력하세요."
+  },
+  "pager": {
+    "showing": "{{shown}}개 표시 중",
+    "showingOf": "{{total}}개 중 {{shown}}개 표시 중",
+    "pageSize": "페이지당 행 수",
+    "perPage": "페이지당 {{size}}개",
+    "first": "첫 페이지",
+    "previous": "이전",
+    "next": "다음"
+  },
+  "users": {
+    "title": "사용자",
+    "description": "계정을 만들고, 액세스를 관리하고, 이 인스턴스의 저장 공간을 확인하세요.",
+    "views": {
+      "label": "사용자 또는 초대",
+      "users": "사용자",
+      "invites": "초대"
+    },
+    "tableLabel": "사용자",
+    "usernameLine": "@{{username}}",
+    "pendingEmail": "{{email}}(으)로 변경 대기 중",
+    "neverSignedIn": "없음",
+    "columns": {
+      "user": "사용자",
+      "role": "역할",
+      "status": "상태",
+      "security": "계정",
+      "storage": "저장 공간",
+      "lastSignIn": "마지막 로그인",
+      "actions": "작업"
+    },
+    "actions": {
+      "label": "{{name}} 작업",
+      "view": "상세 보기",
+      "activate": "다시 활성화",
+      "deactivate": "비활성화",
+      "unlock": "잠금 해제"
+    },
+    "deactivate": {
+      "title": "{{name}} 님을 비활성화할까요?",
+      "description": "모든 곳에서 로그아웃되며, 계정을 다시 활성화하기 전에는 로그인할 수 없습니다. 파일과 공유는 유지됩니다.",
+      "confirm": "비활성화"
+    },
+    "notice": {
+      "activated": "사용자를 다시 활성화했습니다.",
+      "deactivated": "사용자를 비활성화했습니다.",
+      "unlocked": "계정 잠금을 해제했습니다."
+    },
+    "empty": {
+      "filtered": "이 필터와 일치하는 사용자가 없습니다.",
+      "none": "아직 사용자가 없습니다.",
+      "clear": "필터 지우기"
+    },
+    "filters": {
+      "label": "사용자 필터",
+      "search": "사용자 검색",
+      "searchPlaceholder": "이름, 사용자 이름 또는 이메일로 검색",
+      "role": "역할",
+      "status": "상태",
+      "sort": "사용자 정렬",
+      "allRoles": "모든 역할",
+      "allStatuses": "모든 상태"
+    },
+    "sorts": {
+      "newest": "최신순",
+      "oldest": "오래된 순",
+      "usernameAsc": "사용자 이름 A–Z",
+      "usernameDesc": "사용자 이름 Z–A",
+      "emailAsc": "이메일 A–Z",
+      "emailDesc": "이메일 Z–A",
+      "storageDesc": "저장 공간 많이 사용한 순",
+      "storageAsc": "저장 공간 적게 사용한 순"
+    },
+    "create": {
+      "open": "사용자 만들기",
+      "title": "사용자 만들기",
+      "firstName": "이름",
+      "lastName": "성",
+      "username": "사용자 이름",
+      "email": "이메일 주소",
+      "role": "역할",
+      "locale": "언어",
+      "instanceLocale": "인스턴스 기본값",
+      "password": "임시 비밀번호",
+      "passwordHintLocal": "사용자는 이 비밀번호로 로그인합니다. 안전한 경로로 전달하세요.",
+      "passwordHintSso": "선택 사항입니다. 비워 두면 외부 제공자로 로그인하는, 로컬 비밀번호가 없는 계정이 만들어집니다.",
+      "requirePasswordChange": "첫 로그인 시 새 비밀번호 요구",
+      "active": "계정 활성화",
+      "quota": "저장 공간 할당량",
+      "quotaInherit": "인스턴스 기본값",
+      "quotaCustom": "직접 지정",
+      "quotaAmount": "할당량",
+      "submit": "사용자 만들기",
+      "created": "{{name}} 님을 만들었습니다.",
+      "view": "사용자 보기"
+    }
+  },
+  "invites": {
+    "tableLabel": "초대",
+    "columns": {
+      "email": "이메일",
+      "role": "역할",
+      "status": "상태",
+      "createdBy": "만든 사람",
+      "created": "생성일",
+      "expires": "만료",
+      "lastSent": "마지막 발송",
+      "actions": "작업"
+    },
+    "status": {
+      "pending": "대기 중",
+      "accepted": "수락됨",
+      "revoked": "취소됨",
+      "expired": "만료됨"
+    },
+    "neverSent": "없음",
+    "actions": {
+      "resend": "다시 보내기",
+      "revoke": "취소"
+    },
+    "filters": {
+      "status": "상태별로 초대 필터",
+      "allStatuses": "모든 상태"
+    },
+    "notice": {
+      "resent": "초대 이메일을 발송 대기열에 넣었습니다.",
+      "revoked": "초대를 취소했습니다."
+    },
+    "empty": {
+      "none": "아직 초대가 없습니다. 액세스를 부여하려면 누군가를 초대하세요.",
+      "filtered": "이 상태의 초대가 없습니다."
+    },
+    "revoke": {
+      "title": "이 초대를 취소할까요?",
+      "description": "{{email}}에 대한 초대 링크가 즉시 작동하지 않게 됩니다.",
+      "confirm": "초대 취소"
+    },
+    "create": {
+      "open": "사용자 초대",
+      "title": "사용자 초대",
+      "email": "이메일 주소",
+      "role": "역할",
+      "expiry": "유효 기간",
+      "expiryHint": "비워 두면 인스턴스의 초대 유효 기간을 사용합니다.",
+      "sendEmail": "이메일로 초대 보내기",
+      "sendEmailHint": "Palmr가 위 주소로 링크를 이메일로 보냅니다.",
+      "sendEmailOff": "이메일이 설정되어 있지 않으므로 직접 공유할 링크가 제공됩니다.",
+      "submit": "초대 만들기"
+    },
+    "link": {
+      "title": "초대 링크",
+      "description": "이 링크를 초대할 사람에게 보내세요. 링크가 있는 사람은 누구나 계정을 만들 수 있습니다.",
+      "label": "초대 링크"
+    }
+  },
+  "detail": {
+    "back": "← 모든 사용자",
+    "loading": "사용자 불러오는 중…",
+    "notFound": "사용자를 찾을 수 없습니다",
+    "failed": "이 사용자를 불러오지 못했습니다",
+    "subtitle": "@{{username}} · {{email}}",
+    "inactiveNotice": "이 계정은 비활성화되어 있습니다. 다시 활성화하기 전에는 사용자가 로그인할 수 없습니다.",
+    "identity": {
+      "title": "신원 정보",
+      "description": "이름과 사용자 이름입니다. 이메일 주소와 역할은 따로 관리합니다.",
+      "firstName": "이름",
+      "lastName": "성",
+      "username": "사용자 이름",
+      "memberSince": "{{date}}부터 회원",
+      "save": "변경 사항 저장",
+      "saved": "신원 정보를 저장했습니다."
+    },
+    "email": {
+      "title": "이메일 주소",
+      "description": "주소를 바꾸려면 인증이 필요합니다. 그때까지는 현재 주소가 계속 유효합니다.",
+      "current": "현재 주소",
+      "newLabel": "새 이메일 주소",
+      "hint": "새 주소로 인증 링크가 전송됩니다. 확인되기 전에는 아무것도 바뀌지 않습니다.",
+      "request": "이메일 변경 시작",
+      "resend": "인증 다시 보내기",
+      "cancel": "변경 취소",
+      "pendingTitle": "{{email}} 인증 대기 중",
+      "pendingDescription": "새 주소가 인증되기 전까지는 {{email}}이(가) 계속 사용 중인 주소입니다.",
+      "notice": {
+        "requested": "인증을 요청했습니다. 주소는 확인된 후에만 바뀝니다.",
+        "resent": "새 인증 메시지를 대기열에 넣었습니다.",
+        "cancelled": "대기 중인 이메일 변경을 취소했습니다."
+      },
+      "cancelDialog": {
+        "title": "대기 중인 변경을 취소할까요?",
+        "description": "{{email}}의 인증 링크가 작동하지 않게 됩니다. 현재 주소는 그대로 유지됩니다.",
+        "confirm": "변경 취소"
+      }
+    },
+    "account": {
+      "title": "계정 및 보안",
+      "description": "역할, 로그인 상태, 연결된 ID입니다.",
+      "role": "역할",
+      "roleSelect": "새 역할",
+      "roleSave": "역할 변경",
+      "status": "상태",
+      "localPassword": "비밀번호",
+      "passwordLocal": "로컬 비밀번호 설정됨",
+      "passwordSso": "로컬 비밀번호 없음(SSO 전용)",
+      "mustChange": "비밀번호 변경 필요",
+      "twoFactor": "2단계 인증",
+      "twoFactorOn": "켜짐",
+      "twoFactorOff": "꺼짐",
+      "lockout": "로그인 잠금",
+      "locked": "잠김",
+      "lockedUntil": "{{date}}까지 잠김",
+      "notLocked": "잠기지 않음",
+      "unlock": "잠금 해제",
+      "lockoutCounters": "실패 {{failed}}회 · 지금까지 잠금 {{locks}}회",
+      "sessions": "활성 세션",
+      "trustedDevices": "신뢰하는 기기",
+      "identityLinks": "연결된 ID ({{links}})",
+      "linkState": {
+        "active": "활성",
+        "suspended": "일시 중지"
+      },
+      "linkMethod": {
+        "auto_verified_email": "인증된 이메일로 연결",
+        "manual": "수동으로 연결",
+        "auto_provision": "첫 로그인 시 생성"
+      },
+      "linkLastLogin": "마지막 로그인 {{date}}",
+      "resetPassword": "비밀번호 재설정",
+      "noLocalPasswordHint": "이 계정은 외부 제공자로 로그인하며 재설정할 로컬 비밀번호가 없습니다.",
+      "notice": {
+        "roleChanged": "역할을 변경했습니다. 사용자가 모든 곳에서 로그아웃되었습니다.",
+        "unlocked": "계정 잠금을 해제했습니다."
+      },
+      "roleDialog": {
+        "title": "{{name}} 님의 역할을 변경할까요?",
+        "description": "새 역할은 {{role}}입니다. 역할을 변경하면 사용자가 모든 세션에서 로그아웃됩니다.",
+        "confirm": "역할 변경"
+      },
+      "resetDialog": {
+        "title": "{{name}} 님의 비밀번호를 재설정할까요?",
+        "description": "한 번만 표시되는 임시 비밀번호가 생성됩니다. 사용자는 모든 곳에서 로그아웃되며 다음 로그인 때 새 비밀번호를 정해야 합니다.",
+        "confirm": "비밀번호 재설정"
+      },
+      "resetResult": {
+        "title": "임시 비밀번호",
+        "description": "이 비밀번호를 안전한 경로로 {{name}} 님에게 전달하세요. 로그인할 때 변경해야 합니다.",
+        "label": "임시 비밀번호"
+      }
+    },
+    "storage": {
+      "title": "저장 공간 및 할당량",
+      "description": "내 파일과 받은 파일의 사용량, 그리고 이 사용자에게 적용되는 할당량입니다.",
+      "used": "사용 중인 저장 공간",
+      "effective": "적용 중인 할당량",
+      "instanceDefault": "인스턴스 기본값",
+      "files": "파일",
+      "receivedFiles": "받은 파일",
+      "shares": "공유",
+      "reverseShares": "역공유",
+      "overrideTitle": "할당량 재정의",
+      "saved": "할당량을 업데이트했습니다.",
+      "belowUsage": {
+        "title": "이 할당량은 이미 사용 중인 저장 공간보다 작습니다",
+        "description": "삭제되는 항목은 없습니다. 사용량이 할당량 아래로 내려가기 전까지 사용자는 새 파일을 추가할 수 없습니다."
+      },
+      "modes": {
+        "inherit": "인스턴스 기본값 사용({{value}})",
+        "unlimited": "무제한",
+        "bytes": "직접 지정"
+      },
+      "amount": "할당량",
+      "noBypass": "관리자에게도 할당량 예외는 없습니다. 모든 계정에 같은 한도가 적용됩니다.",
+      "save": "할당량 저장"
+    },
+    "sessions": {
+      "title": "세션",
+      "description": "이 사용자가 현재 로그인해 있는 곳입니다.",
+      "none": "이 사용자에게는 활성 세션이 없습니다.",
+      "listLabel": "활성 세션",
+      "more": "그 외 {{more}}개 세션.",
+      "unknownDevice": "알 수 없는 기기",
+      "origin": {
+        "password": "비밀번호",
+        "external": "외부 제공자"
+      },
+      "ip": "IP {{ip}}",
+      "ipUnavailable": "IP 사용 불가",
+      "lastActive": "마지막 활동 {{date}}",
+      "signedIn": "로그인 {{date}}"
+    },
+    "danger": {
+      "title": "영향이 큰 작업",
+      "description": "이 작업은 즉시 적용됩니다.",
+      "notice": {
+        "deactivated": "사용자를 비활성화하고 모든 곳에서 로그아웃했습니다.",
+        "activated": "사용자를 다시 활성화했습니다.",
+        "sessionsRevoked": "이 사용자의 모든 세션을 로그아웃했습니다."
+      },
+      "deactivate": {
+        "title": "이 사용자 비활성화",
+        "description": "사용자를 모든 곳에서 로그아웃하고 로그인을 막습니다. 파일과 공유는 유지됩니다.",
+        "action": "사용자 비활성화",
+        "dialogTitle": "{{name}} 님을 비활성화할까요?",
+        "dialogDescription": "모든 곳에서 로그아웃되며, 계정을 다시 활성화하기 전에는 로그인할 수 없습니다.",
+        "confirm": "비활성화"
+      },
+      "activate": {
+        "title": "이 사용자 다시 활성화",
+        "description": "사용자가 다시 로그인할 수 있게 합니다. 이전에 취소된 세션은 그대로 취소 상태입니다.",
+        "action": "사용자 다시 활성화"
+      },
+      "revoke": {
+        "title": "모든 세션에서 로그아웃",
+        "description": "이 사용자의 모든 세션을 종료합니다. 신뢰하는 기기는 유지됩니다.",
+        "action": "모든 곳에서 로그아웃",
+        "dialogTitle": "{{name}} 님을 모든 곳에서 로그아웃할까요?",
+        "dialogDescription": "이 사용자의 모든 세션이 즉시 종료되며 다시 로그인해야 합니다.",
+        "confirm": "모든 곳에서 로그아웃"
+      }
+    }
+  },
+  "settings": {
+    "title": "보안 및 정책",
+    "description": "인스턴스 전체에 적용되는 정책입니다. 각 섹션은 따로 저장됩니다.",
+    "save": "변경 사항 저장",
+    "saved": "설정을 저장했습니다.",
+    "errors": {
+      "belowFloor": "{{floor}} 이상이어야 합니다.",
+      "belowFloorUnknown": "허용되는 최솟값보다 작은 값입니다.",
+      "aboveMax": "{{max}} 이하여야 합니다.",
+      "invalid": "올바르지 않은 값입니다.",
+      "requiredWhenEnabled": "이 기능이 켜져 있는 동안에는 필수입니다."
+    },
+    "general": {
+      "title": "일반",
+      "description": "인스턴스 이름, 기본 언어, 방문자에게 푸터로 보이는 내용입니다.",
+      "appName": "인스턴스 이름",
+      "appDescription": "설명",
+      "defaultLocale": "기본 언어",
+      "thumbnailSourceLimit": "썸네일 원본 크기 제한",
+      "thumbnailSourceLimitHint": "Palmr가 썸네일을 생성하는 가장 큰 이미지입니다.",
+      "thumbnailLimits": {
+        "64MiB": "64 MiB",
+        "128MiB": "128 MiB",
+        "256MiB": "256 MiB",
+        "512MiB": "512 MiB",
+        "unlimited": "제한 없음"
+      },
+      "showVersion": "Palmr 버전 번호 표시",
+      "poweredByVisible": "“Powered by Palmr” 표시"
+    },
+    "security": {
+      "title": "로그인 및 세션",
+      "description": "비밀번호 규칙, 잠금, 세션 기간, 2단계 인증 정책입니다.",
+      "groups": {
+        "passwords": "비밀번호",
+        "signIn": "로그인 보호",
+        "sessions": "세션",
+        "links": "링크 및 초대",
+        "twoFactor": "2단계 인증",
+        "trustedDevices": "신뢰하는 기기"
+      },
+      "fields": {
+        "passwordMinLength": "계정 비밀번호 최소 길이",
+        "publicLinkPasswordMinLength": "공개 링크 비밀번호 최소 길이",
+        "maxLoginAttempts": "잠금 전 로그인 실패 횟수",
+        "loginLockoutMinutes": "잠금 시간",
+        "sessionIdleDays": "유휴 세션 시간 제한",
+        "sessionAbsoluteDays": "세션 최대 기간",
+        "recentAuthMinutes": "재인증 유효 시간",
+        "passwordResetValidityMinutes": "비밀번호 재설정 링크 유효 기간",
+        "inviteValidityHours": "기본 초대 유효 기간",
+        "trustedDeviceDurationDays": "신뢰하는 기기 유지 기간",
+        "twoFactorRequired": "로컬 계정에 2단계 인증 필수",
+        "trustedDevicesEnabled": "신뢰하는 기기 허용"
+      },
+      "hints": {
+        "passwordMinLength": "새 비밀번호에 적용됩니다.",
+        "publicLinkPasswordMinLength": "공유와 역공유의 비밀번호에 적용됩니다.",
+        "maxLoginAttempts": "계정이 잠기기 전까지 연속으로 실패할 수 있는 횟수입니다.",
+        "loginLockoutMinutes": "잠긴 계정이 잠금 상태로 유지되는 시간입니다.",
+        "sessionIdleDays": "이 기간 동안 활동이 없으면 세션이 종료됩니다.",
+        "sessionAbsoluteDays": "활동 여부와 관계없이 이 기간이 지나면 세션이 종료됩니다.",
+        "recentAuthMinutes": "확인한 비밀번호가 민감한 작업에 유효한 시간입니다.",
+        "passwordResetValidityMinutes": "이메일로 보낸 재설정 링크가 작동하는 시간입니다.",
+        "inviteValidityHours": "초대에 자체 만료가 없을 때 사용됩니다.",
+        "trustedDeviceDurationDays": "신뢰하는 기기가 두 번째 인증 단계를 건너뛰는 기간입니다.",
+        "twoFactorRequired": "로컬 계정은 Palmr를 사용하기 전에 먼저 설정해야 합니다.",
+        "trustedDevicesEnabled": "신뢰하는 기기에서 두 번째 인증 단계를 건너뛸 수 있습니다."
+      }
+    },
+    "quotas": {
+      "title": "할당량",
+      "description": "저장 공간과 업로드 한도입니다. 무제한과 0은 다릅니다.",
+      "fields": {
+        "defaultUserQuotaBytes": "사용자별 기본 저장 공간 할당량",
+        "maxFileSizeBytes": "최대 파일 크기"
+      },
+      "hints": {
+        "defaultUserQuotaBytes": "별도 재정의가 없는 사용자에게 적용됩니다. 0은 저장 공간이 전혀 없음을 뜻합니다.",
+        "maxFileSizeBytes": "업로드할 수 있는 단일 파일의 최대 크기입니다. 0이면 모든 업로드가 차단됩니다."
+      }
+    },
+    "publicLinks": {
+      "title": "공개 링크",
+      "description": "공유와 역공유를 얼마나 오래 유지할 수 있는지 설정합니다.",
+      "noMaximum": "최대 수명 없음",
+      "maxLifetime": "링크 최대 수명",
+      "hint": "더 긴 만료 기간으로는 링크를 만들 수 없습니다."
+    }
+  },
+  "smtp": {
+    "pageTitle": "SMTP",
+    "pageDescription": "초대, 비밀번호 재설정, 알림을 위한 발신 이메일입니다.",
+    "title": "메일 서버",
+    "description": "Palmr는 이메일 없이도 동작합니다. 이메일이 필요한 기능은 설정하기 전까지 사용할 수 없습니다.",
+    "enabledTag": "사용 중",
+    "disabledTag": "사용 안 함",
+    "fields": {
+      "enabled": "이 서버로 이메일 보내기",
+      "host": "호스트",
+      "port": "포트",
+      "security": "연결 보안",
+      "noAuth": "서버에서 인증이 필요하지 않음",
+      "username": "사용자 이름",
+      "password": "비밀번호",
+      "passwordPlaceholder": "교체하려면 새 비밀번호를 입력하세요",
+      "fromName": "보내는 사람 이름",
+      "fromEmail": "보내는 사람 주소",
+      "allowSelfSigned": "자체 서명 인증서 허용",
+      "allowSelfSignedHint": "직접 관리하는 서버에서만 사용하세요. 인증서 검증이 약해집니다."
+    },
+    "security": {
+      "starttls": "STARTTLS",
+      "implicit": "암시적 TLS",
+      "none": "없음"
+    },
+    "password": {
+      "configured": "비밀번호 설정됨",
+      "notConfigured": "저장된 비밀번호 없음",
+      "willClear": "저장하면 삭제됩니다",
+      "willReplace": "저장하면 교체됩니다",
+      "clear": "저장된 비밀번호 지우기",
+      "undoClear": "저장된 비밀번호 유지",
+      "clearDialog": {
+        "title": "저장된 비밀번호를 지울까요?",
+        "description": "저장하면 비밀번호가 삭제됩니다. 인증이 필요한 이메일은 새 비밀번호를 입력하기 전까지 작동하지 않습니다.",
+        "confirm": "비밀번호 지우기"
+      }
+    },
+    "test": {
+      "title": "테스트 이메일 보내기",
+      "description": "연결, TLS, 로그인, 전달을 확인합니다.",
+      "recipient": "테스트를 보낼 주소",
+      "saved": "저장된 설정 테스트",
+      "unsaved": "현재 양식 값 테스트",
+      "unsavedHint": "양식 값을 테스트해도 저장되지 않으며 저장된 비밀번호는 사용되지 않습니다. 서버가 요구한다면 위에 비밀번호를 입력하세요.",
+      "unsavedIncomplete": "양식 값을 테스트하려면 호스트, 포트, 보내는 사람 주소를 입력하세요.",
+      "mode": {
+        "saved": "저장된 설정",
+        "unsaved": "양식 값"
+      },
+      "stages": {
+        "connect": "연결",
+        "starttls": "TLS 시작",
+        "auth": "인증",
+        "send": "메시지 전송"
+      },
+      "stagesLabel": "테스트 단계",
+      "stageOk": "통과",
+      "stageFailed": "실패",
+      "succeeded": "테스트 이메일을 보냈습니다(테스트 대상: {{mode}}).",
+      "incomplete": "테스트가 완료되지 않았습니다(테스트 대상: {{mode}}).",
+      "duration": "{{ms}}ms 만에 완료했습니다.",
+      "failedAt": "다음 단계에서 중단됨: {{stage}}(테스트 대상: {{mode}})."
+    }
+  }
+}

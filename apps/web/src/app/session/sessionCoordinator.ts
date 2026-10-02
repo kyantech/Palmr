@@ -20,7 +20,13 @@ export interface SessionCoordinator {
   connect: (router: SessionRouter) => () => void;
 }
 
-const AUTH_ROUTES: readonly string[] = [PATHS.login, PATHS.setup, "/reset-password", "/invite"];
+const AUTH_ROUTES: readonly string[] = [
+  PATHS.login,
+  PATHS.setup,
+  "/reset-password",
+  "/invite",
+  "/verify-email",
+];
 
 function isAuthRoute(pathname: string): boolean {
   return AUTH_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
@@ -54,6 +60,12 @@ function purgeAuthenticatedQueries(client: QueryClient) {
       unsubscribe();
     }
   });
+}
+
+export function purgeSignedOutState(client: QueryClient): void {
+  discardRecentAuthChallenge();
+  clearMfaChallenge();
+  purgeAuthenticatedQueries(client);
 }
 
 export function signOutLocally(client: QueryClient): boolean {

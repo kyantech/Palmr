@@ -1642,12 +1642,17 @@ fn it_openapi_admin_user_read_routes_declare_closed_typed_contracts() {
     assert_eq!(
         detail_extras["required"],
         json!([
+            "quotaOverrideMode",
             "overQuota",
             "sessionCount",
             "trustedDeviceCount",
             "lockout",
             "identityLinks"
         ])
+    );
+    assert_eq!(
+        schemas["QuotaOverrideModeName"]["enum"],
+        json!(["inherit", "unlimited", "bytes"])
     );
     let serialized = serde_json::to_string(&document).unwrap();
     for forbidden in [

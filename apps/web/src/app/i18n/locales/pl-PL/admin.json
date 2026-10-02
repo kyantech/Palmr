@@ -1,1 +1,541 @@
-{}
+{
+  "title": "Administracja",
+  "sections": {
+    "label": "Sekcje administracji",
+    "users": "Użytkownicy",
+    "security": "Bezpieczeństwo",
+    "smtp": "SMTP"
+  },
+  "common": {
+    "cancel": "Anuluj",
+    "none": "Brak",
+    "yes": "Tak",
+    "no": "Nie",
+    "retry": "Spróbuj ponownie",
+    "unknown": "Niedostępne"
+  },
+  "roles": {
+    "admin": "Administrator",
+    "user": "Użytkownik"
+  },
+  "status": {
+    "active": "Aktywny",
+    "inactive": "Nieaktywny"
+  },
+  "tags": {
+    "locked": "Zablokowane",
+    "mustChangePassword": "Musi zmienić hasło",
+    "ssoOnly": "Tylko SSO",
+    "twoFactor": "2FA włączone"
+  },
+  "secret": {
+    "done": "Gotowe",
+    "notShownAgain": "To nie zostanie pokazane ponownie. Skopiuj to teraz i przechowuj w bezpiecznym miejscu.",
+    "copy": "Kopiuj",
+    "copied": "Skopiowano do schowka.",
+    "copyFailed": "Nie udało się skopiować automatycznie. Zaznacz tekst i skopiuj go ręcznie."
+  },
+  "bytes": {
+    "unit": "Jednostka"
+  },
+  "units": {
+    "characters": "znaków",
+    "attempts": "prób",
+    "minutes": "minut",
+    "hours": "godzin",
+    "days": "dni"
+  },
+  "quota": {
+    "unlimited": "Bez limitu"
+  },
+  "storage": {
+    "usedOf": "{{used}} z {{quota}}",
+    "usedOfUnlimited": "{{used}} · Bez limitu",
+    "overQuota": "Przekroczony limit",
+    "usageLabel": "Wykorzystanie miejsca"
+  },
+  "validation": {
+    "required": "To pole jest wymagane.",
+    "email": "Podaj prawidłowy adres e-mail.",
+    "integer": "Podaj liczbę całkowitą.",
+    "quota": "Podaj wartość od 0 do maksymalnego obsługiwanego rozmiaru.",
+    "invalid": "Ta wartość jest nieprawidłowa.",
+    "passwordTooShort": "Użyj co najmniej {{minLength}} znaków."
+  },
+  "pager": {
+    "showing": "Pokazano {{shown}}",
+    "showingOf": "Pokazano {{shown}} z {{total}}",
+    "pageSize": "Wierszy na stronę",
+    "perPage": "{{size}} na stronę",
+    "first": "Pierwsza strona",
+    "previous": "Poprzednia",
+    "next": "Następna"
+  },
+  "users": {
+    "title": "Użytkownicy",
+    "description": "Twórz konta, zarządzaj dostępem i sprawdzaj wykorzystanie miejsca w tej instancji.",
+    "views": {
+      "label": "Użytkownicy lub zaproszenia",
+      "users": "Użytkownicy",
+      "invites": "Zaproszenia"
+    },
+    "tableLabel": "Użytkownicy",
+    "usernameLine": "@{{username}}",
+    "pendingEmail": "Oczekująca zmiana na {{email}}",
+    "neverSignedIn": "Nigdy",
+    "columns": {
+      "user": "Użytkownik",
+      "role": "Rola",
+      "status": "Status",
+      "security": "Konto",
+      "storage": "Miejsce",
+      "lastSignIn": "Ostatnie logowanie",
+      "actions": "Akcje"
+    },
+    "actions": {
+      "label": "Akcje dla {{name}}",
+      "view": "Pokaż szczegóły",
+      "activate": "Aktywuj ponownie",
+      "deactivate": "Dezaktywuj",
+      "unlock": "Odblokuj"
+    },
+    "deactivate": {
+      "title": "Dezaktywować {{name}}?",
+      "description": "Osoba zostanie wylogowana wszędzie i nie zaloguje się, dopóki nie aktywujesz konta ponownie. Pliki i udostępnienia zostają zachowane.",
+      "confirm": "Dezaktywuj"
+    },
+    "notice": {
+      "activated": "Użytkownik został aktywowany ponownie.",
+      "deactivated": "Użytkownik został dezaktywowany.",
+      "unlocked": "Konto zostało odblokowane."
+    },
+    "empty": {
+      "filtered": "Żaden użytkownik nie pasuje do tych filtrów.",
+      "none": "Nie ma jeszcze użytkowników.",
+      "clear": "Wyczyść filtry"
+    },
+    "filters": {
+      "label": "Filtruj użytkowników",
+      "search": "Szukaj użytkowników",
+      "searchPlaceholder": "Szukaj według imienia, nazwy użytkownika lub e-maila",
+      "role": "Rola",
+      "status": "Status",
+      "sort": "Sortuj użytkowników",
+      "allRoles": "Wszystkie role",
+      "allStatuses": "Wszystkie statusy"
+    },
+    "sorts": {
+      "newest": "Najnowsi najpierw",
+      "oldest": "Najstarsi najpierw",
+      "usernameAsc": "Nazwa użytkownika A–Z",
+      "usernameDesc": "Nazwa użytkownika Z–A",
+      "emailAsc": "E-mail A–Z",
+      "emailDesc": "E-mail Z–A",
+      "storageDesc": "Największe zużycie miejsca",
+      "storageAsc": "Najmniejsze zużycie miejsca"
+    },
+    "create": {
+      "open": "Utwórz użytkownika",
+      "title": "Utwórz użytkownika",
+      "firstName": "Imię",
+      "lastName": "Nazwisko",
+      "username": "Nazwa użytkownika",
+      "email": "Adres e-mail",
+      "role": "Rola",
+      "locale": "Język",
+      "instanceLocale": "Domyślny dla instancji",
+      "password": "Hasło tymczasowe",
+      "passwordHintLocal": "Użytkownik loguje się tym hasłem. Przekaż je bezpiecznym kanałem.",
+      "passwordHintSso": "Opcjonalne. Zostaw puste, aby utworzyć konto bez lokalnego hasła, do logowania przez zewnętrznego dostawcę.",
+      "requirePasswordChange": "Wymagaj nowego hasła przy pierwszym logowaniu",
+      "active": "Konto jest aktywne",
+      "quota": "Limit miejsca",
+      "quotaInherit": "Domyślny dla instancji",
+      "quotaCustom": "Własna wartość",
+      "quotaAmount": "Limit",
+      "submit": "Utwórz użytkownika",
+      "created": "Użytkownik {{name}} został utworzony.",
+      "view": "Pokaż użytkownika"
+    }
+  },
+  "invites": {
+    "tableLabel": "Zaproszenia",
+    "columns": {
+      "email": "E-mail",
+      "role": "Rola",
+      "status": "Status",
+      "createdBy": "Utworzył(a)",
+      "created": "Utworzono",
+      "expires": "Wygasa",
+      "lastSent": "Ostatnio wysłano",
+      "actions": "Akcje"
+    },
+    "status": {
+      "pending": "Oczekuje",
+      "accepted": "Przyjęte",
+      "revoked": "Odwołane",
+      "expired": "Wygasłe"
+    },
+    "neverSent": "Nigdy",
+    "actions": {
+      "resend": "Wyślij ponownie",
+      "revoke": "Odwołaj"
+    },
+    "filters": {
+      "status": "Filtruj zaproszenia według statusu",
+      "allStatuses": "Wszystkie statusy"
+    },
+    "notice": {
+      "resent": "E-mail z zaproszeniem został dodany do kolejki wysyłki.",
+      "revoked": "Zaproszenie zostało odwołane."
+    },
+    "empty": {
+      "none": "Brak zaproszeń. Zaproś kogoś, aby dać mu dostęp.",
+      "filtered": "Żadne zaproszenie nie ma tego statusu."
+    },
+    "revoke": {
+      "title": "Odwołać to zaproszenie?",
+      "description": "Link z zaproszeniem dla {{email}} natychmiast przestanie działać.",
+      "confirm": "Odwołaj zaproszenie"
+    },
+    "create": {
+      "open": "Zaproś użytkownika",
+      "title": "Zaproś użytkownika",
+      "email": "Adres e-mail",
+      "role": "Rola",
+      "expiry": "Ważne przez",
+      "expiryHint": "Zostaw puste, aby użyć domyślnej ważności zaproszeń w instancji.",
+      "sendEmail": "Wyślij zaproszenie e-mailem",
+      "sendEmailHint": "Palmr wyśle link na powyższy adres.",
+      "sendEmailOff": "E-mail nie jest skonfigurowany, więc otrzymasz link do samodzielnego przekazania.",
+      "submit": "Utwórz zaproszenie"
+    },
+    "link": {
+      "title": "Link z zaproszeniem",
+      "description": "Wyślij ten link osobie, którą zapraszasz. Każdy, kto go ma, może utworzyć konto.",
+      "label": "Link z zaproszeniem"
+    }
+  },
+  "detail": {
+    "back": "← Wszyscy użytkownicy",
+    "loading": "Wczytywanie użytkownika…",
+    "notFound": "Nie znaleziono użytkownika",
+    "failed": "Nie można wczytać tego użytkownika",
+    "subtitle": "@{{username}} · {{email}}",
+    "inactiveNotice": "To konto jest dezaktywowane. Użytkownik nie może się zalogować, dopóki nie zostanie aktywowane ponownie.",
+    "identity": {
+      "title": "Tożsamość",
+      "description": "Imię, nazwisko i nazwa użytkownika. Adres e-mail i rola są zarządzane osobno.",
+      "firstName": "Imię",
+      "lastName": "Nazwisko",
+      "username": "Nazwa użytkownika",
+      "memberSince": "Członek od {{date}}",
+      "save": "Zapisz zmiany",
+      "saved": "Tożsamość zapisana."
+    },
+    "email": {
+      "title": "Adres e-mail",
+      "description": "Zmiana adresu wymaga weryfikacji. Do tego czasu obecny adres nadal działa.",
+      "current": "Obecny adres",
+      "newLabel": "Nowy adres e-mail",
+      "hint": "Na nowy adres wysyłany jest link weryfikacyjny. Nic się nie zmienia, dopóki nie zostanie potwierdzony.",
+      "request": "Rozpocznij zmianę e-maila",
+      "resend": "Wyślij weryfikację ponownie",
+      "cancel": "Anuluj zmianę",
+      "pendingTitle": "Oczekiwanie na weryfikację {{email}}",
+      "pendingDescription": "{{email}} pozostaje aktywnym adresem, dopóki nowy nie zostanie zweryfikowany.",
+      "notice": {
+        "requested": "Zażądano weryfikacji. Adres zmieni się dopiero po potwierdzeniu.",
+        "resent": "Nowa wiadomość weryfikacyjna została dodana do kolejki.",
+        "cancelled": "Oczekująca zmiana e-maila została anulowana."
+      },
+      "cancelDialog": {
+        "title": "Anulować oczekującą zmianę?",
+        "description": "Link weryfikacyjny dla {{email}} przestanie działać. Obecny adres pozostaje bez zmian.",
+        "confirm": "Anuluj zmianę"
+      }
+    },
+    "account": {
+      "title": "Konto i bezpieczeństwo",
+      "description": "Rola, stan logowania i powiązane tożsamości.",
+      "role": "Rola",
+      "roleSelect": "Nowa rola",
+      "roleSave": "Zmień rolę",
+      "status": "Status",
+      "localPassword": "Hasło",
+      "passwordLocal": "Ustawiono lokalne hasło",
+      "passwordSso": "Brak lokalnego hasła (tylko SSO)",
+      "mustChange": "Musi zmienić hasło",
+      "twoFactor": "Uwierzytelnianie dwuskładnikowe",
+      "twoFactorOn": "Włączone",
+      "twoFactorOff": "Wyłączone",
+      "lockout": "Blokada logowania",
+      "locked": "Zablokowane",
+      "lockedUntil": "Zablokowane do {{date}}",
+      "notLocked": "Niezablokowane",
+      "unlock": "Odblokuj",
+      "lockoutCounters": "{{failed}} nieudanych prób · dotychczas blokad: {{locks}}",
+      "sessions": "Aktywne sesje",
+      "trustedDevices": "Zaufane urządzenia",
+      "identityLinks": "Powiązane tożsamości ({{links}})",
+      "linkState": {
+        "active": "Aktywne",
+        "suspended": "Wstrzymane"
+      },
+      "linkMethod": {
+        "auto_verified_email": "Powiązane przez zweryfikowany e-mail",
+        "manual": "Powiązane ręcznie",
+        "auto_provision": "Utworzone przy pierwszym logowaniu"
+      },
+      "linkLastLogin": "ostatnie logowanie {{date}}",
+      "resetPassword": "Zresetuj hasło",
+      "noLocalPasswordHint": "To konto loguje się przez zewnętrznego dostawcę i nie ma lokalnego hasła do zresetowania.",
+      "notice": {
+        "roleChanged": "Rola została zmieniona. Użytkownik został wylogowany wszędzie.",
+        "unlocked": "Konto zostało odblokowane."
+      },
+      "roleDialog": {
+        "title": "Zmienić rolę użytkownika {{name}}?",
+        "description": "Nowa rola to {{role}}. Zmiana roli wylogowuje użytkownika ze wszystkich sesji.",
+        "confirm": "Zmień rolę"
+      },
+      "resetDialog": {
+        "title": "Zresetować hasło użytkownika {{name}}?",
+        "description": "Zostanie wygenerowane hasło tymczasowe, pokazane tylko raz. Użytkownik zostanie wylogowany wszędzie i przy następnym logowaniu będzie musiał wybrać nowe hasło.",
+        "confirm": "Zresetuj hasło"
+      },
+      "resetResult": {
+        "title": "Hasło tymczasowe",
+        "description": "Przekaż to hasło użytkownikowi {{name}} bezpiecznym kanałem. Trzeba będzie je zmienić przy logowaniu.",
+        "label": "Hasło tymczasowe"
+      }
+    },
+    "storage": {
+      "title": "Miejsce i limit",
+      "description": "Wykorzystanie w Moich plikach i Odebranych oraz limit obowiązujący tego użytkownika.",
+      "used": "Zajęte miejsce",
+      "effective": "Obowiązujący limit",
+      "instanceDefault": "Domyślny dla instancji",
+      "files": "Pliki",
+      "receivedFiles": "Odebrane pliki",
+      "shares": "Udostępnienia",
+      "reverseShares": "Odwrotne udostępnienia",
+      "overrideTitle": "Własny limit",
+      "saved": "Limit został zaktualizowany.",
+      "belowUsage": {
+        "title": "Ten limit jest niższy niż już zajęte miejsce",
+        "description": "Nic nie jest usuwane. Użytkownik nie doda nowych plików, dopóki zajęcie nie spadnie poniżej limitu."
+      },
+      "modes": {
+        "inherit": "Użyj domyślnego dla instancji ({{value}})",
+        "unlimited": "Bez limitu",
+        "bytes": "Własna wartość"
+      },
+      "amount": "Limit",
+      "noBypass": "Administratorzy nie mają wyjątku od limitu: te same ograniczenia dotyczą wszystkich kont.",
+      "save": "Zapisz limit"
+    },
+    "sessions": {
+      "title": "Sesje",
+      "description": "Gdzie ten użytkownik jest obecnie zalogowany.",
+      "none": "Ten użytkownik nie ma aktywnych sesji.",
+      "listLabel": "Aktywne sesje",
+      "more": "Oraz {{more}} kolejnych sesji.",
+      "unknownDevice": "Nieznane urządzenie",
+      "origin": {
+        "password": "Hasło",
+        "external": "Zewnętrzny dostawca"
+      },
+      "ip": "IP {{ip}}",
+      "ipUnavailable": "IP niedostępne",
+      "lastActive": "Ostatnia aktywność {{date}}",
+      "signedIn": "Zalogowano {{date}}"
+    },
+    "danger": {
+      "title": "Akcje o dużym wpływie",
+      "description": "Te akcje działają natychmiast.",
+      "notice": {
+        "deactivated": "Użytkownik został dezaktywowany i wylogowany wszędzie.",
+        "activated": "Użytkownik został aktywowany ponownie.",
+        "sessionsRevoked": "Wszystkie sesje tego użytkownika zostały zakończone."
+      },
+      "deactivate": {
+        "title": "Dezaktywuj tego użytkownika",
+        "description": "Wylogowuje użytkownika wszędzie i blokuje logowanie. Pliki i udostępnienia zostają zachowane.",
+        "action": "Dezaktywuj użytkownika",
+        "dialogTitle": "Dezaktywować {{name}}?",
+        "dialogDescription": "Osoba zostanie wylogowana wszędzie i nie zaloguje się, dopóki nie aktywujesz konta ponownie.",
+        "confirm": "Dezaktywuj"
+      },
+      "activate": {
+        "title": "Aktywuj tego użytkownika ponownie",
+        "description": "Pozwala użytkownikowi znów się zalogować. Wcześniej zakończone sesje pozostają zakończone.",
+        "action": "Aktywuj użytkownika ponownie"
+      },
+      "revoke": {
+        "title": "Wyloguj ze wszystkich sesji",
+        "description": "Kończy każdą sesję tego użytkownika. Zaufane urządzenia zostają zachowane.",
+        "action": "Wyloguj wszędzie",
+        "dialogTitle": "Wylogować użytkownika {{name}} wszędzie?",
+        "dialogDescription": "Każda sesja tego użytkownika zakończy się natychmiast i będzie musiał zalogować się ponownie.",
+        "confirm": "Wyloguj wszędzie"
+      }
+    }
+  },
+  "settings": {
+    "title": "Bezpieczeństwo i zasady",
+    "description": "Zasady dla całej instancji. Każda sekcja zapisuje się osobno.",
+    "save": "Zapisz zmiany",
+    "saved": "Ustawienia zapisane.",
+    "errors": {
+      "belowFloor": "Musi wynosić co najmniej {{floor}}.",
+      "belowFloorUnknown": "Ta wartość jest poniżej dozwolonego minimum.",
+      "aboveMax": "Może wynosić co najwyżej {{max}}.",
+      "invalid": "Ta wartość jest nieprawidłowa.",
+      "requiredWhenEnabled": "Wymagane, gdy ta funkcja jest włączona."
+    },
+    "general": {
+      "title": "Ogólne",
+      "description": "Nazwa instancji, język domyślny i to, co odwiedzający widzą w stopce.",
+      "appName": "Nazwa instancji",
+      "appDescription": "Opis",
+      "defaultLocale": "Język domyślny",
+      "thumbnailSourceLimit": "Limit źródła miniatur",
+      "thumbnailSourceLimitHint": "Największy obraz, dla którego Palmr tworzy miniaturę.",
+      "thumbnailLimits": {
+        "64MiB": "64 MiB",
+        "128MiB": "128 MiB",
+        "256MiB": "256 MiB",
+        "512MiB": "512 MiB",
+        "unlimited": "Bez limitu"
+      },
+      "showVersion": "Pokazuj numer wersji Palmr",
+      "poweredByVisible": "Pokazuj „Powered by Palmr”"
+    },
+    "security": {
+      "title": "Logowanie i sesje",
+      "description": "Zasady haseł, blokady, czas trwania sesji i polityka uwierzytelniania dwuskładnikowego.",
+      "groups": {
+        "passwords": "Hasła",
+        "signIn": "Ochrona logowania",
+        "sessions": "Sesje",
+        "links": "Linki i zaproszenia",
+        "twoFactor": "Uwierzytelnianie dwuskładnikowe",
+        "trustedDevices": "Zaufane urządzenia"
+      },
+      "fields": {
+        "passwordMinLength": "Minimalna długość hasła do konta",
+        "publicLinkPasswordMinLength": "Minimalna długość hasła do linków publicznych",
+        "maxLoginAttempts": "Nieudane logowania przed blokadą",
+        "loginLockoutMinutes": "Czas trwania blokady",
+        "sessionIdleDays": "Limit bezczynności sesji",
+        "sessionAbsoluteDays": "Maksymalny czas trwania sesji",
+        "recentAuthMinutes": "Okno ponownego potwierdzenia",
+        "passwordResetValidityMinutes": "Ważność linku do resetu hasła",
+        "inviteValidityHours": "Domyślna ważność zaproszeń",
+        "trustedDeviceDurationDays": "Czas zaufania urządzenia",
+        "twoFactorRequired": "Wymagaj uwierzytelniania dwuskładnikowego dla kont lokalnych",
+        "trustedDevicesEnabled": "Zezwalaj na zaufane urządzenia"
+      },
+      "hints": {
+        "passwordMinLength": "Dotyczy nowych haseł.",
+        "publicLinkPasswordMinLength": "Dotyczy haseł udostępnień i odwrotnych udostępnień.",
+        "maxLoginAttempts": "Kolejne niepowodzenia, po których konto zostaje zablokowane.",
+        "loginLockoutMinutes": "Jak długo zablokowane konto pozostaje zablokowane.",
+        "sessionIdleDays": "Sesje kończą się po tak długiej bezczynności.",
+        "sessionAbsoluteDays": "Sesje kończą się po tym czasie, niezależnie od aktywności.",
+        "recentAuthMinutes": "Jak długo potwierdzone hasło liczy się przy wrażliwych akcjach.",
+        "passwordResetValidityMinutes": "Jak długo działa link do resetu wysłany e-mailem.",
+        "inviteValidityHours": "Używane, gdy zaproszenie nie ma własnego terminu ważności.",
+        "trustedDeviceDurationDays": "Jak długo zaufane urządzenie pomija drugi składnik.",
+        "twoFactorRequired": "Konta lokalne muszą to skonfigurować, zanim będą mogły korzystać z Palmr.",
+        "trustedDevicesEnabled": "Pozwala pomijać drugi składnik na urządzeniach, którym ufasz."
+      }
+    },
+    "quotas": {
+      "title": "Limity",
+      "description": "Limity miejsca i przesyłania. Bez limitu to nie to samo co zero.",
+      "fields": {
+        "defaultUserQuotaBytes": "Domyślny limit miejsca na użytkownika",
+        "maxFileSizeBytes": "Maksymalny rozmiar pliku"
+      },
+      "hints": {
+        "defaultUserQuotaBytes": "Dotyczy użytkowników bez własnego limitu. Zero oznacza brak miejsca.",
+        "maxFileSizeBytes": "Największy pojedynczy plik, jaki można przesłać. Zero blokuje wszystkie przesyłania."
+      }
+    },
+    "publicLinks": {
+      "title": "Linki publiczne",
+      "description": "Jak długo udostępnienia i odwrotne udostępnienia mogą pozostawać dostępne.",
+      "noMaximum": "Bez maksymalnego czasu życia",
+      "maxLifetime": "Maksymalny czas życia linku",
+      "hint": "Nie można tworzyć linków z późniejszym terminem wygaśnięcia."
+    }
+  },
+  "smtp": {
+    "pageTitle": "SMTP",
+    "pageDescription": "Poczta wychodząca dla zaproszeń, resetów haseł i powiadomień.",
+    "title": "Serwer poczty",
+    "description": "Palmr działa bez poczty e-mail. Funkcje, które jej potrzebują, pozostają niedostępne do czasu konfiguracji.",
+    "enabledTag": "Włączone",
+    "disabledTag": "Wyłączone",
+    "fields": {
+      "enabled": "Wysyłaj e-maile przez ten serwer",
+      "host": "Host",
+      "port": "Port",
+      "security": "Zabezpieczenie połączenia",
+      "noAuth": "Serwer nie wymaga uwierzytelniania",
+      "username": "Nazwa użytkownika",
+      "password": "Hasło",
+      "passwordPlaceholder": "Wpisz nowe hasło, aby je zastąpić",
+      "fromName": "Nazwa nadawcy",
+      "fromEmail": "Adres nadawcy",
+      "allowSelfSigned": "Zezwalaj na certyfikat z podpisem własnym",
+      "allowSelfSignedHint": "Tylko dla serwerów, które kontrolujesz. Osłabia weryfikację certyfikatów."
+    },
+    "security": {
+      "starttls": "STARTTLS",
+      "implicit": "Niejawny TLS",
+      "none": "Brak"
+    },
+    "password": {
+      "configured": "Hasło skonfigurowane",
+      "notConfigured": "Brak zapisanego hasła",
+      "willClear": "Zostanie usunięte po zapisaniu",
+      "willReplace": "Zostanie zastąpione po zapisaniu",
+      "clear": "Wyczyść zapisane hasło",
+      "undoClear": "Zachowaj zapisane hasło",
+      "clearDialog": {
+        "title": "Wyczyścić zapisane hasło?",
+        "description": "Hasło zostanie usunięte po zapisaniu. E-maile wymagające uwierzytelniania przestaną działać, dopóki nie wpiszesz nowego.",
+        "confirm": "Wyczyść hasło"
+      }
+    },
+    "test": {
+      "title": "Wyślij testowy e-mail",
+      "description": "Sprawdza połączenie, TLS, logowanie i dostarczenie.",
+      "recipient": "Wyślij test do",
+      "saved": "Testuj zapisane ustawienia",
+      "unsaved": "Testuj bieżące wartości formularza",
+      "unsavedHint": "Test wartości formularza nie zapisuje ich i nigdy nie używa zapisanego hasła. Wpisz hasło powyżej, jeśli serwer go wymaga.",
+      "unsavedIncomplete": "Podaj host, port i adres nadawcy, aby przetestować wartości formularza.",
+      "mode": {
+        "saved": "zapisane ustawienia",
+        "unsaved": "wartości formularza"
+      },
+      "stages": {
+        "connect": "Połączenie",
+        "starttls": "Uruchomienie TLS",
+        "auth": "Uwierzytelnianie",
+        "send": "Wysłanie wiadomości"
+      },
+      "stagesLabel": "Etapy testu",
+      "stageOk": "Zakończony powodzeniem",
+      "stageFailed": "Niepowodzenie",
+      "succeeded": "Testowy e-mail został wysłany (test z użyciem: {{mode}}).",
+      "incomplete": "Test nie został ukończony (test z użyciem: {{mode}}).",
+      "duration": "Zakończono w {{ms}} ms.",
+      "failedAt": "Zatrzymano na etapie: {{stage}} (test z użyciem: {{mode}})."
+    }
+  }
+}

@@ -21,7 +21,7 @@ Everything is expressed with Ant Design tokens (`theme.useToken()`) and inline s
 `NavigationMenu` scopes these `Menu` tokens: item height 40, radius `borderRadius + 2`, no inline margin, transparent background, `colorTextSecondary` at rest, `colorFillTertiary` on hover, `colorPrimaryBg` + `colorText` when selected, 18 px icons.
 
 - The selected label uses `colorText`, not `colorPrimaryText`: primary text on `colorPrimaryBg` falls below 4.5:1 under the dark algorithm.
-- Registry icons are plain SVG components that ignore `className`. The menu wraps each in `<span className="anticon">` so Ant Design's icon spacing and collapsed centring apply. Do the same for any custom SVG passed as a `Menu`/`Dropdown` item `icon`.
+- Registry icons are `@gravity-ui/icons` components imported per icon (`import Name from "@gravity-ui/icons/Name"`) and rendered with `aria-hidden`, `focusable="false"` and `1em` size. The menu wraps each in `<span className="anticon">` so Ant Design's icon spacing and collapsed centring apply. Do the same for any icon passed as a `Menu`/`Dropdown` item `icon`.
 - Bottom tabs show the icon inside a 56 × 30 pill (`colorPrimaryBg`, icon `colorPrimary`) with the label in `colorText` when selected; every tab is at least 64 px high.
 
 ## Header account menu
@@ -48,6 +48,17 @@ The version is a small monospace chip (`fontFamilyCode`, `colorFillQuaternary`);
 - Forms keep the vertical layout of the auth screens. Password fields sit in a 480 px column; the language `Select` is capped at 360 px.
 - Appearance changes save on selection. The status slot next to the section title reads "Saving…" then "Saved"; a failed save shows the mapped error and the controls return to the server's value.
 - Destructive session actions confirm with a `Popconfirm` that states the consequence. Ending the current session is labelled "Sign out", never "Revoke".
+
+## Admin pages
+
+`/admin/*` is guarded by the full authenticated chain plus `RequireAdmin` and renders `AppShell` + `AdminLayout`: one `h1` ("Administration"), a horizontally scrollable row of pill links (Users, Security, SMTP) and one `h2` per page. Users and Invites share `/admin/users`; the segmented control writes `?view=users|invites`.
+
+- Server-driven lists own their state in the URL: `q`, `role`, `status`, `sort`, `cursor`, `limit` (users) and `status`, `cursor`, `limit` (invites). Cursors are opaque; paging uses Next, a trail kept in `location.state` for Previous, and First page. Any filter, sort or page-size change drops the cursor.
+- Route loaders only prime the Query cache and never block navigation or throw. They read the cached `/auth/me` and skip priming unless the user is an unrestricted Admin, because loaders run before the guard components. The Query client reaches loaders through the router context (`routeContext.ts`).
+- Every Admin mutation declares its own invalidation set in `features/admin/api/mutations.ts`. Components never refresh data themselves and never catch `AUTH_RECENT_AUTH_REQUIRED`: the global challenge replays the mutation, so success handlers are passed to `mutate`/the hook and must be safe to run after the replay.
+- One-time secrets (temporary password, invite link) are handed to component state from inside `mutationFn`, never returned as mutation data, so they are not kept in the mutation cache. `OneTimeSecretModal` is the only place they are rendered, with an explicit Copy button; closing it drops the value.
+- Settings forms save one group each and send only the keys that changed. Nullable settings (`null` = Unlimited / no maximum) are distinct from `0`. SMTP password is write-only: the field is blank on load, omitted when untouched, sent when typed and `null` only through the explicit Clear action.
+- Quota override has three states (`inherit`, `unlimited`, `bytes`). The user detail response does not carry the override mode, so the form infers it from `quotaBytes`, `effectiveQuotaBytes` and the instance default; the mode returned by a save is authoritative.
 
 ## Visual validation
 

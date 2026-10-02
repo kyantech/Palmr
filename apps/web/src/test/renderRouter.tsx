@@ -28,9 +28,10 @@ export async function renderRouter(
   { state, initialEntries = ["/"] }: RenderRouterOptions,
 ) {
   const i18n = await loadedI18n();
+  const queryClient = createQueryClient();
   const router = createMemoryRouter(routes, { initialEntries });
   const view = render(
-    <QueryClientProvider client={createQueryClient()}>
+    <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
         <Suspense fallback={null}>
           <ConfigProvider>
@@ -42,5 +43,5 @@ export async function renderRouter(
       </I18nextProvider>
     </QueryClientProvider>,
   );
-  return { router, view };
+  return { router, view, queryClient };
 }

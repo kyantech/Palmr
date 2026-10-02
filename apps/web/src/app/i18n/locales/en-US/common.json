@@ -18,7 +18,8 @@
     "open": "Open navigation",
     "more": "More",
     "collapse": "Collapse navigation",
-    "expand": "Expand navigation"
+    "expand": "Expand navigation",
+    "admin": "Admin"
   },
   "user": {
     "menu": {

@@ -1,6 +1,8 @@
+import LayoutCells from "@gravity-ui/icons/LayoutCells";
+import ShieldCheck from "@gravity-ui/icons/ShieldCheck";
+import Sliders from "@gravity-ui/icons/Sliders";
 import type { ReactNode } from "react";
 import { PATHS } from "../../router/paths";
-import { OverviewIcon, SettingsIcon } from "./icons";
 
 export type NavigationRole = "admin" | "user";
 
@@ -22,15 +24,23 @@ export const NAV_ENTRIES: readonly NavigationEntry[] = [
     key: "overview",
     path: PATHS.overview,
     labelKey: "nav.overview",
-    icon: <OverviewIcon />,
+    icon: <LayoutCells aria-hidden="true" focusable="false" width="1em" height="1em" />,
     order: 10,
     bottomBar: true,
+  },
+  {
+    key: "admin",
+    path: PATHS.admin,
+    labelKey: "nav.admin",
+    icon: <ShieldCheck aria-hidden="true" focusable="false" width="1em" height="1em" />,
+    order: 60,
+    requiredRole: "admin",
   },
   {
     key: "settings",
     path: PATHS.settings,
     labelKey: "nav.settings",
-    icon: <SettingsIcon />,
+    icon: <Sliders aria-hidden="true" focusable="false" width="1em" height="1em" />,
     order: 70,
   },
 ];

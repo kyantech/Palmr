@@ -168,6 +168,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@gravity-ui/icons':
+        specifier: ^2.22.0
+        version: 2.22.0(react@19.3.0)
       '@hookform/resolvers':
         specifier: ^5.9.1
         version: 5.9.1(react-hook-form@7.89.0(@types/react@19.3.0)(react@19.3.0))(zod@4.6.5)
@@ -531,6 +534,14 @@ packages:
       '@noble/hashes': ^1.8.0 || ^2.0.0
     peerDependenciesMeta:
       '@noble/hashes':
+        optional: true
+
+  '@gravity-ui/icons@2.22.0':
+    resolution: {integrity: sha512-v304kVTXbtsq8b3Uq3ZnX9R3LnRdECToeLspDgCs92C9fcID4C7dJqS3PywHKEaM4PFEZO8LRp/6JQbIm9UjHA==}
+    peerDependencies:
+      react: '*'
+    peerDependenciesMeta:
+      react:
         optional: true
 
   '@hookform/resolvers@5.9.1':
@@ -3439,6 +3450,12 @@ snapshots:
 
   '@exodus/bytes@1.16.0': {}
 
+  '@gravity-ui/icons@2.22.0(react@19.3.0)':
+    dependencies:
+      tslib: 2.8.1
+    optionalDependencies:
+      react: 19.3.0
+
   '@hookform/resolvers@5.9.1(react-hook-form@7.89.0(@types/react@19.3.0)(react@19.3.0))(zod@4.6.5)':
     dependencies:
       '@standard-schema/utils': 0.3.0
@@ -5856,8 +5873,7 @@ snapshots:
       minimist: 1.2.8
       strip-bom: 3.0.0
 
-  tslib@2.8.1:
-    optional: true
+  tslib@2.8.1: {}
 
   type-check@0.4.0:
     dependencies:

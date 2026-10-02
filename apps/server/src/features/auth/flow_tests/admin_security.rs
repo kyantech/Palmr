@@ -76,6 +76,14 @@ impl Stack {
         .await
     }
 
+    async fn user_detail(&self, creds: &Credentials, id: &str, host: u8) -> Value {
+        let fetched = self
+            .security_call(Method::GET, &format!("{USERS}/{id}"), creds, None, host)
+            .await;
+        assert_eq!(fetched.status, StatusCode::OK, "{}", fetched.text());
+        fetched.json()
+    }
+
     async fn signed_in_ok(&self, identifier: &str, password: &str, host: u8) -> Credentials {
         let fetched = self.login(identifier, password, host).await;
         assert_eq!(fetched.status, StatusCode::OK, "{}", fetched.text());
@@ -1040,6 +1048,73 @@ async fn it_quota_override_unlimited_is_null() {
         assert_eq!(row.1.as_deref(), Some(operator_id.as_str()));
         assert_eq!(row.2.as_deref(), Some(id.as_str()));
     }
+    stack.stop().await;
+}
+
+#[tokio::test]
+async fn it_admin_user_detail_exposes_the_persisted_quota_override_mode() {
+    let root = TempDir::new().unwrap();
+    let stack = Stack::start(root.path(), &TestClock::new(START)).await;
+    let operator = stack.operator(10).await;
+    let hash = password_hash();
+    let bea = stack
+        .user(UserSpec::local("bea", "bea@example.test", &hash))
+        .await;
+    let id = bea.to_string();
+
+    let detail = stack.user_detail(&operator, &id, 11).await;
+    assert_eq!(detail["quotaOverrideMode"], "inherit");
+    assert_eq!(detail["quotaBytes"], Value::Null);
+    assert_eq!(detail["effectiveQuotaBytes"], Value::Null);
+
+    let unlimited = stack
+        .put_quota(&operator, &id, &json!({ "mode": "unlimited" }), 12)
+        .await;
+    assert_eq!(unlimited.status, StatusCode::OK, "{}", unlimited.text());
+    let detail = stack.user_detail(&operator, &id, 13).await;
+    assert_eq!(
+        detail["quotaOverrideMode"], "unlimited",
+        "explicit Unlimited stays distinct from inherit while the instance default is Unlimited"
+    );
+    assert_eq!(detail["quotaBytes"], Value::Null);
+    assert_eq!(detail["effectiveQuotaBytes"], Value::Null);
+    assert_eq!(stack.quota_columns(bea).await.0, "unlimited");
+
+    let zero = stack
+        .put_quota(
+            &operator,
+            &id,
+            &json!({ "mode": "bytes", "quotaBytes": 0 }),
+            14,
+        )
+        .await;
+    assert_eq!(zero.status, StatusCode::OK, "{}", zero.text());
+    let detail = stack.user_detail(&operator, &id, 15).await;
+    assert_eq!(detail["quotaOverrideMode"], "bytes");
+    assert_eq!(detail["quotaBytes"], 0);
+    assert_eq!(detail["effectiveQuotaBytes"], 0);
+
+    let back = stack
+        .put_quota(&operator, &id, &json!({ "mode": "inherit" }), 16)
+        .await;
+    assert_eq!(back.status, StatusCode::OK, "{}", back.text());
+    let detail = stack.user_detail(&operator, &id, 17).await;
+    assert_eq!(detail["quotaOverrideMode"], "inherit");
+    assert_eq!(detail["quotaBytes"], Value::Null);
+    assert_eq!(detail["effectiveQuotaBytes"], Value::Null);
+
+    stack
+        .setting_in("quotas", "default_user_quota_bytes", "integer", "10000")
+        .await;
+    let detail = stack.user_detail(&operator, &id, 18).await;
+    assert_eq!(detail["quotaOverrideMode"], "inherit");
+    assert_eq!(detail["effectiveQuotaBytes"], 10000);
+    stack
+        .put_quota(&operator, &id, &json!({ "mode": "unlimited" }), 19)
+        .await;
+    let detail = stack.user_detail(&operator, &id, 20).await;
+    assert_eq!(detail["quotaOverrideMode"], "unlimited");
+    assert_eq!(detail["effectiveQuotaBytes"], Value::Null);
     stack.stop().await;
 }
 

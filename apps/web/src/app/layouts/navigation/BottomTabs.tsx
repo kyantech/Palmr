@@ -1,9 +1,9 @@
 import { Button, Drawer, Flex, theme, Typography } from "antd";
+import Ellipsis from "@gravity-ui/icons/Ellipsis";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router";
 import { useTextDirection } from "./direction";
-import { MoreIcon } from "./icons";
 import { NavigationMenu } from "./NavigationMenu";
 import type { NavigationEntry } from "./registry";
 
@@ -111,7 +111,11 @@ export function BottomTabs({ entries, selectedKey }: BottomTabsProps) {
               color: token.colorTextSecondary,
             }}
           >
-            <TabFace icon={<MoreIcon />} label={t("nav.more")} selected={false} />
+            <TabFace
+              icon={<Ellipsis aria-hidden="true" focusable="false" width="1em" height="1em" />}
+              label={t("nav.more")}
+              selected={false}
+            />
           </Button>
         ) : null}
       </Flex>
