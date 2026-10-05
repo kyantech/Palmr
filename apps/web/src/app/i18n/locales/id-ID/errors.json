@@ -58,6 +58,7 @@
     "settingBelowFloor": "Nilai ini berada di bawah batas minimum yang diizinkan untuk pengaturan ini.",
     "smtpTestFailed": "Pengujian SMTP gagal. Periksa detail koneksi lalu coba lagi.",
     "providerNotFound": "Penyedia identitas ini tidak ada.",
+    "providerDisabled": "Penyedia identitas ini dinonaktifkan.",
     "providerSlugTaken": "Penyedia identitas dengan slug ini sudah ada. Pilih slug lain.",
     "providerDiscoveryFailed": "Palmr tidak dapat membaca konfigurasi OpenID Connect penyedia. Periksa URL penerbit lalu coba lagi.",
     "providerValidationFailed": "Pemeriksaan penyedia gagal. Tinjau pemeriksaan yang gagal lalu coba lagi.",

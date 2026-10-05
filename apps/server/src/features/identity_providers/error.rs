@@ -11,6 +11,7 @@ use crate::infra::http::error::{ApiError, CheckDetail};
 #[derive(Debug)]
 pub enum ProviderError {
     NotFound,
+    Disabled,
     SlugTaken,
     Invalid { fields: Vec<&'static str> },
     DiscoveryFailed(DiscoveryFailure),
@@ -28,6 +29,7 @@ impl ProviderError {
     pub const fn kind(&self) -> &'static str {
         match self {
             Self::NotFound => "provider_not_found",
+            Self::Disabled => "provider_disabled",
             Self::SlugTaken => "provider_slug_taken",
             Self::Invalid { .. } => "provider_invalid",
             Self::DiscoveryFailed(_) => "provider_discovery_failed",
@@ -45,6 +47,7 @@ impl ProviderError {
     pub fn api_error(&self) -> ApiError {
         match self {
             Self::NotFound => ApiError::new(ErrorCode::ProviderNotFound),
+            Self::Disabled => ApiError::new(ErrorCode::ProviderDisabled),
             Self::SlugTaken => ApiError::new(ErrorCode::ProviderSlugTaken),
             Self::Invalid { fields } => ApiError::validation(fields.iter().copied()),
             Self::DiscoveryFailed(failure) => ApiError::new(ErrorCode::ProviderDiscoveryFailed)
@@ -65,6 +68,7 @@ impl fmt::Display for ProviderError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::NotFound => f.write_str("the identity provider does not exist"),
+            Self::Disabled => f.write_str("the identity provider is disabled"),
             Self::SlugTaken => f.write_str("an identity provider with that slug already exists"),
             Self::Invalid { fields } => {
                 write!(f, "the provider fields {} are invalid", fields.join(", "))

@@ -156,6 +156,7 @@ export function defaultSettings() {
     twoFactorRequired: false,
     trustedDevicesEnabled: true,
     trustedDeviceDurationDays: 30,
+    authProvidersEnabled: true,
   };
   const quotas: Quotas = { defaultUserQuotaBytes: 10 * GIB, maxFileSizeBytes: null };
   const publicLinks: PublicLinks = { maxPublicLinkLifetimeDays: null };

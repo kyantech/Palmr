@@ -58,6 +58,7 @@
     "settingBelowFloor": "Värdet ligger under det lägsta tillåtna för den här inställningen.",
     "smtpTestFailed": "SMTP-testet misslyckades. Kontrollera anslutningsuppgifterna och försök igen.",
     "providerNotFound": "Den här identitetsleverantören finns inte.",
+    "providerDisabled": "Den här identitetsleverantören är inaktiverad.",
     "providerSlugTaken": "Det finns redan en identitetsleverantör med den här sluggen. Välj en annan slug.",
     "providerDiscoveryFailed": "Palmr kunde inte läsa leverantörens OpenID Connect-konfiguration. Kontrollera utfärdar-URL:en och försök igen.",
     "providerValidationFailed": "Leverantörens kontroller misslyckades. Granska de misslyckade kontrollerna och försök igen.",

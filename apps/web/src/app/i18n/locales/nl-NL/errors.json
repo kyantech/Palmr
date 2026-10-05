@@ -58,6 +58,7 @@
     "settingBelowFloor": "Deze waarde ligt onder het toegestane minimum voor deze instelling.",
     "smtpTestFailed": "De SMTP-test is mislukt. Controleer de verbindingsgegevens en probeer het opnieuw.",
     "providerNotFound": "Deze identiteitsprovider bestaat niet.",
+    "providerDisabled": "Deze identiteitsprovider is uitgeschakeld.",
     "providerSlugTaken": "Er bestaat al een identiteitsprovider met deze slug. Kies een andere slug.",
     "providerDiscoveryFailed": "Palmr kon de OpenID Connect-configuratie van de provider niet lezen. Controleer de uitgever-URL en probeer het opnieuw.",
     "providerValidationFailed": "De controles van de provider zijn mislukt. Bekijk de mislukte controles en probeer het opnieuw.",

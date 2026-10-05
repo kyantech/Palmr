@@ -86,6 +86,7 @@ export const RETRY_CLASS: Readonly<Record<ErrorCode, RetryClass>> = {
   SETTING_BELOW_FLOOR: "never",
   SMTP_TEST_FAILED: "never",
   PROVIDER_NOT_FOUND: "never",
+  PROVIDER_DISABLED: "never",
   PROVIDER_SLUG_TAKEN: "never",
   PROVIDER_DISCOVERY_FAILED: "serverFault",
   PROVIDER_VALIDATION_FAILED: "never",

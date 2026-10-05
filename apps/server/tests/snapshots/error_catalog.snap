@@ -188,6 +188,11 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "PROVIDER_DISABLED",
+    "status": 403,
+    "retryable": false
+  },
+  {
     "code": "PROVIDER_DISCOVERY_FAILED",
     "status": 502,
     "retryable": true

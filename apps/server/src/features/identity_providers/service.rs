@@ -22,6 +22,7 @@ use crate::features::audit::model::{
 };
 use crate::features::audit::service::AuditService;
 use crate::features::auth::sessions::AuthenticatedPrincipal;
+use crate::features::settings::SettingsHandle;
 use crate::infra::crypto::aead::SealedSecret;
 use crate::infra::crypto::hkdf::{KeyRing, SealPurpose};
 use crate::infra::db::{DbPools, WriteTx};
@@ -53,6 +54,7 @@ pub struct IdentityProviderService {
     audit: AuditService,
     http: ProviderHttpClient,
     base_url: PublicBaseUrl,
+    settings: SettingsHandle,
 }
 
 struct Mutation<'a> {
@@ -76,6 +78,7 @@ impl IdentityProviderService {
         audit: AuditService,
         http: ProviderHttpClient,
         base_url: PublicBaseUrl,
+        settings: SettingsHandle,
     ) -> Self {
         Self {
             pools,
@@ -84,7 +87,28 @@ impl IdentityProviderService {
             audit,
             http,
             base_url,
+            settings,
         }
+    }
+
+    pub(crate) fn settings(&self) -> &SettingsHandle {
+        &self.settings
+    }
+
+    pub(crate) fn clock(&self) -> &dyn Clock {
+        self.clock.as_ref()
+    }
+
+    pub(crate) fn keys(&self) -> &KeyRing {
+        self.keys.as_ref()
+    }
+
+    pub(crate) fn pools(&self) -> &DbPools {
+        &self.pools
+    }
+
+    pub(crate) fn base_url(&self) -> &PublicBaseUrl {
+        &self.base_url
     }
 
     pub fn query(&self, raw_query: Option<&str>) -> Result<PageRequest, ApiError> {

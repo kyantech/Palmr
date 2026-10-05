@@ -58,6 +58,7 @@
     "settingBelowFloor": "此值低于该设置允许的最小值。",
     "smtpTestFailed": "SMTP 测试失败。请检查连接信息后重试。",
     "providerNotFound": "该身份提供商不存在。",
+    "providerDisabled": "此身份提供商已停用。",
     "providerSlugTaken": "已存在使用此 slug 的身份提供商。请选择其他 slug。",
     "providerDiscoveryFailed": "Palmr 无法读取该提供商的 OpenID Connect 配置。请检查颁发者 URL 后重试。",
     "providerValidationFailed": "提供商检查未通过。请查看未通过的检查项后重试。",

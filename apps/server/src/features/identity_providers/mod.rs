@@ -1,3 +1,4 @@
+pub mod authorize;
 pub mod discovery;
 pub mod draft;
 pub mod error;

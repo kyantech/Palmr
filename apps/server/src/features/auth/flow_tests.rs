@@ -198,6 +198,7 @@ impl Stack {
             audit.clone(),
             ProviderHttpClient::new(),
             config.base_url.clone(),
+            settings.handle(),
         );
         let email_changes = EmailChangeService::new(
             pools.clone(),
@@ -1785,6 +1786,7 @@ mod admin_security;
 mod admin_settings;
 mod admin_smtp;
 mod admin_users;
+mod authorize;
 mod forced_states;
 mod invites;
 mod mfa;

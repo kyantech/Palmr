@@ -4,8 +4,8 @@ use sqlx::{QueryBuilder, Row, Sqlite};
 use super::discovery::discovery_url;
 use super::error::ProviderError;
 use super::model::{
-    ClaimMapping, IdentityProvider, OAuth2Provider, OidcProvider, Preset, Protocol, ProviderId,
-    ProviderRecord, ProviderVariant, TokenAuthMethod,
+    AuthRequestId, AuthorizePurpose, ClaimMapping, IdentityProvider, OAuth2Provider, OidcProvider,
+    Preset, Protocol, ProviderId, ProviderRecord, ProviderVariant, TokenAuthMethod,
 };
 use crate::domain::time::Timestamp;
 use crate::features::users::model::UserId;
@@ -108,6 +108,26 @@ pub async fn find_in_tx(
     row.as_ref().map(record_from).transpose()
 }
 
+pub async fn find_by_slug(
+    reader: &ReadPool,
+    slug: &str,
+) -> Result<Option<ProviderRecord>, ProviderError> {
+    let row = sqlx::query(&format!("SELECT {COLUMNS}{FROM} WHERE p.key = ?1"))
+        .bind(slug)
+        .fetch_optional(reader.executor())
+        .await?;
+    row.as_ref().map(record_from).transpose()
+}
+
+pub async fn list_enabled(reader: &ReadPool) -> Result<Vec<ProviderRecord>, ProviderError> {
+    let rows = sqlx::query(&format!(
+        "SELECT {COLUMNS}{FROM} WHERE p.is_enabled = 1 ORDER BY p.sort_order, p.key"
+    ))
+    .fetch_all(reader.executor())
+    .await?;
+    rows.iter().map(record_from).collect()
+}
+
 pub async fn slug_taken(reader: &ReadPool, slug: &str) -> Result<bool, ProviderError> {
     let taken: bool =
         sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM identity_providers WHERE key = ?1)")
@@ -203,6 +223,51 @@ pub async fn stamp_validation(
     .execute(tx.executor())
     .await?;
     Ok(result.rows_affected() == 1)
+}
+
+pub struct AuthRequestWrite<'a> {
+    pub id: AuthRequestId,
+    pub provider_id: ProviderId,
+    pub state_hash: &'a str,
+    pub binding_cookie_hash: &'a str,
+    pub verifier: &'a SealedSecret,
+    pub nonce: &'a str,
+    pub redirect_uri: &'a str,
+    pub post_auth_path: Option<&'a str>,
+    pub purpose: AuthorizePurpose,
+    pub link_user_id: Option<UserId>,
+    pub created_at: Timestamp,
+    pub expires_at: Timestamp,
+}
+
+pub async fn insert_auth_request(
+    tx: &mut WriteTx<'_>,
+    write: &AuthRequestWrite<'_>,
+) -> Result<(), ProviderError> {
+    sqlx::query(
+        "INSERT INTO oauth_auth_requests
+             (id, provider_id, state_hash, binding_cookie_hash, pkce_verifier_ciphertext,
+              pkce_verifier_nonce, key_version, nonce, redirect_uri, post_auth_path, purpose,
+              link_user_id, created_at, expires_at, consumed_at, ip)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, NULL, NULL)",
+    )
+    .bind(write.id.to_string())
+    .bind(write.provider_id.to_string())
+    .bind(write.state_hash)
+    .bind(write.binding_cookie_hash)
+    .bind(write.verifier.ciphertext().to_vec())
+    .bind(write.verifier.nonce().to_vec())
+    .bind(write.verifier.key_version())
+    .bind(write.nonce)
+    .bind(write.redirect_uri)
+    .bind(write.post_auth_path)
+    .bind(write.purpose.as_str())
+    .bind(write.link_user_id.map(|id| id.to_string()))
+    .bind(write.created_at.to_string())
+    .bind(write.expires_at.to_string())
+    .execute(tx.executor())
+    .await?;
+    Ok(())
 }
 
 type Query<'q> = sqlx::query::Query<'q, Sqlite, sqlx::sqlite::SqliteArguments<'q>>;

@@ -54,6 +54,10 @@ pub fn sha256_hex(bytes: &[u8]) -> TokenDigest {
     TokenDigest(lower_hex(&Sha256::digest(bytes)))
 }
 
+pub fn sha256_base64url(bytes: &[u8]) -> String {
+    super::base64url_no_pad(&Sha256::digest(bytes))
+}
+
 pub fn mac_hex(ring: &KeyRing, purpose: MacPurpose, message: &[u8]) -> TokenDigest {
     TokenDigest(lower_hex(&ring.mac(purpose, message)))
 }

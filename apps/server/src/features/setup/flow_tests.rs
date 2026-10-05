@@ -317,7 +317,7 @@ async fn it_setup_status_reports_setup_state_only() {
     assert!(fetched.set_cookies().is_empty());
     let polled = stack.get(STATUS_PATH, None).await;
     assert_eq!(polled.json()["setupCompleted"], false);
-    assert_eq!(stack.durable_setup_rows().await, [0; 5]);
+    assert_eq!(stack.durable_setup_rows().await, [0, 0, 1, 0, 0]);
 
     stack
         .execute(
@@ -460,7 +460,16 @@ async fn it_setup_seeds_instance_identity() {
             .fetch_all(stack.pools.reader().executor())
             .await
             .unwrap();
-    assert_eq!(updated_by, vec![Some(user_id.clone()); 4]);
+    assert_eq!(
+        updated_by,
+        vec![
+            Some(user_id.clone()),
+            Some(user_id.clone()),
+            None,
+            Some(user_id.clone()),
+            Some(user_id.clone()),
+        ]
+    );
 
     let (auth_method, state, token_hash, csrf_hash): (String, String, String, String) =
         sqlx::query_as(
@@ -591,7 +600,7 @@ async fn regression_R069_setup_atomic_and_idempotent() {
         assert_eq!(interrupted.error_code(), "INTERNAL_ERROR", "{step}");
         assert!(interrupted.set_cookies().is_empty(), "{step}");
         assert!(!interrupted.text().contains("interrupted setup"), "{step}");
-        assert_eq!(stack.durable_setup_rows().await, [0; 5], "{step}");
+        assert_eq!(stack.durable_setup_rows().await, [0, 0, 1, 0, 0], "{step}");
         assert!(!stack.settings.current().setup_completed(), "{step}");
         assert_eq!(
             stack.get(STATUS_PATH, None).await.json()["setupCompleted"],
@@ -894,7 +903,7 @@ async fn it_setup_rejects_invalid_requests_and_stays_open() {
     assert_eq!(error["error"]["details"]["minLength"], 8);
     assert!(!rejected.text().contains("seven77"));
 
-    assert_eq!(stack.durable_setup_rows().await, [0; 5]);
+    assert_eq!(stack.durable_setup_rows().await, [0, 0, 1, 0, 0]);
     assert_eq!(
         stack.get(STATUS_PATH, None).await.json()["setupCompleted"],
         false
@@ -944,7 +953,7 @@ async fn it_setup_request_policy_without_double_submit() {
         );
         assert_eq!(rejected.error_code(), "UNSUPPORTED_MEDIA_TYPE");
     }
-    assert_eq!(stack.durable_setup_rows().await, [0; 5]);
+    assert_eq!(stack.durable_setup_rows().await, [0, 0, 1, 0, 0]);
 
     let without_csrf = Request::builder()
         .method(Method::POST)

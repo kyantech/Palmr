@@ -180,6 +180,8 @@ error_catalog! {
         "The SMTP test failed";
     ProviderNotFound = "PROVIDER_NOT_FOUND", NOT_FOUND, retryable: false,
         "The identity provider was not found";
+    ProviderDisabled = "PROVIDER_DISABLED", FORBIDDEN, retryable: false,
+        "The identity provider is disabled";
     ProviderSlugTaken = "PROVIDER_SLUG_TAKEN", CONFLICT, retryable: false,
         "An identity provider with that slug already exists";
     ProviderDiscoveryFailed = "PROVIDER_DISCOVERY_FAILED", BAD_GATEWAY, retryable: true,

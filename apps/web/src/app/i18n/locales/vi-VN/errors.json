@@ -58,6 +58,7 @@
     "settingBelowFloor": "Giá trị này thấp hơn mức tối thiểu cho phép của cài đặt này.",
     "smtpTestFailed": "Kiểm tra SMTP không thành công. Hãy kiểm tra thông tin kết nối rồi thử lại.",
     "providerNotFound": "Nhà cung cấp danh tính này không tồn tại.",
+    "providerDisabled": "Nhà cung cấp danh tính này đã bị tắt.",
     "providerSlugTaken": "Đã có nhà cung cấp danh tính dùng slug này. Hãy chọn slug khác.",
     "providerDiscoveryFailed": "Palmr không đọc được cấu hình OpenID Connect của nhà cung cấp. Hãy kiểm tra URL của bên phát hành rồi thử lại.",
     "providerValidationFailed": "Các kiểm tra của nhà cung cấp đã thất bại. Hãy xem các kiểm tra thất bại rồi thử lại.",

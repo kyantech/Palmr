@@ -9,6 +9,8 @@ use crate::domain::secret::Secret;
 pub const SESSION_COOKIE: &str = "palmr_session";
 pub const CSRF_COOKIE: &str = "palmr_csrf";
 pub const DEVICE_COOKIE: &str = "palmr_device";
+pub const OAUTH_COOKIE: &str = "palmr_oauth";
+pub const OAUTH_COOKIE_PATH: &str = "/api/v1/auth/providers";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct CookiePolicy {
@@ -86,6 +88,35 @@ impl CookiePolicy {
             None,
         )
     }
+
+    pub fn append_oauth_binding(
+        self,
+        headers: &mut HeaderMap,
+        binding: &Secret<String>,
+        max_age_seconds: u64,
+    ) -> Result<(), CookieError> {
+        append_cookie_at(
+            headers,
+            OAUTH_COOKIE,
+            binding.expose_secret(),
+            true,
+            self.secure,
+            Some(max_age_seconds),
+            OAUTH_COOKIE_PATH,
+        )
+    }
+
+    pub fn expire_oauth_binding(self, headers: &mut HeaderMap) -> Result<(), CookieError> {
+        append_cookie_at(
+            headers,
+            OAUTH_COOKIE,
+            "",
+            true,
+            self.secure,
+            Some(0),
+            OAUTH_COOKIE_PATH,
+        )
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -151,7 +182,28 @@ fn append_cookie(
     secure: bool,
     max_age_seconds: Option<u64>,
 ) -> Result<(), CookieError> {
-    let mut rendered = format!("{name}={value}; Path=/; SameSite=Lax");
+    append_cookie_at(
+        headers,
+        name,
+        value,
+        http_only,
+        secure,
+        max_age_seconds,
+        "/",
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn append_cookie_at(
+    headers: &mut HeaderMap,
+    name: &str,
+    value: &str,
+    http_only: bool,
+    secure: bool,
+    max_age_seconds: Option<u64>,
+    path: &str,
+) -> Result<(), CookieError> {
+    let mut rendered = format!("{name}={value}; Path={path}; SameSite=Lax");
     if let Some(max_age) = max_age_seconds {
         rendered.push_str("; Max-Age=");
         rendered.push_str(&max_age.to_string());
@@ -277,6 +329,36 @@ mod tests {
         assert_eq!(
             http.get(SET_COOKIE).unwrap(),
             &format!("{DEVICE_COOKIE}=device-token; Path=/; SameSite=Lax; Max-Age=60; HttpOnly")
+        );
+    }
+
+    #[test]
+    fn unit_oauth_binding_cookie_attributes_follow_base_url() {
+        let mut https = HeaderMap::new();
+        policy("https://files.example.test")
+            .append_oauth_binding(&mut https, &Secret::new("binding".to_owned()), 600)
+            .unwrap();
+        assert_eq!(
+            https.get(SET_COOKIE).unwrap(),
+            "palmr_oauth=binding; Path=/api/v1/auth/providers; SameSite=Lax; Max-Age=600; Secure; HttpOnly"
+        );
+
+        let mut http = HeaderMap::new();
+        let open = policy("http://localhost:5487");
+        open.append_oauth_binding(&mut http, &Secret::new("binding".to_owned()), 600)
+            .unwrap();
+        open.expire_oauth_binding(&mut http).unwrap();
+        let values: Vec<&str> = http
+            .get_all(SET_COOKIE)
+            .iter()
+            .map(|value| value.to_str().unwrap())
+            .collect();
+        assert_eq!(
+            values,
+            [
+                "palmr_oauth=binding; Path=/api/v1/auth/providers; SameSite=Lax; Max-Age=600; HttpOnly",
+                "palmr_oauth=; Path=/api/v1/auth/providers; SameSite=Lax; Max-Age=0; HttpOnly",
+            ]
         );
     }
 

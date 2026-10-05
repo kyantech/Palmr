@@ -1528,8 +1528,15 @@ async fn it_schema_oauth_request_checks() -> Result<()> {
         ),
         (
             Request {
-                post_auth_path: Some(format!("/{}", "a".repeat(256))),
+                post_auth_path: Some(format!("/{}", "a".repeat(511))),
                 ..Request::login("path-long", 13, "corp")
+            },
+            Accepted,
+        ),
+        (
+            Request {
+                post_auth_path: Some(format!("/{}", "a".repeat(512))),
+                ..Request::login("path-too-long", 20, "corp")
             },
             Check,
         ),
@@ -1549,7 +1556,7 @@ async fn it_schema_oauth_request_checks() -> Result<()> {
         ),
         (
             Request {
-                purpose: "recent_auth",
+                purpose: "reauth",
                 ..Request::login("reauth-without-user", 16, "corp")
             },
             Check,
@@ -1564,7 +1571,7 @@ async fn it_schema_oauth_request_checks() -> Result<()> {
         ),
         (
             Request {
-                purpose: "recent_auth",
+                purpose: "reauth",
                 link_user_id: Some("owner"),
                 ..Request::login("reauth", 18, "corp")
             },
@@ -1593,7 +1600,7 @@ async fn it_schema_oauth_request_checks() -> Result<()> {
     )
     .fetch_all(&mut database.connection)
     .await?;
-    assert_eq!(stored.len(), 4);
+    assert_eq!(stored.len(), 5);
     assert!(stored
         .iter()
         .all(|types| *types == ("blob".to_owned(), "blob".to_owned())));
@@ -1605,7 +1612,7 @@ async fn it_schema_oauth_request_checks() -> Result<()> {
         database
             .ids("SELECT id FROM oauth_auth_requests ORDER BY id")
             .await?,
-        ["login", "path-relative"]
+        ["login", "path-long", "path-relative"]
     );
 
     database.close().await

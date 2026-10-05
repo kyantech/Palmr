@@ -73,6 +73,7 @@ pub const FIELDS: &[Field] = &[
         "trusted_device_duration_days",
         Kind::Integer(TRUSTED_DEVICE_DURATION_DAYS),
     ),
+    Field::new("authProvidersEnabled", "auth_providers_enabled", Kind::Flag),
 ];
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
@@ -100,6 +101,7 @@ pub struct SecuritySettings {
     pub trusted_devices_enabled: bool,
     #[schema(minimum = 1, maximum = 365)]
     pub trusted_device_duration_days: u32,
+    pub auth_providers_enabled: bool,
 }
 
 impl From<&AppSettings> for SecuritySettings {
@@ -118,6 +120,7 @@ impl From<&AppSettings> for SecuritySettings {
             two_factor_required: security.two_factor_required,
             trusted_devices_enabled: security.trusted_devices_enabled,
             trusted_device_duration_days: security.trusted_device_duration_days,
+            auth_providers_enabled: security.auth_providers_enabled,
         }
     }
 }
@@ -153,4 +156,6 @@ pub struct SecurityPatch {
     pub trusted_devices_enabled: Option<bool>,
     #[schema(nullable = false, minimum = 1, maximum = 365)]
     pub trusted_device_duration_days: Option<u32>,
+    #[schema(nullable = false)]
+    pub auth_providers_enabled: Option<bool>,
 }

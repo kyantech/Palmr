@@ -5,13 +5,16 @@ use http::{HeaderValue, StatusCode};
 use utoipa::openapi::path::Parameter;
 use utoipa_axum::routes;
 
+use super::authorize::{
+    AuthorizeContext, AuthorizeRequest, AuthorizeResponse, AUTH_REQUEST_TTL_SECONDS,
+};
 use super::discovery::Discovered;
 use super::error::ProviderError;
 use super::input::{
     parse_order, CreateInput, CreateProviderRequest, DiscoverRequest, OrderRequest, UpdateInput,
     UpdateProviderRequest,
 };
-use super::model::{ProviderId, ProviderItem};
+use super::model::{ProviderId, ProviderItem, PublicProviderList};
 use super::presets::PresetCatalogue;
 use super::provider_test::ProviderTestResult;
 use super::service::{IdentityProviderService, PROVIDER_SORT};
@@ -50,10 +53,24 @@ pub const PROBE_ROUTE: RoutePolicy = RoutePolicy::new(
     Transport::ControlPlane,
 );
 
+pub const PUBLIC_LIST_ROUTE: RoutePolicy = RoutePolicy::new(
+    AuthClass::Public,
+    RateLimitClass::PublicRead,
+    Transport::ControlPlane,
+);
+
+pub const AUTHORIZE_ROUTE: RoutePolicy = RoutePolicy::new(
+    AuthClass::Public,
+    RateLimitClass::AuthLogin,
+    Transport::ControlPlane,
+);
+
 const NO_STORE: HeaderValue = HeaderValue::from_static("no-store");
 
 pub fn routes() -> Routes<AppState> {
     Routes::new()
+        .route(PUBLIC_LIST_ROUTE, routes!(list_public_providers))
+        .route(AUTHORIZE_ROUTE, routes!(authorize_provider))
         .route(
             READ_ROUTE,
             with_query_parameters(routes!(list_providers), &list_parameters()),
@@ -73,6 +90,88 @@ fn list_parameters() -> Vec<Parameter> {
         cursor_parameter(),
         limit_parameter(),
     ]
+}
+
+#[utoipa::path(
+    get,
+    path = "/api/v1/auth/providers",
+    tag = "auth-providers",
+    responses(
+        (status = 200, description = "Enabled providers only, ordered by `sortOrder` with a stable tie-break. Each item carries only `slug`, `displayName` and `iconKey`; no issuer, client id, endpoint, scope, claim mapping, secret state or validation state. When the global provider toggle is off this is an empty list, not an error.", body = PublicProviderList),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn list_public_providers(
+    Extension(service): Extension<IdentityProviderService>,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    match service.public_providers().await {
+        Ok(list) => json_response(StatusCode::OK, &list, request_id.as_ref()),
+        Err(error) => provider_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    post,
+    path = "/api/v1/auth/providers/{slug}/authorize",
+    tag = "auth-providers",
+    params(("slug" = String, Path, description = "Provider slug")),
+    request_body(
+        content = AuthorizeRequest,
+        content_type = "application/json",
+        description = "Starts an **anonymous login** only. `purpose` must be `login`; `link` and `reauth` enter through dedicated authenticated flows and are rejected here as `VALIDATION_ERROR`. `returnTo` is an optional validated relative SPA path (default `/overview`). There is no `redirectUri`/`redirect`/`next`/`callbackUrl` field: the redirect URI is always derived from `PALMR_BASE_URL`."
+    ),
+    responses(
+        (status = 200, description = "An authorization URL plus the `palmr_oauth` browser-binding cookie. The exact callback URI was derived from `PALMR_BASE_URL`, not from the request.", body = AuthorizeResponse),
+        (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
+        (status = 403, description = "`PROVIDER_DISABLED`: the provider is disabled or the global provider toggle is off. Nothing is persisted and no cookie is set.", body = ApiErrorBody),
+        (status = 404, description = "`PROVIDER_NOT_FOUND`.", body = ApiErrorBody),
+        (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
+        (status = 422, description = "`VALIDATION_ERROR` for an undeclared/redirect field, a `purpose` other than `login`, or an unusable provider configuration.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn authorize_provider(
+    Extension(service): Extension<IdentityProviderService>,
+    Path(slug): Path<String>,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let body = match json::read::<AuthorizeRequest>(request.into_body()).await {
+        Ok(body) => body,
+        Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
+    };
+    if body.purpose != "login" {
+        return tag_error(ApiError::validation(["purpose"]), request_id.as_ref()).into_response();
+    }
+    match service
+        .authorize(&slug, AuthorizeContext::login(body.return_to))
+        .await
+    {
+        Ok(authorized) => {
+            let mut response = json_response(
+                StatusCode::OK,
+                &AuthorizeResponse {
+                    authorization_url: authorized.authorization_url,
+                },
+                request_id.as_ref(),
+            );
+            if service
+                .cookie_policy()
+                .append_oauth_binding(
+                    response.headers_mut(),
+                    &authorized.binding,
+                    AUTH_REQUEST_TTL_SECONDS,
+                )
+                .is_err()
+            {
+                return tag_error(ApiError::internal(), request_id.as_ref()).into_response();
+            }
+            response
+        }
+        Err(error) => provider_error(&error, request_id.as_ref()),
+    }
 }
 
 #[utoipa::path(

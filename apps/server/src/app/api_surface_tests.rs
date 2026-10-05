@@ -1383,7 +1383,7 @@ fn it_openapi_admin_settings_routes_declare_typed_contracts() {
             .as_object()
             .unwrap()
             .len(),
-        12
+        13
     );
     assert_eq!(
         schemas["QuotaPatch"]["properties"]["defaultUserQuotaBytes"]["minimum"],

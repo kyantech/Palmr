@@ -58,6 +58,7 @@
     "settingBelowFloor": "ערך זה נמוך מהמינימום המותר להגדרה זו.",
     "smtpTestFailed": "בדיקת ה-SMTP נכשלה. בדקו את פרטי החיבור ונסו שוב.",
     "providerNotFound": "ספק הזהות הזה אינו קיים.",
+    "providerDisabled": "ספק הזהות הזה מושבת.",
     "providerSlugTaken": "כבר קיים ספק זהות עם מזהה (slug) זה. בחרו מזהה אחר.",
     "providerDiscoveryFailed": "Palmr לא הצליח לקרוא את תצורת OpenID Connect של הספק. בדקו את כתובת המנפיק ונסו שוב.",
     "providerValidationFailed": "בדיקות הספק נכשלו. עברו על הבדיקות שנכשלו ונסו שוב.",

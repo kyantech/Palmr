@@ -46,3 +46,15 @@ impl std::error::Error for CryptoError {}
 fn fill_random(bytes: &mut [u8]) -> Result<(), CryptoError> {
     getrandom::fill(bytes).map_err(|_| CryptoError::Randomness)
 }
+
+pub fn random_bytes(len: usize) -> Result<Vec<u8>, CryptoError> {
+    let mut bytes = vec![0_u8; len];
+    fill_random(&mut bytes)?;
+    Ok(bytes)
+}
+
+pub fn base64url_no_pad(bytes: &[u8]) -> String {
+    use base64ct::{Base64UrlUnpadded, Encoding};
+
+    Base64UrlUnpadded::encode_string(bytes)
+}

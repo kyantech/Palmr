@@ -825,6 +825,7 @@ async fn initialize(
         audit_service.clone(),
         ProviderHttpClient::new(),
         config.base_url.clone(),
+        settings.clone(),
     );
     let smtp_test = SmtpTestService::new(settings.clone(), Arc::new(SmtpTransport));
     let totp = TotpService::new(

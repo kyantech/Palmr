@@ -58,6 +58,7 @@
     "settingBelowFloor": "Cette valeur est inférieure au minimum autorisé pour ce paramètre.",
     "smtpTestFailed": "Le test SMTP a échoué. Vérifiez les informations de connexion et réessayez.",
     "providerNotFound": "Ce fournisseur d'identité n'existe pas.",
+    "providerDisabled": "Ce fournisseur d'identité est désactivé.",
     "providerSlugTaken": "Un fournisseur d'identité avec ce slug existe déjà. Choisissez un autre slug.",
     "providerDiscoveryFailed": "Palmr n'a pas pu lire la configuration OpenID Connect du fournisseur. Vérifiez l'URL de l'émetteur et réessayez.",
     "providerValidationFailed": "Les vérifications du fournisseur ont échoué. Examinez les vérifications en échec et réessayez.",

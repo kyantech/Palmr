@@ -58,6 +58,7 @@
     "settingBelowFloor": "Bu değer, bu ayar için izin verilen en düşük değerin altında.",
     "smtpTestFailed": "SMTP testi başarısız oldu. Bağlantı bilgilerini kontrol edip yeniden deneyin.",
     "providerNotFound": "Bu kimlik sağlayıcı mevcut değil.",
+    "providerDisabled": "Bu kimlik sağlayıcı devre dışı.",
     "providerSlugTaken": "Bu slug ile bir kimlik sağlayıcı zaten var. Farklı bir slug seçin.",
     "providerDiscoveryFailed": "Palmr, sağlayıcının OpenID Connect yapılandırmasını okuyamadı. Veren URL'sini kontrol edip yeniden deneyin.",
     "providerValidationFailed": "Sağlayıcı kontrolleri başarısız oldu. Başarısız kontrolleri inceleyip yeniden deneyin.",

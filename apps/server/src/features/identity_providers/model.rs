@@ -23,6 +23,46 @@ pub enum ProviderTag {}
 
 pub type ProviderId = Id<ProviderTag>;
 
+pub enum AuthRequestTag {}
+
+pub type AuthRequestId = Id<AuthRequestTag>;
+
+/// The purpose of one external authorization request. Only `Login` is exposed by
+/// the public route; `Link` and `Reauth` enter through dedicated authenticated
+/// flows (M12-T05). The service supports all three so the request row contract
+/// does not change when those flows land.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+pub enum AuthorizePurpose {
+    #[serde(rename = "login")]
+    #[schema(rename = "login")]
+    Login,
+    #[serde(rename = "link")]
+    #[schema(rename = "link")]
+    Link,
+    #[serde(rename = "reauth")]
+    #[schema(rename = "reauth")]
+    Reauth,
+}
+
+impl AuthorizePurpose {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Login => "login",
+            Self::Link => "link",
+            Self::Reauth => "reauth",
+        }
+    }
+
+    pub fn parse(text: &str) -> Option<Self> {
+        match text {
+            "login" => Some(Self::Login),
+            "link" => Some(Self::Link),
+            "reauth" => Some(Self::Reauth),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 pub enum Protocol {
     #[serde(rename = "oidc")]
@@ -300,6 +340,12 @@ impl IdentityProvider {
     pub const fn protocol(&self) -> Protocol {
         self.kind.protocol()
     }
+
+    /// A non-sensitive icon discriminator for the public provider list. Derived
+    /// only from the persisted preset, so it exposes no provider configuration.
+    pub const fn icon_key(&self) -> &'static str {
+        self.preset.as_str()
+    }
 }
 
 #[derive(Debug)]
@@ -371,6 +417,33 @@ impl ProviderItem {
             redirect_uri: redirect_uri(base_url, &provider.slug),
             created_at: provider.created_at.to_string(),
             updated_at: provider.updated_at.to_string(),
+        }
+    }
+}
+
+/// The public, non-sensitive view of an enabled provider. It deliberately has
+/// no issuer, client id, endpoint, scope, claim mapping, secret state or
+/// validation state.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct PublicProvider {
+    pub slug: String,
+    pub display_name: String,
+    pub icon_key: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct PublicProviderList {
+    pub providers: Vec<PublicProvider>,
+}
+
+impl PublicProvider {
+    pub fn new(provider: &IdentityProvider) -> Self {
+        Self {
+            slug: provider.slug.clone(),
+            display_name: provider.display_name.clone(),
+            icon_key: provider.icon_key().to_owned(),
         }
     }
 }

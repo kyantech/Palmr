@@ -58,6 +58,7 @@
     "settingBelowFloor": "この値はこの設定で許可されている最小値を下回っています。",
     "smtpTestFailed": "SMTPテストに失敗しました。接続情報を確認して、もう一度お試しください。",
     "providerNotFound": "このIDプロバイダーは存在しません。",
+    "providerDisabled": "このIDプロバイダーは無効になっています。",
     "providerSlugTaken": "このスラッグのIDプロバイダーは既に存在します。別のスラッグを選んでください。",
     "providerDiscoveryFailed": "PalmrはプロバイダーのOpenID Connect設定を読み取れませんでした。発行者URLを確認して、もう一度お試しください。",
     "providerValidationFailed": "プロバイダーのチェックに失敗しました。失敗したチェックを確認して、もう一度お試しください。",

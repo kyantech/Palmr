@@ -58,6 +58,7 @@
     "settingBelowFloor": "Questo valore è inferiore al minimo consentito per questa impostazione.",
     "smtpTestFailed": "Il test SMTP non è riuscito. Controlla i dati di connessione e riprova.",
     "providerNotFound": "Questo provider di identità non esiste.",
+    "providerDisabled": "Questo provider di identità è disattivato.",
     "providerSlugTaken": "Esiste già un provider di identità con questo slug. Scegli uno slug diverso.",
     "providerDiscoveryFailed": "Palmr non è riuscito a leggere la configurazione OpenID Connect del provider. Controlla l'URL dell'emittente e riprova.",
     "providerValidationFailed": "I controlli del provider non sono riusciti. Esamina i controlli falliti e riprova.",

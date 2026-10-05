@@ -193,6 +193,7 @@ async fn it_settings_admin_get_and_patch_round_trip() {
                 "twoFactorRequired": false,
                 "trustedDevicesEnabled": true,
                 "trustedDeviceDurationDays": 30,
+                "authProvidersEnabled": true,
             },
             "quotas": { "defaultUserQuotaBytes": null, "maxFileSizeBytes": null },
             "public-links": { "maxPublicLinkLifetimeDays": null },
@@ -801,6 +802,7 @@ async fn it_settings_patch_absent_vs_null() {
         ("security", "twoFactorRequired"),
         ("security", "trustedDevicesEnabled"),
         ("security", "trustedDeviceDurationDays"),
+        ("security", "authProvidersEnabled"),
     ] {
         let rejected = stack
             .patch_settings(group, &admin, &json!({ key: null }))

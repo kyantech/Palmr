@@ -117,6 +117,7 @@ export const ERROR_PRESENTATION: Readonly<Record<ErrorCode, ErrorPresentation>> 
   SETTING_BELOW_FLOOR: entry("message.settingBelowFloor", inline("warning")),
   SMTP_TEST_FAILED: entry("message.smtpTestFailed", inline()),
   PROVIDER_NOT_FOUND: entry("message.providerNotFound", inline("warning")),
+  PROVIDER_DISABLED: entry("message.providerDisabled", inline("warning")),
   PROVIDER_SLUG_TAKEN: entry("message.providerSlugTaken", inline()),
   PROVIDER_DISCOVERY_FAILED: entry("message.providerDiscoveryFailed", {
     ...inline(),

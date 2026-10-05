@@ -426,7 +426,7 @@ CREATE TABLE login_attempts (
 );
 
 -- table oauth_auth_requests
-CREATE TABLE oauth_auth_requests (
+CREATE TABLE "oauth_auth_requests" (
     id                        TEXT    NOT NULL PRIMARY KEY,
     provider_id               TEXT    NOT NULL,
     state_hash                TEXT    NOT NULL CHECK (length(state_hash) = 64),
@@ -438,8 +438,8 @@ CREATE TABLE oauth_auth_requests (
     redirect_uri              TEXT    NOT NULL CHECK (length(redirect_uri) <= 512),
     post_auth_path            TEXT    NULL CHECK (post_auth_path IS NULL OR
                                         (post_auth_path GLOB '/*' AND post_auth_path NOT GLOB '//*'
-                                         AND post_auth_path NOT LIKE '%..%' AND length(post_auth_path) <= 256)),
-    purpose                   TEXT    NOT NULL CHECK (purpose IN ('login','link','recent_auth')),
+                                         AND post_auth_path NOT LIKE '%..%' AND length(post_auth_path) <= 512)),
+    purpose                   TEXT    NOT NULL CHECK (purpose IN ('login','link','reauth')),
     link_user_id              TEXT    NULL,
     created_at                TEXT    NOT NULL,
     expires_at                TEXT    NOT NULL,

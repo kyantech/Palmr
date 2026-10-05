@@ -58,6 +58,7 @@
     "settingBelowFloor": "Ta wartość jest niższa niż minimum dozwolone dla tego ustawienia.",
     "smtpTestFailed": "Test SMTP nie powiódł się. Sprawdź dane połączenia i spróbuj ponownie.",
     "providerNotFound": "Ten dostawca tożsamości nie istnieje.",
+    "providerDisabled": "Ten dostawca tożsamości jest wyłączony.",
     "providerSlugTaken": "Dostawca tożsamości o tym slugu już istnieje. Wybierz inny slug.",
     "providerDiscoveryFailed": "Palmr nie mógł odczytać konfiguracji OpenID Connect dostawcy. Sprawdź adres URL wystawcy i spróbuj ponownie.",
     "providerValidationFailed": "Kontrole dostawcy nie powiodły się. Przejrzyj nieudane kontrole i spróbuj ponownie.",

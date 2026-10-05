@@ -107,7 +107,8 @@ async fn it_migrate_up_from_empty() {
             .collect::<Vec<_>>(),
         [
             "0001_initial_schema.sql",
-            "0002_add_identity_provider_email_linking.sql"
+            "0002_add_identity_provider_email_linking.sql",
+            "0003_authorization_request_contract.sql"
         ]
     );
     assert_eq!(
@@ -118,6 +119,10 @@ async fn it_migrate_up_from_empty() {
         files[1].1,
         include_str!("../../../migrations/0002_add_identity_provider_email_linking.sql")
     );
+    assert_eq!(
+        files[2].1,
+        include_str!("../../../migrations/0003_authorization_request_contract.sql")
+    );
 
     let data = TempDir::new().unwrap();
     let pools = open_pools(data.path()).await;
@@ -127,8 +132,8 @@ async fn it_migrate_up_from_empty() {
     assert_eq!(
         first,
         MigrationStatus {
-            applied: 2,
-            version: Some(2),
+            applied: 3,
+            version: Some(3),
         }
     );
     let again = pools.migrate(&MIGRATOR).await.unwrap();
@@ -136,7 +141,7 @@ async fn it_migrate_up_from_empty() {
         again,
         MigrationStatus {
             applied: 0,
-            version: Some(2),
+            version: Some(3),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -146,7 +151,7 @@ async fn it_migrate_up_from_empty() {
         reopened.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
             applied: 0,
-            version: Some(2),
+            version: Some(3),
         }
     );
     reopened.shutdown().await.checkpoint.unwrap();
@@ -206,8 +211,8 @@ async fn it_migrate_from_0001_derives_email_linking_by_protocol() {
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 1,
-            version: Some(2),
+            applied: 2,
+            version: Some(3),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -235,7 +240,174 @@ async fn it_migrate_from_0001_derives_email_linking_by_protocol() {
             .iter()
             .map(|record| (record.version, record.success))
             .collect::<Vec<_>>(),
-        [(1, true), (2, true)]
+        [(1, true), (2, true), (3, true)]
+    );
+    connection.close().await.unwrap();
+}
+
+#[tokio::test]
+async fn it_migrate_oauth_requests_to_reauth_and_extended_path() {
+    let files = embedded_files();
+    let (_directory, frozen) = fixture_migrator(&files[..2]).await;
+    let data = TempDir::new().unwrap();
+    let pools = open_pools(data.path()).await;
+    pools.migrate(&frozen).await.unwrap();
+    pools.shutdown().await.checkpoint.unwrap();
+
+    let mut connection = raw_connection(data.path()).await;
+    sqlx::query(
+        "INSERT INTO identity_providers
+             (id, key, display_name, kind, client_id, created_at, updated_at)
+         VALUES ('corp', 'corp', 'Corp', 'oidc', 'client', '2026-09-25T12:00:00.000Z',
+                 '2026-09-25T12:00:00.000Z')",
+    )
+    .execute(&mut connection)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO users
+             (id, email, email_normalized, username, username_normalized, created_at, updated_at)
+         VALUES ('owner', 'owner@example.test', 'owner@example.test', 'owner', 'owner',
+                 '2026-09-25T12:00:00.000Z', '2026-09-25T12:00:00.000Z')",
+    )
+    .execute(&mut connection)
+    .await
+    .unwrap();
+
+    let rows = [
+        ("login", None, "login"),
+        ("link", Some("owner"), "link"),
+        ("reauth", Some("owner"), "recent_auth"),
+    ];
+    for (id, user, purpose) in rows {
+        sqlx::query(
+            "INSERT INTO oauth_auth_requests
+                 (id, provider_id, state_hash, binding_cookie_hash, pkce_verifier_ciphertext,
+                  pkce_verifier_nonce, nonce, redirect_uri, purpose, link_user_id,
+                  created_at, expires_at)
+             VALUES (?1, 'corp', ?2, ?3, x'00', zeroblob(24),
+                     'nonce-0123456789abcdef',
+                     'https://palmr.example/api/v1/auth/providers/corp/callback',
+                     ?4, ?5, '2026-09-25T12:00:00.000Z', '2026-09-25T12:10:00.000Z')",
+        )
+        .bind(id)
+        .bind(format!("{id:0<64}"))
+        .bind(format!("{id:1<64}"))
+        .bind(purpose)
+        .bind(user)
+        .execute(&mut connection)
+        .await
+        .unwrap();
+    }
+    connection.close().await.unwrap();
+
+    let pools = open_pools(data.path()).await;
+    assert_eq!(
+        pools.migrate(&MIGRATOR).await.unwrap(),
+        MigrationStatus {
+            applied: 1,
+            version: Some(3),
+        }
+    );
+    pools.shutdown().await.checkpoint.unwrap();
+
+    let mut connection = raw_connection(data.path()).await;
+    let purposes: Vec<(String, String)> =
+        sqlx::query_as("SELECT id, purpose FROM oauth_auth_requests ORDER BY id")
+            .fetch_all(&mut connection)
+            .await
+            .unwrap();
+    assert_eq!(
+        purposes,
+        [
+            ("link".to_owned(), "link".to_owned()),
+            ("login".to_owned(), "login".to_owned()),
+            ("reauth".to_owned(), "reauth".to_owned()),
+        ]
+    );
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>(
+            "SELECT COUNT(*) FROM oauth_auth_requests WHERE link_user_id = 'owner'"
+        )
+        .fetch_one(&mut connection)
+        .await
+        .unwrap(),
+        2
+    );
+
+    // The retired label is no longer accepted.
+    assert!(sqlx::query(
+        "INSERT INTO oauth_auth_requests
+                 (id, provider_id, state_hash, binding_cookie_hash, pkce_verifier_ciphertext,
+                  pkce_verifier_nonce, nonce, redirect_uri, purpose, created_at, expires_at)
+             VALUES ('legacy', 'corp', ?1, ?2, x'00',
+                     zeroblob(24),
+                     'nonce-0123456789abcdef',
+                     'https://palmr.example/api/v1/auth/providers/corp/callback',
+                     'recent_auth', '2026-09-25T12:00:00.000Z', '2026-09-25T12:10:00.000Z')",
+    )
+    .bind(format!("{:0<64}", "legacy"))
+    .bind(format!("{:1<64}", "legacy"))
+    .execute(&mut connection)
+    .await
+    .is_err());
+
+    // The relative path bound is now 512, not 256.
+    let long = format!("/{}", "a".repeat(511));
+    assert!(
+        sqlx::query("UPDATE oauth_auth_requests SET post_auth_path = ?1 WHERE id = 'login'")
+            .bind(&long)
+            .execute(&mut connection)
+            .await
+            .is_ok()
+    );
+    assert!(
+        sqlx::query("UPDATE oauth_auth_requests SET post_auth_path = ?1 WHERE id = 'login'")
+            .bind(format!("/{}", "a".repeat(512)))
+            .execute(&mut connection)
+            .await
+            .is_err()
+    );
+
+    // Primary key, foreign keys and both indexes survive the rebuild.
+    let fks: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM pragma_foreign_key_list('oauth_auth_requests')")
+            .fetch_one(&mut connection)
+            .await
+            .unwrap();
+    assert_eq!(fks, 2);
+    let indexes: Vec<String> = sqlx::query_scalar(
+        "SELECT name FROM sqlite_master
+          WHERE type = 'index' AND tbl_name = 'oauth_auth_requests' AND name NOT LIKE 'sqlite_%'
+          ORDER BY name",
+    )
+    .fetch_all(&mut connection)
+    .await
+    .unwrap();
+    assert_eq!(
+        indexes,
+        [
+            "ix_oauth_auth_requests_expiry",
+            "ux_oauth_auth_requests_state"
+        ]
+    );
+
+    // The global provider toggle is materialized with the documented default.
+    let (value_type, value_json, is_secret, group): (String, String, i64, String) = sqlx::query_as(
+        "SELECT value_type, value_json, is_secret, group_name
+           FROM app_settings WHERE key = 'auth_providers_enabled'",
+    )
+    .fetch_one(&mut connection)
+    .await
+    .unwrap();
+    assert_eq!(
+        (
+            value_type.as_str(),
+            value_json.as_str(),
+            is_secret,
+            group.as_str()
+        ),
+        ("boolean", "true", 0, "security")
     );
     connection.close().await.unwrap();
 }
