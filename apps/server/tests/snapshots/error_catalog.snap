@@ -23,6 +23,21 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "AUTH_ACCOUNT_INACTIVE",
+    "status": 403,
+    "retryable": false
+  },
+  {
+    "code": "AUTH_EXTERNAL_AMBIGUOUS_IDENTITY",
+    "status": 500,
+    "retryable": false
+  },
+  {
+    "code": "AUTH_EXTERNAL_USERNAME_UNAVAILABLE",
+    "status": 409,
+    "retryable": false
+  },
+  {
     "code": "AUTH_INVALID_CREDENTIALS",
     "status": 401,
     "retryable": false
@@ -188,6 +203,21 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "PROVIDER_AUTH_DENIED",
+    "status": 401,
+    "retryable": false
+  },
+  {
+    "code": "PROVIDER_AUTO_PROVISION_DISABLED",
+    "status": 403,
+    "retryable": false
+  },
+  {
+    "code": "PROVIDER_CODE_EXCHANGE_FAILED",
+    "status": 502,
+    "retryable": true
+  },
+  {
     "code": "PROVIDER_DISABLED",
     "status": 403,
     "retryable": false
@@ -198,7 +228,17 @@ source: apps/server/src/domain/error_code.rs
     "retryable": true
   },
   {
+    "code": "PROVIDER_EMAIL_UNVERIFIED",
+    "status": 403,
+    "retryable": false
+  },
+  {
     "code": "PROVIDER_HAS_LINKS",
+    "status": 409,
+    "retryable": false
+  },
+  {
+    "code": "PROVIDER_IDENTITY_ALREADY_LINKED",
     "status": 409,
     "retryable": false
   },
@@ -215,6 +255,11 @@ source: apps/server/src/domain/error_code.rs
   {
     "code": "PROVIDER_SLUG_TAKEN",
     "status": 409,
+    "retryable": false
+  },
+  {
+    "code": "PROVIDER_STATE_INVALID",
+    "status": 400,
     "retryable": false
   },
   {

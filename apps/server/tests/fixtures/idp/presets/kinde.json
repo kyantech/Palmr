@@ -1,0 +1,18 @@
+{
+  "document": {
+    "iss": "https://corp.kinde.example",
+    "sub": "kp_c3143a4b50ad43c88e541d9077681782",
+    "email": "ada@kinde.example",
+    "given_name": "Ada",
+    "family_name": "Lovelace",
+    "picture": null
+  },
+  "expected": {
+    "subject": "kp_c3143a4b50ad43c88e541d9077681782",
+    "email": "ada@kinde.example",
+    "emailVerified": false,
+    "username": null,
+    "name": null,
+    "picture": null
+  }
+}

@@ -676,6 +676,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/providers/{slug}/callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["provider_callback"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/reauthenticate": {
         parameters: {
             query?: never;
@@ -1459,7 +1475,7 @@ export interface components {
             enrollmentId: string;
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN" | "SMTP_TEST_FAILED" | "PROVIDER_NOT_FOUND" | "PROVIDER_DISABLED" | "PROVIDER_SLUG_TAKEN" | "PROVIDER_DISCOVERY_FAILED" | "PROVIDER_VALIDATION_FAILED" | "PROVIDER_HAS_LINKS" | "PROVIDER_ID_TOKEN_INVALID" | "PROVIDER_USERINFO_FAILED" | "PROVIDER_SUBJECT_MISSING";
+        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN" | "SMTP_TEST_FAILED" | "PROVIDER_NOT_FOUND" | "PROVIDER_DISABLED" | "PROVIDER_SLUG_TAKEN" | "PROVIDER_DISCOVERY_FAILED" | "PROVIDER_VALIDATION_FAILED" | "PROVIDER_HAS_LINKS" | "PROVIDER_ID_TOKEN_INVALID" | "PROVIDER_USERINFO_FAILED" | "PROVIDER_SUBJECT_MISSING" | "PROVIDER_STATE_INVALID" | "PROVIDER_AUTH_DENIED" | "PROVIDER_CODE_EXCHANGE_FAILED" | "PROVIDER_EMAIL_UNVERIFIED" | "PROVIDER_AUTO_PROVISION_DISABLED" | "PROVIDER_IDENTITY_ALREADY_LINKED" | "AUTH_ACCOUNT_INACTIVE" | "AUTH_EXTERNAL_AMBIGUOUS_IDENTITY" | "AUTH_EXTERNAL_USERNAME_UNAVAILABLE";
         ForgotPasswordRequest: {
             /** @example ada@example.com */
             identifier: string;
@@ -5984,6 +6000,45 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ApiErrorBody"];
                 };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    provider_callback: {
+        parameters: {
+            query?: {
+                /** @description The authorization code issued by the identity provider. */
+                code?: string;
+                /** @description The single-use authorization state created by `POST /api/v1/auth/providers/{slug}/authorize`. */
+                state?: string;
+                /** @description Present when the identity provider denied the request. Its value is never trusted, rendered or echoed. */
+                error?: string;
+                /** @description Provider supplied text. It is ignored and never echoed. */
+                error_description?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Provider slug */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Always a redirect. On success `Location` is `PALMR_BASE_URL` plus the validated post-authentication path, `palmr_session` and `palmr_csrf` are set and `palmr_oauth` is cleared. On failure `Location` is `PALMR_BASE_URL/login?error=<CODE>` where `<CODE>` is one of `PROVIDER_STATE_INVALID`, `PROVIDER_AUTH_DENIED`, `PROVIDER_DISABLED`, `PROVIDER_CODE_EXCHANGE_FAILED`, `PROVIDER_ID_TOKEN_INVALID`, `PROVIDER_USERINFO_FAILED`, `PROVIDER_SUBJECT_MISSING`, `PROVIDER_EMAIL_UNVERIFIED`, `PROVIDER_AUTO_PROVISION_DISABLED`, `PROVIDER_IDENTITY_ALREADY_LINKED`, `AUTH_EXTERNAL_AMBIGUOUS_IDENTITY`, `AUTH_EXTERNAL_USERNAME_UNAVAILABLE`, `AUTH_ACCOUNT_INACTIVE`, `AUTH_LOCKED` or `INTERNAL_ERROR`; `palmr_oauth` is cleared. No JSON body is returned. */
+            303: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Rate limited. */
             429: {

@@ -196,6 +196,24 @@ error_catalog! {
         "The identity provider userinfo request failed";
     ProviderSubjectMissing = "PROVIDER_SUBJECT_MISSING", UNAUTHORIZED, retryable: false,
         "The identity provider did not return a usable subject";
+    ProviderStateInvalid = "PROVIDER_STATE_INVALID", BAD_REQUEST, retryable: false,
+        "The authorization state is invalid or was already used";
+    ProviderAuthDenied = "PROVIDER_AUTH_DENIED", UNAUTHORIZED, retryable: false,
+        "The identity provider denied the authorization request";
+    ProviderCodeExchangeFailed = "PROVIDER_CODE_EXCHANGE_FAILED", BAD_GATEWAY, retryable: true,
+        "The identity provider rejected the authorization code exchange";
+    ProviderEmailUnverified = "PROVIDER_EMAIL_UNVERIFIED", FORBIDDEN, retryable: false,
+        "The identity provider did not assert a verified e-mail address";
+    ProviderAutoProvisionDisabled = "PROVIDER_AUTO_PROVISION_DISABLED", FORBIDDEN, retryable: false,
+        "No account matches this identity and automatic account creation is off";
+    ProviderIdentityAlreadyLinked = "PROVIDER_IDENTITY_ALREADY_LINKED", CONFLICT, retryable: false,
+        "The external identity is already linked to an account";
+    AuthAccountInactive = "AUTH_ACCOUNT_INACTIVE", FORBIDDEN, retryable: false,
+        "The account is deactivated";
+    AuthExternalAmbiguousIdentity = "AUTH_EXTERNAL_AMBIGUOUS_IDENTITY", INTERNAL_SERVER_ERROR, retryable: false,
+        "The external identity matched more than one account";
+    AuthExternalUsernameUnavailable = "AUTH_EXTERNAL_USERNAME_UNAVAILABLE", CONFLICT, retryable: false,
+        "No username could be allocated for the new account";
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -302,6 +320,7 @@ mod tests {
                 "DATABASE_BUSY",
                 "IDEMPOTENCY_REQUEST_IN_PROGRESS",
                 "INTERNAL_ERROR",
+                "PROVIDER_CODE_EXCHANGE_FAILED",
                 "PROVIDER_DISCOVERY_FAILED",
                 "PROVIDER_USERINFO_FAILED",
                 "RATE_LIMITED",

@@ -1,0 +1,21 @@
+{
+  "document": {
+    "iss": "https://id.corp.example",
+    "sub": "2ff8b2c0-6b0d-4c64-a0c4-7a4f0d9c1e11",
+    "email": "ada@pocket.example",
+    "email_verified": true,
+    "preferred_username": "ada",
+    "name": "Ada Lovelace",
+    "given_name": "Ada",
+    "family_name": "Lovelace",
+    "picture": "https://id.corp.example/api/users/2ff8/profile-picture.png"
+  },
+  "expected": {
+    "subject": "2ff8b2c0-6b0d-4c64-a0c4-7a4f0d9c1e11",
+    "email": "ada@pocket.example",
+    "emailVerified": true,
+    "username": "ada",
+    "name": "Ada Lovelace",
+    "picture": "https://id.corp.example/api/users/2ff8/profile-picture.png"
+  }
+}

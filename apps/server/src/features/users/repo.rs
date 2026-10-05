@@ -139,6 +139,17 @@ pub async fn find_by_username_normalized(
     row.map(|row| user_from(&row)).transpose()
 }
 
+pub async fn find_all_by_email_normalized_in_tx(
+    tx: &mut WriteTx<'_>,
+    email: &NormalizedIdentifier,
+) -> Result<Vec<User>, UserError> {
+    let rows = sqlx::query(&format!("{SELECT_BY_EMAIL_NORMALIZED} LIMIT 2"))
+        .bind(email.as_str())
+        .fetch_all(tx.executor())
+        .await?;
+    rows.iter().map(user_from).collect()
+}
+
 pub async fn find_by_login_identifier(
     reader: &ReadPool,
     identifier: &NormalizedIdentifier,

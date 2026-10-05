@@ -55,6 +55,13 @@ struct UserinfoStub {
     delay: Option<Duration>,
 }
 
+struct TokenStub {
+    status: u16,
+    body: Value,
+    raw: Option<Vec<u8>>,
+    delay: Option<Duration>,
+}
+
 fn lock<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
     mutex.lock().unwrap_or_else(PoisonError::into_inner)
 }
@@ -63,7 +70,8 @@ pub struct MockIdp {
     server: MockServer,
     jwks: Arc<Mutex<JwksStub>>,
     userinfo: Arc<Mutex<UserinfoStub>>,
-    token: Arc<Mutex<Value>>,
+    token: Arc<Mutex<TokenStub>>,
+    emails: Arc<Mutex<UserinfoStub>>,
     issuer: String,
 }
 
@@ -83,11 +91,21 @@ impl MockIdp {
             body: serde_json::to_vec(&verified_userinfo(NONCE)).expect("serialize userinfo"),
             delay: None,
         }));
-        let token = Arc::new(Mutex::new(json!({
-            "access_token": "access-token",
-            "token_type": "Bearer",
-            "expires_in": 3600
-        })));
+        let token = Arc::new(Mutex::new(TokenStub {
+            status: 200,
+            body: json!({
+                "access_token": "access-token",
+                "token_type": "Bearer",
+                "expires_in": 3600
+            }),
+            raw: None,
+            delay: None,
+        }));
+        let emails = Arc::new(Mutex::new(UserinfoStub {
+            status: 200,
+            body: b"[]".to_vec(),
+            delay: None,
+        }));
 
         let discovery = json!({
             "issuer": issuer,
@@ -136,7 +154,27 @@ impl MockIdp {
         Mock::given(method("POST"))
             .and(path("/token"))
             .respond_with(move |_request: &Request| {
-                ResponseTemplate::new(200).set_body_json(lock(&token_state).clone())
+                let stub = lock(&token_state);
+                let mut response = match &stub.raw {
+                    Some(raw) => ResponseTemplate::new(stub.status)
+                        .set_body_raw(raw.clone(), "application/json"),
+                    None => ResponseTemplate::new(stub.status).set_body_json(stub.body.clone()),
+                };
+                if let Some(delay) = stub.delay {
+                    response = response.set_delay(delay);
+                }
+                response
+            })
+            .mount(&server)
+            .await;
+
+        let emails_state = Arc::clone(&emails);
+        Mock::given(method("GET"))
+            .and(path("/userinfo/emails"))
+            .respond_with(move |_request: &Request| {
+                let stub = lock(&emails_state);
+                ResponseTemplate::new(stub.status)
+                    .set_body_raw(stub.body.clone(), "application/json")
             })
             .mount(&server)
             .await;
@@ -146,6 +184,7 @@ impl MockIdp {
             jwks,
             userinfo,
             token,
+            emails,
             issuer,
         }
     }
@@ -288,7 +327,59 @@ impl MockIdp {
     }
 
     pub fn set_token_response(&self, document: Value) {
-        *lock(&self.token) = document;
+        let mut stub = lock(&self.token);
+        stub.status = 200;
+        stub.body = document;
+        stub.raw = None;
+    }
+
+    pub fn set_token_status(&self, status: u16, document: Value) {
+        let mut stub = lock(&self.token);
+        stub.status = status;
+        stub.body = document;
+        stub.raw = None;
+    }
+
+    pub fn set_token_raw(&self, status: u16, body: impl Into<Vec<u8>>) {
+        let mut stub = lock(&self.token);
+        stub.status = status;
+        stub.raw = Some(body.into());
+    }
+
+    pub fn set_token_delay(&self, delay: Option<Duration>) {
+        lock(&self.token).delay = delay;
+    }
+
+    pub fn set_emails(&self, document: Value) {
+        let mut stub = lock(&self.emails);
+        stub.status = 200;
+        stub.body = serde_json::to_vec(&document).unwrap();
+    }
+
+    pub fn set_emails_status(&self, status: u16) {
+        lock(&self.emails).status = status;
+    }
+
+    pub async fn token_requests(&self) -> Vec<Request> {
+        self.server
+            .received_requests()
+            .await
+            .unwrap_or_default()
+            .into_iter()
+            .filter(|request| {
+                request.method == wiremock::http::Method::POST && request.url.path() == "/token"
+            })
+            .collect()
+    }
+
+    pub async fn userinfo_request_count(&self) -> usize {
+        self.server
+            .received_requests()
+            .await
+            .unwrap_or_default()
+            .iter()
+            .filter(|request| request.url.path() == "/userinfo")
+            .count()
     }
 
     /// The number of outbound `GET /jwks` requests the server has actually

@@ -1,6 +1,6 @@
 # External identity providers: control plane
 
-Implemented by `apps/server/src/features/identity_providers/` (M12-T01). Login, callback, token validation and linking arrive in M12-T02 onward.
+Implemented by `apps/server/src/features/identity_providers/` (M12-T01 to M12-T04). Manual linking, SSO re-authentication and the safe SSO-only mode arrive in M12-T05 onward.
 
 ## Model
 
@@ -45,3 +45,33 @@ The checks run concurrently and each is bounded by the fetch limits. A check rep
 ## Ordering audit
 
 `PUT /order` records `IDENTITY_PROVIDER_UPDATED` with `{"fields":["sortOrder"]}` for each provider whose persisted `sort_order` changed, in the same transaction as the update. A reorder that changes nothing records nothing, and an audit failure rolls the whole order back.
+
+## Callback
+
+`GET /api/v1/auth/providers/{slug}/callback` (`public`, `rl.auth.login`) is a top-level browser navigation, so every outcome is a `303 See Other`: success goes to `PALMR_BASE_URL` plus the validated `post_auth_path` stored by the authorize call, failure goes to `PALMR_BASE_URL/login?error=<CODE>`. Only a stable `ErrorCode` crosses into the redirect; provider text (`error`, `error_description`) is never read, logged, audited or echoed. Every outcome clears `palmr_oauth` with the original `Path=/api/v1/auth/providers`.
+
+The order is normative and fail-closed (`callback.rs`):
+
+1. an `error` parameter is `PROVIDER_AUTH_DENIED`; nothing is exchanged and no row is touched;
+2. a missing `palmr_oauth` cookie, a missing or duplicated `state` or `code` is `PROVIDER_STATE_INVALID` with no row consumed;
+3. one short `BEGIN IMMEDIATE` runs the conditional `UPDATE oauth_auth_requests SET consumed_at … WHERE state_hash = ? AND consumed_at IS NULL AND expires_at > ? RETURNING …`; zero rows (unknown, expired, replayed) is `PROVIDER_STATE_INVALID`;
+4. from here the row is consumed and stays consumed: the binding cookie digest must equal `binding_cookie_hash` (constant time), the row's provider must be the provider in the path, the row purpose must be `login`, and `redirect_uri` must equal the URI derived from `PALMR_BASE_URL` exactly. Any mismatch is `PROVIDER_STATE_INVALID` and nothing leaves the process. A disabled provider or a disabled global toggle is `PROVIDER_DISABLED`;
+5. the PKCE verifier is opened with `palmr:v1:oidc` and the request-row AAD (a failure is `PROVIDER_STATE_INVALID`), and the code is exchanged at the token endpoint honouring `token_auth_method` (`client_secret_basic` sends only an `Authorization` header, `client_secret_post` sends `client_id` and `client_secret` in the form, `none` sends `client_id` only). Redirects are never followed. Any transport, status or body failure is `PROVIDER_CODE_EXCHANGE_FAILED`. Access and ID tokens live only for the request;
+6. `oidc` runs the T02 `IdTokenValidator` with the stored nonce (`PROVIDER_ID_TOKEN_INVALID`, `PROVIDER_SUBJECT_MISSING`, `PROVIDER_DISCOVERY_FAILED`); a missing `id_token` is `PROVIDER_ID_TOKEN_INVALID`. When the signed token lacks a username, name or picture and the provider has a userinfo endpoint, one best-effort userinfo request may fill only those display fields, and only when its `sub` equals the signed `sub`. `oauth2` fetches userinfo (`PROVIDER_USERINFO_FAILED`);
+7. a subject that is empty, longer than 255 characters or contains control characters is `PROVIDER_SUBJECT_MISSING`.
+
+No network request is made while a SQLite write transaction is open. The sign-in itself is a single transaction (`resolve.rs`, `provision.rs`, the shared `AuthService::issue_session_in_tx`): resolution, link or account creation, their audit rows, the session, `identity_links.last_login_at` and `sessions.identity_link_id` commit together, and a refusal by the account-state gate rolls the whole transaction back. The `LOGIN_SUCCEEDED` event (`method = external`) is enqueued after the commit.
+
+## Account resolution
+
+1. **Existing link.** `(provider_id, subject)` is authoritative. A changed provider e-mail moves nothing and rewrites neither `email_at_link` nor `email_verified_at_link`, which are link-time evidence. A `suspended` link, an inactive user and a locked user are refused (`AUTH_ACCOUNT_INACTIVE`, `AUTH_LOCKED`) through the shared gate. Palmr TOTP is not applied to external login; the shared gate still restricts hybrid accounts (`must_change_password`, mandatory local 2FA enrolment).
+2. **Verified-e-mail auto-link.** Only when the provider has `allowEmailLinking`, the e-mail parses and is explicitly verified, exactly one active user has that normalized e-mail, and that user has no link to the provider yet (`PROVIDER_IDENTITY_ALREADY_LINKED` otherwise). It writes `link_method = auto_verified_email` and `IDENTITY_LINK_CREATED {via: verified_email, provider_id}` in the same transaction. A unique-index conflict is re-resolved by reading the row that won; a subject is never bound twice.
+3. **Auto-provision.** Only when `autoProvision` is on, the e-mail is verified and no account has it. The account is role `user`, active, `password_hash NULL`, `must_change_password 0`, quota `inherit`, with its link (`auto_provision`), `USER_CREATED` and `IDENTITY_LINK_CREATED` in one transaction. Usernames come from the e-mail local part (NFKC, lowercase, `[a-z0-9._-]`, separator runs collapsed to their first character, trimmed, at most 28 characters, `user` when shorter than 3) and are inserted directly; a unique violation on the normalized username advances to `base-2` … `base-50`, then one attempt with a 20-character base and 8 random base32 characters, then `AUTH_EXTERNAL_USERNAME_UNAVAILABLE`.
+4. **Refuse.** `PROVIDER_EMAIL_UNVERIFIED` when the e-mail is not explicitly verified, `PROVIDER_AUTO_PROVISION_DISABLED` otherwise. The code never depends on whether an account exists. More than one matching account fails closed with `AUTH_EXTERNAL_AMBIGUOUS_IDENTITY`.
+
+An e-mail is verified only when the mapped claim is JSON `true` or the string `"true"`. GitHub never proves an e-mail through `/user`: the secondary endpoint (`<userinfo endpoint>/emails`) is read and only an address with `primary` and `verified` both `true` is eligible. That rule is keyed on the `github` preset and is not applied to any other provider.
+
+## Avatars
+
+A usable avatar is an absolute `https` URL (for Discord, the `avatar` hash is turned into its CDN URL). The callback never fetches it and never stores it: it enqueues `avatar.fetch_external` with `{userId, identityLinkId, providerId, url}` and the dedup key `avatar.fetch_external:<link id>`, in its own short transaction after the session commits. A failure to enqueue is logged and never fails the login. The handler lands with M18-T05.
+

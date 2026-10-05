@@ -1,0 +1,29 @@
+{
+  "document": {
+    "uid": "u-77",
+    "mail": "ada@legacy.example",
+    "mail_ok": "true",
+    "handle": "ada77",
+    "display": "Ada L.",
+    "photo": "https://legacy.example/p/ada.png",
+    "sub": "decoy-subject",
+    "email": "decoy@legacy.example",
+    "email_verified": false
+  },
+  "mapping": {
+    "subject": "uid",
+    "email": "mail",
+    "emailVerified": "mail_ok",
+    "username": "handle",
+    "name": "display",
+    "picture": "photo"
+  },
+  "expected": {
+    "subject": "u-77",
+    "email": "ada@legacy.example",
+    "emailVerified": true,
+    "username": "ada77",
+    "name": "Ada L.",
+    "picture": "https://legacy.example/p/ada.png"
+  }
+}

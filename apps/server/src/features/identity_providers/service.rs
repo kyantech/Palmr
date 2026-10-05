@@ -91,6 +91,18 @@ impl IdentityProviderService {
         }
     }
 
+    pub(crate) fn audit(&self) -> &AuditService {
+        &self.audit
+    }
+
+    pub(crate) fn http(&self) -> &ProviderHttpClient {
+        &self.http
+    }
+
+    pub(crate) fn clock_handle(&self) -> Arc<dyn Clock> {
+        Arc::clone(&self.clock)
+    }
+
     pub(crate) fn settings(&self) -> &SettingsHandle {
         &self.settings
     }

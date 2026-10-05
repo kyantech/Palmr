@@ -1,0 +1,20 @@
+{
+  "document": {
+    "iss": "https://corp.eu.auth0.example/",
+    "sub": "auth0|651f3a9c8d2b1e0012a4b5c6",
+    "email": "ada@auth0.example",
+    "email_verified": true,
+    "name": "Ada Lovelace",
+    "nickname": "ada",
+    "picture": "https://s.gravatar.example/avatar/abc.png",
+    "updated_at": "2026-09-01T10:00:00.000Z"
+  },
+  "expected": {
+    "subject": "auth0|651f3a9c8d2b1e0012a4b5c6",
+    "email": "ada@auth0.example",
+    "emailVerified": true,
+    "username": null,
+    "name": "Ada Lovelace",
+    "picture": "https://s.gravatar.example/avatar/abc.png"
+  }
+}

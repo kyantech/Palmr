@@ -1,5 +1,6 @@
 use serde_json::Value;
 
+use super::claims::email_verified;
 use super::http_client::{FetchFailure, ProviderHttpClient};
 use super::model::ClaimMapping;
 use crate::domain::error_code::ErrorCode;
@@ -76,6 +77,20 @@ pub async fn fetch_userinfo(
     endpoint: &str,
     access_token: &str,
 ) -> Result<Value, UserinfoError> {
+    let value = fetch_json(client, endpoint, access_token).await?;
+    if !value.is_object() {
+        return Err(UserinfoError::NotObject);
+    }
+    Ok(value)
+}
+
+/// Same transport guarantees as [`fetch_userinfo`], for documents that are not
+/// a JSON object (a provider's secondary e-mail list is an array).
+pub async fn fetch_json(
+    client: &ProviderHttpClient,
+    endpoint: &str,
+    access_token: &str,
+) -> Result<Value, UserinfoError> {
     if access_token.is_empty() {
         return Err(UserinfoError::Fetch(FetchFailure::InvalidUrl));
     }
@@ -89,17 +104,12 @@ pub async fn fetch_userinfo(
     if document.body.is_empty() {
         return Err(UserinfoError::Empty);
     }
-    let value: Value =
-        serde_json::from_slice(document.body.as_ref()).map_err(|_| UserinfoError::Malformed)?;
-    if !value.is_object() {
-        return Err(UserinfoError::NotObject);
-    }
-    Ok(value)
+    serde_json::from_slice(document.body.as_ref()).map_err(|_| UserinfoError::Malformed)
 }
 
 /// Extracts the mapped profile claims from a userinfo (or ID-token) document
-/// without interpreting them. A non-boolean `email_verified` is treated as
-/// not verified.
+/// without interpreting them. Only a boolean `true` or the string `"true"`
+/// counts as a verified e-mail.
 pub fn profile_from_claims(claims: &Value, mapping: &ClaimMapping) -> ExternalProfile {
     let text = |key: &str| {
         claims
@@ -116,10 +126,7 @@ pub fn profile_from_claims(claims: &Value, mapping: &ClaimMapping) -> ExternalPr
             _ => text(&mapping.subject),
         },
         email: text(&mapping.email),
-        email_verified: claims
-            .get(&mapping.email_verified)
-            .and_then(Value::as_bool)
-            .unwrap_or(false),
+        email_verified: email_verified(claims.get(&mapping.email_verified)),
         username: text(&mapping.username),
         name: text(&mapping.name),
         picture: text(&mapping.picture),
@@ -163,7 +170,7 @@ mod tests {
     fn unit_userinfo_profile_is_conservative() {
         let mapping = ClaimMapping::standard();
         let profile = profile_from_claims(
-            &json!({"sub": "u-1", "email": "", "email_verified": "true"}),
+            &json!({"sub": "u-1", "email": "", "email_verified": "yes"}),
             &mapping,
         );
         assert_eq!(profile.subject.as_deref(), Some("u-1"));

@@ -1,0 +1,20 @@
+{
+  "document": {
+    "id": "80351110224678912",
+    "username": "nelly",
+    "discriminator": "0",
+    "global_name": "Nelly",
+    "avatar": "8342729096ea3675442027381ff50dfe",
+    "email": "nelly@discord.example",
+    "verified": true,
+    "locale": "en-US"
+  },
+  "expected": {
+    "subject": "80351110224678912",
+    "email": "nelly@discord.example",
+    "emailVerified": true,
+    "username": "nelly",
+    "name": "Nelly",
+    "picture": "8342729096ea3675442027381ff50dfe"
+  }
+}

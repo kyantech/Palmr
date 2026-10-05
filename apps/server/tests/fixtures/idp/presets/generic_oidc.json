@@ -1,0 +1,19 @@
+{
+  "document": {
+    "iss": "https://sso.corp.example",
+    "sub": "user-0001",
+    "email": "ada@corp.example",
+    "email_verified": "true",
+    "preferred_username": "ada",
+    "name": "Ada Lovelace",
+    "picture": "https://sso.corp.example/ada.png"
+  },
+  "expected": {
+    "subject": "user-0001",
+    "email": "ada@corp.example",
+    "emailVerified": true,
+    "username": "ada",
+    "name": "Ada Lovelace",
+    "picture": "https://sso.corp.example/ada.png"
+  }
+}

@@ -611,7 +611,10 @@ async fn it_authorize_persists_everything_the_callback_needs() {
     .unwrap();
     assert!(id.parse::<AuthRequestId>().is_ok());
     assert_eq!(stored_provider, provider_id);
-    assert_eq!(state_hash, sha256_hex(&Base64UrlUnpadded::decode_vec(&state).unwrap()).as_str());
+    assert_eq!(
+        state_hash,
+        sha256_hex(&Base64UrlUnpadded::decode_vec(&state).unwrap()).as_str()
+    );
     assert_eq!(binding_hash.len(), 64);
     assert_eq!(nonce.len(), 43);
     assert_eq!(

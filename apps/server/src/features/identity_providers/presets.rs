@@ -150,7 +150,13 @@ pub static CATALOGUE: [PresetSpec; 11] = [
     },
     oidc(Preset::Auth0, "Auth0"),
     oidc(Preset::Kinde, "Kinde"),
-    oidc(Preset::Frontegg, "Frontegg"),
+    PresetSpec {
+        claims: ClaimNames {
+            picture: "profilePictureUrl",
+            ..STANDARD_CLAIMS
+        },
+        ..oidc(Preset::Frontegg, "Frontegg")
+    },
     oidc(Preset::Generic, "Custom OIDC"),
     PresetSpec {
         preset: Preset::Generic,
@@ -286,6 +292,21 @@ mod tests {
             spec_for(Preset::Zitadel, Protocol::Oidc).token_auth_method,
             TokenAuthMethod::ClientSecretBasic
         );
+    }
+
+    #[test]
+    fn unit_frontegg_preset_maps_its_actual_avatar_claim() {
+        let spec = spec_for(Preset::Frontegg, Protocol::Oidc);
+        assert_eq!(spec.claim_mapping().picture, "profilePictureUrl");
+        let catalogue = PresetCatalogue::bundled();
+        let item = catalogue
+            .items
+            .iter()
+            .find(|item| item.preset == Preset::Frontegg)
+            .unwrap();
+        assert_eq!(item.claim_mapping.picture, "profilePictureUrl");
+        assert_eq!(item.claim_mapping.subject, "sub");
+        assert_eq!(item.claim_mapping.email, "email");
     }
 
     fn keys(value: &serde_json::Value, found: &mut Vec<String>) {

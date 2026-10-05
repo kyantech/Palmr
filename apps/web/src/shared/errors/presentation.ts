@@ -131,6 +131,24 @@ export const ERROR_PRESENTATION: Readonly<Record<ErrorCode, ErrorPresentation>> 
     retryable: true,
   }),
   PROVIDER_SUBJECT_MISSING: entry("message.providerSubjectMissing", inline()),
+  PROVIDER_STATE_INVALID: entry("message.providerStateInvalid", inline("warning")),
+  PROVIDER_AUTH_DENIED: entry("message.providerAuthDenied", inline("warning")),
+  PROVIDER_CODE_EXCHANGE_FAILED: entry("message.providerCodeExchangeFailed", {
+    ...inline(),
+    retryable: true,
+  }),
+  PROVIDER_EMAIL_UNVERIFIED: entry("message.providerEmailUnverified", inline("warning")),
+  PROVIDER_AUTO_PROVISION_DISABLED: entry(
+    "message.providerAutoProvisionDisabled",
+    inline("warning"),
+  ),
+  PROVIDER_IDENTITY_ALREADY_LINKED: entry(
+    "message.providerIdentityAlreadyLinked",
+    inline("warning"),
+  ),
+  AUTH_ACCOUNT_INACTIVE: entry("message.authAccountInactive", inline("warning")),
+  AUTH_EXTERNAL_AMBIGUOUS_IDENTITY: entry("message.authExternalAmbiguousIdentity", inline()),
+  AUTH_EXTERNAL_USERNAME_UNAVAILABLE: entry("message.authExternalUsernameUnavailable", inline()),
 
   CLIENT_OFFLINE: entry("message.offline", { ...toast("warning", true), showRequestId: false }),
   CLIENT_NETWORK_ERROR: entry("message.networkError", {

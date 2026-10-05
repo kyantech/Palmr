@@ -1826,3 +1826,23 @@ fn it_openapi_admin_user_read_routes_declare_closed_typed_contracts() {
     }
     assert!(serialized.contains("USER_NOT_FOUND"));
 }
+
+#[test]
+fn it_openapi_provider_callback_documents_a_redirect_only_contract() {
+    let document = application_document();
+    let operation = &document["paths"]["/api/v1/auth/providers/{slug}/callback"]["get"];
+    assert!(operation["responses"]["303"].is_object());
+    assert!(operation["responses"]["200"].is_null());
+    let names: Vec<&str> = operation["parameters"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|parameter| parameter["name"].as_str().unwrap())
+        .collect();
+    for name in ["slug", "code", "state", "error", "error_description"] {
+        assert!(names.contains(&name), "{name}");
+    }
+    let rendered = operation.to_string();
+    assert!(!rendered.contains("access_token"));
+    assert!(!rendered.contains("clientSecret"));
+}

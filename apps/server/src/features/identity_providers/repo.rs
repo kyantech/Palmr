@@ -10,6 +10,7 @@ use super::model::{
 use crate::domain::time::Timestamp;
 use crate::features::users::model::UserId;
 use crate::infra::crypto::aead::SealedSecret;
+use crate::infra::crypto::hash::TokenDigest;
 use crate::infra::db::{DbError, ReadPool, WriteTx};
 use crate::infra::http::pagination::{Conjunction, PageRequest};
 
@@ -268,6 +269,67 @@ pub async fn insert_auth_request(
     .execute(tx.executor())
     .await?;
     Ok(())
+}
+
+pub struct ConsumedAuthRequest {
+    pub id: AuthRequestId,
+    pub provider_id: ProviderId,
+    pub binding_cookie_hash: TokenDigest,
+    pub verifier: SealedSecret,
+    pub nonce: String,
+    pub redirect_uri: String,
+    pub post_auth_path: Option<String>,
+    pub purpose: AuthorizePurpose,
+}
+
+pub async fn consume_auth_request(
+    tx: &mut WriteTx<'_>,
+    state_hash: &TokenDigest,
+    now: Timestamp,
+) -> Result<Option<ConsumedAuthRequest>, ProviderError> {
+    let row = sqlx::query(
+        "UPDATE oauth_auth_requests SET consumed_at = ?1
+         WHERE state_hash = ?2 AND consumed_at IS NULL AND expires_at > ?1
+         RETURNING id, provider_id, binding_cookie_hash, pkce_verifier_ciphertext,
+                   pkce_verifier_nonce, key_version, nonce, redirect_uri, post_auth_path, purpose",
+    )
+    .bind(now.to_string())
+    .bind(state_hash.as_str())
+    .fetch_optional(tx.executor())
+    .await?;
+    row.map(|row| consumed_from(&row)).transpose()
+}
+
+fn consumed_from(row: &SqliteRow) -> Result<ConsumedAuthRequest, ProviderError> {
+    let text = |column: &'static str| -> Result<String, ProviderError> {
+        row.try_get::<String, _>(column)
+            .map_err(|_| invariant(column))
+    };
+    let ciphertext: Vec<u8> = row
+        .try_get("pkce_verifier_ciphertext")
+        .map_err(|_| invariant("pkce_verifier_ciphertext"))?;
+    let nonce: Vec<u8> = row
+        .try_get("pkce_verifier_nonce")
+        .map_err(|_| invariant("pkce_verifier_nonce"))?;
+    let key_version: i64 = row
+        .try_get("key_version")
+        .map_err(|_| invariant("key_version"))?;
+    Ok(ConsumedAuthRequest {
+        id: text("id")?.parse().map_err(|_| invariant("id"))?,
+        provider_id: text("provider_id")?
+            .parse()
+            .map_err(|_| invariant("provider_id"))?,
+        binding_cookie_hash: TokenDigest::parse(&text("binding_cookie_hash")?)
+            .map_err(|_| invariant("binding_cookie_hash"))?,
+        verifier: SealedSecret::from_parts(ciphertext, &nonce, key_version)
+            .map_err(|_| invariant("pkce_verifier_ciphertext"))?,
+        nonce: text("nonce")?,
+        redirect_uri: text("redirect_uri")?,
+        post_auth_path: row
+            .try_get::<Option<String>, _>("post_auth_path")
+            .map_err(|_| invariant("post_auth_path"))?,
+        purpose: AuthorizePurpose::parse(&text("purpose")?).ok_or_else(|| invariant("purpose"))?,
+    })
 }
 
 type Query<'q> = sqlx::query::Query<'q, Sqlite, sqlx::sqlite::SqliteArguments<'q>>;

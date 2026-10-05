@@ -1,0 +1,19 @@
+{
+  "document": {
+    "iss": "https://corp-a1b2.zitadel.example",
+    "sub": "212345678901234567",
+    "email": "ada@zitadel.example",
+    "email_verified": true,
+    "name": "Ada Lovelace",
+    "preferred_username": "ada@corp-a1b2.zitadel.example",
+    "picture": "https://corp-a1b2.zitadel.example/assets/v1/avatar.png"
+  },
+  "expected": {
+    "subject": "212345678901234567",
+    "email": "ada@zitadel.example",
+    "emailVerified": true,
+    "username": "ada@corp-a1b2.zitadel.example",
+    "name": "Ada Lovelace",
+    "picture": "https://corp-a1b2.zitadel.example/assets/v1/avatar.png"
+  }
+}

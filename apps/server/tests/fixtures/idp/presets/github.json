@@ -1,0 +1,36 @@
+{
+  "document": {
+    "login": "octocat",
+    "id": 583231,
+    "node_id": "MDQ6VXNlcjU4MzIzMQ==",
+    "avatar_url": "https://avatars.githubusercontent.example/u/583231?v=4",
+    "name": "monalisa octocat",
+    "email": "public@octocat.example"
+  },
+  "emails": [
+    {
+      "email": "secondary@octocat.example",
+      "primary": false,
+      "verified": true
+    },
+    {
+      "email": "unverified@octocat.example",
+      "primary": false,
+      "verified": false
+    },
+    {
+      "email": "primary@octocat.example",
+      "primary": true,
+      "verified": true
+    }
+  ],
+  "expected": {
+    "subject": "583231",
+    "email": "public@octocat.example",
+    "emailVerified": false,
+    "username": "octocat",
+    "name": "monalisa octocat",
+    "picture": "https://avatars.githubusercontent.example/u/583231?v=4"
+  },
+  "eligibleEmail": "primary@octocat.example"
+}

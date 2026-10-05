@@ -48,6 +48,7 @@ use crate::features::auth::sessions::SessionService;
 use crate::features::auth::totp::TotpService;
 use crate::features::email::transport::CapturingTransport;
 use crate::features::email::EmailService;
+use crate::features::identity_providers::callback::ExternalLoginService;
 use crate::features::identity_providers::{IdentityProviderService, ProviderHttpClient};
 use crate::features::settings::effective::{EffectiveSettingsService, OperatorPolicy};
 use crate::features::settings::{AdminSettingsService, SettingsService, SmtpTestService};
@@ -200,6 +201,7 @@ impl Stack {
             config.base_url.clone(),
             settings.handle(),
         );
+        let external_login = ExternalLoginService::new(providers.clone(), auth.clone());
         let email_changes = EmailChangeService::new(
             pools.clone(),
             Arc::new(clock.clone()),
@@ -244,6 +246,7 @@ impl Stack {
             .layer(Extension(invites.clone()))
             .layer(Extension(admin_users.clone()))
             .layer(Extension(providers.clone()))
+            .layer(Extension(external_login.clone()))
             .layer(Extension(admin_settings.clone()))
             .layer(Extension(SmtpTestService::new(
                 settings.handle(),
@@ -1787,6 +1790,7 @@ mod admin_settings;
 mod admin_smtp;
 mod admin_users;
 mod authorize;
+mod callback;
 mod forced_states;
 mod invites;
 mod mfa;

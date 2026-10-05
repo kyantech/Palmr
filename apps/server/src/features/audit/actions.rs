@@ -247,6 +247,31 @@ pub fn login_succeeded(method: &'static str) -> ActionSpec {
     ActionSpec::new(AuditAction::LoginSucceeded, metadata)
 }
 
+pub fn login_succeeded_external(provider_id: &str) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("method", Value::from("external")),
+        ("provider_id", Value::from(provider_id)),
+    ]);
+    ActionSpec::new(AuditAction::LoginSucceeded, metadata)
+}
+
+pub fn login_failed_external(provider_id: &str, reason: &'static str) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("method", Value::from("external")),
+        ("provider_id", Value::from(provider_id)),
+        ("reason", Value::from(reason)),
+    ]);
+    ActionSpec::new(AuditAction::LoginFailed, metadata)
+}
+
+pub fn identity_link_created(via: &'static str, provider_id: &str) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("via", Value::from(via)),
+        ("provider_id", Value::from(provider_id)),
+    ]);
+    ActionSpec::new(AuditAction::IdentityLinkCreated, metadata)
+}
+
 pub fn login_failed(method: &'static str, reason: &'static str) -> ActionSpec {
     let metadata = Metadata::json(&[
         ("method", Value::from(method)),

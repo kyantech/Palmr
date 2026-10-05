@@ -195,6 +195,7 @@ pub enum AuditCode {
     NoHandler,
     AuthInvalidCredentials,
     AuthLocked,
+    AuthAccountInactive,
     AuthPasswordLoginDisabled,
     Auth2faInvalid,
 }
@@ -208,6 +209,7 @@ impl AuditCode {
             Self::NoHandler => "JOB_NO_HANDLER",
             Self::AuthInvalidCredentials => "AUTH_INVALID_CREDENTIALS",
             Self::AuthLocked => "AUTH_LOCKED",
+            Self::AuthAccountInactive => "AUTH_ACCOUNT_INACTIVE",
             Self::AuthPasswordLoginDisabled => "AUTH_PASSWORD_LOGIN_DISABLED",
             Self::Auth2faInvalid => "AUTH_2FA_INVALID",
         }
@@ -303,6 +305,7 @@ pub enum AuditAction {
     IdentityProviderDeleted,
     IdentityProviderEnabled,
     IdentityProviderDisabled,
+    IdentityLinkCreated,
 }
 
 impl AuditAction {
@@ -344,6 +347,7 @@ impl AuditAction {
         Self::IdentityProviderDeleted,
         Self::IdentityProviderEnabled,
         Self::IdentityProviderDisabled,
+        Self::IdentityLinkCreated,
     ];
 
     pub const fn as_str(self) -> &'static str {
@@ -385,6 +389,7 @@ impl AuditAction {
             Self::IdentityProviderDeleted => "IDENTITY_PROVIDER_DELETED",
             Self::IdentityProviderEnabled => "IDENTITY_PROVIDER_ENABLED",
             Self::IdentityProviderDisabled => "IDENTITY_PROVIDER_DISABLED",
+            Self::IdentityLinkCreated => "IDENTITY_LINK_CREATED",
         }
     }
 
@@ -426,7 +431,8 @@ impl AuditAction {
             | Self::IdentityProviderUpdated
             | Self::IdentityProviderDeleted
             | Self::IdentityProviderEnabled
-            | Self::IdentityProviderDisabled => WritePath::InTransaction,
+            | Self::IdentityProviderDisabled
+            | Self::IdentityLinkCreated => WritePath::InTransaction,
         }
     }
 }

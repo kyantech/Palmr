@@ -6,10 +6,11 @@ use std::sync::Arc;
 use std::task::{Context, Poll};
 use std::time::Duration;
 
+use base64ct::Encoding;
 use bytes::Bytes;
-use http::header::{ACCEPT, AUTHORIZATION, CONTENT_LENGTH, LOCATION, USER_AGENT};
+use http::header::{ACCEPT, AUTHORIZATION, CONTENT_LENGTH, CONTENT_TYPE, LOCATION, USER_AGENT};
 use http::{HeaderValue, Method, Request, StatusCode};
-use http_body_util::{BodyExt, Empty, LengthLimitError, Limited};
+use http_body_util::{BodyExt, Full, LengthLimitError, Limited};
 use hyper_rustls::HttpsConnector;
 use hyper_util::client::legacy::connect::dns::Name;
 use hyper_util::client::legacy::connect::HttpConnector;
@@ -28,6 +29,7 @@ pub const MAX_REDIRECTS: usize = 2;
 
 const AGENT: HeaderValue = HeaderValue::from_static("Palmr");
 const JSON: HeaderValue = HeaderValue::from_static("application/json");
+const FORM: HeaderValue = HeaderValue::from_static("application/x-www-form-urlencoded");
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FetchFailure {
@@ -57,14 +59,19 @@ impl FetchFailure {
     }
 }
 
+pub struct FormPost<'a> {
+    pub fields: &'a [(&'a str, &'a str)],
+    pub basic: Option<(&'a str, &'a str)>,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Document {
     pub status: StatusCode,
     pub body: Bytes,
 }
 
-type OpenClient = Client<HttpsConnector<HttpConnector>, Empty<Bytes>>;
-type GuardedClient = Client<HttpsConnector<HttpConnector<PublicOnlyResolver>>, Empty<Bytes>>;
+type OpenClient = Client<HttpsConnector<HttpConnector>, Full<Bytes>>;
+type GuardedClient = Client<HttpsConnector<HttpConnector<PublicOnlyResolver>>, Full<Bytes>>;
 
 struct Inner {
     open: OpenClient,
@@ -129,6 +136,21 @@ impl ProviderHttpClient {
     pub async fn bearer_document(&self, url: &str, token: &str) -> Result<Document, FetchFailure> {
         let inner = self.inner.as_ref().ok_or(FetchFailure::Tls)?;
         let exchange = inner.bearer(url, token);
+        tokio::time::timeout(self.timeout, exchange)
+            .await
+            .unwrap_or(Err(FetchFailure::Timeout))
+    }
+
+    /// Posts a form to the original origin only. Redirects are never followed,
+    /// so client credentials and the authorization code cannot be replayed to
+    /// another host, and the response is read under the same hard cap.
+    pub async fn post_form(
+        &self,
+        url: &str,
+        form: &FormPost<'_>,
+    ) -> Result<Document, FetchFailure> {
+        let inner = self.inner.as_ref().ok_or(FetchFailure::Tls)?;
+        let exchange = inner.post(url, form);
         tokio::time::timeout(self.timeout, exchange)
             .await
             .unwrap_or(Err(FetchFailure::Timeout))
@@ -255,6 +277,51 @@ impl Inner {
         Err(FetchFailure::TooManyRedirects)
     }
 
+    async fn post(&self, url: &str, form: &FormPost<'_>) -> Result<Document, FetchFailure> {
+        let target = acceptable_url(url).ok_or(FetchFailure::InvalidUrl)?;
+        let body = {
+            let mut serializer = url::form_urlencoded::Serializer::new(String::new());
+            for (name, value) in form.fields {
+                serializer.append_pair(name, value);
+            }
+            serializer.finish()
+        };
+        let mut builder = Request::builder()
+            .method(Method::POST)
+            .uri(target.as_str())
+            .header(ACCEPT, JSON)
+            .header(CONTENT_TYPE, FORM)
+            .header(USER_AGENT, AGENT);
+        if let Some((identifier, secret)) = form.basic {
+            let credentials = format!(
+                "{}:{}",
+                url::form_urlencoded::byte_serialize(identifier.as_bytes()).collect::<String>(),
+                url::form_urlencoded::byte_serialize(secret.as_bytes()).collect::<String>()
+            );
+            let mut authorization = HeaderValue::from_str(&format!(
+                "Basic {}",
+                base64ct::Base64::encode_string(credentials.as_bytes())
+            ))
+            .map_err(|_| FetchFailure::InvalidUrl)?;
+            authorization.set_sensitive(true);
+            builder = builder.header(AUTHORIZATION, authorization);
+        }
+        let request = builder
+            .body(Full::new(Bytes::from(body)))
+            .map_err(|_| FetchFailure::InvalidUrl)?;
+        let response = self
+            .open
+            .request(request)
+            .await
+            .map_err(|error| classify(&error))?;
+        let status = response.status();
+        if !status.is_success() {
+            return Err(FetchFailure::Status(status.as_u16()));
+        }
+        let body = capped_body(response).await?;
+        Ok(Document { status, body })
+    }
+
     async fn probe(&self, url: &str) -> Result<StatusCode, FetchFailure> {
         let url = acceptable_url(url).ok_or(FetchFailure::InvalidUrl)?;
         let response = self.send(&url, false).await?;
@@ -271,7 +338,7 @@ impl Inner {
             .uri(url.as_str())
             .header(ACCEPT, JSON)
             .header(USER_AGENT, AGENT)
-            .body(Empty::<Bytes>::new())
+            .body(Full::new(Bytes::new()))
             .map_err(|_| FetchFailure::InvalidUrl)?;
         let result = if guarded {
             self.guarded.request(request).await
@@ -297,7 +364,7 @@ impl Inner {
             .header(ACCEPT, JSON)
             .header(USER_AGENT, AGENT)
             .header(AUTHORIZATION, authorization)
-            .body(Empty::<Bytes>::new())
+            .body(Full::new(Bytes::new()))
             .map_err(|_| FetchFailure::InvalidUrl)?;
         self.open
             .request(request)

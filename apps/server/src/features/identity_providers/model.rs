@@ -27,6 +27,10 @@ pub enum AuthRequestTag {}
 
 pub type AuthRequestId = Id<AuthRequestTag>;
 
+pub enum IdentityLinkTag {}
+
+pub type IdentityLinkId = Id<IdentityLinkTag>;
+
 /// The purpose of one external authorization request. Only `Login` is exposed by
 /// the public route; `Link` and `Reauth` enter through dedicated authenticated
 /// flows (M12-T05). The service supports all three so the request row contract

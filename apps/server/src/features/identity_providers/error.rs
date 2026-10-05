@@ -4,9 +4,13 @@ use super::discovery::DiscoveryFailure;
 use crate::domain::error_code::ErrorCode;
 use crate::domain::time::InvalidTimestamp;
 use crate::features::audit::error::AuditError;
+use crate::features::auth::error::LoginError;
+use crate::features::auth::sessions::SessionError;
+use crate::features::users::error::UserError;
 use crate::infra::crypto::CryptoError;
 use crate::infra::db::DbError;
 use crate::infra::http::error::{ApiError, CheckDetail};
+use crate::infra::jobs::JobsError;
 
 #[derive(Debug)]
 pub enum ProviderError {
@@ -122,5 +126,128 @@ impl From<sqlx::Error> for ProviderError {
 impl From<InvalidTimestamp> for ProviderError {
     fn from(error: InvalidTimestamp) -> Self {
         Self::Time(error)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ExternalLoginError {
+    code: ErrorCode,
+    kind: &'static str,
+}
+
+impl ExternalLoginError {
+    pub const fn refused(code: ErrorCode) -> Self {
+        Self {
+            code,
+            kind: code.as_str(),
+        }
+    }
+
+    pub const fn internal(kind: &'static str) -> Self {
+        Self {
+            code: ErrorCode::InternalError,
+            kind,
+        }
+    }
+
+    pub const fn code(self) -> ErrorCode {
+        self.code
+    }
+
+    pub const fn kind(self) -> &'static str {
+        self.kind
+    }
+
+    pub fn is_server_fault(self) -> bool {
+        self.code.status().is_server_error()
+    }
+}
+
+impl fmt::Display for ExternalLoginError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "external login failed: {}", self.kind)
+    }
+}
+
+impl std::error::Error for ExternalLoginError {}
+
+impl From<DbError> for ExternalLoginError {
+    fn from(error: DbError) -> Self {
+        Self {
+            code: error.api_code(),
+            kind: error.kind().as_str(),
+        }
+    }
+}
+
+impl From<sqlx::Error> for ExternalLoginError {
+    fn from(error: sqlx::Error) -> Self {
+        DbError::from(error).into()
+    }
+}
+
+impl From<ProviderError> for ExternalLoginError {
+    fn from(error: ProviderError) -> Self {
+        Self {
+            code: error.api_error().code(),
+            kind: error.kind(),
+        }
+    }
+}
+
+impl From<AuditError> for ExternalLoginError {
+    fn from(error: AuditError) -> Self {
+        match error {
+            AuditError::Db(error) => error.into(),
+            other => Self::internal(other.kind()),
+        }
+    }
+}
+
+impl From<UserError> for ExternalLoginError {
+    fn from(error: UserError) -> Self {
+        match error {
+            UserError::Db(error) => error.into(),
+            other => Self::internal(other.kind()),
+        }
+    }
+}
+
+impl From<LoginError> for ExternalLoginError {
+    fn from(error: LoginError) -> Self {
+        Self {
+            code: error.api_error().code(),
+            kind: error.kind(),
+        }
+    }
+}
+
+impl From<SessionError> for ExternalLoginError {
+    fn from(error: SessionError) -> Self {
+        match error {
+            SessionError::Db(error) => error.into(),
+            other => Self::internal(other.kind()),
+        }
+    }
+}
+
+impl From<JobsError> for ExternalLoginError {
+    fn from(error: JobsError) -> Self {
+        match error {
+            JobsError::Db(error) => error.into(),
+            other => Self::internal(other.kind()),
+        }
+    }
+}
+
+impl From<CryptoError> for ExternalLoginError {
+    fn from(_: CryptoError) -> Self {
+        Self::internal("external_login_crypto")
+    }
+}
+
+impl From<InvalidTimestamp> for ExternalLoginError {
+    fn from(_: InvalidTimestamp) -> Self {
+        Self::internal("external_login_time_out_of_range")
     }
 }

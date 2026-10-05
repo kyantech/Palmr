@@ -8,6 +8,7 @@ use serde_json::{Map, Value};
 use sha2::{Digest, Sha256};
 use subtle::ConstantTimeEq;
 
+use super::claims::email_verified;
 use super::http_client::ProviderHttpClient;
 use super::jwks::{JwksCache, JwksError};
 use super::model::{ClaimMapping, ProviderId};
@@ -240,13 +241,13 @@ impl IdTokenValidator {
     }
 }
 
-struct ClaimContext<'a> {
-    issuer: &'a str,
-    client_id: &'a str,
-    expected_nonce: &'a str,
-    purpose: ValidationPurpose,
-    access_token: Option<&'a str>,
-    mapping: &'a ClaimMapping,
+pub(super) struct ClaimContext<'a> {
+    pub(super) issuer: &'a str,
+    pub(super) client_id: &'a str,
+    pub(super) expected_nonce: &'a str,
+    pub(super) purpose: ValidationPurpose,
+    pub(super) access_token: Option<&'a str>,
+    pub(super) mapping: &'a ClaimMapping,
 }
 
 fn split(token: &str) -> Result<(&str, &str, &str), IdTokenError> {
@@ -346,7 +347,7 @@ fn classify_jwt_error(kind: &ErrorKind) -> IdTokenError {
     }
 }
 
-fn check_claims(
+pub(super) fn check_claims(
     claims: &Value,
     context: &ClaimContext<'_>,
     algorithm: JwsAlgorithm,
@@ -392,10 +393,7 @@ fn check_claims(
     Ok(ValidatedIdToken {
         subject,
         email: text_claim(claims, &mapping.email),
-        email_verified: claims
-            .get(&mapping.email_verified)
-            .and_then(Value::as_bool)
-            .unwrap_or(false),
+        email_verified: email_verified(claims.get(&mapping.email_verified)),
         username: text_claim(claims, &mapping.username),
         name: text_claim(claims, &mapping.name),
         picture: text_claim(claims, &mapping.picture),

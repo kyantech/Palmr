@@ -1,6 +1,7 @@
+use axum::body::Body;
 use axum::extract::{Extension, Path, RawQuery, Request};
 use axum::response::{IntoResponse, Response};
-use http::header::{CACHE_CONTROL, CONTENT_TYPE};
+use http::header::{CACHE_CONTROL, CONTENT_TYPE, LOCATION};
 use http::{HeaderValue, StatusCode};
 use utoipa::openapi::path::Parameter;
 use utoipa_axum::routes;
@@ -8,6 +9,7 @@ use utoipa_axum::routes;
 use super::authorize::{
     AuthorizeContext, AuthorizeRequest, AuthorizeResponse, AUTH_REQUEST_TTL_SECONDS,
 };
+use super::callback::{CallbackParams, CallbackRequest, ExternalLoginService};
 use super::discovery::Discovered;
 use super::error::ProviderError;
 use super::input::{
@@ -22,7 +24,10 @@ use crate::app::auth_class::AuthClass;
 use crate::app::openapi::with_query_parameters;
 use crate::app::router::{RateLimitClass, RoutePolicy, Routes, Transport};
 use crate::app::state::AppState;
+use crate::domain::error_code::ErrorCode;
 use crate::features::auth::sessions::routes::client_metadata;
+use crate::features::auth::sessions::SessionService;
+use crate::infra::http::cookies::{self, OAUTH_COOKIE};
 use crate::infra::http::error::{ApiError, ApiErrorBody, JSON_CONTENT_TYPE};
 use crate::infra::http::extractors::Admin;
 use crate::infra::http::json;
@@ -65,12 +70,19 @@ pub const AUTHORIZE_ROUTE: RoutePolicy = RoutePolicy::new(
     Transport::ControlPlane,
 );
 
+pub const CALLBACK_ROUTE: RoutePolicy = RoutePolicy::new(
+    AuthClass::Public,
+    RateLimitClass::AuthLogin,
+    Transport::ControlPlane,
+);
+
 const NO_STORE: HeaderValue = HeaderValue::from_static("no-store");
 
 pub fn routes() -> Routes<AppState> {
     Routes::new()
         .route(PUBLIC_LIST_ROUTE, routes!(list_public_providers))
         .route(AUTHORIZE_ROUTE, routes!(authorize_provider))
+        .route(CALLBACK_ROUTE, routes!(provider_callback))
         .route(
             READ_ROUTE,
             with_query_parameters(routes!(list_providers), &list_parameters()),
@@ -172,6 +184,99 @@ async fn authorize_provider(
         }
         Err(error) => provider_error(&error, request_id.as_ref()),
     }
+}
+
+#[utoipa::path(
+    get,
+    path = "/api/v1/auth/providers/{slug}/callback",
+    tag = "auth-providers",
+    params(
+        ("slug" = String, Path, description = "Provider slug"),
+        ("code" = Option<String>, Query, description = "The authorization code issued by the identity provider."),
+        ("state" = Option<String>, Query, description = "The single-use authorization state created by `POST /api/v1/auth/providers/{slug}/authorize`."),
+        ("error" = Option<String>, Query, description = "Present when the identity provider denied the request. Its value is never trusted, rendered or echoed."),
+        ("error_description" = Option<String>, Query, description = "Provider supplied text. It is ignored and never echoed."),
+    ),
+    responses(
+        (
+            status = 303,
+            description = "Always a redirect. On success `Location` is `PALMR_BASE_URL` plus the validated post-authentication path, `palmr_session` and `palmr_csrf` are set and `palmr_oauth` is cleared. On failure `Location` is `PALMR_BASE_URL/login?error=<CODE>` where `<CODE>` is one of `PROVIDER_STATE_INVALID`, `PROVIDER_AUTH_DENIED`, `PROVIDER_DISABLED`, `PROVIDER_CODE_EXCHANGE_FAILED`, `PROVIDER_ID_TOKEN_INVALID`, `PROVIDER_USERINFO_FAILED`, `PROVIDER_SUBJECT_MISSING`, `PROVIDER_EMAIL_UNVERIFIED`, `PROVIDER_AUTO_PROVISION_DISABLED`, `PROVIDER_IDENTITY_ALREADY_LINKED`, `AUTH_EXTERNAL_AMBIGUOUS_IDENTITY`, `AUTH_EXTERNAL_USERNAME_UNAVAILABLE`, `AUTH_ACCOUNT_INACTIVE`, `AUTH_LOCKED` or `INTERNAL_ERROR`; `palmr_oauth` is cleared. No JSON body is returned."
+        ),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn provider_callback(
+    Extension(service): Extension<ExternalLoginService>,
+    Path(slug): Path<String>,
+    RawQuery(raw_query): RawQuery,
+    request: Request,
+) -> Response {
+    let binding = cookies::read(request.headers(), OAUTH_COOKIE)
+        .ok()
+        .flatten()
+        .map(crate::domain::secret::Secret::new);
+    let context = CallbackRequest {
+        binding,
+        session: SessionService::client(&request),
+        audit: client_metadata(&request),
+        presented_session: SessionService::presented_token(request.headers()),
+    };
+    let params = CallbackParams::parse(raw_query.as_deref());
+
+    let (location, session) = match service.complete(&slug, params, context).await {
+        Ok(signed_in) => (signed_in.location, Some(signed_in.session)),
+        Err(error) => {
+            if error.is_server_fault() {
+                tracing::error!(kind = error.kind(), "external login callback failed");
+            }
+            (service.failure_location(error.code()), None)
+        }
+    };
+
+    let mut response = redirect_response(&location);
+    let mut failed = cookies_failed(&service, response.headers_mut(), session.as_ref());
+    if failed {
+        response = redirect_response(&service.failure_location(ErrorCode::InternalError));
+        failed = service
+            .cookie_policy()
+            .expire_oauth_binding(response.headers_mut())
+            .is_err();
+    }
+    if failed {
+        tracing::error!("external login callback cookies could not be emitted");
+    }
+    response
+}
+
+fn cookies_failed(
+    service: &ExternalLoginService,
+    headers: &mut http::HeaderMap,
+    session: Option<&crate::features::auth::sessions::MintedSession>,
+) -> bool {
+    if let Some(session) = session {
+        if service
+            .auth()
+            .sessions()
+            .emit_cookies(headers, session)
+            .is_err()
+        {
+            return true;
+        }
+    }
+    service
+        .cookie_policy()
+        .expire_oauth_binding(headers)
+        .is_err()
+}
+
+fn redirect_response(location: &str) -> Response {
+    let mut response = Response::new(Body::empty());
+    *response.status_mut() = StatusCode::SEE_OTHER;
+    if let Ok(value) = HeaderValue::from_str(location) {
+        response.headers_mut().insert(LOCATION, value);
+    }
+    response.headers_mut().insert(CACHE_CONTROL, NO_STORE);
+    response
 }
 
 #[utoipa::path(

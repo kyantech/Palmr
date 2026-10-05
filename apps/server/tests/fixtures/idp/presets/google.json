@@ -1,0 +1,21 @@
+{
+  "document": {
+    "iss": "https://accounts.google.com",
+    "sub": "110169484474386276334",
+    "email": "ada@gmail.example",
+    "email_verified": true,
+    "name": "Ada Lovelace",
+    "given_name": "Ada",
+    "family_name": "Lovelace",
+    "picture": "https://lh3.googleusercontent.example/a/photo=s96-c",
+    "hd": "corp.example"
+  },
+  "expected": {
+    "subject": "110169484474386276334",
+    "email": "ada@gmail.example",
+    "emailVerified": true,
+    "username": null,
+    "name": "Ada Lovelace",
+    "picture": "https://lh3.googleusercontent.example/a/photo=s96-c"
+  }
+}

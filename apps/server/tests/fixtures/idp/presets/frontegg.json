@@ -1,0 +1,21 @@
+{
+  "document": {
+    "iss": "https://corp.frontegg.example",
+    "sub": "7d0b6c1e-5a52-4d0b-9d6a-0b6b8d1f7c33",
+    "email": "ada@frontegg.example",
+    "email_verified": true,
+    "name": "Ada Lovelace",
+    "profilePictureUrl": "https://corp.frontegg.example/avatar.png"
+  },
+  "expected": {
+    "subject": "7d0b6c1e-5a52-4d0b-9d6a-0b6b8d1f7c33",
+    "email": "ada@frontegg.example",
+    "emailVerified": true,
+    "username": null,
+    "name": "Ada Lovelace",
+    "picture": "https://corp.frontegg.example/avatar.png"
+  },
+  "absent": {
+    "remove": "profilePictureUrl"
+  }
+}

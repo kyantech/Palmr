@@ -6,6 +6,7 @@ POST /api/v1/auth/password/reset public
 POST /api/v1/auth/password/reset/check public
 GET /api/v1/auth/providers public
 POST /api/v1/auth/providers/{slug}/authorize public
+GET /api/v1/auth/providers/{slug}/callback public
 GET /api/v1/bootstrap public
 GET /api/v1/public/branding/{asset} public
 GET /api/v1/public/invites/{token} public
