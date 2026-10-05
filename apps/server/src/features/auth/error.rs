@@ -24,7 +24,7 @@ pub enum LoginError {
     SecondFactorChallengeExpired,
     BackupCodeInvalid,
     TrustedDeviceDisabled,
-    ExternalReauthUnavailable,
+    ExternalReauthRequired,
     RepositoryInvariant { column: &'static str },
     VerificationTask,
     User(UserError),
@@ -50,7 +50,7 @@ impl LoginError {
             Self::SecondFactorChallengeExpired => "login_second_factor_challenge_expired",
             Self::BackupCodeInvalid => "login_backup_code_invalid",
             Self::TrustedDeviceDisabled => "login_trusted_device_disabled",
-            Self::ExternalReauthUnavailable => "reauth_external_unavailable",
+            Self::ExternalReauthRequired => "reauth_external_required",
             Self::RepositoryInvariant { .. } => "login_repository_invariant",
             Self::VerificationTask => "login_verification_task_failed",
             Self::User(error) => error.kind(),
@@ -83,7 +83,7 @@ impl LoginError {
             | Self::Session(SessionError::Db(error)) => ApiError::new(error.api_code()),
             Self::Session(error) => error.api_error(),
             Self::SecondFactorUnavailable
-            | Self::ExternalReauthUnavailable
+            | Self::ExternalReauthRequired
             | Self::RepositoryInvariant { .. }
             | Self::VerificationTask
             | Self::User(_)
@@ -124,8 +124,8 @@ impl fmt::Display for LoginError {
             Self::TrustedDeviceDisabled => {
                 f.write_str("remembering a device was requested while trusted devices are disabled")
             }
-            Self::ExternalReauthUnavailable => f.write_str(
-                "the account has no local password and external re-authentication is not available",
+            Self::ExternalReauthRequired => f.write_str(
+                "the account has no local password and must re-authenticate through its identity provider",
             ),
             Self::RepositoryInvariant { column } => {
                 write!(

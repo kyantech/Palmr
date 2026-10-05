@@ -593,7 +593,7 @@ async fn it_reauth_second_factor_account_fails_closed() {
 }
 
 #[tokio::test]
-async fn it_reauth_sso_only_account_fails_closed_until_external_reauth() {
+async fn it_reauth_sso_only_session_without_a_bound_identity_fails_closed() {
     let root = TempDir::new().unwrap();
     let clock = TestClock::new(START);
     let stack = Stack::start_with(root.path(), &clock, probes()).await;
@@ -608,13 +608,26 @@ async fn it_reauth_sso_only_account_fails_closed_until_external_reauth() {
     clock.advance(Duration::from_secs(10 * 60));
     let before = session_row(&stack, &current.session).await;
 
-    for body in [json!({}), json!({ "password": PASSWORD })] {
+    for (body, status, code) in [
+        (json!({}), StatusCode::NOT_FOUND, "PROVIDER_LINK_NOT_FOUND"),
+        (
+            json!({ "password": PASSWORD }),
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "VALIDATION_ERROR",
+        ),
+    ] {
         let refused = stack.reauth(&current, &body.to_string(), 11).await;
-        assert_eq!(refused.status, StatusCode::INTERNAL_SERVER_ERROR, "{body}");
+        assert_eq!(refused.status, status, "{body}");
         assert!(refused.set_cookies().is_empty());
-        assert_eq!(refused.error_code(), "INTERNAL_ERROR");
+        assert_eq!(refused.error_code(), code);
         assert!(!refused.text().contains("externalReauthUrl"));
     }
+    assert_eq!(
+        stack
+            .scalar_i64("SELECT COUNT(*) FROM oauth_auth_requests")
+            .await,
+        0
+    );
     assert_eq!(
         session_row(&stack, &current.session).await.last_auth_at,
         before.last_auth_at

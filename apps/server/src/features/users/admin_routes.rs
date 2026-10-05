@@ -10,9 +10,15 @@ use crate::app::auth_class::AuthClass;
 use crate::app::openapi::with_query_parameters;
 use crate::app::router::{IdempotencyMode, RateLimitClass, RoutePolicy, Routes, Transport};
 use crate::app::state::AppState;
+use crate::domain::error_code::ErrorCode;
 use crate::domain::role::Role;
 use crate::features::auth::sessions::routes::client_metadata;
 use crate::features::auth::sessions::{SessionItem, SessionService};
+use crate::features::identity_providers::callback::ExternalLoginService;
+use crate::features::identity_providers::error::ExternalLoginError;
+use crate::features::identity_providers::link::{IdentityLinkItem, UnlinkCommand, UnlinkScope};
+use crate::features::identity_providers::link_routes;
+use crate::features::identity_providers::model::IdentityLinkId;
 use crate::infra::http::error::{ApiError, ApiErrorBody, JSON_CONTENT_TYPE};
 use crate::infra::http::extractors::Admin;
 use crate::infra::http::idempotency::{Admission, Claim, IdempotencyRequest};
@@ -74,11 +80,20 @@ pub fn routes() -> Routes<AppState> {
         .route(SENSITIVE_WRITE_ROUTE, routes!(reset_user_password))
         .route(UPDATE_ROUTE, routes!(unlock_user))
         .route(SENSITIVE_WRITE_ROUTE, routes!(revoke_user_sessions))
+        .route(
+            READ_ROUTE,
+            with_query_parameters(routes!(list_user_identity_links), &link_list_parameters()),
+        )
+        .route(SENSITIVE_WRITE_ROUTE, routes!(unlink_user_identity))
         .route(UPDATE_ROUTE, routes!(set_user_quota))
         .route(
             READ_ROUTE,
             with_query_parameters(routes!(list_user_sessions), &session_list_parameters()),
         )
+}
+
+fn link_list_parameters() -> Vec<Parameter> {
+    link_routes::list_parameters()
 }
 
 fn user_list_parameters() -> Vec<Parameter> {
@@ -525,6 +540,103 @@ async fn revoke_user_sessions(
         }
         Err(error) => admin_user_error(&error, request_id.as_ref()),
     }
+}
+
+#[utoipa::path(
+    get,
+    path = "/api/v1/admin/users/{id}/identity-links",
+    tag = "admin-users",
+    params(("id" = String, Path, description = "User UUIDv7")),
+    responses(
+        (status = 200, description = "The target user's external identity links in the same safe representation as `GET /api/v1/identity-links`: oldest first with a stable tie-break, no provider configuration, client id, secret, token or state. `totalCount` is exact.", body = Page<IdentityLinkItem>),
+        (status = 400, description = "`CURSOR_INVALID`.", body = ApiErrorBody),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role required.", body = ApiErrorBody),
+        (status = 404, description = "`USER_NOT_FOUND`.", body = ApiErrorBody),
+        (status = 422, description = "Invalid query.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn list_user_identity_links(
+    Extension(service): Extension<ExternalLoginService>,
+    Admin(_admin): Admin,
+    Path(id): Path<String>,
+    RawQuery(raw_query): RawQuery,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let not_found = || {
+        link_routes::link_error(
+            &ExternalLoginError::refused(ErrorCode::UserNotFound),
+            request_id.as_ref(),
+        )
+    };
+    let Some(user_id) = link_routes::parse_user_id(&id) else {
+        return not_found();
+    };
+    let page = match service.link_query(raw_query.as_deref()) {
+        Ok(page) => page,
+        Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
+    };
+    match service.user_exists(user_id).await {
+        Ok(true) => {}
+        Ok(false) => return not_found(),
+        Err(error) => return link_routes::link_error(&error, request_id.as_ref()),
+    }
+    match service.list_links(user_id, page).await {
+        Ok(page) => link_routes::json_response(StatusCode::OK, &page, request_id.as_ref()),
+        Err(error) => link_routes::link_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    delete,
+    path = "/api/v1/admin/users/{id}/identity-links/{linkId}",
+    tag = "admin-users",
+    params(
+        ("id" = String, Path, description = "User UUIDv7"),
+        ("linkId" = String, Path, description = "Identity-link UUIDv7 that must belong to the user"),
+    ),
+    responses(
+        (status = 204, description = "The identity link is removed and every session and trusted device of the target user is revoked in the same transaction, audited as `IDENTITY_LINK_REMOVED`. The acting Admin's own sessions are untouched unless the Admin is the target, in which case the current credentials are expired. The global SSO-only standing invariant (`PASSWORD_LOGIN_DISABLE_UNSAFE`) is owned by the password-login policy and is not evaluated here yet."),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "Administrator role or recent authentication required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
+        (status = 404, description = "`USER_NOT_FOUND`, or `PROVIDER_LINK_NOT_FOUND` when the link is unknown, malformed or does not belong to the user.", body = ApiErrorBody),
+        (status = 409, description = "`PASSWORD_LOGIN_DISABLE_UNSAFE` when the removal would leave no safe Administrator login path while password login is disabled.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn unlink_user_identity(
+    Extension(service): Extension<ExternalLoginService>,
+    Admin(admin): Admin,
+    Path((id, link_id)): Path<(String, String)>,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let Some(target) = link_routes::parse_user_id(&id) else {
+        return link_routes::link_error(
+            &ExternalLoginError::refused(ErrorCode::UserNotFound),
+            request_id.as_ref(),
+        );
+    };
+    let Ok(link) = link_id.parse::<IdentityLinkId>() else {
+        return link_routes::link_error(
+            &ExternalLoginError::refused(ErrorCode::ProviderLinkNotFound),
+            request_id.as_ref(),
+        );
+    };
+    link_routes::unlink_response(
+        &service,
+        UnlinkCommand {
+            actor: &admin,
+            target,
+            link,
+            scope: UnlinkScope::Admin,
+            client: &client_metadata(&request),
+        },
+        request_id.as_ref(),
+    )
+    .await
 }
 
 #[utoipa::path(

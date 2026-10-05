@@ -62,7 +62,8 @@ const RESERVED_AUTHORIZE_PARAMS: [&str; 9] = [
 
 /// The internal request context of one authorization request. `Login` binds no
 /// user; `Link` and `Reauth` require one. The public route may only construct
-/// `Login`; M12-T05 owns the authenticated entry points for the other purposes.
+/// `Login`; `Link` and `Reauth` are built by the authenticated link and
+/// re-authentication entry points.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AuthorizeContext {
     pub purpose: AuthorizePurpose,
@@ -115,7 +116,7 @@ pub struct Authorized {
 }
 
 /// The strict public request body. `purpose` may only be `login`; `link` and
-/// `reauth` are routed through authenticated endpoints (M12-T05), never here.
+/// `reauth` are routed through authenticated endpoints, never here.
 #[derive(Debug, Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct AuthorizeRequest {
@@ -222,6 +223,11 @@ impl super::service::IdentityProviderService {
             return Err(ProviderError::Invalid {
                 fields: vec!["provider"],
             });
+        }
+        if let (AuthorizePurpose::Link, Some(user_id)) = (context.purpose, context.bound_user_id) {
+            if repo::user_has_link(self.pools().reader(), user_id, provider.id).await? {
+                return Err(ProviderError::IdentityAlreadyLinked);
+            }
         }
 
         let redirect_uri = model::redirect_uri(self.base_url().url(), &provider.slug);

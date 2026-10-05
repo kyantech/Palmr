@@ -207,7 +207,13 @@ error_catalog! {
     ProviderAutoProvisionDisabled = "PROVIDER_AUTO_PROVISION_DISABLED", FORBIDDEN, retryable: false,
         "No account matches this identity and automatic account creation is off";
     ProviderIdentityAlreadyLinked = "PROVIDER_IDENTITY_ALREADY_LINKED", CONFLICT, retryable: false,
-        "The external identity is already linked to an account";
+        "The requested link conflicts with an existing identity binding";
+    ProviderLinkNotFound = "PROVIDER_LINK_NOT_FOUND", NOT_FOUND, retryable: false,
+        "The identity link does not exist";
+    IdentityLinkLastLoginPath = "IDENTITY_LINK_LAST_LOGIN_PATH", CONFLICT, retryable: false,
+        "Removing this identity link would remove the account's only login path";
+    PasswordLoginDisableUnsafe = "PASSWORD_LOGIN_DISABLE_UNSAFE", CONFLICT, retryable: false,
+        "The change would remove the last safe administrator login path";
     AuthAccountInactive = "AUTH_ACCOUNT_INACTIVE", FORBIDDEN, retryable: false,
         "The account is deactivated";
     AuthExternalAmbiguousIdentity = "AUTH_EXTERNAL_AMBIGUOUS_IDENTITY", INTERNAL_SERVER_ERROR, retryable: false,

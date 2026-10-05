@@ -691,7 +691,7 @@ CREATE TABLE s3_multipart_uploads (
 );
 
 -- table sessions
-CREATE TABLE sessions (
+CREATE TABLE "sessions" (
     id                  TEXT    NOT NULL PRIMARY KEY,
     user_id             TEXT    NOT NULL,
     token_hash          TEXT    NOT NULL CHECK (length(token_hash) = 64),
@@ -715,7 +715,8 @@ CREATE TABLE sessions (
     revoked_reason      TEXT    NULL CHECK (revoked_reason IS NULL OR revoked_reason IN (
                                     'logout','user_request','admin_request','password_changed',
                                     'password_reset','role_changed','deactivated','deleted',
-                                    'mfa_abandoned','rotated','policy_changed','trusted_device_revoked')),
+                                    'mfa_abandoned','rotated','policy_changed','trusted_device_revoked',
+                                    'identity_provider_unlinked')),
     ip                  TEXT    NULL CHECK (ip IS NULL OR length(ip) <= 45),
     user_agent          TEXT    NULL CHECK (user_agent IS NULL OR length(user_agent) <= 512),
 

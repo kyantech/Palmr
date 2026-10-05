@@ -29,7 +29,7 @@ const FIND_FOR_USER: &str = "SELECT id, user_id, state, avatar_fetched_at
 const INSERT_LINK: &str = "INSERT INTO identity_links
     (id, user_id, provider_id, subject, email_at_link, email_verified_at_link, link_method,
      state, created_at)
-    VALUES (?1, ?2, ?3, ?4, ?5, 1, ?6, 'active', ?7)";
+    VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, 'active', ?8)";
 
 const TOUCH_LINK: &str = "UPDATE identity_links SET last_login_at = ?2 WHERE id = ?1";
 
@@ -55,6 +55,10 @@ impl ExternalIdentity {
         if !self.email_verified {
             return None;
         }
+        self.usable_email()
+    }
+
+    pub fn usable_email(&self) -> Option<Email> {
         Email::parse(self.email.as_deref()?).ok()
     }
 }
@@ -77,6 +81,7 @@ pub struct IdentityLink {
 pub enum LinkMethod {
     AutoVerifiedEmail,
     AutoProvision,
+    Manual,
 }
 
 impl LinkMethod {
@@ -84,6 +89,7 @@ impl LinkMethod {
         match self {
             Self::AutoVerifiedEmail => "auto_verified_email",
             Self::AutoProvision => "auto_provision",
+            Self::Manual => "manual",
         }
     }
 
@@ -91,6 +97,7 @@ impl LinkMethod {
         match self {
             Self::AutoVerifiedEmail => "verified_email",
             Self::AutoProvision => "auto_provision",
+            Self::Manual => "manual",
         }
     }
 }
@@ -183,6 +190,17 @@ pub async fn create_link(
     email: &Email,
     method: LinkMethod,
 ) -> Result<LinkInsert, ExternalLoginError> {
+    insert_link(tx, input, user, Some(email), true, method).await
+}
+
+pub async fn insert_link(
+    tx: &mut WriteTx<'_>,
+    input: &ResolveInput<'_>,
+    user: &User,
+    email: Option<&Email>,
+    email_verified: bool,
+    method: LinkMethod,
+) -> Result<LinkInsert, ExternalLoginError> {
     let provider = input.provider;
     let id = IdentityLinkId::generate(input.clock);
     let now = Timestamp::try_from(input.clock.now())?;
@@ -191,7 +209,8 @@ pub async fn create_link(
         .bind(user.id.to_string())
         .bind(provider.id.to_string())
         .bind(&input.identity.subject)
-        .bind(email.as_str())
+        .bind(email.map(Email::as_str))
+        .bind(email.is_some() && email_verified)
         .bind(method.as_str())
         .bind(now.to_string())
         .execute(tx.executor())

@@ -23,6 +23,10 @@ use crate::infra::crypto::hash::sha256_base64url;
 #[path = "../../../../tests/support/mock_idp.rs"]
 mod mock_idp;
 
+mod link;
+mod links;
+mod reauth;
+
 use mock_idp::{MockIdp, CLIENT_ID, RSA1_KID};
 
 const PROVIDERS: &str = "/api/v1/auth/providers";

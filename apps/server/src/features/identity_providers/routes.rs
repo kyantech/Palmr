@@ -9,7 +9,7 @@ use utoipa_axum::routes;
 use super::authorize::{
     AuthorizeContext, AuthorizeRequest, AuthorizeResponse, AUTH_REQUEST_TTL_SECONDS,
 };
-use super::callback::{CallbackParams, CallbackRequest, ExternalLoginService};
+use super::callback::{CallbackCompletion, CallbackParams, CallbackRequest, ExternalLoginService};
 use super::discovery::Discovered;
 use super::error::ProviderError;
 use super::input::{
@@ -27,7 +27,7 @@ use crate::app::state::AppState;
 use crate::domain::error_code::ErrorCode;
 use crate::features::auth::sessions::routes::client_metadata;
 use crate::features::auth::sessions::SessionService;
-use crate::infra::http::cookies::{self, OAUTH_COOKIE};
+use crate::infra::http::cookies::{self, OAUTH_COOKIE, SESSION_COOKIE};
 use crate::infra::http::error::{ApiError, ApiErrorBody, JSON_CONTENT_TYPE};
 use crate::infra::http::extractors::Admin;
 use crate::infra::http::json;
@@ -200,7 +200,7 @@ async fn authorize_provider(
     responses(
         (
             status = 303,
-            description = "Always a redirect. On success `Location` is `PALMR_BASE_URL` plus the validated post-authentication path, `palmr_session` and `palmr_csrf` are set and `palmr_oauth` is cleared. On failure `Location` is `PALMR_BASE_URL/login?error=<CODE>` where `<CODE>` is one of `PROVIDER_STATE_INVALID`, `PROVIDER_AUTH_DENIED`, `PROVIDER_DISABLED`, `PROVIDER_CODE_EXCHANGE_FAILED`, `PROVIDER_ID_TOKEN_INVALID`, `PROVIDER_USERINFO_FAILED`, `PROVIDER_SUBJECT_MISSING`, `PROVIDER_EMAIL_UNVERIFIED`, `PROVIDER_AUTO_PROVISION_DISABLED`, `PROVIDER_IDENTITY_ALREADY_LINKED`, `AUTH_EXTERNAL_AMBIGUOUS_IDENTITY`, `AUTH_EXTERNAL_USERNAME_UNAVAILABLE`, `AUTH_ACCOUNT_INACTIVE`, `AUTH_LOCKED` or `INTERNAL_ERROR`; `palmr_oauth` is cleared. No JSON body is returned."
+            description = "Always a redirect, for all three purposes. `login`: on success `Location` is `PALMR_BASE_URL` plus the validated post-authentication path and `palmr_session` and `palmr_csrf` are set. `link` (started by `POST /api/v1/auth/providers/{slug}/link`): the callback additionally requires the same live Palmr session that started it, whose recent-authentication window must still be open, and on success `Location` is `PALMR_BASE_URL/settings/security`; no session cookie is set or rotated. `reauth` (started by the SSO branch of `POST /api/v1/auth/reauthenticate`): the callback requires the same session and proves the same provider and subject that established it; on success `last_auth_at` of that session only is stamped, the session token is not rotated and `Location` is `PALMR_BASE_URL/overview`. On every success `palmr_oauth` is cleared. On failure `Location` is `PALMR_BASE_URL/login?error=<CODE>` where `<CODE>` is one of `PROVIDER_STATE_INVALID`, `PROVIDER_AUTH_DENIED`, `PROVIDER_DISABLED`, `PROVIDER_CODE_EXCHANGE_FAILED`, `PROVIDER_ID_TOKEN_INVALID`, `PROVIDER_USERINFO_FAILED`, `PROVIDER_SUBJECT_MISSING`, `PROVIDER_EMAIL_UNVERIFIED`, `PROVIDER_AUTO_PROVISION_DISABLED`, `PROVIDER_IDENTITY_ALREADY_LINKED`, `PROVIDER_LINK_NOT_FOUND`, `AUTH_RECENT_AUTH_REQUIRED`, `AUTH_EXTERNAL_AMBIGUOUS_IDENTITY`, `AUTH_EXTERNAL_USERNAME_UNAVAILABLE`, `AUTH_ACCOUNT_INACTIVE`, `AUTH_LOCKED` or `INTERNAL_ERROR`; `palmr_oauth` is cleared. No JSON body is returned."
         ),
         (status = 429, description = "Rate limited.", body = ApiErrorBody),
     )
@@ -220,11 +220,15 @@ async fn provider_callback(
         session: SessionService::client(&request),
         audit: client_metadata(&request),
         presented_session: SessionService::presented_token(request.headers()),
+        session_cookie: cookies::read(request.headers(), SESSION_COOKIE)
+            .ok()
+            .flatten()
+            .map(crate::domain::secret::Secret::new),
     };
     let params = CallbackParams::parse(raw_query.as_deref());
 
     let (location, session) = match service.complete(&slug, params, context).await {
-        Ok(signed_in) => (signed_in.location, Some(signed_in.session)),
+        Ok(CallbackCompletion { location, session }) => (location, session),
         Err(error) => {
             if error.is_server_fault() {
                 tracing::error!(kind = error.kind(), "external login callback failed");

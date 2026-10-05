@@ -5,6 +5,7 @@ use super::authorize::authorization_request_aad;
 use super::claims;
 use super::error::ExternalLoginError;
 use super::exchange::{exchange_code, ExchangeRequest, TokenResponse};
+use super::link::LinkCompletion;
 use super::model::{
     self, client_secret_aad, AuthorizePurpose, IdentityProvider, Preset, ProviderVariant,
     TokenAuthMethod,
@@ -14,6 +15,7 @@ use super::oidc::{
     IdTokenRequest, IdTokenValidator, ValidatedIdToken, ValidationPurpose,
     DEFAULT_ALLOWED_ALGORITHMS,
 };
+use super::reauth::ReauthCompletion;
 use super::repo;
 use super::resolve::{self, refused, ExternalIdentity, LinkState, ResolveInput};
 use super::service::IdentityProviderService;
@@ -25,7 +27,9 @@ use crate::features::audit::model::{
     Actor, AuditCode, AuditEvent, ClientMetadata, Outcome, Target, TargetType,
 };
 use crate::features::auth::service::{IssueSession, Refusal, SessionIssue};
-use crate::features::auth::sessions::{AuthMethod, MintedSession, SessionClient};
+use crate::features::auth::sessions::{
+    AuthMethod, AuthenticatedPrincipal, MintedSession, SessionClient, SessionError,
+};
 use crate::features::auth::AuthService;
 use crate::features::users::model::UserId;
 use crate::features::users::repo as users;
@@ -80,11 +84,28 @@ pub struct CallbackRequest {
     pub session: SessionClient,
     pub audit: ClientMetadata,
     pub presented_session: Option<TokenDigest>,
+    pub session_cookie: Option<Secret<String>>,
 }
 
-pub struct ExternalSignIn {
-    pub session: MintedSession,
+pub struct CallbackCompletion {
+    pub session: Option<MintedSession>,
     pub location: String,
+}
+
+enum Flow {
+    Login,
+    Link(AuthenticatedPrincipal),
+    Reauth(AuthenticatedPrincipal),
+}
+
+impl Flow {
+    const fn validation_purpose(&self) -> ValidationPurpose {
+        match self {
+            Self::Login => ValidationPurpose::Login,
+            Self::Link(_) => ValidationPurpose::Link,
+            Self::Reauth(_) => ValidationPurpose::Reauth,
+        }
+    }
 }
 
 struct SignedIn {
@@ -126,6 +147,10 @@ impl ExternalLoginService {
         &self.auth
     }
 
+    pub(super) const fn providers(&self) -> &IdentityProviderService {
+        &self.providers
+    }
+
     pub fn success_location(&self, path: &str) -> String {
         success_location(self.providers.base_url().url(), path)
     }
@@ -139,7 +164,7 @@ impl ExternalLoginService {
         slug: &str,
         params: CallbackParams,
         request: CallbackRequest,
-    ) -> Result<ExternalSignIn, ExternalLoginError> {
+    ) -> Result<CallbackCompletion, ExternalLoginError> {
         if params.denied {
             return Err(refused(ErrorCode::ProviderAuthDenied));
         }
@@ -183,9 +208,6 @@ impl ExternalLoginService {
             .filter(|record| record.provider.id == row.provider_id)
             .ok_or_else(invalid_state)?;
         let provider = &record.provider;
-        if row.purpose != AuthorizePurpose::Login {
-            return Err(invalid_state());
-        }
         if !self
             .providers
             .settings()
@@ -200,6 +222,14 @@ impl ExternalLoginService {
             model::redirect_uri(self.providers.base_url().url(), &provider.slug);
         if row.redirect_uri != expected_redirect {
             return Err(invalid_state());
+        }
+
+        let flow = self.bind_flow(&row, &request).await?;
+        if matches!(flow, Flow::Reauth(_)) && provider.protocol() == model::Protocol::OAuth2 {
+            let now = Timestamp::try_from(clock.now())?;
+            if !self.recent_auth_open(row.created_at, now)? {
+                return Err(refused(ErrorCode::AuthRecentAuthRequired));
+            }
         }
 
         let verifier = self
@@ -226,24 +256,80 @@ impl ExternalLoginService {
             )
             .await?;
         let identity = match &provider.kind {
-            ProviderVariant::Oidc(_) => self.oidc_identity(provider, &row.nonce, tokens).await?,
+            ProviderVariant::Oidc(_) => {
+                self.oidc_identity(provider, &row.nonce, flow.validation_purpose(), tokens)
+                    .await?
+            }
             ProviderVariant::OAuth2(_) => self.oauth2_identity(provider, tokens).await?,
         };
         if !identity.subject_usable() {
             return Err(refused(ErrorCode::ProviderSubjectMissing));
         }
 
-        let signed_in = self.sign_in(provider, &identity, &request).await?;
-        self.after_login(provider, &identity, &signed_in, &request)
-            .await;
-
         let path = row
             .post_auth_path
             .as_deref()
             .unwrap_or(super::authorize::DEFAULT_RETURN_TO);
-        Ok(ExternalSignIn {
+        let session = match flow {
+            Flow::Login => {
+                let signed_in = self.sign_in(provider, &identity, &request).await?;
+                self.after_login(provider, &identity, &signed_in, &request)
+                    .await;
+                Some(signed_in.session)
+            }
+            Flow::Link(principal) => {
+                self.complete_link(LinkCompletion {
+                    provider,
+                    identity: &identity,
+                    principal: &principal,
+                    client: &request.audit,
+                })
+                .await?;
+                None
+            }
+            Flow::Reauth(principal) => {
+                self.complete_reauth(ReauthCompletion {
+                    provider,
+                    identity: &identity,
+                    principal: &principal,
+                })
+                .await?;
+                None
+            }
+        };
+        Ok(CallbackCompletion {
             location: self.success_location(path),
-            session: signed_in.session,
+            session,
+        })
+    }
+
+    async fn bind_flow(
+        &self,
+        row: &repo::ConsumedAuthRequest,
+        request: &CallbackRequest,
+    ) -> Result<Flow, ExternalLoginError> {
+        if row.purpose == AuthorizePurpose::Login {
+            return Ok(Flow::Login);
+        }
+        let invalid = || refused(ErrorCode::ProviderStateInvalid);
+        let (Some(user_id), Some(cookie)) = (row.user_id, request.session_cookie.as_ref()) else {
+            return Err(invalid());
+        };
+        let principal =
+            self.auth
+                .sessions()
+                .authenticate(cookie)
+                .await
+                .map_err(|error| match error {
+                    SessionError::Db(error) => error.into(),
+                    _ => invalid(),
+                })?;
+        if principal.user_id != user_id {
+            return Err(invalid());
+        }
+        Ok(match row.purpose {
+            AuthorizePurpose::Reauth => Flow::Reauth(principal),
+            AuthorizePurpose::Login | AuthorizePurpose::Link => Flow::Link(principal),
         })
     }
 
@@ -308,6 +394,7 @@ impl ExternalLoginService {
         &self,
         provider: &IdentityProvider,
         nonce: &str,
+        purpose: ValidationPurpose,
         tokens: TokenResponse,
     ) -> Result<ExternalIdentity, ExternalLoginError> {
         let ProviderVariant::Oidc(oidc) = &provider.kind else {
@@ -326,7 +413,7 @@ impl ExternalLoginService {
                 jwks_uri: &oidc.jwks_uri,
                 allowed_algorithms: &DEFAULT_ALLOWED_ALGORITHMS,
                 expected_nonce: nonce,
-                purpose: ValidationPurpose::Login,
+                purpose,
                 access_token: access_token
                     .as_ref()
                     .map(|token| token.expose_secret().as_str()),

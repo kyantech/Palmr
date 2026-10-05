@@ -108,7 +108,8 @@ async fn it_migrate_up_from_empty() {
         [
             "0001_initial_schema.sql",
             "0002_add_identity_provider_email_linking.sql",
-            "0003_authorization_request_contract.sql"
+            "0003_authorization_request_contract.sql",
+            "0004_session_revoked_reason_identity_unlink.sql"
         ]
     );
     assert_eq!(
@@ -123,6 +124,10 @@ async fn it_migrate_up_from_empty() {
         files[2].1,
         include_str!("../../../migrations/0003_authorization_request_contract.sql")
     );
+    assert_eq!(
+        files[3].1,
+        include_str!("../../../migrations/0004_session_revoked_reason_identity_unlink.sql")
+    );
 
     let data = TempDir::new().unwrap();
     let pools = open_pools(data.path()).await;
@@ -132,8 +137,8 @@ async fn it_migrate_up_from_empty() {
     assert_eq!(
         first,
         MigrationStatus {
-            applied: 3,
-            version: Some(3),
+            applied: 4,
+            version: Some(4),
         }
     );
     let again = pools.migrate(&MIGRATOR).await.unwrap();
@@ -141,7 +146,7 @@ async fn it_migrate_up_from_empty() {
         again,
         MigrationStatus {
             applied: 0,
-            version: Some(3),
+            version: Some(4),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -151,7 +156,7 @@ async fn it_migrate_up_from_empty() {
         reopened.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
             applied: 0,
-            version: Some(3),
+            version: Some(4),
         }
     );
     reopened.shutdown().await.checkpoint.unwrap();
@@ -211,8 +216,8 @@ async fn it_migrate_from_0001_derives_email_linking_by_protocol() {
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 2,
-            version: Some(3),
+            applied: 3,
+            version: Some(4),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -240,7 +245,7 @@ async fn it_migrate_from_0001_derives_email_linking_by_protocol() {
             .iter()
             .map(|record| (record.version, record.success))
             .collect::<Vec<_>>(),
-        [(1, true), (2, true), (3, true)]
+        [(1, true), (2, true), (3, true), (4, true)]
     );
     connection.close().await.unwrap();
 }
@@ -305,8 +310,8 @@ async fn it_migrate_oauth_requests_to_reauth_and_extended_path() {
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 1,
-            version: Some(3),
+            applied: 2,
+            version: Some(4),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -453,4 +458,250 @@ async fn it_migrate_email_linking_rejects_non_boolean_values() {
     .unwrap();
     assert_eq!(stored, 0, "an unspecified policy must fail closed");
     connection.close().await.unwrap();
+}
+
+const SESSION_REASONS: [&str; 13] = [
+    "logout",
+    "user_request",
+    "admin_request",
+    "password_changed",
+    "password_reset",
+    "role_changed",
+    "deactivated",
+    "deleted",
+    "mfa_abandoned",
+    "rotated",
+    "policy_changed",
+    "trusted_device_revoked",
+    "identity_provider_unlinked",
+];
+
+const SESSION_INDEXES: [&str; 6] = [
+    "ix_sessions_absolute_exp",
+    "ix_sessions_idle_exp",
+    "ix_sessions_prune",
+    "ix_sessions_user_active",
+    "ux_sessions_mfa_token_hash",
+    "ux_sessions_token_hash",
+];
+
+async fn insert_session(
+    connection: &mut SqliteConnection,
+    id: &str,
+    state: &str,
+    reason: Option<&str>,
+) -> Result<sqlx::sqlite::SqliteQueryResult, sqlx::Error> {
+    sqlx::query(
+        "INSERT INTO sessions
+             (id, user_id, token_hash, csrf_token_hash, state, auth_method, trusted_device_id,
+              identity_link_id, created_at, last_seen_at, last_auth_at, idle_expires_at,
+              absolute_expires_at, revoked_at, revoked_reason, ip, user_agent)
+         VALUES (?1, 'owner', ?2, ?3, ?4, 'external', 'device', 'link',
+                 '2026-09-25T12:00:00.000Z', '2026-09-25T12:01:00.000Z',
+                 '2026-09-25T12:02:00.000Z', '2026-10-02T12:00:00.000Z',
+                 '2026-10-25T12:00:00.000Z',
+                 CASE WHEN ?4 = 'revoked' THEN '2026-09-26T12:00:00.000Z' END,
+                 ?5, '203.0.113.9', 'agent/1')",
+    )
+    .bind(id)
+    .bind(format!("{id:0<64}"))
+    .bind(format!("{id:1<64}"))
+    .bind(state)
+    .bind(reason)
+    .execute(connection)
+    .await
+}
+
+#[tokio::test]
+async fn it_migrate_session_revoked_reason_accepts_identity_unlink() {
+    let files = embedded_files();
+    let (_directory, frozen) = fixture_migrator(&files[..3]).await;
+    let data = TempDir::new().unwrap();
+    let pools = open_pools(data.path()).await;
+    pools.migrate(&frozen).await.unwrap();
+    pools.shutdown().await.checkpoint.unwrap();
+
+    let mut connection = raw_connection(data.path()).await;
+    let device = format!(
+        "INSERT INTO trusted_devices (id, user_id, token_hash, created_at, expires_at)
+         VALUES ('device', 'owner', '{}', '2026-09-25T12:00:00.000Z', '2027-09-25T12:00:00.000Z')",
+        "d".repeat(64)
+    );
+    for statement in [
+        "INSERT INTO users
+             (id, email, email_normalized, username, username_normalized, created_at, updated_at)
+         VALUES ('owner', 'owner@example.test', 'owner@example.test', 'owner', 'owner',
+                 '2026-09-25T12:00:00.000Z', '2026-09-25T12:00:00.000Z')",
+        "INSERT INTO identity_providers
+             (id, key, display_name, kind, client_id, created_at, updated_at)
+         VALUES ('corp', 'corp', 'Corp', 'oidc', 'client', '2026-09-25T12:00:00.000Z',
+                 '2026-09-25T12:00:00.000Z')",
+        "INSERT INTO identity_links
+             (id, user_id, provider_id, subject, link_method, created_at)
+         VALUES ('link', 'owner', 'corp', 'subject-1', 'manual', '2026-09-25T12:00:00.000Z')",
+        device.as_str(),
+    ] {
+        sqlx::query(statement)
+            .execute(&mut connection)
+            .await
+            .unwrap();
+    }
+    for (index, reason) in SESSION_REASONS[..SESSION_REASONS.len() - 1]
+        .iter()
+        .enumerate()
+    {
+        insert_session(
+            &mut connection,
+            &format!("revoked-{index:02}"),
+            "revoked",
+            Some(reason),
+        )
+        .await
+        .unwrap();
+    }
+    insert_session(&mut connection, "active-01", "active", None)
+        .await
+        .unwrap();
+    assert!(
+        insert_session(
+            &mut connection,
+            "rejected",
+            "revoked",
+            Some("identity_provider_unlinked")
+        )
+        .await
+        .is_err(),
+        "the frozen schema must not know the new reason"
+    );
+    let before = dump_sessions(&mut connection).await;
+    assert_eq!(before.len(), 13);
+    connection.close().await.unwrap();
+
+    let pools = open_pools(data.path()).await;
+    assert_eq!(
+        pools.migrate(&MIGRATOR).await.unwrap(),
+        MigrationStatus {
+            applied: 1,
+            version: Some(4),
+        }
+    );
+    pools.shutdown().await.checkpoint.unwrap();
+
+    let mut connection = raw_connection(data.path()).await;
+    assert_eq!(dump_sessions(&mut connection).await, before);
+
+    for reason in SESSION_REASONS {
+        let id = format!("fresh-{reason}");
+        insert_session(&mut connection, &id, "revoked", Some(reason))
+            .await
+            .unwrap_or_else(|error| panic!("{reason} was rejected: {error}"));
+    }
+    for rejected in [
+        "identity_unlinked",
+        "IDENTITY_PROVIDER_UNLINKED",
+        "",
+        "unknown",
+    ] {
+        assert!(
+            insert_session(&mut connection, "unknown-reason", "revoked", Some(rejected))
+                .await
+                .is_err(),
+            "{rejected:?} must stay rejected"
+        );
+    }
+    assert!(
+        insert_session(&mut connection, "unknown-reason", "revoked", None)
+            .await
+            .is_err(),
+        "a revoked session still needs a reason"
+    );
+    let indexes: Vec<String> = sqlx::query_scalar(
+        "SELECT name FROM sqlite_master
+          WHERE type = 'index' AND tbl_name = 'sessions' AND name NOT LIKE 'sqlite_%'
+          ORDER BY name",
+    )
+    .fetch_all(&mut connection)
+    .await
+    .unwrap();
+    assert_eq!(indexes, SESSION_INDEXES);
+
+    let foreign_keys: Vec<(String, String, String)> = sqlx::query_as(
+        "SELECT \"table\", \"from\", on_delete FROM pragma_foreign_key_list('sessions')
+          ORDER BY \"from\"",
+    )
+    .fetch_all(&mut connection)
+    .await
+    .unwrap();
+    assert_eq!(
+        foreign_keys,
+        [
+            (
+                "identity_links".to_owned(),
+                "identity_link_id".to_owned(),
+                "SET NULL".to_owned()
+            ),
+            (
+                "trusted_devices".to_owned(),
+                "trusted_device_id".to_owned(),
+                "SET NULL".to_owned()
+            ),
+            (
+                "users".to_owned(),
+                "user_id".to_owned(),
+                "CASCADE".to_owned()
+            ),
+        ]
+    );
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM pragma_foreign_key_check")
+            .fetch_one(&mut connection)
+            .await
+            .unwrap(),
+        0
+    );
+    let leftovers: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM sqlite_master WHERE name IN ('sessions_new', 'sessions_old')",
+    )
+    .fetch_one(&mut connection)
+    .await
+    .unwrap();
+    assert_eq!(leftovers, 0);
+    connection.close().await.unwrap();
+}
+
+#[derive(Debug, PartialEq, Eq, sqlx::FromRow)]
+struct SessionDump {
+    id: String,
+    user_id: String,
+    token_hash: String,
+    csrf_token_hash: String,
+    state: String,
+    auth_method: String,
+    mfa_token_hash: Option<String>,
+    mfa_expires_at: Option<String>,
+    mfa_attempts: i64,
+    trusted_device_id: Option<String>,
+    identity_link_id: Option<String>,
+    created_at: String,
+    last_seen_at: String,
+    last_auth_at: String,
+    idle_expires_at: String,
+    absolute_expires_at: String,
+    revoked_at: Option<String>,
+    revoked_reason: Option<String>,
+    ip: Option<String>,
+    user_agent: Option<String>,
+}
+
+async fn dump_sessions(connection: &mut SqliteConnection) -> Vec<SessionDump> {
+    sqlx::query_as(
+        "SELECT id, user_id, token_hash, csrf_token_hash, state, auth_method, mfa_token_hash,
+                mfa_expires_at, mfa_attempts, trusted_device_id, identity_link_id, created_at,
+                last_seen_at, last_auth_at, idle_expires_at, absolute_expires_at, revoked_at,
+                revoked_reason, ip, user_agent
+           FROM sessions ORDER BY id",
+    )
+    .fetch_all(connection)
+    .await
+    .unwrap()
 }

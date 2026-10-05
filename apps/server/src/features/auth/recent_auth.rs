@@ -96,7 +96,18 @@ impl AuthService {
             .filter(|user| user.is_active)
             .ok_or(LoginError::Session(SessionError::AuthRequired))?;
         let Some(stored) = user.password_hash.clone() else {
-            return Err(LoginError::ExternalReauthUnavailable);
+            let mut unexpected = Vec::new();
+            if request.password.is_some() {
+                unexpected.push("password");
+            }
+            if request.totp_code.is_some() {
+                unexpected.push("totpCode");
+            }
+            return Err(if unexpected.is_empty() {
+                LoginError::ExternalReauthRequired
+            } else {
+                LoginError::Invalid { fields: unexpected }
+            });
         };
         let mut missing = Vec::new();
         let password = match request.password {

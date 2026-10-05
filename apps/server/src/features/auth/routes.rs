@@ -9,7 +9,11 @@ use crate::app::auth_class::AuthClass;
 use crate::app::router::{RateLimitClass, RoutePolicy, Routes, Transport};
 use crate::app::state::AppState;
 use crate::features::auth::sessions::routes::client_metadata;
-use crate::features::auth::sessions::SessionService;
+use crate::features::auth::sessions::{AuthenticatedPrincipal, SessionService};
+use crate::features::identity_providers::authorize::AUTH_REQUEST_TTL_SECONDS;
+use crate::features::identity_providers::callback::ExternalLoginService;
+use crate::features::identity_providers::link_routes::link_error;
+use crate::features::identity_providers::reauth::ExternalReauthResponse;
 use crate::infra::http::error::{ApiError, ApiErrorBody, JSON_CONTENT_TYPE};
 use crate::infra::http::extractors::{Authenticated, SignOutCaller};
 use crate::infra::http::json;
@@ -290,16 +294,22 @@ async fn me(
     request_body(
         content = ReauthenticateRequest,
         content_type = "application/json",
-        description = "`password` is required for an account with a local password; `totpCode` is required when the account has TOTP enabled."
+        description = "`password` is required for an account with a local password; `totpCode` is required when the account has TOTP enabled. For an account with no local password the body must be empty (`{}`) and the request starts SSO re-authentication through the identity provider that established the current session; supplying `password` or `totpCode` there is a `VALIDATION_ERROR`."
     ),
     responses(
+        (
+            status = 202,
+            description = "SSO-only account. `externalReauthUrl` is the provider authorization URL generated server-side (`prompt=login`, and `max_age=0` for OIDC) and `palmr_oauth` is set. Send the browser there; the callback stamps `last_auth_at` of this session only after proving the same provider and subject.",
+            body = ExternalReauthResponse
+        ),
         (
             status = 204,
             description = "The current session's recent-authentication window is open; the session and its cookies are unchanged."
         ),
         (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
         (status = 401, description = "The credentials did not authenticate, or no session is present.", body = ApiErrorBody),
-        (status = 403, description = "The CSRF proof or origin is missing or not allowed, or the session is restricted.", body = ApiErrorBody),
+        (status = 403, description = "The CSRF proof or origin is missing or not allowed, the session is restricted, or `PROVIDER_DISABLED` for the SSO branch when the session's provider or the global provider toggle is off.", body = ApiErrorBody),
+        (status = 404, description = "`PROVIDER_LINK_NOT_FOUND` for the SSO branch when the session has no active identity link to re-authenticate through.", body = ApiErrorBody),
         (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
         (status = 422, description = "The request failed validation.", body = ApiErrorBody),
         (status = 429, description = "Rate limited.", body = ApiErrorBody),
@@ -307,6 +317,7 @@ async fn me(
 )]
 async fn reauthenticate(
     Extension(service): Extension<AuthService>,
+    Extension(external): Extension<ExternalLoginService>,
     Authenticated(principal): Authenticated,
     gate: RateLimitGate,
     request: Request,
@@ -329,11 +340,45 @@ async fn reauthenticate(
         Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
     };
     if let Err(error) = service.reauthenticate(&principal, body, context).await {
+        if matches!(error, LoginError::ExternalReauthRequired) {
+            return external_reauthentication(&external, &principal, request_id.as_ref()).await;
+        }
         return login_error(&error, request_id.as_ref());
     }
     let mut response = Response::new(Body::empty());
     *response.status_mut() = StatusCode::NO_CONTENT;
     response.headers_mut().insert(CACHE_CONTROL, NO_STORE);
+    response
+}
+
+async fn external_reauthentication(
+    external: &ExternalLoginService,
+    principal: &AuthenticatedPrincipal,
+    request_id: Option<&RequestId>,
+) -> Response {
+    let authorized = match external.start_reauth(principal).await {
+        Ok(authorized) => authorized,
+        Err(error) => return link_error(&error, request_id),
+    };
+    let mut response = json(
+        StatusCode::ACCEPTED,
+        &ExternalReauthResponse {
+            accepted: true,
+            external_reauth_url: authorized.authorization_url,
+        },
+        request_id,
+    );
+    if external
+        .cookie_policy()
+        .append_oauth_binding(
+            response.headers_mut(),
+            &authorized.binding,
+            AUTH_REQUEST_TTL_SECONDS,
+        )
+        .is_err()
+    {
+        return tag_error(ApiError::internal(), request_id).into_response();
+    }
     response
 }
 

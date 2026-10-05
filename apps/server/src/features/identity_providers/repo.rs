@@ -120,6 +120,21 @@ pub async fn find_by_slug(
     row.as_ref().map(record_from).transpose()
 }
 
+pub async fn user_has_link(
+    reader: &ReadPool,
+    user_id: UserId,
+    provider_id: ProviderId,
+) -> Result<bool, ProviderError> {
+    let exists: bool = sqlx::query_scalar(
+        "SELECT EXISTS(SELECT 1 FROM identity_links WHERE user_id = ?1 AND provider_id = ?2)",
+    )
+    .bind(user_id.to_string())
+    .bind(provider_id.to_string())
+    .fetch_one(reader.executor())
+    .await?;
+    Ok(exists)
+}
+
 pub async fn list_enabled(reader: &ReadPool) -> Result<Vec<ProviderRecord>, ProviderError> {
     let rows = sqlx::query(&format!(
         "SELECT {COLUMNS}{FROM} WHERE p.is_enabled = 1 ORDER BY p.sort_order, p.key"
@@ -280,6 +295,8 @@ pub struct ConsumedAuthRequest {
     pub redirect_uri: String,
     pub post_auth_path: Option<String>,
     pub purpose: AuthorizePurpose,
+    pub user_id: Option<UserId>,
+    pub created_at: Timestamp,
 }
 
 pub async fn consume_auth_request(
@@ -291,7 +308,8 @@ pub async fn consume_auth_request(
         "UPDATE oauth_auth_requests SET consumed_at = ?1
          WHERE state_hash = ?2 AND consumed_at IS NULL AND expires_at > ?1
          RETURNING id, provider_id, binding_cookie_hash, pkce_verifier_ciphertext,
-                   pkce_verifier_nonce, key_version, nonce, redirect_uri, post_auth_path, purpose",
+                   pkce_verifier_nonce, key_version, nonce, redirect_uri, post_auth_path, purpose,
+                   link_user_id, created_at",
     )
     .bind(now.to_string())
     .bind(state_hash.as_str())
@@ -329,6 +347,14 @@ fn consumed_from(row: &SqliteRow) -> Result<ConsumedAuthRequest, ProviderError> 
             .try_get::<Option<String>, _>("post_auth_path")
             .map_err(|_| invariant("post_auth_path"))?,
         purpose: AuthorizePurpose::parse(&text("purpose")?).ok_or_else(|| invariant("purpose"))?,
+        user_id: row
+            .try_get::<Option<String>, _>("link_user_id")
+            .map_err(|_| invariant("link_user_id"))?
+            .map(|id| id.parse().map_err(|_| invariant("link_user_id")))
+            .transpose()?,
+        created_at: text("created_at")?
+            .parse()
+            .map_err(|_| invariant("created_at"))?,
     })
 }
 

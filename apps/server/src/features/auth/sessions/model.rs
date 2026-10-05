@@ -95,6 +95,7 @@ pub enum RevokedReason {
     Rotated,
     PolicyChanged,
     TrustedDeviceRevoked,
+    IdentityProviderUnlinked,
 }
 
 impl RevokedReason {
@@ -112,6 +113,7 @@ impl RevokedReason {
             Self::Rotated => "rotated",
             Self::PolicyChanged => "policy_changed",
             Self::TrustedDeviceRevoked => "trusted_device_revoked",
+            Self::IdentityProviderUnlinked => "identity_provider_unlinked",
         }
     }
 }

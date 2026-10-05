@@ -356,6 +356,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/users/{id}/identity-links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_user_identity_links"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/identity-links/{linkId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["unlink_user_identity"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/users/{id}/password-reset": {
         parameters: {
             query?: never;
@@ -692,6 +724,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/providers/{slug}/link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["link_provider"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/reauthenticate": {
         parameters: {
             query?: never;
@@ -751,6 +799,38 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/identity-links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_identity_links"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/identity-links/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["unlink_identity"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1187,7 +1267,7 @@ export interface components {
         };
         /**
          * @description The strict public request body. `purpose` may only be `login`; `link` and
-         *     `reauth` are routed through authenticated endpoints (M12-T05), never here.
+         *     `reauth` are routed through authenticated endpoints, never here.
          */
         AuthorizeRequest: {
             /** @example login */
@@ -1475,7 +1555,11 @@ export interface components {
             enrollmentId: string;
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN" | "SMTP_TEST_FAILED" | "PROVIDER_NOT_FOUND" | "PROVIDER_DISABLED" | "PROVIDER_SLUG_TAKEN" | "PROVIDER_DISCOVERY_FAILED" | "PROVIDER_VALIDATION_FAILED" | "PROVIDER_HAS_LINKS" | "PROVIDER_ID_TOKEN_INVALID" | "PROVIDER_USERINFO_FAILED" | "PROVIDER_SUBJECT_MISSING" | "PROVIDER_STATE_INVALID" | "PROVIDER_AUTH_DENIED" | "PROVIDER_CODE_EXCHANGE_FAILED" | "PROVIDER_EMAIL_UNVERIFIED" | "PROVIDER_AUTO_PROVISION_DISABLED" | "PROVIDER_IDENTITY_ALREADY_LINKED" | "AUTH_ACCOUNT_INACTIVE" | "AUTH_EXTERNAL_AMBIGUOUS_IDENTITY" | "AUTH_EXTERNAL_USERNAME_UNAVAILABLE";
+        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN" | "SMTP_TEST_FAILED" | "PROVIDER_NOT_FOUND" | "PROVIDER_DISABLED" | "PROVIDER_SLUG_TAKEN" | "PROVIDER_DISCOVERY_FAILED" | "PROVIDER_VALIDATION_FAILED" | "PROVIDER_HAS_LINKS" | "PROVIDER_ID_TOKEN_INVALID" | "PROVIDER_USERINFO_FAILED" | "PROVIDER_SUBJECT_MISSING" | "PROVIDER_STATE_INVALID" | "PROVIDER_AUTH_DENIED" | "PROVIDER_CODE_EXCHANGE_FAILED" | "PROVIDER_EMAIL_UNVERIFIED" | "PROVIDER_AUTO_PROVISION_DISABLED" | "PROVIDER_IDENTITY_ALREADY_LINKED" | "PROVIDER_LINK_NOT_FOUND" | "IDENTITY_LINK_LAST_LOGIN_PATH" | "PASSWORD_LOGIN_DISABLE_UNSAFE" | "AUTH_ACCOUNT_INACTIVE" | "AUTH_EXTERNAL_AMBIGUOUS_IDENTITY" | "AUTH_EXTERNAL_USERNAME_UNAVAILABLE";
+        ExternalReauthResponse: {
+            accepted: boolean;
+            externalReauthUrl: string;
+        };
         ForgotPasswordRequest: {
             /** @example ada@example.com */
             identifier: string;
@@ -1543,6 +1627,16 @@ export interface components {
         };
         /** @enum {string} */
         HealthSummaryStatus: "ok" | "degraded" | "not_ready";
+        IdentityLinkItem: {
+            emailAtLink: string | null;
+            externalSubject: string;
+            /** @example 0192fe3a-5c4b-7e21-9a02-3f8c1d6e4b90 */
+            id: string;
+            lastUsedAt: string | null;
+            linkedAt: string;
+            providerDisplayName: string;
+            providerSlug: string;
+        };
         /** @enum {string} */
         IdentityLinkMethod: "auto_verified_email" | "manual" | "auto_provision";
         /** @enum {string} */
@@ -1708,6 +1802,25 @@ export interface components {
                 twoFactorEnabled: boolean;
                 usedBytes: components["schemas"]["ByteCount"];
                 username: string;
+            }[];
+            /** @description Opaque cursor for the next page; `null` on the last page. */
+            nextCursor: string | null;
+            /**
+             * Format: int64
+             * @description Matching items overall; `null` where counting would require a scan.
+             */
+            totalCount: number | null;
+        };
+        Page_IdentityLinkItem: {
+            items: {
+                emailAtLink: string | null;
+                externalSubject: string;
+                /** @example 0192fe3a-5c4b-7e21-9a02-3f8c1d6e4b90 */
+                id: string;
+                lastUsedAt: string | null;
+                linkedAt: string;
+                providerDisplayName: string;
+                providerSlug: string;
             }[];
             /** @description Opaque cursor for the next page; `null` on the last page. */
             nextCursor: string | null;
@@ -4652,6 +4765,155 @@ export interface operations {
             };
         };
     };
+    list_user_identity_links: {
+        parameters: {
+            query?: {
+                sort?: "linkedAt:asc" | "linkedAt:desc";
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @description User UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The target user's external identity links in the same safe representation as `GET /api/v1/identity-links`: oldest first with a stable tie-break, no provider configuration, client id, secret, token or state. `totalCount` is exact. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_IdentityLinkItem"];
+                };
+            };
+            /** @description `CURSOR_INVALID`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `USER_NOT_FOUND`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Invalid query. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    unlink_user_identity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description User UUIDv7 */
+                id: string;
+                /** @description Identity-link UUIDv7 that must belong to the user */
+                linkId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The identity link is removed and every session and trusted device of the target user is revoked in the same transaction, audited as `IDENTITY_LINK_REMOVED`. The acting Admin's own sessions are untouched unless the Admin is the target, in which case the current credentials are expired. The global SSO-only standing invariant (`PASSWORD_LOGIN_DISABLE_UNSAFE`) is owned by the password-login policy and is not evaluated here yet. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role or recent authentication required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `USER_NOT_FOUND`, or `PROVIDER_LINK_NOT_FOUND` when the link is unknown, malformed or does not belong to the user. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PASSWORD_LOGIN_DISABLE_UNSAFE` when the removal would leave no safe Administrator login path while password login is disabled. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
     reset_user_password: {
         parameters: {
             query?: never;
@@ -6033,12 +6295,89 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Always a redirect. On success `Location` is `PALMR_BASE_URL` plus the validated post-authentication path, `palmr_session` and `palmr_csrf` are set and `palmr_oauth` is cleared. On failure `Location` is `PALMR_BASE_URL/login?error=<CODE>` where `<CODE>` is one of `PROVIDER_STATE_INVALID`, `PROVIDER_AUTH_DENIED`, `PROVIDER_DISABLED`, `PROVIDER_CODE_EXCHANGE_FAILED`, `PROVIDER_ID_TOKEN_INVALID`, `PROVIDER_USERINFO_FAILED`, `PROVIDER_SUBJECT_MISSING`, `PROVIDER_EMAIL_UNVERIFIED`, `PROVIDER_AUTO_PROVISION_DISABLED`, `PROVIDER_IDENTITY_ALREADY_LINKED`, `AUTH_EXTERNAL_AMBIGUOUS_IDENTITY`, `AUTH_EXTERNAL_USERNAME_UNAVAILABLE`, `AUTH_ACCOUNT_INACTIVE`, `AUTH_LOCKED` or `INTERNAL_ERROR`; `palmr_oauth` is cleared. No JSON body is returned. */
+            /** @description Always a redirect, for all three purposes. `login`: on success `Location` is `PALMR_BASE_URL` plus the validated post-authentication path and `palmr_session` and `palmr_csrf` are set. `link` (started by `POST /api/v1/auth/providers/{slug}/link`): the callback additionally requires the same live Palmr session that started it, whose recent-authentication window must still be open, and on success `Location` is `PALMR_BASE_URL/settings/security`; no session cookie is set or rotated. `reauth` (started by the SSO branch of `POST /api/v1/auth/reauthenticate`): the callback requires the same session and proves the same provider and subject that established it; on success `last_auth_at` of that session only is stamped, the session token is not rotated and `Location` is `PALMR_BASE_URL/overview`. On every success `palmr_oauth` is cleared. On failure `Location` is `PALMR_BASE_URL/login?error=<CODE>` where `<CODE>` is one of `PROVIDER_STATE_INVALID`, `PROVIDER_AUTH_DENIED`, `PROVIDER_DISABLED`, `PROVIDER_CODE_EXCHANGE_FAILED`, `PROVIDER_ID_TOKEN_INVALID`, `PROVIDER_USERINFO_FAILED`, `PROVIDER_SUBJECT_MISSING`, `PROVIDER_EMAIL_UNVERIFIED`, `PROVIDER_AUTO_PROVISION_DISABLED`, `PROVIDER_IDENTITY_ALREADY_LINKED`, `PROVIDER_LINK_NOT_FOUND`, `AUTH_RECENT_AUTH_REQUIRED`, `AUTH_EXTERNAL_AMBIGUOUS_IDENTITY`, `AUTH_EXTERNAL_USERNAME_UNAVAILABLE`, `AUTH_ACCOUNT_INACTIVE`, `AUTH_LOCKED` or `INTERNAL_ERROR`; `palmr_oauth` is cleared. No JSON body is returned. */
             303: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    link_provider: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Provider slug */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description An authorization URL for linking the provider to the signed-in account, plus the `palmr_oauth` browser-binding cookie. The request is bound to the caller and returns to `/settings/security`. No body is accepted and nothing is linked until the callback validates the provider identity. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthorizeResponse"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `AUTH_RECENT_AUTH_REQUIRED`, `PROVIDER_DISABLED` (the provider is disabled or the global provider toggle is off), the session is restricted, or the CSRF proof or origin is not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PROVIDER_NOT_FOUND`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PROVIDER_IDENTITY_ALREADY_LINKED`: the account already has an identity from this provider. Nothing is persisted and no cookie is set. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `VALIDATION_ERROR` for an unusable provider configuration. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
             };
             /** @description Rate limited. */
             429: {
@@ -6058,13 +6397,22 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        /** @description `password` is required for an account with a local password; `totpCode` is required when the account has TOTP enabled. */
+        /** @description `password` is required for an account with a local password; `totpCode` is required when the account has TOTP enabled. For an account with no local password the body must be empty (`{}`) and the request starts SSO re-authentication through the identity provider that established the current session; supplying `password` or `totpCode` there is a `VALIDATION_ERROR`. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ReauthenticateRequest"];
             };
         };
         responses: {
+            /** @description SSO-only account. `externalReauthUrl` is the provider authorization URL generated server-side (`prompt=login`, and `max_age=0` for OIDC) and `palmr_oauth` is set. Send the browser there; the callback stamps `last_auth_at` of this session only after proving the same provider and subject. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalReauthResponse"];
+                };
+            };
             /** @description The current session's recent-authentication window is open; the session and its cookies are unchanged. */
             204: {
                 headers: {
@@ -6090,8 +6438,17 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
-            /** @description The CSRF proof or origin is missing or not allowed, or the session is restricted. */
+            /** @description The CSRF proof or origin is missing or not allowed, the session is restricted, or `PROVIDER_DISABLED` for the SSO branch when the session's provider or the global provider toggle is off. */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PROVIDER_LINK_NOT_FOUND` for the SSO branch when the session has no active identity link to re-authenticate through. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -6309,6 +6666,132 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Bootstrap"];
+                };
+            };
+        };
+    };
+    list_identity_links: {
+        parameters: {
+            query?: {
+                sort?: "linkedAt:asc" | "linkedAt:desc";
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The caller's own external identity links, oldest first with a stable tie-break. No provider configuration, client id, secret, token or state is ever included. `totalCount` is exact. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_IdentityLinkItem"];
+                };
+            };
+            /** @description `CURSOR_INVALID`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Invalid query. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    unlink_identity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identity-link UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The identity link is removed and every session and trusted device of the caller is revoked in the same transaction, including the current session. `palmr_session`, `palmr_csrf` and `palmr_device` are expired. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `AUTH_RECENT_AUTH_REQUIRED`, the session is restricted, or the CSRF proof or origin is not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PROVIDER_LINK_NOT_FOUND`: the id is unknown, malformed or belongs to another account; the cases are indistinguishable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `IDENTITY_LINK_LAST_LOGIN_PATH`: the account has no local password and this is its only identity link. Nothing changes. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
         };

@@ -21,6 +21,7 @@ pub enum ProviderError {
     DiscoveryFailed(DiscoveryFailure),
     ValidationFailed { checks: Vec<CheckDetail> },
     HasLinks,
+    IdentityAlreadyLinked,
     Stale,
     RepositoryInvariant { column: &'static str },
     Audit(AuditError),
@@ -39,6 +40,7 @@ impl ProviderError {
             Self::DiscoveryFailed(_) => "provider_discovery_failed",
             Self::ValidationFailed { .. } => "provider_validation_failed",
             Self::HasLinks => "provider_has_identity_links",
+            Self::IdentityAlreadyLinked => "provider_identity_already_linked",
             Self::Stale => "provider_changed_concurrently",
             Self::RepositoryInvariant { .. } => "provider_repository_invariant",
             Self::Audit(error) => error.kind(),
@@ -59,6 +61,7 @@ impl ProviderError {
             Self::ValidationFailed { checks } => ApiError::new(ErrorCode::ProviderValidationFailed)
                 .with_detail("checks", checks.clone()),
             Self::HasLinks => ApiError::new(ErrorCode::ProviderHasLinks),
+            Self::IdentityAlreadyLinked => ApiError::new(ErrorCode::ProviderIdentityAlreadyLinked),
             Self::Stale => ApiError::new(ErrorCode::DatabaseBusy),
             Self::Db(error) | Self::Audit(AuditError::Db(error)) => ApiError::new(error.api_code()),
             Self::RepositoryInvariant { .. } | Self::Audit(_) | Self::Crypto(_) | Self::Time(_) => {
@@ -82,6 +85,9 @@ impl fmt::Display for ProviderError {
             }
             Self::ValidationFailed { .. } => f.write_str("the provider checks failed"),
             Self::HasLinks => f.write_str("the provider still has identity links"),
+            Self::IdentityAlreadyLinked => {
+                f.write_str("the account already has an identity from the provider")
+            }
             Self::Stale => f.write_str("the provider changed while the request was running"),
             Self::RepositoryInvariant { column } => {
                 write!(

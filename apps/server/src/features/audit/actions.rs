@@ -272,6 +272,26 @@ pub fn identity_link_created(via: &'static str, provider_id: &str) -> ActionSpec
     ActionSpec::new(AuditAction::IdentityLinkCreated, metadata)
 }
 
+pub fn identity_link_removed(
+    by: &'static str,
+    provider_id: &str,
+    user_id: &str,
+    sessions_revoked: u64,
+    trusted_devices_revoked: u64,
+) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("by", Value::from(by)),
+        ("provider_id", Value::from(provider_id)),
+        ("user_id", Value::from(user_id)),
+        ("sessions_revoked", Value::from(sessions_revoked)),
+        (
+            "trusted_devices_revoked",
+            Value::from(trusted_devices_revoked),
+        ),
+    ]);
+    ActionSpec::new(AuditAction::IdentityLinkRemoved, metadata)
+}
+
 pub fn login_failed(method: &'static str, reason: &'static str) -> ActionSpec {
     let metadata = Metadata::json(&[
         ("method", Value::from(method)),
@@ -697,6 +717,27 @@ mod tests {
         let mut keys: Vec<String> = parsed.as_object().unwrap().keys().cloned().collect();
         keys.sort();
         keys
+    }
+
+    #[test]
+    fn unit_identity_link_metadata_is_closed_and_secret_free() {
+        let created = identity_link_created("manual", "provider-1");
+        assert_eq!(created.action(), AuditAction::IdentityLinkCreated);
+        assert_eq!(fields(&created), ["provider_id", "via"]);
+
+        let removed = identity_link_removed("admin", "provider-1", "user-1", u64::MAX, u64::MAX);
+        assert_eq!(removed.action(), AuditAction::IdentityLinkRemoved);
+        assert_eq!(removed.action().write_path(), WritePath::InTransaction);
+        assert_eq!(
+            fields(&removed),
+            [
+                "by",
+                "provider_id",
+                "sessions_revoked",
+                "trusted_devices_revoked",
+                "user_id"
+            ]
+        );
     }
 
     #[test]

@@ -51,6 +51,9 @@ const LOGGED_OUT: &str = "logout";
 const ROLE_CHANGED: &str = "role_changed";
 const DEACTIVATED: &str = "deactivated";
 const ADMIN_REQUEST: &str = "admin_request";
+const IDENTITY_UNLINKED: &str = "identity_provider_unlinked";
+const IDENTITY_LINKS: &str = "/api/v1/identity-links";
+const DEVICE_COOKIE: &str = "palmr_device";
 const ADMIN_USERS: &str = "/api/v1/admin/users";
 
 #[derive(Debug, Clone, Copy)]
@@ -726,6 +729,114 @@ impl World {
             id,
             cookie: Base64UrlUnpadded::encode_string(&raw),
         })
+    }
+
+    async fn seed_identity_link(&self, user_id: &str) -> Result<String> {
+        let mut connection = self.db.writer().await?;
+        let provider = Uuid::now_v7().to_string();
+        sqlx::query(
+            "INSERT INTO identity_providers
+                 (id, key, display_name, kind, client_id, created_at, updated_at)
+             VALUES (?1, 'r042', 'R042 IdP', 'oidc', 'client',
+                     strftime('%Y-%m-%dT%H:%M:%fZ', '2026-01-01'),
+                     strftime('%Y-%m-%dT%H:%M:%fZ', '2026-01-01'))",
+        )
+        .bind(&provider)
+        .execute(&mut connection)
+        .await
+        .context("seed identity provider")?;
+        let id = Uuid::now_v7().to_string();
+        sqlx::query(
+            "INSERT INTO identity_links
+                 (id, user_id, provider_id, subject, link_method, created_at)
+             VALUES (?1, ?2, ?4, ?3, 'manual',
+                     strftime('%Y-%m-%dT%H:%M:%fZ', '2026-01-01'))",
+        )
+        .bind(&id)
+        .bind(user_id)
+        .bind(format!("r042-subject-{user_id}"))
+        .bind(&provider)
+        .execute(&mut connection)
+        .await
+        .context("seed identity link")?;
+        Ok(id)
+    }
+
+    async fn add_external_session(&mut self, link_id: &str) -> Result<()> {
+        let user_id = self.a.id.clone();
+        let raw = |label: &str| -> Vec<u8> {
+            Sha256::digest(format!("r042-external-{label}-{user_id}").as_bytes())
+                .iter()
+                .copied()
+                .collect()
+        };
+        let (session, csrf) = (raw("session"), raw("csrf"));
+        let mut connection = self.db.writer().await?;
+        sqlx::query(
+            "INSERT INTO sessions
+                 (id, user_id, token_hash, csrf_token_hash, state, auth_method, identity_link_id,
+                  created_at, last_seen_at, last_auth_at, idle_expires_at, absolute_expires_at)
+             VALUES (?1, ?2, ?3, ?4, 'active', 'external', ?5,
+                     strftime('%Y-%m-%dT%H:%M:%fZ', '2026-01-01'),
+                     strftime('%Y-%m-%dT%H:%M:%fZ', '2026-01-01'),
+                     strftime('%Y-%m-%dT%H:%M:%fZ', '2026-01-01'),
+                     strftime('%Y-%m-%dT%H:%M:%fZ', '2099-01-01'),
+                     strftime('%Y-%m-%dT%H:%M:%fZ', '2099-01-01'))",
+        )
+        .bind(Uuid::now_v7().to_string())
+        .bind(&user_id)
+        .bind(hex(&Sha256::digest(&session)))
+        .bind(hex(&Sha256::digest(&csrf)))
+        .bind(link_id)
+        .execute(&mut connection)
+        .await
+        .context("seed external session")?;
+        drop(connection);
+        let creds = Creds {
+            session: Base64UrlUnpadded::encode_string(&session),
+            csrf: Base64UrlUnpadded::encode_string(&csrf),
+        };
+        let live = self.live(creds).await?;
+        self.a.sessions.push(live);
+        Ok(())
+    }
+
+    async fn assert_devices_unusable(&self, trigger: &str) -> Result<()> {
+        for device in &self.a.devices {
+            let challenged = self
+                .http
+                .send(
+                    Method::POST,
+                    LOGIN,
+                    None,
+                    Some(&device.cookie),
+                    Some(json!({ "identifier": "ada", "password": PASSWORD })),
+                )
+                .await?;
+            expect_eq(
+                challenged.status,
+                StatusCode::UNAUTHORIZED,
+                &format!(
+                    "{trigger}: revoked trusted device {} still skips 2FA",
+                    device.id
+                ),
+            )?;
+            expect_eq(
+                challenged.error_code()?,
+                "AUTH_2FA_REQUIRED".to_owned(),
+                &format!("{trigger}: revoked trusted device {}", device.id),
+            )?;
+        }
+        Ok(())
+    }
+
+    async fn link_count(&self, user_id: &str) -> Result<i64> {
+        self.db
+            .scalar_count(
+                "SELECT count(*) FROM identity_links WHERE user_id = ?1",
+                user_id,
+            )
+            .await
     }
 
     async fn seed_reset_token(&self, user_id: &str) -> Result<String> {
@@ -2093,6 +2204,125 @@ async fn email_change_verified() -> Result<()> {
     world.finish().await
 }
 
+async fn identity_unlink_self() -> Result<()> {
+    let mut world = World::start("r042_identity_unlink_self", true, 3).await?;
+    let link = world.seed_identity_link(&world.a.id).await?;
+    world.add_external_session(&link).await?;
+    let current = world.a.sessions[CURRENT].creds.clone();
+    let path = format!("{IDENTITY_LINKS}/{link}");
+    let before = world.snapshot().await?;
+    let audit_before = world.audit_count("IDENTITY_LINK_REMOVED").await?;
+
+    world.inject_audit_failure("IDENTITY_LINK_REMOVED").await?;
+    let failed = world.call(Method::DELETE, &path, &current).await?;
+    world.assert_injected_failure(failed).await?;
+    world
+        .assert_rolled_back(
+            "identity unlink",
+            &before,
+            "IDENTITY_LINK_REMOVED",
+            audit_before,
+        )
+        .await?;
+    expect_eq(
+        world.link_count(&world.a.id).await?,
+        1,
+        "a failed audit write keeps the identity link",
+    )?;
+    world.remove_audit_failure().await?;
+
+    let reply = world
+        .call(Method::DELETE, &path, &current)
+        .await?
+        .expect(StatusCode::NO_CONTENT)?;
+    reply.assert_cleared()?;
+    expect_eq(
+        reply.cookie(DEVICE_COOKIE),
+        Some(""),
+        "trusted-device cookie cleared",
+    )?;
+    let fates = vec![Fate::Revoked(IDENTITY_UNLINKED); world.a.sessions.len()];
+    world
+        .settle(
+            "identity unlink",
+            &before,
+            &fates,
+            &EVERY_DEVICE_REVOKED,
+            None,
+        )
+        .await?;
+    world.assert_devices_unusable("identity unlink").await?;
+    expect_eq(
+        world.link_count(&world.a.id).await?,
+        0,
+        "the identity link is deleted",
+    )?;
+    expect_eq(
+        world.audit_count("IDENTITY_LINK_REMOVED").await?,
+        audit_before + 1,
+        "identity unlink audit",
+    )?;
+    world.finish().await
+}
+
+async fn identity_unlink_by_admin() -> Result<()> {
+    let mut world = World::start("r042_identity_unlink_admin", true, 3).await?;
+    let actor = world.add_admin_actor().await?;
+    let link = world.seed_identity_link(&world.a.id).await?;
+    world.add_external_session(&link).await?;
+    let path = format!("{ADMIN_USERS}/{}/identity-links/{link}", world.a.id);
+    let before = world.snapshot().await?;
+    let audit_before = world.audit_count("IDENTITY_LINK_REMOVED").await?;
+
+    world.inject_audit_failure("IDENTITY_LINK_REMOVED").await?;
+    let failed = world.call(Method::DELETE, &path, &actor).await?;
+    world.assert_injected_failure(failed).await?;
+    world
+        .assert_rolled_back(
+            "admin identity unlink",
+            &before,
+            "IDENTITY_LINK_REMOVED",
+            audit_before,
+        )
+        .await?;
+    world.remove_audit_failure().await?;
+
+    world
+        .call(Method::DELETE, &path, &actor)
+        .await?
+        .expect(StatusCode::NO_CONTENT)?
+        .assert_no_session_cookie()?;
+    let fates = vec![Fate::Revoked(IDENTITY_UNLINKED); world.a.sessions.len()];
+    world
+        .settle(
+            "admin identity unlink",
+            &before,
+            &fates,
+            &EVERY_DEVICE_REVOKED,
+            None,
+        )
+        .await?;
+    world
+        .assert_devices_unusable("admin identity unlink")
+        .await?;
+    expect_eq(
+        world.me(&actor).await?,
+        StatusCode::OK,
+        "the acting admin keeps their session",
+    )?;
+    expect_eq(
+        world.link_count(&world.a.id).await?,
+        0,
+        "the identity link is deleted",
+    )?;
+    expect_eq(
+        world.audit_count("IDENTITY_LINK_REMOVED").await?,
+        audit_before + 1,
+        "admin identity unlink audit",
+    )?;
+    world.finish().await
+}
+
 type Scenario = Pin<Box<dyn Future<Output = Result<()>>>>;
 
 #[allow(non_snake_case, reason = "the accepted regression identifier is R-042")]
@@ -2133,6 +2363,11 @@ async fn regression_R042_session_revocation_on_security_change() -> Result<()> {
             Box::pin(admin_revoke_own_sessions()),
         ),
         ("email_change_verified", Box::pin(email_change_verified())),
+        ("identity_unlink_self", Box::pin(identity_unlink_self())),
+        (
+            "identity_unlink_by_admin",
+            Box::pin(identity_unlink_by_admin()),
+        ),
     ];
     let (names, futures): (Vec<_>, Vec<_>) = scenarios.into_iter().unzip();
     let results = futures_util::future::join_all(futures).await;

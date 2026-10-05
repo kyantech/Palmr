@@ -306,6 +306,7 @@ pub enum AuditAction {
     IdentityProviderEnabled,
     IdentityProviderDisabled,
     IdentityLinkCreated,
+    IdentityLinkRemoved,
 }
 
 impl AuditAction {
@@ -348,6 +349,7 @@ impl AuditAction {
         Self::IdentityProviderEnabled,
         Self::IdentityProviderDisabled,
         Self::IdentityLinkCreated,
+        Self::IdentityLinkRemoved,
     ];
 
     pub const fn as_str(self) -> &'static str {
@@ -390,6 +392,7 @@ impl AuditAction {
             Self::IdentityProviderEnabled => "IDENTITY_PROVIDER_ENABLED",
             Self::IdentityProviderDisabled => "IDENTITY_PROVIDER_DISABLED",
             Self::IdentityLinkCreated => "IDENTITY_LINK_CREATED",
+            Self::IdentityLinkRemoved => "IDENTITY_LINK_REMOVED",
         }
     }
 
@@ -432,7 +435,8 @@ impl AuditAction {
             | Self::IdentityProviderDeleted
             | Self::IdentityProviderEnabled
             | Self::IdentityProviderDisabled
-            | Self::IdentityLinkCreated => WritePath::InTransaction,
+            | Self::IdentityLinkCreated
+            | Self::IdentityLinkRemoved => WritePath::InTransaction,
         }
     }
 }

@@ -1846,3 +1846,164 @@ fn it_openapi_provider_callback_documents_a_redirect_only_contract() {
     assert!(!rendered.contains("access_token"));
     assert!(!rendered.contains("clientSecret"));
 }
+
+#[test]
+fn unit_identity_link_and_reauth_routes_are_declared_with_exactly_one_class() {
+    let inventory = application_inventory();
+    let routes = [
+        (
+            Method::POST,
+            "/api/v1/auth/providers/{slug}/link",
+            AuthClass::AuthenticatedRecentAuth,
+            RateLimitClass::Write,
+        ),
+        (
+            Method::GET,
+            "/api/v1/identity-links",
+            AuthClass::Authenticated,
+            RateLimitClass::Read,
+        ),
+        (
+            Method::DELETE,
+            "/api/v1/identity-links/{id}",
+            AuthClass::AuthenticatedRecentAuth,
+            RateLimitClass::Write,
+        ),
+        (
+            Method::GET,
+            "/api/v1/admin/users/{id}/identity-links",
+            AuthClass::Admin,
+            RateLimitClass::Read,
+        ),
+        (
+            Method::DELETE,
+            "/api/v1/admin/users/{id}/identity-links/{linkId}",
+            AuthClass::AdminRecentAuth,
+            RateLimitClass::AdminWrite,
+        ),
+        (
+            Method::POST,
+            "/api/v1/auth/reauthenticate",
+            AuthClass::Authenticated,
+            RateLimitClass::AuthTotp,
+        ),
+        (
+            Method::POST,
+            "/api/v1/auth/providers/{slug}/authorize",
+            AuthClass::Public,
+            RateLimitClass::AuthLogin,
+        ),
+        (
+            Method::GET,
+            "/api/v1/auth/providers/{slug}/callback",
+            AuthClass::Public,
+            RateLimitClass::AuthLogin,
+        ),
+    ];
+    for (method, path, auth, rate_limit) in routes {
+        let matching: Vec<_> = inventory
+            .entries()
+            .iter()
+            .filter(|entry| entry.path() == path && *entry.method() == method)
+            .collect();
+        assert_eq!(matching.len(), 1, "{method} {path}");
+        let policy = matching[0].policy();
+        assert_eq!(policy.auth(), auth, "{method} {path}");
+        assert_eq!(policy.rate_limit(), rate_limit, "{method} {path}");
+        assert_eq!(policy.transport(), Transport::ControlPlane);
+        assert_eq!(policy.idempotency(), IdempotencyMode::None);
+    }
+    assert!(
+        inventory
+            .entries()
+            .iter()
+            .all(|entry| !entry.path().contains("reauth/external")),
+        "SSO re-authentication has no dedicated public route"
+    );
+}
+
+#[test]
+fn it_openapi_external_identity_flows_document_their_contracts() {
+    let document = application_document();
+    let paths = &document["paths"];
+    assert!(paths["/api/v1/auth/reauth/external"].is_null());
+
+    let reauthenticate = &paths["/api/v1/auth/reauthenticate"]["post"]["responses"];
+    assert!(reauthenticate["202"].is_object());
+    assert!(reauthenticate["204"].is_object());
+    assert!(reauthenticate["202"]["description"]
+        .as_str()
+        .unwrap()
+        .contains("prompt=login"));
+    let schema = &document["components"]["schemas"]["ExternalReauthResponse"];
+    assert_eq!(schema["properties"]["accepted"]["type"], json!("boolean"));
+    assert_eq!(
+        schema["properties"]["externalReauthUrl"]["type"],
+        json!("string")
+    );
+
+    let authorize = paths["/api/v1/auth/providers/{slug}/authorize"]["post"].to_string();
+    assert!(authorize.contains("**anonymous login** only"));
+    assert!(!authorize.contains("reauth/external"));
+
+    let link = &paths["/api/v1/auth/providers/{slug}/link"]["post"];
+    assert!(link["responses"]["200"].is_object());
+    assert!(link["responses"]["409"]["description"]
+        .as_str()
+        .unwrap()
+        .contains("PROVIDER_IDENTITY_ALREADY_LINKED"));
+    assert!(link.get("requestBody").is_none());
+
+    let unlink = &paths["/api/v1/identity-links/{id}"]["delete"]["responses"];
+    assert!(unlink["204"].is_object());
+    assert!(unlink["404"]["description"]
+        .as_str()
+        .unwrap()
+        .contains("PROVIDER_LINK_NOT_FOUND"));
+    assert!(unlink["409"]["description"]
+        .as_str()
+        .unwrap()
+        .contains("IDENTITY_LINK_LAST_LOGIN_PATH"));
+
+    let admin = &paths["/api/v1/admin/users/{id}/identity-links/{linkId}"]["delete"]["responses"];
+    assert!(admin["204"].is_object());
+    assert!(admin["409"]["description"]
+        .as_str()
+        .unwrap()
+        .contains("PASSWORD_LOGIN_DISABLE_UNSAFE"));
+    assert!(
+        paths["/api/v1/admin/users/{id}/identity-links"]["get"]["responses"]["404"]["description"]
+            .as_str()
+            .unwrap()
+            .contains("USER_NOT_FOUND")
+    );
+
+    let item = &document["components"]["schemas"]["IdentityLinkItem"]["properties"];
+    let mut fields: Vec<&str> = item
+        .as_object()
+        .unwrap()
+        .keys()
+        .map(String::as_str)
+        .collect();
+    fields.sort_unstable();
+    assert_eq!(
+        fields,
+        [
+            "emailAtLink",
+            "externalSubject",
+            "id",
+            "lastUsedAt",
+            "linkedAt",
+            "providerDisplayName",
+            "providerSlug"
+        ]
+    );
+    let rendered = document.to_string();
+    for code in [
+        "PROVIDER_LINK_NOT_FOUND",
+        "IDENTITY_LINK_LAST_LOGIN_PATH",
+        "PASSWORD_LOGIN_DISABLE_UNSAFE",
+    ] {
+        assert!(rendered.contains(code), "{code}");
+    }
+}

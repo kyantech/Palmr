@@ -1,6 +1,6 @@
 # External identity providers: control plane
 
-Implemented by `apps/server/src/features/identity_providers/` (M12-T01 to M12-T04). Manual linking, SSO re-authentication and the safe SSO-only mode arrive in M12-T05 onward.
+Implemented by `apps/server/src/features/identity_providers/` (M12-T01 to M12-T05). The safe SSO-only mode arrives in M12-T06.
 
 ## Model
 
@@ -55,12 +55,31 @@ The order is normative and fail-closed (`callback.rs`):
 1. an `error` parameter is `PROVIDER_AUTH_DENIED`; nothing is exchanged and no row is touched;
 2. a missing `palmr_oauth` cookie, a missing or duplicated `state` or `code` is `PROVIDER_STATE_INVALID` with no row consumed;
 3. one short `BEGIN IMMEDIATE` runs the conditional `UPDATE oauth_auth_requests SET consumed_at … WHERE state_hash = ? AND consumed_at IS NULL AND expires_at > ? RETURNING …`; zero rows (unknown, expired, replayed) is `PROVIDER_STATE_INVALID`;
-4. from here the row is consumed and stays consumed: the binding cookie digest must equal `binding_cookie_hash` (constant time), the row's provider must be the provider in the path, the row purpose must be `login`, and `redirect_uri` must equal the URI derived from `PALMR_BASE_URL` exactly. Any mismatch is `PROVIDER_STATE_INVALID` and nothing leaves the process. A disabled provider or a disabled global toggle is `PROVIDER_DISABLED`;
-5. the PKCE verifier is opened with `palmr:v1:oidc` and the request-row AAD (a failure is `PROVIDER_STATE_INVALID`), and the code is exchanged at the token endpoint honouring `token_auth_method` (`client_secret_basic` sends only an `Authorization` header, `client_secret_post` sends `client_id` and `client_secret` in the form, `none` sends `client_id` only). Redirects are never followed. Any transport, status or body failure is `PROVIDER_CODE_EXCHANGE_FAILED`. Access and ID tokens live only for the request;
-6. `oidc` runs the T02 `IdTokenValidator` with the stored nonce (`PROVIDER_ID_TOKEN_INVALID`, `PROVIDER_SUBJECT_MISSING`, `PROVIDER_DISCOVERY_FAILED`); a missing `id_token` is `PROVIDER_ID_TOKEN_INVALID`. When the signed token lacks a username, name or picture and the provider has a userinfo endpoint, one best-effort userinfo request may fill only those display fields, and only when its `sub` equals the signed `sub`. `oauth2` fetches userinfo (`PROVIDER_USERINFO_FAILED`);
-7. a subject that is empty, longer than 255 characters or contains control characters is `PROVIDER_SUBJECT_MISSING`.
+4. from here the row is consumed and stays consumed: the binding cookie digest must equal `binding_cookie_hash` (constant time), the row's provider must be the provider in the path, and `redirect_uri` must equal the URI derived from `PALMR_BASE_URL` exactly. Any mismatch is `PROVIDER_STATE_INVALID` and nothing leaves the process. A disabled provider or a disabled global toggle is `PROVIDER_DISABLED`;
+5. the row purpose selects exactly one flow (`Flow::Login | Link | Reauth`, no fall-through). `link` and `reauth` additionally require the presented `palmr_session` to authenticate as the row's `link_user_id` (`PROVIDER_STATE_INVALID` otherwise) *before* anything is exchanged, and an OAuth2 `reauth` row older than the recent-authentication window is `AUTH_RECENT_AUTH_REQUIRED` without contacting the provider;
+6. the PKCE verifier is opened with `palmr:v1:oidc` and the request-row AAD (a failure is `PROVIDER_STATE_INVALID`), and the code is exchanged at the token endpoint honouring `token_auth_method` (`client_secret_basic` sends only an `Authorization` header, `client_secret_post` sends `client_id` and `client_secret` in the form, `none` sends `client_id` only). Redirects are never followed. Any transport, status or body failure is `PROVIDER_CODE_EXCHANGE_FAILED`. Access and ID tokens live only for the request;
+7. `oidc` runs the T02 `IdTokenValidator` with the stored nonce and the flow's `ValidationPurpose` (`Reauth` makes a missing, stale or future `auth_time` an `AUTH_RECENT_AUTH_REQUIRED`) (`PROVIDER_ID_TOKEN_INVALID`, `PROVIDER_SUBJECT_MISSING`, `PROVIDER_DISCOVERY_FAILED`); a missing `id_token` is `PROVIDER_ID_TOKEN_INVALID`. When the signed token lacks a username, name or picture and the provider has a userinfo endpoint, one best-effort userinfo request may fill only those display fields, and only when its `sub` equals the signed `sub`. `oauth2` fetches userinfo (`PROVIDER_USERINFO_FAILED`);
+8. a subject that is empty, longer than 255 characters or contains control characters is `PROVIDER_SUBJECT_MISSING`.
 
-No network request is made while a SQLite write transaction is open. The sign-in itself is a single transaction (`resolve.rs`, `provision.rs`, the shared `AuthService::issue_session_in_tx`): resolution, link or account creation, their audit rows, the session, `identity_links.last_login_at` and `sessions.identity_link_id` commit together, and a refusal by the account-state gate rolls the whole transaction back. The `LOGIN_SUCCEEDED` event (`method = external`) is enqueued after the commit.
+No network request is made while a SQLite write transaction is open. The `login` sign-in itself is a single transaction (`resolve.rs`, `provision.rs`, the shared `AuthService::issue_session_in_tx`): resolution, link or account creation, their audit rows, the session, `identity_links.last_login_at` and `sessions.identity_link_id` commit together, and a refusal by the account-state gate rolls the whole transaction back. The `LOGIN_SUCCEEDED` event (`method = external`) is enqueued after the commit.
+
+## Link, unlink and SSO re-authentication (M12-T05)
+
+`login` is the only purpose the public `POST /authorize` accepts. The other two enter through authenticated routes that call the same `IdentityProviderService::authorize` with a bound user id:
+
+| Purpose | Entry | Class |
+|---|---|---|
+| `link` | `POST /api/v1/auth/providers/{slug}/link` (`link_routes.rs`, `rl.write`) | `authenticated+recent-auth` |
+| `reauth` | SSO branch of `POST /api/v1/auth/reauthenticate` (empty body, `password_hash IS NULL`) | `authenticated` |
+
+`link` stores `purpose = link`, `link_user_id` and `post_auth_path = /settings/security`; it is refused before a row is minted with `PROVIDER_IDENTITY_ALREADY_LINKED` when the caller already holds an identity from that provider. `reauth` resolves the provider from `sessions.identity_link_id` (never an arbitrary link), requires the link to belong to the caller and be `active`, and answers `202 { accepted, externalReauthUrl }`, where `externalReauthUrl` is the real provider URL carrying `prompt=login` (and `max_age=0` for OIDC only).
+
+The callback (`link.rs`, `reauth.rs`) never enters `resolve::resolve`:
+
+* **link** re-reads the session inside one short write transaction (live, same user, still inside the recent-authentication window, otherwise `AUTH_RECENT_AUTH_REQUIRED`) and inserts `identity_links(link_method = 'manual')` with `IDENTITY_LINK_CREATED {via: manual, provider_id}`. The provider e-mail only fills `email_at_link`/`email_verified_at_link`; it never decides. The exact subject already bound to the same user is a no-op success; a subject bound to another user, or another subject for the same provider, is `PROVIDER_IDENTITY_ALREADY_LINKED`. No session is issued, rotated or stamped.
+* **reauth** proves the same user, provider and subject as the session's link inside one short write transaction and sets `sessions.last_auth_at` for that session only; a mismatch is `AUTH_RECENT_AUTH_REQUIRED`. The token is not rotated, nothing else changes and Palmr TOTP is never applied.
+
+`GET /api/v1/identity-links` and `GET /api/v1/admin/users/{id}/identity-links` return `{ id, providerSlug, providerDisplayName, externalSubject, emailAtLink, linkedAt, lastUsedAt }` (keyset-paged, oldest first). `DELETE /api/v1/identity-links/{id}` and `DELETE /api/v1/admin/users/{id}/identity-links/{linkId}` share `ExternalLoginService::unlink`: one write transaction scoped by `(user_id, link id)` deletes the link, revokes **every** session of the target (`revoked_reason = identity_provider_unlinked`, migration `0004`) and every trusted device, and writes `IDENTITY_LINK_REMOVED`. `assert_unlink_allowed` is the single guard seam: the self route refuses the only login path of a passwordless account (`IDENTITY_LINK_LAST_LOGIN_PATH`), and the global SSO-only standing invariant (`PASSWORD_LOGIN_DISABLE_UNSAFE`) is added there by M12-T06.
 
 ## Account resolution
 

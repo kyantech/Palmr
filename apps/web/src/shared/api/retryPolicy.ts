@@ -103,6 +103,9 @@ export const RETRY_CLASS: Readonly<Record<ErrorCode, RetryClass>> = {
   AUTH_ACCOUNT_INACTIVE: "never",
   AUTH_EXTERNAL_AMBIGUOUS_IDENTITY: "never",
   AUTH_EXTERNAL_USERNAME_UNAVAILABLE: "never",
+  PROVIDER_LINK_NOT_FOUND: "never",
+  IDENTITY_LINK_LAST_LOGIN_PATH: "never",
+  PASSWORD_LOGIN_DISABLE_UNSAFE: "never",
 };
 
 const MAX_RETRIES: Readonly<Record<RetryClass, number>> = {
