@@ -47,7 +47,9 @@ use crate::features::auth::AuthService;
 use crate::features::branding::BrandingService;
 use crate::features::email::{self, EmailService, SmtpTransport};
 use crate::features::identity_providers::callback::ExternalLoginService;
-use crate::features::identity_providers::{IdentityProviderService, ProviderHttpClient};
+use crate::features::identity_providers::{
+    IdentityProviderService, PasswordLoginService, ProviderHttpClient,
+};
 use crate::features::settings::{
     AdminSettingsService, EffectiveSettingsService, OperatorPolicy, SettingsError, SettingsHandle,
     SettingsService, SmtpTestService,
@@ -829,6 +831,12 @@ async fn initialize(
         settings.clone(),
     );
     let external_login = ExternalLoginService::new(identity_providers.clone(), auth.clone());
+    let password_login = PasswordLoginService::new(
+        database.pools().clone(),
+        Arc::clone(&clock),
+        settings_service.clone(),
+        audit_service.clone(),
+    );
     let smtp_test = SmtpTestService::new(settings.clone(), Arc::new(SmtpTransport));
     let totp = TotpService::new(
         database.pools().clone(),
@@ -878,6 +886,7 @@ async fn initialize(
         admin_users,
         identity_providers,
         external_login,
+        password_login,
         admin_settings: AdminSettingsService::new(
             settings_service.clone(),
             Arc::clone(&clock),
@@ -1130,6 +1139,7 @@ struct RequestServices {
     admin_users: AdminUserService,
     identity_providers: IdentityProviderService,
     external_login: ExternalLoginService,
+    password_login: PasswordLoginService,
     admin_settings: AdminSettingsService,
     smtp_test: SmtpTestService,
     email_change: EmailChangeService,
@@ -1168,6 +1178,7 @@ fn composed_router(
             .layer(axum::Extension(services.admin_users))
             .layer(axum::Extension(services.identity_providers))
             .layer(axum::Extension(services.external_login))
+            .layer(axum::Extension(services.password_login))
             .layer(axum::Extension(services.admin_settings))
             .layer(axum::Extension(services.smtp_test))
             .layer(axum::Extension(services.email_change))

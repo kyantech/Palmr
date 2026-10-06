@@ -78,6 +78,7 @@
     "providerLinkNotFound": "Cette identité associée n'existe plus. Actualisez la liste et réessayez.",
     "identityLinkLastLoginPath": "C'est le seul moyen de vous connecter à ce compte, il ne peut donc pas être supprimé. Associez d'abord un autre fournisseur.",
     "passwordLoginDisableUnsafe": "Ce changement ne laisserait aucun accès administrateur sûr tant que la connexion par mot de passe est désactivée ; il a donc été refusé.",
+    "noValidatedProvider": "Aucun fournisseur de connexion activé n'a encore été testé avec succès ; la connexion par mot de passe ne peut donc pas être désactivée. Testez d'abord un fournisseur.",
     "twoFactorCodeInvalid": "Le code de vérification est incorrect. Vérifiez votre application d'authentification et réessayez.",
     "twoFactorCodeReplayed": "Ce code a déjà été utilisé. Attendez que votre application d'authentification affiche un nouveau code.",
     "twoFactorAlreadyEnabled": "L'authentification à deux facteurs est déjà activée sur votre compte.",

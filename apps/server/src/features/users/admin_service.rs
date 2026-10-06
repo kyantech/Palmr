@@ -27,6 +27,9 @@ use crate::features::auth::sessions::{
 };
 use crate::features::auth::trusted_devices::repo as trusted_devices;
 use crate::features::auth::trusted_devices::TrustedDeviceError;
+use crate::features::identity_providers::password_login::{
+    assert_safe_sso_after_change, Projection, SsoGuardError,
+};
 use crate::features::settings::SettingsHandle;
 use crate::infra::crypto::hkdf::KeyRing;
 use crate::infra::crypto::password::hash_password;
@@ -83,6 +86,7 @@ pub enum AdminUserError {
     NoLocalAuth,
     PasswordLoginDisabled,
     User(UserError),
+    SsoGuard(SsoGuardError),
     Login(LoginError),
     ResetLinks(PasswordResetError),
     Session(SessionError),
@@ -103,6 +107,7 @@ impl AdminUserError {
             Self::NoLocalAuth => "admin_user_no_local_auth",
             Self::PasswordLoginDisabled => "admin_user_password_login_disabled",
             Self::User(error) => error.kind(),
+            Self::SsoGuard(error) => error.kind(),
             Self::Login(error) => error.kind(),
             Self::ResetLinks(error) => error.kind(),
             Self::Session(error) => error.kind(),
@@ -125,6 +130,7 @@ impl AdminUserError {
             }
             Self::NoLocalAuth => ApiError::new(ErrorCode::UserHasNoLocalAuth),
             Self::PasswordLoginDisabled => ApiError::new(ErrorCode::AuthPasswordLoginDisabled),
+            Self::SsoGuard(error) => error.api_error(),
             Self::Login(error) => error.api_error(),
             Self::ResetLinks(error) => error.api_error(),
             Self::Invalid { fields } => ApiError::validation(fields.iter().copied()),
@@ -158,6 +164,7 @@ impl fmt::Display for AdminUserError {
             Self::NoLocalAuth => f.write_str("the user has no local password"),
             Self::PasswordLoginDisabled => f.write_str("password login is disabled"),
             Self::User(error) => write!(f, "admin user operation failed: {error}"),
+            Self::SsoGuard(error) => write!(f, "{error}"),
             Self::Login(error) => write!(f, "admin user lockout operation failed: {error}"),
             Self::ResetLinks(error) => {
                 write!(f, "admin user reset-link operation failed: {error}")
@@ -180,6 +187,12 @@ impl std::error::Error for AdminUserError {}
 impl From<UserError> for AdminUserError {
     fn from(error: UserError) -> Self {
         Self::User(error)
+    }
+}
+
+impl From<SsoGuardError> for AdminUserError {
+    fn from(error: SsoGuardError) -> Self {
+        Self::SsoGuard(error)
     }
 }
 
@@ -484,6 +497,7 @@ impl AdminUserService {
                 }
                 if role == Role::User {
                     assert_active_admin_remains(tx, id).await?;
+                    assert_safe_sso_after_change(tx, Projection::removing_admin(id)).await?;
                 }
                 lifecycle::set_role(tx, id, role, at).await?;
                 let sessions_revoked = self
@@ -518,6 +532,7 @@ impl AdminUserService {
                     return Ok::<_, AdminUserError>(());
                 }
                 assert_active_admin_remains(tx, id).await?;
+                assert_safe_sso_after_change(tx, Projection::removing_admin(id)).await?;
                 lifecycle::deactivate(tx, id, admin.user_id, at).await?;
                 let sessions_revoked = self
                     .sessions

@@ -193,6 +193,11 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "NO_VALIDATED_PROVIDER",
+    "status": 409,
+    "retryable": false
+  },
+  {
     "code": "ORIGIN_NOT_ALLOWED",
     "status": 403,
     "retryable": false

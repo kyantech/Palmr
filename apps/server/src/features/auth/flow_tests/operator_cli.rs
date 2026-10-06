@@ -256,6 +256,74 @@ fn assert_all_revoked(rows: &[SessionRow], reason: &str) {
 }
 
 #[tokio::test]
+async fn it_cli_admin_recover_reenables_a_disabled_password_login() {
+    let root = TempDir::new().unwrap();
+    let clock = TestClock::new(START);
+    let stack = Stack::start(root.path(), &clock).await;
+    let hash = password_hash();
+    let admin = stack
+        .user(UserSpec::local("root", "root@example.test", &hash))
+        .await;
+    stack
+        .execute(&format!(
+            "UPDATE users SET role = 'admin' WHERE id = '{admin}'"
+        ))
+        .await;
+    stack
+        .execute(
+            "UPDATE app_settings SET value_json = 'false' WHERE key = 'password_login_enabled'",
+        )
+        .await;
+    stack.settings.reload().await.unwrap();
+    assert!(!password_login_enabled(&stack.settings.handle().load()));
+    let refused = stack.login("root", PASSWORD, 10).await;
+    assert_eq!(refused.status, StatusCode::FORBIDDEN);
+    assert_eq!(refused.error_code(), "AUTH_PASSWORD_LOGIN_DISABLED");
+    stack.stop().await;
+
+    let (outcome, _) = run_recover(root.path(), &clock, "root").await;
+    let facts = outcome.unwrap().facts;
+    assert_eq!(
+        facts,
+        AdminRecoverFacts {
+            role_changed: false,
+            activated: false,
+            lockout_cleared: false,
+            password_login_reenabled: true,
+            sessions_revoked: 0,
+        }
+    );
+
+    let stack = Stack::start(root.path(), &clock).await;
+    assert!(password_login_enabled(&stack.settings.handle().load()));
+    assert_eq!(
+        stack
+            .count("SELECT COUNT(*) FROM app_settings WHERE key = 'password_login_enabled' AND value_json = 'true'")
+            .await,
+        1
+    );
+    let signed_in = stack.login("root", PASSWORD, 11).await;
+    assert_eq!(signed_in.status, StatusCode::OK, "{}", signed_in.text());
+    let audit = stack.operator_audit("OPERATOR_CLI_ADMIN_RECOVER").await;
+    assert_eq!(audit.len(), 1, "{audit:?}");
+    assert_eq!(
+        assert_operator_row(&audit[0], ADMIN_RECOVER_ACTOR, admin)["password_login_reenabled"],
+        json!(true)
+    );
+    assert_eq!(
+        stack
+            .count("SELECT COUNT(*) FROM audit_events WHERE action = 'PASSWORD_LOGIN_ENABLED'")
+            .await,
+        0,
+        "the operator CLI is audited once, as OPERATOR_CLI_ADMIN_RECOVER"
+    );
+    stack.stop().await;
+
+    let (again, _) = run_recover(root.path(), &clock, "root").await;
+    assert!(!again.unwrap().facts.password_login_reenabled);
+}
+
+#[tokio::test]
 async fn it_cli_admin_recover_promotes_and_unlocks() {
     let root = TempDir::new().unwrap();
     let clock = TestClock::new(START);

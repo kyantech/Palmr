@@ -292,6 +292,16 @@ pub fn identity_link_removed(
     ActionSpec::new(AuditAction::IdentityLinkRemoved, metadata)
 }
 
+pub fn password_login_disabled(safe_admin_path_count: usize) -> ActionSpec {
+    let metadata = Metadata::json(&[("safe_admin_path_count", Value::from(safe_admin_path_count))]);
+    ActionSpec::new(AuditAction::PasswordLoginDisabled, metadata)
+}
+
+pub fn password_login_enabled(safe_admin_path_count: usize) -> ActionSpec {
+    let metadata = Metadata::json(&[("safe_admin_path_count", Value::from(safe_admin_path_count))]);
+    ActionSpec::new(AuditAction::PasswordLoginEnabled, metadata)
+}
+
 pub fn login_failed(method: &'static str, reason: &'static str) -> ActionSpec {
     let metadata = Metadata::json(&[
         ("method", Value::from(method)),
@@ -738,6 +748,24 @@ mod tests {
                 "user_id"
             ]
         );
+    }
+
+    #[test]
+    fn unit_password_login_metadata_is_closed_and_secret_free() {
+        for (spec, action) in [
+            (
+                password_login_disabled(usize::MAX),
+                AuditAction::PasswordLoginDisabled,
+            ),
+            (
+                password_login_enabled(usize::MAX),
+                AuditAction::PasswordLoginEnabled,
+            ),
+        ] {
+            assert_eq!(spec.action(), action);
+            assert_eq!(spec.action().write_path(), WritePath::InTransaction);
+            assert_eq!(fields(&spec), ["safe_admin_path_count"]);
+        }
     }
 
     #[test]

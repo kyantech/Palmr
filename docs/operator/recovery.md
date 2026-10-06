@@ -19,7 +19,7 @@ The command makes the account an active Admin:
 - promotes it to Admin if it is a regular user;
 - reactivates it if it is deactivated;
 - clears its login lockout;
-- re-enables password login for the instance if it was disabled.
+- re-enables password login for the instance if it was disabled: the persisted `password_login_enabled` setting is set back to `true`, which is the only way to turn it back on without a signed-in Admin. An Admin who can still sign in through the identity provider re-enables it from the web interface instead (it needs recent authentication and no provider precondition).
 
 When the account is promoted, every session it had is signed out, so no session created as a regular user gains Admin rights. Running the command on an account that is already an active Admin changes nothing else and is safe to repeat.
 

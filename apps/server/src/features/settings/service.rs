@@ -319,6 +319,8 @@ mod tests {
         assert!(!settings.security.two_factor_required);
         assert!(settings.security.trusted_devices_enabled);
         assert_eq!(settings.security.trusted_device_duration_days, 30);
+        assert!(settings.security.auth_providers_enabled);
+        assert!(settings.security.password_login_enabled);
 
         assert_eq!(settings.quotas.max_file_size_bytes, None);
         assert_eq!(settings.quotas.default_user_quota_bytes, None);

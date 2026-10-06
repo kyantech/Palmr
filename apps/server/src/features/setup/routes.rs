@@ -6,13 +6,16 @@ use http::{HeaderValue, StatusCode};
 use utoipa_axum::routes;
 
 use super::error::SetupError;
-use super::model::{Bootstrap, SetupInput, SetupRequest, SetupResponse, SetupStatus};
+use super::model::{
+    Bootstrap, BootstrapProvider, SetupInput, SetupRequest, SetupResponse, SetupStatus,
+};
 use super::service::SetupService;
 use crate::app::auth_class::AuthClass;
 use crate::app::router::{RateLimitClass, RoutePolicy, Routes, Transport};
 use crate::app::state::AppState;
 use crate::features::audit::model::ClientMetadata;
 use crate::features::auth::sessions::SessionService;
+use crate::features::identity_providers::IdentityProviderService;
 use crate::infra::http::error::{ApiError, ApiErrorBody, JSON_CONTENT_TYPE};
 use crate::infra::http::json;
 use crate::infra::http::proxy::ResolvedClient;
@@ -59,8 +62,23 @@ pub fn routes() -> Routes<AppState> {
     )
 )]
 async fn bootstrap(State(state): State<AppState>, request: Request) -> Response {
-    let settings = state.settings().load();
-    match serde_json::to_vec(&Bootstrap::from_settings(&settings)) {
+    let mut payload = Bootstrap::from_settings(&state.settings().load());
+    if let Some(providers) = request.extensions().get::<IdentityProviderService>() {
+        match providers.login_providers().await {
+            Ok(enabled) => {
+                payload.providers = enabled.iter().map(BootstrapProvider::from).collect()
+            }
+            Err(error) => {
+                tracing::error!(
+                    kind = error.kind(),
+                    "the bootstrap provider list could not be read"
+                );
+                return tag_error(ApiError::internal(), RequestId::of(&request).as_ref())
+                    .into_response();
+            }
+        }
+    }
+    match serde_json::to_vec(&payload) {
         Ok(body) => (
             StatusCode::OK,
             [

@@ -25,6 +25,7 @@ mod mock_idp;
 
 mod link;
 mod links;
+mod password_login;
 mod reauth;
 
 use mock_idp::{MockIdp, CLIENT_ID, RSA1_KID};

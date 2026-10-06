@@ -164,7 +164,6 @@ impl AuthService {
         let policy = LockoutPolicy::from_settings(&settings);
         drop(settings);
         if !enabled {
-            self.record_disabled(&input, &context).await?;
             return Err(LoginError::PasswordLoginDisabled);
         }
 
@@ -533,25 +532,6 @@ impl AuthService {
         tokio::task::spawn_blocking(move || verifier.verify(&password, stored.as_ref()))
             .await
             .map_err(|_| LoginError::VerificationTask)
-    }
-
-    async fn record_disabled(
-        &self,
-        input: &LoginInput,
-        context: &LoginContext,
-    ) -> Result<(), LoginError> {
-        self.pools
-            .write_tx(self.clock.as_ref(), LOGIN_FAILURE_TRANSACTION, async |tx| {
-                self.attempt(
-                    tx,
-                    &input.identifier,
-                    None,
-                    AttemptResult::PasswordAuthDisabled,
-                    &context.attempt,
-                )
-                .await
-            })
-            .await
     }
 
     async fn record_failure(

@@ -651,6 +651,7 @@ pub fn application_routes() -> Routes<AppState> {
         .merge(branding::routes::routes())
         .merge(identity_providers::routes::routes())
         .merge(identity_providers::link_routes::routes())
+        .merge(identity_providers::password_login_routes::routes())
         .merge(setup::routes::routes())
         .merge(settings::routes::routes())
         .merge(settings::admin_routes::routes())

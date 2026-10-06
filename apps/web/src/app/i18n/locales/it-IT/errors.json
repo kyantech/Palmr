@@ -78,6 +78,7 @@
     "providerLinkNotFound": "Quell'identità collegata non esiste più. Aggiorna l'elenco e riprova.",
     "identityLinkLastLoginPath": "È l'unico modo per accedere a questo account, quindi non può essere rimossa. Collega prima un altro provider.",
     "passwordLoginDisableUnsafe": "Questa modifica non lascerebbe alcun percorso di accesso sicuro per l'amministratore mentre l'accesso con password è disattivato, quindi è stata rifiutata.",
+    "noValidatedProvider": "Nessun provider di accesso abilitato è stato ancora testato con successo, quindi l'accesso con password non può essere disattivato. Prova prima un provider.",
     "twoFactorCodeInvalid": "Il codice di verifica non è corretto. Controlla l'app di autenticazione e riprova.",
     "twoFactorCodeReplayed": "Questo codice è già stato usato. Attendi che l'app di autenticazione mostri un nuovo codice.",
     "twoFactorAlreadyEnabled": "L'autenticazione a due fattori è già attiva sul tuo account.",

@@ -379,7 +379,11 @@ mod tests {
             }
             let exposed: Vec<&str> = group.fields().iter().map(|field| field.key).collect();
             for setting in SETTINGS_REGISTRY {
-                if setting.group == registry_group(group) && setting.key != "setup_completed" {
+                let dedicated = matches!(
+                    setting.key,
+                    "setup_completed" | security::PASSWORD_LOGIN_ENABLED_KEY
+                );
+                if setting.group == registry_group(group) && !dedicated {
                     assert!(
                         exposed.contains(&setting.key),
                         "{} is not exposed",

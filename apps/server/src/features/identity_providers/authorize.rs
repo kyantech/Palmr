@@ -185,18 +185,22 @@ impl super::service::IdentityProviderService {
     /// The public, non-sensitive provider list. When the global provider toggle
     /// is off this is an empty list and never an error.
     pub async fn public_providers(&self) -> Result<PublicProviderList, ProviderError> {
-        if !self.settings().load().security.auth_providers_enabled {
-            return Ok(PublicProviderList {
-                providers: Vec::new(),
-            });
-        }
-        let records = repo::list_enabled(self.pools().reader()).await?;
         Ok(PublicProviderList {
-            providers: records
+            providers: self
+                .login_providers()
+                .await?
                 .iter()
-                .map(|record| PublicProvider::new(&record.provider))
+                .map(PublicProvider::new)
                 .collect(),
         })
+    }
+
+    pub async fn login_providers(&self) -> Result<Vec<IdentityProvider>, ProviderError> {
+        if !self.settings().load().security.auth_providers_enabled {
+            return Ok(Vec::new());
+        }
+        let records = repo::list_enabled(self.pools().reader()).await?;
+        Ok(records.into_iter().map(|record| record.provider).collect())
     }
 
     /// Create one durable authorization request and return the authorization URL

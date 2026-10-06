@@ -8,7 +8,9 @@ use utoipa::ToSchema;
 use super::groups::general::GeneralSettings;
 use super::groups::public_links::PublicLinkSettings;
 use super::groups::quotas::QuotaSettings;
-use super::groups::security::{SecuritySettings, TWO_FACTOR_REQUIRED_KEY};
+use super::groups::security::{
+    SecuritySettings, AUTH_PROVIDERS_ENABLED_KEY, TWO_FACTOR_REQUIRED_KEY,
+};
 use super::groups::smtp::{SmtpSettings, PASSWORD_KEY, USERNAME_KEY};
 use super::groups::{parse_patch, Change, Kind, PatchError, SettingsGroup, Stored};
 use super::model::{self, AppSettings};
@@ -27,6 +29,9 @@ use crate::features::audit::model::{
 use crate::features::audit::service::AuditService;
 use crate::features::auth::sessions::AuthenticatedPrincipal;
 use crate::features::email::transport::SmtpConfig;
+use crate::features::identity_providers::password_login::{
+    assert_safe_sso_after_change, Projection, SsoGuardError,
+};
 use crate::infra::crypto::hkdf::KeyRing;
 use crate::infra::db::{DbError, WriteTx};
 use crate::infra::http::error::ApiError;
@@ -57,6 +62,7 @@ impl From<&AppSettings> for AdminSettings {
 #[derive(Debug)]
 pub enum AdminSettingsError {
     Patch(PatchError),
+    SsoGuard(SsoGuardError),
     Settings(SettingsError),
     Audit(AuditError),
     Db(DbError),
@@ -67,6 +73,7 @@ impl AdminSettingsError {
     pub const fn kind(&self) -> &'static str {
         match self {
             Self::Patch(_) => "admin_settings_patch_rejected",
+            Self::SsoGuard(error) => error.kind(),
             Self::Settings(error) => error.kind(),
             Self::Audit(error) => error.kind(),
             Self::Db(error) => error.kind().as_str(),
@@ -96,6 +103,7 @@ impl AdminSettingsError {
                     .with_detail("key", *field)
                     .with_detail("floor", *floor)
             }
+            Self::SsoGuard(error) => error.api_error(),
             Self::Db(error)
             | Self::Settings(SettingsError::Db(error))
             | Self::Audit(AuditError::Db(error)) => ApiError::new(error.api_code()),
@@ -108,6 +116,7 @@ impl fmt::Display for AdminSettingsError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Patch(error) => write!(f, "the settings patch was rejected: {error:?}"),
+            Self::SsoGuard(error) => write!(f, "{error}"),
             Self::Settings(error) => write!(f, "settings operation failed: {error}"),
             Self::Audit(error) => write!(f, "settings audit failed: {error}"),
             Self::Db(error) => write!(f, "settings database operation failed: {error}"),
@@ -124,6 +133,12 @@ impl std::error::Error for AdminSettingsError {}
 impl From<DbError> for AdminSettingsError {
     fn from(error: DbError) -> Self {
         Self::Db(error)
+    }
+}
+
+impl From<SsoGuardError> for AdminSettingsError {
+    fn from(error: SsoGuardError) -> Self {
+        Self::SsoGuard(error)
     }
 }
 
@@ -227,6 +242,13 @@ impl AdminSettingsService {
                 }
                 if group == SettingsGroup::Smtp {
                     check_smtp_usable(&rows, &keys, &effective)?;
+                }
+                let disables_providers = effective.iter().any(|transition| {
+                    transition.change.field.key == AUTH_PROVIDERS_ENABLED_KEY
+                        && transition.change.stored() == Stored::Flag(false)
+                });
+                if disables_providers {
+                    assert_safe_sso_after_change(tx, Projection::disabling_providers()).await?;
                 }
                 let applied = Applied {
                     actor: &actor,

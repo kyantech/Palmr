@@ -78,6 +78,7 @@
     "providerLinkNotFound": "Esa identidad vinculada ya no existe. Actualiza la lista e inténtalo de nuevo.",
     "identityLinkLastLoginPath": "Es la única forma de iniciar sesión en esta cuenta, así que no se puede eliminar. Vincula primero otro proveedor.",
     "passwordLoginDisableUnsafe": "Este cambio no dejaría ninguna vía segura de inicio de sesión de administrador mientras el inicio de sesión con contraseña está desactivado, por lo que se rechazó.",
+    "noValidatedProvider": "Todavía no se ha probado con éxito ningún proveedor de inicio de sesión habilitado, por lo que no se puede desactivar el inicio de sesión con contraseña. Prueba primero un proveedor.",
     "twoFactorCodeInvalid": "El código de verificación es incorrecto. Revisa tu aplicación de autenticación e inténtalo de nuevo.",
     "twoFactorCodeReplayed": "Este código ya se ha utilizado. Espera a que tu aplicación de autenticación muestre un código nuevo.",
     "twoFactorAlreadyEnabled": "La autenticación en dos pasos ya está activada en tu cuenta.",

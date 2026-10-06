@@ -2007,3 +2007,98 @@ fn it_openapi_external_identity_flows_document_their_contracts() {
         assert!(rendered.contains(code), "{code}");
     }
 }
+
+#[test]
+fn unit_password_login_routes_are_declared_with_exactly_one_class() {
+    let inventory = application_inventory();
+    for (method, auth, rate_limit) in [
+        (Method::GET, AuthClass::Admin, RateLimitClass::Read),
+        (
+            Method::PUT,
+            AuthClass::AdminRecentAuth,
+            RateLimitClass::AdminWrite,
+        ),
+    ] {
+        let matching: Vec<_> = inventory
+            .entries()
+            .iter()
+            .filter(|entry| {
+                entry.path() == "/api/v1/admin/auth/password-login" && *entry.method() == method
+            })
+            .collect();
+        assert_eq!(matching.len(), 1, "{method}");
+        let policy = matching[0].policy();
+        assert_eq!(policy.auth(), auth, "{method}");
+        assert_eq!(policy.rate_limit(), rate_limit, "{method}");
+        assert_eq!(policy.transport(), Transport::ControlPlane);
+        assert_eq!(policy.idempotency(), IdempotencyMode::None);
+    }
+}
+
+#[test]
+fn it_openapi_password_login_documents_its_contract() {
+    let document = application_document();
+    let path = &document["paths"]["/api/v1/admin/auth/password-login"];
+    assert!(path["get"]["responses"]["200"].is_object());
+    assert!(path["put"]["responses"]["200"].is_object());
+    let conflict = path["put"]["responses"]["409"]["description"]
+        .as_str()
+        .unwrap();
+    assert!(conflict.contains("PASSWORD_LOGIN_DISABLE_UNSAFE"));
+    assert!(conflict.contains("details.blockers"));
+    assert!(path["put"]["responses"]["422"]["description"]
+        .as_str()
+        .unwrap()
+        .contains("confirm"));
+
+    let request = &document["components"]["schemas"]["PasswordLoginRequest"];
+    let mut required: Vec<&str> = request["required"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|field| field.as_str().unwrap())
+        .collect();
+    required.sort_unstable();
+    assert_eq!(required, ["confirm", "enabled"]);
+    assert_eq!(request["properties"]["confirm"]["type"], json!("boolean"));
+    assert_eq!(request["properties"]["enabled"]["type"], json!("boolean"));
+
+    let state = &document["components"]["schemas"]["PasswordLoginState"];
+    let mut fields: Vec<&str> = state["properties"]
+        .as_object()
+        .unwrap()
+        .keys()
+        .map(String::as_str)
+        .collect();
+    fields.sort_unstable();
+    assert_eq!(
+        fields,
+        [
+            "blockers",
+            "canDisable",
+            "passwordLoginEnabled",
+            "safeAdminLoginPaths"
+        ]
+    );
+    let safe = &document["components"]["schemas"]["SafeAdminPath"]["properties"];
+    let mut safe_fields: Vec<&str> = safe
+        .as_object()
+        .unwrap()
+        .keys()
+        .map(String::as_str)
+        .collect();
+    safe_fields.sort_unstable();
+    assert_eq!(
+        safe_fields,
+        ["providerSlug", "providerValidated", "userId", "username"]
+    );
+
+    let security = document["paths"]["/api/v1/admin/settings/security"]["patch"].to_string();
+    assert!(security.contains("PASSWORD_LOGIN_DISABLE_UNSAFE"));
+    assert!(security.contains("only by `PUT /api/v1/admin/auth/password-login`"));
+    let members = document["components"]["schemas"]["SecurityPatch"]["properties"]
+        .as_object()
+        .unwrap();
+    assert!(!members.contains_key("passwordLoginEnabled"));
+    assert!(members.contains_key("authProvidersEnabled"));
+}

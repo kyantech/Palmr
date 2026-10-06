@@ -106,6 +106,7 @@ export const RETRY_CLASS: Readonly<Record<ErrorCode, RetryClass>> = {
   PROVIDER_LINK_NOT_FOUND: "never",
   IDENTITY_LINK_LAST_LOGIN_PATH: "never",
   PASSWORD_LOGIN_DISABLE_UNSAFE: "never",
+  NO_VALIDATED_PROVIDER: "never",
 };
 
 const MAX_RETRIES: Readonly<Record<RetryClass, number>> = {

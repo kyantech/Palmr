@@ -78,6 +78,7 @@
     "providerLinkNotFound": "Essa identidade vinculada não existe mais. Atualize a lista e tente novamente.",
     "identityLinkLastLoginPath": "Esta é a única forma de entrar nesta conta, então ela não pode ser removida. Vincule outro provedor primeiro.",
     "passwordLoginDisableUnsafe": "Esta alteração não deixaria nenhum caminho seguro de login de administrador enquanto o login por senha está desativado, por isso foi recusada.",
+    "noValidatedProvider": "Nenhum provedor de login ativado foi testado com sucesso ainda, então o login por senha não pode ser desativado. Teste um provedor primeiro.",
     "twoFactorCodeInvalid": "O código de verificação está incorreto. Confira seu aplicativo autenticador e tente novamente.",
     "twoFactorCodeReplayed": "Este código já foi usado. Aguarde o aplicativo autenticador mostrar um novo código.",
     "twoFactorAlreadyEnabled": "A autenticação em dois fatores já está ativada na sua conta.",

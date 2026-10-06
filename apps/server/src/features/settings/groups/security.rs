@@ -15,6 +15,8 @@ pub const INVITE_VALIDITY_HOURS: Bounds = Bounds::new(1, 720);
 pub const TRUSTED_DEVICE_DURATION_DAYS: Bounds = Bounds::new(1, 365);
 
 pub const TWO_FACTOR_REQUIRED_KEY: &str = "two_factor_required";
+pub const PASSWORD_LOGIN_ENABLED_KEY: &str = "password_login_enabled";
+pub const AUTH_PROVIDERS_ENABLED_KEY: &str = "auth_providers_enabled";
 
 pub const FIELDS: &[Field] = &[
     Field::new(
@@ -73,7 +75,11 @@ pub const FIELDS: &[Field] = &[
         "trusted_device_duration_days",
         Kind::Integer(TRUSTED_DEVICE_DURATION_DAYS),
     ),
-    Field::new("authProvidersEnabled", "auth_providers_enabled", Kind::Flag),
+    Field::new(
+        "authProvidersEnabled",
+        AUTH_PROVIDERS_ENABLED_KEY,
+        Kind::Flag,
+    ),
 ];
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]

@@ -214,6 +214,8 @@ error_catalog! {
         "Removing this identity link would remove the account's only login path";
     PasswordLoginDisableUnsafe = "PASSWORD_LOGIN_DISABLE_UNSAFE", CONFLICT, retryable: false,
         "The change would remove the last safe administrator login path";
+    NoValidatedProvider = "NO_VALIDATED_PROVIDER", CONFLICT, retryable: false,
+        "No enabled provider has been successfully tested";
     AuthAccountInactive = "AUTH_ACCOUNT_INACTIVE", FORBIDDEN, retryable: false,
         "The account is deactivated";
     AuthExternalAmbiguousIdentity = "AUTH_EXTERNAL_AMBIGUOUS_IDENTITY", INTERNAL_SERVER_ERROR, retryable: false,

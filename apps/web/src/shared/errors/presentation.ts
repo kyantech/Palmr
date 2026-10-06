@@ -152,6 +152,7 @@ export const ERROR_PRESENTATION: Readonly<Record<ErrorCode, ErrorPresentation>> 
   PROVIDER_LINK_NOT_FOUND: entry("message.providerLinkNotFound", inline("warning")),
   IDENTITY_LINK_LAST_LOGIN_PATH: entry("message.identityLinkLastLoginPath", inline("warning")),
   PASSWORD_LOGIN_DISABLE_UNSAFE: entry("message.passwordLoginDisableUnsafe", inline("warning")),
+  NO_VALIDATED_PROVIDER: entry("message.noValidatedProvider", inline("warning")),
 
   CLIENT_OFFLINE: entry("message.offline", { ...toast("warning", true), showRequestId: false }),
   CLIENT_NETWORK_ERROR: entry("message.networkError", {

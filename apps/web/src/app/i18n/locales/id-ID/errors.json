@@ -78,6 +78,7 @@
     "providerLinkNotFound": "Identitas tertaut itu sudah tidak ada. Muat ulang daftar lalu coba lagi.",
     "identityLinkLastLoginPath": "Ini satu-satunya cara untuk masuk ke akun ini, sehingga tidak bisa dihapus. Tautkan penyedia lain terlebih dahulu.",
     "passwordLoginDisableUnsafe": "Perubahan ini tidak akan menyisakan jalur masuk administrator yang aman saat masuk dengan kata sandi dinonaktifkan, sehingga ditolak.",
+    "noValidatedProvider": "Belum ada penyedia masuk yang diaktifkan dan berhasil diuji, sehingga masuk dengan kata sandi tidak dapat dinonaktifkan. Uji sebuah penyedia terlebih dahulu.",
     "twoFactorCodeInvalid": "Kode verifikasi salah. Periksa aplikasi autentikator Anda lalu coba lagi.",
     "twoFactorCodeReplayed": "Kode ini sudah digunakan. Tunggu hingga aplikasi autentikator menampilkan kode baru.",
     "twoFactorAlreadyEnabled": "Autentikasi dua faktor sudah aktif di akun Anda.",

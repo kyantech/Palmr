@@ -78,6 +78,7 @@
     "providerLinkNotFound": "That linked identity no longer exists. Refresh the list and try again.",
     "identityLinkLastLoginPath": "This is the only way to sign in to this account, so it can't be removed. Link another provider first.",
     "passwordLoginDisableUnsafe": "This change would leave no safe administrator sign-in path while password sign-in is off, so it was refused.",
+    "noValidatedProvider": "No enabled sign-in provider has been tested successfully yet, so password sign-in can't be turned off. Test a provider first.",
     "twoFactorCodeInvalid": "The verification code is incorrect. Check your authenticator app and try again.",
     "twoFactorCodeReplayed": "This code was already used. Wait for your authenticator app to show a new code.",
     "twoFactorAlreadyEnabled": "Two-factor authentication is already turned on for your account.",

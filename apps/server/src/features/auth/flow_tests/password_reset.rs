@@ -695,6 +695,74 @@ async fn it_reset_token_single_use_and_hashed() {
 }
 
 #[tokio::test]
+async fn it_reset_is_refused_while_password_login_is_disabled() {
+    let root = TempDir::new().unwrap();
+    let clock = TestClock::new(START);
+    let stack = Stack::start(root.path(), &clock).await;
+    stack.enable_smtp().await;
+    let hash = password_hash();
+    let ada = stack
+        .user(UserSpec::local("ada", "ada@example.test", &hash))
+        .await;
+    let token = stack.issued_token("ada", 10).await;
+    let before = stack.security_state(ada).await;
+    let rows = stack.reset_rows(ada).await;
+    assert_eq!(rows.len(), 1);
+
+    stack
+        .execute(
+            "UPDATE app_settings SET value_json = 'false' WHERE key = 'password_login_enabled'",
+        )
+        .await;
+    stack.settings.reload().await.unwrap();
+
+    let refused = stack.reset_password(&token, REPLACEMENT, 11).await;
+    assert_code(
+        &refused,
+        StatusCode::FORBIDDEN,
+        "AUTH_PASSWORD_LOGIN_DISABLED",
+    );
+    assert_eq!(stack.security_state(ada).await, before);
+    assert_eq!(
+        stack.reset_rows(ada).await,
+        rows,
+        "the token is not consumed"
+    );
+    assert_eq!(
+        stack
+            .scalar_i64(
+                "SELECT COUNT(*) FROM audit_events WHERE action = 'PASSWORD_RESET_COMPLETED'"
+            )
+            .await,
+        0
+    );
+
+    let mail_before = stack.mail.captured().len();
+    let silent = stack.forgot("ada", 12).await;
+    assert_eq!(silent.status, StatusCode::ACCEPTED);
+    stack.deliver_mail().await;
+    assert_eq!(stack.mail.captured().len(), mail_before);
+    assert_eq!(stack.reset_rows(ada).await, rows);
+
+    stack
+        .execute("UPDATE app_settings SET value_json = 'true' WHERE key = 'password_login_enabled'")
+        .await;
+    stack.settings.reload().await.unwrap();
+    let completed = stack.reset_password(&token, REPLACEMENT, 13).await;
+    assert_eq!(
+        completed.status,
+        StatusCode::NO_CONTENT,
+        "{}",
+        completed.text()
+    );
+    assert_ne!(
+        stack.security_state(ada).await.password_hash,
+        before.password_hash
+    );
+    stack.stop().await;
+}
+
+#[tokio::test]
 async fn it_reset_invalidates_older_tokens() {
     let root = TempDir::new().unwrap();
     let stack = Stack::start(root.path(), &TestClock::new(START)).await;

@@ -1,6 +1,7 @@
 use std::fmt;
 
 use super::discovery::DiscoveryFailure;
+use super::password_login::SsoGuardError;
 use crate::domain::error_code::ErrorCode;
 use crate::domain::time::InvalidTimestamp;
 use crate::features::audit::error::AuditError;
@@ -22,6 +23,7 @@ pub enum ProviderError {
     ValidationFailed { checks: Vec<CheckDetail> },
     HasLinks,
     IdentityAlreadyLinked,
+    SsoGuard(SsoGuardError),
     Stale,
     RepositoryInvariant { column: &'static str },
     Audit(AuditError),
@@ -41,6 +43,7 @@ impl ProviderError {
             Self::ValidationFailed { .. } => "provider_validation_failed",
             Self::HasLinks => "provider_has_identity_links",
             Self::IdentityAlreadyLinked => "provider_identity_already_linked",
+            Self::SsoGuard(error) => error.kind(),
             Self::Stale => "provider_changed_concurrently",
             Self::RepositoryInvariant { .. } => "provider_repository_invariant",
             Self::Audit(error) => error.kind(),
@@ -62,6 +65,7 @@ impl ProviderError {
                 .with_detail("checks", checks.clone()),
             Self::HasLinks => ApiError::new(ErrorCode::ProviderHasLinks),
             Self::IdentityAlreadyLinked => ApiError::new(ErrorCode::ProviderIdentityAlreadyLinked),
+            Self::SsoGuard(error) => error.api_error(),
             Self::Stale => ApiError::new(ErrorCode::DatabaseBusy),
             Self::Db(error) | Self::Audit(AuditError::Db(error)) => ApiError::new(error.api_code()),
             Self::RepositoryInvariant { .. } | Self::Audit(_) | Self::Crypto(_) | Self::Time(_) => {
@@ -88,6 +92,7 @@ impl fmt::Display for ProviderError {
             Self::IdentityAlreadyLinked => {
                 f.write_str("the account already has an identity from the provider")
             }
+            Self::SsoGuard(error) => write!(f, "{error}"),
             Self::Stale => f.write_str("the provider changed while the request was running"),
             Self::RepositoryInvariant { column } => {
                 write!(
@@ -104,6 +109,12 @@ impl fmt::Display for ProviderError {
 }
 
 impl std::error::Error for ProviderError {}
+
+impl From<SsoGuardError> for ProviderError {
+    fn from(error: SsoGuardError) -> Self {
+        Self::SsoGuard(error)
+    }
+}
 
 impl From<AuditError> for ProviderError {
     fn from(error: AuditError) -> Self {
@@ -189,6 +200,16 @@ impl From<DbError> for ExternalLoginError {
 impl From<sqlx::Error> for ExternalLoginError {
     fn from(error: sqlx::Error) -> Self {
         DbError::from(error).into()
+    }
+}
+
+impl From<SsoGuardError> for ExternalLoginError {
+    fn from(error: SsoGuardError) -> Self {
+        match error {
+            SsoGuardError::Unsafe(_) => Self::refused(ErrorCode::PasswordLoginDisableUnsafe),
+            SsoGuardError::Db(error) => error.into(),
+            SsoGuardError::Invariant(kind) => Self::internal(kind),
+        }
     }
 }
 

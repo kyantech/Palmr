@@ -309,7 +309,7 @@ async fn update_user(
         (status = 401, description = "Authentication required.", body = ApiErrorBody),
         (status = 403, description = "Administrator role or recent authentication required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
         (status = 404, description = "`USER_NOT_FOUND`.", body = ApiErrorBody),
-        (status = 409, description = "`LAST_ADMIN_PROTECTED` when the target is the only active Admin.", body = ApiErrorBody),
+        (status = 409, description = "`LAST_ADMIN_PROTECTED` when the target is the only active Admin; otherwise `PASSWORD_LOGIN_DISABLE_UNSAFE` (`details.blockers[]`) while password login is disabled and the change would leave no usable Administrator external login path.", body = ApiErrorBody),
         (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
         (status = 422, description = "`VALIDATION_ERROR` for a missing or unknown role.", body = ApiErrorBody),
         (status = 429, description = "Rate limited.", body = ApiErrorBody),
@@ -379,7 +379,7 @@ async fn activate_user(
         (status = 401, description = "Authentication required.", body = ApiErrorBody),
         (status = 403, description = "Administrator role or recent authentication required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
         (status = 404, description = "`USER_NOT_FOUND`.", body = ApiErrorBody),
-        (status = 409, description = "`LAST_ADMIN_PROTECTED` when the target is the only active Admin.", body = ApiErrorBody),
+        (status = 409, description = "`LAST_ADMIN_PROTECTED` when the target is the only active Admin; otherwise `PASSWORD_LOGIN_DISABLE_UNSAFE` (`details.blockers[]`) while password login is disabled and the change would leave no usable Administrator external login path.", body = ApiErrorBody),
         (status = 429, description = "Rate limited.", body = ApiErrorBody),
     )
 )]
@@ -598,7 +598,7 @@ async fn list_user_identity_links(
         ("linkId" = String, Path, description = "Identity-link UUIDv7 that must belong to the user"),
     ),
     responses(
-        (status = 204, description = "The identity link is removed and every session and trusted device of the target user is revoked in the same transaction, audited as `IDENTITY_LINK_REMOVED`. The acting Admin's own sessions are untouched unless the Admin is the target, in which case the current credentials are expired. The global SSO-only standing invariant (`PASSWORD_LOGIN_DISABLE_UNSAFE`) is owned by the password-login policy and is not evaluated here yet."),
+        (status = 204, description = "The identity link is removed and every session and trusted device of the target user is revoked in the same transaction, audited as `IDENTITY_LINK_REMOVED`. The acting Admin's own sessions are untouched unless the Admin is the target, in which case the current credentials are expired. While password login is disabled, the same transaction refuses a removal that would leave no usable Administrator external login path (`PASSWORD_LOGIN_DISABLE_UNSAFE`)."),
         (status = 401, description = "Authentication required.", body = ApiErrorBody),
         (status = 403, description = "Administrator role or recent authentication required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
         (status = 404, description = "`USER_NOT_FOUND`, or `PROVIDER_LINK_NOT_FOUND` when the link is unknown, malformed or does not belong to the user.", body = ApiErrorBody),

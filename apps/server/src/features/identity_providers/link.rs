@@ -6,6 +6,7 @@ use super::callback::ExternalLoginService;
 use super::error::ExternalLoginError;
 use super::link_repo::{self, ListedLink};
 use super::model::{IdentityLinkId, IdentityProvider};
+use super::password_login::{assert_safe_sso_after_change, Projection};
 use super::resolve::{
     insert_link, refused, ExternalIdentity, LinkInsert, LinkMethod, ResolveInput,
 };
@@ -157,7 +158,7 @@ impl ExternalLoginService {
                 let link = link_repo::find_scoped_in_tx(tx, target.id, command.link)
                     .await?
                     .ok_or_else(|| refused(ErrorCode::ProviderLinkNotFound))?;
-                assert_unlink_allowed(tx, command.scope, &target).await?;
+                assert_unlink_allowed(tx, command.scope, &target, link.id).await?;
 
                 let sessions = self
                     .auth()
@@ -263,15 +264,14 @@ async fn assert_unlink_allowed(
     tx: &mut WriteTx<'_>,
     scope: UnlinkScope,
     target: &User,
+    link: IdentityLinkId,
 ) -> Result<(), ExternalLoginError> {
-    match scope {
-        UnlinkScope::SelfService => {
-            let remaining = link_repo::count_for_user_in_tx(tx, target.id).await?;
-            if target.password_hash.is_none() && remaining <= 1 {
-                return Err(refused(ErrorCode::IdentityLinkLastLoginPath));
-            }
-            Ok(())
+    if scope == UnlinkScope::SelfService {
+        let remaining = link_repo::count_for_user_in_tx(tx, target.id).await?;
+        if target.password_hash.is_none() && remaining <= 1 {
+            return Err(refused(ErrorCode::IdentityLinkLastLoginPath));
         }
-        UnlinkScope::Admin => Ok(()),
     }
+    assert_safe_sso_after_change(tx, Projection::removing_link(link)).await?;
+    Ok(())
 }

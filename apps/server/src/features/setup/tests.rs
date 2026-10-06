@@ -211,6 +211,22 @@ async fn it_bootstrap_reflects_persisted_instance_settings() {
     assert_eq!(body["supportedLocales"], json!(SUPPORTED_LOCALES));
 }
 
+#[tokio::test]
+async fn it_bootstrap_password_login_follows_the_settings_snapshot() {
+    let enabled = bootstrap(AppSettings::defaults()).await.json();
+    assert_eq!(enabled["passwordLoginEnabled"], json!(true));
+
+    let mut settings = AppSettings::defaults();
+    settings.security.password_login_enabled = false;
+    let disabled = bootstrap(settings).await.json();
+    let object = disabled.as_object().unwrap();
+    assert_eq!(object["passwordLoginEnabled"], json!(false));
+    assert_eq!(object.len(), BOOTSTRAP_FIELDS.len());
+    for admin_only in ["canDisable", "blockers", "safeAdminLoginPaths"] {
+        assert!(!object.contains_key(admin_only), "{admin_only}");
+    }
+}
+
 #[test]
 fn unit_bootstrap_setup_state_comes_only_from_settings() {
     let mut settings = AppSettings::defaults();

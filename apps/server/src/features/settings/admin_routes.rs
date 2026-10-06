@@ -164,13 +164,14 @@ async fn get_security(
     request_body(
         content = SecurityPatch,
         content_type = "application/json",
-        description = "Any subset of the `security` members. An absent member is left unchanged and no member of this group is nullable, so an explicit `null` is rejected. Every member is validated before anything is written; the changed members are then written in one transaction, each audited as `SECURITY_POLICY_CHANGED` (`twoFactorRequired` as `MANDATORY_2FA_POLICY_CHANGED`), and take effect on the next request. A member equal to its current value is not written and not audited."
+        description = "Any subset of the `security` members. An absent member is left unchanged and no member of this group is nullable, so an explicit `null` is rejected. Every member is validated before anything is written; the changed members are then written in one transaction, each audited as `SECURITY_POLICY_CHANGED` (`twoFactorRequired` as `MANDATORY_2FA_POLICY_CHANGED`), and take effect on the next request. A member equal to its current value is not written and not audited. `passwordLoginEnabled` is not a member of this group: it is written only by `PUT /api/v1/admin/auth/password-login`, and naming it here is `SETTING_UNKNOWN`. While password login is disabled, setting `authProvidersEnabled` to `false` is refused."
     ),
     responses(
         (status = 200, description = "The group after the change.", body = SecuritySettings),
         (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
         (status = 401, description = "Authentication required.", body = ApiErrorBody),
         (status = 403, description = "Administrator role or recent authentication (`AUTH_RECENT_AUTH_REQUIRED`) required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
+        (status = 409, description = "`PASSWORD_LOGIN_DISABLE_UNSAFE` (`details.blockers[]`) when `authProvidersEnabled: false` is requested while password login is disabled. Nothing is written.", body = ApiErrorBody),
         (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
         (status = 422, description = "`SETTING_UNKNOWN` for a member the group does not define, `SETTING_BELOW_FLOOR` (`details.key`, `details.floor`) below the platform floor, `SETTING_VALUE_INVALID` (`details.key`, and `details.max` above a documented range or the 32-bit integer limit) for a wrong type, `null` or an out-of-range value, or `VALIDATION_ERROR` when the body is not an object. Nothing is written.", body = ApiErrorBody),
         (status = 429, description = "Rate limited.", body = ApiErrorBody),

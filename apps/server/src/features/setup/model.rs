@@ -10,6 +10,7 @@ use crate::domain::username::Username;
 use crate::features::auth::login::password_login_enabled;
 use crate::features::branding::model::BrandingAsset;
 use crate::features::branding::service::public_url;
+use crate::features::identity_providers::model::IdentityProvider;
 use crate::features::settings::model::AppSettings;
 use crate::features::users::model::{self as users, User};
 use crate::features::users::service::AccountPasswordPolicy;
@@ -37,10 +38,6 @@ pub struct Bootstrap {
     pub version: Option<&'static str>,
 }
 
-#[allow(
-    dead_code,
-    reason = "external identity providers populate this list once they exist"
-)]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct BootstrapProvider {
@@ -48,6 +45,17 @@ pub struct BootstrapProvider {
     pub display_name: String,
     pub icon_key: String,
     pub sort_order: i64,
+}
+
+impl From<&IdentityProvider> for BootstrapProvider {
+    fn from(provider: &IdentityProvider) -> Self {
+        Self {
+            slug: provider.slug.clone(),
+            display_name: provider.display_name.clone(),
+            icon_key: provider.icon_key().to_owned(),
+            sort_order: provider.sort_order,
+        }
+    }
 }
 
 impl Bootstrap {

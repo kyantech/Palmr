@@ -49,7 +49,9 @@ use crate::features::auth::totp::TotpService;
 use crate::features::email::transport::CapturingTransport;
 use crate::features::email::EmailService;
 use crate::features::identity_providers::callback::ExternalLoginService;
-use crate::features::identity_providers::{IdentityProviderService, ProviderHttpClient};
+use crate::features::identity_providers::{
+    IdentityProviderService, PasswordLoginService, ProviderHttpClient,
+};
 use crate::features::settings::effective::{EffectiveSettingsService, OperatorPolicy};
 use crate::features::settings::{AdminSettingsService, SettingsService, SmtpTestService};
 use crate::features::setup::SetupService;
@@ -88,6 +90,7 @@ struct Stack {
     invites: InviteService,
     admin_users: AdminUserService,
     providers: IdentityProviderService,
+    password_login: PasswordLoginService,
     email_changes: EmailChangeService,
     mail: Arc<CapturingTransport>,
     email: EmailService,
@@ -202,6 +205,12 @@ impl Stack {
             settings.handle(),
         );
         let external_login = ExternalLoginService::new(providers.clone(), auth.clone());
+        let password_login = PasswordLoginService::new(
+            pools.clone(),
+            Arc::new(clock.clone()),
+            settings.clone(),
+            audit.clone(),
+        );
         let email_changes = EmailChangeService::new(
             pools.clone(),
             Arc::new(clock.clone()),
@@ -247,6 +256,7 @@ impl Stack {
             .layer(Extension(admin_users.clone()))
             .layer(Extension(providers.clone()))
             .layer(Extension(external_login.clone()))
+            .layer(Extension(password_login.clone()))
             .layer(Extension(admin_settings.clone()))
             .layer(Extension(SmtpTestService::new(
                 settings.handle(),
@@ -284,6 +294,7 @@ impl Stack {
             invites,
             admin_users,
             providers,
+            password_login,
             email_changes,
             mail,
             email,
@@ -469,6 +480,7 @@ impl Stack {
         drop(self.auth);
         drop(self.profile);
         drop(self.totp);
+        drop(self.password_login);
         drop(self.resets);
         drop(self.invites);
         drop(self.email_changes);

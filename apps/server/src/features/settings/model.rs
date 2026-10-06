@@ -105,6 +105,7 @@ pub enum Slot {
     TrustedDevicesEnabled,
     TrustedDeviceDurationDays,
     AuthProvidersEnabled,
+    PasswordLoginEnabled,
     DefaultUserQuotaBytes,
     MaxFileSizeBytes,
     MaxPublicLinkLifetimeDays,
@@ -238,6 +239,12 @@ pub const SETTINGS_REGISTRY: &[SettingSpec] = &[
         Security,
         Boolean,
         AuthProvidersEnabled
+    ),
+    spec!(
+        "password_login_enabled",
+        Security,
+        Boolean,
+        PasswordLoginEnabled
     ),
     spec!(
         "default_user_quota_bytes",
@@ -449,6 +456,7 @@ pub struct SecuritySettings {
     pub trusted_devices_enabled: bool,
     pub trusted_device_duration_days: u32,
     pub auth_providers_enabled: bool,
+    pub password_login_enabled: bool,
 }
 
 #[derive(Debug)]
@@ -560,6 +568,7 @@ impl AppSettings {
                 trusted_devices_enabled: true,
                 trusted_device_duration_days: 30,
                 auth_providers_enabled: true,
+                password_login_enabled: true,
             },
             quotas: QuotaSettings {
                 default_user_quota_bytes: None,
@@ -736,6 +745,9 @@ pub fn apply_value(
         }
         Slot::AuthProvidersEnabled => {
             settings.security.auth_providers_enabled = value.as_bool().ok_or_else(malformed)?;
+        }
+        Slot::PasswordLoginEnabled => {
+            settings.security.password_login_enabled = value.as_bool().ok_or_else(malformed)?;
         }
         Slot::DefaultUserQuotaBytes => {
             settings.quotas.default_user_quota_bytes =

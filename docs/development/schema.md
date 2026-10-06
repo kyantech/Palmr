@@ -26,6 +26,9 @@ Post-freeze migrations so far:
 | Migration | Change |
 |---|---|
 | `0002_add_identity_provider_email_linking.sql` | `identity_providers.allow_email_linking` (ADR 0012 rule 3): existing `oidc` rows `1`, `oauth2` rows `0`, column default `0` |
+| `0003_authorization_request_contract.sql` | `oauth_auth_requests` purpose vocabulary (`login`, `link`, `reauth`) and the `auth_providers_enabled` setting row |
+| `0004_session_revoked_reason_identity_unlink.sql` | `sessions.revoked_reason` gains `identity_provider_unlinked` |
+| `0005_password_login_enabled.sql` | `app_settings.password_login_enabled` (`security`, `boolean`, `true`; Decision 52): written only by `PUT /api/v1/admin/auth/password-login` |
 
 A new migration must keep both of these producing the same normalized schema:
 

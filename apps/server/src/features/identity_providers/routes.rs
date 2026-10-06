@@ -370,6 +370,7 @@ async fn create_provider(
         (status = 401, description = "Authentication required.", body = ApiErrorBody),
         (status = 403, description = "Administrator role or recent authentication required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
         (status = 404, description = "`PROVIDER_NOT_FOUND`.", body = ApiErrorBody),
+        (status = 409, description = "`PASSWORD_LOGIN_DISABLE_UNSAFE` (`details.blockers[]`) while password login is disabled and the change (`enabled: false`, or an edit that clears `validatedAt`) would remove the last usable Administrator external login path. Nothing changes.", body = ApiErrorBody),
         (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
         (status = 422, description = "`VALIDATION_ERROR` for an invalid or immutable member, an empty body or an inconsistent resulting configuration.", body = ApiErrorBody),
         (status = 429, description = "Rate limited.", body = ApiErrorBody),
@@ -411,7 +412,7 @@ async fn update_provider(
         (status = 401, description = "Authentication required.", body = ApiErrorBody),
         (status = 403, description = "Administrator role or recent authentication required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
         (status = 404, description = "`PROVIDER_NOT_FOUND`.", body = ApiErrorBody),
-        (status = 409, description = "`PROVIDER_HAS_LINKS`: identity links still reference the provider. It is never deleted and its links are never removed by this call; unlink those identities or remove the affected accounts first.", body = ApiErrorBody),
+        (status = 409, description = "`PASSWORD_LOGIN_DISABLE_UNSAFE` (`details.blockers[]`) while password login is disabled and the provider carries the last usable Administrator external login path, or `PROVIDER_HAS_LINKS`: identity links still reference the provider. It is never deleted and its links are never removed by this call; unlink those identities or remove the affected accounts first.", body = ApiErrorBody),
         (status = 429, description = "Rate limited.", body = ApiErrorBody),
     )
 )]
@@ -520,7 +521,7 @@ async fn discover_provider(
         (status = 401, description = "Authentication required.", body = ApiErrorBody),
         (status = 403, description = "Administrator role required, or the CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
         (status = 404, description = "`PROVIDER_NOT_FOUND`.", body = ApiErrorBody),
-        (status = 422, description = "`PROVIDER_VALIDATION_FAILED` with the failing `details.checks[]`; the provider is left without a current `validatedAt`.", body = ApiErrorBody),
+        (status = 422, description = "`PROVIDER_VALIDATION_FAILED` with the failing `details.checks[]`; the provider is left without a current `validatedAt`. This holds in every instance mode: a test is diagnostic and is never refused by the SSO-only standing invariant.", body = ApiErrorBody),
         (status = 429, description = "Rate limited.", body = ApiErrorBody),
         (status = 503, description = "`DATABASE_BUSY`, including a provider that changed while its test was running; retry.", body = ApiErrorBody),
     )

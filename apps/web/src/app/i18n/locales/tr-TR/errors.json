@@ -78,6 +78,7 @@
     "providerLinkNotFound": "Bağlı bu kimlik artık yok. Listeyi yenileyip tekrar deneyin.",
     "identityLinkLastLoginPath": "Bu hesaba giriş yapmanın tek yolu bu, bu yüzden kaldırılamaz. Önce başka bir sağlayıcı bağlayın.",
     "passwordLoginDisableUnsafe": "Parola ile giriş kapalıyken bu değişiklik güvenli bir yönetici giriş yolu bırakmayacağı için reddedildi.",
+    "noValidatedProvider": "Etkin hiçbir giriş sağlayıcısı henüz başarıyla test edilmedi, bu yüzden parola ile giriş kapatılamaz. Önce bir sağlayıcıyı test edin.",
     "twoFactorCodeInvalid": "Doğrulama kodu yanlış. Kimlik doğrulama uygulamanızı kontrol edip yeniden deneyin.",
     "twoFactorCodeReplayed": "Bu kod zaten kullanıldı. Kimlik doğrulama uygulamanız yeni bir kod gösterene kadar bekleyin.",
     "twoFactorAlreadyEnabled": "Hesabınızda iki faktörlü kimlik doğrulama zaten açık.",

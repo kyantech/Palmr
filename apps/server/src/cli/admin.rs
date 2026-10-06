@@ -17,7 +17,8 @@ use crate::features::audit::model::{Actor, AuditEvent, Outcome, Target, TargetTy
 use crate::features::audit::service::AuditService;
 use crate::features::auth::error::LoginError;
 use crate::features::auth::sessions::{RevokedReason, SessionError, SessionService};
-use crate::features::auth::{lockout, login, trusted_devices};
+use crate::features::auth::{lockout, trusted_devices};
+use crate::features::identity_providers::password_login;
 use crate::features::settings::SettingsService;
 use crate::features::users::error::UserError;
 use crate::features::users::model::{NormalizedIdentifier, User, UserId};
@@ -308,7 +309,7 @@ impl Recovery {
             0
         };
         let lockout_cleared = lockout::clear(tx, user.id, None, now).await?;
-        let password_login_reenabled = login::reenable_password_login_in_tx(tx).await?;
+        let password_login_reenabled = password_login::reenable_in_tx(tx, now).await?;
         let facts = AdminRecoverFacts {
             role_changed,
             activated,

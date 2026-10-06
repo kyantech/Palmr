@@ -78,6 +78,7 @@
     "providerLinkNotFound": "该已关联的身份已不存在。请刷新列表后重试。",
     "identityLinkLastLoginPath": "这是登录此账户的唯一方式，因此无法移除。请先关联其他提供商。",
     "passwordLoginDisableUnsafe": "在密码登录关闭期间，此更改会使管理员没有安全的登录途径，因此已被拒绝。",
+    "noValidatedProvider": "尚无已启用的登录提供方通过测试，因此无法关闭密码登录。请先测试一个提供方。",
     "twoFactorCodeInvalid": "验证码不正确。请检查你的身份验证器应用后重试。",
     "twoFactorCodeReplayed": "此验证码已被使用。请等待身份验证器应用显示新的验证码。",
     "twoFactorAlreadyEnabled": "你的账户已启用双重身份验证。",

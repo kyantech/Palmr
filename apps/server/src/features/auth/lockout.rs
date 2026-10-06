@@ -124,7 +124,6 @@ pub enum AttemptResult {
     UnknownIdentifier,
     Inactive,
     LockedOut,
-    PasswordAuthDisabled,
     TotpRequired,
     TotpFailed,
 }
@@ -137,7 +136,6 @@ impl AttemptResult {
             Self::UnknownIdentifier => "unknown_identifier",
             Self::Inactive => "inactive",
             Self::LockedOut => "locked_out",
-            Self::PasswordAuthDisabled => "password_auth_disabled",
             Self::TotpRequired => "totp_required",
             Self::TotpFailed => "totp_failed",
         }

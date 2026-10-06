@@ -143,7 +143,7 @@ async fn list_identity_links(
         (status = 401, description = "Authentication required.", body = ApiErrorBody),
         (status = 403, description = "`AUTH_RECENT_AUTH_REQUIRED`, the session is restricted, or the CSRF proof or origin is not allowed.", body = ApiErrorBody),
         (status = 404, description = "`PROVIDER_LINK_NOT_FOUND`: the id is unknown, malformed or belongs to another account; the cases are indistinguishable.", body = ApiErrorBody),
-        (status = 409, description = "`IDENTITY_LINK_LAST_LOGIN_PATH`: the account has no local password and this is its only identity link. Nothing changes.", body = ApiErrorBody),
+        (status = 409, description = "`IDENTITY_LINK_LAST_LOGIN_PATH`: the account has no local password and this is its only identity link; or `PASSWORD_LOGIN_DISABLE_UNSAFE` while password login is disabled and the link is the last usable Administrator external login path. Nothing changes.", body = ApiErrorBody),
         (status = 429, description = "Rate limited.", body = ApiErrorBody),
     )
 )]

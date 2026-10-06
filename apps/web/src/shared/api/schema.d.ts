@@ -4,6 +4,22 @@
  */
 
 export interface paths {
+    "/api/v1/admin/auth/password-login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_password_login"];
+        put: operations["put_password_login"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/invites": {
         parameters: {
             query?: never;
@@ -1292,6 +1308,10 @@ export interface components {
              */
             generatedAt: string;
         };
+        BlockerDetail: {
+            code: string;
+            detail: string;
+        };
         Bootstrap: {
             appDescription: string;
             appName: string;
@@ -1468,7 +1488,7 @@ export interface components {
         };
         /** @enum {string} */
         DatabaseHealthStatus: "ok";
-        DetailValue: boolean | number | string | string[] | components["schemas"]["CheckDetail"][];
+        DetailValue: boolean | number | string | string[] | components["schemas"]["CheckDetail"][] | components["schemas"]["BlockerDetail"][];
         DiscoverRequest: {
             /** @example https://sso.example.com/application/o/palmr/ */
             issuerUrl: string;
@@ -1555,7 +1575,7 @@ export interface components {
             enrollmentId: string;
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN" | "SMTP_TEST_FAILED" | "PROVIDER_NOT_FOUND" | "PROVIDER_DISABLED" | "PROVIDER_SLUG_TAKEN" | "PROVIDER_DISCOVERY_FAILED" | "PROVIDER_VALIDATION_FAILED" | "PROVIDER_HAS_LINKS" | "PROVIDER_ID_TOKEN_INVALID" | "PROVIDER_USERINFO_FAILED" | "PROVIDER_SUBJECT_MISSING" | "PROVIDER_STATE_INVALID" | "PROVIDER_AUTH_DENIED" | "PROVIDER_CODE_EXCHANGE_FAILED" | "PROVIDER_EMAIL_UNVERIFIED" | "PROVIDER_AUTO_PROVISION_DISABLED" | "PROVIDER_IDENTITY_ALREADY_LINKED" | "PROVIDER_LINK_NOT_FOUND" | "IDENTITY_LINK_LAST_LOGIN_PATH" | "PASSWORD_LOGIN_DISABLE_UNSAFE" | "AUTH_ACCOUNT_INACTIVE" | "AUTH_EXTERNAL_AMBIGUOUS_IDENTITY" | "AUTH_EXTERNAL_USERNAME_UNAVAILABLE";
+        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN" | "SMTP_TEST_FAILED" | "PROVIDER_NOT_FOUND" | "PROVIDER_DISABLED" | "PROVIDER_SLUG_TAKEN" | "PROVIDER_DISCOVERY_FAILED" | "PROVIDER_VALIDATION_FAILED" | "PROVIDER_HAS_LINKS" | "PROVIDER_ID_TOKEN_INVALID" | "PROVIDER_USERINFO_FAILED" | "PROVIDER_SUBJECT_MISSING" | "PROVIDER_STATE_INVALID" | "PROVIDER_AUTH_DENIED" | "PROVIDER_CODE_EXCHANGE_FAILED" | "PROVIDER_EMAIL_UNVERIFIED" | "PROVIDER_AUTO_PROVISION_DISABLED" | "PROVIDER_IDENTITY_ALREADY_LINKED" | "PROVIDER_LINK_NOT_FOUND" | "IDENTITY_LINK_LAST_LOGIN_PATH" | "PASSWORD_LOGIN_DISABLE_UNSAFE" | "NO_VALIDATED_PROVIDER" | "AUTH_ACCOUNT_INACTIVE" | "AUTH_EXTERNAL_AMBIGUOUS_IDENTITY" | "AUTH_EXTERNAL_USERNAME_UNAVAILABLE";
         ExternalReauthResponse: {
             accepted: boolean;
             externalReauthUrl: string;
@@ -1926,6 +1946,16 @@ export interface components {
             /** Format: password */
             newPassword: string;
         };
+        PasswordLoginRequest: {
+            confirm: boolean;
+            enabled: boolean;
+        };
+        PasswordLoginState: {
+            blockers: components["schemas"]["BlockerDetail"][];
+            canDisable: boolean;
+            passwordLoginEnabled: boolean;
+            safeAdminLoginPaths: components["schemas"]["SafeAdminPath"][];
+        };
         Preferences: {
             /** @example blue */
             accent: string;
@@ -2106,6 +2136,13 @@ export interface components {
         };
         /** @enum {string} */
         RestrictionName: "must_change_password" | "mfa_enrollment_required";
+        SafeAdminPath: {
+            providerSlug: string;
+            providerValidated: boolean;
+            /** @example 0192f3a1-0000-7000-8000-000000000001 */
+            userId: string;
+            username: string;
+        };
         /** @enum {string} */
         SecondFactorMethod: "totp" | "backup_code";
         SecurityPatch: {
@@ -2421,6 +2458,141 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    get_password_login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Advisory pre-flight for the instance-wide local password login switch. `canDisable` is true only while password login is enabled and every disable precondition holds for the calling Administrator: external providers are globally enabled, an enabled provider has a successful test no older than 24 hours, an active Administrator is linked to it, and the caller is linked to such a provider. `blockers` explains each missing precondition with the accepted `NO_VALIDATED_PROVIDER` or `PASSWORD_LOGIN_DISABLE_UNSAFE` code. `safeAdminLoginPaths` lists active Administrators with an active link to an enabled provider (the structural standing path); `providerValidated` is true when that provider's last test succeeded within 24 hours, which is what disable admission requires. The list is empty while providers are globally disabled. The result is never a guarantee: `PUT` recomputes everything inside its own write transaction. No secret, token, external subject or provider response is returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PasswordLoginState"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    put_password_login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description `confirm` must be `true`. Disabling runs in one `BEGIN IMMEDIATE` transaction that recomputes every precondition: external providers are globally enabled, an enabled provider has a successful test no older than 24 hours, an active Administrator is linked to it and the acting Administrator is linked to such a provider. Enabling needs no precondition and is the recovery direction. A request for the state already in force changes nothing and writes no audit row. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordLoginRequest"];
+            };
+        };
+        responses: {
+            /** @description The state after the request, in the shape of `GET`. A change is audited as `PASSWORD_LOGIN_DISABLED` or `PASSWORD_LOGIN_ENABLED` in the same transaction and visible to the next request. Existing sessions, trusted devices and local password hashes are untouched. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PasswordLoginState"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Administrator role or recent authentication required, or the CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PASSWORD_LOGIN_DISABLE_UNSAFE` with `details.blockers[]`; nothing changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `VALIDATION_ERROR` for an unknown field, a non-boolean member or `confirm` that is not `true`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
     list_invites: {
         parameters: {
             query?: {
@@ -3124,7 +3296,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
-            /** @description `PROVIDER_HAS_LINKS`: identity links still reference the provider. It is never deleted and its links are never removed by this call; unlink those identities or remove the affected accounts first. */
+            /** @description `PASSWORD_LOGIN_DISABLE_UNSAFE` (`details.blockers[]`) while password login is disabled and the provider carries the last usable Administrator external login path, or `PROVIDER_HAS_LINKS`: identity links still reference the provider. It is never deleted and its links are never removed by this call; unlink those identities or remove the affected accounts first. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -3199,6 +3371,15 @@ export interface operations {
             };
             /** @description `PROVIDER_NOT_FOUND`. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PASSWORD_LOGIN_DISABLE_UNSAFE` (`details.blockers[]`) while password login is disabled and the change (`enabled: false`, or an edit that clears `validatedAt`) would remove the last usable Administrator external login path. Nothing changes. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3301,7 +3482,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
-            /** @description `PROVIDER_VALIDATION_FAILED` with the failing `details.checks[]`; the provider is left without a current `validatedAt`. */
+            /** @description `PROVIDER_VALIDATION_FAILED` with the failing `details.checks[]`; the provider is left without a current `validatedAt`. This holds in every instance mode: a test is diagnostic and is never refused by the SSO-only standing invariant. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -3809,7 +3990,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        /** @description Any subset of the `security` members. An absent member is left unchanged and no member of this group is nullable, so an explicit `null` is rejected. Every member is validated before anything is written; the changed members are then written in one transaction, each audited as `SECURITY_POLICY_CHANGED` (`twoFactorRequired` as `MANDATORY_2FA_POLICY_CHANGED`), and take effect on the next request. A member equal to its current value is not written and not audited. */
+        /** @description Any subset of the `security` members. An absent member is left unchanged and no member of this group is nullable, so an explicit `null` is rejected. Every member is validated before anything is written; the changed members are then written in one transaction, each audited as `SECURITY_POLICY_CHANGED` (`twoFactorRequired` as `MANDATORY_2FA_POLICY_CHANGED`), and take effect on the next request. A member equal to its current value is not written and not audited. `passwordLoginEnabled` is not a member of this group: it is written only by `PUT /api/v1/admin/auth/password-login`, and naming it here is `SETTING_UNKNOWN`. While password login is disabled, setting `authProvidersEnabled` to `false` is refused. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["SecurityPatch"];
@@ -3845,6 +4026,15 @@ export interface operations {
             };
             /** @description Administrator role or recent authentication (`AUTH_RECENT_AUTH_REQUIRED`) required, or the CSRF proof or origin is missing or not allowed. */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PASSWORD_LOGIN_DISABLE_UNSAFE` (`details.blockers[]`) when `authProvidersEnabled: false` is requested while password login is disabled. Nothing is written. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4524,7 +4714,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
-            /** @description `LAST_ADMIN_PROTECTED` when the target is the only active Admin. */
+            /** @description `LAST_ADMIN_PROTECTED` when the target is the only active Admin; otherwise `PASSWORD_LOGIN_DISABLE_UNSAFE` (`details.blockers[]`) while password login is disabled and the change would leave no usable Administrator external login path. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -4860,7 +5050,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The identity link is removed and every session and trusted device of the target user is revoked in the same transaction, audited as `IDENTITY_LINK_REMOVED`. The acting Admin's own sessions are untouched unless the Admin is the target, in which case the current credentials are expired. The global SSO-only standing invariant (`PASSWORD_LOGIN_DISABLE_UNSAFE`) is owned by the password-login policy and is not evaluated here yet. */
+            /** @description The identity link is removed and every session and trusted device of the target user is revoked in the same transaction, audited as `IDENTITY_LINK_REMOVED`. The acting Admin's own sessions are untouched unless the Admin is the target, in which case the current credentials are expired. While password login is disabled, the same transaction refuses a removal that would leave no usable Administrator external login path (`PASSWORD_LOGIN_DISABLE_UNSAFE`). */
             204: {
                 headers: {
                     [name: string]: unknown;
@@ -5135,7 +5325,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
-            /** @description `LAST_ADMIN_PROTECTED` when the target is the only active Admin. */
+            /** @description `LAST_ADMIN_PROTECTED` when the target is the only active Admin; otherwise `PASSWORD_LOGIN_DISABLE_UNSAFE` (`details.blockers[]`) while password login is disabled and the change would leave no usable Administrator external login path. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -6776,7 +6966,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
-            /** @description `IDENTITY_LINK_LAST_LOGIN_PATH`: the account has no local password and this is its only identity link. Nothing changes. */
+            /** @description `IDENTITY_LINK_LAST_LOGIN_PATH`: the account has no local password and this is its only identity link; or `PASSWORD_LOGIN_DISABLE_UNSAFE` while password login is disabled and the link is the last usable Administrator external login path. Nothing changes. */
             409: {
                 headers: {
                     [name: string]: unknown;

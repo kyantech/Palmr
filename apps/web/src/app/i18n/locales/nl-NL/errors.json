@@ -78,6 +78,7 @@
     "providerLinkNotFound": "Die gekoppelde identiteit bestaat niet meer. Vernieuw de lijst en probeer het opnieuw.",
     "identityLinkLastLoginPath": "Dit is de enige manier om in te loggen op dit account, dus het kan niet worden verwijderd. Koppel eerst een andere provider.",
     "passwordLoginDisableUnsafe": "Deze wijziging zou geen veilige beheerderslogin overlaten terwijl wachtwoordlogin is uitgeschakeld en is daarom geweigerd.",
+    "noValidatedProvider": "Er is nog geen ingeschakelde inlogprovider succesvol getest, dus wachtwoordlogin kan niet worden uitgeschakeld. Test eerst een provider.",
     "twoFactorCodeInvalid": "De verificatiecode is onjuist. Controleer je authenticator-app en probeer het opnieuw.",
     "twoFactorCodeReplayed": "Deze code is al gebruikt. Wacht tot je authenticator-app een nieuwe code toont.",
     "twoFactorAlreadyEnabled": "Tweestapsverificatie is al ingeschakeld voor je account.",

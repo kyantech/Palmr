@@ -24,6 +24,7 @@ pub enum DetailValue {
     Text(&'static str),
     TextList(Vec<&'static str>),
     Checks(Vec<CheckDetail>),
+    Blockers(Vec<BlockerDetail>),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
@@ -33,6 +34,14 @@ pub struct CheckDetail {
     pub ok: bool,
     #[schema(value_type = Option<String>)]
     pub detail: Option<&'static str>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, ToSchema)]
+pub struct BlockerDetail {
+    #[schema(value_type = String)]
+    pub code: &'static str,
+    #[schema(value_type = String)]
+    pub detail: &'static str,
 }
 
 impl From<bool> for DetailValue {
@@ -56,6 +65,12 @@ impl From<&'static str> for DetailValue {
 impl From<Vec<CheckDetail>> for DetailValue {
     fn from(value: Vec<CheckDetail>) -> Self {
         Self::Checks(value)
+    }
+}
+
+impl From<Vec<BlockerDetail>> for DetailValue {
+    fn from(value: Vec<BlockerDetail>) -> Self {
+        Self::Blockers(value)
     }
 }
 
@@ -540,6 +555,7 @@ mod tests {
                 { "type": "string" },
                 { "type": "array", "items": { "type": "string" } },
                 { "type": "array", "items": { "$ref": "#/components/schemas/CheckDetail" } },
+                { "type": "array", "items": { "$ref": "#/components/schemas/BlockerDetail" } },
             ])
         );
         let check = &schemas["CheckDetail"];
@@ -547,6 +563,11 @@ mod tests {
         assert_eq!(check["required"], json!(["name", "ok"]));
         assert_eq!(check["properties"]["name"]["type"], "string");
         assert_eq!(check["properties"]["ok"]["type"], "boolean");
+        let blocker = &schemas["BlockerDetail"];
+        assert_eq!(blocker["type"], "object");
+        assert_eq!(blocker["required"], json!(["code", "detail"]));
+        assert_eq!(blocker["properties"]["code"]["type"], "string");
+        assert_eq!(blocker["properties"]["detail"]["type"], "string");
 
         let mut codes: Vec<&str> = schemas["ErrorCode"]["enum"]
             .as_array()

@@ -109,7 +109,8 @@ async fn it_migrate_up_from_empty() {
             "0001_initial_schema.sql",
             "0002_add_identity_provider_email_linking.sql",
             "0003_authorization_request_contract.sql",
-            "0004_session_revoked_reason_identity_unlink.sql"
+            "0004_session_revoked_reason_identity_unlink.sql",
+            "0005_password_login_enabled.sql"
         ]
     );
     assert_eq!(
@@ -128,6 +129,10 @@ async fn it_migrate_up_from_empty() {
         files[3].1,
         include_str!("../../../migrations/0004_session_revoked_reason_identity_unlink.sql")
     );
+    assert_eq!(
+        files[4].1,
+        include_str!("../../../migrations/0005_password_login_enabled.sql")
+    );
 
     let data = TempDir::new().unwrap();
     let pools = open_pools(data.path()).await;
@@ -137,8 +142,8 @@ async fn it_migrate_up_from_empty() {
     assert_eq!(
         first,
         MigrationStatus {
-            applied: 4,
-            version: Some(4),
+            applied: 5,
+            version: Some(5),
         }
     );
     let again = pools.migrate(&MIGRATOR).await.unwrap();
@@ -146,7 +151,7 @@ async fn it_migrate_up_from_empty() {
         again,
         MigrationStatus {
             applied: 0,
-            version: Some(4),
+            version: Some(5),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -156,7 +161,7 @@ async fn it_migrate_up_from_empty() {
         reopened.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
             applied: 0,
-            version: Some(4),
+            version: Some(5),
         }
     );
     reopened.shutdown().await.checkpoint.unwrap();
@@ -216,8 +221,8 @@ async fn it_migrate_from_0001_derives_email_linking_by_protocol() {
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 3,
-            version: Some(4),
+            applied: 4,
+            version: Some(5),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -245,7 +250,7 @@ async fn it_migrate_from_0001_derives_email_linking_by_protocol() {
             .iter()
             .map(|record| (record.version, record.success))
             .collect::<Vec<_>>(),
-        [(1, true), (2, true), (3, true), (4, true)]
+        [(1, true), (2, true), (3, true), (4, true), (5, true)]
     );
     connection.close().await.unwrap();
 }
@@ -310,8 +315,8 @@ async fn it_migrate_oauth_requests_to_reauth_and_extended_path() {
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 2,
-            version: Some(4),
+            applied: 3,
+            version: Some(5),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -581,8 +586,8 @@ async fn it_migrate_session_revoked_reason_accepts_identity_unlink() {
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 1,
-            version: Some(4),
+            applied: 2,
+            version: Some(5),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -704,4 +709,82 @@ async fn dump_sessions(connection: &mut SqliteConnection) -> Vec<SessionDump> {
     .fetch_all(connection)
     .await
     .unwrap()
+}
+
+#[tokio::test]
+async fn it_migrate_password_login_enabled_defaults_on_and_preserves_settings() {
+    let files = embedded_files();
+    let (_directory, released) = fixture_migrator(&files[..4]).await;
+    let data = TempDir::new().unwrap();
+    let pools = open_pools(data.path()).await;
+    assert_eq!(
+        pools.migrate(&released).await.unwrap(),
+        MigrationStatus {
+            applied: 4,
+            version: Some(4),
+        }
+    );
+    pools.shutdown().await.checkpoint.unwrap();
+
+    let mut connection = raw_connection(data.path()).await;
+    sqlx::query(
+        "INSERT INTO app_settings (key, group_name, value_type, value_json, is_secret, updated_at)
+         VALUES ('app_name', 'general', 'string', '\"Kept\"', 0, '2026-09-25T12:00:00.000Z')",
+    )
+    .execute(&mut connection)
+    .await
+    .unwrap();
+    let before: Vec<(String, Option<String>)> =
+        sqlx::query_as("SELECT key, value_json FROM app_settings ORDER BY key")
+            .fetch_all(&mut connection)
+            .await
+            .unwrap();
+    assert!(!before
+        .iter()
+        .any(|(key, _)| key == "password_login_enabled"));
+    connection.close().await.unwrap();
+
+    let pools = open_pools(data.path()).await;
+    assert_eq!(
+        pools.migrate(&MIGRATOR).await.unwrap(),
+        MigrationStatus {
+            applied: 1,
+            version: Some(5),
+        }
+    );
+    pools.shutdown().await.checkpoint.unwrap();
+
+    let mut connection = raw_connection(data.path()).await;
+    let (group, value_type, value_json, is_secret, updated_by): (
+        String,
+        String,
+        String,
+        i64,
+        Option<String>,
+    ) = sqlx::query_as(
+        "SELECT group_name, value_type, value_json, is_secret, updated_by
+           FROM app_settings WHERE key = 'password_login_enabled'",
+    )
+    .fetch_one(&mut connection)
+    .await
+    .unwrap();
+    assert_eq!(
+        (
+            group.as_str(),
+            value_type.as_str(),
+            value_json.as_str(),
+            is_secret,
+            updated_by
+        ),
+        ("security", "boolean", "true", 0, None)
+    );
+    let after: Vec<(String, Option<String>)> = sqlx::query_as(
+        "SELECT key, value_json FROM app_settings WHERE key <> 'password_login_enabled'
+          ORDER BY key",
+    )
+    .fetch_all(&mut connection)
+    .await
+    .unwrap();
+    assert_eq!(after, before);
+    connection.close().await.unwrap();
 }

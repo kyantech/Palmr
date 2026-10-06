@@ -9,6 +9,7 @@ use super::input::{CreateInput, UpdateInput};
 use super::model::{
     client_secret_aad, IdentityProvider, ProviderId, ProviderItem, ProviderRecord, ProviderVariant,
 };
+use super::password_login::{assert_safe_sso_after_change, Projection};
 use super::provider_test::{self, ProviderTestResult};
 use super::repo::{self, ProviderWrite};
 use crate::config::PublicBaseUrl;
@@ -242,9 +243,13 @@ impl IdentityProviderService {
         } else {
             (existing.validated_at, existing.validation_error.as_deref())
         };
+        let withdraws_login_path = changes.enabled == Some(false) || changes.validation_reset;
         self.pools
             .write_tx(self.clock.as_ref(), UPDATE_TRANSACTION, async |tx| {
                 let at = Timestamp::try_from(self.clock.now())?;
+                if withdraws_login_path {
+                    assert_safe_sso_after_change(tx, Projection::removing_provider(id)).await?;
+                }
                 let stored = prepared_secret(&prepared, existing, &draft);
                 let written = repo::update(
                     tx,
@@ -303,6 +308,7 @@ impl IdentityProviderService {
                     .await?
                     .ok_or(ProviderError::NotFound)?;
                 let provider = &record.provider;
+                assert_safe_sso_after_change(tx, Projection::removing_provider(id)).await?;
                 if !repo::delete(tx, id).await? {
                     return Err(ProviderError::NotFound);
                 }

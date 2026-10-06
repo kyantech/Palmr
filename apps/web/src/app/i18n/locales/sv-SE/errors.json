@@ -78,6 +78,7 @@
     "providerLinkNotFound": "Den länkade identiteten finns inte längre. Uppdatera listan och försök igen.",
     "identityLinkLastLoginPath": "Det här är det enda sättet att logga in på kontot, så den kan inte tas bort. Länka först en annan leverantör.",
     "passwordLoginDisableUnsafe": "Ändringen skulle inte lämna någon säker inloggningsväg för administratörer medan lösenordsinloggning är avstängd och avvisades därför.",
+    "noValidatedProvider": "Ingen aktiverad inloggningsleverantör har testats framgångsrikt ännu, så lösenordsinloggning kan inte stängas av. Testa en leverantör först.",
     "twoFactorCodeInvalid": "Verifieringskoden är felaktig. Kontrollera din autentiseringsapp och försök igen.",
     "twoFactorCodeReplayed": "Den här koden har redan använts. Vänta tills din autentiseringsapp visar en ny kod.",
     "twoFactorAlreadyEnabled": "Tvåfaktorsautentisering är redan aktiverad för ditt konto.",

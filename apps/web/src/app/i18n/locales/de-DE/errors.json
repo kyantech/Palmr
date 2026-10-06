@@ -78,6 +78,7 @@
     "providerLinkNotFound": "Diese verknüpfte Identität existiert nicht mehr. Aktualisiere die Liste und versuche es erneut.",
     "identityLinkLastLoginPath": "Das ist die einzige Möglichkeit, sich bei diesem Konto anzumelden, daher kann sie nicht entfernt werden. Verknüpfe zuerst einen anderen Anbieter.",
     "passwordLoginDisableUnsafe": "Diese Änderung würde keinen sicheren Anmeldeweg für Administratoren übrig lassen, solange die Passwortanmeldung deaktiviert ist, und wurde daher abgelehnt.",
+    "noValidatedProvider": "Noch kein aktivierter Anmeldeanbieter wurde erfolgreich getestet, daher lässt sich die Passwortanmeldung nicht ausschalten. Testen Sie zuerst einen Anbieter.",
     "twoFactorCodeInvalid": "Der Bestätigungscode ist falsch. Prüfe deine Authenticator-App und versuche es erneut.",
     "twoFactorCodeReplayed": "Dieser Code wurde bereits verwendet. Warte, bis deine Authenticator-App einen neuen Code anzeigt.",
     "twoFactorAlreadyEnabled": "Die Zwei-Faktor-Authentifizierung ist für dein Konto bereits aktiviert.",
