@@ -4,7 +4,8 @@
     "label": "Các mục quản trị",
     "users": "Người dùng",
     "security": "Bảo mật",
-    "smtp": "SMTP"
+    "smtp": "SMTP",
+    "providers": "Nhà cung cấp"
   },
   "common": {
     "cancel": "Hủy",
@@ -536,6 +537,225 @@
       "incomplete": "Bài thử chưa hoàn tất (thử với {{mode}}).",
       "duration": "Hoàn tất trong {{ms}} ms.",
       "failedAt": "Dừng ở: {{stage}} (thử với {{mode}})."
+    }
+  },
+  "providers": {
+    "title": "Nhà cung cấp danh tính",
+    "description": "Cho phép mọi người đăng nhập bằng nhà cung cấp OpenID Connect hoặc OAuth2. Khóa bí mật của client chỉ ghi, không bao giờ hiển thị lại.",
+    "add": "Thêm nhà cung cấp",
+    "global": {
+      "label": "Cho phép đăng nhập bên ngoài",
+      "hint": "Khi tắt, trang đăng nhập sẽ không hiển thị nhà cung cấp nào.",
+      "offNotice": "Đăng nhập bên ngoài đang tắt. Các nhà cung cấp vẫn được cấu hình, nhưng không ai dùng được cho đến khi bật lại."
+    },
+    "empty": {
+      "title": "Chưa có nhà cung cấp",
+      "description": "Thêm một mẫu có sẵn hoặc nhà cung cấp OpenID Connect hay OAuth2 tùy chỉnh để bật đăng nhập một lần."
+    },
+    "list": {
+      "title": "Nhà cung cấp",
+      "label": "Nhà cung cấp danh tính"
+    },
+    "row": {
+      "position": "Vị trí {{position}}/{{total}}",
+      "protocol": {
+        "oidc": "OpenID Connect",
+        "oauth2": "OAuth2"
+      },
+      "enabled": "Đã bật",
+      "disabled": "Đã tắt",
+      "validation": {
+        "validated": "Đã kiểm tra vào {{date}}",
+        "failed": "Lần kiểm tra gần nhất thất bại",
+        "untested": "Chưa kiểm tra"
+      },
+      "secret": {
+        "configured": "Đã cấu hình khóa bí mật client",
+        "missing": "Chưa có khóa bí mật client"
+      },
+      "autoProvision": {
+        "on": "Tự động tạo: bật",
+        "off": "Tự động tạo: tắt"
+      },
+      "emailLinking": {
+        "on": "Liên kết qua e-mail: bật",
+        "off": "Liên kết qua e-mail: tắt"
+      },
+      "linkedUsers": "Tài khoản đã liên kết: {{total}}",
+      "drag": "Kéo để sắp xếp lại",
+      "moveUp": "Chuyển {{name}} lên",
+      "moveDown": "Chuyển {{name}} xuống",
+      "toggle": "Bật {{name}}",
+      "test": "Kiểm tra",
+      "testLabel": "Kiểm tra {{name}}",
+      "edit": "Sửa",
+      "editLabel": "Sửa {{name}}",
+      "delete": "Xóa",
+      "deleteLabel": "Xóa {{name}}"
+    },
+    "redirectUri": {
+      "label": "URI chuyển hướng",
+      "copy": "Sao chép",
+      "copied": "Đã sao chép"
+    },
+    "checks": {
+      "title": "Kết quả kiểm tra gần nhất của {{name}}",
+      "passed": "Đạt",
+      "failed": "Thất bại",
+      "names": {
+        "discovery": "Tài liệu khám phá",
+        "jwks": "Khóa ký",
+        "token_endpoint": "Điểm cuối token",
+        "authorization_endpoint": "Điểm cuối ủy quyền",
+        "userinfo_endpoint": "Điểm cuối thông tin người dùng",
+        "redirect_uri": "URI chuyển hướng"
+      }
+    },
+    "reorder": {
+      "moved": "Đã chuyển {{name}} đến vị trí {{position}}/{{total}}."
+    },
+    "delete": {
+      "title": "Xóa {{name}}?",
+      "description": "Nhà cung cấp sẽ bị gỡ và không thể dùng để đăng nhập nữa. Không thể hoàn tác thao tác này.",
+      "linked": "Vẫn còn {{total}} tài khoản liên kết đang dùng nhà cung cấp này. Hãy gỡ các liên kết đó trước; không thể xóa nhà cung cấp khi chúng còn tồn tại.",
+      "confirm": "Xóa nhà cung cấp",
+      "done": "Đã xóa nhà cung cấp."
+    },
+    "editor": {
+      "createTitle": "Thêm nhà cung cấp",
+      "editTitle": "Sửa {{name}}"
+    },
+    "discovery": {
+      "run": "Khám phá cài đặt",
+      "title": "Cài đặt đã khám phá",
+      "apply": "Dùng các giá trị này",
+      "issuer": "Bên phát hành",
+      "endpoints": {
+        "authorization": "Điểm cuối ủy quyền",
+        "token": "Điểm cuối token",
+        "userinfo": "Điểm cuối thông tin người dùng",
+        "jwks": "Khóa ký (JWKS)"
+      },
+      "scopes": "Phạm vi được hỗ trợ",
+      "authMethods": "Phương thức xác thực token",
+      "none": "Không được cung cấp"
+    },
+    "form": {
+      "preset": "Loại nhà cung cấp",
+      "presetHint": "Các mẫu có sẵn điền sẵn những cài đặt thông thường. Bạn có thể điều chỉnh mọi thứ trước khi lưu.",
+      "presetPlaceholder": "Chọn loại nhà cung cấp",
+      "presets": {
+        "custom": {
+          "oidc": "OpenID Connect tùy chỉnh",
+          "oauth2": "OAuth2 tùy chỉnh"
+        }
+      },
+      "displayName": "Tên hiển thị",
+      "slug": "Slug",
+      "slugHint": "2–40 chữ thường, chữ số, dấu gạch ngang hoặc gạch dưới. Slug là một phần của URI chuyển hướng và không thể đổi sau này.",
+      "issuerUrl": "URL bên phát hành",
+      "issuerHint": "Palmr đọc cài đặt của nhà cung cấp từ địa chỉ này.",
+      "clientId": "Client ID",
+      "clientSecret": "Khóa bí mật client",
+      "secretWriteOnly": "Được lưu ở dạng mã hóa và không bao giờ hiển thị lại.",
+      "secretKeepHint": "Để trống để giữ khóa bí mật đã lưu. Nhập giá trị mới để thay thế.",
+      "secretPlaceholderConfigured": "Đã cấu hình. Nhập khóa bí mật mới để thay thế",
+      "clearSecret": "Gỡ khóa bí mật client đã lưu",
+      "tokenAuthMethod": "Xác thực tại điểm cuối token",
+      "tokenMethods": {
+        "client_secret_basic": "Khóa bí mật client (HTTP Basic)",
+        "client_secret_post": "Khóa bí mật client (nội dung yêu cầu)",
+        "none": "Không (client công khai)"
+      },
+      "scopes": "Phạm vi",
+      "scopesHint": "Nhập một phạm vi rồi nhấn Enter. Nhà cung cấp OpenID Connect phải yêu cầu openid.",
+      "endpoints": {
+        "title": "Điểm cuối",
+        "advanced": "Nâng cao: ghi đè điểm cuối",
+        "authorization": "Điểm cuối ủy quyền",
+        "token": "Điểm cuối token",
+        "userinfo": "Điểm cuối thông tin người dùng",
+        "jwks": "Điểm cuối khóa ký (JWKS)"
+      },
+      "claims": {
+        "title": "Nâng cao: ánh xạ claim",
+        "subject": "Claim chủ thể",
+        "email": "Claim e-mail",
+        "emailVerified": "Claim e-mail đã xác minh",
+        "username": "Claim tên người dùng",
+        "name": "Claim tên",
+        "picture": "Claim ảnh"
+      },
+      "flags": {
+        "autoProvision": {
+          "label": "Tự động tạo tài khoản",
+          "hint": "Người mới đủ điều kiện sẽ có tài khoản ngay lần đăng nhập đầu tiên. Các tài khoản này luôn là người dùng thường, không bao giờ là quản trị viên."
+        },
+        "allowEmailLinking": {
+          "label": "Liên kết qua e-mail đã xác minh",
+          "hint": "Một lần đăng nhập chỉ được liên kết với tài khoản hiện có cùng e-mail khi nhà cung cấp cho biết e-mail đã được xác minh."
+        },
+        "enabled": {
+          "label": "Bật ngay",
+          "hint": "Nhà cung cấp đã bật sẽ hiển thị trên trang đăng nhập."
+        }
+      },
+      "consequences": {
+        "title": "Các cài đặt này làm gì",
+        "autoProvision": "Tự động tạo tài khoản chỉ áp dụng cho những người chưa có tài khoản.",
+        "emailLinking": "Liên kết qua e-mail không bao giờ áp dụng cho địa chỉ e-mail chưa xác minh.",
+        "manualLinking": "Mọi người luôn có thể tự kết nối nhà cung cấp này trong cài đặt bảo mật, bất kể các cài đặt này."
+      },
+      "redirectAfterCreate": "URI chuyển hướng sẽ hiển thị sau khi nhà cung cấp được tạo.",
+      "create": "Thêm nhà cung cấp",
+      "save": "Lưu thay đổi",
+      "validation": {
+        "url": "Nhập URL https:// hợp lệ.",
+        "slug": "Dùng 2–40 chữ thường, chữ số, dấu gạch ngang hoặc gạch dưới.",
+        "openid": "Nhà cung cấp OpenID Connect phải có phạm vi openid.",
+        "slugTaken": "Slug này đã được nhà cung cấp khác dùng.",
+        "rejected": "Máy chủ đã từ chối giá trị này."
+      }
+    }
+  },
+  "passwordLogin": {
+    "title": "Đăng nhập bằng mật khẩu",
+    "description": "Tắt đăng nhập bằng mật khẩu cục bộ để phiên bản này chỉ dùng đăng nhập một lần.",
+    "state": "Đăng nhập bằng mật khẩu cục bộ",
+    "on": "Bật",
+    "off": "Tắt",
+    "explainOn": "Người có mật khẩu có thể đăng nhập bằng mật khẩu. Chỉ có thể tắt khi quản trị viên vẫn đăng nhập được qua một nhà cung cấp đã kiểm tra.",
+    "explainOff": "Chỉ có thể đăng nhập bằng nhà cung cấp bên ngoài. Nếu mọi nhà cung cấp đều không dùng được, người vận hành có thể khôi phục quyền truy cập từ dòng lệnh.",
+    "blockers": {
+      "title": "Chưa thể tắt đăng nhập bằng mật khẩu"
+    },
+    "paths": {
+      "title": "Các cách đăng nhập của quản trị viên",
+      "description": "Quản trị viên đang hoạt động được liên kết với nhà cung cấp đã bật. Để tắt đăng nhập bằng mật khẩu còn cần một nhà cung cấp đã kiểm tra thành công trong 24 giờ qua. Khi đã tắt, các thay đổi sẽ xóa cách đăng nhập cuối cùng này đều bị từ chối.",
+      "empty": "Không có quản trị viên đang hoạt động nào được liên kết với nhà cung cấp đã bật.",
+      "entry": "{{username}} qua {{provider}}",
+      "validated": "Đã kiểm tra trong 24 giờ qua",
+      "notValidated": "Gần đây chưa kiểm tra"
+    },
+    "disable": {
+      "action": "Tắt đăng nhập bằng mật khẩu…",
+      "title": "Tắt đăng nhập bằng mật khẩu?",
+      "confirm": "Tắt đăng nhập bằng mật khẩu",
+      "intro": "Hãy xem các hệ quả này trước khi tiếp tục.",
+      "points": {
+        "unavailable": "Đăng nhập bằng mật khẩu cục bộ sẽ không còn khả dụng với mọi người, kể cả bạn.",
+        "admission": "Palmr chỉ cho phép điều này khi một nhà cung cấp đã bật được kiểm tra thành công trong 24 giờ qua và được liên kết với một quản trị viên đang hoạt động, bao gồm cả bạn.",
+        "standing": "Sau đó, các thay đổi sẽ xóa cách đăng nhập quản trị viên cuối cùng qua nhà cung cấp đều bị từ chối.",
+        "recovery": "Nếu bị khóa quyền truy cập, người vận hành có thể khôi phục từ dòng lệnh."
+      },
+      "understood": "Tôi hiểu rằng đăng nhập bằng mật khẩu sẽ ngừng hoạt động."
+    },
+    "enable": {
+      "action": "Bật lại đăng nhập bằng mật khẩu"
+    },
+    "notice": {
+      "disabled": "Đăng nhập bằng mật khẩu đang tắt.",
+      "enabled": "Đăng nhập bằng mật khẩu đang bật."
     }
   }
 }

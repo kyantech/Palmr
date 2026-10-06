@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { waitForIdp } from "./idp";
 
 const COMPOSE_FILE = resolve(import.meta.dirname, "../compose.yml");
 const FIXTURE_DATA_OWNER = "10001:10001";
@@ -46,6 +47,8 @@ export async function withPalmrStopped<T>(
   } finally {
     compose("start", "palmr");
     await waitForLive(baseURL);
+    compose("restart", "--no-deps", "mock-idp");
+    await waitForIdp();
   }
 }
 

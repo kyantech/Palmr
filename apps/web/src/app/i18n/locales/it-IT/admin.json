@@ -4,7 +4,8 @@
     "label": "Sezioni di amministrazione",
     "users": "Utenti",
     "security": "Sicurezza",
-    "smtp": "SMTP"
+    "smtp": "SMTP",
+    "providers": "Provider"
   },
   "common": {
     "cancel": "Annulla",
@@ -536,6 +537,225 @@
       "incomplete": "La prova non è stata completata (test con {{mode}}).",
       "duration": "Completata in {{ms}} ms.",
       "failedAt": "Interrotta a: {{stage}} (test con {{mode}})."
+    }
+  },
+  "providers": {
+    "title": "Provider di identità",
+    "description": "Consenti alle persone di accedere con provider OpenID Connect o OAuth2. I segreti del client sono in sola scrittura e non vengono mai più mostrati.",
+    "add": "Aggiungi provider",
+    "global": {
+      "label": "Consenti l'accesso esterno",
+      "hint": "Se disattivato, nella pagina di accesso non viene offerto alcun provider.",
+      "offNotice": "L'accesso esterno è disattivato. I provider restano configurati, ma nessuno può usarli finché non viene riattivato."
+    },
+    "empty": {
+      "title": "Ancora nessun provider",
+      "description": "Aggiungi un modello o un provider OpenID Connect o OAuth2 personalizzato per attivare l'accesso unico."
+    },
+    "list": {
+      "title": "Provider",
+      "label": "Provider di identità"
+    },
+    "row": {
+      "position": "Posizione {{position}} di {{total}}",
+      "protocol": {
+        "oidc": "OpenID Connect",
+        "oauth2": "OAuth2"
+      },
+      "enabled": "Attivo",
+      "disabled": "Disattivato",
+      "validation": {
+        "validated": "Testato il {{date}}",
+        "failed": "Ultimo test non riuscito",
+        "untested": "Non testato"
+      },
+      "secret": {
+        "configured": "Segreto del client configurato",
+        "missing": "Nessun segreto del client"
+      },
+      "autoProvision": {
+        "on": "Creazione automatica attiva",
+        "off": "Creazione automatica disattivata"
+      },
+      "emailLinking": {
+        "on": "Collegamento via e-mail attivo",
+        "off": "Collegamento via e-mail disattivato"
+      },
+      "linkedUsers": "Account collegati: {{total}}",
+      "drag": "Trascina per riordinare",
+      "moveUp": "Sposta {{name}} su",
+      "moveDown": "Sposta {{name}} giù",
+      "toggle": "Attiva {{name}}",
+      "test": "Testa",
+      "testLabel": "Testa {{name}}",
+      "edit": "Modifica",
+      "editLabel": "Modifica {{name}}",
+      "delete": "Elimina",
+      "deleteLabel": "Elimina {{name}}"
+    },
+    "redirectUri": {
+      "label": "URI di reindirizzamento",
+      "copy": "Copia",
+      "copied": "Copiato"
+    },
+    "checks": {
+      "title": "Risultati dell'ultimo test di {{name}}",
+      "passed": "Superato",
+      "failed": "Non riuscito",
+      "names": {
+        "discovery": "Documento di discovery",
+        "jwks": "Chiavi di firma",
+        "token_endpoint": "Endpoint del token",
+        "authorization_endpoint": "Endpoint di autorizzazione",
+        "userinfo_endpoint": "Endpoint delle informazioni utente",
+        "redirect_uri": "URI di reindirizzamento"
+      }
+    },
+    "reorder": {
+      "moved": "{{name}} spostato alla posizione {{position}} di {{total}}."
+    },
+    "delete": {
+      "title": "Eliminare {{name}}?",
+      "description": "Il provider viene rimosso e non può più essere usato per accedere. L'operazione non può essere annullata.",
+      "linked": "{{total}} account collegati usano ancora questo provider. Rimuovi prima quei collegamenti; il provider non può essere eliminato finché esistono.",
+      "confirm": "Elimina provider",
+      "done": "Provider eliminato."
+    },
+    "editor": {
+      "createTitle": "Aggiungi provider",
+      "editTitle": "Modifica {{name}}"
+    },
+    "discovery": {
+      "run": "Rileva impostazioni",
+      "title": "Impostazioni rilevate",
+      "apply": "Usa questi valori",
+      "issuer": "Emittente",
+      "endpoints": {
+        "authorization": "Endpoint di autorizzazione",
+        "token": "Endpoint del token",
+        "userinfo": "Endpoint delle informazioni utente",
+        "jwks": "Chiavi di firma (JWKS)"
+      },
+      "scopes": "Scope supportati",
+      "authMethods": "Metodi di autenticazione del token",
+      "none": "Non fornito"
+    },
+    "form": {
+      "preset": "Tipo di provider",
+      "presetHint": "I modelli compilano le impostazioni consuete. Puoi modificare tutto prima di salvare.",
+      "presetPlaceholder": "Scegli un tipo di provider",
+      "presets": {
+        "custom": {
+          "oidc": "OpenID Connect personalizzato",
+          "oauth2": "OAuth2 personalizzato"
+        }
+      },
+      "displayName": "Nome visualizzato",
+      "slug": "Slug",
+      "slugHint": "Da 2 a 40 lettere minuscole, cifre, trattini o trattini bassi. Diventa parte dell'URI di reindirizzamento e non può essere modificato in seguito.",
+      "issuerUrl": "URL dell'emittente",
+      "issuerHint": "Palmr legge le impostazioni del provider da questo indirizzo.",
+      "clientId": "ID client",
+      "clientSecret": "Segreto del client",
+      "secretWriteOnly": "Memorizzato cifrato e mai più mostrato.",
+      "secretKeepHint": "Lascia vuoto per mantenere il segreto memorizzato. Digita un nuovo valore per sostituirlo.",
+      "secretPlaceholderConfigured": "Configurato. Inserisci un nuovo segreto per sostituirlo",
+      "clearSecret": "Rimuovi il segreto del client memorizzato",
+      "tokenAuthMethod": "Autenticazione all'endpoint del token",
+      "tokenMethods": {
+        "client_secret_basic": "Segreto del client (HTTP Basic)",
+        "client_secret_post": "Segreto del client (corpo della richiesta)",
+        "none": "Nessuna (client pubblico)"
+      },
+      "scopes": "Scope",
+      "scopesHint": "Digita uno scope e premi Invio. I provider OpenID Connect devono richiedere openid.",
+      "endpoints": {
+        "title": "Endpoint",
+        "advanced": "Avanzate: sostituzione degli endpoint",
+        "authorization": "Endpoint di autorizzazione",
+        "token": "Endpoint del token",
+        "userinfo": "Endpoint delle informazioni utente",
+        "jwks": "Endpoint delle chiavi di firma (JWKS)"
+      },
+      "claims": {
+        "title": "Avanzate: mappatura dei claim",
+        "subject": "Claim del soggetto",
+        "email": "Claim dell'e-mail",
+        "emailVerified": "Claim e-mail verificata",
+        "username": "Claim del nome utente",
+        "name": "Claim del nome",
+        "picture": "Claim dell'immagine"
+      },
+      "flags": {
+        "autoProvision": {
+          "label": "Crea account automaticamente",
+          "hint": "Le nuove persone idonee ricevono un account al primo accesso. Questi account sono sempre utenti normali, mai amministratori."
+        },
+        "allowEmailLinking": {
+          "label": "Collega tramite e-mail verificata",
+          "hint": "Un accesso viene collegato all'account esistente con la stessa e-mail solo quando il provider dichiara che l'e-mail è verificata."
+        },
+        "enabled": {
+          "label": "Attiva ora",
+          "hint": "I provider attivi compaiono nella pagina di accesso."
+        }
+      },
+      "consequences": {
+        "title": "Cosa fanno queste impostazioni",
+        "autoProvision": "La creazione automatica degli account vale solo per chi non ha ancora un account.",
+        "emailLinking": "Il collegamento via e-mail non si applica mai a indirizzi e-mail non verificati.",
+        "manualLinking": "Le persone possono sempre collegare questo provider manualmente dalle impostazioni di sicurezza, qualunque cosa dicano queste impostazioni."
+      },
+      "redirectAfterCreate": "L'URI di reindirizzamento viene mostrato dopo la creazione del provider.",
+      "create": "Aggiungi provider",
+      "save": "Salva modifiche",
+      "validation": {
+        "url": "Inserisci un URL https:// valido.",
+        "slug": "Usa da 2 a 40 lettere minuscole, cifre, trattini o trattini bassi.",
+        "openid": "I provider OpenID Connect devono includere lo scope openid.",
+        "slugTaken": "Questo slug è già usato da un altro provider.",
+        "rejected": "Il server ha rifiutato questo valore."
+      }
+    }
+  },
+  "passwordLogin": {
+    "title": "Accesso con password",
+    "description": "Disattiva l'accesso locale con password per rendere questa istanza solo ad accesso unico.",
+    "state": "Accesso locale con password",
+    "on": "Attivo",
+    "off": "Disattivato",
+    "explainOn": "Chi ha una password può accedere con essa. Disattivarlo è possibile solo se un amministratore può ancora accedere tramite un provider testato.",
+    "explainOff": "Per accedere si possono usare solo provider esterni. Se tutti i provider diventano inutilizzabili, un operatore può ripristinare l'accesso dalla riga di comando.",
+    "blockers": {
+      "title": "Non è ancora possibile disattivare l'accesso con password"
+    },
+    "paths": {
+      "title": "Percorsi di accesso degli amministratori",
+      "description": "Amministratori attivi collegati a un provider attivo. Per disattivare l'accesso con password serve anche un provider testato con successo nelle ultime 24 ore. Una volta disattivato, le modifiche che rimuoverebbero l'ultimo di questi percorsi vengono rifiutate.",
+      "empty": "Nessun amministratore attivo è collegato a un provider attivo.",
+      "entry": "{{username}} tramite {{provider}}",
+      "validated": "Testato nelle ultime 24 ore",
+      "notValidated": "Non testato di recente"
+    },
+    "disable": {
+      "action": "Disattiva l'accesso con password…",
+      "title": "Disattivare l'accesso con password?",
+      "confirm": "Disattiva l'accesso con password",
+      "intro": "Controlla queste conseguenze prima di continuare.",
+      "points": {
+        "unavailable": "L'accesso locale con password non sarà più disponibile per nessuno, te compreso.",
+        "admission": "Palmr lo consente solo quando un provider attivo è stato testato con successo nelle ultime 24 ore ed è collegato a un amministratore attivo, te compreso.",
+        "standing": "Dopo la disattivazione, le modifiche che rimuoverebbero l'ultimo percorso di accesso di un amministratore tramite provider vengono rifiutate.",
+        "recovery": "Se resti bloccato fuori, un operatore può ripristinare l'accesso dalla riga di comando."
+      },
+      "understood": "Capisco che l'accesso con password smetterà di funzionare."
+    },
+    "enable": {
+      "action": "Riattiva l'accesso con password"
+    },
+    "notice": {
+      "disabled": "L'accesso con password è disattivato.",
+      "enabled": "L'accesso con password è attivo."
     }
   }
 }

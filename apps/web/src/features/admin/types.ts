@@ -37,6 +37,27 @@ export type SmtpTestStage = Schemas["SmtpTestStage"];
 export type SmtpUnsavedSettings = Schemas["SmtpUnsavedSettings"];
 export type ThumbnailSourceLimit = Schemas["ThumbnailSourceLimitName"];
 
+export type Provider = Schemas["ProviderItem"];
+export type ProviderPage = Schemas["Page_ProviderItem"];
+export type ProviderPreset = Schemas["PresetItem"];
+export type PresetKey = Schemas["Preset"];
+export type ProviderProtocol = Schemas["Protocol"];
+export type TokenAuthMethod = Schemas["TokenAuthMethod"];
+export type CreateProviderRequest = Schemas["CreateProviderRequest"];
+export type UpdateProviderRequest = Schemas["UpdateProviderRequest"];
+export type ProviderEndpoints = Schemas["Endpoints"];
+export type ProviderClaimMapping = Schemas["ClaimMapping"];
+export type DiscoveredProvider = Schemas["Discovered"];
+export type ProviderTestResult = Schemas["ProviderTestResult"];
+export type PasswordLoginState = Schemas["PasswordLoginState"];
+export type PasswordLoginRequest = Schemas["PasswordLoginRequest"];
+
+export const TOKEN_AUTH_METHODS = [
+  "client_secret_basic",
+  "client_secret_post",
+  "none",
+] as const satisfies readonly TokenAuthMethod[];
+
 export const USER_ROLES = ["user", "admin"] as const;
 export type UserRole = (typeof USER_ROLES)[number];
 

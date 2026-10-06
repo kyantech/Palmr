@@ -4,7 +4,8 @@
     "label": "Beheersecties",
     "users": "Gebruikers",
     "security": "Beveiliging",
-    "smtp": "SMTP"
+    "smtp": "SMTP",
+    "providers": "Providers"
   },
   "common": {
     "cancel": "Annuleren",
@@ -536,6 +537,225 @@
       "incomplete": "De test is niet voltooid (test met {{mode}}).",
       "duration": "Voltooid in {{ms}} ms.",
       "failedAt": "Gestopt bij: {{stage}} (test met {{mode}})."
+    }
+  },
+  "providers": {
+    "title": "Identiteitsproviders",
+    "description": "Laat mensen inloggen met OpenID Connect- of OAuth2-providers. Clientgeheimen zijn alleen schrijfbaar en worden nooit meer getoond.",
+    "add": "Provider toevoegen",
+    "global": {
+      "label": "Extern inloggen toestaan",
+      "hint": "Als dit uit staat, wordt op de inlogpagina geen provider aangeboden.",
+      "offNotice": "Extern inloggen staat uit. Providers blijven geconfigureerd, maar niemand kan ze gebruiken totdat het weer aan staat."
+    },
+    "empty": {
+      "title": "Nog geen providers",
+      "description": "Voeg een voorinstelling of een aangepaste OpenID Connect- of OAuth2-provider toe om single sign-on in te schakelen."
+    },
+    "list": {
+      "title": "Providers",
+      "label": "Identiteitsproviders"
+    },
+    "row": {
+      "position": "Positie {{position}} van {{total}}",
+      "protocol": {
+        "oidc": "OpenID Connect",
+        "oauth2": "OAuth2"
+      },
+      "enabled": "Ingeschakeld",
+      "disabled": "Uitgeschakeld",
+      "validation": {
+        "validated": "Getest op {{date}}",
+        "failed": "Laatste test mislukt",
+        "untested": "Niet getest"
+      },
+      "secret": {
+        "configured": "Clientgeheim geconfigureerd",
+        "missing": "Geen clientgeheim"
+      },
+      "autoProvision": {
+        "on": "Automatisch aanmaken aan",
+        "off": "Automatisch aanmaken uit"
+      },
+      "emailLinking": {
+        "on": "Koppelen via e-mail aan",
+        "off": "Koppelen via e-mail uit"
+      },
+      "linkedUsers": "Gekoppelde accounts: {{total}}",
+      "drag": "Sleep om te herschikken",
+      "moveUp": "{{name}} omhoog verplaatsen",
+      "moveDown": "{{name}} omlaag verplaatsen",
+      "toggle": "{{name}} inschakelen",
+      "test": "Testen",
+      "testLabel": "{{name}} testen",
+      "edit": "Bewerken",
+      "editLabel": "{{name}} bewerken",
+      "delete": "Verwijderen",
+      "deleteLabel": "{{name}} verwijderen"
+    },
+    "redirectUri": {
+      "label": "Redirect-URI",
+      "copy": "Kopiëren",
+      "copied": "Gekopieerd"
+    },
+    "checks": {
+      "title": "Resultaten van de laatste test voor {{name}}",
+      "passed": "Geslaagd",
+      "failed": "Mislukt",
+      "names": {
+        "discovery": "Discovery-document",
+        "jwks": "Ondertekeningssleutels",
+        "token_endpoint": "Tokenendpoint",
+        "authorization_endpoint": "Autorisatie-endpoint",
+        "userinfo_endpoint": "Endpoint voor gebruikersinformatie",
+        "redirect_uri": "Redirect-URI"
+      }
+    },
+    "reorder": {
+      "moved": "{{name}} verplaatst naar positie {{position}} van {{total}}."
+    },
+    "delete": {
+      "title": "{{name}} verwijderen?",
+      "description": "De provider wordt verwijderd en kan niet meer worden gebruikt om in te loggen. Dit kan niet ongedaan worden gemaakt.",
+      "linked": "{{total}} gekoppelde accounts gebruiken deze provider nog. Verwijder eerst die koppelingen; de provider kan niet worden verwijderd zolang ze bestaan.",
+      "confirm": "Provider verwijderen",
+      "done": "Provider verwijderd."
+    },
+    "editor": {
+      "createTitle": "Provider toevoegen",
+      "editTitle": "{{name}} bewerken"
+    },
+    "discovery": {
+      "run": "Instellingen ophalen",
+      "title": "Opgehaalde instellingen",
+      "apply": "Deze waarden gebruiken",
+      "issuer": "Uitgever",
+      "endpoints": {
+        "authorization": "Autorisatie-endpoint",
+        "token": "Tokenendpoint",
+        "userinfo": "Endpoint voor gebruikersinformatie",
+        "jwks": "Ondertekeningssleutels (JWKS)"
+      },
+      "scopes": "Ondersteunde scopes",
+      "authMethods": "Tokenauthenticatiemethoden",
+      "none": "Niet opgegeven"
+    },
+    "form": {
+      "preset": "Providertype",
+      "presetHint": "Voorinstellingen vullen de gebruikelijke instellingen in. Je kunt alles aanpassen voordat je opslaat.",
+      "presetPlaceholder": "Kies een providertype",
+      "presets": {
+        "custom": {
+          "oidc": "Aangepaste OpenID Connect",
+          "oauth2": "Aangepaste OAuth2"
+        }
+      },
+      "displayName": "Weergavenaam",
+      "slug": "Slug",
+      "slugHint": "2–40 kleine letters, cijfers, koppeltekens of underscores. Het wordt onderdeel van de redirect-URI en kan later niet meer worden gewijzigd.",
+      "issuerUrl": "Uitgever-URL",
+      "issuerHint": "Palmr leest de instellingen van de provider op dit adres.",
+      "clientId": "Client-ID",
+      "clientSecret": "Clientgeheim",
+      "secretWriteOnly": "Versleuteld opgeslagen en nooit meer getoond.",
+      "secretKeepHint": "Laat leeg om het opgeslagen geheim te behouden. Typ een nieuwe waarde om het te vervangen.",
+      "secretPlaceholderConfigured": "Geconfigureerd. Voer een nieuw geheim in om het te vervangen",
+      "clearSecret": "Het opgeslagen clientgeheim verwijderen",
+      "tokenAuthMethod": "Authenticatie op het tokenendpoint",
+      "tokenMethods": {
+        "client_secret_basic": "Clientgeheim (HTTP Basic)",
+        "client_secret_post": "Clientgeheim (aanvraagbody)",
+        "none": "Geen (publieke client)"
+      },
+      "scopes": "Scopes",
+      "scopesHint": "Typ een scope en druk op Enter. OpenID Connect-providers moeten openid aanvragen.",
+      "endpoints": {
+        "title": "Endpoints",
+        "advanced": "Geavanceerd: endpoints overschrijven",
+        "authorization": "Autorisatie-endpoint",
+        "token": "Tokenendpoint",
+        "userinfo": "Endpoint voor gebruikersinformatie",
+        "jwks": "Endpoint voor ondertekeningssleutels (JWKS)"
+      },
+      "claims": {
+        "title": "Geavanceerd: claimtoewijzing",
+        "subject": "Subject-claim",
+        "email": "E-mailclaim",
+        "emailVerified": "Claim 'e-mail geverifieerd'",
+        "username": "Gebruikersnaamclaim",
+        "name": "Naamclaim",
+        "picture": "Afbeeldingsclaim"
+      },
+      "flags": {
+        "autoProvision": {
+          "label": "Accounts automatisch aanmaken",
+          "hint": "Geschikte nieuwe mensen krijgen bij hun eerste aanmelding een account. Deze accounts zijn altijd gewone gebruikers, nooit beheerders."
+        },
+        "allowEmailLinking": {
+          "label": "Koppelen via geverifieerde e-mail",
+          "hint": "Een aanmelding wordt alleen gekoppeld aan het bestaande account met hetzelfde e-mailadres als de provider aangeeft dat het e-mailadres is geverifieerd."
+        },
+        "enabled": {
+          "label": "Nu inschakelen",
+          "hint": "Ingeschakelde providers verschijnen op de inlogpagina."
+        }
+      },
+      "consequences": {
+        "title": "Wat deze instellingen doen",
+        "autoProvision": "Automatisch accounts aanmaken geldt alleen voor mensen die nog geen account hebben.",
+        "emailLinking": "Koppelen via e-mail geldt nooit voor niet-geverifieerde e-mailadressen.",
+        "manualLinking": "Mensen kunnen deze provider altijd handmatig koppelen via hun beveiligingsinstellingen, wat deze instellingen ook zeggen."
+      },
+      "redirectAfterCreate": "De redirect-URI wordt getoond nadat de provider is aangemaakt.",
+      "create": "Provider toevoegen",
+      "save": "Wijzigingen opslaan",
+      "validation": {
+        "url": "Voer een geldige https://-URL in.",
+        "slug": "Gebruik 2–40 kleine letters, cijfers, koppeltekens of underscores.",
+        "openid": "OpenID Connect-providers moeten de scope openid bevatten.",
+        "slugTaken": "Deze slug wordt al door een andere provider gebruikt.",
+        "rejected": "De server heeft deze waarde geweigerd."
+      }
+    }
+  },
+  "passwordLogin": {
+    "title": "Inloggen met wachtwoord",
+    "description": "Schakel lokaal inloggen met wachtwoord uit om deze instantie alleen single sign-on te laten gebruiken.",
+    "state": "Lokaal inloggen met wachtwoord",
+    "on": "Aan",
+    "off": "Uit",
+    "explainOn": "Mensen met een wachtwoord kunnen daarmee inloggen. Uitschakelen kan alleen als een beheerder nog kan inloggen via een geteste provider.",
+    "explainOff": "Alleen externe providers kunnen worden gebruikt om in te loggen. Als geen enkele provider meer bruikbaar is, kan een operator de toegang herstellen via de opdrachtregel.",
+    "blockers": {
+      "title": "Inloggen met wachtwoord kan nog niet worden uitgeschakeld"
+    },
+    "paths": {
+      "title": "Inlogroutes van beheerders",
+      "description": "Actieve beheerders die aan een ingeschakelde provider zijn gekoppeld. Voor het uitschakelen van inloggen met wachtwoord is ook een provider nodig die in de afgelopen 24 uur succesvol is getest. Zodra het uit staat, worden wijzigingen die de laatste van deze routes zouden verwijderen geweigerd.",
+      "empty": "Geen enkele actieve beheerder is gekoppeld aan een ingeschakelde provider.",
+      "entry": "{{username}} via {{provider}}",
+      "validated": "In de afgelopen 24 uur getest",
+      "notValidated": "Niet recent getest"
+    },
+    "disable": {
+      "action": "Inloggen met wachtwoord uitschakelen…",
+      "title": "Inloggen met wachtwoord uitschakelen?",
+      "confirm": "Inloggen met wachtwoord uitschakelen",
+      "intro": "Controleer deze gevolgen voordat je verdergaat.",
+      "points": {
+        "unavailable": "Lokaal inloggen met wachtwoord is niet meer beschikbaar voor iedereen, ook niet voor jou.",
+        "admission": "Palmr staat dit alleen toe als een ingeschakelde provider in de afgelopen 24 uur succesvol is getest en is gekoppeld aan een actieve beheerder, jou inbegrepen.",
+        "standing": "Daarna worden wijzigingen geweigerd die de laatste inlogroute van een beheerder via een provider zouden verwijderen.",
+        "recovery": "Als je buitengesloten raakt, kan een operator de toegang herstellen via de opdrachtregel."
+      },
+      "understood": "Ik begrijp dat inloggen met wachtwoord niet meer werkt."
+    },
+    "enable": {
+      "action": "Inloggen met wachtwoord weer inschakelen"
+    },
+    "notice": {
+      "disabled": "Inloggen met wachtwoord staat uit.",
+      "enabled": "Inloggen met wachtwoord staat aan."
     }
   }
 }

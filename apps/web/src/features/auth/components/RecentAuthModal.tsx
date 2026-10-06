@@ -5,11 +5,19 @@ import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import type { components } from "../../../shared/api/schema";
-import { ErrorAlert, presentError, useErrorMessage } from "../../../shared/errors";
+import {
+  ErrorAlert,
+  presentError,
+  type ReportedError,
+  ReportedErrorAlert,
+  RequestId,
+  useErrorMessage,
+} from "../../../shared/errors";
 import { FormField } from "../../../shared/ui/FormField";
 import { useReauthenticate } from "../api/mutations";
 import { compactCode, isTotpCode } from "./codeFormat";
 import { OneTimeCodeInput } from "./OneTimeCodeInput";
+import { useExternalReauth } from "./useExternalReauth";
 import {
   discardRecentAuthChallenge,
   type RecentAuthChallenge,
@@ -105,7 +113,7 @@ function RecentAuthBody({ me, challenge, onCancel }: RecentAuthBodyProps) {
         </Typography.Text>
       </Flex>
       {method === "external" ? (
-        <UnavailableChallenge onCancel={onCancel} />
+        <ExternalChallenge challenge={challenge} onCancel={onCancel} />
       ) : (
         <CredentialChallenge
           challenge={challenge}
@@ -117,21 +125,67 @@ function RecentAuthBody({ me, challenge, onCancel }: RecentAuthBodyProps) {
   );
 }
 
-function UnavailableChallenge({ onCancel }: { onCancel: () => void }) {
+function ExternalFailure({ reported }: { reported: ReportedError }) {
   const { t } = useTranslation("auth");
+  if (reported.code !== "AUTH_RECENT_AUTH_REQUIRED") {
+    return <ReportedErrorAlert reported={reported} />;
+  }
   return (
-    <>
-      <Alert
-        type="info"
-        showIcon
-        data-recent-auth-method="external"
-        title={t("recentAuth.externalUnavailable.title")}
-        description={t("recentAuth.externalUnavailable.description")}
-      />
-      <Flex justify="end">
-        <Button onClick={onCancel}>{t("recentAuth.close")}</Button>
+    <Alert
+      type="warning"
+      showIcon
+      role="alert"
+      data-testid="recent-auth-external-unconfirmed"
+      title={t("recentAuth.external.unconfirmed")}
+      {...(reported.requestId === null
+        ? {}
+        : { description: <RequestId requestId={reported.requestId} /> })}
+    />
+  );
+}
+
+function ExternalChallenge({
+  challenge,
+  onCancel,
+}: {
+  challenge: RecentAuthChallenge;
+  onCancel: () => void;
+}) {
+  const { t } = useTranslation("auth");
+  const { token } = theme.useToken();
+  const { phase, notice, failure, start } = useExternalReauth(challenge);
+  const busy = phase !== "idle";
+  return (
+    <Flex vertical gap={16} data-recent-auth-method="external">
+      {failure?.kind === "api" ? <ErrorAlert error={failure.error} /> : null}
+      {failure?.kind === "reported" ? <ExternalFailure reported={failure.reported} /> : null}
+      {notice === null ? null : (
+        <Alert
+          type={notice === "popupBlocked" ? "warning" : "info"}
+          showIcon
+          role="status"
+          data-testid="recent-auth-external-notice"
+          data-notice={notice}
+          title={t(`recentAuth.external.notice.${notice}.title`)}
+          description={t(`recentAuth.external.notice.${notice}.description`)}
+        />
+      )}
+      {phase === "waiting" || phase === "verifying" ? (
+        <Alert
+          type="info"
+          showIcon
+          role="status"
+          data-testid="recent-auth-external-progress"
+          title={t(`recentAuth.external.progress.${phase}`)}
+        />
+      ) : null}
+      <Flex justify="end" gap={token.marginXS}>
+        <Button onClick={onCancel}>{t("recentAuth.cancel")}</Button>
+        <Button type="primary" loading={busy} disabled={busy} onClick={start}>
+          {t("recentAuth.external.continue")}
+        </Button>
       </Flex>
-    </>
+    </Flex>
   );
 }
 

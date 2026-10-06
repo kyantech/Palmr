@@ -15,7 +15,12 @@ const PUBLIC_PATH_PREFIXES: readonly string[] = [
   "/public/",
 ];
 
+const AUTHENTICATED_PROVIDER_ACTION = /^\/auth\/providers\/[^/]+\/link$/;
+
 export function isPublicRequest({ path }: Pick<ApiRequestDescription, "path">): boolean {
+  if (AUTHENTICATED_PROVIDER_ACTION.test(path)) {
+    return false;
+  }
   return (
     PUBLIC_EXACT_PATHS.has(path) || PUBLIC_PATH_PREFIXES.some((prefix) => path.startsWith(prefix))
   );

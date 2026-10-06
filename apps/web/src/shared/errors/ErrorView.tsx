@@ -1,6 +1,11 @@
 import { Alert, Flex, Typography } from "antd";
 import { useTranslation } from "react-i18next";
-import { presentError, type PresentedError } from "./presentation";
+import {
+  presentError,
+  presentErrorCode,
+  type PresentedError,
+  type ReportedError,
+} from "./presentation";
 
 export const ERRORS_NAMESPACE = "errors";
 
@@ -38,9 +43,8 @@ export function ErrorTechnicalDetails({ presented }: { presented: PresentedError
   );
 }
 
-export function ErrorAlert({ error }: { error: unknown }) {
+function PresentedErrorAlert({ presented }: { presented: PresentedError }) {
   const { t } = useTranslation(ERRORS_NAMESPACE);
-  const presented = presentError(error);
   if (presented.presentation.silent) {
     return null;
   }
@@ -52,6 +56,19 @@ export function ErrorAlert({ error }: { error: unknown }) {
       showIcon
       title={t(presented.presentation.i18nKey)}
       {...(detailed ? { description: <ErrorTechnicalDetails presented={presented} /> } : {})}
+    />
+  );
+}
+
+export function ErrorAlert({ error }: { error: unknown }) {
+  return <PresentedErrorAlert presented={presentError(error)} />;
+}
+
+export function ReportedErrorAlert({ reported }: { reported: ReportedError }) {
+  const presented = presentErrorCode(reported.code, reported.requestId);
+  return (
+    <PresentedErrorAlert
+      presented={{ ...presented, presentation: { ...presented.presentation, showRequestId: true } }}
     />
   );
 }

@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import { Navigate, type RouteObject } from "react-router";
-import { TrustedDevices, TwoFactorSettings } from "../../features/auth";
+import { IdentityLinks, TrustedDevices, TwoFactorSettings } from "../../features/auth";
 import {
   AppearancePage,
   ProfilePage,
@@ -16,6 +16,7 @@ import { reconcileSignedIn } from "../session/authReconciliation";
 import { endLocalSession } from "../session/useSignOut";
 import { accentSwatches } from "../theme/appearance";
 import { PATHS } from "./paths";
+import { useCallbackError } from "./useCallbackError";
 
 function AppearanceRoute() {
   const { bootstrap } = useBootState();
@@ -33,6 +34,7 @@ function SecurityRoute() {
   const hasLocalPassword = me?.capabilities.hasLocalPassword ?? false;
   const onEnabled = useCallback(() => reconcileSignedIn(client), [client]);
   const onSignedOutEverywhere = useCallback(() => endLocalSession(client), [client]);
+  const callbackError = useCallbackError();
   return (
     <SecurityPage
       canChangePassword={me?.capabilities.canChangePassword ?? false}
@@ -43,6 +45,11 @@ function SecurityRoute() {
         hasLocalPassword={hasLocalPassword}
         onEnabled={onEnabled}
         onSignedOutEverywhere={onSignedOutEverywhere}
+      />
+      <IdentityLinks
+        providers={bootstrap.providers}
+        callbackError={callbackError}
+        onUnlinked={onSignedOutEverywhere}
       />
       <TrustedDevices />
     </SecurityPage>

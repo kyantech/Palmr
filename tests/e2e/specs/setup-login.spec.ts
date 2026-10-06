@@ -12,6 +12,13 @@ import {
   requireTwoFactor,
   runJobsOnce,
 } from "../support/instance";
+import {
+  authorizations,
+  denyNextAuthorization,
+  IDP_ORIGIN,
+  resetIdp,
+  setIdentity,
+} from "../support/idp";
 import { clearSink, messagesTo } from "../support/smtp-sink";
 
 test.describe.configure({ mode: "serial" });
@@ -1043,6 +1050,7 @@ test("e2e_admin_create_user_and_forced_change", async ({ browser }) => {
     "Users",
     "Security",
     "SMTP",
+    "Providers",
   ]);
 
   await adminPage.getByRole("button", { name: "Create user" }).click();
@@ -1501,4 +1509,548 @@ test("e2e_forced_password_change", async ({ browser, baseURL }) => {
     fresh.close(),
     mandatoryContext.close(),
   ]);
+});
+
+const SSO_CLIENT = { id: "palmr-e2e", secret: "mock-client-secret" };
+const FIRST_PROVIDER = { slug: "mockidp", displayName: "Mock IdP" };
+const SECOND_PROVIDER = { slug: "mockidp2", displayName: "Mock IdP Two" };
+const ALICE_AT_IDP = {
+  sub: "idp-alice",
+  email: "alice@idp.example.test",
+  email_verified: true,
+  name: "Alice Idp",
+  preferred_username: "alice",
+};
+const ADA_AT_IDP = {
+  sub: "idp-ada",
+  email: "ada@idp.example.test",
+  email_verified: true,
+  name: "Ada Idp",
+  preferred_username: "ada-idp",
+};
+
+async function adminApi(
+  context: BrowserContext,
+  method: "PATCH" | "POST",
+  path: string,
+  data?: unknown,
+) {
+  const csrf = await csrfOf(context);
+  return context.request.fetch(path, {
+    method,
+    headers: { "X-Palmr-CSRF": csrf },
+    ...(data === undefined ? {} : { data }),
+  });
+}
+
+async function adminSession(browser: Browser): Promise<BrowserContext> {
+  const context = await browser.newContext();
+  const login = await apiLogin(context, ADMIN.username, NEW_PASSWORD);
+  expect(login.status()).toBe(200);
+  expect(await login.json()).not.toHaveProperty(
+    "restriction",
+    "mfa_enrollment_required",
+  );
+  return context;
+}
+
+async function configureProvider(
+  context: BrowserContext,
+  provider: { slug: string; displayName: string },
+  autoProvision: boolean,
+) {
+  const created = await adminApi(context, "POST", "/api/v1/admin/providers", {
+    slug: provider.slug,
+    displayName: provider.displayName,
+    protocol: "oidc",
+    preset: "generic",
+    issuerUrl: IDP_ORIGIN,
+    clientId: SSO_CLIENT.id,
+    clientSecret: SSO_CLIENT.secret,
+    tokenAuthMethod: "client_secret_basic",
+    scopes: ["openid", "email", "profile"],
+    autoProvision,
+    allowEmailLinking: true,
+    enabled: true,
+  });
+  expect(created.status()).toBe(201);
+  const { id } = (await created.json()) as { id: string };
+  const tested = await adminApi(
+    context,
+    "POST",
+    `/api/v1/admin/providers/${id}/test`,
+  );
+  expect(tested.status()).toBe(200);
+  expect(await tested.json()).toMatchObject({ ok: true });
+}
+
+async function waitForRecentAuthToLapse(page: Page) {
+  await expect
+    .poll(
+      async () => {
+        const response = await page.request.get("/api/v1/auth/me");
+        const serverNow = Date.parse(response.headers()["date"] ?? "");
+        const me = (await response.json()) as {
+          session: { recentAuthUntil: string };
+        };
+        return Date.parse(me.session.recentAuthUntil) + 2_000 < serverNow;
+      },
+      { timeout: 150_000, intervals: [2_000] },
+    )
+    .toBe(true);
+}
+
+async function replayStateAbsent(page: Page) {
+  return page.evaluate(async () => ({
+    local: window.localStorage.length,
+    session: window.sessionStorage.length,
+    databases: (await window.indexedDB.databases()).length,
+    search: window.location.search,
+    hash: window.location.hash,
+  }));
+}
+
+test.describe("external identity", () => {
+  test.describe.configure({ mode: "serial" });
+
+  let aliceContext: BrowserContext | null = null;
+  let linkSession: BrowserContext | null = null;
+  let unlinkSession: BrowserContext | null = null;
+
+  test.beforeAll(async ({ browser, baseURL }, testInfo) => {
+    testInfo.setTimeout(240_000);
+    const origin = baseURL ?? APP_ORIGIN;
+    await requireTwoFactor(origin, false);
+    await resetIdp();
+    const admin = await adminSession(browser);
+    const lowered = await adminApi(
+      admin,
+      "PATCH",
+      "/api/v1/admin/settings/security",
+      { recentAuthMinutes: 1 },
+    );
+    expect(lowered.status()).toBe(200);
+    await configureProvider(admin, FIRST_PROVIDER, true);
+    await configureProvider(admin, SECOND_PROVIDER, false);
+    await admin.close();
+    linkSession = await adminSession(browser);
+    unlinkSession = await adminSession(browser);
+  });
+
+  test.afterAll(async ({ browser }, testInfo) => {
+    testInfo.setTimeout(120_000);
+    await Promise.all([
+      aliceContext?.close(),
+      linkSession?.close(),
+      unlinkSession?.close(),
+    ]);
+    const admin = await adminSession(browser);
+    const restored = await adminApi(
+      admin,
+      "PATCH",
+      "/api/v1/admin/settings/security",
+      { recentAuthMinutes: 5 },
+    );
+    expect(restored.status()).toBe(200);
+    await admin.close();
+  });
+
+  test("e2e_oidc_login_mock_idp", async ({ browser, baseURL }) => {
+    test.setTimeout(120_000);
+    const origin = baseURL ?? APP_ORIGIN;
+
+    const refused = await browser.newContext();
+    const refusedPage = await refused.newPage();
+    const refusedErrors = collectPageErrors(refusedPage);
+    await refusedPage.goto("/login");
+    const providers = refusedPage.getByTestId("login-providers");
+    await expect(providers.getByRole("button")).toHaveText([
+      "Continue with Mock IdP",
+      "Continue with Mock IdP Two",
+    ]);
+    await denyNextAuthorization();
+    await providers
+      .getByRole("button", { name: "Continue with Mock IdP", exact: true })
+      .click();
+    const callbackError = refusedPage.getByTestId("login-callback-error");
+    await expect(callbackError).toContainText(
+      "The identity provider denied the sign-in request.",
+    );
+    await expect(callbackError).toContainText(/Request ID: [A-Za-z0-9._-]+/);
+    await expect(callbackError).not.toContainText("The mock user denied");
+    await expect(refusedPage).toHaveURL(/\/login$/);
+    expect(await refusedPage.evaluate(() => window.location.search)).toBe("");
+    await refusedPage.reload();
+    await expect(refusedPage.getByTestId("login-callback-error")).toHaveCount(
+      0,
+    );
+    expect(refusedErrors).toEqual([]);
+    await refused.close();
+
+    await setIdentity(ALICE_AT_IDP);
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    const pageErrors = collectPageErrors(page);
+    await page.goto("/login");
+    await page
+      .getByRole("button", { name: "Continue with Mock IdP", exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/overview$/);
+    await expect(page.getByTestId("app-shell")).toBeVisible();
+    const me = await page.request.get("/api/v1/auth/me");
+    expect(me.status()).toBe(200);
+    expect(await me.json()).toMatchObject({
+      user: { username: "alice", email: ALICE_AT_IDP.email, role: "user" },
+      capabilities: { hasLocalPassword: false, identityLinkCount: 1 },
+      restriction: null,
+    });
+    const requests = await authorizations();
+    const login = requests.at(-1);
+    expect(login).toMatchObject({
+      clientId: SSO_CLIENT.id,
+      challengeMethod: "S256",
+      hasNonce: true,
+      redirectUri: `${origin}/api/v1/auth/providers/${FIRST_PROVIDER.slug}/callback`,
+    });
+
+    const english = await page.request.fetch("/api/v1/profile/preferences", {
+      method: "PATCH",
+      headers: { "X-Palmr-CSRF": await csrfOf(context) },
+      data: { locale: "en-US" },
+    });
+    expect(english.status()).toBe(200);
+    await page.goto("/settings/security");
+    const section = page.getByTestId("settings-identity-links");
+    const row = section.getByTestId("identity-link-row");
+    await expect(row).toHaveCount(1);
+    await expect(row).toContainText("Mock IdP");
+    await expect(row).toContainText(`Linked as ${ALICE_AT_IDP.email}`);
+    await expect(row).not.toContainText(ALICE_AT_IDP.sub);
+
+    await row.getByRole("button", { name: "Remove Mock IdP" }).click();
+    await page
+      .getByRole("dialog", { name: "Remove Mock IdP?" })
+      .getByRole("button", { name: "Remove account" })
+      .click();
+    await expect(
+      section.getByText(
+        "This is the only way to sign in to this account, so it can't be removed.",
+      ),
+    ).toBeVisible();
+    await expect(row).toHaveCount(1);
+    expect((await page.request.get("/api/v1/auth/me")).status()).toBe(200);
+
+    expect(pageErrors).toEqual([]);
+    aliceContext = context;
+  });
+
+  test("e2e_admin_providers_configure_via_ui", async ({ browser }) => {
+    test.setTimeout(180_000);
+    const context = await adminSession(browser);
+    const page = await context.newPage();
+    const pageErrors = collectPageErrors(page);
+    const secretSeen: string[] = [];
+    page.on("response", async (response) => {
+      if (
+        new URL(response.url()).pathname.startsWith("/api/v1/admin/providers")
+      ) {
+        try {
+          secretSeen.push(await response.text());
+        } catch {
+          return;
+        }
+      }
+    });
+
+    await page.goto("/admin/providers");
+    const rows = page.getByTestId("provider-row");
+    await expect(rows).toHaveCount(2);
+    await expect(rows.first()).toContainText("Mock IdP");
+    await expect(rows.first().getByTestId("provider-validation")).toContainText(
+      "Tested",
+    );
+    await expect(
+      rows
+        .first()
+        .getByTestId("provider-redirect-uri")
+        .locator("[data-redirect-uri]"),
+    ).toHaveAttribute(
+      "data-redirect-uri",
+      `${APP_ORIGIN}/api/v1/auth/providers/${FIRST_PROVIDER.slug}/callback`,
+    );
+
+    await page
+      .getByRole("button", { name: "Add provider", exact: true })
+      .click();
+    const form = page.getByTestId("provider-form");
+    await form.getByLabel("Provider type").click();
+    await page.getByTitle("Custom OpenID Connect", { exact: true }).click();
+    await form.getByLabel("Display name").fill("UI IdP");
+    await form.getByLabel("Slug").fill("uiidp");
+    await form.getByLabel("Issuer URL").fill(IDP_ORIGIN);
+    await form.getByRole("button", { name: "Discover settings" }).click();
+    const discovery = form.getByTestId("provider-discovery");
+    await expect(discovery).toContainText(`${IDP_ORIGIN}/token`);
+    await discovery.getByRole("button", { name: "Use these values" }).click();
+    await form.getByLabel("Client ID", { exact: true }).fill(SSO_CLIENT.id);
+    await form.getByLabel("Client secret").fill(SSO_CLIENT.secret);
+    await form.getByRole("button", { name: "Add provider" }).click();
+    await completeRecentAuthIfAsked(
+      page,
+      page.getByTestId("provider-row").filter({ hasText: "UI IdP" }),
+      NEW_PASSWORD,
+    );
+    await expect(rows).toHaveCount(3);
+
+    const created = rows.filter({ hasText: "UI IdP" });
+    await expect(created.getByTestId("provider-enabled")).toHaveAttribute(
+      "data-enabled",
+      "false",
+    );
+    await expect(created.getByTestId("provider-secret")).toHaveAttribute(
+      "data-configured",
+      "true",
+    );
+    await created.getByRole("button", { name: "Test UI IdP" }).click();
+    await expect(created.getByTestId("provider-checks")).toContainText(
+      "Passed",
+    );
+    await expect(created.getByTestId("provider-validation")).toHaveAttribute(
+      "data-state",
+      "validated",
+    );
+
+    await created.getByRole("button", { name: "Move UI IdP up" }).click();
+    await expect
+      .poll(async () =>
+        rows.evaluateAll((all) =>
+          all.map((row) => row.getAttribute("data-provider-slug")),
+        ),
+      )
+      .toEqual([FIRST_PROVIDER.slug, "uiidp", SECOND_PROVIDER.slug]);
+    await created.getByRole("switch", { name: "Enable UI IdP" }).click();
+    await expect(created.getByTestId("provider-enabled")).toHaveAttribute(
+      "data-enabled",
+      "true",
+    );
+    await expect
+      .poll(async () => {
+        const bootstrap = (await (
+          await page.request.get("/api/v1/bootstrap")
+        ).json()) as { providers: { slug: string }[] };
+        return bootstrap.providers.map((provider) => provider.slug);
+      })
+      .toEqual([FIRST_PROVIDER.slug, "uiidp", SECOND_PROVIDER.slug]);
+
+    await created.getByRole("button", { name: "Edit UI IdP" }).click();
+    const editor = page.getByTestId("provider-form");
+    await expect(editor.getByLabel("Client secret")).toHaveValue("");
+    await expect(
+      editor.getByTestId("provider-form-secret-state"),
+    ).toHaveAttribute("data-configured", "true");
+    expect(await page.content()).not.toContain(SSO_CLIENT.secret);
+    expect(secretSeen.join("\n")).not.toContain(SSO_CLIENT.secret);
+    await page.getByRole("button", { name: "Cancel" }).click();
+    await expect(page.getByTestId("provider-form")).toHaveCount(0);
+
+    await created.getByRole("button", { name: "Delete UI IdP" }).click();
+    const confirm = page.getByRole("dialog", { name: "Delete UI IdP?" });
+    await confirm.getByRole("button", { name: "Delete provider" }).click();
+    await completeRecentAuthIfAsked(
+      page,
+      page.getByText("Provider deleted."),
+      NEW_PASSWORD,
+    );
+    await expect(rows).toHaveCount(2);
+
+    expect(pageErrors).toEqual([]);
+    await context.close();
+  });
+
+  test("e2e_link_unlink_requires_recent_auth", async ({ browser }) => {
+    test.setTimeout(240_000);
+    expect(linkSession).not.toBeNull();
+    expect(unlinkSession).not.toBeNull();
+    await setIdentity(ADA_AT_IDP);
+    const page = await (linkSession as BrowserContext).newPage();
+    const pageErrors = collectPageErrors(page);
+
+    const linkRequests: number[] = [];
+    page.on("response", (response) => {
+      if (
+        response.request().method() === "POST" &&
+        new URL(response.url()).pathname ===
+          `/api/v1/auth/providers/${FIRST_PROVIDER.slug}/link`
+      ) {
+        linkRequests.push(response.status());
+      }
+    });
+
+    await waitForRecentAuthToLapse(page);
+    await page.goto("/settings/security");
+    const section = page.getByTestId("settings-identity-links");
+    await expect(section.getByTestId("identity-links-empty")).toBeVisible();
+    await section
+      .getByRole("button", { name: "Connect Mock IdP", exact: true })
+      .click();
+    const challenge = page
+      .getByRole("dialog")
+      .filter({ hasText: "Confirm it's you" });
+    await expect(challenge).toBeVisible();
+    await challenge.getByLabel("Password").fill(NEW_PASSWORD);
+    await challenge.getByRole("button", { name: "Confirm" }).click();
+
+    const linked = page
+      .getByTestId("settings-identity-links")
+      .getByTestId("identity-link-row");
+    await expect(linked).toHaveCount(1, { timeout: 30_000 });
+    await expect(page).toHaveURL(/\/settings\/security$/);
+    await expect(linked).toContainText("Mock IdP");
+    await expect(linked).toContainText(`Linked as ${ADA_AT_IDP.email}`);
+    expect(linkRequests).toEqual([403, 200]);
+
+    const other = await (unlinkSession as BrowserContext).newPage();
+    const otherErrors = collectPageErrors(other);
+    await waitForRecentAuthToLapse(other);
+    await other.goto("/settings/security");
+    const row = other
+      .getByTestId("settings-identity-links")
+      .getByTestId("identity-link-row");
+    await expect(row).toHaveCount(1);
+    await row.getByRole("button", { name: "Remove Mock IdP" }).click();
+    await other
+      .getByRole("dialog", { name: "Remove Mock IdP?" })
+      .getByRole("button", { name: "Remove account" })
+      .click();
+    const unlinkChallenge = other
+      .getByRole("dialog")
+      .filter({ hasText: "Confirm it's you" });
+    await expect(unlinkChallenge).toBeVisible();
+    await unlinkChallenge.getByLabel("Password").fill(NEW_PASSWORD);
+    await unlinkChallenge.getByRole("button", { name: "Confirm" }).click();
+
+    await expect(
+      other.getByRole("heading", { level: 1, name: "Sign in" }),
+    ).toBeVisible({ timeout: 30_000 });
+    await expect(other.getByTestId("login-notice")).toContainText(
+      "Sign-in method removed",
+    );
+    expect((await other.request.get("/api/v1/auth/me")).status()).toBe(401);
+    expect((await page.request.get("/api/v1/auth/me")).status()).toBe(401);
+
+    const fresh = await browser.newContext();
+    expect((await apiLogin(fresh, ADMIN.username, NEW_PASSWORD)).status()).toBe(
+      200,
+    );
+    const links = await fresh.request.get("/api/v1/identity-links");
+    expect(await links.json()).toMatchObject({ items: [], totalCount: 0 });
+
+    expect(pageErrors).toEqual([]);
+    expect(otherErrors).toEqual([]);
+    await fresh.close();
+  });
+
+  test("e2e_sso_recent_auth_replays_sensitive_mutation", async () => {
+    test.fixme(
+      true,
+      "BLOCKED: Palmr's Cross-Origin-Opener-Policy: same-origin (SECURITY_MODEL §11.4) severs window.opener once the popup reaches the IdP, so the accepted popup seam cannot report back; see docs/development/identity-providers.md.",
+    );
+    test.setTimeout(240_000);
+    expect(aliceContext).not.toBeNull();
+    const context = aliceContext as BrowserContext;
+    const page = context.pages()[0] as Page;
+    const pageErrors = collectPageErrors(page);
+    await setIdentity(ALICE_AT_IDP);
+    await waitForRecentAuthToLapse(page);
+
+    const linkResponses: number[] = [];
+    page.on("response", (response) => {
+      if (
+        response.request().method() === "POST" &&
+        new URL(response.url()).pathname ===
+          `/api/v1/auth/providers/${SECOND_PROVIDER.slug}/link`
+      ) {
+        linkResponses.push(response.status());
+      }
+    });
+    const reauthRequests: unknown[] = [];
+    page.on("request", (request) => {
+      if (
+        request.method() === "POST" &&
+        new URL(request.url()).pathname === "/api/v1/auth/reauthenticate"
+      ) {
+        reauthRequests.push(request.postDataJSON());
+      }
+    });
+
+    await page.goto("/settings/security");
+    const section = page.getByTestId("settings-identity-links");
+    await expect(section.getByTestId("identity-link-row")).toHaveCount(1);
+    await section
+      .getByRole("button", { name: "Connect Mock IdP Two", exact: true })
+      .click();
+
+    const challenge = page
+      .getByRole("dialog")
+      .filter({ hasText: "Confirm it's you" });
+    await expect(challenge).toBeVisible();
+    await expect(challenge.getByLabel("Password")).toHaveCount(0);
+    await expect(challenge.getByLabel("Authentication code")).toHaveCount(0);
+    expect(await replayStateAbsent(page)).toEqual({
+      local: 0,
+      session: 0,
+      databases: 0,
+      search: "",
+      hash: "",
+    });
+
+    const popupOpened = page.waitForEvent("popup");
+    await challenge
+      .getByRole("button", { name: /Continue with your sign-in provider/ })
+      .click();
+    const popup = await popupOpened;
+    const popupUrls: string[] = [];
+    popup.on("framenavigated", (frame) => {
+      if (frame === popup.mainFrame()) {
+        popupUrls.push(frame.url());
+      }
+    });
+    await popup.waitForEvent("close", { timeout: 60_000 });
+    expect(
+      popupUrls.some((url) =>
+        /\/auth\/reauth-complete\?status=success$/.test(url),
+      ),
+    ).toBe(true);
+
+    await expect(section.getByTestId("identity-link-row")).toHaveCount(2, {
+      timeout: 30_000,
+    });
+    await expect(page).toHaveURL(/\/settings\/security$/);
+    await expect(
+      section
+        .getByTestId("identity-link-row")
+        .filter({ hasText: "Mock IdP Two" }),
+    ).toHaveCount(1);
+    expect(reauthRequests).toEqual([{}]);
+    expect(linkResponses).toEqual([403, 200]);
+    const reauthorization = (await authorizations()).find(
+      (request) => request.prompt === "login",
+    );
+    expect(reauthorization).toMatchObject({
+      maxAge: "0",
+      challengeMethod: "S256",
+      hasNonce: true,
+    });
+    expect(await replayStateAbsent(page)).toEqual({
+      local: 0,
+      session: 0,
+      databases: 0,
+      search: "",
+      hash: "",
+    });
+    expect(
+      (await context.cookies()).map((cookie) => cookie.name).sort(),
+    ).toEqual(expect.not.arrayContaining(["palmr_replay", "palmr_reauth"]));
+    expect(pageErrors).toEqual([]);
+  });
 });

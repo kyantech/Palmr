@@ -184,6 +184,21 @@ export function isKnownErrorCode(code: string): code is ErrorCode {
   return Object.hasOwn(ERROR_PRESENTATION, code);
 }
 
+export function presentErrorCode(
+  code: string,
+  requestId: string | null,
+  retryAfterSeconds: number | null = null,
+): PresentedError {
+  const known = isKnownErrorCode(code);
+  return {
+    presentation: known ? ERROR_PRESENTATION[code] : UNKNOWN_ERROR_PRESENTATION,
+    code,
+    known,
+    requestId,
+    retryAfterSeconds,
+  };
+}
+
 export function presentError(error: unknown): PresentedError {
   if (!(error instanceof ApiError)) {
     return {
@@ -194,13 +209,28 @@ export function presentError(error: unknown): PresentedError {
       retryAfterSeconds: null,
     };
   }
-  const known = isKnownErrorCode(error.code);
+  return presentErrorCode(error.code, error.requestId, error.retryAfterSeconds);
+}
+
+const CODE_SHAPE = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/;
+const REQUEST_ID_SHAPE = /^[A-Za-z0-9._-]{1,128}$/;
+const CODE_MAX_LENGTH = 64;
+
+export interface ReportedError {
+  readonly code: string;
+  readonly requestId: string | null;
+}
+
+export function reportedError(
+  code: string | null | undefined,
+  requestId: string | null | undefined,
+): ReportedError | null {
+  if (typeof code !== "string" || code.length > CODE_MAX_LENGTH || !CODE_SHAPE.test(code)) {
+    return null;
+  }
   return {
-    presentation: known ? ERROR_PRESENTATION[error.code] : UNKNOWN_ERROR_PRESENTATION,
-    code: error.code,
-    known,
-    requestId: error.requestId,
-    retryAfterSeconds: error.retryAfterSeconds,
+    code,
+    requestId: typeof requestId === "string" && REQUEST_ID_SHAPE.test(requestId) ? requestId : null,
   };
 }
 

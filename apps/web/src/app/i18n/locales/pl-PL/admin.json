@@ -4,7 +4,8 @@
     "label": "Sekcje administracji",
     "users": "Użytkownicy",
     "security": "Bezpieczeństwo",
-    "smtp": "SMTP"
+    "smtp": "SMTP",
+    "providers": "Dostawcy"
   },
   "common": {
     "cancel": "Anuluj",
@@ -536,6 +537,225 @@
       "incomplete": "Test nie został ukończony (test z użyciem: {{mode}}).",
       "duration": "Zakończono w {{ms}} ms.",
       "failedAt": "Zatrzymano na etapie: {{stage}} (test z użyciem: {{mode}})."
+    }
+  },
+  "providers": {
+    "title": "Dostawcy tożsamości",
+    "description": "Pozwól użytkownikom logować się za pomocą dostawców OpenID Connect lub OAuth2. Sekrety klienta są tylko do zapisu i nigdy nie są ponownie wyświetlane.",
+    "add": "Dodaj dostawcę",
+    "global": {
+      "label": "Zezwalaj na logowanie zewnętrzne",
+      "hint": "Gdy wyłączone, na stronie logowania nie jest oferowany żaden dostawca.",
+      "offNotice": "Logowanie zewnętrzne jest wyłączone. Dostawcy pozostają skonfigurowani, ale nikt nie może z nich korzystać, dopóki nie zostanie ponownie włączone."
+    },
+    "empty": {
+      "title": "Brak dostawców",
+      "description": "Dodaj gotowy szablon albo własnego dostawcę OpenID Connect lub OAuth2, aby włączyć logowanie jednokrotne."
+    },
+    "list": {
+      "title": "Dostawcy",
+      "label": "Dostawcy tożsamości"
+    },
+    "row": {
+      "position": "Pozycja {{position}} z {{total}}",
+      "protocol": {
+        "oidc": "OpenID Connect",
+        "oauth2": "OAuth2"
+      },
+      "enabled": "Włączony",
+      "disabled": "Wyłączony",
+      "validation": {
+        "validated": "Przetestowano {{date}}",
+        "failed": "Ostatni test nie powiódł się",
+        "untested": "Nie przetestowano"
+      },
+      "secret": {
+        "configured": "Skonfigurowano sekret klienta",
+        "missing": "Brak sekretu klienta"
+      },
+      "autoProvision": {
+        "on": "Automatyczne tworzenie włączone",
+        "off": "Automatyczne tworzenie wyłączone"
+      },
+      "emailLinking": {
+        "on": "Łączenie przez e-mail włączone",
+        "off": "Łączenie przez e-mail wyłączone"
+      },
+      "linkedUsers": "Powiązane konta: {{total}}",
+      "drag": "Przeciągnij, aby zmienić kolejność",
+      "moveUp": "Przesuń {{name}} w górę",
+      "moveDown": "Przesuń {{name}} w dół",
+      "toggle": "Włącz {{name}}",
+      "test": "Testuj",
+      "testLabel": "Testuj {{name}}",
+      "edit": "Edytuj",
+      "editLabel": "Edytuj {{name}}",
+      "delete": "Usuń",
+      "deleteLabel": "Usuń {{name}}"
+    },
+    "redirectUri": {
+      "label": "URI przekierowania",
+      "copy": "Kopiuj",
+      "copied": "Skopiowano"
+    },
+    "checks": {
+      "title": "Wyniki ostatniego testu dostawcy {{name}}",
+      "passed": "Zaliczono",
+      "failed": "Niepowodzenie",
+      "names": {
+        "discovery": "Dokument wykrywania",
+        "jwks": "Klucze podpisu",
+        "token_endpoint": "Punkt końcowy tokenu",
+        "authorization_endpoint": "Punkt końcowy autoryzacji",
+        "userinfo_endpoint": "Punkt końcowy informacji o użytkowniku",
+        "redirect_uri": "URI przekierowania"
+      }
+    },
+    "reorder": {
+      "moved": "Przeniesiono {{name}} na pozycję {{position}} z {{total}}."
+    },
+    "delete": {
+      "title": "Usunąć {{name}}?",
+      "description": "Dostawca zostanie usunięty i nie będzie można go już używać do logowania. Tej operacji nie można cofnąć.",
+      "linked": "Z tego dostawcy nadal korzystają powiązane konta ({{total}}). Najpierw usuń te powiązania; dostawcy nie można usunąć, dopóki istnieją.",
+      "confirm": "Usuń dostawcę",
+      "done": "Usunięto dostawcę."
+    },
+    "editor": {
+      "createTitle": "Dodaj dostawcę",
+      "editTitle": "Edytuj {{name}}"
+    },
+    "discovery": {
+      "run": "Wykryj ustawienia",
+      "title": "Wykryte ustawienia",
+      "apply": "Użyj tych wartości",
+      "issuer": "Wystawca",
+      "endpoints": {
+        "authorization": "Punkt końcowy autoryzacji",
+        "token": "Punkt końcowy tokenu",
+        "userinfo": "Punkt końcowy informacji o użytkowniku",
+        "jwks": "Klucze podpisu (JWKS)"
+      },
+      "scopes": "Obsługiwane zakresy",
+      "authMethods": "Metody uwierzytelniania tokenu",
+      "none": "Nie podano"
+    },
+    "form": {
+      "preset": "Typ dostawcy",
+      "presetHint": "Szablony wypełniają zwykłe ustawienia. Przed zapisaniem możesz wszystko zmienić.",
+      "presetPlaceholder": "Wybierz typ dostawcy",
+      "presets": {
+        "custom": {
+          "oidc": "Własny OpenID Connect",
+          "oauth2": "Własny OAuth2"
+        }
+      },
+      "displayName": "Nazwa wyświetlana",
+      "slug": "Slug",
+      "slugHint": "2–40 małych liter, cyfr, myślników lub podkreślników. Staje się częścią URI przekierowania i nie można go później zmienić.",
+      "issuerUrl": "Adres URL wystawcy",
+      "issuerHint": "Palmr odczytuje ustawienia dostawcy z tego adresu.",
+      "clientId": "Identyfikator klienta",
+      "clientSecret": "Sekret klienta",
+      "secretWriteOnly": "Przechowywany w postaci zaszyfrowanej i nigdy więcej nie wyświetlany.",
+      "secretKeepHint": "Pozostaw puste, aby zachować zapisany sekret. Wpisz nową wartość, aby go zastąpić.",
+      "secretPlaceholderConfigured": "Skonfigurowano. Wpisz nowy sekret, aby go zastąpić",
+      "clearSecret": "Usuń zapisany sekret klienta",
+      "tokenAuthMethod": "Uwierzytelnianie w punkcie końcowym tokenu",
+      "tokenMethods": {
+        "client_secret_basic": "Sekret klienta (HTTP Basic)",
+        "client_secret_post": "Sekret klienta (treść żądania)",
+        "none": "Brak (klient publiczny)"
+      },
+      "scopes": "Zakresy",
+      "scopesHint": "Wpisz zakres i naciśnij Enter. Dostawcy OpenID Connect muszą żądać openid.",
+      "endpoints": {
+        "title": "Punkty końcowe",
+        "advanced": "Zaawansowane: nadpisywanie punktów końcowych",
+        "authorization": "Punkt końcowy autoryzacji",
+        "token": "Punkt końcowy tokenu",
+        "userinfo": "Punkt końcowy informacji o użytkowniku",
+        "jwks": "Punkt końcowy kluczy podpisu (JWKS)"
+      },
+      "claims": {
+        "title": "Zaawansowane: mapowanie claimów",
+        "subject": "Claim identyfikatora",
+        "email": "Claim adresu e-mail",
+        "emailVerified": "Claim zweryfikowanego e-maila",
+        "username": "Claim nazwy użytkownika",
+        "name": "Claim nazwy",
+        "picture": "Claim zdjęcia"
+      },
+      "flags": {
+        "autoProvision": {
+          "label": "Twórz konta automatycznie",
+          "hint": "Kwalifikujące się nowe osoby dostają konto przy pierwszym logowaniu. Te konta są zawsze zwykłymi użytkownikami, nigdy administratorami."
+        },
+        "allowEmailLinking": {
+          "label": "Łącz przez zweryfikowany e-mail",
+          "hint": "Logowanie jest łączone z istniejącym kontem o tym samym adresie e-mail tylko wtedy, gdy dostawca potwierdza, że e-mail jest zweryfikowany."
+        },
+        "enabled": {
+          "label": "Włącz teraz",
+          "hint": "Włączeni dostawcy pojawiają się na stronie logowania."
+        }
+      },
+      "consequences": {
+        "title": "Co robią te ustawienia",
+        "autoProvision": "Automatyczne tworzenie kont dotyczy tylko osób, które nie mają jeszcze konta.",
+        "emailLinking": "Łączenie przez e-mail nigdy nie dotyczy niezweryfikowanych adresów e-mail.",
+        "manualLinking": "Użytkownicy zawsze mogą ręcznie połączyć tego dostawcę w ustawieniach zabezpieczeń, niezależnie od tych ustawień."
+      },
+      "redirectAfterCreate": "URI przekierowania pojawi się po utworzeniu dostawcy.",
+      "create": "Dodaj dostawcę",
+      "save": "Zapisz zmiany",
+      "validation": {
+        "url": "Wpisz prawidłowy adres URL https://.",
+        "slug": "Użyj 2–40 małych liter, cyfr, myślników lub podkreślników.",
+        "openid": "Dostawcy OpenID Connect muszą zawierać zakres openid.",
+        "slugTaken": "Ten slug jest już używany przez innego dostawcę.",
+        "rejected": "Serwer odrzucił tę wartość."
+      }
+    }
+  },
+  "passwordLogin": {
+    "title": "Logowanie hasłem",
+    "description": "Wyłącz lokalne logowanie hasłem, aby ta instancja używała wyłącznie logowania jednokrotnego.",
+    "state": "Lokalne logowanie hasłem",
+    "on": "Włączone",
+    "off": "Wyłączone",
+    "explainOn": "Osoby z hasłem mogą się nim logować. Wyłączenie jest możliwe tylko wtedy, gdy administrator nadal może zalogować się przez przetestowanego dostawcę.",
+    "explainOff": "Do logowania można używać tylko zewnętrznych dostawców. Jeśli żaden dostawca nie będzie nadawał się do użycia, operator może przywrócić dostęp z wiersza poleceń.",
+    "blockers": {
+      "title": "Logowania hasłem nie można jeszcze wyłączyć"
+    },
+    "paths": {
+      "title": "Ścieżki logowania administratorów",
+      "description": "Aktywni administratorzy powiązani z włączonym dostawcą. Wyłączenie logowania hasłem wymaga też dostawcy pomyślnie przetestowanego w ciągu ostatnich 24 godzin. Po wyłączeniu zmiany, które usunęłyby ostatnią z tych ścieżek, są odrzucane.",
+      "empty": "Żaden aktywny administrator nie jest powiązany z włączonym dostawcą.",
+      "entry": "{{username}} przez {{provider}}",
+      "validated": "Przetestowano w ciągu ostatnich 24 godzin",
+      "notValidated": "Niedawno nie testowano"
+    },
+    "disable": {
+      "action": "Wyłącz logowanie hasłem…",
+      "title": "Wyłączyć logowanie hasłem?",
+      "confirm": "Wyłącz logowanie hasłem",
+      "intro": "Sprawdź te konsekwencje, zanim przejdziesz dalej.",
+      "points": {
+        "unavailable": "Lokalne logowanie hasłem przestaje być dostępne dla wszystkich, także dla Ciebie.",
+        "admission": "Palmr zezwala na to tylko wtedy, gdy włączony dostawca został pomyślnie przetestowany w ciągu ostatnich 24 godzin i jest powiązany z aktywnym administratorem, w tym z Tobą.",
+        "standing": "Potem zmiany, które usunęłyby ostatnią ścieżkę logowania administratora przez dostawcę, są odrzucane.",
+        "recovery": "Jeśli stracisz dostęp, operator może go przywrócić z wiersza poleceń."
+      },
+      "understood": "Rozumiem, że logowanie hasłem przestanie działać."
+    },
+    "enable": {
+      "action": "Włącz ponownie logowanie hasłem"
+    },
+    "notice": {
+      "disabled": "Logowanie hasłem jest wyłączone.",
+      "enabled": "Logowanie hasłem jest włączone."
     }
   }
 }

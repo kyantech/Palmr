@@ -60,3 +60,12 @@ The reset test drains the durable outbox with the shipped `palmr jobs run-once -
 ## Release artifact purity
 
 `tests/container/smoke.sh` asserts that the image contains no `e2e-fixture` file, that `palmr --help` lists no fixture command and that `/openapi.json` mentions no fixture. `tests/snapshots/public_routes.txt` is the route snapshot and contains no fixture route.
+
+## Mock identity provider
+
+M12-T07 browser tests need a real OIDC round trip without a real provider. `tests/e2e/support/mock-idp/server.mjs` is a dependency-free Node server (`PALMR_E2E_IDP_IMAGE`, default `node:24-bookworm-slim`; `run.sh` copies the script into the created container with `compose cp`, like the fixture data, so no bind mount of the checkout is required) that serves discovery, JWKS, `/authorize`, `/token` and `/userinfo`. It signs RS256 ID tokens, checks S256 PKCE and the client secret, and approves every authorization request immediately for the identity it was last told about. A small control surface (`/__control/identity`, `/deny-next`, `/authorizations`, `/reset`) lets the test choose the identity, force one denial and read back what the authorization requests carried (`prompt`, `max_age`, PKCE method, nonce).
+
+The `mock-idp` compose service shares the `palmr` network namespace (`network_mode: service:palmr`) and port 9100 is published next to 5487. The issuer is therefore `http://127.0.0.1:9100` for the browser and for Palmr's own outbound HTTP client alike, which satisfies the loopback-only plain-HTTP rule for provider URLs without any production bypass. `withPalmrStopped` restarts the service after Palmr restarts because its namespace is tied to the Palmr container.
+
+Providers, the lowered recent-auth window and the second provider are created through the supported admin HTTP API with a logged-in admin session; no database access and no new fixture subcommand is involved. The mock never ships in the release image.
+

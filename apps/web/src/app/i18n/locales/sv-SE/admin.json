@@ -4,7 +4,8 @@
     "label": "Administrationsavsnitt",
     "users": "Användare",
     "security": "Säkerhet",
-    "smtp": "SMTP"
+    "smtp": "SMTP",
+    "providers": "Leverantörer"
   },
   "common": {
     "cancel": "Avbryt",
@@ -536,6 +537,225 @@
       "incomplete": "Testet slutfördes inte (test med {{mode}}).",
       "duration": "Klart på {{ms}} ms.",
       "failedAt": "Stoppade vid: {{stage}} (test med {{mode}})."
+    }
+  },
+  "providers": {
+    "title": "Identitetsleverantörer",
+    "description": "Låt människor logga in med OpenID Connect- eller OAuth2-leverantörer. Klienthemligheter är skrivskyddade i efterhand och visas aldrig igen.",
+    "add": "Lägg till leverantör",
+    "global": {
+      "label": "Tillåt extern inloggning",
+      "hint": "När det är av erbjuds ingen leverantör på inloggningssidan.",
+      "offNotice": "Extern inloggning är av. Leverantörerna förblir konfigurerade, men ingen kan använda dem förrän den slås på igen."
+    },
+    "empty": {
+      "title": "Inga leverantörer ännu",
+      "description": "Lägg till en förinställning eller en anpassad OpenID Connect- eller OAuth2-leverantör för att aktivera enkel inloggning."
+    },
+    "list": {
+      "title": "Leverantörer",
+      "label": "Identitetsleverantörer"
+    },
+    "row": {
+      "position": "Position {{position}} av {{total}}",
+      "protocol": {
+        "oidc": "OpenID Connect",
+        "oauth2": "OAuth2"
+      },
+      "enabled": "Aktiverad",
+      "disabled": "Inaktiverad",
+      "validation": {
+        "validated": "Testad {{date}}",
+        "failed": "Senaste testet misslyckades",
+        "untested": "Inte testad"
+      },
+      "secret": {
+        "configured": "Klienthemlighet konfigurerad",
+        "missing": "Ingen klienthemlighet"
+      },
+      "autoProvision": {
+        "on": "Automatiskt skapande på",
+        "off": "Automatiskt skapande av"
+      },
+      "emailLinking": {
+        "on": "E-postlänkning på",
+        "off": "E-postlänkning av"
+      },
+      "linkedUsers": "Länkade konton: {{total}}",
+      "drag": "Dra för att ändra ordning",
+      "moveUp": "Flytta {{name}} uppåt",
+      "moveDown": "Flytta {{name}} nedåt",
+      "toggle": "Aktivera {{name}}",
+      "test": "Testa",
+      "testLabel": "Testa {{name}}",
+      "edit": "Redigera",
+      "editLabel": "Redigera {{name}}",
+      "delete": "Ta bort",
+      "deleteLabel": "Ta bort {{name}}"
+    },
+    "redirectUri": {
+      "label": "Omdirigerings-URI",
+      "copy": "Kopiera",
+      "copied": "Kopierad"
+    },
+    "checks": {
+      "title": "Resultat från senaste testet av {{name}}",
+      "passed": "Godkänd",
+      "failed": "Misslyckades",
+      "names": {
+        "discovery": "Discovery-dokument",
+        "jwks": "Signeringsnycklar",
+        "token_endpoint": "Token-slutpunkt",
+        "authorization_endpoint": "Auktoriseringsslutpunkt",
+        "userinfo_endpoint": "Slutpunkt för användarinformation",
+        "redirect_uri": "Omdirigerings-URI"
+      }
+    },
+    "reorder": {
+      "moved": "{{name}} flyttades till position {{position}} av {{total}}."
+    },
+    "delete": {
+      "title": "Ta bort {{name}}?",
+      "description": "Leverantören tas bort och kan inte längre användas för inloggning. Det går inte att ångra.",
+      "linked": "{{total}} länkade konton använder fortfarande den här leverantören. Ta bort dessa länkar först; leverantören kan inte tas bort så länge de finns.",
+      "confirm": "Ta bort leverantör",
+      "done": "Leverantören togs bort."
+    },
+    "editor": {
+      "createTitle": "Lägg till leverantör",
+      "editTitle": "Redigera {{name}}"
+    },
+    "discovery": {
+      "run": "Upptäck inställningar",
+      "title": "Upptäckta inställningar",
+      "apply": "Använd de här värdena",
+      "issuer": "Utfärdare",
+      "endpoints": {
+        "authorization": "Auktoriseringsslutpunkt",
+        "token": "Token-slutpunkt",
+        "userinfo": "Slutpunkt för användarinformation",
+        "jwks": "Signeringsnycklar (JWKS)"
+      },
+      "scopes": "Scope som stöds",
+      "authMethods": "Autentiseringsmetoder för token",
+      "none": "Inte angivet"
+    },
+    "form": {
+      "preset": "Leverantörstyp",
+      "presetHint": "Förinställningar fyller i de vanliga inställningarna. Du kan justera allt innan du sparar.",
+      "presetPlaceholder": "Välj en leverantörstyp",
+      "presets": {
+        "custom": {
+          "oidc": "Anpassad OpenID Connect",
+          "oauth2": "Anpassad OAuth2"
+        }
+      },
+      "displayName": "Visningsnamn",
+      "slug": "Slug",
+      "slugHint": "2–40 gemena bokstäver, siffror, bindestreck eller understreck. Den blir en del av omdirigerings-URI:n och kan inte ändras senare.",
+      "issuerUrl": "Utfärdar-URL",
+      "issuerHint": "Palmr läser leverantörens inställningar från den här adressen.",
+      "clientId": "Klient-ID",
+      "clientSecret": "Klienthemlighet",
+      "secretWriteOnly": "Lagras krypterad och visas aldrig igen.",
+      "secretKeepHint": "Lämna tomt för att behålla den lagrade hemligheten. Skriv ett nytt värde för att ersätta den.",
+      "secretPlaceholderConfigured": "Konfigurerad. Ange en ny hemlighet för att ersätta den",
+      "clearSecret": "Ta bort den lagrade klienthemligheten",
+      "tokenAuthMethod": "Autentisering vid token-slutpunkten",
+      "tokenMethods": {
+        "client_secret_basic": "Klienthemlighet (HTTP Basic)",
+        "client_secret_post": "Klienthemlighet (förfrågans brödtext)",
+        "none": "Ingen (offentlig klient)"
+      },
+      "scopes": "Scope",
+      "scopesHint": "Skriv ett scope och tryck på Enter. OpenID Connect-leverantörer måste begära openid.",
+      "endpoints": {
+        "title": "Slutpunkter",
+        "advanced": "Avancerat: åsidosätt slutpunkter",
+        "authorization": "Auktoriseringsslutpunkt",
+        "token": "Token-slutpunkt",
+        "userinfo": "Slutpunkt för användarinformation",
+        "jwks": "Slutpunkt för signeringsnycklar (JWKS)"
+      },
+      "claims": {
+        "title": "Avancerat: claim-mappning",
+        "subject": "Subject-claim",
+        "email": "E-postclaim",
+        "emailVerified": "Claim för verifierad e-post",
+        "username": "Användarnamnsclaim",
+        "name": "Namnclaim",
+        "picture": "Bildclaim"
+      },
+      "flags": {
+        "autoProvision": {
+          "label": "Skapa konton automatiskt",
+          "hint": "Behöriga nya personer får ett konto första gången de loggar in. Dessa konton är alltid vanliga användare, aldrig administratörer."
+        },
+        "allowEmailLinking": {
+          "label": "Länka via verifierad e-post",
+          "hint": "En inloggning länkas till det befintliga kontot med samma e-postadress endast när leverantören anger att e-postadressen är verifierad."
+        },
+        "enabled": {
+          "label": "Aktivera nu",
+          "hint": "Aktiverade leverantörer visas på inloggningssidan."
+        }
+      },
+      "consequences": {
+        "title": "Vad de här inställningarna gör",
+        "autoProvision": "Automatiskt kontoskapande gäller bara personer som inte har något konto än.",
+        "emailLinking": "E-postlänkning gäller aldrig overifierade e-postadresser.",
+        "manualLinking": "Människor kan alltid ansluta den här leverantören manuellt i sina säkerhetsinställningar, oavsett vad de här inställningarna säger."
+      },
+      "redirectAfterCreate": "Omdirigerings-URI:n visas när leverantören har skapats.",
+      "create": "Lägg till leverantör",
+      "save": "Spara ändringar",
+      "validation": {
+        "url": "Ange en giltig https://-URL.",
+        "slug": "Använd 2–40 gemena bokstäver, siffror, bindestreck eller understreck.",
+        "openid": "OpenID Connect-leverantörer måste ha scopet openid.",
+        "slugTaken": "Den här sluggen används redan av en annan leverantör.",
+        "rejected": "Servern avvisade det här värdet."
+      }
+    }
+  },
+  "passwordLogin": {
+    "title": "Inloggning med lösenord",
+    "description": "Stäng av lokal lösenordsinloggning för att göra den här instansen enbart till enkel inloggning.",
+    "state": "Lokal lösenordsinloggning",
+    "on": "På",
+    "off": "Av",
+    "explainOn": "Personer med lösenord kan logga in med det. Det går bara att stänga av när en administratör fortfarande kan logga in via en testad leverantör.",
+    "explainOff": "Bara externa leverantörer kan användas för inloggning. Om alla leverantörer blir oanvändbara kan en operatör återställa åtkomsten från kommandoraden.",
+    "blockers": {
+      "title": "Lösenordsinloggning kan inte stängas av ännu"
+    },
+    "paths": {
+      "title": "Administratörers inloggningsvägar",
+      "description": "Aktiva administratörer som är länkade till en aktiverad leverantör. För att stänga av lösenordsinloggning krävs också en leverantör som testats framgångsrikt de senaste 24 timmarna. När den är av avvisas ändringar som skulle ta bort den sista av dessa vägar.",
+      "empty": "Ingen aktiv administratör är länkad till en aktiverad leverantör.",
+      "entry": "{{username}} via {{provider}}",
+      "validated": "Testad de senaste 24 timmarna",
+      "notValidated": "Inte testad nyligen"
+    },
+    "disable": {
+      "action": "Stäng av lösenordsinloggning …",
+      "title": "Stänga av lösenordsinloggning?",
+      "confirm": "Stäng av lösenordsinloggning",
+      "intro": "Kontrollera de här följderna innan du fortsätter.",
+      "points": {
+        "unavailable": "Lokal lösenordsinloggning blir otillgänglig för alla, även för dig.",
+        "admission": "Palmr tillåter det bara när en aktiverad leverantör har testats framgångsrikt de senaste 24 timmarna och är länkad till en aktiv administratör, dig inräknad.",
+        "standing": "Efteråt avvisas ändringar som skulle ta bort administratörens sista inloggningsväg via en leverantör.",
+        "recovery": "Om du blir utelåst kan en operatör återställa åtkomsten från kommandoraden."
+      },
+      "understood": "Jag förstår att lösenordsinloggning slutar fungera."
+    },
+    "enable": {
+      "action": "Slå på lösenordsinloggning igen"
+    },
+    "notice": {
+      "disabled": "Lösenordsinloggning är av.",
+      "enabled": "Lösenordsinloggning är på."
     }
   }
 }

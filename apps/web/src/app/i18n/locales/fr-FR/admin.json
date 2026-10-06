@@ -4,7 +4,8 @@
     "label": "Sections d'administration",
     "users": "Utilisateurs",
     "security": "Sécurité",
-    "smtp": "SMTP"
+    "smtp": "SMTP",
+    "providers": "Fournisseurs"
   },
   "common": {
     "cancel": "Annuler",
@@ -536,6 +537,225 @@
       "incomplete": "Le test avec les {{mode}} n'a pas abouti.",
       "duration": "Terminé en {{ms}} ms.",
       "failedAt": "Arrêt à l'étape : {{stage}} (test avec les {{mode}})."
+    }
+  },
+  "providers": {
+    "title": "Fournisseurs d'identité",
+    "description": "Permettez aux utilisateurs de se connecter avec des fournisseurs OpenID Connect ou OAuth2. Les secrets client sont en écriture seule et ne sont plus jamais affichés.",
+    "add": "Ajouter un fournisseur",
+    "global": {
+      "label": "Autoriser la connexion externe",
+      "hint": "Lorsque cette option est désactivée, aucun fournisseur n'est proposé sur la page de connexion.",
+      "offNotice": "La connexion externe est désactivée. Les fournisseurs restent configurés, mais personne ne peut les utiliser tant qu'elle n'est pas réactivée."
+    },
+    "empty": {
+      "title": "Aucun fournisseur pour l'instant",
+      "description": "Ajoutez un modèle ou un fournisseur OpenID Connect ou OAuth2 personnalisé pour activer l'authentification unique."
+    },
+    "list": {
+      "title": "Fournisseurs",
+      "label": "Fournisseurs d'identité"
+    },
+    "row": {
+      "position": "Position {{position}} sur {{total}}",
+      "protocol": {
+        "oidc": "OpenID Connect",
+        "oauth2": "OAuth2"
+      },
+      "enabled": "Activé",
+      "disabled": "Désactivé",
+      "validation": {
+        "validated": "Testé le {{date}}",
+        "failed": "Le dernier test a échoué",
+        "untested": "Non testé"
+      },
+      "secret": {
+        "configured": "Secret client configuré",
+        "missing": "Aucun secret client"
+      },
+      "autoProvision": {
+        "on": "Création automatique activée",
+        "off": "Création automatique désactivée"
+      },
+      "emailLinking": {
+        "on": "Association par e-mail activée",
+        "off": "Association par e-mail désactivée"
+      },
+      "linkedUsers": "Comptes associés : {{total}}",
+      "drag": "Faites glisser pour réorganiser",
+      "moveUp": "Monter {{name}}",
+      "moveDown": "Descendre {{name}}",
+      "toggle": "Activer {{name}}",
+      "test": "Tester",
+      "testLabel": "Tester {{name}}",
+      "edit": "Modifier",
+      "editLabel": "Modifier {{name}}",
+      "delete": "Supprimer",
+      "deleteLabel": "Supprimer {{name}}"
+    },
+    "redirectUri": {
+      "label": "URI de redirection",
+      "copy": "Copier",
+      "copied": "Copié"
+    },
+    "checks": {
+      "title": "Résultats du dernier test de {{name}}",
+      "passed": "Réussi",
+      "failed": "Échec",
+      "names": {
+        "discovery": "Document de découverte",
+        "jwks": "Clés de signature",
+        "token_endpoint": "Point de terminaison du jeton",
+        "authorization_endpoint": "Point de terminaison d'autorisation",
+        "userinfo_endpoint": "Point de terminaison des informations utilisateur",
+        "redirect_uri": "URI de redirection"
+      }
+    },
+    "reorder": {
+      "moved": "{{name}} déplacé à la position {{position}} sur {{total}}."
+    },
+    "delete": {
+      "title": "Supprimer {{name}} ?",
+      "description": "Le fournisseur est supprimé et ne peut plus servir à se connecter. Cette action est irréversible.",
+      "linked": "{{total}} comptes associés utilisent encore ce fournisseur. Supprimez d'abord ces associations ; le fournisseur ne peut pas être supprimé tant qu'elles existent.",
+      "confirm": "Supprimer le fournisseur",
+      "done": "Fournisseur supprimé."
+    },
+    "editor": {
+      "createTitle": "Ajouter un fournisseur",
+      "editTitle": "Modifier {{name}}"
+    },
+    "discovery": {
+      "run": "Détecter les paramètres",
+      "title": "Paramètres détectés",
+      "apply": "Utiliser ces valeurs",
+      "issuer": "Émetteur",
+      "endpoints": {
+        "authorization": "Point de terminaison d'autorisation",
+        "token": "Point de terminaison du jeton",
+        "userinfo": "Point de terminaison des informations utilisateur",
+        "jwks": "Clés de signature (JWKS)"
+      },
+      "scopes": "Portées prises en charge",
+      "authMethods": "Méthodes d'authentification du jeton",
+      "none": "Non fourni"
+    },
+    "form": {
+      "preset": "Type de fournisseur",
+      "presetHint": "Les modèles renseignent les paramètres habituels. Vous pouvez tout ajuster avant d'enregistrer.",
+      "presetPlaceholder": "Choisissez un type de fournisseur",
+      "presets": {
+        "custom": {
+          "oidc": "OpenID Connect personnalisé",
+          "oauth2": "OAuth2 personnalisé"
+        }
+      },
+      "displayName": "Nom affiché",
+      "slug": "Slug",
+      "slugHint": "2 à 40 lettres minuscules, chiffres, tirets ou tirets bas. Il fait partie de l'URI de redirection et ne peut pas être modifié ensuite.",
+      "issuerUrl": "URL de l'émetteur",
+      "issuerHint": "Palmr lit les paramètres du fournisseur à cette adresse.",
+      "clientId": "ID client",
+      "clientSecret": "Secret client",
+      "secretWriteOnly": "Stocké chiffré et plus jamais affiché.",
+      "secretKeepHint": "Laissez vide pour conserver le secret enregistré. Saisissez une nouvelle valeur pour le remplacer.",
+      "secretPlaceholderConfigured": "Configuré. Saisissez un nouveau secret pour le remplacer",
+      "clearSecret": "Supprimer le secret client enregistré",
+      "tokenAuthMethod": "Authentification au point de terminaison du jeton",
+      "tokenMethods": {
+        "client_secret_basic": "Secret client (HTTP Basic)",
+        "client_secret_post": "Secret client (corps de la requête)",
+        "none": "Aucune (client public)"
+      },
+      "scopes": "Portées",
+      "scopesHint": "Saisissez une portée et appuyez sur Entrée. Les fournisseurs OpenID Connect doivent demander openid.",
+      "endpoints": {
+        "title": "Points de terminaison",
+        "advanced": "Avancé : remplacement des points de terminaison",
+        "authorization": "Point de terminaison d'autorisation",
+        "token": "Point de terminaison du jeton",
+        "userinfo": "Point de terminaison des informations utilisateur",
+        "jwks": "Point de terminaison des clés de signature (JWKS)"
+      },
+      "claims": {
+        "title": "Avancé : correspondance des claims",
+        "subject": "Claim de l'identifiant",
+        "email": "Claim de l'e-mail",
+        "emailVerified": "Claim d'e-mail vérifié",
+        "username": "Claim du nom d'utilisateur",
+        "name": "Claim du nom",
+        "picture": "Claim de l'image"
+      },
+      "flags": {
+        "autoProvision": {
+          "label": "Créer les comptes automatiquement",
+          "hint": "Les nouveaux utilisateurs éligibles obtiennent un compte dès leur première connexion. Ces comptes sont toujours des comptes utilisateur, jamais administrateur."
+        },
+        "allowEmailLinking": {
+          "label": "Associer par e-mail vérifié",
+          "hint": "Une connexion n'est associée au compte existant ayant le même e-mail que si le fournisseur indique que l'e-mail est vérifié."
+        },
+        "enabled": {
+          "label": "Activer maintenant",
+          "hint": "Les fournisseurs activés apparaissent sur la page de connexion."
+        }
+      },
+      "consequences": {
+        "title": "Ce que font ces paramètres",
+        "autoProvision": "La création automatique de comptes ne concerne que les personnes qui n'ont pas encore de compte.",
+        "emailLinking": "L'association par e-mail ne s'applique jamais aux adresses e-mail non vérifiées.",
+        "manualLinking": "Chacun peut toujours connecter ce fournisseur manuellement depuis ses paramètres de sécurité, quels que soient ces réglages."
+      },
+      "redirectAfterCreate": "L'URI de redirection s'affiche une fois le fournisseur créé.",
+      "create": "Ajouter un fournisseur",
+      "save": "Enregistrer les modifications",
+      "validation": {
+        "url": "Saisissez une URL https:// valide.",
+        "slug": "Utilisez 2 à 40 lettres minuscules, chiffres, tirets ou tirets bas.",
+        "openid": "Les fournisseurs OpenID Connect doivent inclure la portée openid.",
+        "slugTaken": "Ce slug est déjà utilisé par un autre fournisseur.",
+        "rejected": "Le serveur a refusé cette valeur."
+      }
+    }
+  },
+  "passwordLogin": {
+    "title": "Connexion par mot de passe",
+    "description": "Désactivez la connexion locale par mot de passe pour que cette instance n'utilise que l'authentification unique.",
+    "state": "Connexion locale par mot de passe",
+    "on": "Activée",
+    "off": "Désactivée",
+    "explainOn": "Les personnes qui ont un mot de passe peuvent s'en servir pour se connecter. Il n'est possible de la désactiver que si un administrateur peut encore se connecter via un fournisseur testé.",
+    "explainOff": "Seuls les fournisseurs externes peuvent servir à se connecter. Si plus aucun fournisseur n'est utilisable, un opérateur peut rétablir l'accès en ligne de commande.",
+    "blockers": {
+      "title": "La connexion par mot de passe ne peut pas encore être désactivée"
+    },
+    "paths": {
+      "title": "Voies de connexion des administrateurs",
+      "description": "Administrateurs actifs associés à un fournisseur activé. Pour désactiver la connexion par mot de passe, il faut aussi un fournisseur testé avec succès au cours des 24 dernières heures. Une fois désactivée, les modifications qui supprimeraient la dernière de ces voies sont refusées.",
+      "empty": "Aucun administrateur actif n'est associé à un fournisseur activé.",
+      "entry": "{{username}} via {{provider}}",
+      "validated": "Testé au cours des dernières 24 heures",
+      "notValidated": "Pas testé récemment"
+    },
+    "disable": {
+      "action": "Désactiver la connexion par mot de passe…",
+      "title": "Désactiver la connexion par mot de passe ?",
+      "confirm": "Désactiver la connexion par mot de passe",
+      "intro": "Vérifiez ces conséquences avant de continuer.",
+      "points": {
+        "unavailable": "La connexion locale par mot de passe devient indisponible pour tout le monde, vous compris.",
+        "admission": "Palmr ne l'autorise que si un fournisseur activé a été testé avec succès au cours des 24 dernières heures et est associé à un administrateur actif, vous compris.",
+        "standing": "Ensuite, les modifications qui supprimeraient la dernière voie de connexion d'administrateur via un fournisseur sont refusées.",
+        "recovery": "Si vous perdez l'accès, un opérateur peut le rétablir en ligne de commande."
+      },
+      "understood": "Je comprends que la connexion par mot de passe cessera de fonctionner."
+    },
+    "enable": {
+      "action": "Réactiver la connexion par mot de passe"
+    },
+    "notice": {
+      "disabled": "La connexion par mot de passe est désactivée.",
+      "enabled": "La connexion par mot de passe est activée."
     }
   }
 }

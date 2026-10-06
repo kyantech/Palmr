@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { expect } from "vitest";
 import { appRoutes } from "../app/router/routes";
 import { type AdminServerOptions, installAdminServer } from "./adminServer";
+import { installProviderServer, type ProviderServerOptions } from "./providerServer";
 import { renderSession } from "./renderSession";
 
 export type User = ReturnType<typeof userEvent.setup>;
@@ -11,6 +12,25 @@ export function renderAdmin(path: string, options: AdminServerOptions = {}) {
   const state = installAdminServer(options);
   const session = renderSession({ routes: appRoutes, initialEntries: [path] });
   return { state, ...session, user: userEvent.setup({ delay: null }) };
+}
+
+export function renderApp(path: string) {
+  return { ...renderSession({ routes: appRoutes, initialEntries: [path] }) };
+}
+
+export interface ProviderRenderOptions {
+  admin?: AdminServerOptions;
+  providers?: ProviderServerOptions;
+}
+
+export function renderProviders(
+  path = "/admin/providers",
+  { admin, providers }: ProviderRenderOptions = {},
+) {
+  const state = installAdminServer(admin);
+  const providerState = installProviderServer(state, providers);
+  const session = renderSession({ routes: appRoutes, initialEntries: [path] });
+  return { state, providers: providerState, ...session, user: userEvent.setup({ delay: null }) };
 }
 
 export async function chooseOption(user: User, combobox: HTMLElement, label: string) {

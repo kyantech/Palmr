@@ -7,7 +7,11 @@ import {
 } from "../errors";
 import { API_PREFIX, resolveApiBase } from "./basePath";
 import { CSRF_COOKIE, CSRF_HEADER, readCookie } from "./csrf";
-import type { paths } from "./schema";
+import type { components, paths } from "./schema";
+
+type DetailValue = components["schemas"]["DetailValue"];
+type CheckDetail = components["schemas"]["CheckDetail"];
+type BlockerDetail = components["schemas"]["BlockerDetail"];
 
 export const REQUEST_ID_HEADER = "X-Request-Id";
 export const RETRY_AFTER_HEADER = "Retry-After";
@@ -269,12 +273,16 @@ function toDetails(value: unknown): ErrorDetails {
   if (!isRecord(value)) {
     return {};
   }
-  const details: Record<string, boolean | number | string | string[]> = {};
+  const details: Record<string, DetailValue> = {};
   for (const [key, entry] of Object.entries(value)) {
     if (typeof entry === "boolean" || typeof entry === "number" || typeof entry === "string") {
       details[key] = entry;
     } else if (isStringList(entry)) {
       details[key] = [...entry];
+    } else if (isCheckList(entry)) {
+      details[key] = entry.map(({ name, ok, detail }) => ({ name, ok, detail: detail ?? null }));
+    } else if (isBlockerList(entry)) {
+      details[key] = entry.map(({ code, detail }) => ({ code, detail }));
     }
   }
   return details;
@@ -282,6 +290,30 @@ function toDetails(value: unknown): ErrorDetails {
 
 function isStringList(value: unknown): value is readonly string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string");
+}
+
+function isCheckList(value: unknown): value is readonly CheckDetail[] {
+  return (
+    Array.isArray(value) &&
+    value.length > 0 &&
+    value.every(
+      (item) =>
+        isRecord(item) &&
+        typeof item.name === "string" &&
+        typeof item.ok === "boolean" &&
+        (item.detail === undefined || item.detail === null || typeof item.detail === "string"),
+    )
+  );
+}
+
+function isBlockerList(value: unknown): value is readonly BlockerDetail[] {
+  return (
+    Array.isArray(value) &&
+    value.length > 0 &&
+    value.every(
+      (item) => isRecord(item) && typeof item.code === "string" && typeof item.detail === "string",
+    )
+  );
 }
 
 function proxyErrorCode(status: number): ClientErrorCode {

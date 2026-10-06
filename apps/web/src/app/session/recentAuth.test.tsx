@@ -437,20 +437,24 @@ describe("component_recent_auth_totp", () => {
   });
 });
 
-describe("component_recent_auth_fails_closed", () => {
-  test("SSO-only accounts get no fabricated provider URL and nothing replays", async () => {
+describe("component_recent_auth_external_variant", () => {
+  test("SSO-only accounts get the external variant: no password field, no fabricated provider URL, and Cancel discards without a request", async () => {
     const state = installServer({ me: meFixture({ capabilities: { hasLocalPassword: false } }) });
     const { user, dialog } = await startBlockedChange();
 
     expect(within(dialog).queryByLabelText("Password")).toBeNull();
-    expect(within(dialog).getByText("Confirm with your sign-in provider")).toBeDefined();
+    expect(within(dialog).queryByLabelText("Authentication code")).toBeNull();
+    expect(
+      within(dialog).getByRole("button", { name: "Continue with your sign-in provider" }),
+    ).toBeDefined();
     expect(within(dialog).queryAllByRole("link")).toHaveLength(0);
     expect(dialog.querySelector("a[href], form[action]")).toBeNull();
 
-    await user.click(within(dialog).getByText("Close"));
+    await user.click(within(dialog).getByRole("button", { name: "Cancel" }));
 
     expect(recentAuthStore.getState().challenge).toBeNull();
     expect(state.reauthBodies).toHaveLength(0);
     expect(state.passwordBodies).toHaveLength(1);
+    expectOriginalFormIntact();
   });
 });

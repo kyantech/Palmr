@@ -4,7 +4,8 @@
     "label": "Secciones de administración",
     "users": "Usuarios",
     "security": "Seguridad",
-    "smtp": "SMTP"
+    "smtp": "SMTP",
+    "providers": "Proveedores"
   },
   "common": {
     "cancel": "Cancelar",
@@ -536,6 +537,225 @@
       "incomplete": "La prueba con los {{mode}} no se completó.",
       "duration": "Terminado en {{ms}} ms.",
       "failedAt": "Se detuvo en: {{stage}} (prueba con los {{mode}})."
+    }
+  },
+  "providers": {
+    "title": "Proveedores de identidad",
+    "description": "Permite que las personas inicien sesión con proveedores OpenID Connect u OAuth2. Los secretos de cliente son de solo escritura y no se vuelven a mostrar.",
+    "add": "Añadir proveedor",
+    "global": {
+      "label": "Permitir inicio de sesión externo",
+      "hint": "Si está desactivado, no se ofrece ningún proveedor en la página de inicio de sesión.",
+      "offNotice": "El inicio de sesión externo está desactivado. Los proveedores siguen configurados, pero nadie puede usarlos hasta que se vuelva a activar."
+    },
+    "empty": {
+      "title": "Aún no hay proveedores",
+      "description": "Añade una plantilla o un proveedor OpenID Connect u OAuth2 personalizado para activar el inicio de sesión único."
+    },
+    "list": {
+      "title": "Proveedores",
+      "label": "Proveedores de identidad"
+    },
+    "row": {
+      "position": "Posición {{position}} de {{total}}",
+      "protocol": {
+        "oidc": "OpenID Connect",
+        "oauth2": "OAuth2"
+      },
+      "enabled": "Activado",
+      "disabled": "Desactivado",
+      "validation": {
+        "validated": "Probado el {{date}}",
+        "failed": "La última prueba falló",
+        "untested": "Sin probar"
+      },
+      "secret": {
+        "configured": "Secreto de cliente configurado",
+        "missing": "Sin secreto de cliente"
+      },
+      "autoProvision": {
+        "on": "Creación automática activada",
+        "off": "Creación automática desactivada"
+      },
+      "emailLinking": {
+        "on": "Vinculación por correo activada",
+        "off": "Vinculación por correo desactivada"
+      },
+      "linkedUsers": "Cuentas vinculadas: {{total}}",
+      "drag": "Arrastra para reordenar",
+      "moveUp": "Subir {{name}}",
+      "moveDown": "Bajar {{name}}",
+      "toggle": "Activar {{name}}",
+      "test": "Probar",
+      "testLabel": "Probar {{name}}",
+      "edit": "Editar",
+      "editLabel": "Editar {{name}}",
+      "delete": "Eliminar",
+      "deleteLabel": "Eliminar {{name}}"
+    },
+    "redirectUri": {
+      "label": "URI de redirección",
+      "copy": "Copiar",
+      "copied": "Copiado"
+    },
+    "checks": {
+      "title": "Resultados de la última prueba de {{name}}",
+      "passed": "Correcto",
+      "failed": "Fallido",
+      "names": {
+        "discovery": "Documento de descubrimiento",
+        "jwks": "Claves de firma",
+        "token_endpoint": "Endpoint de token",
+        "authorization_endpoint": "Endpoint de autorización",
+        "userinfo_endpoint": "Endpoint de información de usuario",
+        "redirect_uri": "URI de redirección"
+      }
+    },
+    "reorder": {
+      "moved": "{{name}} movido a la posición {{position}} de {{total}}."
+    },
+    "delete": {
+      "title": "¿Eliminar {{name}}?",
+      "description": "El proveedor se elimina y ya no se puede usar para iniciar sesión. Esta acción no se puede deshacer.",
+      "linked": "{{total}} cuentas vinculadas siguen usando este proveedor. Quita primero esos vínculos; el proveedor no se puede eliminar mientras existan.",
+      "confirm": "Eliminar proveedor",
+      "done": "Proveedor eliminado."
+    },
+    "editor": {
+      "createTitle": "Añadir proveedor",
+      "editTitle": "Editar {{name}}"
+    },
+    "discovery": {
+      "run": "Descubrir ajustes",
+      "title": "Ajustes descubiertos",
+      "apply": "Usar estos valores",
+      "issuer": "Emisor",
+      "endpoints": {
+        "authorization": "Endpoint de autorización",
+        "token": "Endpoint de token",
+        "userinfo": "Endpoint de información de usuario",
+        "jwks": "Claves de firma (JWKS)"
+      },
+      "scopes": "Ámbitos admitidos",
+      "authMethods": "Métodos de autenticación del token",
+      "none": "No proporcionado"
+    },
+    "form": {
+      "preset": "Tipo de proveedor",
+      "presetHint": "Las plantillas rellenan los ajustes habituales. Puedes cambiar todo antes de guardar.",
+      "presetPlaceholder": "Elige un tipo de proveedor",
+      "presets": {
+        "custom": {
+          "oidc": "OpenID Connect personalizado",
+          "oauth2": "OAuth2 personalizado"
+        }
+      },
+      "displayName": "Nombre visible",
+      "slug": "Slug",
+      "slugHint": "De 2 a 40 letras minúsculas, dígitos, guiones o guiones bajos. Forma parte de la URI de redirección y no se puede cambiar después.",
+      "issuerUrl": "URL del emisor",
+      "issuerHint": "Palmr lee los ajustes del proveedor desde esta dirección.",
+      "clientId": "ID de cliente",
+      "clientSecret": "Secreto de cliente",
+      "secretWriteOnly": "Se guarda cifrado y no se vuelve a mostrar.",
+      "secretKeepHint": "Déjalo en blanco para conservar el secreto guardado. Escribe un valor nuevo para sustituirlo.",
+      "secretPlaceholderConfigured": "Configurado. Introduce un secreto nuevo para sustituirlo",
+      "clearSecret": "Quitar el secreto de cliente guardado",
+      "tokenAuthMethod": "Autenticación en el endpoint de token",
+      "tokenMethods": {
+        "client_secret_basic": "Secreto de cliente (HTTP Basic)",
+        "client_secret_post": "Secreto de cliente (cuerpo de la solicitud)",
+        "none": "Ninguna (cliente público)"
+      },
+      "scopes": "Ámbitos",
+      "scopesHint": "Escribe un ámbito y pulsa Intro. Los proveedores OpenID Connect deben solicitar openid.",
+      "endpoints": {
+        "title": "Endpoints",
+        "advanced": "Avanzado: sustitución de endpoints",
+        "authorization": "Endpoint de autorización",
+        "token": "Endpoint de token",
+        "userinfo": "Endpoint de información de usuario",
+        "jwks": "Endpoint de claves de firma (JWKS)"
+      },
+      "claims": {
+        "title": "Avanzado: mapeo de claims",
+        "subject": "Claim del identificador",
+        "email": "Claim del correo",
+        "emailVerified": "Claim de correo verificado",
+        "username": "Claim del nombre de usuario",
+        "name": "Claim del nombre",
+        "picture": "Claim de la imagen"
+      },
+      "flags": {
+        "autoProvision": {
+          "label": "Crear cuentas automáticamente",
+          "hint": "Las personas nuevas que cumplan los requisitos reciben una cuenta la primera vez que inician sesión. Estas cuentas siempre son de usuario normal, nunca de administrador."
+        },
+        "allowEmailLinking": {
+          "label": "Vincular por correo verificado",
+          "hint": "Un inicio de sesión se vincula a la cuenta existente con el mismo correo solo cuando el proveedor indica que el correo está verificado."
+        },
+        "enabled": {
+          "label": "Activar ahora",
+          "hint": "Los proveedores activados aparecen en la página de inicio de sesión."
+        }
+      },
+      "consequences": {
+        "title": "Qué hacen estos ajustes",
+        "autoProvision": "La creación automática de cuentas solo se aplica a personas que aún no tienen cuenta.",
+        "emailLinking": "La vinculación por correo nunca se aplica a direcciones de correo sin verificar.",
+        "manualLinking": "Las personas siempre pueden conectar este proveedor manualmente desde sus ajustes de seguridad, sea cual sea esta configuración."
+      },
+      "redirectAfterCreate": "La URI de redirección se muestra después de crear el proveedor.",
+      "create": "Añadir proveedor",
+      "save": "Guardar cambios",
+      "validation": {
+        "url": "Introduce una URL https:// válida.",
+        "slug": "Usa de 2 a 40 letras minúsculas, dígitos, guiones o guiones bajos.",
+        "openid": "Los proveedores OpenID Connect deben incluir el ámbito openid.",
+        "slugTaken": "Otro proveedor ya usa este slug.",
+        "rejected": "El servidor rechazó este valor."
+      }
+    }
+  },
+  "passwordLogin": {
+    "title": "Inicio de sesión con contraseña",
+    "description": "Desactiva el inicio de sesión local con contraseña para que esta instancia solo use inicio de sesión único.",
+    "state": "Inicio de sesión local con contraseña",
+    "on": "Activado",
+    "off": "Desactivado",
+    "explainOn": "Quienes tienen contraseña pueden iniciar sesión con ella. Solo se puede desactivar si un administrador aún puede iniciar sesión mediante un proveedor probado.",
+    "explainOff": "Solo se pueden usar proveedores externos para iniciar sesión. Si todos los proveedores quedan inutilizables, un operador puede recuperar el acceso desde la línea de comandos.",
+    "blockers": {
+      "title": "Aún no se puede desactivar el inicio de sesión con contraseña"
+    },
+    "paths": {
+      "title": "Vías de inicio de sesión de administradores",
+      "description": "Administradores activos vinculados a un proveedor activado. Para desactivar el inicio de sesión con contraseña también hace falta un proveedor probado correctamente en las últimas 24 horas. Una vez desactivado, se rechazan los cambios que eliminarían la última de estas vías.",
+      "empty": "Ningún administrador activo está vinculado a un proveedor activado.",
+      "entry": "{{username}} mediante {{provider}}",
+      "validated": "Probado en las últimas 24 horas",
+      "notValidated": "Sin probar recientemente"
+    },
+    "disable": {
+      "action": "Desactivar el inicio de sesión con contraseña…",
+      "title": "¿Desactivar el inicio de sesión con contraseña?",
+      "confirm": "Desactivar el inicio de sesión con contraseña",
+      "intro": "Revisa estas consecuencias antes de continuar.",
+      "points": {
+        "unavailable": "El inicio de sesión local con contraseña deja de estar disponible para todos, incluido tú.",
+        "admission": "Palmr solo lo permite cuando un proveedor activado se ha probado correctamente en las últimas 24 horas y está vinculado a un administrador activo, incluido tú.",
+        "standing": "Después, se rechazan los cambios que eliminarían la última vía de inicio de sesión de administrador mediante un proveedor.",
+        "recovery": "Si te quedas sin acceso, un operador puede recuperarlo desde la línea de comandos."
+      },
+      "understood": "Entiendo que el inicio de sesión con contraseña dejará de funcionar."
+    },
+    "enable": {
+      "action": "Volver a activar el inicio de sesión con contraseña"
+    },
+    "notice": {
+      "disabled": "El inicio de sesión con contraseña está desactivado.",
+      "enabled": "El inicio de sesión con contraseña está activado."
     }
   }
 }

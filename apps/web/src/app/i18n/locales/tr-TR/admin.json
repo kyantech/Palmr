@@ -4,7 +4,8 @@
     "label": "Yönetim bölümleri",
     "users": "Kullanıcılar",
     "security": "Güvenlik",
-    "smtp": "SMTP"
+    "smtp": "SMTP",
+    "providers": "Sağlayıcılar"
   },
   "common": {
     "cancel": "İptal",
@@ -536,6 +537,225 @@
       "incomplete": "Test tamamlanmadı (test: {{mode}}).",
       "duration": "{{ms}} ms içinde tamamlandı.",
       "failedAt": "Şu aşamada durdu: {{stage}} (test: {{mode}})."
+    }
+  },
+  "providers": {
+    "title": "Kimlik sağlayıcılar",
+    "description": "İnsanların OpenID Connect veya OAuth2 sağlayıcılarıyla oturum açmasına izin verin. İstemci gizli anahtarları yalnızca yazılabilir ve bir daha gösterilmez.",
+    "add": "Sağlayıcı ekle",
+    "global": {
+      "label": "Harici oturum açmaya izin ver",
+      "hint": "Kapalıyken oturum açma sayfasında hiçbir sağlayıcı sunulmaz.",
+      "offNotice": "Harici oturum açma kapalı. Sağlayıcılar yapılandırılmış kalır ancak yeniden açılana kadar kimse kullanamaz."
+    },
+    "empty": {
+      "title": "Henüz sağlayıcı yok",
+      "description": "Çoklu oturum açmayı etkinleştirmek için hazır bir şablon ya da özel bir OpenID Connect veya OAuth2 sağlayıcısı ekleyin."
+    },
+    "list": {
+      "title": "Sağlayıcılar",
+      "label": "Kimlik sağlayıcılar"
+    },
+    "row": {
+      "position": "{{total}} içinde {{position}}. sıra",
+      "protocol": {
+        "oidc": "OpenID Connect",
+        "oauth2": "OAuth2"
+      },
+      "enabled": "Etkin",
+      "disabled": "Devre dışı",
+      "validation": {
+        "validated": "{{date}} tarihinde test edildi",
+        "failed": "Son test başarısız oldu",
+        "untested": "Test edilmedi"
+      },
+      "secret": {
+        "configured": "İstemci gizli anahtarı yapılandırıldı",
+        "missing": "İstemci gizli anahtarı yok"
+      },
+      "autoProvision": {
+        "on": "Otomatik oluşturma açık",
+        "off": "Otomatik oluşturma kapalı"
+      },
+      "emailLinking": {
+        "on": "E-posta ile bağlama açık",
+        "off": "E-posta ile bağlama kapalı"
+      },
+      "linkedUsers": "Bağlı hesaplar: {{total}}",
+      "drag": "Yeniden sıralamak için sürükleyin",
+      "moveUp": "{{name}} sağlayıcısını yukarı taşı",
+      "moveDown": "{{name}} sağlayıcısını aşağı taşı",
+      "toggle": "{{name}} sağlayıcısını etkinleştir",
+      "test": "Test et",
+      "testLabel": "{{name}} sağlayıcısını test et",
+      "edit": "Düzenle",
+      "editLabel": "{{name}} sağlayıcısını düzenle",
+      "delete": "Sil",
+      "deleteLabel": "{{name}} sağlayıcısını sil"
+    },
+    "redirectUri": {
+      "label": "Yönlendirme URI'si",
+      "copy": "Kopyala",
+      "copied": "Kopyalandı"
+    },
+    "checks": {
+      "title": "{{name}} için son test sonuçları",
+      "passed": "Başarılı",
+      "failed": "Başarısız",
+      "names": {
+        "discovery": "Keşif belgesi",
+        "jwks": "İmzalama anahtarları",
+        "token_endpoint": "Belirteç uç noktası",
+        "authorization_endpoint": "Yetkilendirme uç noktası",
+        "userinfo_endpoint": "Kullanıcı bilgisi uç noktası",
+        "redirect_uri": "Yönlendirme URI'si"
+      }
+    },
+    "reorder": {
+      "moved": "{{name}} sağlayıcısı {{total}} içinde {{position}}. sıraya taşındı."
+    },
+    "delete": {
+      "title": "{{name}} silinsin mi?",
+      "description": "Sağlayıcı kaldırılır ve artık oturum açmak için kullanılamaz. Bu işlem geri alınamaz.",
+      "linked": "{{total}} bağlı hesap bu sağlayıcıyı hâlâ kullanıyor. Önce bu bağlantıları kaldırın; bağlantılar varken sağlayıcı silinemez.",
+      "confirm": "Sağlayıcıyı sil",
+      "done": "Sağlayıcı silindi."
+    },
+    "editor": {
+      "createTitle": "Sağlayıcı ekle",
+      "editTitle": "{{name}} sağlayıcısını düzenle"
+    },
+    "discovery": {
+      "run": "Ayarları keşfet",
+      "title": "Keşfedilen ayarlar",
+      "apply": "Bu değerleri kullan",
+      "issuer": "Veren",
+      "endpoints": {
+        "authorization": "Yetkilendirme uç noktası",
+        "token": "Belirteç uç noktası",
+        "userinfo": "Kullanıcı bilgisi uç noktası",
+        "jwks": "İmzalama anahtarları (JWKS)"
+      },
+      "scopes": "Desteklenen kapsamlar",
+      "authMethods": "Belirteç kimlik doğrulama yöntemleri",
+      "none": "Sağlanmadı"
+    },
+    "form": {
+      "preset": "Sağlayıcı türü",
+      "presetHint": "Şablonlar olağan ayarları doldurur. Kaydetmeden önce her şeyi değiştirebilirsiniz.",
+      "presetPlaceholder": "Bir sağlayıcı türü seçin",
+      "presets": {
+        "custom": {
+          "oidc": "Özel OpenID Connect",
+          "oauth2": "Özel OAuth2"
+        }
+      },
+      "displayName": "Görünen ad",
+      "slug": "Slug",
+      "slugHint": "2–40 küçük harf, rakam, tire veya alt çizgi. Yönlendirme URI'sinin parçası olur ve sonradan değiştirilemez.",
+      "issuerUrl": "Veren URL'si",
+      "issuerHint": "Palmr sağlayıcının ayarlarını bu adresten okur.",
+      "clientId": "İstemci kimliği",
+      "clientSecret": "İstemci gizli anahtarı",
+      "secretWriteOnly": "Şifrelenmiş olarak saklanır ve bir daha gösterilmez.",
+      "secretKeepHint": "Kayıtlı gizli anahtarı korumak için boş bırakın. Değiştirmek için yeni bir değer yazın.",
+      "secretPlaceholderConfigured": "Yapılandırıldı. Değiştirmek için yeni bir gizli anahtar girin",
+      "clearSecret": "Kayıtlı istemci gizli anahtarını kaldır",
+      "tokenAuthMethod": "Belirteç uç noktasında kimlik doğrulama",
+      "tokenMethods": {
+        "client_secret_basic": "İstemci gizli anahtarı (HTTP Basic)",
+        "client_secret_post": "İstemci gizli anahtarı (istek gövdesi)",
+        "none": "Yok (genel istemci)"
+      },
+      "scopes": "Kapsamlar",
+      "scopesHint": "Bir kapsam yazıp Enter'a basın. OpenID Connect sağlayıcıları openid istemelidir.",
+      "endpoints": {
+        "title": "Uç noktalar",
+        "advanced": "Gelişmiş: uç noktaları geçersiz kıl",
+        "authorization": "Yetkilendirme uç noktası",
+        "token": "Belirteç uç noktası",
+        "userinfo": "Kullanıcı bilgisi uç noktası",
+        "jwks": "İmzalama anahtarları (JWKS) uç noktası"
+      },
+      "claims": {
+        "title": "Gelişmiş: claim eşlemesi",
+        "subject": "Konu claim'i",
+        "email": "E-posta claim'i",
+        "emailVerified": "E-posta doğrulandı claim'i",
+        "username": "Kullanıcı adı claim'i",
+        "name": "Ad claim'i",
+        "picture": "Resim claim'i"
+      },
+      "flags": {
+        "autoProvision": {
+          "label": "Hesapları otomatik oluştur",
+          "hint": "Uygun yeni kişiler ilk oturum açışlarında bir hesap alır. Bu hesaplar her zaman normal kullanıcıdır, asla yönetici değildir."
+        },
+        "allowEmailLinking": {
+          "label": "Doğrulanmış e-posta ile bağla",
+          "hint": "Bir oturum açma, yalnızca sağlayıcı e-postanın doğrulandığını bildirdiğinde aynı e-postaya sahip mevcut hesaba bağlanır."
+        },
+        "enabled": {
+          "label": "Şimdi etkinleştir",
+          "hint": "Etkin sağlayıcılar oturum açma sayfasında görünür."
+        }
+      },
+      "consequences": {
+        "title": "Bu ayarlar ne yapar",
+        "autoProvision": "Otomatik hesap oluşturma yalnızca henüz hesabı olmayan kişiler için geçerlidir.",
+        "emailLinking": "E-posta ile bağlama doğrulanmamış e-posta adresleri için asla geçerli olmaz.",
+        "manualLinking": "İnsanlar, bu ayarlar ne derse desin, bu sağlayıcıyı güvenlik ayarlarından her zaman elle bağlayabilir."
+      },
+      "redirectAfterCreate": "Yönlendirme URI'si, sağlayıcı oluşturulduktan sonra gösterilir.",
+      "create": "Sağlayıcı ekle",
+      "save": "Değişiklikleri kaydet",
+      "validation": {
+        "url": "Geçerli bir https:// URL'si girin.",
+        "slug": "2–40 küçük harf, rakam, tire veya alt çizgi kullanın.",
+        "openid": "OpenID Connect sağlayıcıları openid kapsamını içermelidir.",
+        "slugTaken": "Bu slug başka bir sağlayıcı tarafından zaten kullanılıyor.",
+        "rejected": "Sunucu bu değeri reddetti."
+      }
+    }
+  },
+  "passwordLogin": {
+    "title": "Parolayla oturum açma",
+    "description": "Bu örneği yalnızca çoklu oturum açma kullanır hale getirmek için yerel parolayla oturum açmayı kapatın.",
+    "state": "Yerel parolayla oturum açma",
+    "on": "Açık",
+    "off": "Kapalı",
+    "explainOn": "Parolası olanlar onunla oturum açabilir. Kapatmak yalnızca bir yönetici test edilmiş bir sağlayıcı üzerinden hâlâ oturum açabiliyorsa mümkündür.",
+    "explainOff": "Oturum açmak için yalnızca harici sağlayıcılar kullanılabilir. Tüm sağlayıcılar kullanılamaz hale gelirse bir operatör erişimi komut satırından kurtarabilir.",
+    "blockers": {
+      "title": "Parolayla oturum açma henüz kapatılamaz"
+    },
+    "paths": {
+      "title": "Yöneticilerin oturum açma yolları",
+      "description": "Etkin bir sağlayıcıya bağlı aktif yöneticiler. Parolayla oturum açmayı kapatmak için ayrıca son 24 saatte başarıyla test edilmiş bir sağlayıcı gerekir. Kapatıldıktan sonra bu yolların sonuncusunu kaldıracak değişiklikler reddedilir.",
+      "empty": "Etkin bir sağlayıcıya bağlı aktif yönetici yok.",
+      "entry": "{{provider}} üzerinden {{username}}",
+      "validated": "Son 24 saatte test edildi",
+      "notValidated": "Yakın zamanda test edilmedi"
+    },
+    "disable": {
+      "action": "Parolayla oturum açmayı kapat…",
+      "title": "Parolayla oturum açma kapatılsın mı?",
+      "confirm": "Parolayla oturum açmayı kapat",
+      "intro": "Devam etmeden önce bu sonuçları gözden geçirin.",
+      "points": {
+        "unavailable": "Yerel parolayla oturum açma, siz dahil herkes için kullanılamaz hale gelir.",
+        "admission": "Palmr buna yalnızca etkin bir sağlayıcı son 24 saatte başarıyla test edilmişse ve siz dahil aktif bir yöneticiye bağlıysa izin verir.",
+        "standing": "Sonrasında, bir yöneticinin bir sağlayıcı üzerinden son oturum açma yolunu kaldıracak değişiklikler reddedilir.",
+        "recovery": "Erişiminizi kaybederseniz bir operatör bunu komut satırından kurtarabilir."
+      },
+      "understood": "Parolayla oturum açmanın çalışmayacağını anlıyorum."
+    },
+    "enable": {
+      "action": "Parolayla oturum açmayı yeniden aç"
+    },
+    "notice": {
+      "disabled": "Parolayla oturum açma kapalı.",
+      "enabled": "Parolayla oturum açma açık."
     }
   }
 }

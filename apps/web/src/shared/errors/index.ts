@@ -1,6 +1,21 @@
-export { ApiError, type ApiErrorInit, type ApiRequestDescription, detailFields } from "./ApiError";
+export {
+  ApiError,
+  type ApiErrorInit,
+  type ApiRequestDescription,
+  type Blocker,
+  detailBlockers,
+  detailChecks,
+  detailFields,
+  type ProviderCheck,
+} from "./ApiError";
 export type { ClientErrorCode, ErrorCode, ErrorDetails, ServerErrorCode } from "./codes";
-export { ErrorAlert, ErrorTechnicalDetails, RequestId, useErrorMessage } from "./ErrorView";
+export {
+  ErrorAlert,
+  ErrorTechnicalDetails,
+  ReportedErrorAlert,
+  RequestId,
+  useErrorMessage,
+} from "./ErrorView";
 export {
   ERROR_PRESENTATION,
   type ErrorMessageKey,
@@ -11,5 +26,8 @@ export {
   isKnownErrorCode,
   type PresentedError,
   presentError,
+  presentErrorCode,
+  type ReportedError,
+  reportedError,
   UNKNOWN_ERROR_PRESENTATION,
 } from "./presentation";

@@ -126,3 +126,32 @@ An e-mail is verified only when the mapped claim is JSON `true` or the string `"
 
 A usable avatar is an absolute `https` URL (for Discord, the `avatar` hash is turned into its CDN URL). The callback never fetches it and never stores it: it enqueues `avatar.fetch_external` with `{userId, identityLinkId, providerId, url}` and the dedup key `avatar.fetch_external:<link id>`, in its own short transaction after the session commits. A failure to enqueue is logged and never fails the login. The handler lands with M18-T05.
 
+## Frontend (M12-T07)
+
+The browser holds no OAuth state. Every flow below starts at an authenticated or public Palmr endpoint and ends at a server-chosen redirect.
+
+* **Login.** `/login` renders the provider buttons from the bootstrap payload in the order the server sent them and never requests the provider list. A click calls `POST /auth/providers/{slug}/authorize` with `{ purpose: "login" }` (plus the validated `next` path as `returnTo`) and navigates the whole tab to the `authorizationUrl` it returns, only when that URL is `http(s)`. Buttons use a bundled icon chosen by `iconKey`, with a generic fallback; provider logos and avatars are never fetched.
+* **Callback landing.** Failures arrive as `/login?error=<CODE>&requestId=<ID>` and `/settings/security?error=<CODE>&requestId=<ID>`. The route reads the pair once, presents the code through the shared error catalogue together with the callback's own request id, and removes both parameters with a replace navigation. Anything that is not a well-formed code and request id is dropped; `error_description` is never read.
+* **Connected accounts.** `/settings/security` lists `GET /identity-links` (provider, linked e-mail, dates; never the external subject). Linking calls `POST /auth/providers/{slug}/link` through the shared recent-auth replay and navigates to the returned URL. Unlinking calls `DELETE /identity-links/{id}` after a destructive confirmation; the server revokes every session of the caller, so success ends the local session and the login page explains why. `IDENTITY_LINK_LAST_LOGIN_PATH`, `PASSWORD_LOGIN_DISABLE_UNSAFE` and `PROVIDER_LINK_NOT_FOUND` are shown by code and leave the session untouched.
+* **SSO recent authentication.** The recent-auth modal offers one button for an account without a local password. The click opens `about:blank` synchronously, then posts `{}` to `/auth/reauthenticate` and loads only the returned `externalReauthUrl` into that popup. The IdP round trip ends at `/auth/reauth-complete`, which posts `{ type: "palmr:external-reauth", status, error?, requestId? }` to `window.opener` for its own origin and closes. The parent accepts a message only from its own origin **and** from the exact popup window with exactly that shape, then re-reads `/auth/me` and replays the blocked mutation once only if `recentAuthUntil` moved past the value it had before the popup opened. The replay thunk lives in memory only; no storage, cookie or URL carries it, and a reload discards it.
+* **Admin providers.** `/admin/providers` manages the control plane: presets from `GET /admin/providers/presets`, custom OIDC and OAuth2, server-side discovery and test, drag or button ordering, enable/disable, auto-provision and e-mail-linking switches, the global external sign-in switch (`authProvidersEnabled`) and the password-login panel. The client secret is write-only: the form never shows or prefills one, an omitted secret keeps the stored one, and clearing requires the explicit `none` token method. A failed provider test patches the cached provider to its failed state before the refetch, so a stale green validation is never shown.
+* **Password sign-in.** The panel renders `canDisable`, `blockers` and `safeAdminLoginPaths` exactly as the server reports them and never recomputes them. A path is labelled tested only when the server says `providerValidated`; the standing structural rule is explained separately. Disabling needs an acknowledged confirmation dialog and sends `{ enabled: false, confirm: true }`.
+
+### Open blocker: the popup seam and `Cross-Origin-Opener-Policy`
+
+The SSO recent-authentication popup is implemented exactly as `FRONTEND_ARCHITECTURE.md` §4.6 specifies and is covered by component and integration tests that simulate the popup. It does **not** work in a real browser against the release container, because every Palmr response carries `Cross-Origin-Opener-Policy: same-origin` (`SECURITY_MODEL.md` §11.4, `ARCHITECTURE.md` §11.4, M05). When a `same-origin` page navigates a popup it opened to a cross-origin document that does not share that policy (the IdP), the browser moves the popup into a new browsing-context group: `window.opener` becomes `null` in the popup and `popup.closed` is `true` from the parent's point of view. The IdP round trip itself succeeds (the server stamps `last_auth_at` and redirects to `/auth/reauth-complete?status=success`), but the completion page has no opener to message and the parent never learns the outcome, so nothing is replayed.
+
+Observed against the release container (Chromium, `e2e_sso_recent_auth_replays_sensitive_mutation`, currently `test.fixme`): popup URL `/auth/reauth-complete?status=success`, popup `window.opener === null`, completion page `data-reporting="false"`, parent shows the "Sign-in window closed" notice, one `POST /auth/providers/{slug}/link` (the 403) and the challenge still open.
+
+Standalone matrix (two local origins, an app origin that serves the completion page and an IdP that redirects back; popup opened with `window.open("about:blank")` then navigated to the IdP):
+
+| App `COOP` (shell / completion route) | Chromium | Firefox | WebKit |
+| --- | --- | --- | --- |
+| `same-origin` / `same-origin` (today) | severed | severed | severed |
+| `same-origin-allow-popups` / `same-origin-allow-popups` | severed | works | severed |
+| `same-origin-allow-popups` / `unsafe-none` | works | works | severed |
+| `same-origin` / `unsafe-none` | severed | severed | severed |
+| `unsafe-none` / `unsafe-none` | works | works | works |
+
+No header configuration that keeps a COOP protection works in all three engines of the critical browser matrix, so the seam needs an owner decision (relax COOP for the SPA, change the completion channel, or change the re-authentication design) recorded in an ADR before it can be completed. The browser must not fall back to persistence, a same-tab redirect with stored state, or a non-`opener` channel without that decision.
+

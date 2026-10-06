@@ -4,9 +4,11 @@ import { type LoaderFunction, Navigate, type Params, type RouteObject } from "re
 import {
   AdminLayout,
   AdminSecurityPage,
+  primeProviders,
   primeSettings,
   primeUser,
   primeUsers,
+  ProvidersPage,
   SmtpPage,
   UserDetailPage,
   UsersPage,
@@ -82,6 +84,11 @@ const adminChildren: RouteObject[] = [
     path: "smtp",
     element: <SmtpPage />,
     loader: primeAdminQueries((client) => primeSettings(client, "smtp")),
+  },
+  {
+    path: "providers",
+    element: <ProvidersPage />,
+    loader: primeAdminQueries((client) => primeProviders(client)),
   },
 ];
 

@@ -33,6 +33,10 @@ test.each([
   "/auth/loginx",
   "/publicity",
   "/auth/email/verify/extra",
+  "/auth/providers/{slug}/link",
+  "/auth/providers/google/link",
+  "/identity-links",
+  "/identity-links/{id}",
 ])("unit_public_request_classifier: %s is not public", (path) => {
   expect(isPublicRequest({ path })).toBe(false);
 });

@@ -16,6 +16,7 @@ import {
 } from "./params";
 
 export const USER_SESSIONS_PAGE_SIZE = 50;
+export const PROVIDERS_PAGE_SIZE = 100;
 
 export function usersQueryOptions(params: UsersListParams) {
   return queryOptions({
@@ -99,4 +100,42 @@ export function settingsQueryOptions<Group extends AdminSettingsGroup>(group: Gr
 
 export function useSettings<Group extends AdminSettingsGroup>(group: Group) {
   return useQuery(settingsQueryOptions(group));
+}
+
+export function providersQueryOptions() {
+  return queryOptions({
+    queryKey: qk.admin.providers(),
+    queryFn: ({ signal }) =>
+      apiFetch("get", "/admin/providers", { query: { limit: PROVIDERS_PAGE_SIZE }, signal }),
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useProviders() {
+  return useQuery(providersQueryOptions());
+}
+
+export function providerPresetsQueryOptions() {
+  return queryOptions({
+    queryKey: qk.admin.providerPresets(),
+    queryFn: ({ signal }) => apiFetch("get", "/admin/providers/presets", { signal }),
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useProviderPresets(enabled: boolean) {
+  return useQuery({ ...providerPresetsQueryOptions(), enabled });
+}
+
+export function passwordLoginQueryOptions() {
+  return queryOptions({
+    queryKey: qk.admin.passwordLogin(),
+    queryFn: ({ signal }) => apiFetch("get", "/admin/auth/password-login", { signal }),
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function usePasswordLogin() {
+  return useQuery(passwordLoginQueryOptions());
 }

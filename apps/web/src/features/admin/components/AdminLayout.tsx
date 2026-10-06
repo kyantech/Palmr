@@ -2,7 +2,7 @@ import { Flex, theme, Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useLocation } from "react-router";
 
-export const ADMIN_SECTIONS = ["users", "security", "smtp"] as const;
+export const ADMIN_SECTIONS = ["users", "security", "smtp", "providers"] as const;
 
 export type AdminSectionKey = (typeof ADMIN_SECTIONS)[number];
 

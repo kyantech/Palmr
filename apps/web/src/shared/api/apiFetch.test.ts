@@ -529,6 +529,40 @@ describe("error classification", () => {
     expect(error.details).toEqual({ kept: 1, fields: ["name"] });
   });
 
+  test("structured check and blocker lists survive, malformed ones are dropped", async () => {
+    stubFetch(() =>
+      json(
+        {
+          error: {
+            code: "PROVIDER_VALIDATION_FAILED",
+            message: "m",
+            requestId: "r",
+            details: {
+              checks: [
+                { name: "jwks", ok: false, detail: "upstream_error" },
+                { name: "discovery", ok: true },
+              ],
+              blockers: [{ code: "NO_VALIDATED_PROVIDER", detail: "fixed text" }],
+              brokenChecks: [{ name: "jwks", ok: "no" }],
+              brokenBlockers: [{ code: 1, detail: "x" }],
+            },
+          },
+        },
+        { status: 422 },
+      ),
+    );
+
+    const error = await rejection(fixtureFetch("get", "/items"));
+
+    expect(error.details).toEqual({
+      checks: [
+        { name: "jwks", ok: false, detail: "upstream_error" },
+        { name: "discovery", ok: true, detail: null },
+      ],
+      blockers: [{ code: "NO_VALIDATED_PROVIDER", detail: "fixed text" }],
+    });
+  });
+
   test("an aborted request is CLIENT_ABORTED", async () => {
     const controller = new AbortController();
     vi.spyOn(globalThis, "fetch").mockImplementation(() => {

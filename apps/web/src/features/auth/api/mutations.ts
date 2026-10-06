@@ -8,7 +8,8 @@ import { apiFetch } from "../../../shared/api/apiFetch";
 import { qk } from "../../../shared/api/query-keys";
 import type { components } from "../../../shared/api/schema";
 import { isApiErrorCode } from "../../../shared/errors";
-import { beginMfaChallenge, clearMfaChallenge, mfaChallengeStore } from "../store";
+import { externalNavigation, providerUrlOrFail } from "../externalNavigation";
+import { beginMfaChallenge, clearMfaChallenge, mfaChallengeStore, setLoginNotice } from "../store";
 
 export type ReauthenticateRequest = components["schemas"]["ReauthenticateRequest"];
 export type LoginRequest = components["schemas"]["LoginRequest"];
@@ -66,6 +67,84 @@ export function useReauthenticate() {
     retry: false,
     gcTime: 0,
     onSuccess: () => refreshMe(queryClient),
+  });
+}
+
+export interface ExternalLoginStart {
+  slug: string;
+  returnTo: string | null;
+}
+
+export function useStartExternalLogin() {
+  return useMutation({
+    mutationKey: ["auth", "providers", "authorize"],
+    mutationFn: async ({ slug, returnTo }: ExternalLoginStart) => {
+      const response = await apiFetch("post", "/auth/providers/{slug}/authorize", {
+        path: { slug },
+        body: { purpose: "login", ...(returnTo === null ? {} : { returnTo }) },
+      });
+      return providerUrlOrFail(response.authorizationUrl, {
+        method: "POST",
+        path: "/auth/providers/{slug}/authorize",
+      });
+    },
+    retry: false,
+    gcTime: 0,
+    onSuccess: (url) => {
+      externalNavigation.assign(url);
+    },
+  });
+}
+
+export function useStartIdentityLink() {
+  return useMutation({
+    mutationKey: ["me", "identity-links", "start"],
+    mutationFn: async ({ slug }: { slug: string }) => {
+      const response = await apiFetch("post", "/auth/providers/{slug}/link", { path: { slug } });
+      return providerUrlOrFail(response.authorizationUrl, {
+        method: "POST",
+        path: "/auth/providers/{slug}/link",
+      });
+    },
+    retry: false,
+    gcTime: 0,
+    onSuccess: (url) => {
+      externalNavigation.assign(url);
+    },
+  });
+}
+
+export function useUnlinkIdentity(onUnlinked: () => Promise<void>) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationKey: ["me", "identity-links", "unlink"],
+    mutationFn: ({ id }: { id: string }) =>
+      apiFetch("delete", "/identity-links/{id}", { path: { id } }),
+    retry: false,
+    onSuccess: async () => {
+      setLoginNotice("identityUnlinked");
+      await onUnlinked();
+    },
+    onError: (error) => {
+      if (!isApiErrorCode(error, "AUTH_RECENT_AUTH_REQUIRED")) {
+        void client.invalidateQueries({ queryKey: qk.me.identityLinks() });
+      }
+    },
+  });
+}
+
+export function useStartExternalReauthentication() {
+  return useMutation({
+    mutationKey: ["auth", "reauthenticate", "external"],
+    mutationFn: async () => {
+      const response = await apiFetch("post", "/auth/reauthenticate", { body: {} });
+      return providerUrlOrFail(response?.externalReauthUrl, {
+        method: "POST",
+        path: "/auth/reauthenticate",
+      });
+    },
+    retry: false,
+    gcTime: 0,
   });
 }
 

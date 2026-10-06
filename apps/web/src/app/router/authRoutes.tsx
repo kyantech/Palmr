@@ -9,6 +9,7 @@ import {
   InvitePage,
   type LoginMode,
   LoginPage,
+  ReauthCompletePage,
   ResetPasswordPage,
   SecondFactorPage,
   VerifyEmailPage,
@@ -31,8 +32,9 @@ import {
   reconcileSignedIn,
 } from "../session/authReconciliation";
 import { reconcileSessionRevoked, useSignOut } from "../session/useSignOut";
-import { keepNext } from "./next";
+import { keepNext, nextOf } from "./next";
 import { PATHS } from "./paths";
+import { useCallbackError } from "./useCallbackError";
 
 interface LoginLocationState {
   authMode?: LoginMode;
@@ -65,6 +67,7 @@ function LoginRoute() {
   const onMfaRequired = useCallback(() => {
     void navigate(keepNext(PATHS.twoFactor, search));
   }, [navigate, search]);
+  const callbackError = useCallbackError();
   useEffect(() => {
     clearMfaChallenge();
   }, []);
@@ -74,9 +77,24 @@ function LoginRoute() {
       appName={bootstrap.appName}
       passwordLoginEnabled={bootstrap.passwordLoginEnabled}
       providers={bootstrap.providers}
+      returnTo={nextOf(search)}
+      callbackError={callbackError}
       onSignedIn={onSignedIn}
       onMfaRequired={onMfaRequired}
       initialMode={loginModeOf(location.state as unknown)}
+    />
+  );
+}
+
+function ReauthCompleteRoute() {
+  const navigate = useNavigate();
+  const { search } = useLocation();
+  return (
+    <ReauthCompletePage
+      search={search}
+      onContinue={() => {
+        void navigate(PATHS.overview, { replace: true });
+      }}
     />
   );
 }
@@ -235,6 +253,7 @@ export const authRoutes: RouteObject[] = [
       {
         element: <RequireAuth />,
         children: [
+          { path: PATHS.reauthComplete, element: <ReauthCompleteRoute /> },
           {
             element: <AuthLayout />,
             children: [

@@ -16,6 +16,7 @@ export const qk = {
     effectiveSettings: () => ["me", "effective-settings"] as const,
     twoFactor: () => ["me", "two-factor"] as const,
     trustedDevices: () => ["me", "trusted-devices"] as const,
+    identityLinks: () => ["me", "identity-links"] as const,
   },
 
   admin: {
@@ -28,6 +29,9 @@ export const qk = {
     invitesAll: () => ["admin", "invites"] as const,
     invites: (params: ListParams) => ["admin", "invites", params] as const,
     settings: (group: AdminSettingsGroup) => ["admin", "settings", group] as const,
+    providers: () => ["admin", "providers"] as const,
+    providerPresets: () => ["admin", "provider-presets"] as const,
+    passwordLogin: () => ["admin", "password-login"] as const,
   },
 
   public: {

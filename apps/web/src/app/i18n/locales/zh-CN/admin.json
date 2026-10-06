@@ -4,7 +4,8 @@
     "label": "管理分区",
     "users": "用户",
     "security": "安全",
-    "smtp": "SMTP"
+    "smtp": "SMTP",
+    "providers": "提供商"
   },
   "common": {
     "cancel": "取消",
@@ -536,6 +537,225 @@
       "incomplete": "测试未完成（测试对象：{{mode}}）。",
       "duration": "用时 {{ms}} 毫秒。",
       "failedAt": "停在：{{stage}}（测试对象：{{mode}}）。"
+    }
+  },
+  "providers": {
+    "title": "身份提供商",
+    "description": "允许用户通过 OpenID Connect 或 OAuth2 提供商登录。客户端密钥仅可写入，不会再次显示。",
+    "add": "添加提供商",
+    "global": {
+      "label": "允许外部登录",
+      "hint": "关闭后，登录页面不会提供任何提供商。",
+      "offNotice": "外部登录已关闭。提供商配置会保留，但在重新开启之前无人可以使用。"
+    },
+    "empty": {
+      "title": "还没有提供商",
+      "description": "添加预设或自定义的 OpenID Connect 或 OAuth2 提供商，以启用单点登录。"
+    },
+    "list": {
+      "title": "提供商",
+      "label": "身份提供商"
+    },
+    "row": {
+      "position": "第 {{position}} 位，共 {{total}} 位",
+      "protocol": {
+        "oidc": "OpenID Connect",
+        "oauth2": "OAuth2"
+      },
+      "enabled": "已启用",
+      "disabled": "已停用",
+      "validation": {
+        "validated": "测试于 {{date}}",
+        "failed": "上次测试失败",
+        "untested": "未测试"
+      },
+      "secret": {
+        "configured": "已配置客户端密钥",
+        "missing": "没有客户端密钥"
+      },
+      "autoProvision": {
+        "on": "自动创建已开启",
+        "off": "自动创建已关闭"
+      },
+      "emailLinking": {
+        "on": "邮箱关联已开启",
+        "off": "邮箱关联已关闭"
+      },
+      "linkedUsers": "已关联账户：{{total}}",
+      "drag": "拖动以重新排序",
+      "moveUp": "将 {{name}} 上移",
+      "moveDown": "将 {{name}} 下移",
+      "toggle": "启用 {{name}}",
+      "test": "测试",
+      "testLabel": "测试 {{name}}",
+      "edit": "编辑",
+      "editLabel": "编辑 {{name}}",
+      "delete": "删除",
+      "deleteLabel": "删除 {{name}}"
+    },
+    "redirectUri": {
+      "label": "重定向 URI",
+      "copy": "复制",
+      "copied": "已复制"
+    },
+    "checks": {
+      "title": "{{name}} 的上次测试结果",
+      "passed": "通过",
+      "failed": "失败",
+      "names": {
+        "discovery": "发现文档",
+        "jwks": "签名密钥",
+        "token_endpoint": "令牌端点",
+        "authorization_endpoint": "授权端点",
+        "userinfo_endpoint": "用户信息端点",
+        "redirect_uri": "重定向 URI"
+      }
+    },
+    "reorder": {
+      "moved": "已将 {{name}} 移至第 {{position}} 位，共 {{total}} 位。"
+    },
+    "delete": {
+      "title": "删除 {{name}}？",
+      "description": "该提供商将被移除，无法再用于登录。此操作无法撤销。",
+      "linked": "仍有 {{total}} 个已关联账户在使用此提供商。请先移除这些关联；只要它们存在，就无法删除该提供商。",
+      "confirm": "删除提供商",
+      "done": "提供商已删除。"
+    },
+    "editor": {
+      "createTitle": "添加提供商",
+      "editTitle": "编辑 {{name}}"
+    },
+    "discovery": {
+      "run": "发现设置",
+      "title": "已发现的设置",
+      "apply": "使用这些值",
+      "issuer": "颁发者",
+      "endpoints": {
+        "authorization": "授权端点",
+        "token": "令牌端点",
+        "userinfo": "用户信息端点",
+        "jwks": "签名密钥 (JWKS)"
+      },
+      "scopes": "支持的范围",
+      "authMethods": "令牌认证方式",
+      "none": "未提供"
+    },
+    "form": {
+      "preset": "提供商类型",
+      "presetHint": "预设会填入常用设置。保存前你可以调整所有内容。",
+      "presetPlaceholder": "选择提供商类型",
+      "presets": {
+        "custom": {
+          "oidc": "自定义 OpenID Connect",
+          "oauth2": "自定义 OAuth2"
+        }
+      },
+      "displayName": "显示名称",
+      "slug": "Slug",
+      "slugHint": "2–40 个小写字母、数字、连字符或下划线。它会成为重定向 URI 的一部分，之后无法更改。",
+      "issuerUrl": "颁发者 URL",
+      "issuerHint": "Palmr 会从此地址读取提供商的设置。",
+      "clientId": "客户端 ID",
+      "clientSecret": "客户端密钥",
+      "secretWriteOnly": "加密存储，不会再次显示。",
+      "secretKeepHint": "留空以保留已存储的密钥。输入新值即可替换。",
+      "secretPlaceholderConfigured": "已配置。输入新密钥即可替换",
+      "clearSecret": "移除已存储的客户端密钥",
+      "tokenAuthMethod": "令牌端点认证",
+      "tokenMethods": {
+        "client_secret_basic": "客户端密钥 (HTTP Basic)",
+        "client_secret_post": "客户端密钥 (请求正文)",
+        "none": "无 (公共客户端)"
+      },
+      "scopes": "范围",
+      "scopesHint": "输入一个范围并按 Enter。OpenID Connect 提供商必须请求 openid。",
+      "endpoints": {
+        "title": "端点",
+        "advanced": "高级：覆盖端点",
+        "authorization": "授权端点",
+        "token": "令牌端点",
+        "userinfo": "用户信息端点",
+        "jwks": "签名密钥 (JWKS) 端点"
+      },
+      "claims": {
+        "title": "高级：声明映射",
+        "subject": "主体声明",
+        "email": "邮箱声明",
+        "emailVerified": "邮箱已验证声明",
+        "username": "用户名声明",
+        "name": "名称声明",
+        "picture": "头像声明"
+      },
+      "flags": {
+        "autoProvision": {
+          "label": "自动创建账户",
+          "hint": "符合条件的新用户在首次登录时会获得账户。这些账户始终是普通用户，绝不会是管理员。"
+        },
+        "allowEmailLinking": {
+          "label": "通过已验证邮箱关联",
+          "hint": "仅当提供商声明邮箱已验证时，才会把登录关联到使用相同邮箱的现有账户。"
+        },
+        "enabled": {
+          "label": "立即启用",
+          "hint": "已启用的提供商会显示在登录页面上。"
+        }
+      },
+      "consequences": {
+        "title": "这些设置的作用",
+        "autoProvision": "自动创建账户仅适用于尚无账户的人。",
+        "emailLinking": "邮箱关联绝不适用于未验证的邮箱地址。",
+        "manualLinking": "无论这些设置如何，用户始终可以在安全设置中手动连接此提供商。"
+      },
+      "redirectAfterCreate": "提供商创建后会显示重定向 URI。",
+      "create": "添加提供商",
+      "save": "保存更改",
+      "validation": {
+        "url": "请输入有效的 https:// URL。",
+        "slug": "请使用 2–40 个小写字母、数字、连字符或下划线。",
+        "openid": "OpenID Connect 提供商必须包含 openid 范围。",
+        "slugTaken": "此 slug 已被其他提供商使用。",
+        "rejected": "服务器拒绝了此值。"
+      }
+    }
+  },
+  "passwordLogin": {
+    "title": "密码登录",
+    "description": "关闭本地密码登录，可让此实例仅使用单点登录。",
+    "state": "本地密码登录",
+    "on": "开启",
+    "off": "关闭",
+    "explainOn": "有密码的用户可以用密码登录。只有当管理员仍可通过已测试的提供商登录时，才能关闭。",
+    "explainOff": "只能使用外部提供商登录。如果所有提供商都无法使用，运维人员可以通过命令行恢复访问。",
+    "blockers": {
+      "title": "暂时无法关闭密码登录"
+    },
+    "paths": {
+      "title": "管理员登录途径",
+      "description": "已关联到已启用提供商的活跃管理员。关闭密码登录还需要一个在过去 24 小时内测试成功的提供商。关闭后，会拒绝将移除最后一条此类途径的更改。",
+      "empty": "没有活跃管理员关联到已启用的提供商。",
+      "entry": "{{username}}（通过 {{provider}}）",
+      "validated": "过去 24 小时内已测试",
+      "notValidated": "近期未测试"
+    },
+    "disable": {
+      "action": "关闭密码登录…",
+      "title": "关闭密码登录？",
+      "confirm": "关闭密码登录",
+      "intro": "继续之前，请先确认以下影响。",
+      "points": {
+        "unavailable": "本地密码登录将对所有人不可用，包括你自己。",
+        "admission": "仅当已启用的提供商在过去 24 小时内测试成功，并且关联到包括你在内的活跃管理员时，Palmr 才允许这样做。",
+        "standing": "之后，会拒绝将移除管理员通过提供商登录的最后一条途径的更改。",
+        "recovery": "如果你被锁在门外，运维人员可以通过命令行恢复访问。"
+      },
+      "understood": "我明白密码登录将停止工作。"
+    },
+    "enable": {
+      "action": "重新开启密码登录"
+    },
+    "notice": {
+      "disabled": "密码登录已关闭。",
+      "enabled": "密码登录已开启。"
     }
   }
 }

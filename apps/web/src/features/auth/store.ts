@@ -111,7 +111,8 @@ export function useMfaChallenge(): MfaChallenge | null {
   return mfaChallengeStore((state) => state.challenge);
 }
 
-export type LoginNotice = "passwordReset" | "twoFactorDisabled" | "challengeExpired";
+export type LoginNotice =
+  "passwordReset" | "twoFactorDisabled" | "challengeExpired" | "identityUnlinked";
 
 interface LoginNoticeState {
   notice: LoginNotice | null;

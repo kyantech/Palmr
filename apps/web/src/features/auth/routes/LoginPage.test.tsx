@@ -218,7 +218,7 @@ describe("component_login_providers_from_bootstrap", () => {
     expect(actions.map((button) => button.textContent)).toEqual(["Forgot password?", "Sign in"]);
   });
 
-  test("renders exactly the bootstrap providers in sortOrder, after the password form", async () => {
+  test("renders exactly the bootstrap providers in the server-provided order, after the password form", async () => {
     await renderLogin({ providers });
 
     const area = screen.getByTestId("login-providers");
@@ -226,18 +226,24 @@ describe("component_login_providers_from_bootstrap", () => {
       within(area)
         .getAllByRole("button")
         .map((button) => button.textContent),
-    ).toEqual(["Continue with GitHub", "Continue with Zeta SSO"]);
+    ).toEqual(["Continue with Zeta SSO", "Continue with GitHub"]);
     expect(screen.getByText("or")).toBeDefined();
     expect(screen.queryByRole("link")).toBeNull();
   });
 
-  test("provider selection is a seam for the provider flow and invokes only the supplied handler", async () => {
-    const onProviderSelect = vi.fn();
-    const { user } = await renderLogin({ providers, onProviderSelect });
+  test("each provider shows a bundled icon chosen by iconKey and falls back for unknown keys", async () => {
+    await renderLogin({ providers });
 
-    await user.click(screen.getByRole("button", { name: "Continue with GitHub" }));
-
-    expect(onProviderSelect).toHaveBeenCalledWith("github");
+    const area = screen.getByTestId("login-providers");
+    const github = within(area).getByRole("button", { name: "Continue with GitHub" });
+    const unknown = within(area).getByRole("button", { name: "Continue with Zeta SSO" });
+    expect(github.getAttribute("data-icon-key")).toBe("github");
+    expect(unknown.getAttribute("data-icon-key")).toBe("oidc");
+    for (const button of [github, unknown]) {
+      expect(button.querySelectorAll("svg[aria-hidden='true']")).toHaveLength(1);
+      expect(button.querySelector("img, [style*='url(']")).toBeNull();
+    }
+    expect(github.innerHTML).not.toBe(unknown.innerHTML);
   });
 
   test("with password login disabled only the providers remain", async () => {

@@ -1,5 +1,5 @@
 import { delay, http, HttpResponse } from "msw";
-import type { Me } from "../app/bootstrap/queries";
+import type { Bootstrap, Me } from "../app/bootstrap/queries";
 import type { components } from "../shared/api/schema";
 import { BOOTSTRAP_URL, bootstrapFixture, errorEnvelope, ME_URL, meFixture } from "./bootFixtures";
 import { server } from "./server";
@@ -55,6 +55,7 @@ export function defaultSessions(): SessionItem[] {
 
 export interface SettingsServerOptions {
   me?: Me;
+  bootstrap?: Bootstrap;
   sessions?: SessionItem[];
   recentAuth?: boolean;
   preferencesFailure?: () => Response;
@@ -106,6 +107,7 @@ function recentAuthRequired() {
 
 export function installSettingsServer({
   me = meFixture(),
+  bootstrap = bootstrapFixture(),
   sessions = defaultSessions(),
   recentAuth = false,
   preferencesFailure,
@@ -135,12 +137,16 @@ export function installSettingsServer({
   server.use(
     http.get(BOOTSTRAP_URL, () => {
       state.calls.bootstrap += 1;
-      return HttpResponse.json(bootstrapFixture());
+      return HttpResponse.json(bootstrap);
     }),
     http.get(ME_URL, () => {
       state.calls.me += 1;
       return signedIn() ?? HttpResponse.json(state.me);
     }),
+    http.get(
+      `${API}/identity-links`,
+      () => signedIn() ?? HttpResponse.json({ items: [], nextCursor: null, totalCount: 0 }),
+    ),
     http.get(`${API}/profile`, () => signedIn() ?? HttpResponse.json(state.me?.user)),
     http.patch(`${API}/profile`, async ({ request }) => {
       const body = (await request.json()) as { firstName: string; lastName: string };

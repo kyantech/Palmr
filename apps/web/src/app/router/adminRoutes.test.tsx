@@ -40,6 +40,7 @@ const ADMIN_PATHS = [
   `/admin/users/${GRACE_ID}`,
   "/admin/security",
   "/admin/smtp",
+  "/admin/providers",
 ];
 
 describe("RequireAdmin on every Admin route", () => {
@@ -107,6 +108,7 @@ describe("AdminLayout", () => {
       ["Users", "/admin/users"],
       ["Security", "/admin/security"],
       ["SMTP", "/admin/smtp"],
+      ["Providers", "/admin/providers"],
     ]);
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
   });
@@ -145,17 +147,16 @@ describe("AdminLayout", () => {
     expect(link.getAttribute("aria-current")).toBe("page");
   });
 
-  test.each([
-    "/admin/storage",
-    "/admin/branding",
-    "/admin/audit",
-    "/admin/providers",
-    "/admin/invites",
-  ])("%s is not registered yet", async (path) => {
-    renderAdmin(path);
+  test.each(["/admin/storage", "/admin/branding", "/admin/audit", "/admin/invites"])(
+    "%s is not registered yet",
+    async (path) => {
+      renderAdmin(path);
 
-    expect(await screen.findByRole("heading", { level: 1, name: "Page not found" })).toBeDefined();
-  });
+      expect(
+        await screen.findByRole("heading", { level: 1, name: "Page not found" }),
+      ).toBeDefined();
+    },
+  );
 });
 
 describe("route loaders", () => {

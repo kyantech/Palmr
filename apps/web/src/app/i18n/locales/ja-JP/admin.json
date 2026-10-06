@@ -4,7 +4,8 @@
     "label": "管理セクション",
     "users": "ユーザー",
     "security": "セキュリティ",
-    "smtp": "SMTP"
+    "smtp": "SMTP",
+    "providers": "プロバイダー"
   },
   "common": {
     "cancel": "キャンセル",
@@ -536,6 +537,225 @@
       "incomplete": "テストは完了しませんでした（テスト対象: {{mode}}）。",
       "duration": "{{ms}} ミリ秒で完了しました。",
       "failedAt": "次の段階で停止しました: {{stage}}（テスト対象: {{mode}}）。"
+    }
+  },
+  "providers": {
+    "title": "IDプロバイダー",
+    "description": "OpenID Connect または OAuth2 プロバイダーでサインインできるようにします。クライアントシークレットは書き込み専用で、再表示されることはありません。",
+    "add": "プロバイダーを追加",
+    "global": {
+      "label": "外部サインインを許可",
+      "hint": "オフにすると、サインインページにプロバイダーが表示されません。",
+      "offNotice": "外部サインインはオフです。プロバイダーの設定は保持されますが、オンに戻すまで誰も使用できません。"
+    },
+    "empty": {
+      "title": "プロバイダーはまだありません",
+      "description": "シングルサインオンを有効にするには、プリセットまたはカスタムの OpenID Connect / OAuth2 プロバイダーを追加してください。"
+    },
+    "list": {
+      "title": "プロバイダー",
+      "label": "IDプロバイダー"
+    },
+    "row": {
+      "position": "{{total}} 件中 {{position}} 番目",
+      "protocol": {
+        "oidc": "OpenID Connect",
+        "oauth2": "OAuth2"
+      },
+      "enabled": "有効",
+      "disabled": "無効",
+      "validation": {
+        "validated": "{{date}} にテスト済み",
+        "failed": "前回のテストは失敗",
+        "untested": "未テスト"
+      },
+      "secret": {
+        "configured": "クライアントシークレット設定済み",
+        "missing": "クライアントシークレットなし"
+      },
+      "autoProvision": {
+        "on": "自動作成オン",
+        "off": "自動作成オフ"
+      },
+      "emailLinking": {
+        "on": "メール連携オン",
+        "off": "メール連携オフ"
+      },
+      "linkedUsers": "連携アカウント数: {{total}}",
+      "drag": "ドラッグして並べ替え",
+      "moveUp": "{{name}} を上へ移動",
+      "moveDown": "{{name}} を下へ移動",
+      "toggle": "{{name}} を有効にする",
+      "test": "テスト",
+      "testLabel": "{{name}} をテスト",
+      "edit": "編集",
+      "editLabel": "{{name}} を編集",
+      "delete": "削除",
+      "deleteLabel": "{{name}} を削除"
+    },
+    "redirectUri": {
+      "label": "リダイレクト URI",
+      "copy": "コピー",
+      "copied": "コピーしました"
+    },
+    "checks": {
+      "title": "{{name}} の前回のテスト結果",
+      "passed": "成功",
+      "failed": "失敗",
+      "names": {
+        "discovery": "ディスカバリードキュメント",
+        "jwks": "署名キー",
+        "token_endpoint": "トークンエンドポイント",
+        "authorization_endpoint": "認可エンドポイント",
+        "userinfo_endpoint": "ユーザー情報エンドポイント",
+        "redirect_uri": "リダイレクト URI"
+      }
+    },
+    "reorder": {
+      "moved": "{{name}} を {{total}} 件中 {{position}} 番目に移動しました。"
+    },
+    "delete": {
+      "title": "{{name}} を削除しますか？",
+      "description": "プロバイダーが削除され、サインインに使用できなくなります。この操作は元に戻せません。",
+      "linked": "このプロバイダーを使用している連携アカウントが {{total}} 件あります。先にその連携を解除してください。連携が残っている間は、プロバイダーを削除できません。",
+      "confirm": "プロバイダーを削除",
+      "done": "プロバイダーを削除しました。"
+    },
+    "editor": {
+      "createTitle": "プロバイダーを追加",
+      "editTitle": "{{name}} を編集"
+    },
+    "discovery": {
+      "run": "設定を検出",
+      "title": "検出された設定",
+      "apply": "この値を使用",
+      "issuer": "発行者",
+      "endpoints": {
+        "authorization": "認可エンドポイント",
+        "token": "トークンエンドポイント",
+        "userinfo": "ユーザー情報エンドポイント",
+        "jwks": "署名キー (JWKS)"
+      },
+      "scopes": "サポートされているスコープ",
+      "authMethods": "トークン認証方式",
+      "none": "提供なし"
+    },
+    "form": {
+      "preset": "プロバイダーの種類",
+      "presetHint": "プリセットは一般的な設定を自動入力します。保存する前にすべて調整できます。",
+      "presetPlaceholder": "プロバイダーの種類を選択",
+      "presets": {
+        "custom": {
+          "oidc": "カスタム OpenID Connect",
+          "oauth2": "カスタム OAuth2"
+        }
+      },
+      "displayName": "表示名",
+      "slug": "スラッグ",
+      "slugHint": "小文字、数字、ハイフン、アンダースコアで 2～40 文字。リダイレクト URI の一部になり、後から変更できません。",
+      "issuerUrl": "発行者 URL",
+      "issuerHint": "Palmr はこのアドレスからプロバイダーの設定を読み取ります。",
+      "clientId": "クライアント ID",
+      "clientSecret": "クライアントシークレット",
+      "secretWriteOnly": "暗号化して保存され、再表示されることはありません。",
+      "secretKeepHint": "保存済みのシークレットを維持するには空欄のままにします。置き換えるには新しい値を入力してください。",
+      "secretPlaceholderConfigured": "設定済み。置き換えるには新しいシークレットを入力してください",
+      "clearSecret": "保存済みのクライアントシークレットを削除",
+      "tokenAuthMethod": "トークンエンドポイントの認証",
+      "tokenMethods": {
+        "client_secret_basic": "クライアントシークレット (HTTP Basic)",
+        "client_secret_post": "クライアントシークレット (リクエスト本文)",
+        "none": "なし (パブリッククライアント)"
+      },
+      "scopes": "スコープ",
+      "scopesHint": "スコープを入力して Enter を押してください。OpenID Connect プロバイダーは openid を要求する必要があります。",
+      "endpoints": {
+        "title": "エンドポイント",
+        "advanced": "詳細設定: エンドポイントの上書き",
+        "authorization": "認可エンドポイント",
+        "token": "トークンエンドポイント",
+        "userinfo": "ユーザー情報エンドポイント",
+        "jwks": "署名キー (JWKS) エンドポイント"
+      },
+      "claims": {
+        "title": "詳細設定: クレームのマッピング",
+        "subject": "サブジェクトのクレーム",
+        "email": "メールのクレーム",
+        "emailVerified": "メール確認済みのクレーム",
+        "username": "ユーザー名のクレーム",
+        "name": "名前のクレーム",
+        "picture": "画像のクレーム"
+      },
+      "flags": {
+        "autoProvision": {
+          "label": "アカウントを自動作成",
+          "hint": "対象となる新しいユーザーは、初回サインイン時にアカウントが作成されます。これらのアカウントは常に一般ユーザーで、管理者になることはありません。"
+        },
+        "allowEmailLinking": {
+          "label": "確認済みメールで連携",
+          "hint": "プロバイダーがメールを確認済みと示した場合にのみ、サインインが同じメールの既存アカウントに連携されます。"
+        },
+        "enabled": {
+          "label": "今すぐ有効にする",
+          "hint": "有効なプロバイダーはサインインページに表示されます。"
+        }
+      },
+      "consequences": {
+        "title": "これらの設定の動作",
+        "autoProvision": "アカウントの自動作成は、まだアカウントを持っていないユーザーにのみ適用されます。",
+        "emailLinking": "メール連携は、未確認のメールアドレスには適用されません。",
+        "manualLinking": "これらの設定にかかわらず、ユーザーはセキュリティ設定からいつでもこのプロバイダーを手動で連携できます。"
+      },
+      "redirectAfterCreate": "リダイレクト URI は、プロバイダーの作成後に表示されます。",
+      "create": "プロバイダーを追加",
+      "save": "変更を保存",
+      "validation": {
+        "url": "有効な https:// URL を入力してください。",
+        "slug": "小文字、数字、ハイフン、アンダースコアで 2～40 文字にしてください。",
+        "openid": "OpenID Connect プロバイダーには openid スコープが必要です。",
+        "slugTaken": "このスラッグは別のプロバイダーで既に使用されています。",
+        "rejected": "サーバーがこの値を拒否しました。"
+      }
+    }
+  },
+  "passwordLogin": {
+    "title": "パスワードサインイン",
+    "description": "ローカルのパスワードサインインをオフにすると、このインスタンスはシングルサインオン専用になります。",
+    "state": "ローカルのパスワードサインイン",
+    "on": "オン",
+    "off": "オフ",
+    "explainOn": "パスワードを持つユーザーはそれでサインインできます。オフにできるのは、管理者がテスト済みのプロバイダー経由で引き続きサインインできる場合のみです。",
+    "explainOff": "サインインには外部プロバイダーのみ使用できます。すべてのプロバイダーが使用できなくなった場合は、オペレーターがコマンドラインからアクセスを回復できます。",
+    "blockers": {
+      "title": "パスワードサインインはまだオフにできません"
+    },
+    "paths": {
+      "title": "管理者のサインイン経路",
+      "description": "有効なプロバイダーに連携している有効な管理者です。パスワードサインインをオフにするには、過去 24 時間以内にテストに成功したプロバイダーも必要です。オフにした後は、これらの経路の最後の 1 つを失う変更は拒否されます。",
+      "empty": "有効なプロバイダーに連携している有効な管理者はいません。",
+      "entry": "{{username}} ({{provider}} 経由)",
+      "validated": "過去 24 時間以内にテスト済み",
+      "notValidated": "最近テストされていません"
+    },
+    "disable": {
+      "action": "パスワードサインインをオフにする…",
+      "title": "パスワードサインインをオフにしますか？",
+      "confirm": "パスワードサインインをオフにする",
+      "intro": "続行する前に、次の影響を確認してください。",
+      "points": {
+        "unavailable": "ローカルのパスワードサインインは、あなたを含むすべてのユーザーが使えなくなります。",
+        "admission": "Palmr がこれを許可するのは、有効なプロバイダーが過去 24 時間以内にテストに成功し、あなたを含む有効な管理者に連携されている場合のみです。",
+        "standing": "その後は、プロバイダー経由の管理者サインイン経路の最後の 1 つを削除する変更は拒否されます。",
+        "recovery": "ロックアウトされた場合は、オペレーターがコマンドラインからアクセスを回復できます。"
+      },
+      "understood": "パスワードサインインが使えなくなることを理解しました。"
+    },
+    "enable": {
+      "action": "パスワードサインインを再びオンにする"
+    },
+    "notice": {
+      "disabled": "パスワードサインインはオフです。",
+      "enabled": "パスワードサインインはオンです。"
     }
   }
 }

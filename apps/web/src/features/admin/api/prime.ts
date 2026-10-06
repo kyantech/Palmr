@@ -3,6 +3,8 @@ import type { AdminSettingsGroup } from "../../../shared/api/query-keys";
 import { parseInvitesParams, parseUsersParams, parseView } from "./params";
 import {
   invitesQueryOptions,
+  passwordLoginQueryOptions,
+  providersQueryOptions,
   settingsQueryOptions,
   userQueryOptions,
   userSessionsQueryOptions,
@@ -33,4 +35,12 @@ export async function primeUser(client: QueryClient, userId: string): Promise<vo
 
 export function primeSettings(client: QueryClient, group: AdminSettingsGroup): Promise<void> {
   return settle(client.query(settingsQueryOptions(group)));
+}
+
+export async function primeProviders(client: QueryClient): Promise<void> {
+  await Promise.all([
+    settle(client.query(providersQueryOptions())),
+    settle(client.query(passwordLoginQueryOptions())),
+    settle(client.query(settingsQueryOptions("security"))),
+  ]);
 }

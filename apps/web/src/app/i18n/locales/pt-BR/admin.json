@@ -4,7 +4,8 @@
     "label": "Seções de administração",
     "users": "Usuários",
     "security": "Segurança",
-    "smtp": "SMTP"
+    "smtp": "SMTP",
+    "providers": "Provedores"
   },
   "common": {
     "cancel": "Cancelar",
@@ -536,6 +537,225 @@
       "incomplete": "O teste não foi concluído (teste com {{mode}}).",
       "duration": "Concluído em {{ms}} ms.",
       "failedAt": "Parou em: {{stage}} (teste com {{mode}})."
+    }
+  },
+  "providers": {
+    "title": "Provedores de identidade",
+    "description": "Permita que as pessoas entrem com provedores OpenID Connect ou OAuth2. Os segredos do cliente são somente de escrita e nunca são exibidos novamente.",
+    "add": "Adicionar provedor",
+    "global": {
+      "label": "Permitir login externo",
+      "hint": "Quando desativado, nenhum provedor é oferecido na página de login.",
+      "offNotice": "O login externo está desativado. Os provedores continuam configurados, mas ninguém pode usá-los até que seja reativado."
+    },
+    "empty": {
+      "title": "Nenhum provedor ainda",
+      "description": "Adicione um modelo ou um provedor OpenID Connect ou OAuth2 personalizado para ativar o login único."
+    },
+    "list": {
+      "title": "Provedores",
+      "label": "Provedores de identidade"
+    },
+    "row": {
+      "position": "Posição {{position}} de {{total}}",
+      "protocol": {
+        "oidc": "OpenID Connect",
+        "oauth2": "OAuth2"
+      },
+      "enabled": "Ativado",
+      "disabled": "Desativado",
+      "validation": {
+        "validated": "Testado em {{date}}",
+        "failed": "O último teste falhou",
+        "untested": "Não testado"
+      },
+      "secret": {
+        "configured": "Segredo do cliente configurado",
+        "missing": "Sem segredo do cliente"
+      },
+      "autoProvision": {
+        "on": "Criação automática ativada",
+        "off": "Criação automática desativada"
+      },
+      "emailLinking": {
+        "on": "Vínculo por e-mail ativado",
+        "off": "Vínculo por e-mail desativado"
+      },
+      "linkedUsers": "Contas vinculadas: {{total}}",
+      "drag": "Arraste para reordenar",
+      "moveUp": "Mover {{name}} para cima",
+      "moveDown": "Mover {{name}} para baixo",
+      "toggle": "Ativar {{name}}",
+      "test": "Testar",
+      "testLabel": "Testar {{name}}",
+      "edit": "Editar",
+      "editLabel": "Editar {{name}}",
+      "delete": "Excluir",
+      "deleteLabel": "Excluir {{name}}"
+    },
+    "redirectUri": {
+      "label": "URI de redirecionamento",
+      "copy": "Copiar",
+      "copied": "Copiado"
+    },
+    "checks": {
+      "title": "Resultados do último teste de {{name}}",
+      "passed": "Aprovado",
+      "failed": "Reprovado",
+      "names": {
+        "discovery": "Documento de descoberta",
+        "jwks": "Chaves de assinatura",
+        "token_endpoint": "Endpoint de token",
+        "authorization_endpoint": "Endpoint de autorização",
+        "userinfo_endpoint": "Endpoint de informações do usuário",
+        "redirect_uri": "URI de redirecionamento"
+      }
+    },
+    "reorder": {
+      "moved": "{{name}} movido para a posição {{position}} de {{total}}."
+    },
+    "delete": {
+      "title": "Excluir {{name}}?",
+      "description": "O provedor é removido e não pode mais ser usado para entrar. Isso não pode ser desfeito.",
+      "linked": "{{total}} contas vinculadas ainda usam este provedor. Remova esses vínculos primeiro; o provedor não pode ser excluído enquanto eles existirem.",
+      "confirm": "Excluir provedor",
+      "done": "Provedor excluído."
+    },
+    "editor": {
+      "createTitle": "Adicionar provedor",
+      "editTitle": "Editar {{name}}"
+    },
+    "discovery": {
+      "run": "Descobrir configurações",
+      "title": "Configurações descobertas",
+      "apply": "Usar estes valores",
+      "issuer": "Emissor",
+      "endpoints": {
+        "authorization": "Endpoint de autorização",
+        "token": "Endpoint de token",
+        "userinfo": "Endpoint de informações do usuário",
+        "jwks": "Chaves de assinatura (JWKS)"
+      },
+      "scopes": "Escopos compatíveis",
+      "authMethods": "Métodos de autenticação do token",
+      "none": "Não informado"
+    },
+    "form": {
+      "preset": "Tipo de provedor",
+      "presetHint": "Os modelos preenchem as configurações usuais. Você pode ajustar tudo antes de salvar.",
+      "presetPlaceholder": "Escolha um tipo de provedor",
+      "presets": {
+        "custom": {
+          "oidc": "OpenID Connect personalizado",
+          "oauth2": "OAuth2 personalizado"
+        }
+      },
+      "displayName": "Nome de exibição",
+      "slug": "Slug",
+      "slugHint": "2 a 40 letras minúsculas, dígitos, hifens ou sublinhados. Ele faz parte do URI de redirecionamento e não pode ser alterado depois.",
+      "issuerUrl": "URL do emissor",
+      "issuerHint": "O Palmr lê as configurações do provedor a partir deste endereço.",
+      "clientId": "ID do cliente",
+      "clientSecret": "Segredo do cliente",
+      "secretWriteOnly": "Armazenado criptografado e nunca exibido novamente.",
+      "secretKeepHint": "Deixe em branco para manter o segredo armazenado. Digite um novo valor para substituí-lo.",
+      "secretPlaceholderConfigured": "Configurado. Digite um novo segredo para substituí-lo",
+      "clearSecret": "Remover o segredo do cliente armazenado",
+      "tokenAuthMethod": "Autenticação no endpoint de token",
+      "tokenMethods": {
+        "client_secret_basic": "Segredo do cliente (HTTP Basic)",
+        "client_secret_post": "Segredo do cliente (corpo da requisição)",
+        "none": "Nenhuma (cliente público)"
+      },
+      "scopes": "Escopos",
+      "scopesHint": "Digite um escopo e pressione Enter. Provedores OpenID Connect precisam solicitar openid.",
+      "endpoints": {
+        "title": "Endpoints",
+        "advanced": "Avançado: substituição de endpoints",
+        "authorization": "Endpoint de autorização",
+        "token": "Endpoint de token",
+        "userinfo": "Endpoint de informações do usuário",
+        "jwks": "Endpoint das chaves de assinatura (JWKS)"
+      },
+      "claims": {
+        "title": "Avançado: mapeamento de claims",
+        "subject": "Claim do identificador",
+        "email": "Claim do e-mail",
+        "emailVerified": "Claim de e-mail verificado",
+        "username": "Claim do nome de usuário",
+        "name": "Claim do nome",
+        "picture": "Claim da imagem"
+      },
+      "flags": {
+        "autoProvision": {
+          "label": "Criar contas automaticamente",
+          "hint": "Novas pessoas elegíveis recebem uma conta no primeiro login. Essas contas são sempre de usuário comum, nunca de administrador."
+        },
+        "allowEmailLinking": {
+          "label": "Vincular por e-mail verificado",
+          "hint": "Um login é vinculado à conta existente com o mesmo e-mail somente quando o provedor declara que o e-mail foi verificado."
+        },
+        "enabled": {
+          "label": "Ativar agora",
+          "hint": "Provedores ativados aparecem na página de login."
+        }
+      },
+      "consequences": {
+        "title": "O que estas configurações fazem",
+        "autoProvision": "A criação automática de contas só vale para pessoas que ainda não têm conta.",
+        "emailLinking": "O vínculo por e-mail nunca se aplica a endereços de e-mail não verificados.",
+        "manualLinking": "As pessoas sempre podem conectar este provedor manualmente nas configurações de segurança, independentemente destas opções."
+      },
+      "redirectAfterCreate": "O URI de redirecionamento é exibido depois que o provedor é criado.",
+      "create": "Adicionar provedor",
+      "save": "Salvar alterações",
+      "validation": {
+        "url": "Informe uma URL https:// válida.",
+        "slug": "Use de 2 a 40 letras minúsculas, dígitos, hifens ou sublinhados.",
+        "openid": "Provedores OpenID Connect precisam incluir o escopo openid.",
+        "slugTaken": "Este slug já é usado por outro provedor.",
+        "rejected": "O servidor rejeitou este valor."
+      }
+    }
+  },
+  "passwordLogin": {
+    "title": "Login com senha",
+    "description": "Desative o login local com senha para tornar esta instância somente de login único.",
+    "state": "Login local com senha",
+    "on": "Ativado",
+    "off": "Desativado",
+    "explainOn": "Quem tem senha pode entrar com ela. Só é possível desativá-lo quando um administrador ainda consegue entrar por um provedor testado.",
+    "explainOff": "Somente provedores externos podem ser usados para entrar. Se todos os provedores ficarem inutilizáveis, um operador pode recuperar o acesso pela linha de comando.",
+    "blockers": {
+      "title": "Ainda não é possível desativar o login com senha"
+    },
+    "paths": {
+      "title": "Caminhos de login de administradores",
+      "description": "Administradores ativos vinculados a um provedor ativado. Desativar o login com senha também exige um provedor testado com sucesso nas últimas 24 horas. Depois de desativado, alterações que removeriam o último desses caminhos são recusadas.",
+      "empty": "Nenhum administrador ativo está vinculado a um provedor ativado.",
+      "entry": "{{username}} via {{provider}}",
+      "validated": "Testado nas últimas 24 horas",
+      "notValidated": "Não testado recentemente"
+    },
+    "disable": {
+      "action": "Desativar o login com senha…",
+      "title": "Desativar o login com senha?",
+      "confirm": "Desativar o login com senha",
+      "intro": "Confira estas consequências antes de continuar.",
+      "points": {
+        "unavailable": "O login local com senha deixa de estar disponível para todos, inclusive para você.",
+        "admission": "O Palmr só permite isso quando um provedor ativado foi testado com sucesso nas últimas 24 horas e está vinculado a um administrador ativo, incluindo você.",
+        "standing": "Depois disso, alterações que removeriam o último caminho de login de administrador por um provedor são recusadas.",
+        "recovery": "Se você ficar sem acesso, um operador pode recuperá-lo pela linha de comando."
+      },
+      "understood": "Entendo que o login com senha deixará de funcionar."
+    },
+    "enable": {
+      "action": "Reativar o login com senha"
+    },
+    "notice": {
+      "disabled": "O login com senha está desativado.",
+      "enabled": "O login com senha está ativado."
     }
   }
 }

@@ -4,7 +4,8 @@
     "label": "Administration sections",
     "users": "Users",
     "security": "Security",
-    "smtp": "SMTP"
+    "smtp": "SMTP",
+    "providers": "Providers"
   },
   "common": {
     "cancel": "Cancel",
@@ -536,6 +537,225 @@
       "incomplete": "The test did not complete using the {{mode}}.",
       "duration": "Finished in {{ms}} ms.",
       "failedAt": "Stopped at: {{stage}} (testing the {{mode}})."
+    }
+  },
+  "providers": {
+    "title": "Identity providers",
+    "description": "Let people sign in with OpenID Connect or OAuth2 providers. Client secrets are write-only and are never shown again.",
+    "add": "Add provider",
+    "global": {
+      "label": "Allow external sign-in",
+      "hint": "When off, no provider is offered on the sign-in page.",
+      "offNotice": "External sign-in is off. Providers stay configured, but nobody can use them until it is turned back on."
+    },
+    "empty": {
+      "title": "No providers yet",
+      "description": "Add a preset or a custom OpenID Connect or OAuth2 provider to enable single sign-on."
+    },
+    "list": {
+      "title": "Providers",
+      "label": "Identity providers"
+    },
+    "row": {
+      "position": "Position {{position}} of {{total}}",
+      "protocol": {
+        "oidc": "OpenID Connect",
+        "oauth2": "OAuth2"
+      },
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "validation": {
+        "validated": "Tested {{date}}",
+        "failed": "Last test failed",
+        "untested": "Not tested"
+      },
+      "secret": {
+        "configured": "Client secret configured",
+        "missing": "No client secret"
+      },
+      "autoProvision": {
+        "on": "Auto-provision on",
+        "off": "Auto-provision off"
+      },
+      "emailLinking": {
+        "on": "E-mail linking on",
+        "off": "E-mail linking off"
+      },
+      "linkedUsers": "Linked accounts: {{total}}",
+      "drag": "Drag to reorder",
+      "moveUp": "Move {{name}} up",
+      "moveDown": "Move {{name}} down",
+      "toggle": "Enable {{name}}",
+      "test": "Test",
+      "testLabel": "Test {{name}}",
+      "edit": "Edit",
+      "editLabel": "Edit {{name}}",
+      "delete": "Delete",
+      "deleteLabel": "Delete {{name}}"
+    },
+    "redirectUri": {
+      "label": "Redirect URI",
+      "copy": "Copy",
+      "copied": "Copied"
+    },
+    "checks": {
+      "title": "Last test results for {{name}}",
+      "passed": "Passed",
+      "failed": "Failed",
+      "names": {
+        "discovery": "Discovery document",
+        "jwks": "Signing keys",
+        "token_endpoint": "Token endpoint",
+        "authorization_endpoint": "Authorization endpoint",
+        "userinfo_endpoint": "User info endpoint",
+        "redirect_uri": "Redirect URI"
+      }
+    },
+    "reorder": {
+      "moved": "{{name}} moved to position {{position}} of {{total}}."
+    },
+    "delete": {
+      "title": "Delete {{name}}?",
+      "description": "The provider is removed and can no longer be used to sign in. This can't be undone.",
+      "linked": "{{total}} linked accounts still use this provider. Remove those links first; the provider can't be deleted while they exist.",
+      "confirm": "Delete provider",
+      "done": "Provider deleted."
+    },
+    "editor": {
+      "createTitle": "Add provider",
+      "editTitle": "Edit {{name}}"
+    },
+    "discovery": {
+      "run": "Discover settings",
+      "title": "Discovered settings",
+      "apply": "Use these values",
+      "issuer": "Issuer",
+      "endpoints": {
+        "authorization": "Authorization endpoint",
+        "token": "Token endpoint",
+        "userinfo": "User info endpoint",
+        "jwks": "Signing keys (JWKS)"
+      },
+      "scopes": "Scopes supported",
+      "authMethods": "Token authentication methods",
+      "none": "Not provided"
+    },
+    "form": {
+      "preset": "Provider type",
+      "presetHint": "Presets fill in the usual settings. You can adjust everything before saving.",
+      "presetPlaceholder": "Choose a provider type",
+      "presets": {
+        "custom": {
+          "oidc": "Custom OpenID Connect",
+          "oauth2": "Custom OAuth2"
+        }
+      },
+      "displayName": "Display name",
+      "slug": "Slug",
+      "slugHint": "2–40 lowercase letters, digits, hyphens or underscores. It becomes part of the redirect URI and can't be changed later.",
+      "issuerUrl": "Issuer URL",
+      "issuerHint": "Palmr reads the provider's settings from this address.",
+      "clientId": "Client ID",
+      "clientSecret": "Client secret",
+      "secretWriteOnly": "Stored encrypted and never shown again.",
+      "secretKeepHint": "Leave blank to keep the stored secret. Type a new value to replace it.",
+      "secretPlaceholderConfigured": "Configured. Enter a new secret to replace it",
+      "clearSecret": "Remove the stored client secret",
+      "tokenAuthMethod": "Token endpoint authentication",
+      "tokenMethods": {
+        "client_secret_basic": "Client secret (HTTP Basic)",
+        "client_secret_post": "Client secret (request body)",
+        "none": "None (public client)"
+      },
+      "scopes": "Scopes",
+      "scopesHint": "Type a scope and press Enter. OpenID Connect providers must request openid.",
+      "endpoints": {
+        "title": "Endpoints",
+        "advanced": "Advanced: endpoint overrides",
+        "authorization": "Authorization endpoint",
+        "token": "Token endpoint",
+        "userinfo": "User info endpoint",
+        "jwks": "Signing keys (JWKS) endpoint"
+      },
+      "claims": {
+        "title": "Advanced: claim mapping",
+        "subject": "Subject claim",
+        "email": "E-mail claim",
+        "emailVerified": "E-mail verified claim",
+        "username": "Username claim",
+        "name": "Name claim",
+        "picture": "Picture claim"
+      },
+      "flags": {
+        "autoProvision": {
+          "label": "Create accounts automatically",
+          "hint": "Eligible new people get an account the first time they sign in. These accounts are always regular users, never administrators."
+        },
+        "allowEmailLinking": {
+          "label": "Link by verified e-mail",
+          "hint": "A sign-in is linked to the existing account with the same e-mail only when the provider states the e-mail is verified."
+        },
+        "enabled": {
+          "label": "Enable now",
+          "hint": "Enabled providers appear on the sign-in page."
+        }
+      },
+      "consequences": {
+        "title": "What these settings do",
+        "autoProvision": "Automatic account creation only applies to people who don't have an account yet.",
+        "emailLinking": "E-mail linking never applies to unverified e-mail addresses.",
+        "manualLinking": "People can always connect this provider manually from their security settings, whatever these settings say."
+      },
+      "redirectAfterCreate": "The redirect URI is shown after the provider is created.",
+      "create": "Add provider",
+      "save": "Save changes",
+      "validation": {
+        "url": "Enter a valid https:// URL.",
+        "slug": "Use 2–40 lowercase letters, digits, hyphens or underscores.",
+        "openid": "OpenID Connect providers must include the openid scope.",
+        "slugTaken": "This slug is already used by another provider.",
+        "rejected": "The server rejected this value."
+      }
+    }
+  },
+  "passwordLogin": {
+    "title": "Password sign-in",
+    "description": "Turn off local password sign-in to make this instance single sign-on only.",
+    "state": "Local password sign-in",
+    "on": "On",
+    "off": "Off",
+    "explainOn": "People with a password can sign in with it. Turning it off is only possible when an administrator can still sign in through a tested provider.",
+    "explainOff": "Only external providers can be used to sign in. If every provider becomes unusable, an operator can recover access from the command line.",
+    "blockers": {
+      "title": "Password sign-in can't be turned off yet"
+    },
+    "paths": {
+      "title": "Administrator sign-in paths",
+      "description": "Active administrators linked to an enabled provider. Turning password sign-in off also requires a provider tested successfully in the last 24 hours. Once it is off, changes that would remove the last of these paths are refused.",
+      "empty": "No active administrator is linked to an enabled provider.",
+      "entry": "{{username}} via {{provider}}",
+      "validated": "Tested in the last 24 hours",
+      "notValidated": "Not tested recently"
+    },
+    "disable": {
+      "action": "Turn off password sign-in…",
+      "title": "Turn off password sign-in?",
+      "confirm": "Turn off password sign-in",
+      "intro": "Check these consequences before you continue.",
+      "points": {
+        "unavailable": "Local password sign-in becomes unavailable for everyone, including you.",
+        "admission": "Palmr only allows this when an enabled provider has been tested successfully in the last 24 hours and is linked to an active administrator, including you.",
+        "standing": "Afterwards, changes that would remove the last administrator sign-in path through a provider are refused.",
+        "recovery": "If you get locked out, an operator can recover access from the command line."
+      },
+      "understood": "I understand that password sign-in will stop working."
+    },
+    "enable": {
+      "action": "Turn password sign-in back on"
+    },
+    "notice": {
+      "disabled": "Password sign-in is off.",
+      "enabled": "Password sign-in is on."
     }
   }
 }

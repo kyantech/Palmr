@@ -1,18 +1,24 @@
 import { type QueryClient, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../../../shared/api/apiFetch";
 import { type AdminSettingsGroup, qk } from "../../../shared/api/query-keys";
+import { type ApiError, detailChecks, isApiErrorCode } from "../../../shared/errors";
 import type {
   CreatedInvite,
   CreateInviteRequest,
+  CreateProviderRequest,
   CreateUserRequest,
   GeneralPatch,
+  PasswordLoginRequest,
   PasswordReset,
+  Provider,
+  ProviderPage,
   PublicLinkPatch,
   QuotaOverrideRequest,
   QuotaPatch,
   SecurityPatch,
   SmtpPatch,
   SmtpTestRequest,
+  UpdateProviderRequest,
   UpdateUserRequest,
   UserRole,
 } from "../types";
@@ -247,6 +253,11 @@ function settingsEffects(client: QueryClient, group: AdminSettingsGroup) {
         client.invalidateQueries({ queryKey: qk.admin.userAll() }),
       ];
     case "security":
+      return [
+        client.invalidateQueries({ queryKey: qk.me.effectiveSettings(), exact: true }),
+        client.invalidateQueries({ queryKey: qk.admin.passwordLogin() }),
+        refetchBootstrap(client),
+      ];
     case "public-links":
     case "smtp":
       return [client.invalidateQueries({ queryKey: qk.me.effectiveSettings(), exact: true })];
@@ -311,5 +322,138 @@ export function useSmtpTest() {
     mutationFn: (body: SmtpTestRequest) => apiFetch("post", "/admin/settings/smtp/test", { body }),
     gcTime: 0,
     retry: false,
+  });
+}
+
+function refetchBootstrap(client: QueryClient) {
+  return client.refetchQueries({ queryKey: qk.bootstrap(), exact: true });
+}
+
+function refreshProviderState(client: QueryClient) {
+  return Promise.all([
+    client.invalidateQueries({ queryKey: qk.admin.providers() }),
+    client.invalidateQueries({ queryKey: qk.admin.passwordLogin() }),
+  ]);
+}
+
+async function refreshProvidersAndLogin(client: QueryClient) {
+  await Promise.all([refreshProviderState(client), refetchBootstrap(client)]);
+}
+
+export function useCreateProvider() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationKey: ["admin", "providers", "create"],
+    mutationFn: (body: CreateProviderRequest) => apiFetch("post", "/admin/providers", { body }),
+    gcTime: 0,
+    retry: false,
+    onSuccess: () => refreshProvidersAndLogin(client),
+  });
+}
+
+export interface ProviderEdit {
+  id: string;
+  body: UpdateProviderRequest;
+}
+
+export function useUpdateProvider() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationKey: ["admin", "providers", "update"],
+    mutationFn: ({ id, body }: ProviderEdit) =>
+      apiFetch("patch", "/admin/providers/{id}", { path: { id }, body }),
+    gcTime: 0,
+    retry: false,
+    onSuccess: () => refreshProvidersAndLogin(client),
+    onError: () => refreshProviderState(client),
+  });
+}
+
+export function useDeleteProvider() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationKey: ["admin", "providers", "delete"],
+    mutationFn: (id: string) => apiFetch("delete", "/admin/providers/{id}", { path: { id } }),
+    retry: false,
+    onSuccess: () => refreshProvidersAndLogin(client),
+    onError: () => refreshProviderState(client),
+  });
+}
+
+export function useReorderProviders() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationKey: ["admin", "providers", "order"],
+    mutationFn: (order: string[]) => apiFetch("put", "/admin/providers/order", { body: { order } }),
+    retry: false,
+    onSuccess: () => refreshProvidersAndLogin(client),
+    onError: () => refreshProviderState(client),
+  });
+}
+
+export function useDiscoverProvider() {
+  return useMutation({
+    mutationKey: ["admin", "providers", "discover"],
+    mutationFn: (issuerUrl: string) =>
+      apiFetch("post", "/admin/providers/discover", { body: { issuerUrl } }),
+    gcTime: 0,
+    retry: false,
+  });
+}
+
+function patchProvider(client: QueryClient, id: string, patch: Partial<Provider>) {
+  client.setQueryData<ProviderPage>(qk.admin.providers(), (page) =>
+    page === undefined
+      ? page
+      : {
+          ...page,
+          items: page.items.map((item) => (item.id === id ? { ...item, ...patch } : item)),
+        },
+  );
+}
+
+function failureSummary(error: ApiError): string | null {
+  const failing = detailChecks(error)
+    .filter((check) => !check.ok)
+    .map((check) => `${check.name}:${check.detail ?? "failed"}`);
+  return failing.length === 0 ? null : failing.join(",").slice(0, 512);
+}
+
+export function useTestProvider() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationKey: ["admin", "providers", "test"],
+    mutationFn: (id: string) => apiFetch("post", "/admin/providers/{id}/test", { path: { id } }),
+    gcTime: 0,
+    retry: false,
+    onSuccess: (result, id) => {
+      patchProvider(client, id, { validatedAt: result.validatedAt, validationError: null });
+    },
+    onError: (error, id) => {
+      if (isApiErrorCode(error, "PROVIDER_VALIDATION_FAILED")) {
+        patchProvider(client, id, { validatedAt: null, validationError: failureSummary(error) });
+      }
+    },
+    onSettled: () => refreshProviderState(client),
+  });
+}
+
+export function useSetPasswordLogin() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationKey: ["admin", "password-login", "set"],
+    mutationFn: (body: PasswordLoginRequest) =>
+      apiFetch("put", "/admin/auth/password-login", { body }),
+    gcTime: 0,
+    retry: false,
+    onSuccess: async (state) => {
+      client.setQueryData(qk.admin.passwordLogin(), state);
+      await Promise.all([
+        client.invalidateQueries({ queryKey: qk.admin.passwordLogin() }),
+        client.invalidateQueries({ queryKey: qk.admin.providers() }),
+        refetchBootstrap(client),
+      ]);
+    },
+    onError: () => client.invalidateQueries({ queryKey: qk.admin.passwordLogin() }),
   });
 }

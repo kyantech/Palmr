@@ -82,13 +82,18 @@ afterEach(() => {
 });
 
 describe("component_security_two_factor_settings", () => {
-  test("the existing password section stays, followed by two-factor and trusted-device sections", async () => {
+  test("the existing password section stays, followed by two-factor, connected-account and trusted-device sections", async () => {
     renderSecurity();
 
     const headings = (await screen.findAllByRole("heading", { level: 2 })).map(
       (heading) => heading.textContent,
     );
-    expect(headings).toEqual(["Password", "Two-factor authentication", "Trusted devices"]);
+    expect(headings).toEqual([
+      "Password",
+      "Two-factor authentication",
+      "Connected accounts",
+      "Trusted devices",
+    ]);
     expect(screen.getByLabelText("Current password")).toBeDefined();
   });
 

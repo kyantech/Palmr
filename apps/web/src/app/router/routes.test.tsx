@@ -45,6 +45,7 @@ describe("production route table", () => {
       "/login/2fa",
       "/reset-password/:token",
       "/invite/:token",
+      "/auth/reauth-complete",
       "/login/forced-password-change",
       "/login/enroll-2fa",
       "/overview",
@@ -58,6 +59,7 @@ describe("production route table", () => {
       "users/:userId",
       "security",
       "smtp",
+      "providers",
       "*",
     ]);
   });
@@ -74,7 +76,6 @@ describe("production route table", () => {
       "/admin/storage",
       "/admin/branding",
       "/admin/audit",
-      "/admin/providers",
       "/admin/invites",
       "/files",
       "/shared",

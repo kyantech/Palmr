@@ -4,7 +4,8 @@
     "label": "Bagian administrasi",
     "users": "Pengguna",
     "security": "Keamanan",
-    "smtp": "SMTP"
+    "smtp": "SMTP",
+    "providers": "Penyedia"
   },
   "common": {
     "cancel": "Batal",
@@ -536,6 +537,225 @@
       "incomplete": "Pengujian tidak selesai (uji dengan {{mode}}).",
       "duration": "Selesai dalam {{ms}} md.",
       "failedAt": "Berhenti di: {{stage}} (uji dengan {{mode}})."
+    }
+  },
+  "providers": {
+    "title": "Penyedia identitas",
+    "description": "Izinkan orang masuk dengan penyedia OpenID Connect atau OAuth2. Rahasia klien bersifat hanya-tulis dan tidak pernah ditampilkan lagi.",
+    "add": "Tambah penyedia",
+    "global": {
+      "label": "Izinkan login eksternal",
+      "hint": "Jika dimatikan, tidak ada penyedia yang ditawarkan di halaman login.",
+      "offNotice": "Login eksternal dimatikan. Penyedia tetap terkonfigurasi, tetapi tidak ada yang bisa menggunakannya sampai diaktifkan kembali."
+    },
+    "empty": {
+      "title": "Belum ada penyedia",
+      "description": "Tambahkan preset atau penyedia OpenID Connect atau OAuth2 kustom untuk mengaktifkan single sign-on."
+    },
+    "list": {
+      "title": "Penyedia",
+      "label": "Penyedia identitas"
+    },
+    "row": {
+      "position": "Posisi {{position}} dari {{total}}",
+      "protocol": {
+        "oidc": "OpenID Connect",
+        "oauth2": "OAuth2"
+      },
+      "enabled": "Aktif",
+      "disabled": "Nonaktif",
+      "validation": {
+        "validated": "Diuji pada {{date}}",
+        "failed": "Pengujian terakhir gagal",
+        "untested": "Belum diuji"
+      },
+      "secret": {
+        "configured": "Rahasia klien dikonfigurasi",
+        "missing": "Tidak ada rahasia klien"
+      },
+      "autoProvision": {
+        "on": "Pembuatan otomatis aktif",
+        "off": "Pembuatan otomatis nonaktif"
+      },
+      "emailLinking": {
+        "on": "Penautan e-mail aktif",
+        "off": "Penautan e-mail nonaktif"
+      },
+      "linkedUsers": "Akun tertaut: {{total}}",
+      "drag": "Seret untuk mengurutkan ulang",
+      "moveUp": "Pindahkan {{name}} ke atas",
+      "moveDown": "Pindahkan {{name}} ke bawah",
+      "toggle": "Aktifkan {{name}}",
+      "test": "Uji",
+      "testLabel": "Uji {{name}}",
+      "edit": "Edit",
+      "editLabel": "Edit {{name}}",
+      "delete": "Hapus",
+      "deleteLabel": "Hapus {{name}}"
+    },
+    "redirectUri": {
+      "label": "URI pengalihan",
+      "copy": "Salin",
+      "copied": "Tersalin"
+    },
+    "checks": {
+      "title": "Hasil pengujian terakhir untuk {{name}}",
+      "passed": "Lulus",
+      "failed": "Gagal",
+      "names": {
+        "discovery": "Dokumen discovery",
+        "jwks": "Kunci penandatanganan",
+        "token_endpoint": "Endpoint token",
+        "authorization_endpoint": "Endpoint otorisasi",
+        "userinfo_endpoint": "Endpoint informasi pengguna",
+        "redirect_uri": "URI pengalihan"
+      }
+    },
+    "reorder": {
+      "moved": "{{name}} dipindahkan ke posisi {{position}} dari {{total}}."
+    },
+    "delete": {
+      "title": "Hapus {{name}}?",
+      "description": "Penyedia akan dihapus dan tidak dapat lagi digunakan untuk masuk. Tindakan ini tidak dapat dibatalkan.",
+      "linked": "{{total}} akun tertaut masih menggunakan penyedia ini. Hapus dulu tautan tersebut; penyedia tidak dapat dihapus selama tautan masih ada.",
+      "confirm": "Hapus penyedia",
+      "done": "Penyedia dihapus."
+    },
+    "editor": {
+      "createTitle": "Tambah penyedia",
+      "editTitle": "Edit {{name}}"
+    },
+    "discovery": {
+      "run": "Temukan pengaturan",
+      "title": "Pengaturan yang ditemukan",
+      "apply": "Gunakan nilai ini",
+      "issuer": "Penerbit",
+      "endpoints": {
+        "authorization": "Endpoint otorisasi",
+        "token": "Endpoint token",
+        "userinfo": "Endpoint informasi pengguna",
+        "jwks": "Kunci penandatanganan (JWKS)"
+      },
+      "scopes": "Scope yang didukung",
+      "authMethods": "Metode autentikasi token",
+      "none": "Tidak tersedia"
+    },
+    "form": {
+      "preset": "Jenis penyedia",
+      "presetHint": "Preset mengisi pengaturan yang umum. Anda dapat menyesuaikan semuanya sebelum menyimpan.",
+      "presetPlaceholder": "Pilih jenis penyedia",
+      "presets": {
+        "custom": {
+          "oidc": "OpenID Connect kustom",
+          "oauth2": "OAuth2 kustom"
+        }
+      },
+      "displayName": "Nama tampilan",
+      "slug": "Slug",
+      "slugHint": "2–40 huruf kecil, angka, tanda hubung, atau garis bawah. Slug menjadi bagian dari URI pengalihan dan tidak dapat diubah nanti.",
+      "issuerUrl": "URL penerbit",
+      "issuerHint": "Palmr membaca pengaturan penyedia dari alamat ini.",
+      "clientId": "ID klien",
+      "clientSecret": "Rahasia klien",
+      "secretWriteOnly": "Disimpan terenkripsi dan tidak pernah ditampilkan lagi.",
+      "secretKeepHint": "Kosongkan untuk mempertahankan rahasia yang tersimpan. Ketik nilai baru untuk menggantinya.",
+      "secretPlaceholderConfigured": "Dikonfigurasi. Masukkan rahasia baru untuk menggantinya",
+      "clearSecret": "Hapus rahasia klien yang tersimpan",
+      "tokenAuthMethod": "Autentikasi endpoint token",
+      "tokenMethods": {
+        "client_secret_basic": "Rahasia klien (HTTP Basic)",
+        "client_secret_post": "Rahasia klien (isi permintaan)",
+        "none": "Tidak ada (klien publik)"
+      },
+      "scopes": "Scope",
+      "scopesHint": "Ketik scope lalu tekan Enter. Penyedia OpenID Connect harus meminta openid.",
+      "endpoints": {
+        "title": "Endpoint",
+        "advanced": "Lanjutan: timpa endpoint",
+        "authorization": "Endpoint otorisasi",
+        "token": "Endpoint token",
+        "userinfo": "Endpoint informasi pengguna",
+        "jwks": "Endpoint kunci penandatanganan (JWKS)"
+      },
+      "claims": {
+        "title": "Lanjutan: pemetaan claim",
+        "subject": "Claim subjek",
+        "email": "Claim e-mail",
+        "emailVerified": "Claim e-mail terverifikasi",
+        "username": "Claim nama pengguna",
+        "name": "Claim nama",
+        "picture": "Claim gambar"
+      },
+      "flags": {
+        "autoProvision": {
+          "label": "Buat akun secara otomatis",
+          "hint": "Orang baru yang memenuhi syarat mendapat akun saat pertama kali masuk. Akun ini selalu pengguna biasa, tidak pernah administrator."
+        },
+        "allowEmailLinking": {
+          "label": "Tautkan lewat e-mail terverifikasi",
+          "hint": "Login hanya ditautkan ke akun yang ada dengan e-mail yang sama jika penyedia menyatakan e-mail tersebut terverifikasi."
+        },
+        "enabled": {
+          "label": "Aktifkan sekarang",
+          "hint": "Penyedia yang aktif muncul di halaman login."
+        }
+      },
+      "consequences": {
+        "title": "Fungsi pengaturan ini",
+        "autoProvision": "Pembuatan akun otomatis hanya berlaku untuk orang yang belum punya akun.",
+        "emailLinking": "Penautan e-mail tidak pernah berlaku untuk alamat e-mail yang belum terverifikasi.",
+        "manualLinking": "Orang selalu dapat menghubungkan penyedia ini secara manual dari pengaturan keamanan mereka, apa pun pengaturan ini."
+      },
+      "redirectAfterCreate": "URI pengalihan ditampilkan setelah penyedia dibuat.",
+      "create": "Tambah penyedia",
+      "save": "Simpan perubahan",
+      "validation": {
+        "url": "Masukkan URL https:// yang valid.",
+        "slug": "Gunakan 2–40 huruf kecil, angka, tanda hubung, atau garis bawah.",
+        "openid": "Penyedia OpenID Connect harus menyertakan scope openid.",
+        "slugTaken": "Slug ini sudah digunakan penyedia lain.",
+        "rejected": "Server menolak nilai ini."
+      }
+    }
+  },
+  "passwordLogin": {
+    "title": "Login dengan kata sandi",
+    "description": "Matikan login kata sandi lokal agar instans ini hanya menggunakan single sign-on.",
+    "state": "Login kata sandi lokal",
+    "on": "Aktif",
+    "off": "Nonaktif",
+    "explainOn": "Orang yang punya kata sandi dapat masuk dengannya. Mematikannya hanya mungkin jika administrator masih bisa masuk lewat penyedia yang telah diuji.",
+    "explainOff": "Hanya penyedia eksternal yang dapat digunakan untuk masuk. Jika semua penyedia tidak dapat digunakan, operator dapat memulihkan akses dari command line.",
+    "blockers": {
+      "title": "Login kata sandi belum dapat dimatikan"
+    },
+    "paths": {
+      "title": "Jalur login administrator",
+      "description": "Administrator aktif yang tertaut ke penyedia yang aktif. Mematikan login kata sandi juga memerlukan penyedia yang berhasil diuji dalam 24 jam terakhir. Setelah dimatikan, perubahan yang akan menghapus jalur terakhir ini ditolak.",
+      "empty": "Tidak ada administrator aktif yang tertaut ke penyedia yang aktif.",
+      "entry": "{{username}} melalui {{provider}}",
+      "validated": "Diuji dalam 24 jam terakhir",
+      "notValidated": "Belum diuji baru-baru ini"
+    },
+    "disable": {
+      "action": "Matikan login kata sandi…",
+      "title": "Matikan login kata sandi?",
+      "confirm": "Matikan login kata sandi",
+      "intro": "Periksa konsekuensi berikut sebelum melanjutkan.",
+      "points": {
+        "unavailable": "Login kata sandi lokal tidak lagi tersedia untuk siapa pun, termasuk Anda.",
+        "admission": "Palmr hanya mengizinkannya jika penyedia yang aktif berhasil diuji dalam 24 jam terakhir dan tertaut ke administrator aktif, termasuk Anda.",
+        "standing": "Setelah itu, perubahan yang akan menghapus jalur login administrator terakhir melalui penyedia ditolak.",
+        "recovery": "Jika Anda terkunci, operator dapat memulihkan akses dari command line."
+      },
+      "understood": "Saya mengerti bahwa login kata sandi akan berhenti berfungsi."
+    },
+    "enable": {
+      "action": "Aktifkan kembali login kata sandi"
+    },
+    "notice": {
+      "disabled": "Login kata sandi dimatikan.",
+      "enabled": "Login kata sandi diaktifkan."
     }
   }
 }

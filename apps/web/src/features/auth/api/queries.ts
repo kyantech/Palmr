@@ -8,6 +8,10 @@ export type TrustedDeviceItem = components["schemas"]["TrustedDeviceItem"];
 export type TrustedDeviceList = components["schemas"]["TrustedDeviceList"];
 export type ResetCheck = components["schemas"]["ResetCheckResponse"];
 export type InviteLookup = components["schemas"]["InviteLookupResponse"];
+export type IdentityLinkItem = components["schemas"]["IdentityLinkItem"];
+export type IdentityLinkPage = components["schemas"]["Page_IdentityLinkItem"];
+
+export const IDENTITY_LINKS_PAGE_SIZE = 50;
 
 export const TRUSTED_DEVICES_PAGE_SIZE = 50;
 
@@ -34,6 +38,23 @@ export function useTrustedDevices() {
       apiFetch("get", "/auth/trusted-devices", {
         query: {
           limit: TRUSTED_DEVICES_PAGE_SIZE,
+          ...(pageParam === null ? {} : { cursor: pageParam }),
+        },
+        signal,
+      }),
+    initialPageParam: null as string | null,
+    getNextPageParam: (page) => page.nextCursor,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useIdentityLinks() {
+  return useInfiniteQuery({
+    queryKey: qk.me.identityLinks(),
+    queryFn: ({ pageParam, signal }): Promise<IdentityLinkPage> =>
+      apiFetch("get", "/identity-links", {
+        query: {
+          limit: IDENTITY_LINKS_PAGE_SIZE,
           ...(pageParam === null ? {} : { cursor: pageParam }),
         },
         signal,

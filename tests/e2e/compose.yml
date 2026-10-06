@@ -6,8 +6,17 @@ services:
       PALMR_BASE_URL: ${PALMR_E2E_BASE_URL:-http://127.0.0.1:5487}
     ports:
       - "127.0.0.1:${PALMR_E2E_PORT:-5487}:5487"
+      - "127.0.0.1:9100:9100"
     volumes:
       - palmr-data:/data
+
+  mock-idp:
+    image: ${PALMR_E2E_IDP_IMAGE:-node:24-bookworm-slim}
+    pull_policy: never
+    network_mode: "service:palmr"
+    command: ["node", "/tmp/mock-idp-server.mjs"]
+    environment:
+      MOCK_IDP_PORT: "9100"
 
   smtp-sink:
     image: ${PALMR_E2E_SINK_IMAGE:-axllent/mailpit:v1.29.1}

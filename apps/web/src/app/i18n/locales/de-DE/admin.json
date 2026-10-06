@@ -4,7 +4,8 @@
     "label": "Verwaltungsbereiche",
     "users": "Benutzer",
     "security": "Sicherheit",
-    "smtp": "SMTP"
+    "smtp": "SMTP",
+    "providers": "Anbieter"
   },
   "common": {
     "cancel": "Abbrechen",
@@ -536,6 +537,225 @@
       "incomplete": "Der Test mit den {{mode}} wurde nicht abgeschlossen.",
       "duration": "Abgeschlossen in {{ms}} ms.",
       "failedAt": "Abgebrochen bei: {{stage}} (Test mit den {{mode}})."
+    }
+  },
+  "providers": {
+    "title": "Identitätsanbieter",
+    "description": "Lass Personen sich mit OpenID-Connect- oder OAuth2-Anbietern anmelden. Client-Geheimnisse sind nur schreibbar und werden nie wieder angezeigt.",
+    "add": "Anbieter hinzufügen",
+    "global": {
+      "label": "Externe Anmeldung erlauben",
+      "hint": "Wenn deaktiviert, wird auf der Anmeldeseite kein Anbieter angeboten.",
+      "offNotice": "Die externe Anmeldung ist deaktiviert. Die Anbieter bleiben konfiguriert, aber niemand kann sie nutzen, bis sie wieder aktiviert wird."
+    },
+    "empty": {
+      "title": "Noch keine Anbieter",
+      "description": "Füge eine Vorlage oder einen benutzerdefinierten OpenID-Connect- oder OAuth2-Anbieter hinzu, um Single Sign-on zu aktivieren."
+    },
+    "list": {
+      "title": "Anbieter",
+      "label": "Identitätsanbieter"
+    },
+    "row": {
+      "position": "Position {{position}} von {{total}}",
+      "protocol": {
+        "oidc": "OpenID Connect",
+        "oauth2": "OAuth2"
+      },
+      "enabled": "Aktiviert",
+      "disabled": "Deaktiviert",
+      "validation": {
+        "validated": "Getestet am {{date}}",
+        "failed": "Letzter Test fehlgeschlagen",
+        "untested": "Nicht getestet"
+      },
+      "secret": {
+        "configured": "Client-Geheimnis konfiguriert",
+        "missing": "Kein Client-Geheimnis"
+      },
+      "autoProvision": {
+        "on": "Automatische Erstellung an",
+        "off": "Automatische Erstellung aus"
+      },
+      "emailLinking": {
+        "on": "E-Mail-Verknüpfung an",
+        "off": "E-Mail-Verknüpfung aus"
+      },
+      "linkedUsers": "Verknüpfte Konten: {{total}}",
+      "drag": "Zum Umsortieren ziehen",
+      "moveUp": "{{name}} nach oben",
+      "moveDown": "{{name}} nach unten",
+      "toggle": "{{name}} aktivieren",
+      "test": "Testen",
+      "testLabel": "{{name}} testen",
+      "edit": "Bearbeiten",
+      "editLabel": "{{name}} bearbeiten",
+      "delete": "Löschen",
+      "deleteLabel": "{{name}} löschen"
+    },
+    "redirectUri": {
+      "label": "Weiterleitungs-URI",
+      "copy": "Kopieren",
+      "copied": "Kopiert"
+    },
+    "checks": {
+      "title": "Ergebnisse des letzten Tests für {{name}}",
+      "passed": "Bestanden",
+      "failed": "Fehlgeschlagen",
+      "names": {
+        "discovery": "Discovery-Dokument",
+        "jwks": "Signaturschlüssel",
+        "token_endpoint": "Token-Endpunkt",
+        "authorization_endpoint": "Autorisierungsendpunkt",
+        "userinfo_endpoint": "Endpunkt für Benutzerinformationen",
+        "redirect_uri": "Weiterleitungs-URI"
+      }
+    },
+    "reorder": {
+      "moved": "{{name}} auf Position {{position}} von {{total}} verschoben."
+    },
+    "delete": {
+      "title": "{{name}} löschen?",
+      "description": "Der Anbieter wird entfernt und kann nicht mehr zur Anmeldung genutzt werden. Das lässt sich nicht rückgängig machen.",
+      "linked": "{{total}} verknüpfte Konten nutzen diesen Anbieter noch. Entferne zuerst diese Verknüpfungen; der Anbieter kann nicht gelöscht werden, solange sie bestehen.",
+      "confirm": "Anbieter löschen",
+      "done": "Anbieter gelöscht."
+    },
+    "editor": {
+      "createTitle": "Anbieter hinzufügen",
+      "editTitle": "{{name}} bearbeiten"
+    },
+    "discovery": {
+      "run": "Einstellungen ermitteln",
+      "title": "Ermittelte Einstellungen",
+      "apply": "Diese Werte verwenden",
+      "issuer": "Aussteller",
+      "endpoints": {
+        "authorization": "Autorisierungsendpunkt",
+        "token": "Token-Endpunkt",
+        "userinfo": "Endpunkt für Benutzerinformationen",
+        "jwks": "Signaturschlüssel (JWKS)"
+      },
+      "scopes": "Unterstützte Scopes",
+      "authMethods": "Token-Authentifizierungsmethoden",
+      "none": "Nicht angegeben"
+    },
+    "form": {
+      "preset": "Anbietertyp",
+      "presetHint": "Vorlagen füllen die üblichen Einstellungen aus. Du kannst vor dem Speichern alles anpassen.",
+      "presetPlaceholder": "Anbietertyp wählen",
+      "presets": {
+        "custom": {
+          "oidc": "Benutzerdefiniertes OpenID Connect",
+          "oauth2": "Benutzerdefiniertes OAuth2"
+        }
+      },
+      "displayName": "Anzeigename",
+      "slug": "Slug",
+      "slugHint": "2–40 Kleinbuchstaben, Ziffern, Bindestriche oder Unterstriche. Er wird Teil des Weiterleitungs-URI und kann später nicht geändert werden.",
+      "issuerUrl": "Aussteller-URL",
+      "issuerHint": "Palmr liest die Einstellungen des Anbieters von dieser Adresse.",
+      "clientId": "Client-ID",
+      "clientSecret": "Client-Geheimnis",
+      "secretWriteOnly": "Verschlüsselt gespeichert und nie wieder angezeigt.",
+      "secretKeepHint": "Leer lassen, um das gespeicherte Geheimnis zu behalten. Gib einen neuen Wert ein, um es zu ersetzen.",
+      "secretPlaceholderConfigured": "Konfiguriert. Gib ein neues Geheimnis ein, um es zu ersetzen",
+      "clearSecret": "Gespeichertes Client-Geheimnis entfernen",
+      "tokenAuthMethod": "Authentifizierung am Token-Endpunkt",
+      "tokenMethods": {
+        "client_secret_basic": "Client-Geheimnis (HTTP Basic)",
+        "client_secret_post": "Client-Geheimnis (Anfragekörper)",
+        "none": "Keine (öffentlicher Client)"
+      },
+      "scopes": "Scopes",
+      "scopesHint": "Gib einen Scope ein und drücke die Eingabetaste. OpenID-Connect-Anbieter müssen openid anfordern.",
+      "endpoints": {
+        "title": "Endpunkte",
+        "advanced": "Erweitert: Endpunkte überschreiben",
+        "authorization": "Autorisierungsendpunkt",
+        "token": "Token-Endpunkt",
+        "userinfo": "Endpunkt für Benutzerinformationen",
+        "jwks": "Endpunkt für Signaturschlüssel (JWKS)"
+      },
+      "claims": {
+        "title": "Erweitert: Claim-Zuordnung",
+        "subject": "Subject-Claim",
+        "email": "E-Mail-Claim",
+        "emailVerified": "Claim „E-Mail verifiziert“",
+        "username": "Benutzernamen-Claim",
+        "name": "Namens-Claim",
+        "picture": "Bild-Claim"
+      },
+      "flags": {
+        "autoProvision": {
+          "label": "Konten automatisch erstellen",
+          "hint": "Berechtigte neue Personen erhalten bei der ersten Anmeldung ein Konto. Diese Konten sind immer normale Benutzer, nie Administratoren."
+        },
+        "allowEmailLinking": {
+          "label": "Per verifizierter E-Mail verknüpfen",
+          "hint": "Eine Anmeldung wird nur dann mit dem bestehenden Konto mit derselben E-Mail verknüpft, wenn der Anbieter die E-Mail als verifiziert meldet."
+        },
+        "enabled": {
+          "label": "Jetzt aktivieren",
+          "hint": "Aktivierte Anbieter erscheinen auf der Anmeldeseite."
+        }
+      },
+      "consequences": {
+        "title": "Was diese Einstellungen bewirken",
+        "autoProvision": "Die automatische Kontoerstellung gilt nur für Personen, die noch kein Konto haben.",
+        "emailLinking": "Die E-Mail-Verknüpfung gilt nie für nicht verifizierte E-Mail-Adressen.",
+        "manualLinking": "Personen können diesen Anbieter jederzeit manuell in ihren Sicherheitseinstellungen verbinden, unabhängig von diesen Einstellungen."
+      },
+      "redirectAfterCreate": "Der Weiterleitungs-URI wird angezeigt, nachdem der Anbieter erstellt wurde.",
+      "create": "Anbieter hinzufügen",
+      "save": "Änderungen speichern",
+      "validation": {
+        "url": "Gib eine gültige https://-URL ein.",
+        "slug": "Verwende 2–40 Kleinbuchstaben, Ziffern, Bindestriche oder Unterstriche.",
+        "openid": "OpenID-Connect-Anbieter müssen den Scope openid enthalten.",
+        "slugTaken": "Dieser Slug wird bereits von einem anderen Anbieter verwendet.",
+        "rejected": "Der Server hat diesen Wert abgelehnt."
+      }
+    }
+  },
+  "passwordLogin": {
+    "title": "Anmeldung mit Passwort",
+    "description": "Deaktiviere die lokale Passwortanmeldung, damit diese Instanz nur noch Single Sign-on nutzt.",
+    "state": "Lokale Passwortanmeldung",
+    "on": "An",
+    "off": "Aus",
+    "explainOn": "Personen mit Passwort können sich damit anmelden. Ausschalten ist nur möglich, wenn sich ein Administrator weiterhin über einen getesteten Anbieter anmelden kann.",
+    "explainOff": "Zur Anmeldung können nur externe Anbieter genutzt werden. Wenn kein Anbieter mehr nutzbar ist, kann ein Operator den Zugriff über die Befehlszeile wiederherstellen.",
+    "blockers": {
+      "title": "Die Passwortanmeldung kann noch nicht deaktiviert werden"
+    },
+    "paths": {
+      "title": "Anmeldewege der Administratoren",
+      "description": "Aktive Administratoren, die mit einem aktivierten Anbieter verknüpft sind. Zum Deaktivieren der Passwortanmeldung ist außerdem ein in den letzten 24 Stunden erfolgreich getesteter Anbieter nötig. Ist sie deaktiviert, werden Änderungen abgelehnt, die den letzten dieser Wege entfernen würden.",
+      "empty": "Kein aktiver Administrator ist mit einem aktivierten Anbieter verknüpft.",
+      "entry": "{{username}} über {{provider}}",
+      "validated": "In den letzten 24 Stunden getestet",
+      "notValidated": "Nicht kürzlich getestet"
+    },
+    "disable": {
+      "action": "Passwortanmeldung deaktivieren …",
+      "title": "Passwortanmeldung deaktivieren?",
+      "confirm": "Passwortanmeldung deaktivieren",
+      "intro": "Prüfe diese Folgen, bevor du fortfährst.",
+      "points": {
+        "unavailable": "Die lokale Passwortanmeldung steht für alle nicht mehr zur Verfügung, auch für dich.",
+        "admission": "Palmr erlaubt das nur, wenn ein aktivierter Anbieter in den letzten 24 Stunden erfolgreich getestet wurde und mit einem aktiven Administrator verknüpft ist, dich eingeschlossen.",
+        "standing": "Danach werden Änderungen abgelehnt, die den letzten Anmeldeweg eines Administrators über einen Anbieter entfernen würden.",
+        "recovery": "Falls du ausgesperrt wirst, kann ein Operator den Zugriff über die Befehlszeile wiederherstellen."
+      },
+      "understood": "Ich verstehe, dass die Passwortanmeldung nicht mehr funktioniert."
+    },
+    "enable": {
+      "action": "Passwortanmeldung wieder aktivieren"
+    },
+    "notice": {
+      "disabled": "Die Passwortanmeldung ist deaktiviert.",
+      "enabled": "Die Passwortanmeldung ist aktiviert."
     }
   }
 }

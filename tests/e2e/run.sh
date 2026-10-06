@@ -6,6 +6,7 @@ REPO=$(cd "$ROOT/../.." && pwd)
 export COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-palmr-e2e-$$}
 export PALMR_E2E_SINK_IMAGE=${PALMR_E2E_SINK_IMAGE:-axllent/mailpit:v1.29.1}
 export PALMR_E2E_SEED_IMAGE=${PALMR_E2E_SEED_IMAGE:-busybox:1.37.0-musl}
+export PALMR_E2E_IDP_IMAGE=${PALMR_E2E_IDP_IMAGE:-node:24-bookworm-slim}
 export PALMR_E2E_SINK_URL=${PALMR_E2E_SINK_URL:-http://127.0.0.1:${PALMR_E2E_SINK_PORT:-8025}}
 
 if docker compose version >/dev/null 2>&1; then
@@ -17,7 +18,7 @@ else
   exit 1
 fi
 
-for image in "$PALMR_E2E_SINK_IMAGE" "$PALMR_E2E_SEED_IMAGE"; do
+for image in "$PALMR_E2E_SINK_IMAGE" "$PALMR_E2E_SEED_IMAGE" "$PALMR_E2E_IDP_IMAGE"; do
   docker image inspect "$image" >/dev/null 2>&1 || docker pull "$image" >/dev/null
 done
 
@@ -29,6 +30,8 @@ cleanup() {
 }
 
 trap cleanup EXIT
+"${COMPOSE[@]}" create --no-build --pull never
+"${COMPOSE[@]}" cp "$ROOT/support/mock-idp/server.mjs" mock-idp:/tmp/mock-idp-server.mjs
 "${COMPOSE[@]}" up --detach --no-build --pull never
 
 for _ in {1..100}; do
