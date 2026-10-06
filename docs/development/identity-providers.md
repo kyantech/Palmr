@@ -48,7 +48,15 @@ The checks run concurrently and each is bounded by the fetch limits. A check rep
 
 ## Callback
 
-`GET /api/v1/auth/providers/{slug}/callback` (`public`, `rl.auth.login`) is a top-level browser navigation, so every outcome is a `303 See Other`: success goes to `PALMR_BASE_URL` plus the validated `post_auth_path` stored by the authorize call, failure goes to `PALMR_BASE_URL/login?error=<CODE>`. Only a stable `ErrorCode` crosses into the redirect; provider text (`error`, `error_description`) is never read, logged, audited or echoed. Every outcome clears `palmr_oauth` with the original `Path=/api/v1/auth/providers`.
+`GET /api/v1/auth/providers/{slug}/callback` (`public`, `rl.auth.login`) is a top-level browser navigation, so every outcome is a `303 See Other` whose landing is chosen by the `purpose` stored in the authorization request (never by a request parameter):
+
+| `purpose` | Success | Failure |
+|---|---|---|
+| `login` | `PALMR_BASE_URL` plus the validated `post_auth_path` stored by the authorize call (default `/overview`) | `/login?error=<CODE>&requestId=<ID>` |
+| `link` | `/settings/security` | `/settings/security?error=<CODE>&requestId=<ID>` |
+| `reauth` | `/auth/reauth-complete?status=success` | `/auth/reauth-complete?status=error&error=<CODE>&requestId=<ID>` |
+
+`/auth/reauth-complete` is the SPA completion route of the popup SSO re-authentication (FRONTEND_ARCHITECTURE §4.6), not an API route. `requestId` is the callback request's own `X-Request-Id`, read from the request-ID extension (`RequestId::of`); no second id is generated. Only a stable `ErrorCode` and that id cross into the redirect; provider text (`error`, `error_description`) is never read, logged, audited or echoed. The purpose for the landing comes from `ExternalLoginService::run` setting it once the consumed row's binding digest and provider match (`CallbackFailure.purpose`), or from the read-only `recover_purpose` lookup for a provider denial, which consumes nothing; when it cannot be established the landing is the `login` failure form. It is routing context only and changes no validation. Every outcome clears `palmr_oauth` with the original `Path=/api/v1/auth/providers`.
 
 The order is normative and fail-closed (`callback.rs`):
 

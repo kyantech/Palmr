@@ -293,13 +293,13 @@ async fn it_link_callback_requires_the_same_live_palmr_session() {
     let anonymous = f.begin_link("corp", &ada.creds).await;
     f.arm_oidc(&anonymous, json!({}), &[]);
     let rejected = f.finish_as("corp", &anonymous, None).await;
-    assert_failure(&rejected, "PROVIDER_STATE_INVALID");
+    assert_link_failure(&rejected, "PROVIDER_STATE_INVALID");
     assert_eq!(f.idp.token_requests().await.len(), 0);
 
     let foreign = f.begin_link("corp", &ada.creds).await;
     f.arm_oidc(&foreign, json!({}), &[]);
     let rejected = f.finish_as("corp", &foreign, Some(&bea.creds)).await;
-    assert_failure(&rejected, "PROVIDER_STATE_INVALID");
+    assert_link_failure(&rejected, "PROVIDER_STATE_INVALID");
 
     let stale_cookie = Credentials {
         session: "not-a-session".to_owned(),
@@ -308,7 +308,7 @@ async fn it_link_callback_requires_the_same_live_palmr_session() {
     let garbage = f.begin_link("corp", &ada.creds).await;
     f.arm_oidc(&garbage, json!({}), &[]);
     let rejected = f.finish_as("corp", &garbage, Some(&stale_cookie)).await;
-    assert_failure(&rejected, "PROVIDER_STATE_INVALID");
+    assert_link_failure(&rejected, "PROVIDER_STATE_INVALID");
 
     let revoked = f.begin_link("corp", &ada.creds).await;
     f.arm_oidc(&revoked, json!({}), &[]);
@@ -320,7 +320,7 @@ async fn it_link_callback_requires_the_same_live_palmr_session() {
         ))
         .await;
     let rejected = f.finish_as("corp", &revoked, Some(&ada.creds)).await;
-    assert_failure(&rejected, "PROVIDER_STATE_INVALID");
+    assert_link_failure(&rejected, "PROVIDER_STATE_INVALID");
 
     assert_eq!(f.links().await.len(), 0);
     assert_eq!(f.idp.token_requests().await.len(), 0);
@@ -501,7 +501,7 @@ async fn it_link_refuses_subject_bound_elsewhere() {
     let fetched = f
         .link_oidc("corp", &member, json!({ "sub": "external-subject" }), &[])
         .await;
-    assert_failure(&fetched, "PROVIDER_IDENTITY_ALREADY_LINKED");
+    assert_link_failure(&fetched, "PROVIDER_IDENTITY_ALREADY_LINKED");
     assert_eq!(f.links().await, links_before);
     assert_eq!(f.audit_rows("IDENTITY_LINK_CREATED").await.len(), 0);
     assert_eq!(f.live_sessions().await, sessions_before);
@@ -528,7 +528,7 @@ async fn it_link_same_subject_same_user_is_idempotent_and_a_different_subject_co
     f.link("corp", member.id, "the-original", "active").await;
     f.arm_oidc(&different, json!({ "sub": "a-new-subject" }), &[]);
     let fetched = f.finish_as("corp", &different, Some(&member.creds)).await;
-    assert_failure(&fetched, "PROVIDER_IDENTITY_ALREADY_LINKED");
+    assert_link_failure(&fetched, "PROVIDER_IDENTITY_ALREADY_LINKED");
     let links = f.links().await;
     assert_eq!(links.len(), 1);
     assert_eq!(links[0].1, "the-original");
@@ -549,7 +549,7 @@ async fn it_link_fails_when_recent_auth_expires_during_the_round_trip() {
         .await
         .unwrap();
     let fetched = f.finish_as("corp", &begun, Some(&member.creds)).await;
-    assert_failure(&fetched, "AUTH_RECENT_AUTH_REQUIRED");
+    assert_link_failure(&fetched, "AUTH_RECENT_AUTH_REQUIRED");
     assert_eq!(f.links().await.len(), 0);
     assert_eq!(f.audit_rows("IDENTITY_LINK_CREATED").await.len(), 0);
     let after: String = sqlx::query_scalar("SELECT last_auth_at FROM sessions")
@@ -578,7 +578,7 @@ async fn it_link_audit_failure_rolls_back_the_link() {
     let fetched = f
         .link_oidc("corp", &member, json!({ "sub": "rolled-back" }), &[])
         .await;
-    assert_failure(&fetched, "INTERNAL_ERROR");
+    assert_link_failure(&fetched, "INTERNAL_ERROR");
     assert_eq!(f.links().await.len(), 0);
     assert_eq!(f.audit_rows("IDENTITY_LINK_CREATED").await.len(), 0);
     f.stack.stop().await;
@@ -598,17 +598,17 @@ async fn it_link_surfaces_provider_failures_as_stable_codes_without_linking() {
             Some(&denied.binding),
         )
         .await;
-    assert_failure(&fetched, "PROVIDER_AUTH_DENIED");
+    assert_link_failure(&fetched, "PROVIDER_AUTH_DENIED");
 
     let invalid = f.begin_link("corp", &member.creds).await;
     f.arm_oidc(&invalid, json!({ "nonce": "forged" }), &[]);
     let fetched = f.finish_as("corp", &invalid, Some(&member.creds)).await;
-    assert_failure(&fetched, "PROVIDER_ID_TOKEN_INVALID");
+    assert_link_failure(&fetched, "PROVIDER_ID_TOKEN_INVALID");
 
     let missing = f.begin_link("corp", &member.creds).await;
     f.arm_oidc(&missing, json!({}), &["sub"]);
     let fetched = f.finish_as("corp", &missing, Some(&member.creds)).await;
-    assert_failure(&fetched, "PROVIDER_SUBJECT_MISSING");
+    assert_link_failure(&fetched, "PROVIDER_SUBJECT_MISSING");
 
     assert_eq!(f.links().await.len(), 0);
     f.stack.stop().await;

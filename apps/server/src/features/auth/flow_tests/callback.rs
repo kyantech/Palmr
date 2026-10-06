@@ -23,6 +23,7 @@ use crate::infra::crypto::hash::sha256_base64url;
 #[path = "../../../../tests/support/mock_idp.rs"]
 mod mock_idp;
 
+mod landing;
 mod link;
 mod links;
 mod password_login;
@@ -32,7 +33,7 @@ use mock_idp::{MockIdp, CLIENT_ID, RSA1_KID};
 
 const PROVIDERS: &str = "/api/v1/auth/providers";
 const SECRET: &str = "callback-test-client-secret";
-const FAILURE_PREFIX: &str = "https://files.example.test/login?error=";
+const BASE: &str = "https://files.example.test";
 const OAUTH_CLEARED: &str =
     "palmr_oauth=; Path=/api/v1/auth/providers; SameSite=Lax; Max-Age=0; Secure; HttpOnly";
 
@@ -303,13 +304,93 @@ fn location(fetched: &Fetched) -> String {
         .to_owned()
 }
 
-fn assert_failure(fetched: &Fetched, code: &str) {
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Landing {
+    Login,
+    Link,
+    Reauth,
+}
+
+impl Landing {
+    const fn path(self) -> &'static str {
+        match self {
+            Self::Login => "/login",
+            Self::Link => "/settings/security",
+            Self::Reauth => "/auth/reauth-complete",
+        }
+    }
+}
+
+fn assert_landing(fetched: &Fetched, landing: Landing, code: &str) -> String {
     assert_eq!(fetched.status, StatusCode::SEE_OTHER, "{code}");
-    assert_eq!(location(fetched), format!("{FAILURE_PREFIX}{code}"));
+    let target = Url::parse(&location(fetched)).unwrap();
+    assert_eq!(
+        format!("{}://{}", target.scheme(), target.host_str().unwrap()),
+        BASE,
+        "{code}"
+    );
+    assert_eq!(target.path(), landing.path(), "{code}");
+    let query: Vec<(String, String)> = target
+        .query_pairs()
+        .map(|(name, value)| (name.into_owned(), value.into_owned()))
+        .collect();
+    let mut expected = Vec::new();
+    if landing == Landing::Reauth {
+        expected.push("status");
+    }
+    expected.extend(["error", "requestId"]);
+    assert_eq!(
+        query
+            .iter()
+            .map(|(name, _)| name.as_str())
+            .collect::<Vec<_>>(),
+        expected,
+        "{code}"
+    );
+    assert_eq!(form_value(&query, "error"), Some(code));
+    if landing == Landing::Reauth {
+        assert_eq!(form_value(&query, "status"), Some("error"));
+    }
+    let request_id = form_value(&query, "requestId").unwrap();
+    assert!(!request_id.is_empty(), "{code}");
+    assert_eq!(
+        fetched
+            .headers
+            .get("x-request-id")
+            .unwrap()
+            .to_str()
+            .unwrap(),
+        request_id,
+        "{code}"
+    );
     assert_eq!(fetched.headers.get("cache-control").unwrap(), "no-store");
     assert!(fetched.body.is_empty());
-    let cookies = fetched.set_cookies();
-    assert_eq!(cookies, vec![OAUTH_CLEARED.to_owned()], "{code}");
+    assert_eq!(
+        fetched.set_cookies(),
+        vec![OAUTH_CLEARED.to_owned()],
+        "{code}"
+    );
+    request_id.to_owned()
+}
+
+fn without_request_id(fetched: &Fetched) -> String {
+    location(fetched)
+        .split("&requestId=")
+        .next()
+        .unwrap()
+        .to_owned()
+}
+
+fn assert_failure(fetched: &Fetched, code: &str) -> String {
+    assert_landing(fetched, Landing::Login, code)
+}
+
+fn assert_link_failure(fetched: &Fetched, code: &str) -> String {
+    assert_landing(fetched, Landing::Link, code)
+}
+
+fn assert_reauth_failure(fetched: &Fetched, code: &str) -> String {
+    assert_landing(fetched, Landing::Reauth, code)
 }
 
 fn assert_signed_in(fetched: &Fetched, destination: &str) -> Credentials {
@@ -368,11 +449,47 @@ fn unit_callback_params_parse_the_documented_query_only() {
 fn unit_callback_locations_are_built_from_the_trusted_base_url() {
     use crate::domain::error_code::ErrorCode;
     use crate::features::identity_providers::callback::{failure_location, success_location};
+    use crate::features::identity_providers::model::AuthorizePurpose;
 
     let base = Url::parse("https://files.example.test").unwrap();
     assert_eq!(
-        failure_location(&base, ErrorCode::ProviderStateInvalid),
-        "https://files.example.test/login?error=PROVIDER_STATE_INVALID"
+        failure_location(&base, None, ErrorCode::ProviderStateInvalid, Some("req-1")),
+        "https://files.example.test/login?error=PROVIDER_STATE_INVALID&requestId=req-1"
+    );
+    assert_eq!(
+        failure_location(
+            &base,
+            Some(AuthorizePurpose::Login),
+            ErrorCode::ProviderAuthDenied,
+            Some("req-1")
+        ),
+        "https://files.example.test/login?error=PROVIDER_AUTH_DENIED&requestId=req-1"
+    );
+    assert_eq!(
+        failure_location(
+            &base,
+            Some(AuthorizePurpose::Link),
+            ErrorCode::ProviderAuthDenied,
+            Some("req-1")
+        ),
+        "https://files.example.test/settings/security?error=PROVIDER_AUTH_DENIED&requestId=req-1"
+    );
+    assert_eq!(
+        failure_location(
+            &base,
+            Some(AuthorizePurpose::Reauth),
+            ErrorCode::ProviderAuthDenied,
+            Some("req-1")
+        ),
+        "https://files.example.test/auth/reauth-complete?status=error&error=PROVIDER_AUTH_DENIED&requestId=req-1"
+    );
+    assert_eq!(
+        failure_location(&base, None, ErrorCode::InternalError, None),
+        "https://files.example.test/login?error=INTERNAL_ERROR"
+    );
+    assert_eq!(
+        failure_location(&base, None, ErrorCode::InternalError, Some("a b&c=d/é")),
+        "https://files.example.test/login?error=INTERNAL_ERROR&requestId=a+b%26c%3Dd%2F%C3%A9"
     );
     assert_eq!(
         success_location(&base, "/files?x=1"),
@@ -380,8 +497,17 @@ fn unit_callback_locations_are_built_from_the_trusted_base_url() {
     );
     let nested = Url::parse("https://example.com/palmr/").unwrap();
     assert_eq!(
-        failure_location(&nested, ErrorCode::AuthLocked),
-        "https://example.com/palmr/login?error=AUTH_LOCKED"
+        failure_location(&nested, None, ErrorCode::AuthLocked, Some("req-2")),
+        "https://example.com/palmr/login?error=AUTH_LOCKED&requestId=req-2"
+    );
+    assert_eq!(
+        failure_location(
+            &nested,
+            Some(AuthorizePurpose::Reauth),
+            ErrorCode::AuthLocked,
+            Some("req-2")
+        ),
+        "https://example.com/palmr/auth/reauth-complete?status=error&error=AUTH_LOCKED&requestId=req-2"
     );
     assert_eq!(
         success_location(&nested, "/overview"),
@@ -466,10 +592,7 @@ async fn regression_R041_oauth_state_nonce_pkce_single_use() {
         .iter()
         .filter(|fetched| location(fetched) != "https://files.example.test/overview")
     {
-        assert_eq!(
-            location(fetched),
-            format!("{FAILURE_PREFIX}PROVIDER_STATE_INVALID")
-        );
+        assert_failure(fetched, "PROVIDER_STATE_INVALID");
     }
     assert_eq!(f.idp.token_requests().await.len(), before + 1);
     f.stack.stop().await;
@@ -726,7 +849,12 @@ async fn it_callback_non_login_requests_never_run_login_resolution() {
         };
         f.arm_oidc(&begun, json!({ "email": "existing@example.test" }), &[]);
         let fetched = f.finish("corp", &begun).await;
-        assert_failure(&fetched, "PROVIDER_STATE_INVALID");
+        let landing = if purpose == "link" {
+            Landing::Link
+        } else {
+            Landing::Reauth
+        };
+        assert_landing(&fetched, landing, "PROVIDER_STATE_INVALID");
         assert!(consumed(&f, &begun).await);
     }
     assert!(f.idp.token_requests().await.is_empty());
@@ -1368,7 +1496,7 @@ async fn it_callback_refusals_do_not_reveal_whether_an_account_exists() {
         let rendered = format!("{:?}{}", fetched.headers, fetched.text());
         assert!(!rendered.contains("known@"));
         assert!(!rendered.contains("example.test/") || rendered.contains("files.example.test"));
-        seen.push(location(&fetched));
+        seen.push(without_request_id(&fetched));
     }
     assert_eq!(seen[0], seen[1]);
     for email in ["known@example.test", "unknown@example.test"] {

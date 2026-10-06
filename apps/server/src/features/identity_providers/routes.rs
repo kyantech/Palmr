@@ -9,7 +9,9 @@ use utoipa_axum::routes;
 use super::authorize::{
     AuthorizeContext, AuthorizeRequest, AuthorizeResponse, AUTH_REQUEST_TTL_SECONDS,
 };
-use super::callback::{CallbackCompletion, CallbackParams, CallbackRequest, ExternalLoginService};
+use super::callback::{
+    CallbackCompletion, CallbackFailure, CallbackParams, CallbackRequest, ExternalLoginService,
+};
 use super::discovery::Discovered;
 use super::error::ProviderError;
 use super::input::{
@@ -200,7 +202,7 @@ async fn authorize_provider(
     responses(
         (
             status = 303,
-            description = "Always a redirect, for all three purposes. `login`: on success `Location` is `PALMR_BASE_URL` plus the validated post-authentication path and `palmr_session` and `palmr_csrf` are set. `link` (started by `POST /api/v1/auth/providers/{slug}/link`): the callback additionally requires the same live Palmr session that started it, whose recent-authentication window must still be open, and on success `Location` is `PALMR_BASE_URL/settings/security`; no session cookie is set or rotated. `reauth` (started by the SSO branch of `POST /api/v1/auth/reauthenticate`): the callback requires the same session and proves the same provider and subject that established it; on success `last_auth_at` of that session only is stamped, the session token is not rotated and `Location` is `PALMR_BASE_URL/overview`. On every success `palmr_oauth` is cleared. On failure `Location` is `PALMR_BASE_URL/login?error=<CODE>` where `<CODE>` is one of `PROVIDER_STATE_INVALID`, `PROVIDER_AUTH_DENIED`, `PROVIDER_DISABLED`, `PROVIDER_CODE_EXCHANGE_FAILED`, `PROVIDER_ID_TOKEN_INVALID`, `PROVIDER_USERINFO_FAILED`, `PROVIDER_SUBJECT_MISSING`, `PROVIDER_EMAIL_UNVERIFIED`, `PROVIDER_AUTO_PROVISION_DISABLED`, `PROVIDER_IDENTITY_ALREADY_LINKED`, `PROVIDER_LINK_NOT_FOUND`, `AUTH_RECENT_AUTH_REQUIRED`, `AUTH_EXTERNAL_AMBIGUOUS_IDENTITY`, `AUTH_EXTERNAL_USERNAME_UNAVAILABLE`, `AUTH_ACCOUNT_INACTIVE`, `AUTH_LOCKED` or `INTERNAL_ERROR`; `palmr_oauth` is cleared. No JSON body is returned."
+            description = "Always a redirect, for all three purposes; the landing is chosen by the purpose stored in the server-side authorization request, never by a client or provider parameter. `login`: on success `Location` is `PALMR_BASE_URL` plus the validated post-authentication path (default `/overview`) and `palmr_session` and `palmr_csrf` are set. `link` (started by `POST /api/v1/auth/providers/{slug}/link`): the callback additionally requires the same live Palmr session that started it, whose recent-authentication window must still be open, and on success `Location` is `PALMR_BASE_URL/settings/security`; no session cookie is set or rotated. `reauth` (started by the SSO branch of `POST /api/v1/auth/reauthenticate`, normally in a popup): the callback requires the same session and proves the same provider and subject that established it; on success `last_auth_at` of that session only is stamped, the session token is not rotated and `Location` is `PALMR_BASE_URL/auth/reauth-complete?status=success`, a SPA completion route, not an API route. On every success `palmr_oauth` is cleared. On failure `Location` is `PALMR_BASE_URL/login?error=<CODE>&requestId=<REQUEST_ID>` for `login`, `PALMR_BASE_URL/settings/security?error=<CODE>&requestId=<REQUEST_ID>` for `link` and `PALMR_BASE_URL/auth/reauth-complete?status=error&error=<CODE>&requestId=<REQUEST_ID>` for `reauth`. The purpose is recovered only from an unexpired authorization request whose provider matches the callback and whose browser-binding cookie matches; when it cannot be established (missing, malformed, unknown, expired, already consumed or foreign state, a binding mismatch or a provider mismatch) the landing is the `login` failure form. `<REQUEST_ID>` is the `X-Request-Id` of the callback request itself and is diagnostic only; `error_description`, provider text, codes, state, tokens, subjects and e-mail addresses are never forwarded. `<CODE>` is one of `PROVIDER_STATE_INVALID`, `PROVIDER_AUTH_DENIED`, `PROVIDER_DISABLED`, `PROVIDER_CODE_EXCHANGE_FAILED`, `PROVIDER_ID_TOKEN_INVALID`, `PROVIDER_USERINFO_FAILED`, `PROVIDER_SUBJECT_MISSING`, `PROVIDER_EMAIL_UNVERIFIED`, `PROVIDER_AUTO_PROVISION_DISABLED`, `PROVIDER_IDENTITY_ALREADY_LINKED`, `PROVIDER_LINK_NOT_FOUND`, `AUTH_RECENT_AUTH_REQUIRED`, `AUTH_EXTERNAL_AMBIGUOUS_IDENTITY`, `AUTH_EXTERNAL_USERNAME_UNAVAILABLE`, `AUTH_ACCOUNT_INACTIVE`, `AUTH_LOCKED` or `INTERNAL_ERROR`; `palmr_oauth` is cleared. No JSON body is returned."
         ),
         (status = 429, description = "Rate limited.", body = ApiErrorBody),
     )
@@ -211,6 +213,8 @@ async fn provider_callback(
     RawQuery(raw_query): RawQuery,
     request: Request,
 ) -> Response {
+    let request_id = RequestId::of(&request);
+    let request_id = request_id.as_ref().map(RequestId::as_str);
     let binding = cookies::read(request.headers(), OAUTH_COOKIE)
         .ok()
         .flatten()
@@ -227,20 +231,32 @@ async fn provider_callback(
     };
     let params = CallbackParams::parse(raw_query.as_deref());
 
-    let (location, session) = match service.complete(&slug, params, context).await {
-        Ok(CallbackCompletion { location, session }) => (location, session),
-        Err(error) => {
+    let (location, session, purpose) = match service.complete(&slug, params, context).await {
+        Ok(CallbackCompletion {
+            location,
+            session,
+            purpose,
+        }) => (location, session, Some(purpose)),
+        Err(CallbackFailure { error, purpose }) => {
             if error.is_server_fault() {
                 tracing::error!(kind = error.kind(), "external login callback failed");
             }
-            (service.failure_location(error.code()), None)
+            (
+                service.failure_location(purpose, error.code(), request_id),
+                None,
+                purpose,
+            )
         }
     };
 
     let mut response = redirect_response(&location);
     let mut failed = cookies_failed(&service, response.headers_mut(), session.as_ref());
     if failed {
-        response = redirect_response(&service.failure_location(ErrorCode::InternalError));
+        response = redirect_response(&service.failure_location(
+            purpose,
+            ErrorCode::InternalError,
+            request_id,
+        ));
         failed = service
             .cookie_policy()
             .expire_oauth_binding(response.headers_mut())

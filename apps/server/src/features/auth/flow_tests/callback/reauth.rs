@@ -2,22 +2,27 @@ use super::link::{assert_link_redirect, Member};
 use super::*;
 
 const REAUTHENTICATE: &str = "/api/v1/auth/reauthenticate";
-const OVERVIEW: &str = "https://files.example.test/overview";
+const REAUTH_COMPLETE: &str = "https://files.example.test/auth/reauth-complete?status=success";
 
 #[derive(Debug, Clone, PartialEq, Eq, sqlx::FromRow)]
-struct SessionFacts {
-    id: String,
-    token_hash: String,
-    csrf_token_hash: String,
-    state: String,
-    auth_method: String,
-    identity_link_id: Option<String>,
-    created_at: String,
-    last_auth_at: String,
+pub(super) struct SessionFacts {
+    pub(super) id: String,
+    pub(super) token_hash: String,
+    pub(super) csrf_token_hash: String,
+    pub(super) state: String,
+    pub(super) auth_method: String,
+    pub(super) identity_link_id: Option<String>,
+    pub(super) created_at: String,
+    pub(super) last_auth_at: String,
 }
 
 impl Federation {
-    async fn external_oidc_member(&self, slug: &str, subject: &str, email: &str) -> Member {
+    pub(super) async fn external_oidc_member(
+        &self,
+        slug: &str,
+        subject: &str,
+        email: &str,
+    ) -> Member {
         self.external_member(slug, subject, email).await
     }
 
@@ -30,7 +35,7 @@ impl Federation {
             .await
     }
 
-    async fn begin_reauth(&self, creds: &Credentials) -> Begun {
+    pub(super) async fn begin_reauth(&self, creds: &Credentials) -> Begun {
         let fetched = self.request_reauth(creds, &json!({})).await;
         assert_eq!(fetched.status, StatusCode::ACCEPTED, "{}", fetched.text());
         let body = fetched.json();
@@ -55,7 +60,7 @@ impl Federation {
         }
     }
 
-    async fn session_facts(&self, raw: &str) -> SessionFacts {
+    pub(super) async fn session_facts(&self, raw: &str) -> SessionFacts {
         sqlx::query_as(
             "SELECT id, token_hash, csrf_token_hash, state, auth_method, identity_link_id,
                     created_at, last_auth_at
@@ -95,14 +100,14 @@ impl Federation {
     }
 }
 
-fn assert_reauth_redirect(fetched: &Fetched) {
+pub(super) fn assert_reauth_redirect(fetched: &Fetched) {
     assert_eq!(
         fetched.status,
         StatusCode::SEE_OTHER,
         "{}",
         location(fetched)
     );
-    assert_eq!(location(fetched), OVERVIEW);
+    assert_eq!(location(fetched), REAUTH_COMPLETE);
     assert_eq!(fetched.headers.get("cache-control").unwrap(), "no-store");
     assert_eq!(fetched.set_cookies(), vec![OAUTH_CLEARED.to_owned()]);
 }
@@ -386,14 +391,14 @@ async fn it_reauth_callback_requires_the_same_live_session_and_user() {
 
     let anonymous = f.begin_reauth(&member.creds).await;
     f.arm_oidc(&anonymous, json!({ "sub": "sso-subject" }), &[]);
-    assert_failure(
+    assert_reauth_failure(
         &f.finish_as("corp", &anonymous, None).await,
         "PROVIDER_STATE_INVALID",
     );
 
     let foreign = f.begin_reauth(&member.creds).await;
     f.arm_oidc(&foreign, json!({ "sub": "sso-subject" }), &[]);
-    assert_failure(
+    assert_reauth_failure(
         &f.finish_as("corp", &foreign, Some(&stranger.creds)).await,
         "PROVIDER_STATE_INVALID",
     );
@@ -439,7 +444,7 @@ async fn it_reauth_callback_must_prove_the_same_subject_and_provider() {
     let wrong_subject = f
         .reauth_oidc("corp", &member, json!({ "sub": "someone-else" }), &[])
         .await;
-    assert_failure(&wrong_subject, "AUTH_RECENT_AUTH_REQUIRED");
+    assert_reauth_failure(&wrong_subject, "AUTH_RECENT_AUTH_REQUIRED");
     assert_eq!(f.session_facts(&member.creds.session).await, before);
 
     let begun = f.begin_reauth(&member.creds).await;
@@ -455,7 +460,7 @@ async fn it_reauth_callback_must_prove_the_same_subject_and_provider() {
         .await;
     f.arm_oidc(&begun, json!({ "sub": "sso-subject" }), &[]);
     let wrong_provider = f.finish_as("other", &begun, Some(&member.creds)).await;
-    assert_failure(&wrong_provider, "AUTH_RECENT_AUTH_REQUIRED");
+    assert_reauth_failure(&wrong_provider, "AUTH_RECENT_AUTH_REQUIRED");
     assert_eq!(f.session_facts(&member.creds.session).await, before);
 
     let intruding = f.begin_reauth(&intruder.creds).await;
@@ -463,7 +468,7 @@ async fn it_reauth_callback_must_prove_the_same_subject_and_provider() {
     let swapped_user = f
         .finish_as("other", &intruding, Some(&intruder.creds))
         .await;
-    assert_failure(&swapped_user, "AUTH_RECENT_AUTH_REQUIRED");
+    assert_reauth_failure(&swapped_user, "AUTH_RECENT_AUTH_REQUIRED");
 
     f.assert_nothing_gained(users, sessions, links).await;
     f.stack.stop().await;
@@ -488,7 +493,7 @@ async fn it_oidc_reauth_enforces_auth_time() {
             &["auth_time"],
         )
         .await;
-    assert_failure(&missing, "AUTH_RECENT_AUTH_REQUIRED");
+    assert_reauth_failure(&missing, "AUTH_RECENT_AUTH_REQUIRED");
     let stale = f
         .reauth_oidc(
             "corp",
@@ -497,7 +502,7 @@ async fn it_oidc_reauth_enforces_auth_time() {
             &[],
         )
         .await;
-    assert_failure(&stale, "AUTH_RECENT_AUTH_REQUIRED");
+    assert_reauth_failure(&stale, "AUTH_RECENT_AUTH_REQUIRED");
     let future = f
         .reauth_oidc(
             "corp",
@@ -506,7 +511,7 @@ async fn it_oidc_reauth_enforces_auth_time() {
             &[],
         )
         .await;
-    assert_failure(&future, "AUTH_RECENT_AUTH_REQUIRED");
+    assert_reauth_failure(&future, "AUTH_RECENT_AUTH_REQUIRED");
     let unparsable = f
         .reauth_oidc(
             "corp",
@@ -515,7 +520,7 @@ async fn it_oidc_reauth_enforces_auth_time() {
             &[],
         )
         .await;
-    assert_failure(&unparsable, "AUTH_RECENT_AUTH_REQUIRED");
+    assert_reauth_failure(&unparsable, "AUTH_RECENT_AUTH_REQUIRED");
     assert_eq!(f.session_facts(&member.creds.session).await, before);
 
     let forged = f
@@ -526,7 +531,7 @@ async fn it_oidc_reauth_enforces_auth_time() {
             &[],
         )
         .await;
-    assert_failure(&forged, "PROVIDER_ID_TOKEN_INVALID");
+    assert_reauth_failure(&forged, "PROVIDER_ID_TOKEN_INVALID");
 
     let recent = f
         .reauth_oidc(
@@ -562,7 +567,7 @@ async fn it_oauth2_reauth_requires_a_fresh_round_trip_and_the_same_subject() {
 
     let mismatched = f.begin_reauth(&member.creds).await;
     arm("9999");
-    assert_failure(
+    assert_reauth_failure(
         &f.finish_as("plain", &mismatched, Some(&member.creds)).await,
         "AUTH_RECENT_AUTH_REQUIRED",
     );
@@ -572,7 +577,7 @@ async fn it_oauth2_reauth_requires_a_fresh_round_trip_and_the_same_subject() {
     f.stack.clock.advance(Duration::from_secs(5 * 60 + 1));
     arm("4242");
     let requests = f.idp.token_requests().await.len();
-    assert_failure(
+    assert_reauth_failure(
         &f.finish_as("plain", &slow, Some(&member.creds)).await,
         "AUTH_RECENT_AUTH_REQUIRED",
     );

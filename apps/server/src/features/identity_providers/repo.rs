@@ -299,6 +299,43 @@ pub struct ConsumedAuthRequest {
     pub created_at: Timestamp,
 }
 
+pub struct PendingAuthRequest {
+    pub provider_id: ProviderId,
+    pub binding_cookie_hash: TokenDigest,
+    pub purpose: AuthorizePurpose,
+}
+
+pub async fn find_pending_auth_request(
+    reader: &ReadPool,
+    state_hash: &TokenDigest,
+    now: Timestamp,
+) -> Result<Option<PendingAuthRequest>, ProviderError> {
+    let row = sqlx::query(
+        "SELECT provider_id, binding_cookie_hash, purpose FROM oauth_auth_requests
+         WHERE state_hash = ?1 AND consumed_at IS NULL AND expires_at > ?2",
+    )
+    .bind(state_hash.as_str())
+    .bind(now.to_string())
+    .fetch_optional(reader.executor())
+    .await?;
+    row.map(|row| {
+        let text = |column: &'static str| -> Result<String, ProviderError> {
+            row.try_get::<String, _>(column)
+                .map_err(|_| invariant(column))
+        };
+        Ok(PendingAuthRequest {
+            provider_id: text("provider_id")?
+                .parse()
+                .map_err(|_| invariant("provider_id"))?,
+            binding_cookie_hash: TokenDigest::parse(&text("binding_cookie_hash")?)
+                .map_err(|_| invariant("binding_cookie_hash"))?,
+            purpose: AuthorizePurpose::parse(&text("purpose")?)
+                .ok_or_else(|| invariant("purpose"))?,
+        })
+    })
+    .transpose()
+}
+
 pub async fn consume_auth_request(
     tx: &mut WriteTx<'_>,
     state_hash: &TokenDigest,

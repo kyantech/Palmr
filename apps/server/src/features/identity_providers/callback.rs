@@ -5,7 +5,7 @@ use super::authorize::authorization_request_aad;
 use super::claims;
 use super::error::ExternalLoginError;
 use super::exchange::{exchange_code, ExchangeRequest, TokenResponse};
-use super::link::LinkCompletion;
+use super::link::{LinkCompletion, LINK_RETURN_TO};
 use super::model::{
     self, client_secret_aad, AuthorizePurpose, IdentityProvider, Preset, ProviderVariant,
     TokenAuthMethod,
@@ -47,6 +47,10 @@ pub const MAX_STATE_CHARS: usize = 128;
 pub const MAX_CODE_CHARS: usize = 4096;
 pub const FAILURE_PATH: &str = "/login";
 pub const FAILURE_PARAMETER: &str = "error";
+pub const REQUEST_ID_PARAMETER: &str = "requestId";
+pub const STATUS_PARAMETER: &str = "status";
+pub const REAUTH_COMPLETE_PATH: &str = "/auth/reauth-complete";
+pub const REAUTH_SUCCESS_PATH: &str = "/auth/reauth-complete?status=success";
 
 #[derive(Default)]
 pub struct CallbackParams {
@@ -90,6 +94,12 @@ pub struct CallbackRequest {
 pub struct CallbackCompletion {
     pub session: Option<MintedSession>,
     pub location: String,
+    pub purpose: AuthorizePurpose,
+}
+
+pub struct CallbackFailure {
+    pub error: ExternalLoginError,
+    pub purpose: Option<AuthorizePurpose>,
 }
 
 enum Flow {
@@ -155,8 +165,13 @@ impl ExternalLoginService {
         success_location(self.providers.base_url().url(), path)
     }
 
-    pub fn failure_location(&self, code: ErrorCode) -> String {
-        failure_location(self.providers.base_url().url(), code)
+    pub fn failure_location(
+        &self,
+        purpose: Option<AuthorizePurpose>,
+        code: ErrorCode,
+        request_id: Option<&str>,
+    ) -> String {
+        failure_location(self.providers.base_url().url(), purpose, code, request_id)
     }
 
     pub async fn complete(
@@ -164,8 +179,53 @@ impl ExternalLoginService {
         slug: &str,
         params: CallbackParams,
         request: CallbackRequest,
+    ) -> Result<CallbackCompletion, CallbackFailure> {
+        let mut purpose = None;
+        self.run(slug, params, request, &mut purpose)
+            .await
+            .map_err(|error| CallbackFailure { error, purpose })
+    }
+
+    async fn recover_purpose(
+        &self,
+        slug: &str,
+        params: &CallbackParams,
+        request: &CallbackRequest,
+    ) -> Option<AuthorizePurpose> {
+        let (Some(binding), Some(state)) = (&request.binding, &params.state) else {
+            return None;
+        };
+        if params.malformed || state.expose_secret().len() > MAX_STATE_CHARS {
+            return None;
+        }
+        let state_digest = Token::decode(state.expose_secret()).ok()?.digest();
+        let presented = Token::decode(binding.expose_secret()).ok()?.digest();
+        let now = Timestamp::try_from(self.providers.clock().now()).ok()?;
+        let reader = self.providers.pools().reader();
+        let pending = repo::find_pending_auth_request(reader, &state_digest, now)
+            .await
+            .ok()??;
+        if !presented.verify(&pending.binding_cookie_hash) {
+            return None;
+        }
+        repo::find_by_slug(reader, slug)
+            .await
+            .ok()??
+            .provider
+            .id
+            .eq(&pending.provider_id)
+            .then_some(pending.purpose)
+    }
+
+    async fn run(
+        &self,
+        slug: &str,
+        params: CallbackParams,
+        request: CallbackRequest,
+        known: &mut Option<AuthorizePurpose>,
     ) -> Result<CallbackCompletion, ExternalLoginError> {
         if params.denied {
+            *known = self.recover_purpose(slug, &params, &request).await;
             return Err(refused(ErrorCode::ProviderAuthDenied));
         }
         let invalid_state = || refused(ErrorCode::ProviderStateInvalid);
@@ -208,6 +268,7 @@ impl ExternalLoginService {
             .filter(|record| record.provider.id == row.provider_id)
             .ok_or_else(invalid_state)?;
         let provider = &record.provider;
+        *known = Some(row.purpose);
         if !self
             .providers
             .settings()
@@ -266,10 +327,14 @@ impl ExternalLoginService {
             return Err(refused(ErrorCode::ProviderSubjectMissing));
         }
 
-        let path = row
-            .post_auth_path
-            .as_deref()
-            .unwrap_or(super::authorize::DEFAULT_RETURN_TO);
+        let path = match &flow {
+            Flow::Login => row
+                .post_auth_path
+                .as_deref()
+                .unwrap_or(super::authorize::DEFAULT_RETURN_TO),
+            Flow::Link(_) => LINK_RETURN_TO,
+            Flow::Reauth(_) => REAUTH_SUCCESS_PATH,
+        };
         let session = match flow {
             Flow::Login => {
                 let signed_in = self.sign_in(provider, &identity, &request).await?;
@@ -300,6 +365,7 @@ impl ExternalLoginService {
         Ok(CallbackCompletion {
             location: self.success_location(path),
             session,
+            purpose: row.purpose,
         })
     }
 
@@ -752,12 +818,30 @@ pub fn success_location(base: &Url, path: &str) -> String {
     format!("{}{path}", base.as_str().trim_end_matches('/'))
 }
 
-pub fn failure_location(base: &Url, code: ErrorCode) -> String {
-    let root = format!("{}{FAILURE_PATH}", base.as_str().trim_end_matches('/'));
+pub fn failure_location(
+    base: &Url,
+    purpose: Option<AuthorizePurpose>,
+    code: ErrorCode,
+    request_id: Option<&str>,
+) -> String {
+    let path = match purpose {
+        Some(AuthorizePurpose::Link) => LINK_RETURN_TO,
+        Some(AuthorizePurpose::Reauth) => REAUTH_COMPLETE_PATH,
+        Some(AuthorizePurpose::Login) | None => FAILURE_PATH,
+    };
+    let root = format!("{}{path}", base.as_str().trim_end_matches('/'));
     match Url::parse(&root) {
         Ok(mut url) => {
-            url.query_pairs_mut()
-                .append_pair(FAILURE_PARAMETER, code.as_str());
+            {
+                let mut query = url.query_pairs_mut();
+                if purpose == Some(AuthorizePurpose::Reauth) {
+                    query.append_pair(STATUS_PARAMETER, "error");
+                }
+                query.append_pair(FAILURE_PARAMETER, code.as_str());
+                if let Some(request_id) = request_id {
+                    query.append_pair(REQUEST_ID_PARAMETER, request_id);
+                }
+            }
             url.into()
         }
         Err(_) => root,
