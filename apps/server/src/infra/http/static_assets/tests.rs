@@ -303,6 +303,24 @@ fn assert_global_headers(fetched: &Fetched, context: &str) {
         "same-origin",
         "{context}"
     );
+    assert_eq!(
+        fetched.header(HeaderName::from_static("cross-origin-opener-policy")),
+        "same-origin",
+        "{context}"
+    );
+}
+
+#[tokio::test]
+async fn it_reauth_completion_route_keeps_strict_opener_policy() {
+    let dist = built_dist();
+    for path in [
+        "/auth/reauth-complete",
+        "/auth/reauth-complete?status=success&channel=AwsTGyMrMztDS1NbY2tze4OLk5ujq7O7w8vT2-Pr8_s",
+        "/auth/reauth-complete?status=error&error=PROVIDER_AUTH_DENIED&requestId=r&channel=c",
+    ] {
+        let fetched = navigate(&dist, Method::GET, path).await;
+        assert_shell(&fetched, path);
+    }
 }
 
 #[tokio::test]

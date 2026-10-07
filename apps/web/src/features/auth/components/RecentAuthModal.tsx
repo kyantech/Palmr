@@ -154,7 +154,7 @@ function ExternalChallenge({
   const { t } = useTranslation("auth");
   const { token } = theme.useToken();
   const { phase, notice, failure, start } = useExternalReauth(challenge);
-  const busy = phase !== "idle";
+  const busy = phase === "starting" || phase === "verifying";
   return (
     <Flex vertical gap={16} data-recent-auth-method="external">
       {failure?.kind === "api" ? <ErrorAlert error={failure.error} /> : null}
@@ -181,9 +181,15 @@ function ExternalChallenge({
       ) : null}
       <Flex justify="end" gap={token.marginXS}>
         <Button onClick={onCancel}>{t("recentAuth.cancel")}</Button>
-        <Button type="primary" loading={busy} disabled={busy} onClick={start}>
-          {t("recentAuth.external.continue")}
-        </Button>
+        {phase === "waiting" ? (
+          <Button type="primary" onClick={start}>
+            {t("recentAuth.external.tryAgain")}
+          </Button>
+        ) : (
+          <Button type="primary" loading={busy} disabled={busy} onClick={start}>
+            {t("recentAuth.external.continue")}
+          </Button>
+        )}
       </Flex>
     </Flex>
   );

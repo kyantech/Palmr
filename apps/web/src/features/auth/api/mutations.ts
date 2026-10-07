@@ -8,7 +8,12 @@ import { apiFetch } from "../../../shared/api/apiFetch";
 import { qk } from "../../../shared/api/query-keys";
 import type { components } from "../../../shared/api/schema";
 import { isApiErrorCode } from "../../../shared/errors";
-import { externalNavigation, providerUrlOrFail } from "../externalNavigation";
+import {
+  type ExternalReauthStart,
+  externalNavigation,
+  externalReauthChannelOrFail,
+  providerUrlOrFail,
+} from "../externalNavigation";
 import { beginMfaChallenge, clearMfaChallenge, mfaChallengeStore, setLoginNotice } from "../store";
 
 export type ReauthenticateRequest = components["schemas"]["ReauthenticateRequest"];
@@ -136,12 +141,14 @@ export function useUnlinkIdentity(onUnlinked: () => Promise<void>) {
 export function useStartExternalReauthentication() {
   return useMutation({
     mutationKey: ["auth", "reauthenticate", "external"],
-    mutationFn: async () => {
+    mutationFn: async (): Promise<ExternalReauthStart> => {
       const response = await apiFetch("post", "/auth/reauthenticate", { body: {} });
-      return providerUrlOrFail(response?.externalReauthUrl, {
-        method: "POST",
-        path: "/auth/reauthenticate",
-      });
+      const request = { method: "POST", path: "/auth/reauthenticate" } as const;
+      const url = providerUrlOrFail(response?.externalReauthUrl, request);
+      return {
+        url,
+        channel: externalReauthChannelOrFail(response?.externalReauthChannel, request),
+      };
     },
     retry: false,
     gcTime: 0,

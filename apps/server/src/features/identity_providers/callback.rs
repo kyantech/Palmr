@@ -15,7 +15,7 @@ use super::oidc::{
     IdTokenRequest, IdTokenValidator, ValidatedIdToken, ValidationPurpose,
     DEFAULT_ALLOWED_ALGORITHMS,
 };
-use super::reauth::ReauthCompletion;
+use super::reauth::{self, ReauthCompletion};
 use super::repo;
 use super::resolve::{self, refused, ExternalIdentity, LinkState, ResolveInput};
 use super::service::IdentityProviderService;
@@ -50,7 +50,6 @@ pub const FAILURE_PARAMETER: &str = "error";
 pub const REQUEST_ID_PARAMETER: &str = "requestId";
 pub const STATUS_PARAMETER: &str = "status";
 pub const REAUTH_COMPLETE_PATH: &str = "/auth/reauth-complete";
-pub const REAUTH_SUCCESS_PATH: &str = "/auth/reauth-complete?status=success";
 
 #[derive(Default)]
 pub struct CallbackParams {
@@ -95,11 +94,32 @@ pub struct CallbackCompletion {
     pub session: Option<MintedSession>,
     pub location: String,
     pub purpose: AuthorizePurpose,
+    pub reauth_channel: Option<String>,
 }
 
 pub struct CallbackFailure {
     pub error: ExternalLoginError,
     pub purpose: Option<AuthorizePurpose>,
+    pub reauth_channel: Option<String>,
+}
+
+#[derive(Default)]
+struct Known {
+    purpose: Option<AuthorizePurpose>,
+    reauth_channel: Option<String>,
+}
+
+impl Known {
+    fn of(purpose: AuthorizePurpose, post_auth_path: Option<&str>) -> Self {
+        let reauth_channel = (purpose == AuthorizePurpose::Reauth)
+            .then(|| post_auth_path.and_then(reauth::channel_of_target))
+            .flatten()
+            .map(str::to_owned);
+        Self {
+            purpose: Some(purpose),
+            reauth_channel,
+        }
+    }
 }
 
 enum Flow {
@@ -168,10 +188,17 @@ impl ExternalLoginService {
     pub fn failure_location(
         &self,
         purpose: Option<AuthorizePurpose>,
+        reauth_channel: Option<&str>,
         code: ErrorCode,
         request_id: Option<&str>,
     ) -> String {
-        failure_location(self.providers.base_url().url(), purpose, code, request_id)
+        failure_location(
+            self.providers.base_url().url(),
+            purpose,
+            reauth_channel,
+            code,
+            request_id,
+        )
     }
 
     pub async fn complete(
@@ -180,18 +207,22 @@ impl ExternalLoginService {
         params: CallbackParams,
         request: CallbackRequest,
     ) -> Result<CallbackCompletion, CallbackFailure> {
-        let mut purpose = None;
-        self.run(slug, params, request, &mut purpose)
+        let mut known = Known::default();
+        self.run(slug, params, request, &mut known)
             .await
-            .map_err(|error| CallbackFailure { error, purpose })
+            .map_err(|error| CallbackFailure {
+                error,
+                purpose: known.purpose,
+                reauth_channel: known.reauth_channel,
+            })
     }
 
-    async fn recover_purpose(
+    async fn recover_known(
         &self,
         slug: &str,
         params: &CallbackParams,
         request: &CallbackRequest,
-    ) -> Option<AuthorizePurpose> {
+    ) -> Option<Known> {
         let (Some(binding), Some(state)) = (&request.binding, &params.state) else {
             return None;
         };
@@ -214,7 +245,7 @@ impl ExternalLoginService {
             .provider
             .id
             .eq(&pending.provider_id)
-            .then_some(pending.purpose)
+            .then(|| Known::of(pending.purpose, pending.post_auth_path.as_deref()))
     }
 
     async fn run(
@@ -222,10 +253,13 @@ impl ExternalLoginService {
         slug: &str,
         params: CallbackParams,
         request: CallbackRequest,
-        known: &mut Option<AuthorizePurpose>,
+        known: &mut Known,
     ) -> Result<CallbackCompletion, ExternalLoginError> {
         if params.denied {
-            *known = self.recover_purpose(slug, &params, &request).await;
+            *known = self
+                .recover_known(slug, &params, &request)
+                .await
+                .unwrap_or_default();
             return Err(refused(ErrorCode::ProviderAuthDenied));
         }
         let invalid_state = || refused(ErrorCode::ProviderStateInvalid);
@@ -268,7 +302,7 @@ impl ExternalLoginService {
             .filter(|record| record.provider.id == row.provider_id)
             .ok_or_else(invalid_state)?;
         let provider = &record.provider;
-        *known = Some(row.purpose);
+        *known = Known::of(row.purpose, row.post_auth_path.as_deref());
         if !self
             .providers
             .settings()
@@ -286,6 +320,9 @@ impl ExternalLoginService {
         }
 
         let flow = self.bind_flow(&row, &request).await?;
+        if matches!(flow, Flow::Reauth(_)) && known.reauth_channel.is_none() {
+            return Err(invalid_state());
+        }
         if matches!(flow, Flow::Reauth(_)) && provider.protocol() == model::Protocol::OAuth2 {
             let now = Timestamp::try_from(clock.now())?;
             if !self.recent_auth_open(row.created_at, now)? {
@@ -327,13 +364,14 @@ impl ExternalLoginService {
             return Err(refused(ErrorCode::ProviderSubjectMissing));
         }
 
-        let path = match &flow {
-            Flow::Login => row
+        let path = match (&flow, known.reauth_channel.as_deref()) {
+            (Flow::Login, _) => row
                 .post_auth_path
                 .as_deref()
-                .unwrap_or(super::authorize::DEFAULT_RETURN_TO),
-            Flow::Link(_) => LINK_RETURN_TO,
-            Flow::Reauth(_) => REAUTH_SUCCESS_PATH,
+                .unwrap_or(super::authorize::DEFAULT_RETURN_TO)
+                .to_owned(),
+            (Flow::Link(_), _) => LINK_RETURN_TO.to_owned(),
+            (Flow::Reauth(_), channel) => reauth_success_path(channel.unwrap_or_default()),
         };
         let session = match flow {
             Flow::Login => {
@@ -363,9 +401,10 @@ impl ExternalLoginService {
             }
         };
         Ok(CallbackCompletion {
-            location: self.success_location(path),
+            location: self.success_location(&path),
             session,
             purpose: row.purpose,
+            reauth_channel: known.reauth_channel.clone(),
         })
     }
 
@@ -818,9 +857,17 @@ pub fn success_location(base: &Url, path: &str) -> String {
     format!("{}{path}", base.as_str().trim_end_matches('/'))
 }
 
+pub fn reauth_success_path(channel: &str) -> String {
+    let mut query = url::form_urlencoded::Serializer::new(String::new());
+    query.append_pair(STATUS_PARAMETER, "success");
+    query.append_pair(reauth::REAUTH_CHANNEL_PARAMETER, channel);
+    format!("{REAUTH_COMPLETE_PATH}?{}", query.finish())
+}
+
 pub fn failure_location(
     base: &Url,
     purpose: Option<AuthorizePurpose>,
+    reauth_channel: Option<&str>,
     code: ErrorCode,
     request_id: Option<&str>,
 ) -> String {
@@ -840,6 +887,9 @@ pub fn failure_location(
                 query.append_pair(FAILURE_PARAMETER, code.as_str());
                 if let Some(request_id) = request_id {
                     query.append_pair(REQUEST_ID_PARAMETER, request_id);
+                }
+                if let (Some(AuthorizePurpose::Reauth), Some(channel)) = (purpose, reauth_channel) {
+                    query.append_pair(reauth::REAUTH_CHANNEL_PARAMETER, channel);
                 }
             }
             url.into()

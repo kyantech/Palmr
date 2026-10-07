@@ -11,6 +11,7 @@ import {
   installIdentityServer,
   type IdentityServerOptions,
 } from "../../test/identityServer";
+import { CHANNEL_ID, listenOnChannel } from "../../test/reauthChannel";
 import { renderSession, resetSessionHarness, stubMatchMedia } from "../../test/renderSession";
 import { server } from "../../test/server";
 import { installSettingsServer, type SettingsServerOptions } from "../../test/settingsServer";
@@ -390,35 +391,32 @@ describe("component_identity_unlink", () => {
 });
 
 describe("component_reauth_complete_route", () => {
-  test("an authenticated popup landing renders the minimal status panel, outside the app shell", async () => {
+  test("an authenticated popup landing renders the minimal status panel, outside the app shell, and announces on its channel", async () => {
     installSettingsServer();
-    const opener = { closed: false, postMessage: vi.fn() };
-    Object.defineProperty(window, "opener", { value: opener, configurable: true, writable: true });
+    const own = listenOnChannel(CHANNEL_ID);
     vi.spyOn(window, "close").mockImplementation(() => undefined);
     renderSession({
       routes: appRoutes,
-      initialEntries: ["/auth/reauth-complete?status=success"],
+      initialEntries: [`/auth/reauth-complete?status=success&channel=${CHANNEL_ID}`],
     });
 
     const page = await screen.findByTestId("reauth-complete");
     expect(page.getAttribute("data-outcome")).toBe("success");
     expect(screen.queryByTestId("app-shell")).toBeNull();
     expect(screen.queryByTestId("auth-brand")).toBeNull();
-    expect(opener.postMessage).toHaveBeenCalledWith(
-      { type: "palmr:external-reauth", status: "success" },
-      window.location.origin,
-    );
-    Object.defineProperty(window, "opener", { value: null, configurable: true, writable: true });
+    await waitFor(() => {
+      expect(own.messages).toEqual([{ type: "palmr:external-reauth", status: "success" }]);
+    });
+    own.close();
   });
 
-  test("without an opener it shows the localized outcome and a way back to /overview", async () => {
+  test("it shows the localized outcome and a way back to /overview when the window stays open", async () => {
     installSettingsServer();
-    Object.defineProperty(window, "opener", { value: null, configurable: true, writable: true });
     const { router, user } = (() => {
       const harness = renderSession({
         routes: appRoutes,
         initialEntries: [
-          "/auth/reauth-complete?status=error&error=PROVIDER_AUTH_DENIED&requestId=req-ra-1",
+          `/auth/reauth-complete?status=error&error=PROVIDER_AUTH_DENIED&requestId=req-ra-1&channel=${CHANNEL_ID}`,
         ],
       });
       return { ...harness, user: userEvent.setup({ delay: null }) };
@@ -436,7 +434,7 @@ describe("component_reauth_complete_route", () => {
     server.use(...handlers);
     const { router } = renderSession({
       routes: appRoutes,
-      initialEntries: ["/auth/reauth-complete?status=success"],
+      initialEntries: [`/auth/reauth-complete?status=success&channel=${CHANNEL_ID}`],
     });
 
     await screen.findByRole("heading", { level: 1, name: "Sign in" });
@@ -446,7 +444,10 @@ describe("component_reauth_complete_route", () => {
 
   test("it never calls an API route of its own", async () => {
     const settings = installSettingsServer({ me: meFixture() });
-    renderSession({ routes: appRoutes, initialEntries: ["/auth/reauth-complete?status=success"] });
+    renderSession({
+      routes: appRoutes,
+      initialEntries: [`/auth/reauth-complete?status=success&channel=${CHANNEL_ID}`],
+    });
 
     await screen.findByTestId("reauth-complete");
     expect(settings.calls.sessions).toBe(0);

@@ -4,7 +4,6 @@ export interface FakePopup {
   closed: boolean;
   location: { href: string };
   close: ReturnType<typeof vi.fn>;
-  postMessage: ReturnType<typeof vi.fn>;
 }
 
 export interface PopupHarness {
@@ -28,7 +27,6 @@ export function stubWindowOpen({ blocked = false }: { blocked?: boolean } = {}):
       close: vi.fn(() => {
         popup.closed = true;
       }),
-      postMessage: vi.fn(),
     };
     popups.push(popup);
     return popup;
@@ -43,16 +41,4 @@ export function stubWindowOpen({ blocked = false }: { blocked?: boolean } = {}):
       window.open = original;
     },
   };
-}
-
-export function dispatchWindowMessage(
-  data: unknown,
-  {
-    source,
-    origin = window.location.origin,
-  }: { source: FakePopup | Window | null; origin?: string },
-) {
-  const event = new MessageEvent("message", { data, origin });
-  Object.defineProperty(event, "source", { value: source });
-  window.dispatchEvent(event);
 }

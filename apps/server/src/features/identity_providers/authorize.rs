@@ -14,6 +14,7 @@ use super::error::ProviderError;
 use super::model::{
     self, AuthRequestId, AuthorizePurpose, IdentityProvider, PublicProvider, PublicProviderList,
 };
+use super::reauth;
 use super::repo::{self, AuthRequestWrite};
 use crate::domain::secret::Secret;
 use crate::domain::time::Timestamp;
@@ -88,11 +89,11 @@ impl AuthorizeContext {
         }
     }
 
-    pub fn reauth(user_id: UserId, return_to: Option<String>) -> Self {
+    pub fn reauth(user_id: UserId, channel: &str) -> Self {
         Self {
             purpose: AuthorizePurpose::Reauth,
             bound_user_id: Some(user_id),
-            return_to,
+            return_to: Some(reauth::completion_target(channel)),
         }
     }
 
@@ -235,7 +236,19 @@ impl super::service::IdentityProviderService {
         }
 
         let redirect_uri = model::redirect_uri(self.base_url().url(), &provider.slug);
-        let return_to = validate_return_to(context.return_to.as_deref());
+        let return_to = match context.purpose {
+            AuthorizePurpose::Reauth => context
+                .return_to
+                .as_deref()
+                .filter(|target| reauth::channel_of_target(target).is_some())
+                .map(str::to_owned)
+                .ok_or(ProviderError::Invalid {
+                    fields: vec!["returnTo"],
+                })?,
+            AuthorizePurpose::Login | AuthorizePurpose::Link => {
+                validate_return_to(context.return_to.as_deref())
+            }
+        };
 
         let state = Token::mint()?;
         let binding = Token::mint()?;
@@ -403,6 +416,7 @@ mod tests {
             "/files\r\nLocation: evil",
             "/files\nevil",
             "/unknown",
+            "/auth/reauth-complete?channel=AwsTGyMrMztDS1NbY2tze4OLk5ujq7O7w8vT2-Pr8_s",
             "",
             "/",
             "files",

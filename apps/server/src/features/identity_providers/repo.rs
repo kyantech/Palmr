@@ -302,6 +302,7 @@ pub struct ConsumedAuthRequest {
 pub struct PendingAuthRequest {
     pub provider_id: ProviderId,
     pub binding_cookie_hash: TokenDigest,
+    pub post_auth_path: Option<String>,
     pub purpose: AuthorizePurpose,
 }
 
@@ -311,7 +312,7 @@ pub async fn find_pending_auth_request(
     now: Timestamp,
 ) -> Result<Option<PendingAuthRequest>, ProviderError> {
     let row = sqlx::query(
-        "SELECT provider_id, binding_cookie_hash, purpose FROM oauth_auth_requests
+        "SELECT provider_id, binding_cookie_hash, post_auth_path, purpose FROM oauth_auth_requests
          WHERE state_hash = ?1 AND consumed_at IS NULL AND expires_at > ?2",
     )
     .bind(state_hash.as_str())
@@ -329,6 +330,9 @@ pub async fn find_pending_auth_request(
                 .map_err(|_| invariant("provider_id"))?,
             binding_cookie_hash: TokenDigest::parse(&text("binding_cookie_hash")?)
                 .map_err(|_| invariant("binding_cookie_hash"))?,
+            post_auth_path: row
+                .try_get::<Option<String>, _>("post_auth_path")
+                .map_err(|_| invariant("post_auth_path"))?,
             purpose: AuthorizePurpose::parse(&text("purpose")?)
                 .ok_or_else(|| invariant("purpose"))?,
         })

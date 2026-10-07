@@ -4,6 +4,7 @@ import { qk } from "../../../shared/api/query-keys";
 import type { components } from "../../../shared/api/schema";
 import type { ReportedError } from "../../../shared/errors";
 import { useStartExternalReauthentication } from "../api/mutations";
+import { openExternalReauthChannel } from "../externalReauthChannel";
 import { type ExternalReauthLanding, parseExternalReauthMessage } from "../externalReauthMessage";
 import { type RecentAuthChallenge, takeRecentAuthReplay } from "../store";
 
@@ -11,13 +12,13 @@ type Me = components["schemas"]["MeResponse"];
 
 export const REAUTH_POPUP_NAME = "palmr-external-reauth";
 
+export const EXTERNAL_REAUTH_WAIT_LIMIT_MS = 600_000;
+
 const POPUP_FEATURES = "popup=yes,width=520,height=720";
-const CLOSE_POLL_MS = 500;
-const CLOSE_GRACE_MS = 400;
 
 export type ExternalReauthPhase = "idle" | "starting" | "waiting" | "verifying";
 
-export type ExternalReauthNotice = "popupBlocked" | "popupClosed";
+export type ExternalReauthNotice = "popupBlocked" | "expired";
 
 export type ExternalReauthFailure =
   | { readonly kind: "api"; readonly error: unknown }
@@ -33,6 +34,7 @@ export interface ExternalReauth {
 interface Attempt {
   readonly popup: Window;
   readonly baseline: number | null;
+  channel: BroadcastChannel | null;
   stop: () => void;
 }
 
@@ -46,9 +48,17 @@ export function recentAuthWindowOpened(me: Me | null | undefined, baseline: numb
   return next !== null && next > (baseline ?? Date.now());
 }
 
+function closeQuietly(popup: Window) {
+  try {
+    popup.close();
+  } catch {
+    return;
+  }
+}
+
 export function useExternalReauth(challenge: RecentAuthChallenge): ExternalReauth {
   const client = useQueryClient();
-  const { mutateAsync: requestExternalReauthUrl } = useStartExternalReauthentication();
+  const { mutateAsync: requestExternalReauth } = useStartExternalReauthentication();
   const [phase, setPhase] = useState<ExternalReauthPhase>("idle");
   const [notice, setNotice] = useState<ExternalReauthNotice | null>(null);
   const [failure, setFailure] = useState<ExternalReauthFailure | null>(null);
@@ -62,9 +72,8 @@ export function useExternalReauth(challenge: RecentAuthChallenge): ExternalReaut
       return;
     }
     current.stop();
-    if (!current.popup.closed) {
-      current.popup.close();
-    }
+    current.channel?.close();
+    closeQuietly(current.popup);
   }, []);
 
   useEffect(
@@ -90,7 +99,6 @@ export function useExternalReauth(challenge: RecentAuthChallenge): ExternalReaut
         settle({ failure: { kind: "reported", reported: landing.reported } });
         return;
       }
-      setPhase("verifying");
       await client.refetchQueries({ queryKey: qk.me.current(), exact: true });
       const me = client.getQueryData<Me | null>(qk.me.current());
       if (!recentAuthWindowOpened(me, baseline)) {
@@ -114,10 +122,10 @@ export function useExternalReauth(challenge: RecentAuthChallenge): ExternalReaut
     if (busy.current) {
       return;
     }
+    release();
     const popup = window.open("about:blank", REAUTH_POPUP_NAME, POPUP_FEATURES);
     if (popup === null) {
-      setFailure(null);
-      setNotice("popupBlocked");
+      settle({ notice: "popupBlocked" });
       return;
     }
     busy.current = true;
@@ -128,13 +136,14 @@ export function useExternalReauth(challenge: RecentAuthChallenge): ExternalReaut
     const current: Attempt = {
       popup,
       baseline: recentAuthUntilOf(client.getQueryData<Me | null>(qk.me.current())),
+      channel: null,
       stop: () => undefined,
     };
     attempt.current = current;
     const isCurrent = () => attempt.current === current;
 
     const onMessage = (event: MessageEvent<unknown>) => {
-      if (!isCurrent() || event.origin !== window.location.origin || event.source !== popup) {
+      if (!isCurrent()) {
         return;
       }
       const landing = parseExternalReauthMessage(event.data);
@@ -142,38 +151,40 @@ export function useExternalReauth(challenge: RecentAuthChallenge): ExternalReaut
         return;
       }
       release();
+      busy.current = true;
+      setPhase("verifying");
       void complete(landing, current.baseline);
     };
-    const watcher = window.setInterval(() => {
-      if (!popup.closed) {
-        return;
-      }
-      window.clearInterval(watcher);
-      window.setTimeout(() => {
-        if (isCurrent()) {
-          release();
-          settle({ notice: "popupClosed" });
-        }
-      }, CLOSE_GRACE_MS);
-    }, CLOSE_POLL_MS);
-    window.addEventListener("message", onMessage);
-    current.stop = () => {
-      window.removeEventListener("message", onMessage);
-      window.clearInterval(watcher);
-    };
 
-    requestExternalReauthUrl().then(
-      (url) => {
+    requestExternalReauth().then(
+      ({ url, channel }) => {
         if (!isCurrent()) {
           return;
         }
         try {
+          current.channel = openExternalReauthChannel(channel);
+          current.channel.addEventListener("message", onMessage);
           popup.location.href = url;
         } catch {
           release();
-          settle({ notice: "popupClosed" });
+          settle({
+            failure: {
+              kind: "reported",
+              reported: { code: "CLIENT_UNEXPECTED_RESPONSE", requestId: null },
+            },
+          });
           return;
         }
+        const expiry = window.setTimeout(() => {
+          if (isCurrent()) {
+            release();
+            settle({ notice: "expired" });
+          }
+        }, EXTERNAL_REAUTH_WAIT_LIMIT_MS);
+        current.stop = () => {
+          window.clearTimeout(expiry);
+        };
+        busy.current = false;
         setPhase("waiting");
       },
       (error: unknown) => {
@@ -184,7 +195,7 @@ export function useExternalReauth(challenge: RecentAuthChallenge): ExternalReaut
         settle({ failure: { kind: "api", error } });
       },
     );
-  }, [client, complete, release, requestExternalReauthUrl, settle]);
+  }, [client, complete, release, requestExternalReauth, settle]);
 
   return { phase, notice, failure, start };
 }

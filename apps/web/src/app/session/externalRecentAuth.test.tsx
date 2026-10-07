@@ -5,16 +5,12 @@ import { delay, http, HttpResponse } from "msw";
 import { useState } from "react";
 import { type RouteObject, useLocation } from "react-router";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { recentAuthStore } from "../../features/auth";
+import { EXTERNAL_REAUTH_WAIT_LIMIT_MS, recentAuthStore } from "../../features/auth";
 import { apiFetch } from "../../shared/api/apiFetch";
 import { qk } from "../../shared/api/query-keys";
 import { bootHandlers, errorEnvelope, ME_URL, meFixture } from "../../test/bootFixtures";
-import {
-  dispatchWindowMessage,
-  type FakePopup,
-  type PopupHarness,
-  stubWindowOpen,
-} from "../../test/fakePopup";
+import { type FakePopup, type PopupHarness, stubWindowOpen } from "../../test/fakePopup";
+import { broadcastOnChannel, CHANNEL_ID, OTHER_CHANNEL_ID } from "../../test/reauthChannel";
 import { renderSession, resetSessionHarness, stubMatchMedia } from "../../test/renderSession";
 import { server } from "../../test/server";
 import { authenticatedRoutes } from "../guards/chain";
@@ -112,7 +108,10 @@ function installServer({ reauth, meDelayMs = 0 }: ServerOptions = {}): ServerSta
       state.events.push("reauth");
       return (
         reauth?.(state) ??
-        HttpResponse.json({ accepted: true, externalReauthUrl: IDP_URL }, { status: 202 })
+        HttpResponse.json(
+          { accepted: true, externalReauthUrl: IDP_URL, externalReauthChannel: CHANNEL_ID },
+          { status: 202 },
+        )
       );
     }),
   );
@@ -145,6 +144,13 @@ function popup(index = 0): FakePopup {
 
 const SUCCESS = { type: "palmr:external-reauth", status: "success" };
 
+async function emit(data: unknown, channelId = CHANNEL_ID) {
+  await act(async () => {
+    broadcastOnChannel(channelId, data);
+    await new Promise((resolve) => setTimeout(resolve, 30));
+  });
+}
+
 async function settle(ms = 60) {
   await act(async () => {
     await new Promise((resolve) => setTimeout(resolve, ms));
@@ -171,7 +177,10 @@ describe("component_external_recent_auth_popup_start", () => {
     const state = installServer({
       reauth: async () => {
         await delay(60);
-        return HttpResponse.json({ accepted: true, externalReauthUrl: IDP_URL }, { status: 202 });
+        return HttpResponse.json(
+          { accepted: true, externalReauthUrl: IDP_URL, externalReauthChannel: CHANNEL_ID },
+          { status: 202 },
+        );
       },
     });
     const { user, dialog } = await startChallenge();
@@ -184,7 +193,6 @@ describe("component_external_recent_auth_popup_start", () => {
         close: vi.fn(() => {
           placeholder.closed = true;
         }),
-        postMessage: vi.fn(),
       };
       popups.popups.push(placeholder);
       return placeholder;
@@ -292,10 +300,7 @@ describe("component_external_recent_auth_completion", () => {
     const meCallsBefore = state.meCalls;
 
     state.recentAuthUntil = AFTER;
-    await act(async () => {
-      dispatchWindowMessage(SUCCESS, { source: popup() });
-      await Promise.resolve();
-    });
+    await emit(SUCCESS);
 
     await waitFor(() => {
       expect(screen.getByTestId("action-status").textContent).toBe("success");
@@ -321,10 +326,7 @@ describe("component_external_recent_auth_completion", () => {
     const meCallsBefore = state.meCalls;
 
     state.recentAuthUntil = AFTER;
-    await act(async () => {
-      dispatchWindowMessage(SUCCESS, { source: popup() });
-      await Promise.resolve();
-    });
+    await emit(SUCCESS);
     await settle(30);
 
     expect(state.meCalls).toBe(meCallsBefore + 1);
@@ -340,10 +342,7 @@ describe("component_external_recent_auth_completion", () => {
     const { user, dialog } = await startChallenge();
     await waitForPopupNavigation(dialog, user);
 
-    await act(async () => {
-      dispatchWindowMessage(SUCCESS, { source: popup() });
-      await Promise.resolve();
-    });
+    await emit(SUCCESS);
 
     const alert = await within(dialog).findByTestId("recent-auth-external-unconfirmed");
     expect(within(alert).getByText(/didn't confirm a fresh sign-in/)).toBeDefined();
@@ -360,17 +359,11 @@ describe("component_external_recent_auth_completion", () => {
     await waitForPopupNavigation(dialog, user);
     const meCallsBefore = state.meCalls;
 
-    await act(async () => {
-      dispatchWindowMessage(
-        {
-          type: "palmr:external-reauth",
-          status: "error",
-          error: "PROVIDER_AUTH_DENIED",
-          requestId: "req-cb-42",
-        },
-        { source: popup() },
-      );
-      await Promise.resolve();
+    await emit({
+      type: "palmr:external-reauth",
+      status: "error",
+      error: "PROVIDER_AUTH_DENIED",
+      requestId: "req-cb-42",
     });
 
     expect(
@@ -389,17 +382,11 @@ describe("component_external_recent_auth_completion", () => {
     const { user, dialog } = await startChallenge();
     await waitForPopupNavigation(dialog, user);
 
-    await act(async () => {
-      dispatchWindowMessage(
-        {
-          type: "palmr:external-reauth",
-          status: "error",
-          error: "AUTH_RECENT_AUTH_REQUIRED",
-          requestId: "req-cb-9",
-        },
-        { source: popup() },
-      );
-      await Promise.resolve();
+    await emit({
+      type: "palmr:external-reauth",
+      status: "error",
+      error: "AUTH_RECENT_AUTH_REQUIRED",
+      requestId: "req-cb-9",
     });
 
     const alert = await within(dialog).findByTestId("recent-auth-external-unconfirmed");
@@ -407,43 +394,51 @@ describe("component_external_recent_auth_completion", () => {
     expect(within(dialog).queryByText("Confirm your password to continue.")).toBeNull();
   });
 
-  test("a message from the wrong origin is ignored", async () => {
+  test("a message on another challenge's channel is ignored and the own channel still works", async () => {
     const state = installServer();
     const { user, dialog } = await startChallenge();
     await waitForPopupNavigation(dialog, user);
     state.recentAuthUntil = AFTER;
     const meCallsBefore = state.meCalls;
 
-    await act(async () => {
-      dispatchWindowMessage(SUCCESS, { source: popup(), origin: "https://evil.example" });
-      await Promise.resolve();
-    });
+    await emit(SUCCESS, OTHER_CHANNEL_ID);
+    await emit(
+      { type: "palmr:external-reauth", status: "error", error: "AUTH_LOCKED", requestId: null },
+      OTHER_CHANNEL_ID,
+    );
     await settle();
 
     expect(state.meCalls).toBe(meCallsBefore);
     expect(state.actionBodies).toHaveLength(1);
     expect(recentAuthStore.getState().challenge).not.toBeNull();
+    expect(within(dialog).getByTestId("recent-auth-external-progress")).toBeDefined();
+
+    await emit(SUCCESS);
+    await waitFor(() => {
+      expect(state.actionBodies).toHaveLength(2);
+    });
   });
 
-  test("a message whose source is not the exact popup is ignored, even from the same origin", async () => {
-    const state = installServer();
+  test("the parent listens on a channel named only after the server's challenge id", async () => {
+    installServer();
+    const names: string[] = [];
+    const Original = globalThis.BroadcastChannel;
+    vi.stubGlobal(
+      "BroadcastChannel",
+      class extends Original {
+        constructor(name: string) {
+          super(name);
+          names.push(name);
+        }
+      },
+    );
     const { user, dialog } = await startChallenge();
+
     await waitForPopupNavigation(dialog, user);
-    state.recentAuthUntil = AFTER;
-    const meCallsBefore = state.meCalls;
-    const otherTab = { closed: false } as unknown as Window;
 
-    await act(async () => {
-      dispatchWindowMessage(SUCCESS, { source: otherTab });
-      dispatchWindowMessage(SUCCESS, { source: window });
-      dispatchWindowMessage(SUCCESS, { source: null });
-      await Promise.resolve();
-    });
-    await settle();
-
-    expect(state.meCalls).toBe(meCallsBefore);
-    expect(state.actionBodies).toHaveLength(1);
-    expect(recentAuthStore.getState().challenge).not.toBeNull();
+    expect(names).toEqual([`palmr:external-reauth:${CHANNEL_ID}`]);
+    expect(IDP_URL).not.toContain(CHANNEL_ID);
+    vi.unstubAllGlobals();
   });
 
   test.each([
@@ -452,6 +447,10 @@ describe("component_external_recent_auth_completion", () => {
     ["an extra key", { type: "palmr:external-reauth", status: "success", token: "x" }],
     ["an unknown status", { type: "palmr:external-reauth", status: "done" }],
     ["a loose truthy object", { type: "palmr:external-reauth", status: "success", ok: true }],
+    [
+      "an error without its request id key",
+      { type: "palmr:external-reauth", status: "error", error: "AUTH_LOCKED" },
+    ],
   ])(
     "a malformed message (%s) is ignored and a valid one still works afterwards",
     async (_label, data) => {
@@ -461,18 +460,13 @@ describe("component_external_recent_auth_completion", () => {
       state.recentAuthUntil = AFTER;
       const meCallsBefore = state.meCalls;
 
-      await act(async () => {
-        dispatchWindowMessage(data, { source: popup() });
-        await Promise.resolve();
-      });
+      await emit(data);
       await settle();
       expect(state.meCalls).toBe(meCallsBefore);
       expect(state.actionBodies).toHaveLength(1);
+      expect(within(dialog).getByTestId("recent-auth-external-progress")).toBeDefined();
 
-      await act(async () => {
-        dispatchWindowMessage(SUCCESS, { source: popup() });
-        await Promise.resolve();
-      });
+      await emit(SUCCESS);
       await waitFor(() => {
         expect(state.actionBodies).toHaveLength(2);
       });
@@ -487,22 +481,34 @@ describe("component_external_recent_auth_completion", () => {
     state.recentAuthUntil = AFTER;
 
     await act(async () => {
-      dispatchWindowMessage(SUCCESS, { source: popup() });
-      dispatchWindowMessage(SUCCESS, { source: popup() });
-      dispatchWindowMessage(SUCCESS, { source: popup() });
-      await Promise.resolve();
+      broadcastOnChannel(CHANNEL_ID, SUCCESS);
+      broadcastOnChannel(CHANNEL_ID, SUCCESS);
+      broadcastOnChannel(CHANNEL_ID, SUCCESS);
+      await new Promise((resolve) => setTimeout(resolve, 30));
     });
     await waitFor(() => {
       expect(screen.getByTestId("action-status").textContent).toBe("success");
     });
-    await act(async () => {
-      dispatchWindowMessage(SUCCESS, { source: popup() });
-      await Promise.resolve();
-    });
+    await emit(SUCCESS);
     await settle(120);
 
     expect(state.actionBodies).toHaveLength(2);
     expect(state.meCalls).toBe(meCallsBefore + 1);
+  });
+
+  test("a response without a usable channel id is refused, the placeholder is closed and nothing is navigated", async () => {
+    installServer({
+      reauth: () =>
+        HttpResponse.json({ accepted: true, externalReauthUrl: IDP_URL }, { status: 202 }),
+    });
+    const { user, dialog } = await startChallenge();
+
+    await user.click(continueButton(dialog));
+
+    expect(await within(dialog).findByRole("alert")).toBeDefined();
+    expect(popup().location.href).toBe("about:blank");
+    expect(popup().close).toHaveBeenCalled();
+    expect(recentAuthStore.getState().challenge).not.toBeNull();
   });
 });
 
@@ -517,7 +523,49 @@ describe("component_external_recent_auth_lifecycle", () => {
     return { state, ...harness };
   }
 
-  test("cancelling the modal closes the popup, discards the challenge and a late message replays nothing", async () => {
+  test("the popup is opened, the request made, the channel attached and only then the popup navigated", async () => {
+    const state = installServer();
+    const Original = globalThis.BroadcastChannel;
+    vi.stubGlobal(
+      "BroadcastChannel",
+      class extends Original {
+        constructor(name: string) {
+          super(name);
+          state.events.push("channel");
+        }
+      },
+    );
+    const { user, dialog } = await startChallenge();
+    popups.open.mockImplementation((() => {
+      state.events.push("open");
+      let href = "about:blank";
+      const placeholder: FakePopup = {
+        closed: false,
+        location: {
+          get href() {
+            return href;
+          },
+          set href(value: string) {
+            state.events.push("navigate");
+            href = value;
+          },
+        },
+        close: vi.fn(),
+      };
+      popups.popups.push(placeholder);
+      return placeholder;
+    }) as never);
+
+    await user.click(continueButton(dialog));
+    await waitFor(() => {
+      expect(state.events).toContain("navigate");
+    });
+
+    expect(state.events).toEqual(["action", "open", "reauth", "channel", "navigate"]);
+    vi.unstubAllGlobals();
+  });
+
+  test("cancelling the modal discards the challenge, releases the channel and a late message replays nothing", async () => {
     const { state, user, dialog } = await engage();
     state.recentAuthUntil = AFTER;
     const meCallsBefore = state.meCalls;
@@ -526,42 +574,61 @@ describe("component_external_recent_auth_lifecycle", () => {
 
     expect(recentAuthStore.getState().challenge).toBeNull();
     expect(popup().close).toHaveBeenCalled();
-    await act(async () => {
-      dispatchWindowMessage(SUCCESS, { source: popup() });
-      await Promise.resolve();
-    });
+    await emit(SUCCESS);
     await settle();
     expect(state.actionBodies).toHaveLength(1);
     expect(state.meCalls).toBe(meCallsBefore);
     expectDraftIntact();
   });
 
-  test("closing the popup by hand returns to idle without replaying, and the user can start again", async () => {
-    const { state, user, dialog } = await engage();
+  test("the popup disappearing is never read as an outcome: the wait continues until a message, Cancel or Try again", async () => {
+    const { state, dialog } = await engage();
 
     popup().closed = true;
+    await settle(900);
 
-    const notice = await within(dialog).findByTestId("recent-auth-external-notice", undefined, {
-      timeout: 4000,
-    });
-    expect(notice.getAttribute("data-notice")).toBe("popupClosed");
+    expect(within(dialog).queryByTestId("recent-auth-external-notice")).toBeNull();
+    expect(within(dialog).getByTestId("recent-auth-external-progress")).toBeDefined();
     expect(state.actionBodies).toHaveLength(1);
     expect(recentAuthStore.getState().challenge).not.toBeNull();
     expectDraftIntact();
 
-    await user.click(continueButton(dialog));
-    expect(popups.open).toHaveBeenCalledTimes(2);
+    state.recentAuthUntil = AFTER;
+    await emit(SUCCESS);
+    await waitFor(() => {
+      expect(state.actionBodies).toHaveLength(2);
+    });
   });
 
-  test("a success message that arrives right as the popup closes itself still counts", async () => {
+  test("Try again opens a fresh popup, releases the old one and the old attempt can no longer replay", async () => {
+    const { state, user, dialog } = await engage();
+    const first = popup();
+
+    await user.click(within(dialog).getByRole("button", { name: "Try again" }));
+
+    await waitFor(() => {
+      expect(popup(1).location.href).toBe(IDP_URL);
+    });
+    expect(popups.open).toHaveBeenCalledTimes(2);
+    expect(first.close).toHaveBeenCalled();
+    expect(state.reauthBodies).toHaveLength(2);
+    expect(state.actionBodies).toHaveLength(1);
+
+    state.recentAuthUntil = AFTER;
+    await emit(SUCCESS);
+    await waitFor(() => {
+      expect(state.actionBodies).toHaveLength(2);
+    });
+    await settle();
+    expect(state.actionBodies).toHaveLength(2);
+  });
+
+  test("a success message that arrives while the popup is closing itself still counts", async () => {
     const { state, dialog } = await engage();
     state.recentAuthUntil = AFTER;
 
-    await act(async () => {
-      dispatchWindowMessage(SUCCESS, { source: popup() });
-      popup().closed = true;
-      await Promise.resolve();
-    });
+    popup().closed = true;
+    await emit(SUCCESS);
 
     await waitFor(() => {
       expect(state.actionBodies).toHaveLength(2);
@@ -569,8 +636,48 @@ describe("component_external_recent_auth_lifecycle", () => {
     expect(within(dialog).queryByTestId("recent-auth-external-notice")).toBeNull();
   });
 
-  test("leaving the originating route discards the challenge and closes the popup", async () => {
-    const { router } = await engage();
+  test("the wait ends at the authorization-request lifetime: the popup is released and a late message replays nothing", async () => {
+    const state = installServer();
+    const timers: (() => void)[] = [];
+    const realSetTimeout = window.setTimeout.bind(window);
+    vi.spyOn(window, "setTimeout").mockImplementation(((
+      handler: TimerHandler,
+      timeout?: number,
+      ...args: unknown[]
+    ) => {
+      if (timeout === EXTERNAL_REAUTH_WAIT_LIMIT_MS) {
+        timers.push(handler as () => void);
+        return 0;
+      }
+      return realSetTimeout(handler, timeout, ...args);
+    }) as never);
+    const { user, dialog } = await startChallenge();
+    await user.click(continueButton(dialog));
+    await waitFor(() => {
+      expect(popup().location.href).toBe(IDP_URL);
+    });
+    expect(EXTERNAL_REAUTH_WAIT_LIMIT_MS).toBe(600_000);
+    expect(timers).toHaveLength(1);
+
+    await act(async () => {
+      timers[0]?.();
+      await Promise.resolve();
+    });
+
+    const notice = await within(dialog).findByTestId("recent-auth-external-notice");
+    expect(notice.getAttribute("data-notice")).toBe("expired");
+    expect(popup().close).toHaveBeenCalled();
+    state.recentAuthUntil = AFTER;
+    await emit(SUCCESS);
+    await settle();
+    expect(state.actionBodies).toHaveLength(1);
+    expect(recentAuthStore.getState().challenge).not.toBeNull();
+    expect(continueButton(dialog).hasAttribute("disabled")).toBe(false);
+  });
+
+  test("leaving the originating route discards the challenge, closes the popup and a late message replays nothing", async () => {
+    const { state, router } = await engage();
+    state.recentAuthUntil = AFTER;
 
     await act(async () => {
       await router.navigate("/overview");
@@ -578,9 +685,12 @@ describe("component_external_recent_auth_lifecycle", () => {
 
     expect(recentAuthStore.getState().challenge).toBeNull();
     expect(popup().close).toHaveBeenCalled();
+    await emit(SUCCESS);
+    await settle();
+    expect(state.actionBodies).toHaveLength(1);
   });
 
-  test("session loss destroys the challenge and its popup", async () => {
+  test("session loss destroys the challenge, its popup and its channel", async () => {
     const { state, queryClient } = await engage();
 
     await act(async () => {
@@ -590,10 +700,7 @@ describe("component_external_recent_auth_lifecycle", () => {
     });
 
     expect(popup().close).toHaveBeenCalled();
-    await act(async () => {
-      dispatchWindowMessage(SUCCESS, { source: popup() });
-      await Promise.resolve();
-    });
+    await emit(SUCCESS);
     await settle();
     expect(state.actionBodies).toHaveLength(1);
   });
@@ -614,10 +721,7 @@ describe("component_external_recent_auth_replay_is_memory_only", () => {
       expect(popup().location.href).toBe(IDP_URL);
     });
     state.recentAuthUntil = AFTER;
-    await act(async () => {
-      dispatchWindowMessage(SUCCESS, { source: popup() });
-      await Promise.resolve();
-    });
+    await emit(SUCCESS);
     await waitFor(() => {
       expect(screen.getByTestId("action-status").textContent).toBe("success");
     });

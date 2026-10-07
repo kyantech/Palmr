@@ -11,6 +11,7 @@ export {
 } from "./routes/ForcedPasswordChangePage";
 export { InvitePage, type InvitePageProps } from "./routes/InvitePage";
 export { LoginPage, type LoginMode, type LoginPageProps } from "./routes/LoginPage";
+export { EXTERNAL_REAUTH_WAIT_LIMIT_MS } from "./components/useExternalReauth";
 export { ReauthCompletePage, type ReauthCompletePageProps } from "./routes/ReauthCompletePage";
 export { ResetPasswordPage, type ResetPasswordPageProps } from "./routes/ResetPasswordPage";
 export { SecondFactorPage, type SecondFactorPageProps } from "./routes/SecondFactorPage";

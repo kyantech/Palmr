@@ -13,6 +13,7 @@ use crate::features::identity_providers::model::{AuthRequestId, IdentityLinkId};
 use crate::features::identity_providers::provision::{
     deterministic_candidates, provision_with, random_candidate, RANDOM_SUFFIX_BYTES,
 };
+use crate::features::identity_providers::reauth::mint_channel;
 use crate::features::identity_providers::repo;
 use crate::features::identity_providers::resolve::ExternalIdentity;
 use crate::features::identity_providers::resolve::{
@@ -339,6 +340,9 @@ fn assert_landing(fetched: &Fetched, landing: Landing, code: &str) -> String {
         expected.push("status");
     }
     expected.extend(["error", "requestId"]);
+    if landing == Landing::Reauth {
+        expected.push("channel");
+    }
     assert_eq!(
         query
             .iter()
@@ -350,6 +354,7 @@ fn assert_landing(fetched: &Fetched, landing: Landing, code: &str) -> String {
     assert_eq!(form_value(&query, "error"), Some(code));
     if landing == Landing::Reauth {
         assert_eq!(form_value(&query, "status"), Some("error"));
+        assert_channel_shape(form_value(&query, "channel").unwrap());
     }
     let request_id = form_value(&query, "requestId").unwrap();
     assert!(!request_id.is_empty(), "{code}");
@@ -371,6 +376,14 @@ fn assert_landing(fetched: &Fetched, landing: Landing, code: &str) -> String {
         "{code}"
     );
     request_id.to_owned()
+}
+
+fn assert_channel_shape(channel: &str) {
+    assert_eq!(channel.len(), 43, "{channel}");
+    assert!(channel
+        .bytes()
+        .all(|byte| byte.is_ascii_alphanumeric() || byte == b'-' || byte == b'_'));
+    assert!(Token::decode(channel).is_ok());
 }
 
 fn without_request_id(fetched: &Fetched) -> String {
@@ -448,18 +461,27 @@ fn unit_callback_params_parse_the_documented_query_only() {
 #[test]
 fn unit_callback_locations_are_built_from_the_trusted_base_url() {
     use crate::domain::error_code::ErrorCode;
-    use crate::features::identity_providers::callback::{failure_location, success_location};
+    use crate::features::identity_providers::callback::{
+        failure_location, reauth_success_path, success_location,
+    };
     use crate::features::identity_providers::model::AuthorizePurpose;
 
     let base = Url::parse("https://files.example.test").unwrap();
     assert_eq!(
-        failure_location(&base, None, ErrorCode::ProviderStateInvalid, Some("req-1")),
+        failure_location(
+            &base,
+            None,
+            None,
+            ErrorCode::ProviderStateInvalid,
+            Some("req-1")
+        ),
         "https://files.example.test/login?error=PROVIDER_STATE_INVALID&requestId=req-1"
     );
     assert_eq!(
         failure_location(
             &base,
             Some(AuthorizePurpose::Login),
+            None,
             ErrorCode::ProviderAuthDenied,
             Some("req-1")
         ),
@@ -469,6 +491,7 @@ fn unit_callback_locations_are_built_from_the_trusted_base_url() {
         failure_location(
             &base,
             Some(AuthorizePurpose::Link),
+            None,
             ErrorCode::ProviderAuthDenied,
             Some("req-1")
         ),
@@ -478,17 +501,24 @@ fn unit_callback_locations_are_built_from_the_trusted_base_url() {
         failure_location(
             &base,
             Some(AuthorizePurpose::Reauth),
+            None,
             ErrorCode::ProviderAuthDenied,
             Some("req-1")
         ),
         "https://files.example.test/auth/reauth-complete?status=error&error=PROVIDER_AUTH_DENIED&requestId=req-1"
     );
     assert_eq!(
-        failure_location(&base, None, ErrorCode::InternalError, None),
+        failure_location(&base, None, None, ErrorCode::InternalError, None),
         "https://files.example.test/login?error=INTERNAL_ERROR"
     );
     assert_eq!(
-        failure_location(&base, None, ErrorCode::InternalError, Some("a b&c=d/é")),
+        failure_location(
+            &base,
+            None,
+            None,
+            ErrorCode::InternalError,
+            Some("a b&c=d/é")
+        ),
         "https://files.example.test/login?error=INTERNAL_ERROR&requestId=a+b%26c%3Dd%2F%C3%A9"
     );
     assert_eq!(
@@ -497,17 +527,60 @@ fn unit_callback_locations_are_built_from_the_trusted_base_url() {
     );
     let nested = Url::parse("https://example.com/palmr/").unwrap();
     assert_eq!(
-        failure_location(&nested, None, ErrorCode::AuthLocked, Some("req-2")),
+        failure_location(&nested, None, None, ErrorCode::AuthLocked, Some("req-2")),
         "https://example.com/palmr/login?error=AUTH_LOCKED&requestId=req-2"
     );
     assert_eq!(
         failure_location(
             &nested,
             Some(AuthorizePurpose::Reauth),
+            None,
             ErrorCode::AuthLocked,
             Some("req-2")
         ),
         "https://example.com/palmr/auth/reauth-complete?status=error&error=AUTH_LOCKED&requestId=req-2"
+    );
+    let channel = "AwsTGyMrMztDS1NbY2tze4OLk5ujq7O7w8vT2-Pr8_s";
+    assert_eq!(
+        failure_location(
+            &base,
+            Some(AuthorizePurpose::Reauth),
+            Some(channel),
+            ErrorCode::ProviderAuthDenied,
+            Some("req-1")
+        ),
+        format!("https://files.example.test/auth/reauth-complete?status=error&error=PROVIDER_AUTH_DENIED&requestId=req-1&channel={channel}")
+    );
+    assert_eq!(
+        failure_location(
+            &base,
+            Some(AuthorizePurpose::Reauth),
+            Some(channel),
+            ErrorCode::InternalError,
+            None
+        ),
+        format!("https://files.example.test/auth/reauth-complete?status=error&error=INTERNAL_ERROR&channel={channel}")
+    );
+    for purpose in [
+        None,
+        Some(AuthorizePurpose::Login),
+        Some(AuthorizePurpose::Link),
+    ] {
+        assert!(
+            !failure_location(
+                &base,
+                purpose,
+                Some(channel),
+                ErrorCode::InternalError,
+                None
+            )
+            .contains("channel"),
+            "{purpose:?}"
+        );
+    }
+    assert_eq!(
+        reauth_success_path(channel),
+        format!("/auth/reauth-complete?status=success&channel={channel}")
     );
     assert_eq!(
         success_location(&nested, "/overview"),
@@ -826,7 +899,7 @@ async fn it_callback_non_login_requests_never_run_login_resolution() {
         let context = if purpose == "link" {
             AuthorizeContext::link(user, None)
         } else {
-            AuthorizeContext::reauth(user, None)
+            AuthorizeContext::reauth(user, &mint_channel().unwrap())
         };
         let authorized = f.stack.providers.authorize("corp", context).await.unwrap();
         let url = Url::parse(&authorized.authorization_url).unwrap();

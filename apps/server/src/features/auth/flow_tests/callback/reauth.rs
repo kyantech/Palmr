@@ -1,8 +1,10 @@
 use super::link::{assert_link_redirect, Member};
 use super::*;
+use crate::features::identity_providers::model::AuthorizePurpose;
 
 const REAUTHENTICATE: &str = "/api/v1/auth/reauthenticate";
 const REAUTH_COMPLETE: &str = "https://files.example.test/auth/reauth-complete?status=success";
+const REAUTH_TARGET: &str = "/auth/reauth-complete?channel=";
 
 #[derive(Debug, Clone, PartialEq, Eq, sqlx::FromRow)]
 pub(super) struct SessionFacts {
@@ -36,10 +38,16 @@ impl Federation {
     }
 
     pub(super) async fn begin_reauth(&self, creds: &Credentials) -> Begun {
+        self.begin_reauth_channel(creds).await.0
+    }
+
+    async fn begin_reauth_channel(&self, creds: &Credentials) -> (Begun, String) {
         let fetched = self.request_reauth(creds, &json!({})).await;
         assert_eq!(fetched.status, StatusCode::ACCEPTED, "{}", fetched.text());
         let body = fetched.json();
         assert_eq!(body["accepted"], true);
+        let channel = body["externalReauthChannel"].as_str().unwrap().to_owned();
+        assert_channel_shape(&channel);
         let url = Url::parse(body["externalReauthUrl"].as_str().unwrap()).unwrap();
         let state = url
             .query_pairs()
@@ -53,11 +61,12 @@ impl Federation {
                 .fetch_one(self.stack.pools.reader().executor())
                 .await
                 .unwrap();
-        Begun {
+        let begun = Begun {
             binding: fetched.cookie("palmr_oauth"),
             state,
             nonce,
-        }
+        };
+        (begun, channel)
     }
 
     pub(super) async fn session_facts(&self, raw: &str) -> SessionFacts {
@@ -100,16 +109,21 @@ impl Federation {
     }
 }
 
-pub(super) fn assert_reauth_redirect(fetched: &Fetched) {
+pub(super) fn assert_reauth_redirect(fetched: &Fetched) -> String {
     assert_eq!(
         fetched.status,
         StatusCode::SEE_OTHER,
         "{}",
         location(fetched)
     );
-    assert_eq!(location(fetched), REAUTH_COMPLETE);
+    let target = location(fetched);
+    let channel = target
+        .strip_prefix(&format!("{REAUTH_COMPLETE}&channel="))
+        .unwrap_or_else(|| panic!("{target}"));
+    assert_channel_shape(channel);
     assert_eq!(fetched.headers.get("cache-control").unwrap(), "no-store");
     assert_eq!(fetched.set_cookies(), vec![OAUTH_CLEARED.to_owned()]);
+    channel.to_owned()
 }
 
 #[tokio::test]
@@ -136,7 +150,7 @@ async fn it_sso_reauth_sets_last_auth_at() {
 
     let before = f.session_facts(&member.creds.session).await;
     let untouched = f.session_facts(&second.session).await;
-    let begun = f.begin_reauth(&member.creds).await;
+    let (begun, channel) = f.begin_reauth_channel(&member.creds).await;
     assert_eq!(
         f.session_facts(&member.creds.session).await,
         before,
@@ -144,7 +158,11 @@ async fn it_sso_reauth_sets_last_auth_at() {
     );
     f.arm_oidc(&begun, json!({ "sub": "sso-subject" }), &[]);
     let fetched = f.finish_as("corp", &begun, Some(&member.creds)).await;
-    assert_reauth_redirect(&fetched);
+    assert_eq!(assert_reauth_redirect(&fetched), channel);
+    assert_eq!(
+        location(&fetched),
+        format!("{REAUTH_COMPLETE}&channel={channel}")
+    );
 
     let after = f.session_facts(&member.creds.session).await;
     assert_eq!(after.id, before.id);
@@ -197,7 +215,9 @@ async fn it_sso_reauth_start_response_and_request_row() {
     assert_eq!(fetched.headers.get("cache-control").unwrap(), "no-store");
     let body = fetched.json();
     assert_eq!(body["accepted"], true);
-    assert_eq!(body.as_object().unwrap().len(), 2);
+    assert_eq!(body.as_object().unwrap().len(), 3);
+    let channel = body["externalReauthChannel"].as_str().unwrap();
+    assert_channel_shape(channel);
     let url = Url::parse(body["externalReauthUrl"].as_str().unwrap()).unwrap();
     assert!(!url.path().starts_with("/api/"), "{url}");
     let query: Vec<(String, String)> = url
@@ -208,6 +228,8 @@ async fn it_sso_reauth_start_response_and_request_row() {
     assert_eq!(form_value(&query, "max_age"), Some("0"));
     assert_eq!(form_value(&query, "code_challenge_method"), Some("S256"));
     assert!(form_value(&query, "nonce").is_some());
+    assert!(!url.as_str().contains(channel), "{url}");
+    assert!(query.iter().all(|(_, value)| !value.contains(channel)));
     assert_eq!(
         form_value(&query, "redirect_uri"),
         Some("https://files.example.test/api/v1/auth/providers/corp/callback")
@@ -228,7 +250,7 @@ async fn it_sso_reauth_start_response_and_request_row() {
     .unwrap();
     assert_eq!(row.0, "reauth");
     assert_eq!(row.1, Some(member.id.to_string()));
-    assert_eq!(row.2.as_deref(), Some("/overview"));
+    assert_eq!(row.2, Some(format!("{REAUTH_TARGET}{channel}")));
     assert_eq!(row.3, f.provider_id("corp").await);
 
     let oauth2 = f
@@ -655,6 +677,201 @@ async fn it_reauth_and_link_hold_no_write_transaction_across_provider_calls() {
     assert!(
         waited < Duration::from_millis(1200),
         "a write waited {waited:?} for the token exchange of a link"
+    );
+    f.stack.stop().await;
+}
+
+#[tokio::test]
+async fn it_sso_reauth_channels_are_independent_per_challenge() {
+    let f = Federation::start().await;
+    f.oidc("corp", json!({ "autoProvision": true })).await;
+    let member = f
+        .external_oidc_member("corp", "sso-subject", "sso@example.test")
+        .await;
+    f.stack.clock.advance(Duration::from_secs(6 * 60));
+    let before = f.session_facts(&member.creds.session).await;
+
+    let (first, first_channel) = f.begin_reauth_channel(&member.creds).await;
+    let (second, second_channel) = f.begin_reauth_channel(&member.creds).await;
+    assert_ne!(first_channel, second_channel);
+    let stored: Vec<String> = sqlx::query_scalar(
+        "SELECT post_auth_path FROM oauth_auth_requests WHERE purpose = 'reauth'
+          ORDER BY post_auth_path",
+    )
+    .fetch_all(f.stack.pools.reader().executor())
+    .await
+    .unwrap();
+    let mut expected = vec![
+        format!("{REAUTH_TARGET}{first_channel}"),
+        format!("{REAUTH_TARGET}{second_channel}"),
+    ];
+    expected.sort();
+    assert_eq!(stored, expected);
+
+    f.arm_oidc(&second, json!({ "sub": "sso-subject" }), &[]);
+    let fetched = f.finish_as("corp", &second, Some(&member.creds)).await;
+    assert_eq!(assert_reauth_redirect(&fetched), second_channel);
+
+    f.arm_oidc(&first, json!({ "sub": "wrong-subject" }), &[]);
+    let fetched = f.finish_as("corp", &first, Some(&member.creds)).await;
+    let target = Url::parse(&location(&fetched)).unwrap();
+    let query: Vec<(String, String)> = target
+        .query_pairs()
+        .map(|(key, value)| (key.into_owned(), value.into_owned()))
+        .collect();
+    assert_eq!(form_value(&query, "channel"), Some(first_channel.as_str()));
+    assert_eq!(
+        form_value(&query, "error"),
+        Some("AUTH_RECENT_AUTH_REQUIRED")
+    );
+    assert_ne!(form_value(&query, "channel"), Some(second_channel.as_str()));
+
+    let after = f.session_facts(&member.creds.session).await;
+    assert_eq!(after.token_hash, before.token_hash);
+    assert!(after.last_auth_at > before.last_auth_at);
+    f.stack.stop().await;
+}
+
+#[tokio::test]
+async fn it_sso_reauth_failure_landing_carries_the_stored_channel() {
+    let f = Federation::start().await;
+    f.oidc("corp", json!({ "autoProvision": true })).await;
+    let member = f
+        .external_oidc_member("corp", "sso-subject", "sso@example.test")
+        .await;
+    f.stack.clock.advance(Duration::from_secs(6 * 60));
+    let before = f.session_facts(&member.creds.session).await;
+
+    let (denied, channel) = f.begin_reauth_channel(&member.creds).await;
+    let fetched = f
+        .callback(
+            "corp",
+            &format!(
+                "error=access_denied&error_description=Upstream%20prose&state={}",
+                denied.state
+            ),
+            Some(&denied.binding),
+        )
+        .await;
+    assert_reauth_failure(&fetched, "PROVIDER_AUTH_DENIED");
+    let landing = location(&fetched);
+    assert!(
+        landing.ends_with(&format!("&channel={channel}")),
+        "{landing}"
+    );
+    for secret in [
+        denied.state.as_str(),
+        denied.nonce.as_str(),
+        denied.binding.as_str(),
+        "Upstream",
+    ] {
+        assert!(!landing.contains(secret), "{secret}");
+    }
+
+    let (exchange, channel) = f.begin_reauth_channel(&member.creds).await;
+    f.idp
+        .set_token_status(400, json!({ "error": "invalid_grant" }));
+    let fetched = f.finish_as("corp", &exchange, Some(&member.creds)).await;
+    assert_reauth_failure(&fetched, "PROVIDER_CODE_EXCHANGE_FAILED");
+    assert!(location(&fetched).ends_with(&format!("&channel={channel}")));
+
+    assert_eq!(f.session_facts(&member.creds.session).await, before);
+    f.stack.stop().await;
+}
+
+#[tokio::test]
+async fn it_sso_reauth_channel_is_never_taken_from_callback_input() {
+    let f = Federation::start().await;
+    f.oidc("corp", json!({ "autoProvision": true })).await;
+    let member = f
+        .external_oidc_member("corp", "sso-subject", "sso@example.test")
+        .await;
+    let forged = mint_channel().unwrap();
+
+    let (begun, channel) = f.begin_reauth_channel(&member.creds).await;
+    let fetched = f
+        .callback(
+            "corp",
+            &format!("error=access_denied&channel={forged}&state={}", begun.state),
+            Some(&begun.binding),
+        )
+        .await;
+    assert_reauth_failure(&fetched, "PROVIDER_AUTH_DENIED");
+    let landing = location(&fetched);
+    assert!(
+        landing.ends_with(&format!("&channel={channel}")),
+        "{landing}"
+    );
+    assert!(!landing.contains(&forged));
+
+    for query in [
+        format!("error=access_denied&channel={forged}"),
+        format!("code=auth-code&channel={forged}&state=unknown"),
+    ] {
+        let fetched = f.callback("corp", &query, Some(&begun.binding)).await;
+        let landing = location(&fetched);
+        assert!(
+            landing.starts_with("https://files.example.test/login?"),
+            "{landing}"
+        );
+        assert!(
+            !landing.contains("channel") && !landing.contains(&forged),
+            "{landing}"
+        );
+    }
+    let fetched = f.callback("corp", &format!("channel={forged}"), None).await;
+    assert!(!location(&fetched).contains("channel"));
+    f.stack.stop().await;
+}
+
+#[tokio::test]
+async fn it_sso_reauth_without_a_stored_channel_fails_closed() {
+    let f = Federation::start().await;
+    f.oidc("corp", json!({ "autoProvision": true })).await;
+    let member = f
+        .external_oidc_member("corp", "sso-subject", "sso@example.test")
+        .await;
+    f.stack.clock.advance(Duration::from_secs(6 * 60));
+    let before = f.session_facts(&member.creds.session).await;
+
+    let begun = f.begin_reauth(&member.creds).await;
+    f.stack
+        .execute(&format!(
+            "UPDATE oauth_auth_requests SET post_auth_path = '/overview' WHERE state_hash = '{}'",
+            digest(&begun.state)
+        ))
+        .await;
+    f.arm_oidc(&begun, json!({ "sub": "sso-subject" }), &[]);
+    let exchanges = f.idp.token_requests().await.len();
+    let fetched = f.finish_as("corp", &begun, Some(&member.creds)).await;
+    assert_eq!(fetched.status, StatusCode::SEE_OTHER);
+    let landing = location(&fetched);
+    assert!(
+        landing.starts_with(
+            "https://files.example.test/auth/reauth-complete?status=error&error=PROVIDER_STATE_INVALID&requestId="
+        ),
+        "{landing}"
+    );
+    assert!(!landing.contains("channel"), "{landing}");
+    assert_eq!(f.idp.token_requests().await.len(), exchanges);
+    assert_eq!(f.session_facts(&member.creds.session).await, before);
+
+    let requests = f.auth_requests().await;
+    for return_to in [None, Some("/overview"), Some("/auth/reauth-complete")] {
+        let context = AuthorizeContext {
+            purpose: AuthorizePurpose::Reauth,
+            bound_user_id: Some(member.id),
+            return_to: return_to.map(str::to_owned),
+        };
+        assert!(
+            f.stack.providers.authorize("corp", context).await.is_err(),
+            "{return_to:?}"
+        );
+    }
+    assert_eq!(
+        f.auth_requests().await,
+        requests,
+        "no request row is minted"
     );
     f.stack.stop().await;
 }

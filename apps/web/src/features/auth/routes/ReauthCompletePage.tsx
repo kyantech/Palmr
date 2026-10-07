@@ -1,39 +1,51 @@
 import { Button, Flex, theme, Typography } from "antd";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { ReportedErrorAlert } from "../../../shared/errors";
-import { messageForLanding, readExternalReauthLanding } from "../externalReauthMessage";
+import { openExternalReauthChannel } from "../externalReauthChannel";
+import {
+  type ExternalReauthCompletion,
+  messageForLanding,
+  readExternalReauthCompletion,
+} from "../externalReauthMessage";
 
 export interface ReauthCompletePageProps {
   search: string;
   onContinue: () => void;
 }
 
-function openerWindow(): Window | null {
-  const opener = (window as { opener?: Window | null }).opener;
-  return opener === undefined || opener === null || opener.closed ? null : opener;
+function broadcast({ channel, landing }: ExternalReauthCompletion): boolean {
+  try {
+    const target = openExternalReauthChannel(channel);
+    target.postMessage(messageForLanding(landing));
+    target.close();
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function ReauthCompletePage({ search, onContinue }: ReauthCompletePageProps) {
   const { t } = useTranslation("auth");
   const { token } = theme.useToken();
-  const landing = useMemo(() => readExternalReauthLanding(search), [search]);
-  const [opener] = useState(openerWindow);
+  const completion = useMemo(() => readExternalReauthCompletion(search), [search]);
+  const landing = completion?.landing ?? null;
   const sent = useRef(false);
-  const reporting = landing !== null && opener !== null;
+  const reporting = completion !== null;
 
   useEffect(() => {
-    if (landing === null || opener === null || sent.current) {
+    if (completion === null || sent.current) {
       return;
     }
     sent.current = true;
-    try {
-      opener.postMessage(messageForLanding(landing), window.location.origin);
-      window.close();
-    } catch {
-      return;
+    if (broadcast(completion)) {
+      try {
+        window.close();
+      } catch {
+        return;
+      }
     }
-  }, [landing, opener]);
+  }, [completion]);
 
   const outcome = landing?.status ?? "invalid";
   return (
@@ -76,13 +88,12 @@ export function ReauthCompletePage({ search, onContinue }: ReauthCompletePagePro
           <Typography.Text type="secondary" role="status">
             {t("reauthComplete.closeHint")}
           </Typography.Text>
-        ) : (
-          <Flex justify="end">
-            <Button type="primary" onClick={onContinue}>
-              {t("reauthComplete.continue")}
-            </Button>
-          </Flex>
-        )}
+        ) : null}
+        <Flex justify="end">
+          <Button type={reporting ? "default" : "primary"} onClick={onContinue}>
+            {t("reauthComplete.continue")}
+          </Button>
+        </Flex>
       </Flex>
     </main>
   );

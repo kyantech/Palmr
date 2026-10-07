@@ -3,24 +3,38 @@ import {
   EXTERNAL_REAUTH_MESSAGE_TYPE,
   messageForLanding,
   parseExternalReauthMessage,
-  readExternalReauthLanding,
+  readExternalReauthCompletion,
 } from "./externalReauthMessage";
 
+const CHANNEL = "AwsTGyMrMztDS1NbY2tze4OLk5ujq7O7w8vT2-Pr8_s";
+
 describe("unit_external_reauth_landing", () => {
-  test("a success landing carries nothing else", () => {
-    expect(readExternalReauthLanding("?status=success")).toEqual({ status: "success" });
-    expect(readExternalReauthLanding("?status=success&error=PROVIDER_STATE_INVALID")).toEqual({
-      status: "success",
+  test("a success landing carries the channel and nothing else", () => {
+    expect(readExternalReauthCompletion(`?status=success&channel=${CHANNEL}`)).toEqual({
+      channel: CHANNEL,
+      landing: { status: "success" },
     });
+    expect(
+      readExternalReauthCompletion(
+        `?status=success&channel=${CHANNEL}&error=PROVIDER_STATE_INVALID&token=t`,
+      ),
+    ).toEqual({ channel: CHANNEL, landing: { status: "success" } });
   });
 
-  test("an error landing carries the structured code and the callback request id", () => {
+  test("an error landing carries the structured code, the callback request id and the channel", () => {
     expect(
-      readExternalReauthLanding("?status=error&error=PROVIDER_AUTH_DENIED&requestId=req-1"),
-    ).toEqual({ status: "error", reported: { code: "PROVIDER_AUTH_DENIED", requestId: "req-1" } });
-    expect(readExternalReauthLanding("?status=error&error=AUTH_LOCKED")).toEqual({
-      status: "error",
-      reported: { code: "AUTH_LOCKED", requestId: null },
+      readExternalReauthCompletion(
+        `?status=error&error=PROVIDER_AUTH_DENIED&requestId=req-1&channel=${CHANNEL}`,
+      ),
+    ).toEqual({
+      channel: CHANNEL,
+      landing: { status: "error", reported: { code: "PROVIDER_AUTH_DENIED", requestId: "req-1" } },
+    });
+    expect(
+      readExternalReauthCompletion(`?status=error&error=AUTH_LOCKED&channel=${CHANNEL}`),
+    ).toEqual({
+      channel: CHANNEL,
+      landing: { status: "error", reported: { code: "AUTH_LOCKED", requestId: null } },
     });
   });
 
@@ -29,19 +43,37 @@ describe("unit_external_reauth_landing", () => {
     "?status=",
     "?status=ok",
     "?status=error",
-    "?status=error&error=not-a-code",
-    "?status=error&error=%3Cscript%3E",
-    "?status=error&error=error_description",
-    `?status=error&error=${"A".repeat(80)}`,
     "?error=PROVIDER_AUTH_DENIED",
+    `?status=error&error=not-a-code&channel=${CHANNEL}`,
+    `?status=error&error=%3Cscript%3E&channel=${CHANNEL}`,
+    `?status=error&error=error_description&channel=${CHANNEL}`,
+    `?status=error&error=${"A".repeat(80)}&channel=${CHANNEL}`,
   ])("%s is not a landing", (search) => {
-    expect(readExternalReauthLanding(search)).toBeNull();
+    expect(readExternalReauthCompletion(search)).toBeNull();
+  });
+
+  test.each([
+    ["is missing", ""],
+    ["is empty", "&channel="],
+    ["is too short", "&channel=abc"],
+    ["is too long", `&channel=${CHANNEL}A`],
+    ["has characters outside base64url", `&channel=${CHANNEL.slice(0, 42)}!`],
+    ["has a path separator", `&channel=${CHANNEL.slice(0, 42)}/`],
+    ["is padded", `&channel=${CHANNEL.slice(0, 42)}=`],
+  ])("a landing whose channel %s is refused, so nothing is ever broadcast", (_label, suffix) => {
+    expect(readExternalReauthCompletion(`?status=success${suffix}`)).toBeNull();
+    expect(readExternalReauthCompletion(`?status=error&error=AUTH_LOCKED${suffix}`)).toBeNull();
   });
 
   test("an unsafe request id is dropped, never rendered", () => {
     expect(
-      readExternalReauthLanding("?status=error&error=AUTH_LOCKED&requestId=%3Cb%3Eboom%3C%2Fb%3E"),
-    ).toEqual({ status: "error", reported: { code: "AUTH_LOCKED", requestId: null } });
+      readExternalReauthCompletion(
+        `?status=error&error=AUTH_LOCKED&requestId=%3Cb%3Eboom%3C%2Fb%3E&channel=${CHANNEL}`,
+      ),
+    ).toEqual({
+      channel: CHANNEL,
+      landing: { status: "error", reported: { code: "AUTH_LOCKED", requestId: null } },
+    });
   });
 });
 

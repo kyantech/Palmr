@@ -1,4 +1,5 @@
 import { type ReportedError, reportedError } from "../../shared/errors";
+import { isExternalReauthChannelId } from "./externalReauthChannel";
 
 export const EXTERNAL_REAUTH_MESSAGE_TYPE = "palmr:external-reauth";
 
@@ -26,15 +27,24 @@ function hasExactKeys(value: Record<string, unknown>, expected: readonly string[
   return keys.length === expected.length && keys.every((key, index) => key === expected[index]);
 }
 
-export function readExternalReauthLanding(search: string): ExternalReauthLanding | null {
+export interface ExternalReauthCompletion {
+  readonly channel: string;
+  readonly landing: ExternalReauthLanding;
+}
+
+export function readExternalReauthCompletion(search: string): ExternalReauthCompletion | null {
   const params = new URLSearchParams(search);
+  const channel = params.get("channel");
+  if (!isExternalReauthChannelId(channel)) {
+    return null;
+  }
   const status = params.get("status");
   if (status === "success") {
-    return { status };
+    return { channel, landing: { status } };
   }
   if (status === "error") {
     const reported = reportedError(params.get("error"), params.get("requestId"));
-    return reported === null ? null : { status, reported };
+    return reported === null ? null : { channel, landing: { status, reported } };
   }
   return null;
 }

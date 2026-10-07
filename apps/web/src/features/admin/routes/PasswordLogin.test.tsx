@@ -11,7 +11,8 @@ import {
   ME_URL,
   meFixture,
 } from "../../../test/bootFixtures";
-import { dispatchWindowMessage, stubWindowOpen } from "../../../test/fakePopup";
+import { stubWindowOpen } from "../../../test/fakePopup";
+import { broadcastOnChannel, CHANNEL_ID } from "../../../test/reauthChannel";
 import {
   installProviderServer,
   passwordLoginFixture,
@@ -308,7 +309,10 @@ describe("component_password_login_external_recent_auth", () => {
       }),
       http.post("*/api/v1/auth/reauthenticate", async ({ request }) => {
         reauthBodies.push(await request.json());
-        return HttpResponse.json({ accepted: true, externalReauthUrl: IDP_URL }, { status: 202 });
+        return HttpResponse.json(
+          { accepted: true, externalReauthUrl: IDP_URL, externalReauthChannel: CHANNEL_ID },
+          { status: 202 },
+        );
       }),
     );
     const { router } = renderApp("/admin/providers");
@@ -336,11 +340,8 @@ describe("component_password_login_external_recent_auth", () => {
     recentAuthUntil = "2026-09-28T12:05:00Z";
     admin.reauthenticated = true;
     await act(async () => {
-      dispatchWindowMessage(
-        { type: "palmr:external-reauth", status: "success" },
-        { source: popups.popups[0] ?? null },
-      );
-      await Promise.resolve();
+      broadcastOnChannel(CHANNEL_ID, { type: "palmr:external-reauth", status: "success" });
+      await new Promise((resolve) => setTimeout(resolve, 30));
     });
 
     await waitFor(() => {

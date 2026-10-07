@@ -1951,10 +1951,6 @@ test.describe("external identity", () => {
   });
 
   test("e2e_sso_recent_auth_replays_sensitive_mutation", async () => {
-    test.fixme(
-      true,
-      "BLOCKED: Palmr's Cross-Origin-Opener-Policy: same-origin (SECURITY_MODEL §11.4) severs window.opener once the popup reaches the IdP, so the accepted popup seam cannot report back; see docs/development/identity-providers.md.",
-    );
     test.setTimeout(240_000);
     expect(aliceContext).not.toBeNull();
     const context = aliceContext as BrowserContext;
@@ -1963,14 +1959,38 @@ test.describe("external identity", () => {
     await setIdentity(ALICE_AT_IDP);
     await waitForRecentAuthToLapse(page);
 
+    const openerSevered: boolean[] = [];
+    await context.exposeFunction(
+      "__reportOpenerSevered",
+      (severed: boolean) => {
+        openerSevered.push(severed);
+      },
+    );
+    await context.addInitScript(() => {
+      if (location.pathname === "/auth/reauth-complete") {
+        (
+          window as unknown as {
+            __reportOpenerSevered: (severed: boolean) => void;
+          }
+        ).__reportOpenerSevered(window.opener === null);
+      }
+    });
+
+    const timeline: string[] = [];
     const linkResponses: number[] = [];
+    const reauthResponses: { channel: string; url: string }[] = [];
     page.on("response", (response) => {
+      const { pathname } = new URL(response.url());
+      const method = response.request().method();
       if (
-        response.request().method() === "POST" &&
-        new URL(response.url()).pathname ===
-          `/api/v1/auth/providers/${SECOND_PROVIDER.slug}/link`
+        method === "POST" &&
+        pathname === `/api/v1/auth/providers/${SECOND_PROVIDER.slug}/link`
       ) {
         linkResponses.push(response.status());
+        timeline.push(`link:${String(response.status())}`);
+      }
+      if (method === "GET" && pathname === "/api/v1/auth/me") {
+        timeline.push("me");
       }
     });
     const reauthRequests: unknown[] = [];
@@ -1980,6 +2000,24 @@ test.describe("external identity", () => {
         new URL(request.url()).pathname === "/api/v1/auth/reauthenticate"
       ) {
         reauthRequests.push(request.postDataJSON());
+        timeline.push("reauth");
+      }
+    });
+    page.on("response", (response) => {
+      if (
+        response.request().method() === "POST" &&
+        new URL(response.url()).pathname === "/api/v1/auth/reauthenticate"
+      ) {
+        void response.json().then((body: unknown) => {
+          const { externalReauthUrl, externalReauthChannel } = body as {
+            externalReauthUrl: string;
+            externalReauthChannel: string;
+          };
+          reauthResponses.push({
+            url: externalReauthUrl,
+            channel: externalReauthChannel,
+          });
+        });
       }
     });
 
@@ -2013,14 +2051,19 @@ test.describe("external identity", () => {
     popup.on("framenavigated", (frame) => {
       if (frame === popup.mainFrame()) {
         popupUrls.push(frame.url());
+        if (frame.url().includes("/auth/reauth-complete")) {
+          timeline.push("complete");
+        }
       }
     });
     await popup.waitForEvent("close", { timeout: 60_000 });
-    expect(
-      popupUrls.some((url) =>
-        /\/auth\/reauth-complete\?status=success$/.test(url),
-      ),
-    ).toBe(true);
+    expect(reauthResponses).toHaveLength(1);
+    const [{ channel }] = reauthResponses as [{ channel: string; url: string }];
+    expect(channel).toMatch(/^[A-Za-z0-9_-]{43}$/);
+    expect(popupUrls).toContain(
+      `${new URL(page.url()).origin}/auth/reauth-complete?status=success&channel=${channel}`,
+    );
+    expect(openerSevered).toEqual([true]);
 
     await expect(section.getByTestId("identity-link-row")).toHaveCount(2, {
       timeout: 30_000,
@@ -2033,6 +2076,14 @@ test.describe("external identity", () => {
     ).toHaveCount(1);
     expect(reauthRequests).toEqual([{}]);
     expect(linkResponses).toEqual([403, 200]);
+    const completed = timeline.indexOf("complete");
+    const replayed = timeline.lastIndexOf("link:200");
+    expect(timeline.indexOf("link:403")).toBeLessThan(
+      timeline.indexOf("reauth"),
+    );
+    expect(timeline.indexOf("reauth")).toBeLessThan(completed);
+    expect(timeline.slice(completed, replayed)).toContain("me");
+    expect(timeline.filter((entry) => entry === "link:200")).toHaveLength(1);
     const reauthorization = (await authorizations()).find(
       (request) => request.prompt === "login",
     );

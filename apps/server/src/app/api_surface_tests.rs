@@ -1941,6 +1941,16 @@ fn it_openapi_external_identity_flows_document_their_contracts() {
         schema["properties"]["externalReauthUrl"]["type"],
         json!("string")
     );
+    assert_eq!(
+        schema["properties"]["externalReauthChannel"]["type"],
+        json!("string")
+    );
+    assert!(schema["required"]
+        .as_array()
+        .unwrap()
+        .contains(&json!("externalReauthChannel")));
+    let responses = reauthenticate["202"]["description"].as_str().unwrap();
+    assert!(responses.contains("externalReauthChannel") && responses.contains("grants nothing"));
 
     let authorize = paths["/api/v1/auth/providers/{slug}/authorize"]["post"].to_string();
     assert!(authorize.contains("**anonymous login** only"));

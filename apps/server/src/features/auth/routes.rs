@@ -299,7 +299,7 @@ async fn me(
     responses(
         (
             status = 202,
-            description = "SSO-only account. `externalReauthUrl` is the provider authorization URL generated server-side (`prompt=login`, and `max_age=0` for OIDC) and `palmr_oauth` is set. Send the browser there; the callback stamps `last_auth_at` of this session only after proving the same provider and subject.",
+            description = "SSO-only account. `externalReauthUrl` is the provider authorization URL generated server-side (`prompt=login`, and `max_age=0` for OIDC) and `palmr_oauth` is set. Send the browser there; the callback stamps `last_auth_at` of this session only after proving the same provider and subject. `externalReauthChannel` is a fresh random 256-bit base64url identifier of this one challenge; it names the same-origin `BroadcastChannel` that carries the completion notification and is repeated as `channel` in the completion landing. It is correlation only: it grants nothing, refreshes nothing and is never sent to the provider, so the client must re-read its authoritative session state before acting on a notification.",
             body = ExternalReauthResponse
         ),
         (
@@ -356,15 +356,17 @@ async fn external_reauthentication(
     principal: &AuthenticatedPrincipal,
     request_id: Option<&RequestId>,
 ) -> Response {
-    let authorized = match external.start_reauth(principal).await {
-        Ok(authorized) => authorized,
+    let started = match external.start_reauth(principal).await {
+        Ok(started) => started,
         Err(error) => return link_error(&error, request_id),
     };
+    let authorized = started.authorized;
     let mut response = json(
         StatusCode::ACCEPTED,
         &ExternalReauthResponse {
             accepted: true,
             external_reauth_url: authorized.authorization_url,
+            external_reauth_channel: started.channel,
         },
         request_id,
     );
