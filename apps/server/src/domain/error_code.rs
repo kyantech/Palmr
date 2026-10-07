@@ -160,6 +160,10 @@ error_catalog! {
         "The file was not found";
     FileNameConflict = "FILE_NAME_CONFLICT", CONFLICT, retryable: false,
         "No unique name could be generated for this item";
+    FolderNotFound = "FOLDER_NOT_FOUND", NOT_FOUND, retryable: false,
+        "The folder was not found";
+    FolderDepthExceeded = "FOLDER_DEPTH_EXCEEDED", UNPROCESSABLE_ENTITY, retryable: false,
+        "The folder would exceed the maximum nesting depth";
     NameInvalid = "NAME_INVALID", UNPROCESSABLE_ENTITY, retryable: false,
         "The name is not valid";
     RangeNotSatisfiable = "RANGE_NOT_SATISFIABLE", RANGE_NOT_SATISFIABLE, retryable: false,

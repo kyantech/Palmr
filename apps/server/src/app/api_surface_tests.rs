@@ -2112,3 +2112,187 @@ fn it_openapi_password_login_documents_its_contract() {
     assert!(!members.contains_key("passwordLoginEnabled"));
     assert!(members.contains_key("authProvidersEnabled"));
 }
+
+#[test]
+fn it_openapi_folder_routes_declare_typed_contracts() {
+    let document = application_document();
+    let paths = &document["paths"];
+    let list = &paths["/api/v1/folders"]["get"];
+    let create = &paths["/api/v1/folders"]["post"];
+    let tree = &paths["/api/v1/folders/tree"]["get"];
+    let detail = &paths["/api/v1/folders/{id}"]["get"];
+    let update = &paths["/api/v1/folders/{id}"]["patch"];
+
+    for (operation, class) in [
+        (list, "authenticated"),
+        (create, "authenticated"),
+        (tree, "authenticated"),
+        (detail, "authenticated"),
+        (update, "authenticated"),
+    ] {
+        assert!(operation["tags"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|tag| tag == class));
+        assert_eq!(
+            operation["security"].as_array().unwrap().len(),
+            1,
+            "{operation}"
+        );
+        for status in ["401", "403", "429"] {
+            assert!(operation["responses"][status].is_object(), "{status}");
+        }
+    }
+    for operation in [list, tree, detail, update] {
+        assert!(operation["responses"]["404"]["description"]
+            .as_str()
+            .unwrap()
+            .contains("FOLDER_NOT_FOUND"));
+    }
+    assert!(create["responses"]["404"]["description"]
+        .as_str()
+        .unwrap()
+        .contains("FOLDER_NOT_FOUND"));
+    assert!(create["responses"]["422"]["description"]
+        .as_str()
+        .unwrap()
+        .contains("FOLDER_DEPTH_EXCEEDED"));
+    assert!(list["responses"]["400"]["description"]
+        .as_str()
+        .unwrap()
+        .contains("CURSOR_INVALID"));
+
+    assert_eq!(
+        parameter(list, "sort")["schema"]["enum"],
+        json!([
+            "name:asc",
+            "name:desc",
+            "createdAt:asc",
+            "createdAt:desc",
+            "updatedAt:asc",
+            "updatedAt:desc"
+        ])
+    );
+    assert_eq!(parameter(list, "sort")["schema"]["default"], "name:asc");
+    assert_eq!(parameter(list, "parentId")["in"], "query");
+    assert_eq!(parameter(list, "q")["schema"]["minLength"], 2);
+    assert_eq!(parameter(list, "q")["schema"]["maxLength"], 128);
+    assert_eq!(parameter(list, "limit")["schema"]["default"], 50);
+    assert_eq!(parameter(list, "limit")["schema"]["maximum"], 200);
+    assert_eq!(parameter(list, "cursor")["schema"]["type"], "string");
+    assert_eq!(parameter(tree, "depth")["schema"]["minimum"], 1);
+    assert_eq!(parameter(tree, "depth")["schema"]["maximum"], 8);
+    assert_eq!(parameter(tree, "depth")["schema"]["default"], 3);
+    assert_eq!(parameter(tree, "rootId")["in"], "query");
+    assert_eq!(parameter(detail, "id")["in"], "path");
+    assert_eq!(parameter(update, "id")["in"], "path");
+
+    assert_eq!(
+        list["responses"]["200"]["content"]["application/json"]["schema"]["$ref"],
+        "#/components/schemas/Page_FolderItem"
+    );
+    assert_eq!(
+        create["responses"]["201"]["content"]["application/json"]["schema"]["$ref"],
+        "#/components/schemas/FolderItem"
+    );
+    assert_eq!(
+        update["responses"]["200"]["content"]["application/json"]["schema"]["$ref"],
+        "#/components/schemas/FolderItem"
+    );
+    assert_eq!(
+        detail["responses"]["200"]["content"]["application/json"]["schema"]["$ref"],
+        "#/components/schemas/FolderDetail"
+    );
+    assert_eq!(
+        tree["responses"]["200"]["content"]["application/json"]["schema"]["$ref"],
+        "#/components/schemas/FolderTree"
+    );
+
+    let schemas = &document["components"]["schemas"];
+    let create_request = &schemas["CreateFolderRequest"];
+    assert_eq!(create_request["required"], json!(["name"]));
+    assert_eq!(create_request["additionalProperties"], false);
+    let mut create_fields: Vec<&str> = create_request["properties"]
+        .as_object()
+        .unwrap()
+        .keys()
+        .map(String::as_str)
+        .collect();
+    create_fields.sort_unstable();
+    assert_eq!(create_fields, ["description", "name", "parentId"]);
+
+    let update_request = &schemas["UpdateFolderRequest"];
+    assert!(update_request["required"].is_null());
+    assert_eq!(update_request["additionalProperties"], false);
+    let mut update_fields: Vec<&str> = update_request["properties"]
+        .as_object()
+        .unwrap()
+        .keys()
+        .map(String::as_str)
+        .collect();
+    update_fields.sort_unstable();
+    assert_eq!(update_fields, ["description", "name"]);
+    assert_eq!(
+        update_request["properties"]["description"]["type"],
+        json!(["string", "null"])
+    );
+    assert_eq!(update_request["properties"]["name"]["type"], "string");
+
+    let item = &schemas["FolderItem"];
+    let required: Vec<&str> = item["required"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(Value::as_str)
+        .collect();
+    for field in [
+        "id",
+        "name",
+        "description",
+        "parentId",
+        "fileCount",
+        "subfolderCount",
+        "totalBytes",
+        "createdAt",
+        "updatedAt",
+    ] {
+        assert!(required.contains(&field), "{field}");
+    }
+    assert_eq!(
+        item["properties"]["totalBytes"]["$ref"],
+        "#/components/schemas/ByteCount"
+    );
+    for exposed in [
+        &schemas["FolderItem"]["properties"],
+        &schemas["FolderDetail"]["allOf"][1]["properties"],
+        &schemas["FolderPathItem"]["properties"],
+        &schemas["FolderTree"]["properties"],
+        &schemas["FolderTreeNode"]["properties"],
+        &schemas["TruncationPoint"]["properties"],
+    ] {
+        for forbidden in [
+            "ownerId",
+            "owner_id",
+            "nameNormalized",
+            "name_normalized",
+            "depth",
+            "storageObjectId",
+            "objectKey",
+        ] {
+            assert!(exposed.get(forbidden).is_none(), "{forbidden}");
+        }
+    }
+    assert_eq!(
+        schemas["FolderTree"]["required"],
+        json!(["nodes", "truncated", "truncationPoint"])
+    );
+    assert_eq!(
+        schemas["TruncationPoint"]["required"],
+        json!(["afterId", "level"])
+    );
+    assert_eq!(
+        schemas["FolderDetail"]["allOf"][1]["required"],
+        json!(["path"])
+    );
+}

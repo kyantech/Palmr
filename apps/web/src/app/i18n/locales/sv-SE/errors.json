@@ -49,6 +49,8 @@
     "fileNotFound": "Filen finns inte längre.",
     "fileNameConflict": "Palmr hittade inget ledigt namn för objektet. Välj ett annat namn och försök igen.",
     "nameInvalid": "Det här namnet är ogiltigt. Det får inte vara tomt, för långt eller innehålla snedstreck eller styrtecken.",
+    "folderNotFound": "Den här mappen finns inte längre.",
+    "folderDepthExceeded": "Mappar kan vara nästlade på högst 64 nivåer. Välj en plats som ligger grundare.",
     "rangeNotSatisfiable": "Den begärda delen av filen är inte tillgänglig. Starta nedladdningen igen.",
     "storageUnavailable": "Fillagringen är tillfälligt otillgänglig. Försök igen senare.",
     "storageFull": "Serverns lagring är full. Kontakta administratören.",

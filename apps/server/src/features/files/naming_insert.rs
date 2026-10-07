@@ -1,9 +1,7 @@
 use sqlx::sqlite::SqliteQueryResult;
 
 use crate::domain::error_code::ErrorCode;
-use crate::domain::naming::{
-    CandidateError, InvalidName, NameCandidate, NameSeries, MAX_NAME_ATTEMPTS,
-};
+use crate::domain::naming::{CandidateError, InvalidName, NameCandidate, NameSeries};
 use crate::infra::db::DbError;
 use crate::infra::http::error::ApiError;
 
@@ -126,15 +124,35 @@ impl<E: Into<ApiError>> From<NamedInsertError<E>> for ApiError {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct NameAttempts {
+    series: NameSeries,
+    next: u32,
+}
+
+impl NameAttempts {
+    pub fn parse(requested: &str) -> Result<Self, InvalidName> {
+        Ok(Self {
+            series: NameSeries::parse(requested)?,
+            next: 0,
+        })
+    }
+
+    pub fn next_candidate(&mut self) -> Result<NameCandidate, CandidateError> {
+        let candidate = self.series.candidate(self.next)?;
+        self.next = self.next.saturating_add(1);
+        Ok(candidate)
+    }
+}
+
 pub async fn insert_with_unique_name<T, E>(
     requested: &str,
     mut attempt: impl AsyncFnMut(NameCandidate) -> Result<Attempt<T>, E>,
 ) -> Result<Stored<T>, NamedInsertError<E>> {
-    let series = NameSeries::parse(requested).map_err(NamedInsertError::InvalidName)?;
-    for number in 0..=MAX_NAME_ATTEMPTS {
-        let name = series
-            .candidate(number)
-            .map_err(NamedInsertError::Conflict)?;
+    let mut names = NameAttempts::parse(requested).map_err(NamedInsertError::InvalidName)?;
+    let mut number = 0;
+    loop {
+        let name = names.next_candidate().map_err(NamedInsertError::Conflict)?;
         match attempt(name.clone())
             .await
             .map_err(NamedInsertError::Failed)?
@@ -146,10 +164,7 @@ pub async fn insert_with_unique_name<T, E>(
                     value,
                 })
             }
-            Attempt::NameTaken => {}
+            Attempt::NameTaken => number += 1,
         }
     }
-    Err(NamedInsertError::Conflict(
-        CandidateError::AttemptsExhausted,
-    ))
 }

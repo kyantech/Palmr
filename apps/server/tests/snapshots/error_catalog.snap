@@ -133,6 +133,16 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "FOLDER_DEPTH_EXCEEDED",
+    "status": 422,
+    "retryable": false
+  },
+  {
+    "code": "FOLDER_NOT_FOUND",
+    "status": 404,
+    "retryable": false
+  },
+  {
     "code": "FORBIDDEN",
     "status": 403,
     "retryable": false

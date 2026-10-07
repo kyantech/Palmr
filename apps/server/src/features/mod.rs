@@ -25,6 +25,7 @@ pub mod email;
     )
 )]
 pub mod files;
+pub mod folders;
 #[allow(
     dead_code,
     reason = "the provider domain model, presets and test primitives are consumed as the external login flow and Admin providers page are wired"

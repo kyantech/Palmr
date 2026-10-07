@@ -49,6 +49,8 @@
     "fileNotFound": "Este arquivo não existe mais.",
     "fileNameConflict": "O Palmr não encontrou um nome livre para este item. Escolha outro nome e tente novamente.",
     "nameInvalid": "Este nome não é válido. Ele não pode estar vazio, ser longo demais nem conter barras ou caracteres de controle.",
+    "folderNotFound": "Esta pasta não existe mais.",
+    "folderDepthExceeded": "As pastas podem ser aninhadas em no máximo 64 níveis. Escolha um local menos profundo.",
     "rangeNotSatisfiable": "A parte solicitada do arquivo não está disponível. Inicie o download novamente.",
     "storageUnavailable": "O armazenamento de arquivos está temporariamente indisponível. Tente novamente mais tarde.",
     "storageFull": "O armazenamento do servidor está cheio. Entre em contato com o administrador.",

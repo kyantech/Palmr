@@ -820,6 +820,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/folders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_folders"];
+        put?: never;
+        post: operations["create_folder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/folders/tree": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["folder_tree"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/folders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_folder"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["update_folder"];
+        trace?: never;
+    };
     "/api/v1/identity-links": {
         parameters: {
             query?: never;
@@ -1376,6 +1424,16 @@ export interface components {
             /** @example preferred_username */
             username?: string | null;
         };
+        CreateFolderRequest: {
+            description?: string | null;
+            /** @example 2026 */
+            name: string;
+            /**
+             * @description Absent or `null` creates a root-level folder.
+             * @example 0192f3a1-0000-7000-8000-000000000001
+             */
+            parentId?: string | null;
+        };
         CreateInviteRequest: {
             /**
              * @description The address the invite is bound to; the account is created with it.
@@ -1575,7 +1633,7 @@ export interface components {
             enrollmentId: string;
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "FILE_NAME_CONFLICT" | "NAME_INVALID" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN" | "SMTP_TEST_FAILED" | "PROVIDER_NOT_FOUND" | "PROVIDER_DISABLED" | "PROVIDER_SLUG_TAKEN" | "PROVIDER_DISCOVERY_FAILED" | "PROVIDER_VALIDATION_FAILED" | "PROVIDER_HAS_LINKS" | "PROVIDER_ID_TOKEN_INVALID" | "PROVIDER_USERINFO_FAILED" | "PROVIDER_SUBJECT_MISSING" | "PROVIDER_STATE_INVALID" | "PROVIDER_AUTH_DENIED" | "PROVIDER_CODE_EXCHANGE_FAILED" | "PROVIDER_EMAIL_UNVERIFIED" | "PROVIDER_AUTO_PROVISION_DISABLED" | "PROVIDER_IDENTITY_ALREADY_LINKED" | "PROVIDER_LINK_NOT_FOUND" | "IDENTITY_LINK_LAST_LOGIN_PATH" | "PASSWORD_LOGIN_DISABLE_UNSAFE" | "NO_VALIDATED_PROVIDER" | "AUTH_ACCOUNT_INACTIVE" | "AUTH_EXTERNAL_AMBIGUOUS_IDENTITY" | "AUTH_EXTERNAL_USERNAME_UNAVAILABLE";
+        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "FILE_NAME_CONFLICT" | "FOLDER_NOT_FOUND" | "FOLDER_DEPTH_EXCEEDED" | "NAME_INVALID" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN" | "SMTP_TEST_FAILED" | "PROVIDER_NOT_FOUND" | "PROVIDER_DISABLED" | "PROVIDER_SLUG_TAKEN" | "PROVIDER_DISCOVERY_FAILED" | "PROVIDER_VALIDATION_FAILED" | "PROVIDER_HAS_LINKS" | "PROVIDER_ID_TOKEN_INVALID" | "PROVIDER_USERINFO_FAILED" | "PROVIDER_SUBJECT_MISSING" | "PROVIDER_STATE_INVALID" | "PROVIDER_AUTH_DENIED" | "PROVIDER_CODE_EXCHANGE_FAILED" | "PROVIDER_EMAIL_UNVERIFIED" | "PROVIDER_AUTO_PROVISION_DISABLED" | "PROVIDER_IDENTITY_ALREADY_LINKED" | "PROVIDER_LINK_NOT_FOUND" | "IDENTITY_LINK_LAST_LOGIN_PATH" | "PASSWORD_LOGIN_DISABLE_UNSAFE" | "NO_VALIDATED_PROVIDER" | "AUTH_ACCOUNT_INACTIVE" | "AUTH_EXTERNAL_AMBIGUOUS_IDENTITY" | "AUTH_EXTERNAL_USERNAME_UNAVAILABLE";
         ExternalReauthResponse: {
             accepted: boolean;
             /**
@@ -1586,6 +1644,47 @@ export interface components {
              */
             externalReauthChannel: string;
             externalReauthUrl: string;
+        };
+        FolderDetail: components["schemas"]["FolderItem"] & {
+            /** @description Breadcrumbs from the root-level ancestor down to and including this folder. */
+            path: components["schemas"]["FolderPathItem"][];
+        };
+        FolderItem: {
+            createdAt: string;
+            description: string | null;
+            /**
+             * Format: int64
+             * @description Files in the whole subtree rooted at this folder.
+             */
+            fileCount: number;
+            id: string;
+            name: string;
+            parentId: string | null;
+            /**
+             * Format: int64
+             * @description Folders below this folder, at any depth; the folder itself is not counted.
+             */
+            subfolderCount: number;
+            /** @description Sum of the sizes of every file in the subtree. */
+            totalBytes: components["schemas"]["ByteCount"];
+            updatedAt: string;
+        };
+        FolderPathItem: {
+            id: string;
+            name: string;
+        };
+        FolderTree: {
+            /** @description Breadth-first by level, then by normalized name, then by id. A parent always precedes its children. */
+            nodes: components["schemas"]["FolderTreeNode"][];
+            truncated: boolean;
+            truncationPoint: null | components["schemas"]["TruncationPoint"];
+        };
+        FolderTreeNode: {
+            /** @description `true` when the folder has at least one child folder, whether or not it is part of this response. */
+            hasChildren: boolean;
+            id: string;
+            name: string;
+            parentId: string | null;
         };
         ForgotPasswordRequest: {
             /** @example ada@example.com */
@@ -1829,6 +1928,35 @@ export interface components {
                 twoFactorEnabled: boolean;
                 usedBytes: components["schemas"]["ByteCount"];
                 username: string;
+            }[];
+            /** @description Opaque cursor for the next page; `null` on the last page. */
+            nextCursor: string | null;
+            /**
+             * Format: int64
+             * @description Matching items overall; `null` where counting would require a scan.
+             */
+            totalCount: number | null;
+        };
+        Page_FolderItem: {
+            items: {
+                createdAt: string;
+                description: string | null;
+                /**
+                 * Format: int64
+                 * @description Files in the whole subtree rooted at this folder.
+                 */
+                fileCount: number;
+                id: string;
+                name: string;
+                parentId: string | null;
+                /**
+                 * Format: int64
+                 * @description Folders below this folder, at any depth; the folder itself is not counted.
+                 */
+                subfolderCount: number;
+                /** @description Sum of the sizes of every file in the subtree. */
+                totalBytes: components["schemas"]["ByteCount"];
+                updatedAt: string;
             }[];
             /** @description Opaque cursor for the next page; `null` on the last page. */
             nextCursor: string | null;
@@ -2345,6 +2473,15 @@ export interface components {
         ThumbnailSourceLimitName: "64MiB" | "128MiB" | "256MiB" | "512MiB" | "unlimited";
         /** @enum {string} */
         TokenAuthMethod: "client_secret_basic" | "client_secret_post" | "none";
+        TruncationPoint: {
+            /** @description The last node returned. Every node after it in the response order was omitted. */
+            afterId: string;
+            /**
+             * Format: int32
+             * @description The 1-based level of that node, where level 1 is the top of the returned tree.
+             */
+            level: number;
+        };
         TrustedDeviceItem: {
             createdAt: string;
             expiresAt: string;
@@ -2384,6 +2521,12 @@ export interface components {
              */
             enrolledAt: string | null;
             requiredByPolicy: boolean;
+        };
+        UpdateFolderRequest: {
+            /** @description Absent leaves the description unchanged; `null` clears it. */
+            description?: string | null;
+            /** @description Absent leaves the name unchanged. `null` is not a valid name. */
+            name?: string;
         };
         UpdateProviderRequest: {
             allowEmailLinking?: boolean;
@@ -6863,6 +7006,413 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Bootstrap"];
+                };
+            };
+        };
+    };
+    list_folders: {
+        parameters: {
+            query?: {
+                /** @description List the direct child folders of this folder. Absent lists the root-level folders. An unknown or foreign folder id is `FOLDER_NOT_FOUND`. */
+                parentId?: string;
+                q?: string;
+                sort?: "name:asc" | "name:desc" | "createdAt:asc" | "createdAt:desc" | "updatedAt:asc" | "updatedAt:desc";
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Direct child folders with recursive subtree aggregates. `fileCount`, `subfolderCount` and `totalBytes` cover the whole subtree of each folder and are computed with one recursive statement per page. `q` filters the direct children of the selected parent by normalized name; it never searches below them. `totalCount` is the exact filtered count. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_FolderItem"];
+                };
+            };
+            /** @description `CURSOR_INVALID`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FOLDER_NOT_FOUND`: the parent is unknown or belongs to another user. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `VALIDATION_ERROR` for an invalid `q`, `sort` or `limit`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    create_folder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description A duplicate name in the same parent is disambiguated deterministically (`Docs`, `Docs (1)`, `Docs (2)`); the response carries the name that was stored. Maximum nesting depth is 64. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFolderRequest"];
+            };
+        };
+        responses: {
+            /** @description The created folder, with the stored name. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FolderItem"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed, or the session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FOLDER_NOT_FOUND`: the parent is unknown or belongs to another user. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FILE_NAME_CONFLICT`: no unique name could be generated. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `NAME_INVALID`, `FOLDER_DEPTH_EXCEEDED` or `VALIDATION_ERROR`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    folder_tree: {
+        parameters: {
+            query?: {
+                /** @description Levels returned, counted from the top of the tree. */
+                depth?: number;
+                /** @description Root the tree at this folder, which is level 1. Absent returns the root-level folders as level 1. An unknown or foreign folder id is `FOLDER_NOT_FOUND`. */
+                rootId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A flat, breadth-first list of folders, never more than 2 000 nodes. A parent always precedes its children. When the cap cuts the walk, `truncated` is `true` and `truncationPoint` names the last node returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FolderTree"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FOLDER_NOT_FOUND`: the root is unknown or belongs to another user. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `VALIDATION_ERROR` for a `depth` outside 1 to 8. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    get_folder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Folder UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The folder with its recursive aggregates and `path[]`, the breadcrumbs from the root-level ancestor down to and including the folder. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FolderDetail"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FOLDER_NOT_FOUND`, including another user's folder. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    update_folder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Folder UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description Absent members are unchanged. `description: null` clears the description; `name` cannot be `null`. A name that collides with a sibling is disambiguated like a create. Moving a folder is a separate operation. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateFolderRequest"];
+            };
+        };
+        responses: {
+            /** @description The updated folder, with the stored name. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FolderItem"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed, or the session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FOLDER_NOT_FOUND`, including another user's folder. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FILE_NAME_CONFLICT`: no unique name could be generated. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `NAME_INVALID` or `VALIDATION_ERROR`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
         };

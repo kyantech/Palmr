@@ -49,6 +49,8 @@
     "fileNotFound": "File ini sudah tidak ada.",
     "fileNameConflict": "Palmr tidak menemukan nama yang tersedia untuk item ini. Pilih nama lain lalu coba lagi.",
     "nameInvalid": "Nama ini tidak valid. Nama tidak boleh kosong, terlalu panjang, atau berisi garis miring maupun karakter kontrol.",
+    "folderNotFound": "Folder ini sudah tidak ada.",
+    "folderDepthExceeded": "Folder dapat bersarang paling dalam 64 tingkat. Pilih lokasi yang tidak terlalu dalam.",
     "rangeNotSatisfiable": "Bagian file yang diminta tidak tersedia. Mulai ulang unduhan.",
     "storageUnavailable": "Penyimpanan file untuk sementara tidak tersedia. Coba lagi nanti.",
     "storageFull": "Penyimpanan server penuh. Hubungi administrator.",

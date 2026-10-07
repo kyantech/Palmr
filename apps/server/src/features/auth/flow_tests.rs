@@ -48,6 +48,7 @@ use crate::features::auth::sessions::SessionService;
 use crate::features::auth::totp::TotpService;
 use crate::features::email::transport::CapturingTransport;
 use crate::features::email::EmailService;
+use crate::features::folders::FolderService;
 use crate::features::identity_providers::callback::ExternalLoginService;
 use crate::features::identity_providers::{
     IdentityProviderService, PasswordLoginService, ProviderHttpClient,
@@ -71,7 +72,7 @@ const BASE_URL: &str = "https://files.example.test";
 const LOGIN: &str = "/api/v1/auth/login";
 const LOGOUT: &str = "/api/v1/auth/logout";
 const ME: &str = "/api/v1/auth/me";
-const BODY_CAP: usize = 64 * 1024;
+const BODY_CAP: usize = 1024 * 1024;
 const PASSWORD: &str = "correct horse battery staple";
 const WRONG: &str = "incorrect horse battery staple";
 const START: OffsetDateTime = datetime!(2026-09-25 12:00 UTC);
@@ -89,6 +90,7 @@ struct Stack {
     resets: PasswordResetService,
     invites: InviteService,
     admin_users: AdminUserService,
+    folders: FolderService,
     providers: IdentityProviderService,
     password_login: PasswordLoginService,
     email_changes: EmailChangeService,
@@ -195,6 +197,7 @@ impl Stack {
             sessions.clone(),
             audit.clone(),
         );
+        let folders = FolderService::new(pools.clone(), Arc::new(clock.clone()), settings.keys());
         let providers = IdentityProviderService::new(
             pools.clone(),
             Arc::new(clock.clone()),
@@ -254,6 +257,7 @@ impl Stack {
             .layer(Extension(resets.clone()))
             .layer(Extension(invites.clone()))
             .layer(Extension(admin_users.clone()))
+            .layer(Extension(folders.clone()))
             .layer(Extension(providers.clone()))
             .layer(Extension(external_login.clone()))
             .layer(Extension(password_login.clone()))
@@ -293,6 +297,7 @@ impl Stack {
             resets,
             invites,
             admin_users,
+            folders,
             providers,
             password_login,
             email_changes,
@@ -485,6 +490,7 @@ impl Stack {
         drop(self.invites);
         drop(self.email_changes);
         drop(self.email);
+        drop(self.folders);
         drop(self.sessions);
         drop(self.settings);
         drop(self.drain);
@@ -1803,6 +1809,7 @@ mod admin_smtp;
 mod admin_users;
 mod authorize;
 mod callback;
+mod folders;
 mod forced_states;
 mod invites;
 mod mfa;

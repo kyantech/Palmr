@@ -49,6 +49,8 @@
     "fileNotFound": "This file no longer exists.",
     "fileNameConflict": "Palmr couldn't find a free name for this item. Choose a different name and try again.",
     "nameInvalid": "This name isn't valid. It can't be empty, too long, or contain slashes or control characters.",
+    "folderNotFound": "This folder no longer exists.",
+    "folderDepthExceeded": "Folders can be nested at most 64 levels deep. Choose a shallower location.",
     "rangeNotSatisfiable": "The requested part of the file isn't available. Start the download again.",
     "storageUnavailable": "File storage is temporarily unavailable. Try again later.",
     "storageFull": "The server's storage is full. Contact your administrator.",

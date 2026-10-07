@@ -49,6 +49,8 @@
     "fileNotFound": "Este archivo ya no existe.",
     "fileNameConflict": "Palmr no encontró un nombre libre para este elemento. Elige otro nombre e inténtalo de nuevo.",
     "nameInvalid": "Este nombre no es válido. No puede estar vacío, ser demasiado largo ni contener barras o caracteres de control.",
+    "folderNotFound": "Esta carpeta ya no existe.",
+    "folderDepthExceeded": "Las carpetas pueden anidarse como máximo 64 niveles. Elige una ubicación menos profunda.",
     "rangeNotSatisfiable": "La parte solicitada del archivo no está disponible. Inicia la descarga de nuevo.",
     "storageUnavailable": "El almacenamiento de archivos no está disponible temporalmente. Inténtalo más tarde.",
     "storageFull": "El almacenamiento del servidor está lleno. Contacta con tu administrador.",

@@ -49,6 +49,8 @@
     "fileNotFound": "Bu dosya artık mevcut değil.",
     "fileNameConflict": "Palmr bu öğe için boş bir ad bulamadı. Başka bir ad seçip yeniden deneyin.",
     "nameInvalid": "Bu ad geçerli değil. Boş ya da çok uzun olamaz; eğik çizgi veya denetim karakteri içeremez.",
+    "folderNotFound": "Bu klasör artık mevcut değil.",
+    "folderDepthExceeded": "Klasörler en fazla 64 düzey iç içe olabilir. Daha az derin bir konum seçin.",
     "rangeNotSatisfiable": "Dosyanın istenen bölümü kullanılamıyor. İndirmeyi yeniden başlatın.",
     "storageUnavailable": "Dosya depolama geçici olarak kullanılamıyor. Daha sonra tekrar deneyin.",
     "storageFull": "Sunucunun depolama alanı dolu. Yöneticinize başvurun.",

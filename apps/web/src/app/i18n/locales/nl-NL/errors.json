@@ -49,6 +49,8 @@
     "fileNotFound": "Dit bestand bestaat niet meer.",
     "fileNameConflict": "Palmr kon geen vrije naam voor dit item vinden. Kies een andere naam en probeer het opnieuw.",
     "nameInvalid": "Deze naam is ongeldig. Hij mag niet leeg of te lang zijn en geen schuine strepen of stuurtekens bevatten.",
+    "folderNotFound": "Deze map bestaat niet meer.",
+    "folderDepthExceeded": "Mappen kunnen maximaal 64 niveaus diep genest zijn. Kies een minder diepe locatie.",
     "rangeNotSatisfiable": "Het gevraagde deel van het bestand is niet beschikbaar. Start de download opnieuw.",
     "storageUnavailable": "Bestandsopslag is tijdelijk niet beschikbaar. Probeer het later opnieuw.",
     "storageFull": "De opslag van de server is vol. Neem contact op met je beheerder.",

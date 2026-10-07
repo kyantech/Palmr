@@ -23,6 +23,7 @@ use crate::domain::clock::Clock;
 use crate::domain::error_code::ErrorCode;
 use crate::features::auth;
 use crate::features::branding;
+use crate::features::folders;
 use crate::features::{identity_providers, settings, setup, users};
 use crate::infra::http::csrf::{self, AnonymousCsrf, CsrfGuard, RequestContent, RequestGate};
 use crate::infra::http::encoding::{
@@ -649,6 +650,7 @@ pub fn application_routes() -> Routes<AppState> {
         .merge(auth::totp::routes::routes())
         .merge(auth::trusted_devices::routes::routes())
         .merge(branding::routes::routes())
+        .merge(folders::routes::routes())
         .merge(identity_providers::routes::routes())
         .merge(identity_providers::link_routes::routes())
         .merge(identity_providers::password_login_routes::routes())
