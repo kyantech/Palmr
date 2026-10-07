@@ -12,6 +12,7 @@ use crate::features::users::model::UserId;
 use crate::infra::crypto::hkdf::KeyRing;
 use crate::infra::db::{DbPools, WriteTx};
 use crate::infra::http::error::ApiError;
+use crate::infra::http::idempotency::IdempotencyService;
 use crate::infra::http::pagination::{
     cursor_parameter, invalid_param, limit_parameter, search_parameter, CursorKey, Page,
     PageRequest, QueryParams, SearchQuery, SortAllowlist, SortDirection, SortField, SortKeyKind,
@@ -23,7 +24,7 @@ use super::model::{
     FolderChange, FolderDetail, FolderId, FolderItem, FolderRecord, FolderTotals, FolderTree,
     NewFolder, OwnedFolder, MAX_FOLDER_DEPTH, TREE_DEFAULT_DEPTH, TREE_MAX_DEPTH,
 };
-use super::repo::{self, NewRow, Scope};
+use super::repo::{self, NewRow, Relocation, Scope};
 
 pub const PARENT_PARAM: &str = "parentId";
 pub const DEPTH_PARAM: &str = "depth";
@@ -51,9 +52,10 @@ pub struct TreeQuery {
 
 #[derive(Clone)]
 pub struct FolderService {
-    pools: DbPools,
-    clock: Arc<dyn Clock>,
+    pub(super) pools: DbPools,
+    pub(super) clock: Arc<dyn Clock>,
     keys: Arc<KeyRing>,
+    idempotency: IdempotencyService,
 }
 
 pub async fn resolve_owned_folder<'e, E>(
@@ -71,7 +73,18 @@ where
 
 impl FolderService {
     pub fn new(pools: DbPools, clock: Arc<dyn Clock>, keys: Arc<KeyRing>) -> Self {
-        Self { pools, clock, keys }
+        let idempotency =
+            IdempotencyService::new(pools.clone(), Arc::clone(&clock), Arc::clone(&keys));
+        Self {
+            pools,
+            clock,
+            keys,
+            idempotency,
+        }
+    }
+
+    pub const fn idempotency(&self) -> &IdempotencyService {
+        &self.idempotency
     }
 
     pub fn list_parameters() -> Vec<Parameter> {
@@ -251,7 +264,11 @@ impl FolderService {
         self.item(owner, id).await
     }
 
-    async fn item(&self, owner: UserId, id: FolderId) -> Result<FolderItem, FolderError> {
+    pub(super) async fn item(
+        &self,
+        owner: UserId,
+        id: FolderId,
+    ) -> Result<FolderItem, FolderError> {
         let reader = self.pools.reader().executor();
         let record = repo::get_record(reader, owner, id)
             .await?
@@ -331,16 +348,17 @@ async fn update_in_tx(tx: &mut WriteTx<'_>, edit: Edit) -> Result<(), FolderErro
     Ok(())
 }
 
-enum Write<'a> {
+pub(super) enum Write<'a> {
     Insert(&'a NewRow),
     Rename {
         owner: UserId,
         id: FolderId,
         at: Timestamp,
     },
+    Relocate(&'a Relocation),
 }
 
-async fn store_unique_name(
+pub(super) async fn store_unique_name(
     connection: &mut SqliteConnection,
     requested: &str,
     write: &Write<'_>,
@@ -352,6 +370,9 @@ async fn store_unique_name(
             Write::Insert(row) => repo::insert(&mut *connection, row, &candidate).await?,
             Write::Rename { owner, id, at } => {
                 repo::rename(&mut *connection, *owner, *id, &candidate, *at).await?
+            }
+            Write::Relocate(relocation) => {
+                repo::relocate(&mut *connection, relocation, &candidate).await?
             }
         };
         if let Attempt::Stored(()) = attempt {

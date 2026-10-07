@@ -1,8 +1,10 @@
 use serde::{Deserialize, Deserializer, Serialize};
+use serde_json::Value;
 use utoipa::ToSchema;
 
 use crate::domain::bytes::ByteSize;
 use crate::domain::id::Id;
+use crate::domain::relative_path::{DirectoryPath, MAX_SEGMENTS};
 use crate::domain::time::Timestamp;
 use crate::infra::http::json::{JsonField, JsonKind, JsonRequest};
 use crate::infra::http::pagination::WireBytes;
@@ -226,6 +228,101 @@ impl JsonRequest for UpdateFolderRequest {
         JsonField::optional("name", JsonKind::String),
         JsonField::optional("description", JsonKind::String),
     ];
+}
+
+#[derive(Debug, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct MoveFolderRequest {
+    /// The destination folder. `null` moves the folder to the My Files root. The member is required.
+    #[serde(default, deserialize_with = "present")]
+    #[schema(value_type = Option<String>, nullable = true, required = true, example = "0192f3a1-0000-7000-8000-000000000001")]
+    pub parent_id: Option<Option<String>>,
+}
+
+impl JsonRequest for MoveFolderRequest {
+    const FIELDS: &'static [JsonField] = &[JsonField::optional("parentId", JsonKind::String)];
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FolderMove {
+    pub parent_id: Option<FolderId>,
+}
+
+impl FolderMove {
+    pub fn parse(request: MoveFolderRequest) -> Result<Self, FolderError> {
+        let parent_id = match request.parent_id {
+            None => {
+                return Err(FolderError::Invalid {
+                    fields: vec!["parentId"],
+                })
+            }
+            Some(None) => None,
+            Some(Some(raw)) => Some(raw.parse::<FolderId>().map_err(|_| FolderError::NotFound)?),
+        };
+        Ok(Self { parent_id })
+    }
+}
+
+#[derive(Debug, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct EnsurePathRequest {
+    /// Absent or `null` ensures the chain under the My Files root.
+    #[schema(nullable = true, example = "0192f3a1-0000-7000-8000-000000000001")]
+    pub parent_id: Option<String>,
+    /// Directory names from the outermost to the innermost. Each is a folder name: 1 to 255 bytes, no `/`, `\`, control characters, `.` or `..`. At most 32 segments; the NFC-normalized segments joined by `/` fit in 1024 bytes.
+    #[schema(value_type = Vec<String>, min_items = 1, max_items = 32, example = json!(["Photos", "2026", "Iceland"]))]
+    pub segments: Vec<Value>,
+}
+
+impl JsonRequest for EnsurePathRequest {
+    const FIELDS: &'static [JsonField] = &[
+        JsonField::optional("parentId", JsonKind::String),
+        JsonField::required("segments", JsonKind::Array),
+    ];
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EnsurePath {
+    pub parent_id: Option<FolderId>,
+    pub path: DirectoryPath,
+}
+
+impl EnsurePath {
+    pub fn parse(request: EnsurePathRequest) -> Result<Self, FolderError> {
+        let parent_id = match request.parent_id {
+            None => None,
+            Some(raw) => Some(raw.parse::<FolderId>().map_err(|_| FolderError::NotFound)?),
+        };
+        if request.segments.is_empty() {
+            return Err(FolderError::Invalid {
+                fields: vec!["segments"],
+            });
+        }
+        let mut segments = Vec::with_capacity(request.segments.len().min(MAX_SEGMENTS + 1));
+        for segment in &request.segments {
+            match segment {
+                Value::String(text) => segments.push(text.as_str()),
+                _ => {
+                    return Err(FolderError::Invalid {
+                        fields: vec!["segments"],
+                    })
+                }
+            }
+        }
+        let path = DirectoryPath::from_segments(&segments).map_err(FolderError::InvalidPath)?;
+        Ok(Self { parent_id, path })
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct EnsurePathResponse {
+    /// One folder id per requested segment, in request order.
+    pub folder_ids: Vec<String>,
+    /// The id of the last segment.
+    pub leaf_folder_id: String,
+    /// The ids this call created, in segment order. Empty when every folder already existed.
+    pub created: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

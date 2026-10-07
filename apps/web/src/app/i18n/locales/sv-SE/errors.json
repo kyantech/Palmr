@@ -51,6 +51,7 @@
     "nameInvalid": "Det här namnet är ogiltigt. Det får inte vara tomt, för långt eller innehålla snedstreck eller styrtecken.",
     "folderNotFound": "Den här mappen finns inte längre.",
     "folderDepthExceeded": "Mappar kan vara nästlade på högst 64 nivåer. Välj en plats som ligger grundare.",
+    "folderCycle": "En mapp kan inte flyttas in i sig själv eller i någon av sina egna undermappar.",
     "rangeNotSatisfiable": "Den begärda delen av filen är inte tillgänglig. Starta nedladdningen igen.",
     "storageUnavailable": "Fillagringen är tillfälligt otillgänglig. Försök igen senare.",
     "storageFull": "Serverns lagring är full. Kontakta administratören.",

@@ -51,6 +51,7 @@
     "nameInvalid": "Este nome não é válido. Ele não pode estar vazio, ser longo demais nem conter barras ou caracteres de controle.",
     "folderNotFound": "Esta pasta não existe mais.",
     "folderDepthExceeded": "As pastas podem ser aninhadas em no máximo 64 níveis. Escolha um local menos profundo.",
+    "folderCycle": "Uma pasta não pode ser movida para dentro de si mesma ou de uma de suas próprias subpastas.",
     "rangeNotSatisfiable": "A parte solicitada do arquivo não está disponível. Inicie o download novamente.",
     "storageUnavailable": "O armazenamento de arquivos está temporariamente indisponível. Tente novamente mais tarde.",
     "storageFull": "O armazenamento do servidor está cheio. Entre em contato com o administrador.",

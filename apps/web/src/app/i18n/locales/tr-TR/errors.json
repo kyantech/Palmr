@@ -51,6 +51,7 @@
     "nameInvalid": "Bu ad geçerli değil. Boş ya da çok uzun olamaz; eğik çizgi veya denetim karakteri içeremez.",
     "folderNotFound": "Bu klasör artık mevcut değil.",
     "folderDepthExceeded": "Klasörler en fazla 64 düzey iç içe olabilir. Daha az derin bir konum seçin.",
+    "folderCycle": "Bir klasör kendi içine veya kendi alt klasörlerinden birine taşınamaz.",
     "rangeNotSatisfiable": "Dosyanın istenen bölümü kullanılamıyor. İndirmeyi yeniden başlatın.",
     "storageUnavailable": "Dosya depolama geçici olarak kullanılamıyor. Daha sonra tekrar deneyin.",
     "storageFull": "Sunucunun depolama alanı dolu. Yöneticinize başvurun.",

@@ -2,21 +2,26 @@ use std::fmt;
 
 use crate::domain::error_code::ErrorCode;
 use crate::domain::naming::{CandidateError, InvalidName};
+use crate::domain::relative_path::InvalidPath;
 use crate::domain::time::InvalidTimestamp;
 use crate::features::files::naming_insert::NamedInsertError;
 use crate::infra::db::DbError;
 use crate::infra::http::error::ApiError;
+use crate::infra::http::idempotency::IdempotencyError;
 
 #[derive(Debug)]
 pub enum FolderError {
     NotFound,
     DepthExceeded,
+    Cycle,
     InvalidName(InvalidName),
+    InvalidPath(InvalidPath),
     NameConflict(CandidateError),
     Invalid { fields: Vec<&'static str> },
     RepositoryInvariant { column: &'static str },
     Db(DbError),
     Time(InvalidTimestamp),
+    Idempotency(IdempotencyError),
 }
 
 impl FolderError {
@@ -24,12 +29,15 @@ impl FolderError {
         match self {
             Self::NotFound => "folder_not_found",
             Self::DepthExceeded => "folder_depth_exceeded",
+            Self::Cycle => "folder_cycle",
             Self::InvalidName(_) => "folder_name_invalid",
+            Self::InvalidPath(_) => "folder_path_invalid",
             Self::NameConflict(_) => "folder_name_conflict",
             Self::Invalid { .. } => "folder_request_invalid",
             Self::RepositoryInvariant { .. } => "folder_repository_invariant",
             Self::Db(error) => error.kind().as_str(),
             Self::Time(_) => "folder_time_out_of_range",
+            Self::Idempotency(error) => error.kind(),
         }
     }
 
@@ -37,10 +45,14 @@ impl FolderError {
         match self {
             Self::NotFound => ApiError::new(ErrorCode::FolderNotFound),
             Self::DepthExceeded => ApiError::new(ErrorCode::FolderDepthExceeded),
+            Self::Cycle => ApiError::new(ErrorCode::FolderCycle),
             Self::InvalidName(_) => ApiError::new(ErrorCode::NameInvalid),
+            Self::InvalidPath(path) if path.is_shape() => ApiError::validation(["segments"]),
+            Self::InvalidPath(_) => ApiError::new(ErrorCode::NameInvalid),
             Self::NameConflict(_) => ApiError::new(ErrorCode::FileNameConflict),
             Self::Invalid { fields } => ApiError::validation(fields.iter().copied()),
             Self::Db(error) => ApiError::new(error.api_code()),
+            Self::Idempotency(error) => ApiError::new(error.api_code()),
             Self::RepositoryInvariant { .. } | Self::Time(_) => ApiError::internal(),
         }
     }
@@ -51,7 +63,9 @@ impl fmt::Display for FolderError {
         match self {
             Self::NotFound => f.write_str("the folder does not exist for this owner"),
             Self::DepthExceeded => f.write_str("the folder would exceed the maximum depth"),
+            Self::Cycle => f.write_str("the folder cannot be moved into its own subtree"),
             Self::InvalidName(error) => write!(f, "folder name is invalid: {error}"),
+            Self::InvalidPath(error) => write!(f, "folder path is invalid: {error}"),
             Self::NameConflict(error) => write!(f, "folder name could not be allocated: {error}"),
             Self::Invalid { fields } => write!(f, "folder request is invalid: {fields:?}"),
             Self::RepositoryInvariant { column } => {
@@ -59,6 +73,7 @@ impl fmt::Display for FolderError {
             }
             Self::Db(error) => write!(f, "folder database operation failed: {error}"),
             Self::Time(error) => write!(f, "folder timestamp is out of range: {error}"),
+            Self::Idempotency(error) => write!(f, "folder replay record failed: {error}"),
         }
     }
 }
@@ -80,6 +95,12 @@ impl From<sqlx::Error> for FolderError {
 impl From<InvalidTimestamp> for FolderError {
     fn from(error: InvalidTimestamp) -> Self {
         Self::Time(error)
+    }
+}
+
+impl From<IdempotencyError> for FolderError {
+    fn from(error: IdempotencyError) -> Self {
+        Self::Idempotency(error)
     }
 }
 

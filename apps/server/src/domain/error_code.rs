@@ -164,6 +164,8 @@ error_catalog! {
         "The folder was not found";
     FolderDepthExceeded = "FOLDER_DEPTH_EXCEEDED", UNPROCESSABLE_ENTITY, retryable: false,
         "The folder would exceed the maximum nesting depth";
+    FolderCycle = "FOLDER_CYCLE", UNPROCESSABLE_ENTITY, retryable: false,
+        "A folder cannot be moved into itself or one of its own subfolders";
     NameInvalid = "NAME_INVALID", UNPROCESSABLE_ENTITY, retryable: false,
         "The name is not valid";
     RangeNotSatisfiable = "RANGE_NOT_SATISFIABLE", RANGE_NOT_SATISFIABLE, retryable: false,

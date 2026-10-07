@@ -133,6 +133,11 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "FOLDER_CYCLE",
+    "status": 422,
+    "retryable": false
+  },
+  {
     "code": "FOLDER_DEPTH_EXCEEDED",
     "status": 422,
     "retryable": false

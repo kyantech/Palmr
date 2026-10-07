@@ -31,6 +31,40 @@ const RENAME: &str = "UPDATE folders SET name = ?1, name_normalized = ?2, update
 const SET_DESCRIPTION: &str =
     "UPDATE folders SET description = ?1, updated_at = ?2 WHERE id = ?3 AND owner_id = ?4";
 
+const FIND_FOR_MOVE: &str =
+    "SELECT id, parent_id, name, depth FROM folders WHERE id = ?1 AND owner_id = ?2";
+
+const FIND_CHILD_BY_NAME: &str = "SELECT id, parent_id, depth FROM folders \
+    WHERE owner_id = ?1 AND parent_id = ?2 AND name_normalized = ?3";
+
+const FIND_ROOT_BY_NAME: &str = "SELECT id, parent_id, depth FROM folders \
+    WHERE owner_id = ?1 AND parent_id IS NULL AND name_normalized = ?2";
+
+const PROFILE_SUBTREE: &str = "WITH RECURSIVE subtree(id, depth, level) AS (
+    SELECT id, depth, 0 FROM folders WHERE id = ?1 AND owner_id = ?2
+    UNION ALL
+    SELECT f.id, f.depth, s.level + 1
+      FROM folders f JOIN subtree s ON f.parent_id = s.id
+     WHERE f.owner_id = ?2 AND s.level < ?3
+)
+SELECT COALESCE(MAX(depth), 0) AS max_depth,
+       COALESCE(MAX(id = ?4), 0) AS contains_destination
+  FROM subtree";
+
+const RELOCATE: &str = "UPDATE folders \
+    SET parent_id = ?1, name = ?2, name_normalized = ?3, depth = ?4, updated_at = ?5 \
+    WHERE id = ?6 AND owner_id = ?7";
+
+const SHIFT_DESCENDANT_DEPTHS: &str = "WITH RECURSIVE subtree(id, level) AS (
+    SELECT id, 1 FROM folders WHERE parent_id = ?1 AND owner_id = ?2
+    UNION ALL
+    SELECT f.id, s.level + 1
+      FROM folders f JOIN subtree s ON f.parent_id = s.id
+     WHERE f.owner_id = ?2 AND s.level < ?3
+)
+UPDATE folders SET depth = depth + ?4
+ WHERE owner_id = ?2 AND id IN (SELECT id FROM subtree)";
+
 const TOTALS: &str = "WITH RECURSIVE roots(id) AS (
     SELECT f.id FROM folders f, json_each(?2) j WHERE f.owner_id = ?1 AND f.id = j.value
 ), walk(root_id, id, level) AS (
@@ -103,10 +137,7 @@ where
         Ok(OwnedFolder {
             id: parsed(&row, "id")?,
             parent_id: optional_parsed(&row, "parent_id")?,
-            depth: u8::try_from(depth)
-                .ok()
-                .filter(|depth| i64::from(*depth) <= MAX_FOLDER_DEPTH)
-                .ok_or_else(|| invariant("depth"))?,
+            depth: stored_depth(depth)?,
         })
     })
     .transpose()
@@ -126,6 +157,139 @@ where
         .fetch_optional(executor)
         .await?;
     row.as_ref().map(record_from).transpose()
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MoveSource {
+    pub parent_id: Option<FolderId>,
+    pub name: String,
+    pub depth: u8,
+}
+
+pub async fn find_for_move(
+    connection: &mut SqliteConnection,
+    owner: UserId,
+    id: FolderId,
+) -> Result<Option<MoveSource>, FolderError> {
+    let row = sqlx::query(FIND_FOR_MOVE)
+        .bind(id.to_string())
+        .bind(owner.to_string())
+        .fetch_optional(connection)
+        .await?;
+    row.map(|row| {
+        let depth: i64 = column(&row, "depth")?;
+        Ok(MoveSource {
+            parent_id: optional_parsed(&row, "parent_id")?,
+            name: column(&row, "name")?,
+            depth: stored_depth(depth)?,
+        })
+    })
+    .transpose()
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct SubtreeProfile {
+    pub max_depth: i64,
+    pub contains_destination: bool,
+}
+
+pub async fn profile_subtree(
+    connection: &mut SqliteConnection,
+    owner: UserId,
+    root: FolderId,
+    destination: Option<FolderId>,
+) -> Result<SubtreeProfile, FolderError> {
+    let row = sqlx::query(PROFILE_SUBTREE)
+        .bind(root.to_string())
+        .bind(owner.to_string())
+        .bind(MAX_FOLDER_DEPTH)
+        .bind(destination.map(|destination| destination.to_string()))
+        .fetch_one(connection)
+        .await?;
+    let contains: i64 = column(&row, "contains_destination")?;
+    Ok(SubtreeProfile {
+        max_depth: column(&row, "max_depth")?,
+        contains_destination: contains != 0,
+    })
+}
+
+pub struct Relocation {
+    pub owner: UserId,
+    pub id: FolderId,
+    pub parent: Option<FolderId>,
+    pub depth: u8,
+    pub at: Timestamp,
+}
+
+pub async fn relocate(
+    connection: &mut SqliteConnection,
+    relocation: &Relocation,
+    candidate: &NameCandidate,
+) -> Result<Attempt<()>, FolderError> {
+    let result = sqlx::query(RELOCATE)
+        .bind(relocation.parent.map(|parent| parent.to_string()))
+        .bind(candidate.display())
+        .bind(candidate.normalized())
+        .bind(i64::from(relocation.depth))
+        .bind(relocation.at.to_string())
+        .bind(relocation.id.to_string())
+        .bind(relocation.owner.to_string())
+        .execute(connection)
+        .await;
+    match result {
+        Ok(done) if done.rows_affected() == 0 => Err(FolderError::NotFound),
+        other => Ok(Attempt::from_name_update(other)?),
+    }
+}
+
+pub async fn shift_descendant_depths(
+    connection: &mut SqliteConnection,
+    owner: UserId,
+    root: FolderId,
+    delta: i64,
+) -> Result<u64, FolderError> {
+    let done = sqlx::query(SHIFT_DESCENDANT_DEPTHS)
+        .bind(root.to_string())
+        .bind(owner.to_string())
+        .bind(MAX_FOLDER_DEPTH)
+        .bind(delta)
+        .execute(connection)
+        .await?;
+    Ok(done.rows_affected())
+}
+
+pub async fn find_child_by_normalized_name(
+    connection: &mut SqliteConnection,
+    owner: UserId,
+    parent: Option<FolderId>,
+    normalized: &str,
+) -> Result<Option<OwnedFolder>, FolderError> {
+    let row = match parent {
+        Some(parent) => {
+            sqlx::query(FIND_CHILD_BY_NAME)
+                .bind(owner.to_string())
+                .bind(parent.to_string())
+                .bind(normalized)
+                .fetch_optional(connection)
+                .await?
+        }
+        None => {
+            sqlx::query(FIND_ROOT_BY_NAME)
+                .bind(owner.to_string())
+                .bind(normalized)
+                .fetch_optional(connection)
+                .await?
+        }
+    };
+    row.map(|row| {
+        let depth: i64 = column(&row, "depth")?;
+        Ok(OwnedFolder {
+            id: parsed(&row, "id")?,
+            parent_id: optional_parsed(&row, "parent_id")?,
+            depth: stored_depth(depth)?,
+        })
+    })
+    .transpose()
 }
 
 pub struct NewRow {
@@ -386,6 +550,13 @@ fn optional_parsed<T: FromStr>(
     let text: Option<String> = column(row, name)?;
     text.map(|text| text.parse().map_err(|_| invariant(name)))
         .transpose()
+}
+
+fn stored_depth(depth: i64) -> Result<u8, FolderError> {
+    u8::try_from(depth)
+        .ok()
+        .filter(|depth| i64::from(*depth) <= MAX_FOLDER_DEPTH)
+        .ok_or_else(|| invariant("depth"))
 }
 
 const fn invariant(column: &'static str) -> FolderError {

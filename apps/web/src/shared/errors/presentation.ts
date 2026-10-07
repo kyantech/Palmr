@@ -110,6 +110,7 @@ export const ERROR_PRESENTATION: Readonly<Record<ErrorCode, ErrorPresentation>> 
   NAME_INVALID: entry("message.nameInvalid", inline()),
   FOLDER_NOT_FOUND: entry("message.folderNotFound", inline()),
   FOLDER_DEPTH_EXCEEDED: entry("message.folderDepthExceeded", inline()),
+  FOLDER_CYCLE: entry("message.folderCycle", inline()),
   RANGE_NOT_SATISFIABLE: entry("message.rangeNotSatisfiable", inline()),
   STORAGE_UNAVAILABLE: entry("message.storageUnavailable", modal(true)),
   STORAGE_FULL: entry("message.storageFull", modal(true)),

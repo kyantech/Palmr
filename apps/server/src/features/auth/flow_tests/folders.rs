@@ -7,20 +7,20 @@ use super::*;
 use crate::app::router::RateLimitClass;
 use crate::features::folders::{resolve_owned_folder, FolderError, FolderId, OwnedFolder};
 
-const FOLDERS: &str = "/api/v1/folders";
+pub(super) const FOLDERS: &str = "/api/v1/folders";
 const TREE: &str = "/api/v1/folders/tree";
-const SEEDED_AT: &str = "2026-09-25T12:00:00.000Z";
-const HOST_A: u8 = 10;
-const HOST_B: u8 = 11;
-const HOST_WORK: u8 = 12;
+pub(super) const SEEDED_AT: &str = "2026-09-25T12:00:00.000Z";
+pub(super) const HOST_A: u8 = 10;
+pub(super) const HOST_B: u8 = 11;
+pub(super) const HOST_WORK: u8 = 12;
 
-struct Member {
-    id: UserId,
-    creds: Credentials,
+pub(super) struct Member {
+    pub(super) id: UserId,
+    pub(super) creds: Credentials,
 }
 
 impl Stack {
-    async fn member(&self, username: &str, host: u8) -> Member {
+    pub(super) async fn member(&self, username: &str, host: u8) -> Member {
         let hash = password_hash();
         let id = self
             .user(UserSpec::local(
@@ -33,7 +33,7 @@ impl Stack {
         Member { id, creds }
     }
 
-    async fn api(
+    pub(super) async fn api(
         &self,
         method: Method,
         path: &str,
@@ -47,22 +47,27 @@ impl Stack {
         self.call(call, HOST_WORK).await
     }
 
-    async fn read(&self, path: &str, member: &Member) -> Fetched {
+    pub(super) async fn read(&self, path: &str, member: &Member) -> Fetched {
         self.api(Method::GET, path, member, None).await
     }
 
-    async fn create(&self, member: &Member, name: &str, parent: Option<&str>) -> Fetched {
+    pub(super) async fn create(
+        &self,
+        member: &Member,
+        name: &str,
+        parent: Option<&str>,
+    ) -> Fetched {
         let body = json!({ "name": name, "parentId": parent });
         self.api(Method::POST, FOLDERS, member, Some(&body)).await
     }
 
-    async fn make(&self, member: &Member, name: &str, parent: Option<&str>) -> Value {
+    pub(super) async fn make(&self, member: &Member, name: &str, parent: Option<&str>) -> Value {
         let created = self.create(member, name, parent).await;
         assert_eq!(created.status, StatusCode::CREATED, "{}", created.text());
         created.json()
     }
 
-    async fn edit(&self, member: &Member, id: &str, body: &Value) -> Fetched {
+    pub(super) async fn edit(&self, member: &Member, id: &str, body: &Value) -> Fetched {
         self.api(
             Method::PATCH,
             &format!("{FOLDERS}/{id}"),
@@ -72,11 +77,11 @@ impl Stack {
         .await
     }
 
-    fn fresh_id(&self) -> String {
+    pub(super) fn fresh_id(&self) -> String {
         FolderId::generate(&self.clock).to_string()
     }
 
-    async fn seed_folder(
+    pub(super) async fn seed_folder(
         &self,
         owner: UserId,
         parent: Option<&str>,
@@ -94,7 +99,14 @@ impl Stack {
         id
     }
 
-    async fn seed_file(&self, owner: UserId, folder: Option<&str>, name: &str, n: u32, size: i64) {
+    pub(super) async fn seed_file(
+        &self,
+        owner: UserId,
+        folder: Option<&str>,
+        name: &str,
+        n: u32,
+        size: i64,
+    ) {
         let folder = folder.map_or_else(|| "NULL".to_owned(), |folder| format!("'{folder}'"));
         self.execute(&format!(
             "INSERT INTO storage_objects (id, object_key, provider, size_bytes, state, refcount, created_at, updated_at, finalized_at)
@@ -107,7 +119,13 @@ impl Stack {
         .await;
     }
 
-    async fn seed_many_roots(&self, owner: UserId, parent: Option<&str>, count: u32, depth: u8) {
+    pub(super) async fn seed_many_roots(
+        &self,
+        owner: UserId,
+        parent: Option<&str>,
+        count: u32,
+        depth: u8,
+    ) {
         let tag = if parent.is_some() { "0001" } else { "0000" };
         let parent = parent.map_or_else(|| "NULL".to_owned(), |parent| format!("'{parent}'"));
         self.execute(&format!(
@@ -120,7 +138,7 @@ impl Stack {
         .await;
     }
 
-    async fn folder_rows(&self) -> i64 {
+    pub(super) async fn folder_rows(&self) -> i64 {
         self.scalar_i64("SELECT COUNT(*) FROM folders").await
     }
 }
@@ -1381,6 +1399,18 @@ fn unit_folder_routes_are_declared_with_their_classes() {
         (
             Method::PATCH,
             format!("{FOLDERS}/{{id}}"),
+            AuthClass::Authenticated,
+            RateLimitClass::Write,
+        ),
+        (
+            Method::POST,
+            format!("{FOLDERS}/{{id}}/move"),
+            AuthClass::Authenticated,
+            RateLimitClass::Write,
+        ),
+        (
+            Method::POST,
+            format!("{FOLDERS}/ensure-path"),
             AuthClass::Authenticated,
             RateLimitClass::Write,
         ),

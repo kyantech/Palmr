@@ -51,6 +51,7 @@
     "nameInvalid": "Dieser Name ist ungültig. Er darf nicht leer oder zu lang sein und keine Schrägstriche oder Steuerzeichen enthalten.",
     "folderNotFound": "Dieser Ordner existiert nicht mehr.",
     "folderDepthExceeded": "Ordner können höchstens 64 Ebenen tief verschachtelt werden. Wähle einen weniger tiefen Speicherort.",
+    "folderCycle": "Ein Ordner kann nicht in sich selbst oder in einen seiner eigenen Unterordner verschoben werden.",
     "rangeNotSatisfiable": "Der angeforderte Teil der Datei ist nicht verfügbar. Starte den Download erneut.",
     "storageUnavailable": "Der Dateispeicher ist vorübergehend nicht verfügbar. Versuche es später erneut.",
     "storageFull": "Der Speicher des Servers ist voll. Wende dich an deine Administration.",

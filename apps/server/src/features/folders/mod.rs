@@ -1,5 +1,7 @@
+mod ensure_path;
 mod error;
 mod model;
+mod r#move;
 mod repo;
 pub mod routes;
 mod service;

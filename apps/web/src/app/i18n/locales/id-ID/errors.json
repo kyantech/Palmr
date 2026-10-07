@@ -51,6 +51,7 @@
     "nameInvalid": "Nama ini tidak valid. Nama tidak boleh kosong, terlalu panjang, atau berisi garis miring maupun karakter kontrol.",
     "folderNotFound": "Folder ini sudah tidak ada.",
     "folderDepthExceeded": "Folder dapat bersarang paling dalam 64 tingkat. Pilih lokasi yang tidak terlalu dalam.",
+    "folderCycle": "Folder tidak dapat dipindahkan ke dalam dirinya sendiri atau ke salah satu subfoldernya.",
     "rangeNotSatisfiable": "Bagian file yang diminta tidak tersedia. Mulai ulang unduhan.",
     "storageUnavailable": "Penyimpanan file untuk sementara tidak tersedia. Coba lagi nanti.",
     "storageFull": "Penyimpanan server penuh. Hubungi administrator.",

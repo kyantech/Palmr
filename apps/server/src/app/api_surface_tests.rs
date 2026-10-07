@@ -2114,6 +2114,104 @@ fn it_openapi_password_login_documents_its_contract() {
 }
 
 #[test]
+fn it_openapi_folder_move_and_ensure_path_declare_typed_contracts() {
+    let document = application_document();
+    let paths = &document["paths"];
+    let moved = &paths["/api/v1/folders/{id}/move"]["post"];
+    let ensure = &paths["/api/v1/folders/ensure-path"]["post"];
+
+    for operation in [moved, ensure] {
+        assert!(operation["tags"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|tag| tag == "authenticated"));
+        assert_eq!(operation["security"].as_array().unwrap().len(), 1);
+        for status in ["400", "401", "403", "404", "415", "422", "429"] {
+            assert!(operation["responses"][status].is_object(), "{status}");
+        }
+    }
+    assert_eq!(parameter(moved, "id")["in"], "path");
+    assert!(moved["parameters"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .all(|parameter| parameter["name"] != "Idempotency-Key"));
+    let key = parameter(ensure, "Idempotency-Key");
+    assert_eq!(key["in"], "header");
+    assert_ne!(key["required"], true);
+
+    let text = |operation: &Value, status: &str| {
+        operation["responses"][status]["description"]
+            .as_str()
+            .unwrap()
+            .to_owned()
+    };
+    assert!(text(moved, "404").contains("FOLDER_NOT_FOUND"));
+    assert!(text(moved, "409").contains("FILE_NAME_CONFLICT"));
+    for code in ["FOLDER_CYCLE", "FOLDER_DEPTH_EXCEEDED", "VALIDATION_ERROR"] {
+        assert!(text(moved, "422").contains(code), "{code}");
+    }
+    assert!(text(ensure, "404").contains("FOLDER_NOT_FOUND"));
+    for code in [
+        "IDEMPOTENCY_KEY_CONFLICT",
+        "IDEMPOTENCY_REQUEST_IN_PROGRESS",
+    ] {
+        assert!(text(ensure, "409").contains(code), "{code}");
+    }
+    for code in ["NAME_INVALID", "FOLDER_DEPTH_EXCEEDED", "VALIDATION_ERROR"] {
+        assert!(text(ensure, "422").contains(code), "{code}");
+    }
+
+    assert_eq!(
+        moved["responses"]["200"]["content"]["application/json"]["schema"]["$ref"],
+        "#/components/schemas/FolderItem"
+    );
+    assert_eq!(
+        ensure["responses"]["200"]["content"]["application/json"]["schema"]["$ref"],
+        "#/components/schemas/EnsurePathResponse"
+    );
+    assert!(ensure["responses"]["201"].is_null());
+
+    let schemas = &document["components"]["schemas"];
+    let move_request = &schemas["MoveFolderRequest"];
+    assert_eq!(move_request["required"], json!(["parentId"]));
+    assert_eq!(move_request["additionalProperties"], false);
+    assert_eq!(
+        move_request["properties"]["parentId"]["type"],
+        json!(["string", "null"])
+    );
+
+    let ensure_request = &schemas["EnsurePathRequest"];
+    assert_eq!(ensure_request["required"], json!(["segments"]));
+    assert_eq!(ensure_request["additionalProperties"], false);
+    let segments = &ensure_request["properties"]["segments"];
+    assert_eq!(segments["type"], "array");
+    assert_eq!(segments["minItems"], 1);
+    assert_eq!(segments["maxItems"], 32);
+    assert_eq!(segments["items"]["type"], "string");
+    assert_eq!(
+        ensure_request["properties"]["parentId"]["type"],
+        json!(["string", "null"])
+    );
+
+    let response = &schemas["EnsurePathResponse"];
+    let mut required: Vec<&str> = response["required"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(Value::as_str)
+        .collect();
+    required.sort_unstable();
+    assert_eq!(required, ["created", "folderIds", "leafFolderId"]);
+    for exposed in [&response["properties"], &ensure_request["properties"]] {
+        for forbidden in ["depth", "nameNormalized", "name_normalized", "ownerId"] {
+            assert!(exposed.get(forbidden).is_none(), "{forbidden}");
+        }
+    }
+}
+
+#[test]
 fn it_openapi_folder_routes_declare_typed_contracts() {
     let document = application_document();
     let paths = &document["paths"];

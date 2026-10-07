@@ -51,6 +51,7 @@
     "nameInvalid": "此名称无效。名称不能为空、过长，也不能包含斜杠或控制字符。",
     "folderNotFound": "此文件夹已不存在。",
     "folderDepthExceeded": "文件夹最多可嵌套 64 层。请选择层级更浅的位置。",
+    "folderCycle": "不能将文件夹移动到它自身或它的任一子文件夹中。",
     "rangeNotSatisfiable": "所请求的文件部分不可用。请重新开始下载。",
     "storageUnavailable": "文件存储暂时不可用。请稍后重试。",
     "storageFull": "服务器存储空间已满。请联系管理员。",

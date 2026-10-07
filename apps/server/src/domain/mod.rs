@@ -10,6 +10,7 @@ pub mod locale;
 pub mod mime;
 pub mod naming;
 pub mod normalize;
+pub mod relative_path;
 pub mod role;
 pub mod secret;
 pub mod time;

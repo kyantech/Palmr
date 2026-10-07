@@ -81,6 +81,7 @@ export const RETRY_CLASS: Readonly<Record<ErrorCode, RetryClass>> = {
   NAME_INVALID: "never",
   FOLDER_NOT_FOUND: "never",
   FOLDER_DEPTH_EXCEEDED: "never",
+  FOLDER_CYCLE: "never",
   RANGE_NOT_SATISFIABLE: "never",
   STORAGE_PROVIDER_MISMATCH: "never",
   STORAGE_SIZE_MISMATCH: "never",

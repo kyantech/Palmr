@@ -51,6 +51,7 @@
     "nameInvalid": "Ce nom n'est pas valide. Il ne peut pas être vide, trop long ni contenir de barres obliques ou de caractères de contrôle.",
     "folderNotFound": "Ce dossier n'existe plus.",
     "folderDepthExceeded": "Les dossiers peuvent être imbriqués sur 64 niveaux au maximum. Choisissez un emplacement moins profond.",
+    "folderCycle": "Un dossier ne peut pas être déplacé dans lui-même ni dans l'un de ses propres sous-dossiers.",
     "rangeNotSatisfiable": "La partie demandée du fichier n'est pas disponible. Relancez le téléchargement.",
     "storageUnavailable": "Le stockage des fichiers est temporairement indisponible. Réessayez plus tard.",
     "storageFull": "Le stockage du serveur est plein. Contactez votre administrateur.",

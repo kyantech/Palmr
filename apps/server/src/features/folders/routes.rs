@@ -9,17 +9,19 @@ use utoipa_axum::routes;
 
 use crate::app::auth_class::AuthClass;
 use crate::app::openapi::with_query_parameters;
-use crate::app::router::{RateLimitClass, RoutePolicy, Routes, Transport};
+use crate::app::router::{IdempotencyMode, RateLimitClass, RoutePolicy, Routes, Transport};
 use crate::app::state::AppState;
 use crate::infra::http::error::{ApiError, ApiErrorBody, JSON_CONTENT_TYPE};
 use crate::infra::http::extractors::Authenticated;
+use crate::infra::http::idempotency::{Admission, Claim, IdempotencyRequest};
 use crate::infra::http::json;
 use crate::infra::http::pagination::Page;
 use crate::infra::http::request_id::{tag_error, RequestId};
 
 use super::error::FolderError;
 use super::model::{
-    CreateFolderRequest, FolderChange, FolderDetail, FolderId, FolderItem, FolderTree, NewFolder,
+    CreateFolderRequest, EnsurePath, EnsurePathRequest, EnsurePathResponse, FolderChange,
+    FolderDetail, FolderId, FolderItem, FolderMove, FolderTree, MoveFolderRequest, NewFolder,
     UpdateFolderRequest, TREE_DEFAULT_DEPTH, TREE_MAX_DEPTH,
 };
 use super::service::{FolderService, DEPTH_PARAM, ROOT_PARAM};
@@ -35,6 +37,8 @@ const WRITE_ROUTE: RoutePolicy = RoutePolicy::new(
     RateLimitClass::Write,
     Transport::ControlPlane,
 );
+
+const ENSURE_PATH_ROUTE: RoutePolicy = WRITE_ROUTE.with_idempotency(IdempotencyMode::Plaintext);
 
 const NO_STORE: HeaderValue = HeaderValue::from_static("no-store");
 
@@ -79,6 +83,8 @@ pub fn routes() -> Routes<AppState> {
         .route(WRITE_ROUTE, routes!(create_folder))
         .route(READ_ROUTE, routes!(get_folder))
         .route(WRITE_ROUTE, routes!(update_folder))
+        .route(WRITE_ROUTE, routes!(move_folder))
+        .route(ENSURE_PATH_ROUTE, routes!(ensure_path))
 }
 
 #[utoipa::path(
@@ -256,6 +262,126 @@ async fn update_folder(
     match service.update(principal.user_id, id, change).await {
         Ok(folder) => json_response(StatusCode::OK, &folder, request_id.as_ref()),
         Err(error) => folder_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    post,
+    path = "/api/v1/folders/{id}/move",
+    tag = "folders",
+    params(("id" = String, Path, description = "Folder UUIDv7")),
+    request_body(
+        content = MoveFolderRequest,
+        content_type = "application/json",
+        description = "`parentId` is the destination folder, or `null` for the My Files root; the member is required. A move into the folder's current parent changes nothing. A name that collides in the destination is disambiguated deterministically (`Docs`, `Docs (1)`, `Docs (2)`); the response carries the name that was stored. The whole subtree moves; the moved folder and every descendant end at the depth their new location implies, and the deepest descendant may not pass depth 64."
+    ),
+    responses(
+        (status = 200, description = "The moved folder, with the stored name and its recursive aggregates.", body = FolderItem),
+        (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "The CSRF proof or origin is missing or not allowed, or the session is restricted.", body = ApiErrorBody),
+        (status = 404, description = "`FOLDER_NOT_FOUND`: the folder or the destination is unknown or belongs to another user.", body = ApiErrorBody),
+        (status = 409, description = "`FILE_NAME_CONFLICT`: no unique name could be generated in the destination.", body = ApiErrorBody),
+        (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
+        (status = 422, description = "`FOLDER_CYCLE` when the destination is the folder itself or one of its descendants, `FOLDER_DEPTH_EXCEEDED` when the moved subtree would pass depth 64, or `VALIDATION_ERROR`.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn move_folder(
+    Extension(service): Extension<FolderService>,
+    Authenticated(principal): Authenticated,
+    Path(id): Path<String>,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let Ok(id) = id.parse::<FolderId>() else {
+        return folder_error(&FolderError::NotFound, request_id.as_ref());
+    };
+    let destination = match json::read::<MoveFolderRequest>(request.into_body()).await {
+        Ok(body) => match FolderMove::parse(body) {
+            Ok(destination) => destination,
+            Err(error) => return folder_error(&error, request_id.as_ref()),
+        },
+        Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
+    };
+    match service
+        .move_folder(principal.user_id, id, destination.parent_id)
+        .await
+    {
+        Ok(folder) => json_response(StatusCode::OK, &folder, request_id.as_ref()),
+        Err(error) => folder_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    post,
+    path = "/api/v1/folders/ensure-path",
+    tag = "folders",
+    params(
+        ("Idempotency-Key" = Option<String>, Header, description = "16–128 characters. A replay within 24 hours returns the original response with `Idempotency-Replayed: true` without executing again. The call is also idempotent without the header: it reuses the folders that already exist.")
+    ),
+    request_body(
+        content = EnsurePathRequest,
+        content_type = "application/json",
+        description = "Resolves or creates the chain of folders named by `segments` under `parentId` in one transaction. A segment that matches an existing sibling by normalized name (case-insensitive, Unicode-normalized) resolves to that folder: nothing is suffixed, renamed or overwritten. Unlike a folder create, rename or move, this call never disambiguates a name."
+    ),
+    responses(
+        (status = 200, description = "One id per segment in request order, the id of the last segment, and the ids this call created.", body = EnsurePathResponse),
+        (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "The CSRF proof or origin is missing or not allowed, or the session is restricted.", body = ApiErrorBody),
+        (status = 404, description = "`FOLDER_NOT_FOUND`: the parent is unknown, malformed or belongs to another user.", body = ApiErrorBody),
+        (status = 409, description = "`IDEMPOTENCY_KEY_CONFLICT` or `IDEMPOTENCY_REQUEST_IN_PROGRESS` for a reused key.", body = ApiErrorBody),
+        (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
+        (status = 422, description = "`NAME_INVALID` for an invalid segment, `FOLDER_DEPTH_EXCEEDED` when the chain would pass depth 64, or `VALIDATION_ERROR` for a missing, empty or over-long `segments` array.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn ensure_path(
+    Extension(service): Extension<FolderService>,
+    Authenticated(principal): Authenticated,
+    idempotency: IdempotencyRequest,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let body = match json::read_value(request.into_body()).await {
+        Ok(body) => body,
+        Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
+    };
+    let claim = match service.idempotency().claim(idempotency, &body).await {
+        Ok(Admission::Execute(claim)) => claim,
+        Ok(Admission::Replay(mut response)) => {
+            response.headers_mut().insert(CACHE_CONTROL, NO_STORE);
+            return response;
+        }
+        Err(rejection) => return rejection.into_response(),
+    };
+    let parsed = match json::parse::<EnsurePathRequest>(body) {
+        Ok(parsed) => parsed,
+        Err(error) => {
+            release(&service, claim).await;
+            return tag_error(error, request_id.as_ref()).into_response();
+        }
+    };
+    let ensured = match EnsurePath::parse(parsed) {
+        Ok(input) => service.ensure_path(principal.user_id, &input, &claim).await,
+        Err(error) => Err(error),
+    };
+    match ensured {
+        Ok(ensured) => json_response(StatusCode::OK, &ensured, request_id.as_ref()),
+        Err(error) => {
+            release(&service, claim).await;
+            folder_error(&error, request_id.as_ref())
+        }
+    }
+}
+
+async fn release(service: &FolderService, claim: Claim) {
+    if let Err(error) = service.idempotency().release(claim).await {
+        tracing::error!(
+            kind = error.kind(),
+            "folder idempotency claim could not be released"
+        );
     }
 }
 

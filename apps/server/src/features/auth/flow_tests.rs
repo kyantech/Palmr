@@ -1809,6 +1809,8 @@ mod admin_smtp;
 mod admin_users;
 mod authorize;
 mod callback;
+mod folder_moves;
+mod folder_paths;
 mod folders;
 mod forced_states;
 mod invites;
