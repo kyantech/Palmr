@@ -17,6 +17,14 @@ pub mod branding;
     reason = "the transport trait, producers and template seams are consumed as features request mail"
 )]
 pub mod email;
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "the keep-both insertion helper is consumed as upload finalization, rename, move and copy are wired"
+    )
+)]
+pub mod files;
 #[allow(
     dead_code,
     reason = "the provider domain model, presets and test primitives are consumed as the external login flow and Admin providers page are wired"

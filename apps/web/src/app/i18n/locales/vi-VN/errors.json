@@ -47,6 +47,8 @@
     "emailVerificationNotPending": "Người dùng này không có thay đổi e-mail đang chờ để gửi lại.",
     "serverBusy": "Palmr hiện đang bận. Hãy thử lại sau giây lát.",
     "fileNotFound": "Tệp này không còn tồn tại.",
+    "fileNameConflict": "Palmr không tìm được tên còn trống cho mục này. Hãy chọn tên khác và thử lại.",
+    "nameInvalid": "Tên này không hợp lệ. Tên không được để trống, quá dài hoặc chứa dấu gạch chéo hay ký tự điều khiển.",
     "rangeNotSatisfiable": "Phần tệp được yêu cầu không khả dụng. Hãy bắt đầu tải xuống lại.",
     "storageUnavailable": "Kho lưu trữ tệp tạm thời không khả dụng. Hãy thử lại sau.",
     "storageFull": "Bộ nhớ lưu trữ của máy chủ đã đầy. Hãy liên hệ quản trị viên.",

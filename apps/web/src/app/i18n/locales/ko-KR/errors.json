@@ -47,6 +47,8 @@
     "emailVerificationNotPending": "이 사용자에게는 다시 보낼 보류 중인 이메일 변경이 없습니다.",
     "serverBusy": "Palmr가 현재 바쁩니다. 잠시 후 다시 시도하세요.",
     "fileNotFound": "이 파일은 더 이상 존재하지 않습니다.",
+    "fileNameConflict": "Palmr가 이 항목에 사용할 수 있는 이름을 찾지 못했습니다. 다른 이름을 선택한 후 다시 시도하세요.",
+    "nameInvalid": "이 이름은 올바르지 않습니다. 비어 있거나 너무 길거나 슬래시 또는 제어 문자를 포함할 수 없습니다.",
     "rangeNotSatisfiable": "요청한 파일 부분을 사용할 수 없습니다. 다운로드를 다시 시작하세요.",
     "storageUnavailable": "파일 저장소를 일시적으로 사용할 수 없습니다. 나중에 다시 시도하세요.",
     "storageFull": "서버 저장 공간이 가득 찼습니다. 관리자에게 문의하세요.",

@@ -158,6 +158,10 @@ error_catalog! {
         "The database is temporarily busy";
     FileNotFound = "FILE_NOT_FOUND", NOT_FOUND, retryable: false,
         "The file was not found";
+    FileNameConflict = "FILE_NAME_CONFLICT", CONFLICT, retryable: false,
+        "No unique name could be generated for this item";
+    NameInvalid = "NAME_INVALID", UNPROCESSABLE_ENTITY, retryable: false,
+        "The name is not valid";
     RangeNotSatisfiable = "RANGE_NOT_SATISFIABLE", RANGE_NOT_SATISFIABLE, retryable: false,
         "The requested range is not satisfiable";
     StorageUnavailable = "STORAGE_UNAVAILABLE", SERVICE_UNAVAILABLE, retryable: true,

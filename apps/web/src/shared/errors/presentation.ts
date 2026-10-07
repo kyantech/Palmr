@@ -106,6 +106,8 @@ export const ERROR_PRESENTATION: Readonly<Record<ErrorCode, ErrorPresentation>> 
   USER_HAS_NO_LOCAL_AUTH: entry("message.userHasNoLocalAuth", inline("warning")),
   DATABASE_BUSY: entry("message.serverBusy", toast("warning", true)),
   FILE_NOT_FOUND: entry("message.fileNotFound", inline()),
+  FILE_NAME_CONFLICT: entry("message.fileNameConflict", inline()),
+  NAME_INVALID: entry("message.nameInvalid", inline()),
   RANGE_NOT_SATISFIABLE: entry("message.rangeNotSatisfiable", inline()),
   STORAGE_UNAVAILABLE: entry("message.storageUnavailable", modal(true)),
   STORAGE_FULL: entry("message.storageFull", modal(true)),

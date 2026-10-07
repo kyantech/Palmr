@@ -47,6 +47,8 @@
     "emailVerificationNotPending": "Cet utilisateur n'a aucun changement d'adresse e-mail en attente à renvoyer.",
     "serverBusy": "Palmr est occupé pour le moment. Réessayez dans un instant.",
     "fileNotFound": "Ce fichier n'existe plus.",
+    "fileNameConflict": "Palmr n'a pas trouvé de nom disponible pour cet élément. Choisissez un autre nom et réessayez.",
+    "nameInvalid": "Ce nom n'est pas valide. Il ne peut pas être vide, trop long ni contenir de barres obliques ou de caractères de contrôle.",
     "rangeNotSatisfiable": "La partie demandée du fichier n'est pas disponible. Relancez le téléchargement.",
     "storageUnavailable": "Le stockage des fichiers est temporairement indisponible. Réessayez plus tard.",
     "storageFull": "Le stockage du serveur est plein. Contactez votre administrateur.",

@@ -47,6 +47,8 @@
     "emailVerificationNotPending": "Deze gebruiker heeft geen openstaande e-mailwijziging die opnieuw kan worden verzonden.",
     "serverBusy": "Palmr is momenteel bezet. Probeer het zo meteen opnieuw.",
     "fileNotFound": "Dit bestand bestaat niet meer.",
+    "fileNameConflict": "Palmr kon geen vrije naam voor dit item vinden. Kies een andere naam en probeer het opnieuw.",
+    "nameInvalid": "Deze naam is ongeldig. Hij mag niet leeg of te lang zijn en geen schuine strepen of stuurtekens bevatten.",
     "rangeNotSatisfiable": "Het gevraagde deel van het bestand is niet beschikbaar. Start de download opnieuw.",
     "storageUnavailable": "Bestandsopslag is tijdelijk niet beschikbaar. Probeer het later opnieuw.",
     "storageFull": "De opslag van de server is vol. Neem contact op met je beheerder.",

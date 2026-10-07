@@ -47,6 +47,8 @@
     "emailVerificationNotPending": "该用户没有可重新发送的待处理电子邮件更改。",
     "serverBusy": "Palmr 当前繁忙。请稍后重试。",
     "fileNotFound": "此文件已不存在。",
+    "fileNameConflict": "Palmr 无法为此项目找到可用的名称。请选择其他名称后重试。",
+    "nameInvalid": "此名称无效。名称不能为空、过长，也不能包含斜杠或控制字符。",
     "rangeNotSatisfiable": "所请求的文件部分不可用。请重新开始下载。",
     "storageUnavailable": "文件存储暂时不可用。请稍后重试。",
     "storageFull": "服务器存储空间已满。请联系管理员。",

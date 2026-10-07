@@ -47,6 +47,8 @@
     "emailVerificationNotPending": "Den här användaren har ingen väntande e-poständring att skicka igen.",
     "serverBusy": "Palmr är upptaget just nu. Försök igen om en stund.",
     "fileNotFound": "Filen finns inte längre.",
+    "fileNameConflict": "Palmr hittade inget ledigt namn för objektet. Välj ett annat namn och försök igen.",
+    "nameInvalid": "Det här namnet är ogiltigt. Det får inte vara tomt, för långt eller innehålla snedstreck eller styrtecken.",
     "rangeNotSatisfiable": "Den begärda delen av filen är inte tillgänglig. Starta nedladdningen igen.",
     "storageUnavailable": "Fillagringen är tillfälligt otillgänglig. Försök igen senare.",
     "storageFull": "Serverns lagring är full. Kontakta administratören.",

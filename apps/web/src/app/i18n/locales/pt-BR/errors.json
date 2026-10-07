@@ -47,6 +47,8 @@
     "emailVerificationNotPending": "Este usuário não tem nenhuma alteração de e-mail pendente para reenviar.",
     "serverBusy": "O Palmr está ocupado no momento. Tente novamente em instantes.",
     "fileNotFound": "Este arquivo não existe mais.",
+    "fileNameConflict": "O Palmr não encontrou um nome livre para este item. Escolha outro nome e tente novamente.",
+    "nameInvalid": "Este nome não é válido. Ele não pode estar vazio, ser longo demais nem conter barras ou caracteres de controle.",
     "rangeNotSatisfiable": "A parte solicitada do arquivo não está disponível. Inicie o download novamente.",
     "storageUnavailable": "O armazenamento de arquivos está temporariamente indisponível. Tente novamente mais tarde.",
     "storageFull": "O armazenamento do servidor está cheio. Entre em contato com o administrador.",

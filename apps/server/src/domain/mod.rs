@@ -8,6 +8,7 @@ pub mod http_range;
 pub mod id;
 pub mod locale;
 pub mod mime;
+pub mod naming;
 pub mod normalize;
 pub mod role;
 pub mod secret;

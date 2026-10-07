@@ -47,6 +47,8 @@
     "emailVerificationNotPending": "Pengguna ini tidak memiliki perubahan e-mail tertunda yang dapat dikirim ulang.",
     "serverBusy": "Palmr sedang sibuk. Coba lagi sebentar lagi.",
     "fileNotFound": "File ini sudah tidak ada.",
+    "fileNameConflict": "Palmr tidak menemukan nama yang tersedia untuk item ini. Pilih nama lain lalu coba lagi.",
+    "nameInvalid": "Nama ini tidak valid. Nama tidak boleh kosong, terlalu panjang, atau berisi garis miring maupun karakter kontrol.",
     "rangeNotSatisfiable": "Bagian file yang diminta tidak tersedia. Mulai ulang unduhan.",
     "storageUnavailable": "Penyimpanan file untuk sementara tidak tersedia. Coba lagi nanti.",
     "storageFull": "Penyimpanan server penuh. Hubungi administrator.",

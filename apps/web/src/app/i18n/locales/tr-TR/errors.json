@@ -47,6 +47,8 @@
     "emailVerificationNotPending": "Bu kullanıcının yeniden gönderilecek bekleyen bir e-posta değişikliği yok.",
     "serverBusy": "Palmr şu anda meşgul. Birazdan tekrar deneyin.",
     "fileNotFound": "Bu dosya artık mevcut değil.",
+    "fileNameConflict": "Palmr bu öğe için boş bir ad bulamadı. Başka bir ad seçip yeniden deneyin.",
+    "nameInvalid": "Bu ad geçerli değil. Boş ya da çok uzun olamaz; eğik çizgi veya denetim karakteri içeremez.",
     "rangeNotSatisfiable": "Dosyanın istenen bölümü kullanılamıyor. İndirmeyi yeniden başlatın.",
     "storageUnavailable": "Dosya depolama geçici olarak kullanılamıyor. Daha sonra tekrar deneyin.",
     "storageFull": "Sunucunun depolama alanı dolu. Yöneticinize başvurun.",
