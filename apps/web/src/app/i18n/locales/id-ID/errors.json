@@ -55,6 +55,7 @@
     "rangeNotSatisfiable": "Bagian file yang diminta tidak tersedia. Mulai ulang unduhan.",
     "storageUnavailable": "Penyimpanan file untuk sementara tidak tersedia. Coba lagi nanti.",
     "storageFull": "Penyimpanan server penuh. Hubungi administrator.",
+    "quotaExceeded": "Ini akan melebihi kuota penyimpanan Anda. Kosongkan ruang atau minta administrator untuk menaikkannya.",
     "storageProviderMismatch": "File ini disimpan di lokasi yang tidak dikonfigurasi untuk digunakan server. Hubungi administrator.",
     "storageSizeMismatch": "File yang disimpan tidak sesuai ukuran yang diharapkan dan telah dibuang. Unggah lagi.",
     "brandingAssetUnknown": "Aset branding ini tidak ada.",

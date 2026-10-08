@@ -624,7 +624,12 @@ async fn it_schema_jobs_dedup_partial_unique() -> Result<()> {
             .await?,
         1
     );
-    assert_eq!(database.count("SELECT count(*) FROM jobs").await?, 7);
+    assert_eq!(
+        database
+            .count("SELECT count(*) FROM jobs WHERE kind <> 'quota.reconcile'")
+            .await?,
+        7
+    );
     database.close().await
 }
 

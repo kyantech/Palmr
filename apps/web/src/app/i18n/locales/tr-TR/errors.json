@@ -55,6 +55,7 @@
     "rangeNotSatisfiable": "Dosyanın istenen bölümü kullanılamıyor. İndirmeyi yeniden başlatın.",
     "storageUnavailable": "Dosya depolama geçici olarak kullanılamıyor. Daha sonra tekrar deneyin.",
     "storageFull": "Sunucunun depolama alanı dolu. Yöneticinize başvurun.",
+    "quotaExceeded": "Bu işlem depolama kotanızı aşardı. Yer açın veya yöneticinizden kotayı artırmasını isteyin.",
     "storageProviderMismatch": "Bu dosya, sunucunun kullanmak üzere yapılandırılmadığı bir konumda depolanıyor. Yöneticinize başvurun.",
     "storageSizeMismatch": "Depolanan dosya beklenen boyutta olmadığından silindi. Tekrar yükleyin.",
     "brandingAssetUnknown": "Bu marka öğesi mevcut değil.",

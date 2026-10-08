@@ -83,6 +83,7 @@ export const RETRY_CLASS: Readonly<Record<ErrorCode, RetryClass>> = {
   FOLDER_DEPTH_EXCEEDED: "never",
   FOLDER_CYCLE: "never",
   RANGE_NOT_SATISFIABLE: "never",
+  QUOTA_EXCEEDED: "never",
   STORAGE_PROVIDER_MISMATCH: "never",
   STORAGE_SIZE_MISMATCH: "never",
   BRANDING_ASSET_UNKNOWN: "never",

@@ -715,6 +715,38 @@ pub fn storage_orphan_detected(counts: &OrphanSweepCounts) -> ActionSpec {
     ActionSpec::new(AuditAction::StorageOrphanDetected, metadata)
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct QuotaDriftFacts {
+    pub used_bytes: u64,
+    pub expected_bytes: u64,
+    pub difference_bytes: Option<i64>,
+    pub my_files_bytes: u64,
+    pub received_bytes: u64,
+    pub file_count: u64,
+    pub received_file_count: u64,
+    pub inactive_object_rows: u64,
+}
+
+pub fn quota_drift_detected(facts: &QuotaDriftFacts) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("used_bytes", Value::from(facts.used_bytes)),
+        ("expected_bytes", Value::from(facts.expected_bytes)),
+        ("difference_bytes", Value::from(facts.difference_bytes)),
+        ("my_files_bytes", Value::from(facts.my_files_bytes)),
+        ("received_bytes", Value::from(facts.received_bytes)),
+        ("file_count", Value::from(facts.file_count)),
+        (
+            "received_file_count",
+            Value::from(facts.received_file_count),
+        ),
+        (
+            "inactive_object_rows",
+            Value::from(facts.inactive_object_rows),
+        ),
+    ]);
+    ActionSpec::new(AuditAction::QuotaDriftDetected, metadata)
+}
+
 #[cfg(test)]
 mod tests {
     use serde_json::Value;

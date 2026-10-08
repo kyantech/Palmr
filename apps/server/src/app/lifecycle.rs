@@ -52,6 +52,7 @@ use crate::features::identity_providers::callback::ExternalLoginService;
 use crate::features::identity_providers::{
     IdentityProviderService, PasswordLoginService, ProviderHttpClient,
 };
+use crate::features::quota::reconcile::{self as quota_reconcile, QuotaReconcileContext};
 use crate::features::settings::{
     AdminSettingsService, EffectiveSettingsService, OperatorPolicy, SettingsError, SettingsHandle,
     SettingsService, SmtpTestService,
@@ -1033,6 +1034,10 @@ fn start_jobs(
             config.storage_orphan_reap,
         ),
     );
+    let registry = quota_reconcile::register_jobs(
+        registry,
+        QuotaReconcileContext::new(pools.clone(), Arc::clone(clock), audit_service.clone()),
+    );
     let dispatcher = Dispatcher::new(
         pools,
         Arc::clone(clock),
@@ -1294,6 +1299,8 @@ fn log_startup_completed(address: SocketAddr, config: &OperatorConfig, elapsed: 
 
 #[cfg(test)]
 mod migration_tests;
+#[cfg(test)]
+mod recurring_tests;
 #[cfg(test)]
 mod storage_tests;
 #[cfg(test)]

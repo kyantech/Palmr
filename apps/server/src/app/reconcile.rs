@@ -5,11 +5,13 @@ use std::sync::Arc;
 
 use crate::domain::clock::Clock;
 use crate::domain::time::Timestamp;
+use crate::features::quota::reconcile as quota_reconcile;
 use crate::infra::db::{DbPools, InstanceId};
-use crate::infra::jobs::claim::MAX_ROWS_PER_TX;
+use crate::infra::jobs::claim::{Enqueued, MAX_ROWS_PER_TX};
 use crate::infra::jobs::JobsError;
 
 pub const JOBS_STEP: &str = "jobs";
+pub const QUOTA_SCHEDULE_STEP: &str = "quota.schedule_reconcile";
 
 const REQUEUE_STALE_CLAIMS: &str = "UPDATE jobs
         SET state = 'pending', claimed_by = NULL, lease_expires_at = NULL, updated_at = ?1
@@ -83,7 +85,9 @@ impl ReconcileRegistry {
     }
 
     pub fn production() -> Self {
-        Self::new().register(JOBS_STEP, jobs_step)
+        Self::new()
+            .register(JOBS_STEP, jobs_step)
+            .register(QUOTA_SCHEDULE_STEP, quota_schedule_step)
     }
 
     #[must_use]
@@ -178,6 +182,16 @@ impl ReconcileReport {
             .find(|outcome| outcome.id == id)
             .map(StepOutcome::result)
     }
+}
+
+fn quota_schedule_step(context: ReconcileContext) -> StepFuture {
+    Box::pin(async move {
+        match quota_reconcile::ensure_scheduled(&context.pools, context.clock.as_ref()).await {
+            Ok(Enqueued::Inserted(_)) => Ok(1),
+            Ok(Enqueued::Deduplicated) => Ok(0),
+            Err(error) => Err(ReconcileError::new(error.kind(), error.to_string())),
+        }
+    })
 }
 
 fn jobs_step(context: ReconcileContext) -> StepFuture {

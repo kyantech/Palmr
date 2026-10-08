@@ -31,6 +31,14 @@ pub mod folders;
     reason = "the provider domain model, presets and test primitives are consumed as the external login flow and Admin providers page are wired"
 )]
 pub mod identity_providers;
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "the admission, reservation and accounting primitives are consumed as transfer sessions, deletion and Received copy are wired"
+    )
+)]
+pub mod quota;
 #[allow(
     dead_code,
     reason = "typed settings, the default registry and the write primitive are consumed as admin settings routes and features are wired"

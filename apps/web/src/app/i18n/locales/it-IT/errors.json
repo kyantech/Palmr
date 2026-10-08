@@ -55,6 +55,7 @@
     "rangeNotSatisfiable": "La parte richiesta del file non è disponibile. Avvia di nuovo il download.",
     "storageUnavailable": "L'archiviazione dei file è temporaneamente non disponibile. Riprova più tardi.",
     "storageFull": "Lo spazio di archiviazione del server è pieno. Contatta l'amministratore.",
+    "quotaExceeded": "Questo supererebbe la tua quota di archiviazione. Libera spazio o chiedi all'amministratore di aumentarla.",
     "storageProviderMismatch": "Questo file è archiviato in una posizione che il server non è configurato per usare. Contatta l'amministratore.",
     "storageSizeMismatch": "Il file archiviato non aveva la dimensione prevista ed è stato scartato. Caricalo di nuovo.",
     "brandingAssetUnknown": "Questa risorsa di branding non esiste.",

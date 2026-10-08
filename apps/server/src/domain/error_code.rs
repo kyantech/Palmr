@@ -172,6 +172,8 @@ error_catalog! {
         "The requested range is not satisfiable";
     StorageUnavailable = "STORAGE_UNAVAILABLE", SERVICE_UNAVAILABLE, retryable: true,
         "The storage backend is temporarily unavailable";
+    QuotaExceeded = "QUOTA_EXCEEDED", INSUFFICIENT_STORAGE, retryable: false,
+        "The storage quota would be exceeded";
     StorageFull = "STORAGE_FULL", INSUFFICIENT_STORAGE, retryable: true,
         "The storage device is out of space";
     StorageProviderMismatch = "STORAGE_PROVIDER_MISMATCH", INTERNAL_SERVER_ERROR, retryable: false,

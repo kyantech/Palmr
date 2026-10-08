@@ -18,6 +18,10 @@ impl ByteSize {
         self.0
     }
 
+    pub const fn from_u32(value: u32) -> Self {
+        Self(value as i64)
+    }
+
     pub const fn checked_add(self, other: Self) -> Option<Self> {
         match self.0.checked_add(other.0) {
             Some(sum) => Some(Self(sum)),
@@ -29,6 +33,13 @@ impl ByteSize {
         match self.0.checked_sub(other.0) {
             Some(difference) if difference >= 0 => Some(Self(difference)),
             _ => None,
+        }
+    }
+
+    pub const fn checked_mul(self, factor: u32) -> Option<Self> {
+        match self.0.checked_mul(factor as i64) {
+            Some(product) => Some(Self(product)),
+            None => None,
         }
     }
 }

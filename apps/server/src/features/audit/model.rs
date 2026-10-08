@@ -274,6 +274,7 @@ pub enum AuditAction {
     SecurityPolicyChanged,
     Mandatory2faPolicyChanged,
     StorageOrphanDetected,
+    QuotaDriftDetected,
     SessionRevoked,
     AllSessionsRevoked,
     TrustedDeviceRevoked,
@@ -319,6 +320,7 @@ impl AuditAction {
         Self::SecurityPolicyChanged,
         Self::Mandatory2faPolicyChanged,
         Self::StorageOrphanDetected,
+        Self::QuotaDriftDetected,
         Self::SessionRevoked,
         Self::AllSessionsRevoked,
         Self::TrustedDeviceRevoked,
@@ -364,6 +366,7 @@ impl AuditAction {
             Self::SecurityPolicyChanged => "SECURITY_POLICY_CHANGED",
             Self::Mandatory2faPolicyChanged => "MANDATORY_2FA_POLICY_CHANGED",
             Self::StorageOrphanDetected => "STORAGE_ORPHAN_DETECTED",
+            Self::QuotaDriftDetected => "QUOTA_DRIFT_DETECTED",
             Self::SessionRevoked => "SESSION_REVOKED",
             Self::AllSessionsRevoked => "ALL_SESSIONS_REVOKED",
             Self::TrustedDeviceRevoked => "TRUSTED_DEVICE_REVOKED",
@@ -406,6 +409,7 @@ impl AuditAction {
         match self {
             Self::JobDeadLettered
             | Self::StorageOrphanDetected
+            | Self::QuotaDriftDetected
             | Self::LoginSucceeded
             | Self::LoginFailed
             | Self::LoginLockedOut

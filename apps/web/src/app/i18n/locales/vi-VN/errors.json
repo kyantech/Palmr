@@ -55,6 +55,7 @@
     "rangeNotSatisfiable": "Phần tệp được yêu cầu không khả dụng. Hãy bắt đầu tải xuống lại.",
     "storageUnavailable": "Kho lưu trữ tệp tạm thời không khả dụng. Hãy thử lại sau.",
     "storageFull": "Bộ nhớ lưu trữ của máy chủ đã đầy. Hãy liên hệ quản trị viên.",
+    "quotaExceeded": "Thao tác này sẽ vượt quá hạn mức lưu trữ của bạn. Hãy giải phóng dung lượng hoặc nhờ quản trị viên tăng hạn mức.",
     "storageProviderMismatch": "Tệp này được lưu ở vị trí mà máy chủ không được cấu hình để sử dụng. Hãy liên hệ quản trị viên.",
     "storageSizeMismatch": "Tệp đã lưu không khớp kích thước dự kiến nên đã bị loại bỏ. Hãy tải lên lại.",
     "brandingAssetUnknown": "Tài nguyên thương hiệu này không tồn tại.",

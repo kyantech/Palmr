@@ -5,6 +5,7 @@ use time::macros::datetime;
 
 use super::{
     jobs_step, ReconcileContext, ReconcileError, ReconcileRegistry, StepFuture, JOBS_STEP,
+    QUOTA_SCHEDULE_STEP,
 };
 use crate::config::SqliteSynchronous;
 use crate::domain::clock::TestClock;
@@ -246,5 +247,34 @@ async fn it_startup_reconcile_never_deletes() {
             )
             .await,
         ["in_progress"]
+    );
+}
+
+#[tokio::test]
+async fn it_startup_reconcile_schedules_quota_reconcile_idempotently() {
+    let harness = Harness::open().await;
+    let registry = ReconcileRegistry::production();
+
+    let first = registry.run(&harness.context()).await;
+    assert_eq!(first.failed(), 0);
+    assert_eq!(first.outcome(QUOTA_SCHEDULE_STEP), Some(&Ok(1)));
+    let second = registry.run(&harness.context()).await;
+    assert_eq!(second.failed(), 0);
+    assert_eq!(second.outcome(QUOTA_SCHEDULE_STEP), Some(&Ok(0)));
+
+    let rows = harness
+        .strings("SELECT kind || '|' || state || '|' || run_at FROM jobs")
+        .await;
+    assert_eq!(rows, ["quota.reconcile|pending|2026-09-25T00:00:00.000Z"]);
+
+    harness
+        .clock
+        .advance(std::time::Duration::from_secs(3 * 24 * 60 * 60));
+    let third = registry.run(&harness.context()).await;
+    assert_eq!(third.outcome(QUOTA_SCHEDULE_STEP), Some(&Ok(0)));
+    assert_eq!(
+        harness.strings("SELECT id FROM jobs").await.len(),
+        1,
+        "a still-pending schedule from an earlier bucket is not duplicated"
     );
 }

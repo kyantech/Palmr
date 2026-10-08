@@ -55,6 +55,7 @@
     "rangeNotSatisfiable": "Het gevraagde deel van het bestand is niet beschikbaar. Start de download opnieuw.",
     "storageUnavailable": "Bestandsopslag is tijdelijk niet beschikbaar. Probeer het later opnieuw.",
     "storageFull": "De opslag van de server is vol. Neem contact op met je beheerder.",
+    "quotaExceeded": "Dit zou je opslagquotum overschrijden. Maak ruimte vrij of vraag je beheerder het te verhogen.",
     "storageProviderMismatch": "Dit bestand staat op een locatie waarvoor de server niet is ingesteld. Neem contact op met je beheerder.",
     "storageSizeMismatch": "Het opgeslagen bestand had niet de verwachte grootte en is verwijderd. Upload het opnieuw.",
     "brandingAssetUnknown": "Dit huisstijlelement bestaat niet.",

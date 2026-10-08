@@ -55,6 +55,7 @@
     "rangeNotSatisfiable": "Żądana część pliku jest niedostępna. Rozpocznij pobieranie od nowa.",
     "storageUnavailable": "Magazyn plików jest chwilowo niedostępny. Spróbuj ponownie później.",
     "storageFull": "Magazyn serwera jest pełny. Skontaktuj się z administratorem.",
+    "quotaExceeded": "To przekroczyłoby Twój limit miejsca. Zwolnij miejsce lub poproś administratora o zwiększenie limitu.",
     "storageProviderMismatch": "Ten plik jest przechowywany w lokalizacji, której serwer nie jest skonfigurowany używać. Skontaktuj się z administratorem.",
     "storageSizeMismatch": "Zapisany plik miał nieoczekiwany rozmiar i został odrzucony. Prześlij go ponownie.",
     "brandingAssetUnknown": "Ten element identyfikacji wizualnej nie istnieje.",

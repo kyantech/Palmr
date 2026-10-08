@@ -323,6 +323,11 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "QUOTA_EXCEEDED",
+    "status": 507,
+    "retryable": false
+  },
+  {
     "code": "RANGE_NOT_SATISFIABLE",
     "status": 416,
     "retryable": false

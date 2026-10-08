@@ -70,9 +70,7 @@ test("unit_retry_policy_by_error_class", async () => {
     await countQueryAttempts(apiError({ code: "AUTH_RECENT_AUTH_REQUIRED", status: 403 })),
   ).toBe(1);
   expect(await countQueryAttempts(apiError({ code: "VALIDATION_ERROR", status: 422 }))).toBe(1);
-  expect(
-    await countQueryAttempts(apiError({ code: "QUOTA_EXCEEDED" as ErrorCode, status: 507 })),
-  ).toBe(1);
+  expect(await countQueryAttempts(apiError({ code: "QUOTA_EXCEEDED", status: 507 }))).toBe(1);
 
   const postNetwork = apiError({ code: "CLIENT_NETWORK_ERROR", method: "POST" });
   expect(await countMutationAttempts(postNetwork)).toBe(1);
@@ -88,9 +86,7 @@ test("unit_retry_policy_by_error_class", async () => {
 describe("retry classification", () => {
   test("classes are chosen by code, never by status or message", () => {
     expect(retryClassOf(apiError({ code: "STORAGE_FULL", status: 507 }))).toBe("serverFault");
-    expect(retryClassOf(apiError({ code: "QUOTA_EXCEEDED" as ErrorCode, status: 507 }))).toBe(
-      "never",
-    );
+    expect(retryClassOf(apiError({ code: "QUOTA_EXCEEDED", status: 507 }))).toBe("never");
     expect(retryClassOf(apiError({ code: "VALIDATION_ERROR", status: 503 }))).toBe("never");
     expect(retryClassOf(apiError({ code: "SERVICE_UNAVAILABLE", status: 200 }))).toBe(
       "serverFault",

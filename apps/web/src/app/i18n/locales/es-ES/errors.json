@@ -55,6 +55,7 @@
     "rangeNotSatisfiable": "La parte solicitada del archivo no está disponible. Inicia la descarga de nuevo.",
     "storageUnavailable": "El almacenamiento de archivos no está disponible temporalmente. Inténtalo más tarde.",
     "storageFull": "El almacenamiento del servidor está lleno. Contacta con tu administrador.",
+    "quotaExceeded": "Esto superaría tu cuota de almacenamiento. Libera espacio o pide a tu administrador que la aumente.",
     "storageProviderMismatch": "Este archivo está guardado en una ubicación que el servidor no está configurado para usar. Contacta con tu administrador.",
     "storageSizeMismatch": "El archivo guardado no tenía el tamaño esperado y se descartó. Súbelo de nuevo.",
     "brandingAssetUnknown": "Este recurso de marca no existe.",

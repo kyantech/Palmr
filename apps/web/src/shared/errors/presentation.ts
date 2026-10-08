@@ -112,6 +112,7 @@ export const ERROR_PRESENTATION: Readonly<Record<ErrorCode, ErrorPresentation>> 
   FOLDER_DEPTH_EXCEEDED: entry("message.folderDepthExceeded", inline()),
   FOLDER_CYCLE: entry("message.folderCycle", inline()),
   RANGE_NOT_SATISFIABLE: entry("message.rangeNotSatisfiable", inline()),
+  QUOTA_EXCEEDED: entry("message.quotaExceeded", inline("warning")),
   STORAGE_UNAVAILABLE: entry("message.storageUnavailable", modal(true)),
   STORAGE_FULL: entry("message.storageFull", modal(true)),
   STORAGE_PROVIDER_MISMATCH: entry("message.storageProviderMismatch", modal(false)),

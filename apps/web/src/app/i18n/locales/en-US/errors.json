@@ -55,6 +55,7 @@
     "rangeNotSatisfiable": "The requested part of the file isn't available. Start the download again.",
     "storageUnavailable": "File storage is temporarily unavailable. Try again later.",
     "storageFull": "The server's storage is full. Contact your administrator.",
+    "quotaExceeded": "This would exceed your storage quota. Free up space or ask your administrator to raise it.",
     "storageProviderMismatch": "This file is stored in a location the server isn't configured to use. Contact your administrator.",
     "storageSizeMismatch": "The stored file didn't match the expected size and was discarded. Upload it again.",
     "brandingAssetUnknown": "This branding asset doesn't exist.",
