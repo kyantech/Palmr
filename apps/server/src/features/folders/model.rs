@@ -1,4 +1,4 @@
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use utoipa::ToSchema;
 
@@ -6,7 +6,7 @@ use crate::domain::bytes::ByteSize;
 use crate::domain::id::Id;
 use crate::domain::relative_path::{DirectoryPath, MAX_SEGMENTS};
 use crate::domain::time::Timestamp;
-use crate::infra::http::json::{JsonField, JsonKind, JsonRequest};
+use crate::infra::http::json::{present, JsonField, JsonKind, JsonRequest};
 use crate::infra::http::pagination::WireBytes;
 
 use super::error::FolderError;
@@ -60,9 +60,17 @@ pub struct TreeRow {
     pub has_children: bool,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, ToSchema)]
+#[serde(rename_all = "lowercase")]
+pub enum FolderKind {
+    Folder,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct FolderItem {
+    /// Always `folder`. Distinguishes a folder from a file in a mixed listing.
+    pub kind: FolderKind,
     pub id: String,
     pub name: String,
     #[schema(required = true)]
@@ -86,6 +94,7 @@ impl FolderItem {
         let (total_bytes, _) = ByteSize::try_from(totals.total_bytes)
             .map_or((WireBytes::MAX, false), WireBytes::clamped);
         Self {
+            kind: FolderKind::Folder,
             id: record.id.to_string(),
             name: record.name,
             description: record.description,
@@ -214,13 +223,6 @@ pub struct UpdateFolderRequest {
     #[serde(default, deserialize_with = "present")]
     #[schema(value_type = Option<String>, nullable = true, max_length = 2000)]
     pub description: Option<Option<String>>,
-}
-
-fn present<'de, D>(deserializer: D) -> Result<Option<Option<String>>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    Option::<String>::deserialize(deserializer).map(Some)
 }
 
 impl JsonRequest for UpdateFolderRequest {

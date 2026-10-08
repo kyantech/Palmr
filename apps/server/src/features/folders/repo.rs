@@ -8,7 +8,7 @@ use crate::domain::naming::NameCandidate;
 use crate::domain::time::Timestamp;
 use crate::features::files::naming_insert::{Attempt, NameNamespace};
 use crate::features::users::model::UserId;
-use crate::infra::http::pagination::{Conjunction, PageRequest};
+use crate::infra::http::pagination::{Conjunction, CursorKey, PageRequest};
 
 use super::error::FolderError;
 use super::model::{
@@ -410,6 +410,89 @@ where
     page.push_order_and_limit(&mut query);
     let rows = query.build().fetch_all(executor).await?;
     rows.iter().map(record_from).collect()
+}
+
+pub async fn list_children<'e, E>(
+    executor: E,
+    scope: &Scope<'_>,
+    page: &PageRequest,
+    after: Option<&CursorKey>,
+    fetch: i64,
+) -> Result<Vec<FolderRecord>, FolderError>
+where
+    E: sqlx::Executor<'e, Database = Sqlite>,
+{
+    let mut query = if page.sort().field().name() == "size" {
+        sized_children_query(scope)
+    } else {
+        let mut query = QueryBuilder::<Sqlite>::new(
+            "SELECT id, parent_id, name, name_normalized, description, created_at, updated_at \
+             FROM folders",
+        );
+        push_scope(&mut query, scope);
+        query
+    };
+    let conjunction = if page.sort().field().name() == "size" {
+        Conjunction::Where
+    } else {
+        Conjunction::And
+    };
+    page.push_keyset_after(&mut query, conjunction, after);
+    page.push_order_and_fetch(&mut query, fetch);
+    let rows = query.build().fetch_all(executor).await?;
+    rows.iter().map(record_from).collect()
+}
+
+fn sized_children_query<'q>(scope: &Scope<'_>) -> QueryBuilder<'q, Sqlite> {
+    let owner = scope.owner.to_string();
+    let mut query = QueryBuilder::<Sqlite>::new(
+        "WITH RECURSIVE kids(id) AS (SELECT id FROM folders WHERE owner_id = ",
+    );
+    query.push_bind(owner.clone());
+    push_parent(&mut query, "", scope.parent);
+    query
+        .push(
+            "), walk(root_id, id, level) AS (
+    SELECT id, id, 0 FROM kids
+    UNION ALL
+    SELECT w.root_id, c.id, w.level + 1
+      FROM folders c JOIN walk w ON c.parent_id = w.id
+     WHERE c.owner_id = ",
+        )
+        .push_bind(owner.clone())
+        .push(" AND w.level < ")
+        .push_bind(MAX_FOLDER_DEPTH)
+        .push(
+            "), sizes(root_id, size_bytes) AS (
+    SELECT w.root_id, SUM(fi.size_bytes)
+      FROM walk w JOIN files fi ON fi.folder_id = w.id AND fi.owner_id = ",
+        )
+        .push_bind(owner.clone())
+        .push(
+            " GROUP BY w.root_id
+), sized AS (
+    SELECT f.id, f.parent_id, f.name, f.name_normalized, f.description, f.created_at,
+           f.updated_at, COALESCE(s.size_bytes, 0) AS size_bytes
+      FROM folders f LEFT JOIN sizes s ON s.root_id = f.id
+     WHERE f.owner_id = ",
+        )
+        .push_bind(owner);
+    push_parent(&mut query, "f.", scope.parent);
+    query.push(
+        ")
+SELECT id, parent_id, name, name_normalized, description, created_at, updated_at, size_bytes
+  FROM sized",
+    );
+    query
+}
+
+fn push_parent(query: &mut QueryBuilder<'_, Sqlite>, alias: &str, parent: Option<FolderId>) {
+    match parent {
+        Some(parent) => query
+            .push(format!(" AND {alias}parent_id = "))
+            .push_bind(parent.to_string()),
+        None => query.push(format!(" AND {alias}parent_id IS NULL")),
+    };
 }
 
 pub async fn count<'e, E>(executor: E, scope: &Scope<'_>) -> Result<u64, FolderError>

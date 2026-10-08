@@ -636,6 +636,7 @@ async fn it_folder_create_validates_input() {
             "description",
             "fileCount",
             "id",
+            "kind",
             "name",
             "parentId",
             "subfolderCount",

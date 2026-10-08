@@ -9,6 +9,12 @@ use super::service::{resolve_owned_folder, store_unique_name, FolderService, Wri
 
 const TRANSACTION: &str = "folders.move";
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FolderMoveOutcome {
+    pub requested: String,
+    pub stored: String,
+}
+
 impl FolderService {
     pub async fn move_folder(
         &self,
@@ -19,20 +25,20 @@ impl FolderService {
         let at = Timestamp::try_from(self.clock.now())?;
         self.pools
             .write_tx(self.clock.as_ref(), TRANSACTION, async |tx| {
-                move_in_tx(tx, owner, id, destination, at).await
+                move_folder_in_tx(tx, owner, id, destination, at).await
             })
             .await?;
         self.item(owner, id).await
     }
 }
 
-async fn move_in_tx(
+pub async fn move_folder_in_tx(
     tx: &mut WriteTx<'_>,
     owner: UserId,
     id: FolderId,
     destination: Option<FolderId>,
     at: Timestamp,
-) -> Result<(), FolderError> {
+) -> Result<FolderMoveOutcome, FolderError> {
     let source = repo::find_for_move(tx.executor(), owner, id)
         .await?
         .ok_or(FolderError::NotFound)?;
@@ -47,7 +53,10 @@ async fn move_in_tx(
         }
     };
     if destination == source.parent_id {
-        return Ok(());
+        return Ok(FolderMoveOutcome {
+            stored: source.name.clone(),
+            requested: source.name,
+        });
     }
 
     let profile = repo::profile_subtree(tx.executor(), owner, id, destination).await?;
@@ -67,11 +76,15 @@ async fn move_in_tx(
         depth: u8::try_from(new_root_depth).map_err(|_| FolderError::DepthExceeded)?,
         at,
     };
-    store_unique_name(tx.executor(), &source.name, &Write::Relocate(&relocation)).await?;
+    let stored =
+        store_unique_name(tx.executor(), &source.name, &Write::Relocate(&relocation)).await?;
 
     let delta = new_root_depth - old_root_depth;
     if delta != 0 && subtree_height > 0 {
         repo::shift_descendant_depths(tx.executor(), owner, id, delta).await?;
     }
-    Ok(())
+    Ok(FolderMoveOutcome {
+        requested: source.name,
+        stored: stored.into_display(),
+    })
 }

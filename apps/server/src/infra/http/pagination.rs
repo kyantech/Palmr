@@ -310,6 +310,7 @@ impl SortValue {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CursorKey {
+    group: Option<u8>,
     value: SortValue,
     id: String,
 }
@@ -317,9 +318,22 @@ pub struct CursorKey {
 impl CursorKey {
     pub fn new<E>(value: SortValue, id: Id<E>) -> Self {
         Self {
+            group: None,
             value,
             id: id.to_string(),
         }
+    }
+
+    pub fn in_group<E>(group: u8, value: SortValue, id: Id<E>) -> Self {
+        Self {
+            group: Some(group),
+            value,
+            id: id.to_string(),
+        }
+    }
+
+    pub const fn group(&self) -> Option<u8> {
+        self.group
     }
 
     pub const fn value(&self) -> &SortValue {
@@ -335,12 +349,15 @@ impl CursorKey {
 #[serde(deny_unknown_fields)]
 struct CursorPayload {
     sort: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    g: Option<u8>,
     k: (SortValue, String),
 }
 
 pub fn encode_cursor(keys: &KeyRing, sort: &SortSpec, key: &CursorKey) -> String {
     let payload = CursorPayload {
         sort: sort.wire(),
+        g: key.group,
         k: (key.value.clone(), key.id.clone()),
     };
     let Ok(mut bytes) = serde_json::to_vec(&payload) else {
@@ -352,6 +369,24 @@ pub fn encode_cursor(keys: &KeyRing, sort: &SortSpec, key: &CursorKey) -> String
 }
 
 pub fn decode_cursor(keys: &KeyRing, sort: &SortSpec, raw: &str) -> Result<CursorKey, ApiError> {
+    decode_cursor_in(keys, sort, raw, None)
+}
+
+pub fn decode_grouped_cursor(
+    keys: &KeyRing,
+    sort: &SortSpec,
+    raw: &str,
+    groups: u8,
+) -> Result<CursorKey, ApiError> {
+    decode_cursor_in(keys, sort, raw, Some(groups))
+}
+
+fn decode_cursor_in(
+    keys: &KeyRing,
+    sort: &SortSpec,
+    raw: &str,
+    groups: Option<u8>,
+) -> Result<CursorKey, ApiError> {
     if raw.len() > MAX_CURSOR_CHARS {
         return Err(cursor_invalid());
     }
@@ -373,11 +408,21 @@ pub fn decode_cursor(keys: &KeyRing, sort: &SortSpec, raw: &str) -> Result<Curso
     }
     .map_err(|_| cursor_invalid())?;
     let (value, id) = payload.k;
-    let well_formed = payload.sort == sort.wire()
+    let group_matches = match (groups, payload.g) {
+        (None, None) => true,
+        (Some(groups), Some(group)) => group < groups,
+        _ => false,
+    };
+    let well_formed = group_matches
+        && payload.sort == sort.wire()
         && value.kind() == sort.field.kind
         && Id::<()>::from_str(&id).is_ok();
     if well_formed {
-        Ok(CursorKey { value, id })
+        Ok(CursorKey {
+            group: payload.g,
+            value,
+            id,
+        })
     } else {
         Err(cursor_invalid())
     }
@@ -438,11 +483,32 @@ impl PageRequest {
         allowlist: &SortAllowlist,
         keys: &KeyRing,
     ) -> Result<Self, ApiError> {
+        Self::parse(params, allowlist, |sort, raw| {
+            decode_cursor(keys, sort, raw)
+        })
+    }
+
+    pub fn from_grouped_query(
+        params: &QueryParams,
+        allowlist: &SortAllowlist,
+        keys: &KeyRing,
+        groups: u8,
+    ) -> Result<Self, ApiError> {
+        Self::parse(params, allowlist, |sort, raw| {
+            decode_grouped_cursor(keys, sort, raw, groups)
+        })
+    }
+
+    fn parse(
+        params: &QueryParams,
+        allowlist: &SortAllowlist,
+        decode: impl Fn(&SortSpec, &str) -> Result<CursorKey, ApiError>,
+    ) -> Result<Self, ApiError> {
         let sort = allowlist.parse(params.single(SORT_PARAM)?)?;
         let limit = Limit::parse(params.single(LIMIT_PARAM)?)?;
         let after = params
             .single(CURSOR_PARAM)?
-            .map(|raw| decode_cursor(keys, &sort, raw))
+            .map(|raw| decode(&sort, raw))
             .transpose()?;
         Ok(Self { sort, after, limit })
     }
@@ -460,7 +526,16 @@ impl PageRequest {
     }
 
     pub fn push_keyset(&self, query: &mut QueryBuilder<'_, Sqlite>, conjunction: Conjunction) {
-        let Some(after) = &self.after else {
+        self.push_keyset_after(query, conjunction, self.after.as_ref());
+    }
+
+    pub fn push_keyset_after(
+        &self,
+        query: &mut QueryBuilder<'_, Sqlite>,
+        conjunction: Conjunction,
+        after: Option<&CursorKey>,
+    ) {
+        let Some(after) = after else {
             return;
         };
         query
@@ -477,6 +552,14 @@ impl PageRequest {
     }
 
     pub fn push_order_and_limit(&self, query: &mut QueryBuilder<'_, Sqlite>) {
+        self.push_order_and_fetch(query, self.limit.fetch_size());
+    }
+
+    pub fn fetch_size(&self) -> i64 {
+        self.limit.fetch_size()
+    }
+
+    pub fn push_order_and_fetch(&self, query: &mut QueryBuilder<'_, Sqlite>, fetch: i64) {
         let order = self.sort.direction.sql_order();
         query
             .push(" ORDER BY ")
@@ -486,7 +569,7 @@ impl PageRequest {
             .push(self.sort.id_column)
             .push(order)
             .push(" LIMIT ")
-            .push_bind(self.limit.fetch_size());
+            .push_bind(fetch);
     }
 
     pub fn into_page<T>(

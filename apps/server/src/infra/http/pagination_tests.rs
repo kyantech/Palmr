@@ -10,10 +10,10 @@ use utoipa::{PartialSchema, ToSchema};
 
 use super::error::ApiError;
 use super::pagination::{
-    cursor_parameter, decode_cursor, encode_cursor, limit_parameter, repeated_enum_parameter,
-    search_parameter, Conjunction, CursorKey, Limit, Page, PageRequest, QueryParams, SearchQuery,
-    SortAllowlist, SortDirection, SortField, SortKeyKind, SortSpec, SortValue, TotalCount,
-    WireBytes, CURSOR_TAG_LEN, DEFAULT_LIMIT, MAX_LIMIT, MAX_WIRE_BYTES,
+    cursor_parameter, decode_cursor, decode_grouped_cursor, encode_cursor, limit_parameter,
+    repeated_enum_parameter, search_parameter, Conjunction, CursorKey, Limit, Page, PageRequest,
+    QueryParams, SearchQuery, SortAllowlist, SortDirection, SortField, SortKeyKind, SortSpec,
+    SortValue, TotalCount, WireBytes, CURSOR_TAG_LEN, DEFAULT_LIMIT, MAX_LIMIT, MAX_WIRE_BYTES,
 };
 use crate::config::SqliteSynchronous;
 use crate::domain::bytes::ByteSize;
@@ -809,4 +809,54 @@ fn unit_keyset_predicate_is_server_built() {
     );
     assert_eq!(page.items, [1, 2, 3]);
     assert_eq!(page.next_cursor, None);
+}
+
+#[test]
+fn unit_grouped_cursor_carries_its_group_and_is_not_interchangeable() {
+    let keys = ring();
+    let clock = TestClock::new(datetime!(2026-09-24 12:00 UTC));
+    let sort = spec("name:asc");
+    let id = row_id(&clock);
+    let plain = CursorKey::new(SortValue::Text("a".to_owned()), id);
+    let folder = CursorKey::in_group(0, SortValue::Text("a".to_owned()), id);
+    let file = CursorKey::in_group(1, SortValue::Text("a".to_owned()), id);
+    assert_eq!(plain.group(), None);
+
+    let plain_raw = encode_cursor(&keys, &sort, &plain);
+    let folder_raw = encode_cursor(&keys, &sort, &folder);
+    let file_raw = encode_cursor(&keys, &sort, &file);
+    assert_ne!(
+        folder_raw, file_raw,
+        "the group is part of the signed payload"
+    );
+    assert_ne!(plain_raw, folder_raw);
+
+    assert_eq!(
+        decode_grouped_cursor(&keys, &sort, &folder_raw, 2).unwrap(),
+        folder
+    );
+    assert_eq!(
+        decode_grouped_cursor(&keys, &sort, &file_raw, 2).unwrap(),
+        file
+    );
+    assert_eq!(decode_cursor(&keys, &sort, &plain_raw).unwrap(), plain);
+
+    assert_cursor_invalid(decode_cursor(&keys, &sort, &folder_raw));
+    assert_cursor_invalid(decode_grouped_cursor(&keys, &sort, &plain_raw, 2));
+    assert_cursor_invalid(decode_grouped_cursor(&keys, &sort, &file_raw, 1));
+    let out_of_range = encode_cursor(
+        &keys,
+        &sort,
+        &CursorKey::in_group(7, SortValue::Text("a".to_owned()), id),
+    );
+    assert_cursor_invalid(decode_grouped_cursor(&keys, &sort, &out_of_range, 2));
+
+    let payload_without_group =
+        br#"{"sort":"name:asc","k":["a","0192f3a1-0000-7000-8000-000000000001"]}"#;
+    let mut forged = payload_without_group.to_vec();
+    let tag = keys.mac(MacPurpose::Cursor, payload_without_group);
+    forged.extend_from_slice(&tag[..CURSOR_TAG_LEN]);
+    let forged = Base64UrlUnpadded::encode_string(&forged);
+    assert!(decode_cursor(&keys, &sort, &forged).is_ok());
+    assert_cursor_invalid(decode_grouped_cursor(&keys, &sort, &forged, 2));
 }

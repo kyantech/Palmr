@@ -48,6 +48,7 @@ use crate::features::auth::sessions::SessionService;
 use crate::features::auth::totp::TotpService;
 use crate::features::email::transport::CapturingTransport;
 use crate::features::email::EmailService;
+use crate::features::files::FileService;
 use crate::features::folders::FolderService;
 use crate::features::identity_providers::callback::ExternalLoginService;
 use crate::features::identity_providers::{
@@ -198,6 +199,7 @@ impl Stack {
             audit.clone(),
         );
         let folders = FolderService::new(pools.clone(), Arc::new(clock.clone()), settings.keys());
+        let files = FileService::new(pools.clone(), Arc::new(clock.clone()), settings.keys());
         let providers = IdentityProviderService::new(
             pools.clone(),
             Arc::new(clock.clone()),
@@ -258,6 +260,7 @@ impl Stack {
             .layer(Extension(invites.clone()))
             .layer(Extension(admin_users.clone()))
             .layer(Extension(folders.clone()))
+            .layer(Extension(files.clone()))
             .layer(Extension(providers.clone()))
             .layer(Extension(external_login.clone()))
             .layer(Extension(password_login.clone()))
@@ -1809,6 +1812,8 @@ mod admin_smtp;
 mod admin_users;
 mod authorize;
 mod callback;
+mod file_writes;
+mod files;
 mod folder_moves;
 mod folder_paths;
 mod folders;

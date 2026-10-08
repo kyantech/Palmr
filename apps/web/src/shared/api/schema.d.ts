@@ -820,6 +820,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_files"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/files/batch/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["batch_move_files"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/files/name-check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["name_check"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/files/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_file"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["update_file"];
+        trace?: never;
+    };
+    "/api/v1/files/{id}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["move_file"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/folders": {
         parameters: {
             query?: never;
@@ -1388,6 +1468,28 @@ export interface components {
              */
             generatedAt: string;
         };
+        BatchMoveRequest: {
+            /**
+             * @description Files to move. Together with `folderIds` at most 500 ids; no id may repeat.
+             * @example [
+             *       "0192f3a1-0000-7000-8000-000000000001"
+             *     ]
+             */
+            fileIds: string[];
+            /** @description Folders to move along with the files. Absent is the same as empty. */
+            folderIds?: string[];
+            /**
+             * @description The destination folder. `null` moves everything to the My Files root. The member is required.
+             * @example 0192f3a1-0000-7000-8000-000000000002
+             */
+            targetFolderId: string | null;
+        };
+        BatchMoveResult: {
+            /** @description Every requested file, in request order. */
+            files: components["schemas"]["MovedItem"][];
+            /** @description Every requested folder, in request order. */
+            folders: components["schemas"]["MovedItem"][];
+        };
         BlockerDetail: {
             code: string;
             detail: string;
@@ -1413,6 +1515,8 @@ export interface components {
             /** Format: int64 */
             sortOrder: number;
         };
+        /** @description A folder or a file, told apart by `kind`. */
+        BrowseItem: components["schemas"]["FolderItem"] | components["schemas"]["FileItem"];
         /** Format: int64 */
         ByteCount: number;
         ChangeEmailRequest: {
@@ -1701,6 +1805,29 @@ export interface components {
             externalReauthChannel: string;
             externalReauthUrl: string;
         };
+        FileItem: {
+            /** @description The content type Palmr stored when the file was finalized. It is never the type the browser declared. */
+            contentType: string;
+            createdAt: string;
+            description: string | null;
+            /** @description The folder that holds the file; `null` for My Files root. */
+            folderId: string | null;
+            id: string;
+            /**
+             * @description Always `file`. Distinguishes a file from a folder in a mixed listing. (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            kind: "file";
+            name: string;
+            sizeBytes: components["schemas"]["ByteCount"];
+            updatedAt: string;
+        };
+        /** @enum {string} */
+        FileKind: "file";
+        FileResult: components["schemas"]["FileItem"] & {
+            /** @description The stored name when it differs from the requested one because a sibling already had it; otherwise `null`. */
+            renamedTo: string | null;
+        };
         FolderDetail: components["schemas"]["FolderItem"] & {
             /** @description Breadcrumbs from the root-level ancestor down to and including this folder. */
             path: components["schemas"]["FolderPathItem"][];
@@ -1714,6 +1841,11 @@ export interface components {
              */
             fileCount: number;
             id: string;
+            /**
+             * @description Always `folder`. Distinguishes a folder from a file in a mixed listing. (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            kind: "folder";
             name: string;
             parentId: string | null;
             /**
@@ -1725,6 +1857,8 @@ export interface components {
             totalBytes: components["schemas"]["ByteCount"];
             updatedAt: string;
         };
+        /** @enum {string} */
+        FolderKind: "folder";
         FolderPathItem: {
             id: string;
             name: string;
@@ -1957,12 +2091,31 @@ export interface components {
         };
         /** @enum {string} */
         MigrationHealthStatus: "current";
+        MoveFileRequest: {
+            /**
+             * @description The destination folder. `null` moves the file to the My Files root. The member is required.
+             * @example 0192f3a1-0000-7000-8000-000000000001
+             */
+            folderId: string | null;
+        };
         MoveFolderRequest: {
             /**
              * @description The destination folder. `null` moves the folder to the My Files root. The member is required.
              * @example 0192f3a1-0000-7000-8000-000000000001
              */
             parentId: string | null;
+        };
+        MovedItem: {
+            id: string;
+            /** @description The name the item has after the move. */
+            name: string;
+            /** @description The stored name when it differs from the name before the move; otherwise `null`. */
+            renamedTo: string | null;
+        };
+        NameCheck: {
+            available: boolean;
+            /** @description The first currently free deterministic name when `available` is `false`; otherwise `null`. */
+            suggestedName: string | null;
         };
         OrderRequest: {
             /** @description Every provider id exactly once, in the new display order. */
@@ -2000,6 +2153,16 @@ export interface components {
              */
             totalCount: number | null;
         };
+        Page_BrowseItem: {
+            items: (components["schemas"]["FolderItem"] | components["schemas"]["FileItem"])[];
+            /** @description Opaque cursor for the next page; `null` on the last page. */
+            nextCursor: string | null;
+            /**
+             * Format: int64
+             * @description Matching items overall; `null` where counting would require a scan.
+             */
+            totalCount: number | null;
+        };
         Page_FolderItem: {
             items: {
                 createdAt: string;
@@ -2010,6 +2173,8 @@ export interface components {
                  */
                 fileCount: number;
                 id: string;
+                /** @description Always `folder`. Distinguishes a folder from a file in a mixed listing. */
+                kind: components["schemas"]["FolderKind"];
                 name: string;
                 parentId: string | null;
                 /**
@@ -2584,6 +2749,12 @@ export interface components {
              */
             enrolledAt: string | null;
             requiredByPolicy: boolean;
+        };
+        UpdateFileRequest: {
+            /** @description Absent leaves the description unchanged; `null` clears it. */
+            description?: string | null;
+            /** @description Absent leaves the name unchanged. `null` is not a valid name. */
+            name?: string;
         };
         UpdateFolderRequest: {
             /** @description Absent leaves the description unchanged; `null` clears it. */
@@ -7069,6 +7240,521 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Bootstrap"];
+                };
+            };
+        };
+    };
+    list_files: {
+        parameters: {
+            query?: {
+                /** @description List the direct children of this folder. Absent lists the My Files root. An unknown or foreign folder id is `FOLDER_NOT_FOUND`. */
+                folderId?: string;
+                sort?: "name:asc" | "name:desc" | "size:asc" | "size:desc" | "createdAt:asc" | "createdAt:desc" | "updatedAt:asc" | "updatedAt:desc";
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of the direct children of the folder: its subfolders first, then its files. Every item carries a `kind` of `folder` or `file`. Folders always precede files across the whole traversal whatever the `sort`; the sort applies within the folders and within the files. A folder sorts by `totalBytes` for `size`. `totalCount` is the exact number of direct children, folders plus files. Cursors are keyset cursors bound to the `sort`; a cursor reused with another `sort`, or altered, is `CURSOR_INVALID`. This is browse mode only: it never descends below the folder, and `q` is not accepted. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_BrowseItem"];
+                };
+            };
+            /** @description `CURSOR_INVALID`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FOLDER_NOT_FOUND`: the folder is unknown or belongs to another user. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `VALIDATION_ERROR` for an invalid `sort` or `limit`, or for `q`, which global search will take over. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    batch_move_files: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Moves every listed file, and every listed folder, to `targetFolderId` (`null` is the My Files root) in one transaction: all of them move or none does. At most 500 ids in total; an id may not repeat. Folders are moved first, then files, each in request order, so name collisions are resolved in a fixed order (`report.pdf`, `report (1).pdf`, `report (2).pdf`). An item already in the destination is left as it is. Any failure rolls the whole batch back: an unknown or foreign id (`FILE_NOT_FOUND`, `FOLDER_NOT_FOUND`), a folder moved into itself or its own subtree (`FOLDER_CYCLE`), a subtree that would pass depth 64 (`FOLDER_DEPTH_EXCEEDED`) or a name for which no unique variant exists (`FILE_NAME_CONFLICT`). There is no partial result. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BatchMoveRequest"];
+            };
+        };
+        responses: {
+            /** @description Every item moved, with its stored name. `renamedTo` is set where a collision changed the name. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchMoveResult"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed, or the session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FILE_NOT_FOUND` or `FOLDER_NOT_FOUND`: an item or the destination is unknown or belongs to another user. Nothing moved. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FILE_NAME_CONFLICT`: no unique name could be generated for one item. Nothing moved. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `BATCH_TOO_LARGE` beyond 500 ids, `FOLDER_CYCLE`, `FOLDER_DEPTH_EXCEEDED`, or `VALIDATION_ERROR` for no ids, a repeated id or a missing `targetFolderId`. Nothing moved. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    name_check: {
+        parameters: {
+            query: {
+                /** @description The folder whose file names are checked. Absent checks the My Files root. An unknown or foreign folder id is `FOLDER_NOT_FOUND`. */
+                folderId?: string;
+                /** @description The file name to check: 1 to 255 bytes, no `/`, `\`, control characters, `.` or `..`. */
+                name: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Advisory only. `available` is `true` when no file in the folder already has the name, compared case-insensitively and Unicode-normalized; otherwise `suggestedName` is the first free name the server would pick today. Nothing is reserved: a later upload, rename or move still resolves collisions atomically and may pick a different name. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NameCheck"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FOLDER_NOT_FOUND`: the folder is unknown or belongs to another user. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FILE_NAME_CONFLICT`: no free name could be generated. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `NAME_INVALID` for a name that is not a valid file name, or `VALIDATION_ERROR` for a missing or repeated `name`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    get_file: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description File UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The file's metadata. The response never carries a storage identifier or object key. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FileItem"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FILE_NOT_FOUND`, including another user's file. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    update_file: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description File UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description Absent members are unchanged. `description: null` clears the description; `name` cannot be `null`. A name that collides with a sibling is disambiguated deterministically (`photo.jpg`, `photo (1).jpg`); `renamedTo` in the response is then the stored name. Renaming never touches storage, and a request that changes nothing writes nothing. Moving a file is a separate operation. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateFileRequest"];
+            };
+        };
+        responses: {
+            /** @description The updated file, with the stored name. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FileResult"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed, or the session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FILE_NOT_FOUND`, including another user's file. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FILE_NAME_CONFLICT`: no unique name could be generated. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `NAME_INVALID` or `VALIDATION_ERROR`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    move_file: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description File UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description `folderId` is the destination folder, or `null` for the My Files root; the member is required. A move into the file's current folder changes nothing. A name that collides in the destination is disambiguated deterministically (`report.pdf`, `report (1).pdf`); `renamedTo` in the response is then the stored name. Moving never touches storage. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MoveFileRequest"];
+            };
+        };
+        responses: {
+            /** @description The moved file, with the stored name. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FileResult"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed, or the session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FILE_NOT_FOUND`, including another user's file, or `FOLDER_NOT_FOUND` for an unknown or foreign destination. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FILE_NAME_CONFLICT`: no unique name could be generated in the destination. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `VALIDATION_ERROR`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
         };

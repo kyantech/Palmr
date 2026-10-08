@@ -5,6 +5,7 @@ use super::normalize::normalize;
 pub const MAX_NAME_BYTES: usize = 255;
 pub const MAX_NORMALIZED_CHARS: usize = 255;
 pub const MAX_NAME_ATTEMPTS: u32 = 1_000;
+pub const MAX_EXTENSION_CHARS: usize = 32;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum InvalidName {
@@ -52,6 +53,16 @@ impl NameCandidate {
 
     pub fn into_display(self) -> String {
         self.display
+    }
+
+    pub fn extension(&self) -> String {
+        let (_, tail) = split_extension(&self.display);
+        let extension = tail.strip_prefix('.').unwrap_or_default().to_lowercase();
+        if extension.chars().count() > MAX_EXTENSION_CHARS {
+            String::new()
+        } else {
+            extension
+        }
     }
 }
 
@@ -170,8 +181,8 @@ mod tests {
     use proptest::prelude::*;
 
     use super::{
-        CandidateError, InvalidName, NameCandidate, NameSeries, MAX_NAME_ATTEMPTS, MAX_NAME_BYTES,
-        MAX_NORMALIZED_CHARS,
+        CandidateError, InvalidName, NameCandidate, NameSeries, MAX_EXTENSION_CHARS,
+        MAX_NAME_ATTEMPTS, MAX_NAME_BYTES, MAX_NORMALIZED_CHARS,
     };
     use crate::domain::normalize::{normalize, tests::unicode_text};
 
@@ -208,6 +219,92 @@ mod tests {
             assert_eq!(display(name, 1), attempt_one, "{name:?} attempt 1");
             assert_eq!(display(name, 2), attempt_two, "{name:?} attempt 2");
         }
+    }
+
+    #[test]
+    fn unit_naming_extension_is_the_lowercased_last_suffix_or_empty() {
+        for (name, extension) in [
+            ("photo.jpg", "jpg"),
+            ("photo.JPG", "jpg"),
+            ("archive.tar.gz", "gz"),
+            ("README", ""),
+            (".env", ""),
+            (".env.local", "local"),
+            ("a.", ""),
+            ("a..", ""),
+            ("...", ""),
+            ("report (1).pdf", "pdf"),
+            ("Data.CSV", "csv"),
+        ] {
+            assert_eq!(
+                NameCandidate::new(name).unwrap().extension(),
+                extension,
+                "{name:?}"
+            );
+        }
+        let long = format!("blob.{}", "x".repeat(MAX_EXTENSION_CHARS));
+        assert_eq!(
+            NameCandidate::new(long.as_str()).unwrap().extension().len(),
+            MAX_EXTENSION_CHARS
+        );
+        let too_long = format!("blob.{}", "x".repeat(MAX_EXTENSION_CHARS + 1));
+        assert_eq!(NameCandidate::new(too_long).unwrap().extension(), "");
+        for attempt in [0, 1, 2, 10, 999] {
+            let candidate = NameSeries::parse("photo.jpg")
+                .unwrap()
+                .candidate(attempt)
+                .unwrap();
+            assert_eq!(candidate.extension(), "jpg", "attempt {attempt}");
+        }
+    }
+
+    #[test]
+    fn unit_naming_extension_length_boundary_counts_characters_not_bytes() {
+        let edge = |extension: &str| {
+            NameCandidate::new(format!("blob.{extension}"))
+                .unwrap()
+                .extension()
+        };
+        assert_eq!(edge(&"x".repeat(32)), "x".repeat(32), "32 characters fit");
+        assert_eq!(edge(&"x".repeat(33)), "", "33 characters are none");
+        assert_eq!(
+            edge(&"X".repeat(32)),
+            "x".repeat(32),
+            "lowercased at the edge"
+        );
+        assert_eq!(edge(&"X".repeat(33)), "");
+
+        let accented = "é".repeat(32);
+        assert_eq!(accented.len(), 64);
+        assert_eq!(edge(&accented), accented, "64 bytes but 32 characters fit");
+        assert_eq!(edge(&"É".repeat(32)), accented, "multibyte lowercase");
+        assert_eq!(
+            edge(&"é".repeat(33)),
+            "",
+            "33 multibyte characters are none"
+        );
+        let kanji = "日".repeat(32);
+        assert_eq!(edge(&kanji), kanji);
+        assert_eq!(edge(&"日".repeat(33)), "");
+        assert_eq!(
+            edge(&"İ".repeat(32)),
+            "",
+            "a lowercase form that grows past 32 characters is none, never cut"
+        );
+        for name in ["README", ".env", "a.", "blob"] {
+            assert_eq!(NameCandidate::new(name).unwrap().extension(), "", "{name}");
+        }
+
+        let overlong = format!("blob.{}", "é".repeat(33));
+        let candidate = NameCandidate::new(overlong.clone()).unwrap();
+        assert_eq!(
+            candidate.display(),
+            overlong,
+            "the display name is untouched"
+        );
+        let kept = NameSeries::parse(&overlong).unwrap().candidate(1).unwrap();
+        assert!(kept.display().ends_with(&format!(".{}", "é".repeat(33))));
+        assert_eq!(kept.extension(), "");
     }
 
     #[test]

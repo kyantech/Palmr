@@ -46,6 +46,7 @@ use crate::features::auth::totp::TotpService;
 use crate::features::auth::AuthService;
 use crate::features::branding::BrandingService;
 use crate::features::email::{self, EmailService, SmtpTransport};
+use crate::features::files::FileService;
 use crate::features::folders::FolderService;
 use crate::features::identity_providers::callback::ExternalLoginService;
 use crate::features::identity_providers::{
@@ -827,6 +828,11 @@ async fn initialize(
         Arc::clone(&clock),
         Arc::clone(&email_keys),
     );
+    let files = FileService::new(
+        database.pools().clone(),
+        Arc::clone(&clock),
+        Arc::clone(&email_keys),
+    );
     let identity_providers = IdentityProviderService::new(
         database.pools().clone(),
         Arc::clone(&clock),
@@ -891,6 +897,7 @@ async fn initialize(
         profile,
         admin_users,
         folders,
+        files,
         identity_providers,
         external_login,
         password_login,
@@ -1145,6 +1152,7 @@ struct RequestServices {
     profile: ProfileService,
     admin_users: AdminUserService,
     folders: FolderService,
+    files: FileService,
     identity_providers: IdentityProviderService,
     external_login: ExternalLoginService,
     password_login: PasswordLoginService,
@@ -1185,6 +1193,7 @@ fn composed_router(
             .layer(axum::Extension(services.profile))
             .layer(axum::Extension(services.admin_users))
             .layer(axum::Extension(services.folders))
+            .layer(axum::Extension(services.files))
             .layer(axum::Extension(services.identity_providers))
             .layer(axum::Extension(services.external_login))
             .layer(axum::Extension(services.password_login))

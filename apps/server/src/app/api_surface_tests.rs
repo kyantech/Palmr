@@ -2212,6 +2212,278 @@ fn it_openapi_folder_move_and_ensure_path_declare_typed_contracts() {
 }
 
 #[test]
+fn it_openapi_file_routes_declare_typed_contracts() {
+    let document = application_document();
+    let paths = &document["paths"];
+    let list = &paths["/api/v1/files"]["get"];
+    let check = &paths["/api/v1/files/name-check"]["get"];
+    let detail = &paths["/api/v1/files/{id}"]["get"];
+    let update = &paths["/api/v1/files/{id}"]["patch"];
+    let moved = &paths["/api/v1/files/{id}/move"]["post"];
+    let batch = &paths["/api/v1/files/batch/move"]["post"];
+
+    let mut file_paths: Vec<&str> = paths
+        .as_object()
+        .unwrap()
+        .keys()
+        .map(String::as_str)
+        .filter(|path| path.starts_with("/api/v1/files"))
+        .collect();
+    file_paths.sort_unstable();
+    assert_eq!(
+        file_paths,
+        [
+            "/api/v1/files",
+            "/api/v1/files/batch/move",
+            "/api/v1/files/name-check",
+            "/api/v1/files/{id}",
+            "/api/v1/files/{id}/move",
+        ]
+    );
+    for operation in [list, check, detail, update, moved, batch] {
+        assert!(operation["tags"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|tag| tag == "authenticated"));
+        assert_eq!(operation["security"].as_array().unwrap().len(), 1);
+        for status in ["401", "403", "429"] {
+            assert!(operation["responses"][status].is_object(), "{status}");
+        }
+    }
+    let text = |operation: &Value, status: &str| {
+        operation["responses"][status]["description"]
+            .as_str()
+            .unwrap()
+            .to_owned()
+    };
+    assert!(text(list, "404").contains("FOLDER_NOT_FOUND"));
+    assert!(text(list, "400").contains("CURSOR_INVALID"));
+    assert!(text(detail, "404").contains("FILE_NOT_FOUND"));
+    assert!(text(update, "404").contains("FILE_NOT_FOUND"));
+    assert!(text(update, "409").contains("FILE_NAME_CONFLICT"));
+    assert!(text(update, "422").contains("NAME_INVALID"));
+    assert!(text(moved, "404").contains("FILE_NOT_FOUND"));
+    assert!(text(moved, "404").contains("FOLDER_NOT_FOUND"));
+    assert!(text(moved, "409").contains("FILE_NAME_CONFLICT"));
+    assert!(text(check, "404").contains("FOLDER_NOT_FOUND"));
+    assert!(text(check, "409").contains("FILE_NAME_CONFLICT"));
+    assert!(text(check, "422").contains("NAME_INVALID"));
+    for code in ["FILE_NOT_FOUND", "FOLDER_NOT_FOUND"] {
+        assert!(text(batch, "404").contains(code), "{code}");
+    }
+    assert!(text(batch, "409").contains("FILE_NAME_CONFLICT"));
+    for code in [
+        "BATCH_TOO_LARGE",
+        "FOLDER_CYCLE",
+        "FOLDER_DEPTH_EXCEEDED",
+        "VALIDATION_ERROR",
+    ] {
+        assert!(text(batch, "422").contains(code), "{code}");
+    }
+    assert!(batch["responses"]["207"].is_null());
+    assert!(
+        batch["requestBody"]["description"]
+            .as_str()
+            .unwrap()
+            .contains("all of them move or none does"),
+        "batch move is documented as atomic"
+    );
+
+    assert_eq!(
+        parameter(list, "sort")["schema"]["enum"],
+        json!([
+            "name:asc",
+            "name:desc",
+            "size:asc",
+            "size:desc",
+            "createdAt:asc",
+            "createdAt:desc",
+            "updatedAt:asc",
+            "updatedAt:desc"
+        ])
+    );
+    assert_eq!(parameter(list, "sort")["schema"]["default"], "name:asc");
+    assert_eq!(parameter(list, "folderId")["in"], "query");
+    assert_eq!(parameter(list, "limit")["schema"]["default"], 50);
+    assert_eq!(parameter(list, "limit")["schema"]["maximum"], 200);
+    assert_eq!(parameter(list, "cursor")["schema"]["type"], "string");
+    assert!(
+        list["parameters"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|parameter| parameter["name"] != "q"),
+        "global search is not part of the browse contract"
+    );
+    assert_eq!(parameter(check, "name")["required"], true);
+    assert_eq!(parameter(check, "name")["schema"]["maxLength"], 255);
+    assert_eq!(parameter(check, "folderId")["in"], "query");
+    assert_ne!(parameter(check, "folderId")["required"], true);
+
+    let body = |operation: &Value| {
+        operation["responses"]["200"]["content"]["application/json"]["schema"]["$ref"]
+            .as_str()
+            .unwrap()
+            .to_owned()
+    };
+    assert_eq!(body(list), "#/components/schemas/Page_BrowseItem");
+    assert_eq!(body(detail), "#/components/schemas/FileItem");
+    assert_eq!(body(update), "#/components/schemas/FileResult");
+    assert_eq!(body(moved), "#/components/schemas/FileResult");
+    assert_eq!(body(batch), "#/components/schemas/BatchMoveResult");
+    assert_eq!(body(check), "#/components/schemas/NameCheck");
+
+    let schemas = &document["components"]["schemas"];
+    let browse = &schemas["BrowseItem"];
+    assert_eq!(
+        browse["oneOf"],
+        json!([
+            { "$ref": "#/components/schemas/FolderItem" },
+            { "$ref": "#/components/schemas/FileItem" }
+        ])
+    );
+    assert_eq!(browse["discriminator"]["propertyName"], "kind");
+    assert_eq!(
+        browse["discriminator"]["mapping"],
+        json!({
+            "folder": "#/components/schemas/FolderItem",
+            "file": "#/components/schemas/FileItem"
+        })
+    );
+    assert_eq!(schemas["FolderKind"]["enum"], json!(["folder"]));
+    assert_eq!(schemas["FileKind"]["enum"], json!(["file"]));
+    assert!(schemas["FolderItem"]["required"]
+        .as_array()
+        .unwrap()
+        .contains(&json!("kind")));
+
+    let file = &schemas["FileItem"];
+    let mut file_fields: Vec<&str> = file["properties"]
+        .as_object()
+        .unwrap()
+        .keys()
+        .map(String::as_str)
+        .collect();
+    file_fields.sort_unstable();
+    assert_eq!(
+        file_fields,
+        [
+            "contentType",
+            "createdAt",
+            "description",
+            "folderId",
+            "id",
+            "kind",
+            "name",
+            "sizeBytes",
+            "updatedAt"
+        ]
+    );
+    assert_eq!(
+        file["required"].as_array().unwrap().len(),
+        file_fields.len()
+    );
+    assert_eq!(
+        file["properties"]["folderId"]["type"],
+        json!(["string", "null"])
+    );
+    assert_eq!(
+        file["properties"]["description"]["type"],
+        json!(["string", "null"])
+    );
+
+    let result = &schemas["FileResult"];
+    assert_eq!(result["allOf"][0]["$ref"], "#/components/schemas/FileItem");
+    assert_eq!(result["allOf"][1]["required"], json!(["renamedTo"]));
+    assert_eq!(
+        result["allOf"][1]["properties"]["renamedTo"]["type"],
+        json!(["string", "null"])
+    );
+
+    let update_request = &schemas["UpdateFileRequest"];
+    assert!(update_request["required"].is_null());
+    assert_eq!(update_request["additionalProperties"], false);
+    let mut update_fields: Vec<&str> = update_request["properties"]
+        .as_object()
+        .unwrap()
+        .keys()
+        .map(String::as_str)
+        .collect();
+    update_fields.sort_unstable();
+    assert_eq!(update_fields, ["description", "name"]);
+    assert_ne!(
+        update_request["properties"]["name"]["type"],
+        json!(["string", "null"])
+    );
+    assert_eq!(
+        update_request["properties"]["description"]["type"],
+        json!(["string", "null"])
+    );
+
+    let move_request = &schemas["MoveFileRequest"];
+    assert_eq!(move_request["required"], json!(["folderId"]));
+    assert_eq!(move_request["additionalProperties"], false);
+    assert_eq!(
+        move_request["properties"]["folderId"]["type"],
+        json!(["string", "null"])
+    );
+
+    let batch_request = &schemas["BatchMoveRequest"];
+    let mut required: Vec<&str> = batch_request["required"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(Value::as_str)
+        .collect();
+    required.sort_unstable();
+    assert_eq!(required, ["fileIds", "targetFolderId"]);
+    assert_eq!(batch_request["additionalProperties"], false);
+    assert_eq!(batch_request["properties"]["fileIds"]["maxItems"], 500);
+    assert_eq!(batch_request["properties"]["folderIds"]["maxItems"], 500);
+    assert_eq!(
+        batch_request["properties"]["targetFolderId"]["type"],
+        json!(["string", "null"])
+    );
+
+    let moved_item = &schemas["MovedItem"];
+    assert_eq!(moved_item["required"].as_array().unwrap().len(), 3);
+    assert_eq!(
+        schemas["NameCheck"]["required"].as_array().unwrap().len(),
+        2
+    );
+
+    for name in [
+        "FileItem",
+        "FileResult",
+        "BrowseItem",
+        "BatchMoveResult",
+        "MovedItem",
+        "NameCheck",
+        "UpdateFileRequest",
+        "MoveFileRequest",
+        "BatchMoveRequest",
+    ] {
+        let rendered = schemas[name].to_string();
+        for forbidden in [
+            "storageObjectId",
+            "storage_object_id",
+            "objectKey",
+            "object_key",
+            "storageKey",
+            "bucket",
+            "uploadId",
+            "mimeSource",
+            "nameNormalized",
+            "ownerId",
+            "extension",
+        ] {
+            assert!(!rendered.contains(forbidden), "{name} exposes {forbidden}");
+        }
+    }
+}
+
+#[test]
 fn it_openapi_folder_routes_declare_typed_contracts() {
     let document = application_document();
     let paths = &document["paths"];

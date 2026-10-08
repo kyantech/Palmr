@@ -1,6 +1,7 @@
 use axum::body::Body;
 use http_body_util::BodyExt;
 use serde::de::DeserializeOwned;
+use serde::{Deserialize, Deserializer};
 use serde_json::Value;
 
 use super::error::ApiError;
@@ -66,6 +67,14 @@ impl JsonField {
             Some(value) => self.kind.accepts(value),
         }
     }
+}
+
+pub fn present<'de, D, T>(deserializer: D) -> Result<Option<Option<T>>, D::Error>
+where
+    D: Deserializer<'de>,
+    T: Deserialize<'de>,
+{
+    Option::<T>::deserialize(deserializer).map(Some)
 }
 
 pub trait JsonRequest: DeserializeOwned {
