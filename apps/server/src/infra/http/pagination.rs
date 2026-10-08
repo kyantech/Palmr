@@ -311,6 +311,7 @@ impl SortValue {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CursorKey {
     group: Option<u8>,
+    binding: Option<String>,
     value: SortValue,
     id: String,
 }
@@ -319,6 +320,7 @@ impl CursorKey {
     pub fn new<E>(value: SortValue, id: Id<E>) -> Self {
         Self {
             group: None,
+            binding: None,
             value,
             id: id.to_string(),
         }
@@ -327,9 +329,16 @@ impl CursorKey {
     pub fn in_group<E>(group: u8, value: SortValue, id: Id<E>) -> Self {
         Self {
             group: Some(group),
+            binding: None,
             value,
             id: id.to_string(),
         }
+    }
+
+    #[must_use]
+    pub fn bound_to(mut self, binding: impl Into<String>) -> Self {
+        self.binding = Some(binding.into());
+        self
     }
 
     pub const fn group(&self) -> Option<u8> {
@@ -351,6 +360,8 @@ struct CursorPayload {
     sort: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     g: Option<u8>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    b: Option<String>,
     k: (SortValue, String),
 }
 
@@ -358,6 +369,7 @@ pub fn encode_cursor(keys: &KeyRing, sort: &SortSpec, key: &CursorKey) -> String
     let payload = CursorPayload {
         sort: sort.wire(),
         g: key.group,
+        b: key.binding.clone(),
         k: (key.value.clone(), key.id.clone()),
     };
     let Ok(mut bytes) = serde_json::to_vec(&payload) else {
@@ -369,7 +381,7 @@ pub fn encode_cursor(keys: &KeyRing, sort: &SortSpec, key: &CursorKey) -> String
 }
 
 pub fn decode_cursor(keys: &KeyRing, sort: &SortSpec, raw: &str) -> Result<CursorKey, ApiError> {
-    decode_cursor_in(keys, sort, raw, None)
+    decode_cursor_in(keys, sort, raw, &CursorRules::PLAIN)
 }
 
 pub fn decode_grouped_cursor(
@@ -378,14 +390,55 @@ pub fn decode_grouped_cursor(
     raw: &str,
     groups: u8,
 ) -> Result<CursorKey, ApiError> {
-    decode_cursor_in(keys, sort, raw, Some(groups))
+    decode_cursor_in(
+        keys,
+        sort,
+        raw,
+        &CursorRules {
+            groups: Some(groups),
+            ..CursorRules::PLAIN
+        },
+    )
+}
+
+pub fn decode_bound_cursor(
+    keys: &KeyRing,
+    sort: &SortSpec,
+    raw: &str,
+    groups: u8,
+    binding: &str,
+) -> Result<CursorKey, ApiError> {
+    decode_cursor_in(
+        keys,
+        sort,
+        raw,
+        &CursorRules {
+            groups: Some(groups),
+            binding: Some(binding),
+            field_kind: false,
+        },
+    )
+}
+
+struct CursorRules<'a> {
+    groups: Option<u8>,
+    binding: Option<&'a str>,
+    field_kind: bool,
+}
+
+impl CursorRules<'_> {
+    const PLAIN: Self = Self {
+        groups: None,
+        binding: None,
+        field_kind: true,
+    };
 }
 
 fn decode_cursor_in(
     keys: &KeyRing,
     sort: &SortSpec,
     raw: &str,
-    groups: Option<u8>,
+    rules: &CursorRules<'_>,
 ) -> Result<CursorKey, ApiError> {
     if raw.len() > MAX_CURSOR_CHARS {
         return Err(cursor_invalid());
@@ -408,18 +461,20 @@ fn decode_cursor_in(
     }
     .map_err(|_| cursor_invalid())?;
     let (value, id) = payload.k;
-    let group_matches = match (groups, payload.g) {
+    let group_matches = match (rules.groups, payload.g) {
         (None, None) => true,
         (Some(groups), Some(group)) => group < groups,
         _ => false,
     };
     let well_formed = group_matches
+        && payload.b.as_deref() == rules.binding
         && payload.sort == sort.wire()
-        && value.kind() == sort.field.kind
+        && (!rules.field_kind || value.kind() == sort.field.kind)
         && Id::<()>::from_str(&id).is_ok();
     if well_formed {
         Ok(CursorKey {
             group: payload.g,
+            binding: payload.b,
             value,
             id,
         })
@@ -496,6 +551,18 @@ impl PageRequest {
     ) -> Result<Self, ApiError> {
         Self::parse(params, allowlist, |sort, raw| {
             decode_grouped_cursor(keys, sort, raw, groups)
+        })
+    }
+
+    pub fn from_bound_query(
+        params: &QueryParams,
+        allowlist: &SortAllowlist,
+        keys: &KeyRing,
+        groups: u8,
+        binding: &str,
+    ) -> Result<Self, ApiError> {
+        Self::parse(params, allowlist, |sort, raw| {
+            decode_bound_cursor(keys, sort, raw, groups, binding)
         })
     }
 
@@ -635,6 +702,12 @@ pub fn search_parameter() -> Parameter {
             .max_length(Some(SEARCH_MAX_CHARS))
             .into(),
     )
+}
+
+pub fn described_search_parameter(description: &'static str) -> Parameter {
+    let mut parameter = search_parameter();
+    parameter.description = Some(description.to_owned());
+    parameter
 }
 
 pub fn enum_parameter(name: &'static str, values: &[&'static str]) -> Parameter {

@@ -502,7 +502,7 @@ async fn it_files_browse_is_direct_children_only_and_owner_scoped() {
 }
 
 #[tokio::test]
-async fn it_files_browse_rejects_search_bad_sorts_and_foreign_cursors() {
+async fn it_files_browse_rejects_bad_sorts_and_foreign_cursors() {
     let root = TempDir::new().unwrap();
     let stack = Stack::start(root.path(), &TestClock::new(START)).await;
     let alice = stack.member("alice", HOST_A).await;
@@ -516,9 +516,9 @@ async fn it_files_browse_rejects_search_bad_sorts_and_foreign_cursors() {
     }
 
     for path in [
-        format!("{FILES}?q=file"),
-        format!("{FILES}?q="),
         format!("{FILES}?sort=type:asc"),
+        format!("{FILES}?sort=relevance:desc"),
+        format!("{FILES}?sort=relevance:asc"),
         format!("{FILES}?sort=name"),
         format!("{FILES}?sort=name:up"),
         format!("{FILES}?limit=0"),
@@ -532,8 +532,13 @@ async fn it_files_browse_rejects_search_bad_sorts_and_foreign_cursors() {
             "VALIDATION_ERROR",
         );
     }
-    let search = stack.read(&format!("{FILES}?q=file"), &alice).await;
-    assert_eq!(search.json()["error"]["details"]["fields"], json!(["q"]));
+    let relevance = stack
+        .read(&format!("{FILES}?sort=relevance:desc"), &alice)
+        .await;
+    assert_eq!(
+        relevance.json()["error"]["details"]["fields"],
+        json!(["sort"])
+    );
 
     let first = stack
         .read(&format!("{FILES}?limit=2&sort=name:asc"), &alice)

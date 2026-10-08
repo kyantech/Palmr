@@ -8,9 +8,9 @@ use utoipa::ToSchema;
 use crate::domain::bytes::ByteSize;
 use crate::domain::id::Id;
 use crate::domain::time::Timestamp;
-use crate::features::folders::{FolderError, FolderId, FolderItem};
+use crate::features::folders::{FolderError, FolderId, FolderItem, FolderPathItem};
 use crate::infra::http::json::{present, JsonField, JsonKind, JsonRequest};
-use crate::infra::http::pagination::WireBytes;
+use crate::infra::http::pagination::{Page, WireBytes};
 
 use super::error::FileError;
 
@@ -96,6 +96,24 @@ impl From<FileRecord> for FileItem {
 pub enum BrowseItem {
     Folder(FolderItem),
     File(FileItem),
+}
+
+/// A file found by global search, with the folders that contain it.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct SearchFileItem {
+    #[serde(flatten)]
+    pub file: FileItem,
+    /// The folders that contain the file, from the root-level ancestor down to the containing folder. Empty for a file at the My Files root. The file itself is not part of the path.
+    pub path: Vec<FolderPathItem>,
+}
+
+/// The page `GET /files` returns: a browse page without `q`, a search page with it.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+#[serde(untagged)]
+pub enum FilesPage {
+    Browse(Page<BrowseItem>),
+    Search(Page<SearchFileItem>),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]

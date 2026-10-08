@@ -88,14 +88,16 @@ SELECT r.id AS root_id,
   LEFT JOIN folder_totals ft ON ft.root_id = r.id
   LEFT JOIN file_totals t ON t.root_id = r.id";
 
-const BREADCRUMBS: &str = "WITH RECURSIVE crumbs(id, parent_id, name, level) AS (
-    SELECT id, parent_id, name, 0 FROM folders WHERE id = ?1 AND owner_id = ?2
+const BREADCRUMBS: &str = "WITH RECURSIVE crumbs(seed_id, id, parent_id, name, level) AS (
+    SELECT f.id, f.id, f.parent_id, f.name, 0
+      FROM json_each(?2) j JOIN folders f ON f.id = j.value
+     WHERE f.owner_id = ?1
     UNION ALL
-    SELECT f.id, f.parent_id, f.name, c.level + 1
+    SELECT c.seed_id, f.id, f.parent_id, f.name, c.level + 1
       FROM folders f JOIN crumbs c ON f.id = c.parent_id
-     WHERE f.owner_id = ?2 AND c.level < ?3
+     WHERE f.owner_id = ?1 AND c.level < ?3
 )
-SELECT id, name FROM crumbs ORDER BY level DESC";
+SELECT seed_id, id, name FROM crumbs ORDER BY seed_id, level DESC";
 
 const TREE_FROM_ROOT_LEVEL: &str = "parent_id IS NULL";
 const TREE_FROM_FOLDER: &str = "id = ?4";
@@ -549,20 +551,42 @@ pub async fn breadcrumbs<'e, E>(
 where
     E: sqlx::Executor<'e, Database = Sqlite>,
 {
+    let mut paths = breadcrumbs_for(executor, owner, &[id]).await?;
+    Ok(paths.remove(&id).unwrap_or_default())
+}
+
+pub async fn breadcrumbs_for<'e, E>(
+    executor: E,
+    owner: UserId,
+    ids: &[FolderId],
+) -> Result<HashMap<FolderId, Vec<Crumb>>, FolderError>
+where
+    E: sqlx::Executor<'e, Database = Sqlite>,
+{
+    let mut seeds: Vec<String> = ids.iter().map(ToString::to_string).collect();
+    seeds.sort_unstable();
+    seeds.dedup();
+    if seeds.is_empty() {
+        return Ok(HashMap::new());
+    }
+    let seeds = serde_json::to_string(&seeds).map_err(|_| invariant("ids"))?;
     let rows = sqlx::query(BREADCRUMBS)
-        .bind(id.to_string())
         .bind(owner.to_string())
+        .bind(seeds)
         .bind(MAX_FOLDER_DEPTH)
         .fetch_all(executor)
         .await?;
-    rows.iter()
-        .map(|row| {
-            Ok(Crumb {
+    let mut paths: HashMap<FolderId, Vec<Crumb>> = HashMap::new();
+    for row in &rows {
+        paths
+            .entry(parsed(row, "seed_id")?)
+            .or_default()
+            .push(Crumb {
                 id: parsed(row, "id")?,
                 name: column(row, "name")?,
-            })
-        })
-        .collect()
+            });
+    }
+    Ok(paths)
 }
 
 pub async fn tree<'e, E>(

@@ -10,10 +10,11 @@ use utoipa::{PartialSchema, ToSchema};
 
 use super::error::ApiError;
 use super::pagination::{
-    cursor_parameter, decode_cursor, decode_grouped_cursor, encode_cursor, limit_parameter,
-    repeated_enum_parameter, search_parameter, Conjunction, CursorKey, Limit, Page, PageRequest,
-    QueryParams, SearchQuery, SortAllowlist, SortDirection, SortField, SortKeyKind, SortSpec,
-    SortValue, TotalCount, WireBytes, CURSOR_TAG_LEN, DEFAULT_LIMIT, MAX_LIMIT, MAX_WIRE_BYTES,
+    cursor_parameter, decode_bound_cursor, decode_cursor, decode_grouped_cursor, encode_cursor,
+    limit_parameter, repeated_enum_parameter, search_parameter, Conjunction, CursorKey, Limit,
+    Page, PageRequest, QueryParams, SearchQuery, SortAllowlist, SortDirection, SortField,
+    SortKeyKind, SortSpec, SortValue, TotalCount, WireBytes, CURSOR_TAG_LEN, DEFAULT_LIMIT,
+    MAX_LIMIT, MAX_WIRE_BYTES,
 };
 use crate::config::SqliteSynchronous;
 use crate::domain::bytes::ByteSize;
@@ -859,4 +860,99 @@ fn unit_grouped_cursor_carries_its_group_and_is_not_interchangeable() {
     let forged = Base64UrlUnpadded::encode_string(&forged);
     assert!(decode_cursor(&keys, &sort, &forged).is_ok());
     assert_cursor_invalid(decode_grouped_cursor(&keys, &sort, &forged, 2));
+}
+
+fn cursor_payload(raw: &str) -> Value {
+    let bytes = Base64UrlUnpadded::decode_vec(raw).unwrap();
+    serde_json::from_slice(&bytes[..bytes.len() - CURSOR_TAG_LEN]).unwrap()
+}
+
+#[test]
+fn unit_bound_cursor_is_tied_to_its_binding_and_leaves_other_cursors_alone() {
+    let keys = ring();
+    let clock = TestClock::new(datetime!(2026-10-08 12:00 UTC));
+    let sort = spec("name:asc");
+    let id = row_id(&clock);
+    let text = || SortValue::Text("a".to_owned());
+    let bound = CursorKey::in_group(0, text(), id).bound_to("report");
+    let grouped = CursorKey::in_group(0, text(), id);
+    let plain = CursorKey::new(text(), id);
+
+    let bound_raw = encode_cursor(&keys, &sort, &bound);
+    let grouped_raw = encode_cursor(&keys, &sort, &grouped);
+    let plain_raw = encode_cursor(&keys, &sort, &plain);
+
+    assert_eq!(cursor_payload(&bound_raw)["b"], "report");
+    assert!(cursor_payload(&grouped_raw).get("b").is_none());
+    assert!(cursor_payload(&plain_raw).get("b").is_none());
+    assert_eq!(
+        Base64UrlUnpadded::decode_vec(&grouped_raw).unwrap()[..9],
+        *br#"{"sort":""#,
+        "an unbound cursor keeps its existing byte layout"
+    );
+
+    assert_eq!(
+        decode_bound_cursor(&keys, &sort, &bound_raw, 2, "report").unwrap(),
+        bound
+    );
+    assert_cursor_invalid(decode_bound_cursor(&keys, &sort, &bound_raw, 2, "invoice"));
+    assert_cursor_invalid(decode_bound_cursor(&keys, &sort, &bound_raw, 2, "Report"));
+    assert_cursor_invalid(decode_bound_cursor(&keys, &sort, &bound_raw, 2, ""));
+    assert_cursor_invalid(decode_bound_cursor(&keys, &sort, &grouped_raw, 2, "report"));
+    assert_cursor_invalid(decode_bound_cursor(&keys, &sort, &plain_raw, 2, "report"));
+    assert_cursor_invalid(decode_bound_cursor(
+        &keys,
+        &spec("name:desc"),
+        &bound_raw,
+        2,
+        "report",
+    ));
+
+    assert_cursor_invalid(decode_cursor(&keys, &sort, &bound_raw));
+    assert_cursor_invalid(decode_grouped_cursor(&keys, &sort, &bound_raw, 2));
+    assert_eq!(
+        decode_grouped_cursor(&keys, &sort, &grouped_raw, 2).unwrap(),
+        grouped
+    );
+
+    let out_of_range = encode_cursor(
+        &keys,
+        &sort,
+        &CursorKey::in_group(2, text(), id).bound_to("report"),
+    );
+    assert_cursor_invalid(decode_bound_cursor(
+        &keys,
+        &sort,
+        &out_of_range,
+        2,
+        "report",
+    ));
+
+    let mut tampered = bound_raw.clone();
+    let last = tampered.pop().unwrap();
+    tampered.push(if last == 'A' { 'B' } else { 'A' });
+    assert_cursor_invalid(decode_bound_cursor(&keys, &sort, &tampered, 2, "report"));
+}
+
+#[test]
+fn unit_bound_cursor_leaves_the_value_kind_to_the_caller() {
+    let keys = ring();
+    let clock = TestClock::new(datetime!(2026-10-08 12:00 UTC));
+    let ranked = RANK_ALLOWLIST.parse(Some("rank:asc")).unwrap();
+    let id = row_id(&clock);
+    let text = CursorKey::in_group(1, SortValue::Text("a".to_owned()), id).bound_to("q");
+    let raw = encode_cursor(&keys, &ranked, &text);
+    assert_eq!(
+        decode_bound_cursor(&keys, &ranked, &raw, 2, "q").unwrap(),
+        text
+    );
+    assert_cursor_invalid(decode_cursor(
+        &keys,
+        &ranked,
+        &encode_cursor(
+            &keys,
+            &ranked,
+            &CursorKey::new(SortValue::Text("a".to_owned()), id),
+        ),
+    ));
 }

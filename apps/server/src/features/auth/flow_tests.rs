@@ -1812,6 +1812,7 @@ mod admin_smtp;
 mod admin_users;
 mod authorize;
 mod callback;
+mod file_search;
 mod file_writes;
 mod files;
 mod folder_moves;

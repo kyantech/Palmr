@@ -2,22 +2,24 @@ use axum::extract::{Extension, Path, RawQuery, Request};
 use axum::response::{IntoResponse, Response};
 use http::header::{CACHE_CONTROL, CONTENT_TYPE};
 use http::{HeaderValue, StatusCode};
+use utoipa::openapi::schema::Schema;
+use utoipa::openapi::RefOr;
+use utoipa::{PartialSchema, ToSchema};
 use utoipa_axum::routes;
 
 use crate::app::auth_class::AuthClass;
-use crate::app::openapi::with_query_parameters;
+use crate::app::openapi::{with_query_parameters, with_schemas};
 use crate::app::router::{RateLimitClass, RoutePolicy, Routes, Transport};
 use crate::app::state::AppState;
 use crate::infra::http::error::{ApiError, ApiErrorBody, JSON_CONTENT_TYPE};
 use crate::infra::http::extractors::Authenticated;
 use crate::infra::http::json;
-use crate::infra::http::pagination::Page;
 use crate::infra::http::request_id::{tag_error, RequestId};
 
 use super::error::FileError;
 use super::model::{
     BatchMove, BatchMoveRequest, BatchMoveResult, BrowseItem, FileChange, FileId, FileItem,
-    FileMove, FileResult, MoveFileRequest, NameCheck, UpdateFileRequest,
+    FileMove, FileResult, FilesPage, MoveFileRequest, NameCheck, SearchFileItem, UpdateFileRequest,
 };
 use super::service::FileService;
 
@@ -35,11 +37,27 @@ const WRITE_ROUTE: RoutePolicy = RoutePolicy::new(
 
 const NO_STORE: HeaderValue = HeaderValue::from_static("no-store");
 
+fn named_schemas() -> Vec<(String, RefOr<Schema>)> {
+    let mut schemas = Vec::new();
+    for (name, schema) in [
+        (BrowseItem::name(), BrowseItem::schema()),
+        (SearchFileItem::name(), SearchFileItem::schema()),
+    ] {
+        schemas.push((name.into_owned(), schema));
+    }
+    BrowseItem::schemas(&mut schemas);
+    SearchFileItem::schemas(&mut schemas);
+    schemas
+}
+
 pub fn routes() -> Routes<AppState> {
     Routes::new()
         .route(
             READ_ROUTE,
-            with_query_parameters(routes!(list_files), &FileService::browse_parameters()),
+            with_schemas(
+                with_query_parameters(routes!(list_files), &FileService::list_parameters()),
+                named_schemas(),
+            ),
         )
         .route(
             READ_ROUTE,
@@ -56,12 +74,12 @@ pub fn routes() -> Routes<AppState> {
     path = "/api/v1/files",
     tag = "files",
     responses(
-        (status = 200, description = "One page of the direct children of the folder: its subfolders first, then its files. Every item carries a `kind` of `folder` or `file`. Folders always precede files across the whole traversal whatever the `sort`; the sort applies within the folders and within the files. A folder sorts by `totalBytes` for `size`. `totalCount` is the exact number of direct children, folders plus files. Cursors are keyset cursors bound to the `sort`; a cursor reused with another `sort`, or altered, is `CURSOR_INVALID`. This is browse mode only: it never descends below the folder, and `q` is not accepted.", body = Page<BrowseItem>),
+        (status = 200, description = "The shape depends on the request. Without `q` (browse) it is a page of the direct children of the folder, subfolders first and then files, each item with a `kind` of `folder` or `file`; folders always precede files across the whole traversal whatever the `sort`, a folder sorts by `totalBytes` for `size`, `totalCount` is the exact number of direct children, and it never descends below the folder. With `q` (search) it is a page of files only, each a file item plus `path`, the folders that contain it from the root down (empty at the My Files root); the search covers the caller's whole My Files tree, `folderId` is ignored, results are ordered by relevance unless `sort` says otherwise, and `totalCount` is always `null`. Cursors are keyset cursors bound to the `sort` and, in search, to the query; a cursor reused with another `sort` or another `q`, a cursor from the other mode, or an altered cursor is `CURSOR_INVALID`.", body = FilesPage),
         (status = 400, description = "`CURSOR_INVALID`.", body = ApiErrorBody),
         (status = 401, description = "Authentication required.", body = ApiErrorBody),
         (status = 403, description = "The session is restricted.", body = ApiErrorBody),
-        (status = 404, description = "`FOLDER_NOT_FOUND`: the folder is unknown or belongs to another user.", body = ApiErrorBody),
-        (status = 422, description = "`VALIDATION_ERROR` for an invalid `sort` or `limit`, or for `q`, which global search will take over.", body = ApiErrorBody),
+        (status = 404, description = "`FOLDER_NOT_FOUND` in browse mode: the folder is unknown or belongs to another user.", body = ApiErrorBody),
+        (status = 422, description = "`VALIDATION_ERROR` for an invalid `sort` or `limit`, or for a `q` that is empty, repeated, whitespace-only or outside 2 to 128 characters (`details.fields = [\"q\"]`).", body = ApiErrorBody),
         (status = 429, description = "Rate limited.", body = ApiErrorBody),
     )
 )]
@@ -72,11 +90,11 @@ async fn list_files(
     request: Request,
 ) -> Response {
     let request_id = RequestId::of(&request);
-    let query = match service.browse_query(raw_query.as_deref()) {
+    let query = match service.list_query(raw_query.as_deref()) {
         Ok(query) => query,
         Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
     };
-    match service.browse(principal.user_id, query).await {
+    match service.list(principal.user_id, query).await {
         Ok(page) => json_response(StatusCode::OK, &page, request_id.as_ref()),
         Err(error) => file_error(&error, request_id.as_ref()),
     }

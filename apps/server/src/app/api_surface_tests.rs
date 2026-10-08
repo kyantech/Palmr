@@ -2293,6 +2293,8 @@ fn it_openapi_file_routes_declare_typed_contracts() {
     assert_eq!(
         parameter(list, "sort")["schema"]["enum"],
         json!([
+            "relevance:asc",
+            "relevance:desc",
             "name:asc",
             "name:desc",
             "size:asc",
@@ -2303,19 +2305,29 @@ fn it_openapi_file_routes_declare_typed_contracts() {
             "updatedAt:desc"
         ])
     );
-    assert_eq!(parameter(list, "sort")["schema"]["default"], "name:asc");
+    assert!(
+        parameter(list, "sort")["schema"].get("default").is_none(),
+        "the default depends on the mode and is described, not declared"
+    );
+    let sort_text = parameter(list, "sort")["description"].as_str().unwrap();
+    for needle in ["name:asc", "relevance:desc", "rejected without `q`"] {
+        assert!(sort_text.contains(needle), "{needle}");
+    }
     assert_eq!(parameter(list, "folderId")["in"], "query");
+    assert!(parameter(list, "folderId")["description"]
+        .as_str()
+        .unwrap()
+        .contains("Ignored, and not validated, when `q` is present"));
     assert_eq!(parameter(list, "limit")["schema"]["default"], 50);
     assert_eq!(parameter(list, "limit")["schema"]["maximum"], 200);
     assert_eq!(parameter(list, "cursor")["schema"]["type"], "string");
-    assert!(
-        list["parameters"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .all(|parameter| parameter["name"] != "q"),
-        "global search is not part of the browse contract"
-    );
+    let q = parameter(list, "q");
+    assert_eq!(q["in"], "query");
+    assert_ne!(q["required"], true);
+    assert_eq!(q["schema"]["type"], "string");
+    assert_eq!(q["schema"]["minLength"], 2);
+    assert_eq!(q["schema"]["maxLength"], 128);
+    assert!(q["description"].as_str().unwrap().contains("global search"));
     assert_eq!(parameter(check, "name")["required"], true);
     assert_eq!(parameter(check, "name")["schema"]["maxLength"], 255);
     assert_eq!(parameter(check, "folderId")["in"], "query");
@@ -2327,14 +2339,46 @@ fn it_openapi_file_routes_declare_typed_contracts() {
             .unwrap()
             .to_owned()
     };
-    assert_eq!(body(list), "#/components/schemas/Page_BrowseItem");
+    assert_eq!(body(list), "#/components/schemas/FilesPage");
+    let schemas = &document["components"]["schemas"];
+    assert_eq!(
+        schemas["FilesPage"]["oneOf"],
+        json!([
+            { "$ref": "#/components/schemas/Page_BrowseItem" },
+            { "$ref": "#/components/schemas/Page_SearchFileItem" }
+        ])
+    );
+    let search_item = &schemas["Page_SearchFileItem"]["properties"]["items"]["items"]["allOf"];
+    assert_eq!(search_item[0]["$ref"], "#/components/schemas/FileItem");
+    assert_eq!(search_item[1]["required"], json!(["path"]));
+    assert_eq!(
+        search_item[1]["properties"]["path"]["items"]["$ref"],
+        "#/components/schemas/FolderPathItem"
+    );
+    let rendered = schemas["Page_SearchFileItem"].to_string();
+    for forbidden in [
+        "storage",
+        "objectKey",
+        "bucket",
+        "ownerId",
+        "owner_id",
+        "nameNormalized",
+        "name_normalized",
+        "rowid",
+        "score",
+    ] {
+        assert!(!rendered.contains(forbidden), "{forbidden}");
+    }
+    assert_eq!(
+        schemas["Page_SearchFileItem"]["properties"]["totalCount"]["type"],
+        json!(["integer", "null"])
+    );
     assert_eq!(body(detail), "#/components/schemas/FileItem");
     assert_eq!(body(update), "#/components/schemas/FileResult");
     assert_eq!(body(moved), "#/components/schemas/FileResult");
     assert_eq!(body(batch), "#/components/schemas/BatchMoveResult");
     assert_eq!(body(check), "#/components/schemas/NameCheck");
 
-    let schemas = &document["components"]["schemas"];
     let browse = &schemas["BrowseItem"];
     assert_eq!(
         browse["oneOf"],

@@ -7,7 +7,7 @@ mod repo;
 pub mod routes;
 mod service;
 
-pub use browse::{count_child_folders, list_child_folders, ChildFolder};
+pub use browse::{count_child_folders, folder_paths, list_child_folders, ChildFolder};
 pub use error::FolderError;
 #[cfg_attr(
     not(test),
@@ -17,7 +17,7 @@ pub use error::FolderError;
     )
 )]
 pub use model::OwnedFolder;
-pub use model::{FolderId, FolderItem};
+pub use model::{FolderId, FolderItem, FolderPathItem};
 pub use r#move::move_folder_in_tx;
 pub use service::resolve_owned_folder;
 pub use service::FolderService;

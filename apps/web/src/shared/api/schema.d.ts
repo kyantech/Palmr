@@ -1828,6 +1828,8 @@ export interface components {
             /** @description The stored name when it differs from the requested one because a sibling already had it; otherwise `null`. */
             renamedTo: string | null;
         };
+        /** @description The page `GET /files` returns: a browse page without `q`, a search page with it. */
+        FilesPage: components["schemas"]["Page_BrowseItem"] | components["schemas"]["Page_SearchFileItem"];
         FolderDetail: components["schemas"]["FolderItem"] & {
             /** @description Breadcrumbs from the root-level ancestor down to and including this folder. */
             path: components["schemas"]["FolderPathItem"][];
@@ -2280,6 +2282,19 @@ export interface components {
              */
             totalCount: number | null;
         };
+        Page_SearchFileItem: {
+            items: (components["schemas"]["FileItem"] & {
+                /** @description The folders that contain the file, from the root-level ancestor down to the containing folder. Empty for a file at the My Files root. The file itself is not part of the path. */
+                path: components["schemas"]["FolderPathItem"][];
+            })[];
+            /** @description Opaque cursor for the next page; `null` on the last page. */
+            nextCursor: string | null;
+            /**
+             * Format: int64
+             * @description Matching items overall; `null` where counting would require a scan.
+             */
+            totalCount: number | null;
+        };
         Page_SessionItem: {
             items: {
                 absoluteExpiresAt: string;
@@ -2505,6 +2520,11 @@ export interface components {
             /** @example 0192f3a1-0000-7000-8000-000000000001 */
             userId: string;
             username: string;
+        };
+        /** @description A file found by global search, with the folders that contain it. */
+        SearchFileItem: components["schemas"]["FileItem"] & {
+            /** @description The folders that contain the file, from the root-level ancestor down to the containing folder. Empty for a file at the My Files root. The file itself is not part of the path. */
+            path: components["schemas"]["FolderPathItem"][];
         };
         /** @enum {string} */
         SecondFactorMethod: "totp" | "backup_code";
@@ -7247,9 +7267,12 @@ export interface operations {
     list_files: {
         parameters: {
             query?: {
-                /** @description List the direct children of this folder. Absent lists the My Files root. An unknown or foreign folder id is `FOLDER_NOT_FOUND`. */
+                /** @description Browse only: list the direct children of this folder. Absent lists the My Files root. An unknown or foreign folder id is `FOLDER_NOT_FOUND`. Ignored, and not validated, when `q` is present. */
                 folderId?: string;
-                sort?: "name:asc" | "name:desc" | "size:asc" | "size:desc" | "createdAt:asc" | "createdAt:desc" | "updatedAt:asc" | "updatedAt:desc";
+                /** @description Switches to global search: files anywhere in the caller's My Files tree whose name or description starts a word with each of the given words (all words must match). 2 to 128 characters; an empty, repeated or whitespace-only `q` is `VALIDATION_ERROR`. When the index finds nothing on the first page, a bounded substring scan over the names of the caller's 10 000 newest files runs instead. Absent lists one folder (browse). */
+                q?: string;
+                /** @description One field and a direction. Browse (no `q`) accepts `name`, `size`, `createdAt` and `updatedAt`, defaults to `name:asc`, and lists folders before files whatever the sort. Search (`q` present) also accepts `relevance`, defaults to `relevance:desc`, and returns files only: `relevance:desc` lists the best match first, a filename match outranking a description match. `relevance` is rejected without `q`. A cursor is bound to its sort. */
+                sort?: "relevance:asc" | "relevance:desc" | "name:asc" | "name:desc" | "size:asc" | "size:desc" | "createdAt:asc" | "createdAt:desc" | "updatedAt:asc" | "updatedAt:desc";
                 cursor?: string;
                 limit?: number;
             };
@@ -7259,13 +7282,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description One page of the direct children of the folder: its subfolders first, then its files. Every item carries a `kind` of `folder` or `file`. Folders always precede files across the whole traversal whatever the `sort`; the sort applies within the folders and within the files. A folder sorts by `totalBytes` for `size`. `totalCount` is the exact number of direct children, folders plus files. Cursors are keyset cursors bound to the `sort`; a cursor reused with another `sort`, or altered, is `CURSOR_INVALID`. This is browse mode only: it never descends below the folder, and `q` is not accepted. */
+            /** @description The shape depends on the request. Without `q` (browse) it is a page of the direct children of the folder, subfolders first and then files, each item with a `kind` of `folder` or `file`; folders always precede files across the whole traversal whatever the `sort`, a folder sorts by `totalBytes` for `size`, `totalCount` is the exact number of direct children, and it never descends below the folder. With `q` (search) it is a page of files only, each a file item plus `path`, the folders that contain it from the root down (empty at the My Files root); the search covers the caller's whole My Files tree, `folderId` is ignored, results are ordered by relevance unless `sort` says otherwise, and `totalCount` is always `null`. Cursors are keyset cursors bound to the `sort` and, in search, to the query; a cursor reused with another `sort` or another `q`, a cursor from the other mode, or an altered cursor is `CURSOR_INVALID`. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Page_BrowseItem"];
+                    "application/json": components["schemas"]["FilesPage"];
                 };
             };
             /** @description `CURSOR_INVALID`. */
@@ -7295,7 +7318,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
-            /** @description `FOLDER_NOT_FOUND`: the folder is unknown or belongs to another user. */
+            /** @description `FOLDER_NOT_FOUND` in browse mode: the folder is unknown or belongs to another user. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -7304,7 +7327,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
-            /** @description `VALIDATION_ERROR` for an invalid `sort` or `limit`, or for `q`, which global search will take over. */
+            /** @description `VALIDATION_ERROR` for an invalid `sort` or `limit`, or for a `q` that is empty, repeated, whitespace-only or outside 2 to 128 characters (`details.fields = ["q"]`). */
             422: {
                 headers: {
                     [name: string]: unknown;

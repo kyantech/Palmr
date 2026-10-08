@@ -222,6 +222,19 @@ pub(crate) fn with_query_parameters<S>(
     (schemas, paths, handler)
 }
 
+pub(crate) fn with_schemas<S>(
+    route: UtoipaMethodRouter<S>,
+    extra: Vec<(String, RefOr<Schema>)>,
+) -> UtoipaMethodRouter<S> {
+    let (mut schemas, paths, handler) = route;
+    for (name, schema) in extra {
+        if !schemas.iter().any(|(existing, _)| *existing == name) {
+            schemas.push((name, schema));
+        }
+    }
+    (schemas, paths, handler)
+}
+
 pub(super) fn operations_mut(
     item: &mut PathItem,
 ) -> impl Iterator<Item = (Method, &mut Operation)> {

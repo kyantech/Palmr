@@ -223,7 +223,7 @@ where
     u64::try_from(count).map_err(|_| invariant("count"))
 }
 
-fn record_from(row: &SqliteRow) -> Result<FileRecord, FileError> {
+pub(super) fn record_from(row: &SqliteRow) -> Result<FileRecord, FileError> {
     Ok(FileRecord {
         id: parsed(row, "id")?,
         folder_id: optional_parsed(row, "folder_id")?,

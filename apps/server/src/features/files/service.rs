@@ -17,17 +17,19 @@ use crate::infra::crypto::hkdf::KeyRing;
 use crate::infra::db::{DbPools, WriteTx};
 use crate::infra::http::error::ApiError;
 use crate::infra::http::pagination::{
-    cursor_parameter, invalid_param, limit_parameter, CursorKey, Page, PageRequest, QueryParams,
-    SortAllowlist, SortDirection, SortField, SortKeyKind, SortValue, TotalCount, SEARCH_PARAM,
+    cursor_parameter, described_search_parameter, invalid_param, limit_parameter, CursorKey, Page,
+    PageRequest, QueryParams, SortAllowlist, SortDirection, SortField, SortKeyKind, SortValue,
+    TotalCount, SEARCH_PARAM, SORT_PARAM,
 };
 
 use super::error::FileError;
 use super::model::{
     BatchMove, BatchMoveResult, BrowseItem, FileChange, FileId, FileItem, FileRecord, FileResult,
-    MovedItem, NameCheck,
+    FilesPage, MovedItem, NameCheck,
 };
 use super::naming_insert::{Attempt, NameAttempts};
 use super::repo::{self, Relocation};
+use super::search::{self, SearchRequest, SEARCH_SORT};
 
 pub const FOLDER_PARAM: &str = "folderId";
 pub const NAME_PARAM: &str = "name";
@@ -48,6 +50,12 @@ static BROWSE_SORT: SortAllowlist = SortAllowlist::new(&BROWSE_SORT_FIELDS, 0, S
 pub struct BrowseQuery {
     folder: Option<FolderId>,
     page: PageRequest,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ListQuery {
+    Browse(BrowseQuery),
+    Search(SearchRequest),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -84,13 +92,16 @@ impl FileService {
         Self { pools, clock, keys }
     }
 
-    pub fn browse_parameters() -> Vec<Parameter> {
+    pub fn list_parameters() -> Vec<Parameter> {
         vec![
             query_parameter(
                 FOLDER_PARAM,
-                "List the direct children of this folder. Absent lists the My Files root. An unknown or foreign folder id is `FOLDER_NOT_FOUND`.",
+                "Browse only: list the direct children of this folder. Absent lists the My Files root. An unknown or foreign folder id is `FOLDER_NOT_FOUND`. Ignored, and not validated, when `q` is present.",
             ),
-            BROWSE_SORT.parameter(),
+            described_search_parameter(
+                "Switches to global search: files anywhere in the caller's My Files tree whose name or description starts a word with each of the given words (all words must match). 2 to 128 characters; an empty, repeated or whitespace-only `q` is `VALIDATION_ERROR`. When the index finds nothing on the first page, a bounded substring scan over the names of the caller's 10 000 newest files runs instead. Absent lists one folder (browse).",
+            ),
+            list_sort_parameter(),
             cursor_parameter(),
             limit_parameter(),
         ]
@@ -117,10 +128,10 @@ impl FileService {
         ]
     }
 
-    pub fn browse_query(&self, raw_query: Option<&str>) -> Result<BrowseQuery, ApiError> {
+    pub fn list_query(&self, raw_query: Option<&str>) -> Result<ListQuery, ApiError> {
         let params = QueryParams::parse(raw_query);
         if params.all(SEARCH_PARAM).next().is_some() {
-            return Err(invalid_param(SEARCH_PARAM));
+            return SearchRequest::parse(&params, self.keys.as_ref()).map(ListQuery::Search);
         }
         let page =
             PageRequest::from_grouped_query(&params, &BROWSE_SORT, self.keys.as_ref(), GROUPS)?;
@@ -128,7 +139,7 @@ impl FileService {
             .single(FOLDER_PARAM)?
             .map(parse_folder_id)
             .transpose()?;
-        Ok(BrowseQuery { folder, page })
+        Ok(ListQuery::Browse(BrowseQuery { folder, page }))
     }
 
     pub fn name_check_query(raw_query: Option<&str>) -> Result<NameCheckQuery, ApiError> {
@@ -144,7 +155,21 @@ impl FileService {
         Ok(NameCheckQuery { folder, name })
     }
 
-    pub async fn browse(
+    pub async fn list(&self, owner: UserId, query: ListQuery) -> Result<FilesPage, FileError> {
+        match query {
+            ListQuery::Browse(query) => self.browse(owner, query).await.map(FilesPage::Browse),
+            ListQuery::Search(request) => search::search(
+                self.pools.reader().executor(),
+                owner,
+                request,
+                self.keys.as_ref(),
+            )
+            .await
+            .map(FilesPage::Search),
+        }
+    }
+
+    async fn browse(
         &self,
         owner: UserId,
         query: BrowseQuery,
@@ -470,6 +495,22 @@ async fn store_unique_name(
 fn parse_folder_id(raw: &str) -> Result<FolderId, ApiError> {
     raw.parse::<FolderId>()
         .map_err(|_| FileError::Folder(FolderError::NotFound).api_error())
+}
+
+fn list_sort_parameter() -> Parameter {
+    ParameterBuilder::new()
+        .name(SORT_PARAM)
+        .parameter_in(ParameterIn::Query)
+        .required(Required::False)
+        .description(Some(
+            "One field and a direction. Browse (no `q`) accepts `name`, `size`, `createdAt` and `updatedAt`, defaults to `name:asc`, and lists folders before files whatever the sort. Search (`q` present) also accepts `relevance`, defaults to `relevance:desc`, and returns files only: `relevance:desc` lists the best match first, a filename match outranking a description match. `relevance` is rejected without `q`. A cursor is bound to its sort.",
+        ))
+        .schema(Some(
+            ObjectBuilder::new()
+                .schema_type(Type::String)
+                .enum_values(Some(SEARCH_SORT.values())),
+        ))
+        .build()
 }
 
 fn query_parameter(name: &'static str, description: &'static str) -> Parameter {

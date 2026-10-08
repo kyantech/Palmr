@@ -1,10 +1,12 @@
+use std::collections::HashMap;
+
 use sqlx::Sqlite;
 
 use crate::features::users::model::UserId;
 use crate::infra::http::pagination::{CursorKey, PageRequest};
 
 use super::error::FolderError;
-use super::model::{FolderId, FolderRecord, FolderTotals};
+use super::model::{FolderId, FolderPathItem, FolderRecord, FolderTotals};
 use super::repo::{self, Scope};
 
 #[derive(Debug, Clone)]
@@ -59,4 +61,19 @@ where
         },
     )
     .await
+}
+
+pub async fn folder_paths<'e, E>(
+    executor: E,
+    owner: UserId,
+    ids: &[FolderId],
+) -> Result<HashMap<FolderId, Vec<FolderPathItem>>, FolderError>
+where
+    E: sqlx::Executor<'e, Database = Sqlite>,
+{
+    let paths = repo::breadcrumbs_for(executor, owner, ids).await?;
+    Ok(paths
+        .into_iter()
+        .map(|(id, crumbs)| (id, crumbs.into_iter().map(FolderPathItem::from).collect()))
+        .collect())
 }
