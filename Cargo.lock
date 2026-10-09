@@ -2625,6 +2625,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "palmr-stress"
+version = "4.0.0-dev"
+dependencies = [
+ "anyhow",
+ "chacha20 0.9.1",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
 name = "parking"
 version = "2.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

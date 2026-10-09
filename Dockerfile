@@ -15,6 +15,7 @@ WORKDIR /workspace
 
 COPY Cargo.toml Cargo.lock rust-toolchain.toml ./
 COPY apps/server apps/server
+COPY tests/stress tests/stress
 COPY apps/web/src/app/i18n apps/web/src/app/i18n
 COPY apps/web/public/branding apps/web/public/branding
 COPY --from=web-builder /workspace/apps/web/dist apps/web/dist

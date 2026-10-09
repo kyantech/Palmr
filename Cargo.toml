@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["apps/server"]
+members = ["apps/server", "tests/stress"]
 
 [workspace.package]
 version = "4.0.0-dev"
