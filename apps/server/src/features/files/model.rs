@@ -38,6 +38,7 @@ pub struct FileSource {
     pub folder_id: Option<FolderId>,
     pub name: String,
     pub description: Option<String>,
+    pub hidden: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, ToSchema)]
@@ -299,7 +300,7 @@ impl BatchMove {
     }
 }
 
-fn unique_ids<T>(
+pub(super) fn unique_ids<T>(
     raw: &[String],
     unknown: impl Fn() -> FileError,
     field: &'static str,

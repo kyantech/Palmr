@@ -15,11 +15,19 @@ use super::model::{
     Crumb, FolderId, FolderRecord, FolderTotals, OwnedFolder, TreeRow, MAX_FOLDER_DEPTH,
     TREE_NODE_CAP,
 };
+use super::visibility::folder_hidden_sql;
 
-const FIND_OWNED: &str = "SELECT id, parent_id, depth FROM folders WHERE id = ?1 AND owner_id = ?2";
+const FIND_OWNED: &str = concat!(
+    "SELECT f.id, f.parent_id, f.depth, ",
+    folder_hidden_sql!("f.id", "f.owner_id"),
+    " AS hidden FROM folders f WHERE f.id = ?1 AND f.owner_id = ?2"
+);
 
-const GET_RECORD: &str = "SELECT id, parent_id, name, name_normalized, description, created_at, \
-    updated_at FROM folders WHERE id = ?1 AND owner_id = ?2";
+const GET_RECORD: &str = concat!(
+    "SELECT f.id, f.parent_id, f.name, f.name_normalized, f.description, f.created_at, \
+    f.updated_at FROM folders f WHERE f.id = ?1 AND f.owner_id = ?2 AND NOT ",
+    folder_hidden_sql!("f.id", "f.owner_id")
+);
 
 const INSERT_COLUMNS: &str = "INSERT INTO folders \
     (id, owner_id, parent_id, name, name_normalized, description, depth, created_at, updated_at) \
@@ -31,13 +39,16 @@ const RENAME: &str = "UPDATE folders SET name = ?1, name_normalized = ?2, update
 const SET_DESCRIPTION: &str =
     "UPDATE folders SET description = ?1, updated_at = ?2 WHERE id = ?3 AND owner_id = ?4";
 
-const FIND_FOR_MOVE: &str =
-    "SELECT id, parent_id, name, depth FROM folders WHERE id = ?1 AND owner_id = ?2";
+const FIND_FOR_MOVE: &str = concat!(
+    "SELECT f.id, f.parent_id, f.name, f.depth, ",
+    folder_hidden_sql!("f.id", "f.owner_id"),
+    " AS hidden FROM folders f WHERE f.id = ?1 AND f.owner_id = ?2"
+);
 
-const FIND_CHILD_BY_NAME: &str = "SELECT id, parent_id, depth FROM folders \
+const FIND_CHILD_BY_NAME: &str = "SELECT id, parent_id, depth, deleting AS hidden FROM folders \
     WHERE owner_id = ?1 AND parent_id = ?2 AND name_normalized = ?3";
 
-const FIND_ROOT_BY_NAME: &str = "SELECT id, parent_id, depth FROM folders \
+const FIND_ROOT_BY_NAME: &str = "SELECT id, parent_id, depth, deleting AS hidden FROM folders \
     WHERE owner_id = ?1 AND parent_id IS NULL AND name_normalized = ?2";
 
 const PROFILE_SUBTREE: &str = "WITH RECURSIVE subtree(id, depth, level) AS (
@@ -72,7 +83,7 @@ const TOTALS: &str = "WITH RECURSIVE roots(id) AS (
     UNION ALL
     SELECT w.root_id, c.id, w.level + 1
       FROM folders c JOIN walk w ON c.parent_id = w.id
-     WHERE c.owner_id = ?1 AND w.level < ?3
+     WHERE c.owner_id = ?1 AND c.deleting = 0 AND w.level < ?3
 ), folder_totals AS (
     SELECT root_id, COUNT(*) AS subfolders FROM walk WHERE level > 0 GROUP BY root_id
 ), file_totals AS (
@@ -99,23 +110,26 @@ const BREADCRUMBS: &str = "WITH RECURSIVE crumbs(seed_id, id, parent_id, name, l
 )
 SELECT seed_id, id, name FROM crumbs ORDER BY seed_id, level DESC";
 
-const TREE_FROM_ROOT_LEVEL: &str = "parent_id IS NULL";
-const TREE_FROM_FOLDER: &str = "id = ?4";
+const TREE_FROM_ROOT_LEVEL: &str = "t.parent_id IS NULL AND t.deleting = 0";
+const TREE_FROM_FOLDER: &str = concat!(
+    "t.id = ?4 AND NOT ",
+    folder_hidden_sql!("t.id", "t.owner_id")
+);
 
 fn tree_sql(anchor: &str) -> String {
     format!(
         "WITH RECURSIVE walk(id, parent_id, name, name_normalized, level) AS (
-    SELECT id, parent_id, name, name_normalized, 1 FROM folders
-     WHERE owner_id = ?1 AND {anchor}
+    SELECT t.id, t.parent_id, t.name, t.name_normalized, 1 FROM folders t
+     WHERE t.owner_id = ?1 AND {anchor}
     UNION ALL
     SELECT f.id, f.parent_id, f.name, f.name_normalized, w.level + 1
       FROM folders f JOIN walk w ON f.parent_id = w.id
-     WHERE f.owner_id = ?1 AND w.level < ?2
+     WHERE f.owner_id = ?1 AND f.deleting = 0 AND w.level < ?2
     ORDER BY 5, 4, 1
     LIMIT ?3
 )
 SELECT w.id, w.parent_id, w.name, w.level,
-       EXISTS (SELECT 1 FROM folders c WHERE c.parent_id = w.id AND c.owner_id = ?1) AS has_children
+       EXISTS (SELECT 1 FROM folders c WHERE c.parent_id = w.id AND c.owner_id = ?1 AND c.deleting = 0) AS has_children
   FROM walk w
  ORDER BY w.level, w.name_normalized, w.id"
     )
@@ -140,6 +154,7 @@ where
             id: parsed(&row, "id")?,
             parent_id: optional_parsed(&row, "parent_id")?,
             depth: stored_depth(depth)?,
+            hidden: flag(&row, "hidden")?,
         })
     })
     .transpose()
@@ -166,6 +181,7 @@ pub struct MoveSource {
     pub parent_id: Option<FolderId>,
     pub name: String,
     pub depth: u8,
+    pub hidden: bool,
 }
 
 pub async fn find_for_move(
@@ -184,6 +200,7 @@ pub async fn find_for_move(
             parent_id: optional_parsed(&row, "parent_id")?,
             name: column(&row, "name")?,
             depth: stored_depth(depth)?,
+            hidden: flag(&row, "hidden")?,
         })
     })
     .transpose()
@@ -289,6 +306,7 @@ pub async fn find_child_by_normalized_name(
             id: parsed(&row, "id")?,
             parent_id: optional_parsed(&row, "parent_id")?,
             depth: stored_depth(depth)?,
+            hidden: flag(&row, "hidden")?,
         })
     })
     .transpose()
@@ -380,7 +398,8 @@ pub struct Scope<'a> {
 fn push_scope(query: &mut QueryBuilder<'_, Sqlite>, scope: &Scope<'_>) {
     query
         .push(" WHERE owner_id = ")
-        .push_bind(scope.owner.to_string());
+        .push_bind(scope.owner.to_string())
+        .push(" AND deleting = 0");
     match scope.parent {
         Some(parent) => query
             .push(" AND parent_id = ")
@@ -448,7 +467,7 @@ where
 fn sized_children_query<'q>(scope: &Scope<'_>) -> QueryBuilder<'q, Sqlite> {
     let owner = scope.owner.to_string();
     let mut query = QueryBuilder::<Sqlite>::new(
-        "WITH RECURSIVE kids(id) AS (SELECT id FROM folders WHERE owner_id = ",
+        "WITH RECURSIVE kids(id) AS (SELECT id FROM folders WHERE deleting = 0 AND owner_id = ",
     );
     query.push_bind(owner.clone());
     push_parent(&mut query, "", scope.parent);
@@ -459,7 +478,7 @@ fn sized_children_query<'q>(scope: &Scope<'_>) -> QueryBuilder<'q, Sqlite> {
     UNION ALL
     SELECT w.root_id, c.id, w.level + 1
       FROM folders c JOIN walk w ON c.parent_id = w.id
-     WHERE c.owner_id = ",
+     WHERE c.deleting = 0 AND c.owner_id = ",
         )
         .push_bind(owner.clone())
         .push(" AND w.level < ")
@@ -476,7 +495,7 @@ fn sized_children_query<'q>(scope: &Scope<'_>) -> QueryBuilder<'q, Sqlite> {
     SELECT f.id, f.parent_id, f.name, f.name_normalized, f.description, f.created_at,
            f.updated_at, COALESCE(s.size_bytes, 0) AS size_bytes
       FROM folders f LEFT JOIN sizes s ON s.root_id = f.id
-     WHERE f.owner_id = ",
+     WHERE f.deleting = 0 AND f.owner_id = ",
         )
         .push_bind(owner);
     push_parent(&mut query, "f.", scope.parent);
@@ -657,6 +676,11 @@ fn optional_parsed<T: FromStr>(
     let text: Option<String> = column(row, name)?;
     text.map(|text| text.parse().map_err(|_| invariant(name)))
         .transpose()
+}
+
+fn flag(row: &SqliteRow, name: &'static str) -> Result<bool, FolderError> {
+    let value: i64 = column(row, name)?;
+    Ok(value != 0)
 }
 
 fn stored_depth(depth: i64) -> Result<u8, FolderError> {

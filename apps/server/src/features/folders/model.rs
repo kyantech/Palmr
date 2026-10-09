@@ -25,6 +25,7 @@ pub struct OwnedFolder {
     pub id: FolderId,
     pub parent_id: Option<FolderId>,
     pub depth: u8,
+    pub hidden: bool,
 }
 
 #[derive(Debug, Clone)]

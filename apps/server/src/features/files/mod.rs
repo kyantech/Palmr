@@ -1,3 +1,4 @@
+pub mod delete;
 mod error;
 mod model;
 pub mod naming_insert;
@@ -14,4 +15,5 @@ mod search_tests;
 #[cfg(test)]
 pub(crate) use search::{push_indexed, push_scanned, Probe, SCAN_WINDOW, SEARCH_SORT};
 
+pub use model::FileId;
 pub use service::FileService;

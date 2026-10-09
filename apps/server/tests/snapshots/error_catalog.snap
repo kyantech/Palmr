@@ -73,6 +73,11 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "BATCH_DELETE_FAILED",
+    "status": 422,
+    "retryable": false
+  },
+  {
     "code": "BATCH_TOO_LARGE",
     "status": 422,
     "retryable": false
@@ -135,6 +140,11 @@ source: apps/server/src/domain/error_code.rs
   {
     "code": "FOLDER_CYCLE",
     "status": 422,
+    "retryable": false
+  },
+  {
+    "code": "FOLDER_DELETING",
+    "status": 409,
     "retryable": false
   },
   {

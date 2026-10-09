@@ -5,6 +5,7 @@ use sqlx::{QueryBuilder, Row, Sqlite, SqliteConnection};
 
 use crate::domain::naming::NameCandidate;
 use crate::domain::time::Timestamp;
+use crate::features::folders::visibility::folder_hidden_sql;
 use crate::features::folders::FolderId;
 use crate::features::users::model::UserId;
 use crate::infra::http::pagination::{Conjunction, CursorKey, PageRequest};
@@ -16,11 +17,17 @@ use super::naming_insert::Attempt;
 const COLUMNS: &str = "id, folder_id, name, name_normalized, description, size_bytes, mime_type, \
     created_at, updated_at";
 
-const GET_RECORD: &str = "SELECT id, folder_id, name, name_normalized, description, size_bytes, \
-    mime_type, created_at, updated_at FROM files WHERE id = ?1 AND owner_id = ?2";
+const GET_RECORD: &str = concat!(
+    "SELECT f.id, f.folder_id, f.name, f.name_normalized, f.description, f.size_bytes, \
+    f.mime_type, f.created_at, f.updated_at FROM files f WHERE f.id = ?1 AND f.owner_id = ?2 AND NOT ",
+    folder_hidden_sql!("f.folder_id", "f.owner_id")
+);
 
-const FIND_SOURCE: &str =
-    "SELECT folder_id, name, description FROM files WHERE id = ?1 AND owner_id = ?2";
+const FIND_SOURCE: &str = concat!(
+    "SELECT f.folder_id, f.name, f.description, ",
+    folder_hidden_sql!("f.folder_id", "f.owner_id"),
+    " AS hidden FROM files f WHERE f.id = ?1 AND f.owner_id = ?2"
+);
 
 const RENAME: &str = "UPDATE files \
     SET name = ?1, name_normalized = ?2, extension = ?3, updated_at = ?4 \
@@ -70,6 +77,10 @@ pub async fn find_source(
             folder_id: optional_parsed(&row, "folder_id")?,
             name: column(&row, "name")?,
             description: column(&row, "description")?,
+            hidden: {
+                let hidden: i64 = column(&row, "hidden")?;
+                hidden != 0
+            },
         })
     })
     .transpose()

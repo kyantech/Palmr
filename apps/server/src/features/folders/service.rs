@@ -68,7 +68,26 @@ where
 {
     repo::find_owned(executor, owner, id)
         .await?
+        .filter(|folder| !folder.hidden)
         .ok_or(FolderError::NotFound)
+}
+
+pub async fn resolve_writable_folder<'e, E>(
+    executor: E,
+    owner: UserId,
+    id: FolderId,
+) -> Result<OwnedFolder, FolderError>
+where
+    E: sqlx::Executor<'e, Database = Sqlite>,
+{
+    let folder = repo::find_owned(executor, owner, id)
+        .await?
+        .ok_or(FolderError::NotFound)?;
+    if folder.hidden {
+        Err(FolderError::Deleting)
+    } else {
+        Ok(folder)
+    }
 }
 
 impl FolderService {
@@ -305,7 +324,7 @@ async fn create_in_tx(
     let depth = match creation.parent {
         None => 0,
         Some(parent) => {
-            let parent = resolve_owned_folder(tx.executor(), creation.owner, parent).await?;
+            let parent = resolve_writable_folder(tx.executor(), creation.owner, parent).await?;
             if i64::from(parent.depth) >= MAX_FOLDER_DEPTH {
                 return Err(FolderError::DepthExceeded);
             }
@@ -331,6 +350,7 @@ async fn update_in_tx(tx: &mut WriteTx<'_>, edit: Edit) -> Result<(), FolderErro
         description,
         at,
     } = edit;
+    resolve_writable_folder(tx.executor(), owner, id).await?;
     let current = repo::get_record(tx.executor(), owner, id)
         .await?
         .ok_or(FolderError::NotFound)?;

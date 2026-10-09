@@ -5,7 +5,7 @@ use crate::infra::db::WriteTx;
 use super::error::FolderError;
 use super::model::{FolderId, FolderItem, MAX_FOLDER_DEPTH};
 use super::repo::{self, Relocation};
-use super::service::{resolve_owned_folder, store_unique_name, FolderService, Write};
+use super::service::{resolve_writable_folder, store_unique_name, FolderService, Write};
 
 const TRANSACTION: &str = "folders.move";
 
@@ -42,11 +42,14 @@ pub async fn move_folder_in_tx(
     let source = repo::find_for_move(tx.executor(), owner, id)
         .await?
         .ok_or(FolderError::NotFound)?;
+    if source.hidden {
+        return Err(FolderError::Deleting);
+    }
     let new_root_depth = match destination {
         None => 0,
         Some(parent) => {
             i64::from(
-                resolve_owned_folder(tx.executor(), owner, parent)
+                resolve_writable_folder(tx.executor(), owner, parent)
                     .await?
                     .depth,
             ) + 1

@@ -110,7 +110,8 @@ async fn it_migrate_up_from_empty() {
             "0002_add_identity_provider_email_linking.sql",
             "0003_authorization_request_contract.sql",
             "0004_session_revoked_reason_identity_unlink.sql",
-            "0005_password_login_enabled.sql"
+            "0005_password_login_enabled.sql",
+            "0006_deletion_lifecycle.sql"
         ]
     );
     assert_eq!(
@@ -133,6 +134,10 @@ async fn it_migrate_up_from_empty() {
         files[4].1,
         include_str!("../../../migrations/0005_password_login_enabled.sql")
     );
+    assert_eq!(
+        files[5].1,
+        include_str!("../../../migrations/0006_deletion_lifecycle.sql")
+    );
 
     let data = TempDir::new().unwrap();
     let pools = open_pools(data.path()).await;
@@ -142,8 +147,8 @@ async fn it_migrate_up_from_empty() {
     assert_eq!(
         first,
         MigrationStatus {
-            applied: 5,
-            version: Some(5),
+            applied: 6,
+            version: Some(6),
         }
     );
     let again = pools.migrate(&MIGRATOR).await.unwrap();
@@ -151,7 +156,7 @@ async fn it_migrate_up_from_empty() {
         again,
         MigrationStatus {
             applied: 0,
-            version: Some(5),
+            version: Some(6),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -161,7 +166,7 @@ async fn it_migrate_up_from_empty() {
         reopened.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
             applied: 0,
-            version: Some(5),
+            version: Some(6),
         }
     );
     reopened.shutdown().await.checkpoint.unwrap();
@@ -221,8 +226,8 @@ async fn it_migrate_from_0001_derives_email_linking_by_protocol() {
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 4,
-            version: Some(5),
+            applied: 5,
+            version: Some(6),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -250,7 +255,14 @@ async fn it_migrate_from_0001_derives_email_linking_by_protocol() {
             .iter()
             .map(|record| (record.version, record.success))
             .collect::<Vec<_>>(),
-        [(1, true), (2, true), (3, true), (4, true), (5, true)]
+        [
+            (1, true),
+            (2, true),
+            (3, true),
+            (4, true),
+            (5, true),
+            (6, true)
+        ]
     );
     connection.close().await.unwrap();
 }
@@ -315,8 +327,8 @@ async fn it_migrate_oauth_requests_to_reauth_and_extended_path() {
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 3,
-            version: Some(5),
+            applied: 4,
+            version: Some(6),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -586,8 +598,8 @@ async fn it_migrate_session_revoked_reason_accepts_identity_unlink() {
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 2,
-            version: Some(5),
+            applied: 3,
+            version: Some(6),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -748,8 +760,8 @@ async fn it_migrate_password_login_enabled_defaults_on_and_preserves_settings() 
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 1,
-            version: Some(5),
+            applied: 2,
+            version: Some(6),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -786,5 +798,147 @@ async fn it_migrate_password_login_enabled_defaults_on_and_preserves_settings() 
     .await
     .unwrap();
     assert_eq!(after, before);
+    connection.close().await.unwrap();
+}
+
+#[tokio::test]
+async fn it_migrate_deletion_lifecycle_keeps_existing_folders_live_and_checksums_intact() {
+    let files = embedded_files();
+    let (_directory, released) = fixture_migrator(&files[..5]).await;
+    let data = TempDir::new().unwrap();
+    let pools = open_pools(data.path()).await;
+    assert_eq!(
+        pools.migrate(&released).await.unwrap(),
+        MigrationStatus {
+            applied: 5,
+            version: Some(5),
+        }
+    );
+    pools.shutdown().await.checkpoint.unwrap();
+
+    let mut connection = raw_connection(data.path()).await;
+    let before_records = recorded_migrations(&mut connection).await;
+    for statement in [
+        "INSERT INTO users (id, email, email_normalized, username, username_normalized, created_at, updated_at)
+         VALUES ('0192f3a1-0000-7000-8000-000000000001', 'a@example.test', 'a@example.test', 'ada', 'ada',
+                 '2026-09-25T12:00:00.000Z', '2026-09-25T12:00:00.000Z')",
+        "INSERT INTO folders (id, owner_id, parent_id, name, name_normalized, depth, created_at, updated_at)
+         VALUES ('0192f3a1-0000-7000-8000-0000000000a1', '0192f3a1-0000-7000-8000-000000000001', NULL, 'Root', 'root', 0,
+                 '2026-09-25T12:00:00.000Z', '2026-09-25T12:00:00.000Z'),
+                ('0192f3a1-0000-7000-8000-0000000000a2', '0192f3a1-0000-7000-8000-000000000001',
+                 '0192f3a1-0000-7000-8000-0000000000a1', 'Child', 'child', 1,
+                 '2026-09-25T12:00:00.000Z', '2026-09-25T12:00:00.000Z')",
+        "INSERT INTO transfer_sessions (id, context, user_id, provider, state, target_folder_id, created_at, updated_at, expires_at)
+         VALUES ('0192f3a1-0000-7000-8000-0000000000c1', 'my_files', '0192f3a1-0000-7000-8000-000000000001', 'local',
+                 'completed', '0192f3a1-0000-7000-8000-0000000000a2',
+                 '2026-09-25T12:00:00.000Z', '2026-09-25T12:00:00.000Z', '2026-09-26T12:00:00.000Z')",
+    ] {
+        sqlx::query(statement).execute(&mut connection).await.unwrap();
+    }
+    let folders_before: Vec<(String, Option<String>, String, i64)> =
+        sqlx::query_as("SELECT id, parent_id, name, depth FROM folders ORDER BY id")
+            .fetch_all(&mut connection)
+            .await
+            .unwrap();
+    connection.close().await.unwrap();
+
+    let pools = open_pools(data.path()).await;
+    assert_eq!(
+        pools.migrate(&MIGRATOR).await.unwrap(),
+        MigrationStatus {
+            applied: 1,
+            version: Some(6),
+        }
+    );
+    pools.shutdown().await.checkpoint.unwrap();
+
+    let mut connection = raw_connection(data.path()).await;
+    let after: Vec<(String, Option<String>, String, i64, i64)> =
+        sqlx::query_as("SELECT id, parent_id, name, depth, deleting FROM folders ORDER BY id")
+            .fetch_all(&mut connection)
+            .await
+            .unwrap();
+    assert_eq!(
+        after
+            .iter()
+            .map(|row| (row.0.clone(), row.1.clone(), row.2.clone(), row.3))
+            .collect::<Vec<_>>(),
+        folders_before
+    );
+    assert!(
+        after.iter().all(|row| row.4 == 0),
+        "existing folders are not deleting"
+    );
+
+    let recorded = recorded_migrations(&mut connection).await;
+    assert_eq!(
+        recorded[..5],
+        before_records[..],
+        "applied migrations are untouched"
+    );
+    assert_eq!(recorded[5].version, 6);
+    assert!(recorded[5].success);
+
+    let violations: Vec<(String, i64, String, i64)> = sqlx::query_as("PRAGMA foreign_key_check")
+        .fetch_all(&mut connection)
+        .await
+        .unwrap();
+    assert!(violations.is_empty(), "{violations:?}");
+    let integrity: String = sqlx::query_scalar("PRAGMA integrity_check")
+        .fetch_one(&mut connection)
+        .await
+        .unwrap();
+    assert_eq!(integrity, "ok");
+
+    let rejected = sqlx::query(
+        "UPDATE folders SET deleting = 2 WHERE id = '0192f3a1-0000-7000-8000-0000000000a1'",
+    )
+    .execute(&mut connection)
+    .await;
+    assert!(rejected.is_err(), "deleting is a canonical boolean");
+    sqlx::query(
+        "UPDATE folders SET deleting = 1 WHERE id = '0192f3a1-0000-7000-8000-0000000000a1'",
+    )
+    .execute(&mut connection)
+    .await
+    .unwrap();
+    let plan: Vec<(i64, i64, i64, String)> = sqlx::query_as(
+        "EXPLAIN QUERY PLAN SELECT 1 FROM folders z
+          WHERE z.owner_id = '0192f3a1-0000-7000-8000-000000000001' AND z.deleting = 1",
+    )
+    .fetch_all(&mut connection)
+    .await
+    .unwrap();
+    assert!(
+        plan.iter().any(|row| row.3.contains("ix_folders_deleting")),
+        "{plan:?}"
+    );
+    let session: (Option<String>, Option<String>) =
+        sqlx::query_as("SELECT target_folder_id, deleted_target_folder_id FROM transfer_sessions")
+            .fetch_one(&mut connection)
+            .await
+            .unwrap();
+    assert_eq!(
+        session,
+        (
+            Some("0192f3a1-0000-7000-8000-0000000000a2".to_owned()),
+            None
+        ),
+        "an existing session keeps its live destination and has no historical marker"
+    );
+    let trigger: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM sqlite_schema WHERE type = 'trigger' AND name = 'transfer_sessions_deleted_target_immutable'",
+    )
+    .fetch_one(&mut connection)
+    .await
+    .unwrap();
+    assert_eq!(trigger, 1);
+    let tables: Vec<String> = sqlx::query_scalar(
+        "SELECT name FROM sqlite_schema WHERE type = 'table' AND name IN ('folder_deletions', 'deletion_receipts') ORDER BY name",
+    )
+    .fetch_all(&mut connection)
+    .await
+    .unwrap();
+    assert_eq!(tables, ["deletion_receipts", "folder_deletions"]);
     connection.close().await.unwrap();
 }

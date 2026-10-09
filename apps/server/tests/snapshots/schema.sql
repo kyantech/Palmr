@@ -87,6 +87,16 @@ CREATE TABLE branding_assets (
     FOREIGN KEY (created_by)        REFERENCES users(id)           ON DELETE SET NULL
 );
 
+-- table deletion_receipts
+CREATE TABLE deletion_receipts (
+    id            TEXT NOT NULL PRIMARY KEY,
+    resource_kind TEXT NOT NULL CHECK (resource_kind IN ('file','folder')),
+    owner_id      TEXT NOT NULL,
+    deleted_at    TEXT NOT NULL,
+
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- table email_outbox
 CREATE TABLE email_outbox (
     id            TEXT    NOT NULL PRIMARY KEY,
@@ -225,6 +235,19 @@ CREATE TABLE 'files_fts_docsize'(id INTEGER PRIMARY KEY, sz BLOB);
 -- table files_fts_idx
 CREATE TABLE 'files_fts_idx'(segid, term, pgno, PRIMARY KEY(segid, term)) WITHOUT ROWID;
 
+-- table folder_deletions
+CREATE TABLE folder_deletions (
+    folder_id       TEXT    NOT NULL PRIMARY KEY,
+    owner_id        TEXT    NOT NULL,
+    claimed_at      TEXT    NOT NULL,
+    updated_at      TEXT    NOT NULL,
+    files_deleted   INTEGER NOT NULL DEFAULT 0 CHECK (files_deleted >= 0),
+    folders_deleted INTEGER NOT NULL DEFAULT 0 CHECK (folders_deleted >= 0),
+    bytes_released  INTEGER NOT NULL DEFAULT 0 CHECK (bytes_released >= 0),
+
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- table folders
 CREATE TABLE folders (
     id              TEXT    NOT NULL PRIMARY KEY,
@@ -237,7 +260,7 @@ CREATE TABLE folders (
     description     TEXT    NULL CHECK (description IS NULL OR length(description) <= 2000),
     depth           INTEGER NOT NULL CHECK (depth BETWEEN 0 AND 64),
     created_at      TEXT    NOT NULL,
-    updated_at      TEXT    NOT NULL,
+    updated_at      TEXT    NOT NULL, deleting INTEGER NOT NULL DEFAULT 0 CHECK (deleting IN (0,1)),
 
     FOREIGN KEY (owner_id)  REFERENCES users(id)   ON DELETE RESTRICT,
     FOREIGN KEY (parent_id) REFERENCES folders(id) ON DELETE RESTRICT
@@ -967,7 +990,10 @@ CREATE TABLE transfer_sessions (
     created_at                       TEXT    NOT NULL,
     updated_at                       TEXT    NOT NULL,
     expires_at                       TEXT    NOT NULL,
-    completed_at                     TEXT    NULL,
+    completed_at                     TEXT    NULL, deleted_target_folder_id TEXT NULL
+    CHECK (deleted_target_folder_id IS NULL
+           OR (target_folder_id IS NULL AND context = 'my_files'
+               AND state IN ('completed','canceled','expired'))),
 
     CHECK ( (context = 'my_files'      AND user_id IS NOT NULL AND reverse_share_upload_session_id IS NULL)
          OR (context = 'reverse_share' AND user_id IS NULL     AND reverse_share_upload_session_id IS NOT NULL) ),
@@ -1121,6 +1147,9 @@ CREATE INDEX ix_audit_events_target     ON audit_events(target_type, target_id, 
 -- index ix_branding_assets_kind
 CREATE INDEX ix_branding_assets_kind           ON branding_assets(kind, created_at DESC);
 
+-- index ix_deletion_receipts_owner
+CREATE INDEX ix_deletion_receipts_owner ON deletion_receipts(owner_id);
+
 -- index ix_email_outbox_batch
 CREATE INDEX ix_email_outbox_batch      ON email_outbox(batch_key, created_at DESC) WHERE batch_key IS NOT NULL;
 
@@ -1157,6 +1186,12 @@ CREATE INDEX ix_files_owner_size     ON files(owner_id, size_bytes DESC);
 
 -- index ix_files_owner_updated
 CREATE INDEX ix_files_owner_updated  ON files(owner_id, updated_at DESC);
+
+-- index ix_folder_deletions_owner
+CREATE INDEX ix_folder_deletions_owner ON folder_deletions(owner_id);
+
+-- index ix_folders_deleting
+CREATE INDEX ix_folders_deleting ON folders(owner_id) WHERE deleting = 1;
 
 -- index ix_folders_owner
 CREATE INDEX ix_folders_owner    ON folders(owner_id, name_normalized);
@@ -1559,4 +1594,13 @@ END;
 CREATE TRIGGER received_files_fts_au AFTER UPDATE OF name, description ON received_files BEGIN
     INSERT INTO received_files_fts(received_files_fts, rowid, name, description) VALUES ('delete', old.rowid, old.name, old.description);
     INSERT INTO received_files_fts(rowid, name, description) VALUES (new.rowid, new.name, new.description);
+END;
+
+-- trigger transfer_sessions_deleted_target_immutable
+CREATE TRIGGER transfer_sessions_deleted_target_immutable
+BEFORE UPDATE OF deleted_target_folder_id ON transfer_sessions
+WHEN OLD.deleted_target_folder_id IS NOT NULL
+ AND NEW.deleted_target_folder_id IS NOT OLD.deleted_target_folder_id
+BEGIN
+    SELECT RAISE(ABORT, 'transfer_sessions.deleted_target_folder_id is immutable');
 END;

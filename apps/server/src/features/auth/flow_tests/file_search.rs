@@ -1554,7 +1554,9 @@ async fn it_search_primary_query_is_driven_by_files_fts() {
             assert!(
                 plan.iter()
                     .filter(|line| line.starts_with("SCAN"))
-                    .all(|line| line.contains("files_fts") || line.contains("hits")),
+                    .all(|line| line.contains("files_fts")
+                        || line.contains("hits")
+                        || line == "SCAN up"),
                 "{sort}: no full scan of files: {joined}"
             );
         }

@@ -8,6 +8,7 @@ use crate::domain::clock::Clock;
 use crate::features::audit;
 use crate::features::auth;
 use crate::features::email::{self, EmailService, SmtpTransport};
+use crate::features::folders::delete::{self as folder_deletion, DeleteTreeContext};
 use crate::features::quota::reconcile::{self as quota_reconcile, QuotaReconcileContext};
 use crate::features::settings::SettingsService;
 use crate::infra::crypto::instance_key::InstanceKey;
@@ -80,6 +81,10 @@ async fn execute(
     let registry = quota_reconcile::register_jobs(
         registry,
         QuotaReconcileContext::new(pools.clone(), Arc::clone(&clock), audit_service.clone()),
+    );
+    let registry = folder_deletion::register_jobs(
+        registry,
+        DeleteTreeContext::new(pools.clone(), Arc::clone(&clock), audit_service.clone()),
     );
     let registry = if matches!(
         kind,

@@ -15,7 +15,7 @@ const FROZEN_MIGRATION: &str = concat!(
 const FROZEN_FINGERPRINT: &str = include_str!("fixtures/0001_initial_schema.sha256");
 const SNAPSHOT: &str = include_str!("snapshots/schema.sql");
 const UPDATE_SNAPSHOT: &str = "PALMR_UPDATE_SCHEMA_SNAPSHOT";
-const DOMAIN_TABLES: usize = 40;
+const DOMAIN_TABLES: usize = 42;
 const FTS5_TABLES: [&str; 2] = ["files_fts", "received_files_fts"];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

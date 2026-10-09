@@ -78,6 +78,8 @@ error_catalog! {
         "A request with this idempotency key is still in progress";
     BatchTooLarge = "BATCH_TOO_LARGE", UNPROCESSABLE_ENTITY, retryable: false,
         "The batch contains too many items";
+    BatchDeleteFailed = "BATCH_DELETE_FAILED", UNPROCESSABLE_ENTITY, retryable: false,
+        "No item of the batch could be deleted";
     FeatureUnavailableSmtp = "FEATURE_UNAVAILABLE_SMTP", CONFLICT, retryable: false,
         "This action requires e-mail delivery to be configured";
     SetupAlreadyCompleted = "SETUP_ALREADY_COMPLETED", CONFLICT, retryable: false,
@@ -166,6 +168,8 @@ error_catalog! {
         "The folder would exceed the maximum nesting depth";
     FolderCycle = "FOLDER_CYCLE", UNPROCESSABLE_ENTITY, retryable: false,
         "A folder cannot be moved into itself or one of its own subfolders";
+    FolderDeleting = "FOLDER_DELETING", CONFLICT, retryable: false,
+        "The folder is being deleted";
     NameInvalid = "NAME_INVALID", UNPROCESSABLE_ENTITY, retryable: false,
         "The name is not valid";
     RangeNotSatisfiable = "RANGE_NOT_SATISFIABLE", RANGE_NOT_SATISFIABLE, retryable: false,

@@ -98,7 +98,7 @@ impl Observed {
     }
 
     fn crumbs(&self) -> usize {
-        self.matching("RECURSIVE")
+        self.matching("WITH RECURSIVE crumbs(")
     }
 }
 

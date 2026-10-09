@@ -747,6 +747,57 @@ pub fn quota_drift_detected(facts: &QuotaDriftFacts) -> ActionSpec {
     ActionSpec::new(AuditAction::QuotaDriftDetected, metadata)
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FileDeletionScope {
+    File,
+    FolderTree,
+}
+
+impl FileDeletionScope {
+    const fn as_str(self) -> &'static str {
+        match self {
+            Self::File => "file",
+            Self::FolderTree => "folder_tree",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FileDeletedFacts {
+    pub scope: FileDeletionScope,
+    pub files: u64,
+    pub bytes_released: u64,
+    pub shares_detached: u64,
+    pub embeds_revoked: u64,
+}
+
+pub fn file_deleted(facts: &FileDeletedFacts) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("scope", Value::from(facts.scope.as_str())),
+        ("files", Value::from(facts.files)),
+        ("bytes_released", Value::from(facts.bytes_released)),
+        ("shares_detached", Value::from(facts.shares_detached)),
+        ("embeds_revoked", Value::from(facts.embeds_revoked)),
+    ]);
+    ActionSpec::new(AuditAction::FileDeleted, metadata)
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FolderDeletedFacts {
+    pub files: u64,
+    pub folders: u64,
+    pub bytes_released: u64,
+}
+
+pub fn folder_deleted(facts: &FolderDeletedFacts) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("files", Value::from(facts.files)),
+        ("folders", Value::from(facts.folders)),
+        ("bytes_released", Value::from(facts.bytes_released)),
+    ]);
+    ActionSpec::new(AuditAction::FolderDeleted, metadata)
+}
+
 #[cfg(test)]
 mod tests {
     use serde_json::Value;
@@ -798,6 +849,37 @@ mod tests {
             assert_eq!(spec.action().write_path(), WritePath::InTransaction);
             assert_eq!(fields(&spec), ["safe_admin_path_count"]);
         }
+    }
+
+    #[test]
+    fn unit_deletion_metadata_is_closed_bounded_and_secret_free() {
+        let file = file_deleted(&FileDeletedFacts {
+            scope: FileDeletionScope::File,
+            files: u64::MAX,
+            bytes_released: u64::MAX,
+            shares_detached: u64::MAX,
+            embeds_revoked: u64::MAX,
+        });
+        assert_eq!(file.action(), AuditAction::FileDeleted);
+        assert_eq!(file.action().write_path(), WritePath::InTransaction);
+        assert_eq!(
+            fields(&file),
+            [
+                "bytes_released",
+                "embeds_revoked",
+                "files",
+                "scope",
+                "shares_detached"
+            ]
+        );
+        let folder = folder_deleted(&FolderDeletedFacts {
+            files: u64::MAX,
+            folders: u64::MAX,
+            bytes_released: u64::MAX,
+        });
+        assert_eq!(folder.action(), AuditAction::FolderDeleted);
+        assert_eq!(folder.action().write_path(), WritePath::InTransaction);
+        assert_eq!(fields(&folder), ["bytes_released", "files", "folders"]);
     }
 
     #[test]

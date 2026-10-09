@@ -171,7 +171,11 @@ impl World {
 fn recursive(statements: &[String]) -> usize {
     statements
         .iter()
-        .filter(|statement| statement.contains("RECURSIVE"))
+        .filter(|statement| {
+            statement
+                .replace("WITH RECURSIVE up(", "")
+                .contains("RECURSIVE")
+        })
         .count()
 }
 

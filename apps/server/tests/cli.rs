@@ -565,3 +565,98 @@ async fn it_cli_recovery_output_streams() -> Result<()> {
     assert_eq!(account(&root.database()).await?, before);
     Ok(())
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn it_cli_jobs_run_once_drains_a_folder_deletion_and_erases_its_blobs() -> Result<()> {
+    const OWNER: &str = "0192f3a1-0000-7000-8000-000000000001";
+    const TOP: &str = "0192f3a1-0000-7000-8000-0000000000a1";
+    const CHILD: &str = "0192f3a1-0000-7000-8000-0000000000a2";
+    const STAMP: &str = "2026-01-01T00:00:00.000Z";
+
+    let root = DataRoot::new("palmr-cli-delete-tree-")?;
+    assert_success(&root.palmr(&["migrate"])?);
+    let blobs = root.data.join("storage/objects/00/00");
+    fs::create_dir_all(&blobs)?;
+
+    let mut connection = open_writer(&root.database()).await?;
+    for statement in [
+        format!(
+            "INSERT INTO users (id, email, email_normalized, username, username_normalized, used_bytes, created_at, updated_at)
+             VALUES ('{OWNER}', 'o@example.test', 'o@example.test', 'owner', 'owner', 30, '{STAMP}', '{STAMP}')"
+        ),
+        format!(
+            "INSERT INTO folders (id, owner_id, parent_id, name, name_normalized, depth, deleting, created_at, updated_at)
+             VALUES ('{TOP}', '{OWNER}', NULL, 'Top', 'top', 0, 1, '{STAMP}', '{STAMP}'),
+                    ('{CHILD}', '{OWNER}', '{TOP}', 'Child', 'child', 1, 0, '{STAMP}', '{STAMP}')"
+        ),
+        format!(
+            "INSERT INTO folder_deletions (folder_id, owner_id, claimed_at, updated_at)
+             VALUES ('{TOP}', '{OWNER}', '{STAMP}', '{STAMP}')"
+        ),
+        format!(
+            "INSERT INTO jobs (id, kind, payload_json, state, priority, run_at, attempts, max_attempts, dedup_key, created_at, updated_at)
+             VALUES ('0192f3a1-0000-7000-8000-0000000000b1', 'folders.delete_tree',
+                     '{{\"folder_id\":\"{TOP}\",\"owner_id\":\"{OWNER}\"}}', 'pending', 100, '{STAMP}', 0, 12,
+                     'folder-del:{TOP}', '{STAMP}', '{STAMP}')"
+        ),
+    ] {
+        sqlx::query(&statement).execute(&mut connection).await?;
+    }
+    for n in 1..=3_u32 {
+        let key = format!("{:032x}", 7_000_000 + n);
+        fs::write(blobs.join(&key), format!("blob-{n}-0123456789"))?;
+        let folder = if n == 1 { TOP } else { CHILD };
+        sqlx::query(&format!(
+            "INSERT INTO storage_objects (id, object_key, provider, size_bytes, state, refcount, created_at, updated_at, finalized_at)
+             VALUES ('0192f3a1-0000-7000-8000-0000000001{n:02}', 'objects/00/00/{key}', 'local', 10, 'active', 1, '{STAMP}', '{STAMP}', '{STAMP}');
+             INSERT INTO files (id, owner_id, folder_id, storage_object_id, name, name_normalized, size_bytes, created_at, updated_at)
+             VALUES ('0192f3a1-0000-7000-8000-0000000002{n:02}', '{OWNER}', '{folder}', '0192f3a1-0000-7000-8000-0000000001{n:02}',
+                     'f{n}.txt', 'f{n}.txt', 10, '{STAMP}', '{STAMP}')"
+        ))
+        .execute(&mut connection)
+        .await?;
+    }
+    connection.close().await?;
+
+    let tree = root.palmr(&["jobs", "run-once", "--kind", "folders.delete_tree"])?;
+    assert_success(&tree);
+    assert_eq!(
+        text(&tree.stdout),
+        "jobs run-once: executed 1 job(s) of kind folders.delete_tree\n"
+    );
+    let mut connection = open_read_only(&root.database()).await?;
+    let counts: (i64, i64, i64, i64, i64) = sqlx::query_as(
+        "SELECT (SELECT COUNT(*) FROM files), (SELECT COUNT(*) FROM folders),
+                (SELECT COUNT(*) FROM storage_objects WHERE state = 'tombstoned'),
+                (SELECT COUNT(*) FROM jobs WHERE kind = 'storage.delete_blob' AND state = 'pending'),
+                (SELECT used_bytes FROM users WHERE id = ?1)",
+    )
+    .bind(OWNER)
+    .fetch_one(&mut connection)
+    .await?;
+    assert_eq!(counts, (0, 0, 3, 3, 0));
+    connection.close().await?;
+    assert_eq!(
+        fs::read_dir(&blobs)?.count(),
+        3,
+        "the folder job never touches bytes"
+    );
+
+    let blobs_run = root.palmr(&["jobs", "run-once", "--kind", "storage.delete_blob"])?;
+    assert_success(&blobs_run);
+    assert_eq!(
+        text(&blobs_run.stdout),
+        "jobs run-once: executed 3 job(s) of kind storage.delete_blob\n"
+    );
+    assert_eq!(fs::read_dir(&blobs)?.count(), 0);
+    let mut connection = open_read_only(&root.database()).await?;
+    let audited: (i64, i64) = sqlx::query_as(
+        "SELECT (SELECT COUNT(*) FROM storage_objects WHERE state = 'deleted'),
+                (SELECT COUNT(*) FROM audit_events WHERE action = 'FOLDER_DELETED')",
+    )
+    .fetch_one(&mut connection)
+    .await?;
+    assert_eq!(audited, (3, 1));
+    connection.close().await?;
+    Ok(())
+}

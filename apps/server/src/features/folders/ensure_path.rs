@@ -9,7 +9,7 @@ use crate::infra::http::idempotency::{Claim, ReplayEnvelope};
 use super::error::FolderError;
 use super::model::{EnsurePath, EnsurePathResponse, FolderId, MAX_FOLDER_DEPTH};
 use super::repo::{self, NewRow};
-use super::service::{resolve_owned_folder, FolderService};
+use super::service::{resolve_writable_folder, FolderService};
 
 const TRANSACTION: &str = "folders.ensure_path";
 
@@ -47,7 +47,7 @@ async fn materialize(
         None => 0,
         Some(parent) => {
             i64::from(
-                resolve_owned_folder(tx.executor(), owner, parent)
+                resolve_writable_folder(tx.executor(), owner, parent)
                     .await?
                     .depth,
             ) + 1
@@ -83,6 +83,9 @@ async fn materialize(
                 .ok_or(FolderError::RepositoryInvariant {
                     column: "name_normalized",
                 })?;
+                if existing.hidden {
+                    return Err(FolderError::Deleting);
+                }
                 if i64::from(existing.depth) != depth {
                     return Err(FolderError::RepositoryInvariant { column: "depth" });
                 }

@@ -47,6 +47,7 @@ use crate::features::auth::AuthService;
 use crate::features::branding::BrandingService;
 use crate::features::email::{self, EmailService, SmtpTransport};
 use crate::features::files::FileService;
+use crate::features::folders::delete::{self as folder_deletion, DeleteTreeContext};
 use crate::features::folders::FolderService;
 use crate::features::identity_providers::callback::ExternalLoginService;
 use crate::features::identity_providers::{
@@ -833,6 +834,7 @@ async fn initialize(
         database.pools().clone(),
         Arc::clone(&clock),
         Arc::clone(&email_keys),
+        audit_service.clone(),
     );
     let identity_providers = IdentityProviderService::new(
         database.pools().clone(),
@@ -1037,6 +1039,10 @@ fn start_jobs(
     let registry = quota_reconcile::register_jobs(
         registry,
         QuotaReconcileContext::new(pools.clone(), Arc::clone(clock), audit_service.clone()),
+    );
+    let registry = folder_deletion::register_jobs(
+        registry,
+        DeleteTreeContext::new(pools.clone(), Arc::clone(clock), audit_service.clone()),
     );
     let dispatcher = Dispatcher::new(
         pools,

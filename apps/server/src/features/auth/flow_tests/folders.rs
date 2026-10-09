@@ -1415,6 +1415,18 @@ fn unit_folder_routes_are_declared_with_their_classes() {
             AuthClass::Authenticated,
             RateLimitClass::Write,
         ),
+        (
+            Method::GET,
+            format!("{FOLDERS}/{{id}}/deletion-impact"),
+            AuthClass::Authenticated,
+            RateLimitClass::Read,
+        ),
+        (
+            Method::DELETE,
+            format!("{FOLDERS}/{{id}}"),
+            AuthClass::Authenticated,
+            RateLimitClass::Write,
+        ),
     ];
     let order = |entry: &(Method, String, AuthClass, RateLimitClass)| {
         (entry.1.clone(), entry.0.to_string())

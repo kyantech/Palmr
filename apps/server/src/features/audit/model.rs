@@ -310,6 +310,8 @@ pub enum AuditAction {
     IdentityLinkRemoved,
     PasswordLoginDisabled,
     PasswordLoginEnabled,
+    FileDeleted,
+    FolderDeleted,
 }
 
 impl AuditAction {
@@ -356,6 +358,8 @@ impl AuditAction {
         Self::IdentityLinkRemoved,
         Self::PasswordLoginDisabled,
         Self::PasswordLoginEnabled,
+        Self::FileDeleted,
+        Self::FolderDeleted,
     ];
 
     pub const fn as_str(self) -> &'static str {
@@ -402,6 +406,8 @@ impl AuditAction {
             Self::IdentityLinkRemoved => "IDENTITY_LINK_REMOVED",
             Self::PasswordLoginDisabled => "PASSWORD_LOGIN_DISABLED",
             Self::PasswordLoginEnabled => "PASSWORD_LOGIN_ENABLED",
+            Self::FileDeleted => "FILE_DELETED",
+            Self::FolderDeleted => "FOLDER_DELETED",
         }
     }
 
@@ -448,7 +454,9 @@ impl AuditAction {
             | Self::IdentityLinkCreated
             | Self::IdentityLinkRemoved
             | Self::PasswordLoginDisabled
-            | Self::PasswordLoginEnabled => WritePath::InTransaction,
+            | Self::PasswordLoginEnabled
+            | Self::FileDeleted
+            | Self::FolderDeleted => WritePath::InTransaction,
         }
     }
 }

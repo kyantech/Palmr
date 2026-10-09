@@ -1116,6 +1116,30 @@ fn unit_file_routes_are_declared_with_their_classes() {
             AuthClass::Authenticated,
             RateLimitClass::Write,
         ),
+        (
+            Method::GET,
+            format!("{FILES}/{{id}}/deletion-impact"),
+            AuthClass::Authenticated,
+            RateLimitClass::Read,
+        ),
+        (
+            Method::POST,
+            "/api/v1/files/batch/deletion-impact".to_owned(),
+            AuthClass::Authenticated,
+            RateLimitClass::Read,
+        ),
+        (
+            Method::DELETE,
+            format!("{FILES}/{{id}}"),
+            AuthClass::Authenticated,
+            RateLimitClass::Write,
+        ),
+        (
+            Method::POST,
+            "/api/v1/files/batch/delete".to_owned(),
+            AuthClass::Authenticated,
+            RateLimitClass::Write,
+        ),
     ];
     let order = |entry: &(Method, String, AuthClass, RateLimitClass)| {
         (entry.1.clone(), entry.0.to_string())
@@ -1124,7 +1148,7 @@ fn unit_file_routes_are_declared_with_their_classes() {
     declared.sort_by_key(order);
     assert_eq!(
         declared, expected,
-        "no delete, content, preview, thumbnail or search route belongs to this task"
+        "no content, preview or thumbnail route belongs to this task"
     );
 }
 
@@ -1147,14 +1171,12 @@ async fn it_file_static_routes_are_not_swallowed_by_the_id_route() {
     assert_code(&batch, StatusCode::NOT_FOUND, "FILE_NOT_FOUND");
     assert!(batch.json()["error"]["code"] != "METHOD_NOT_ALLOWED");
     for (method, path) in [
-        (Method::DELETE, format!("{FILES}/{}", stack.fresh_id())),
         (Method::GET, format!("{FILES}/{}/content", stack.fresh_id())),
         (Method::GET, format!("{FILES}/{}/preview", stack.fresh_id())),
         (
             Method::GET,
             format!("{FILES}/{}/thumbnail", stack.fresh_id()),
         ),
-        (Method::POST, "/api/v1/files/batch/delete".to_owned()),
     ] {
         let absent = stack.api(method, &path, &alice, None).await;
         assert!(

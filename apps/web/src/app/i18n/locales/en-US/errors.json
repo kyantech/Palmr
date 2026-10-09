@@ -52,6 +52,8 @@
     "folderNotFound": "This folder no longer exists.",
     "folderDepthExceeded": "Folders can be nested at most 64 levels deep. Choose a shallower location.",
     "folderCycle": "A folder cannot be moved into itself or one of its own subfolders.",
+    "folderDeleting": "This folder is being deleted.",
+    "batchDeleteFailed": "None of the selected items could be deleted.",
     "rangeNotSatisfiable": "The requested part of the file isn't available. Start the download again.",
     "storageUnavailable": "File storage is temporarily unavailable. Try again later.",
     "storageFull": "The server's storage is full. Contact your administrator.",

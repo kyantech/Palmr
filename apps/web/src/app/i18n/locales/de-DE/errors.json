@@ -52,6 +52,8 @@
     "folderNotFound": "Dieser Ordner existiert nicht mehr.",
     "folderDepthExceeded": "Ordner können höchstens 64 Ebenen tief verschachtelt werden. Wähle einen weniger tiefen Speicherort.",
     "folderCycle": "Ein Ordner kann nicht in sich selbst oder in einen seiner eigenen Unterordner verschoben werden.",
+    "folderDeleting": "Dieser Ordner wird gerade gelöscht.",
+    "batchDeleteFailed": "Keines der ausgewählten Elemente konnte gelöscht werden.",
     "rangeNotSatisfiable": "Der angeforderte Teil der Datei ist nicht verfügbar. Starte den Download erneut.",
     "storageUnavailable": "Der Dateispeicher ist vorübergehend nicht verfügbar. Versuche es später erneut.",
     "storageFull": "Der Speicher des Servers ist voll. Wende dich an deine Administration.",

@@ -52,6 +52,8 @@
     "folderNotFound": "Questa cartella non esiste più.",
     "folderDepthExceeded": "Le cartelle possono essere annidate al massimo per 64 livelli. Scegli una posizione meno profonda.",
     "folderCycle": "Una cartella non può essere spostata dentro se stessa o in una delle sue sottocartelle.",
+    "folderDeleting": "Questa cartella è in corso di eliminazione.",
+    "batchDeleteFailed": "Nessuno degli elementi selezionati è stato eliminato.",
     "rangeNotSatisfiable": "La parte richiesta del file non è disponibile. Avvia di nuovo il download.",
     "storageUnavailable": "L'archiviazione dei file è temporaneamente non disponibile. Riprova più tardi.",
     "storageFull": "Lo spazio di archiviazione del server è pieno. Contatta l'amministratore.",

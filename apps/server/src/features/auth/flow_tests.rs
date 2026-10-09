@@ -98,6 +98,7 @@ struct Stack {
     mail: Arc<CapturingTransport>,
     email: EmailService,
     drain: AuditDrain,
+    audit: audit::service::AuditService,
     limiter: Arc<RateLimiter>,
     service: BoxedService,
 }
@@ -199,7 +200,12 @@ impl Stack {
             audit.clone(),
         );
         let folders = FolderService::new(pools.clone(), Arc::new(clock.clone()), settings.keys());
-        let files = FileService::new(pools.clone(), Arc::new(clock.clone()), settings.keys());
+        let files = FileService::new(
+            pools.clone(),
+            Arc::new(clock.clone()),
+            settings.keys(),
+            audit.clone(),
+        );
         let providers = IdentityProviderService::new(
             pools.clone(),
             Arc::new(clock.clone()),
@@ -226,6 +232,7 @@ impl Stack {
         );
         let admin_settings =
             AdminSettingsService::new(settings.clone(), Arc::new(clock.clone()), audit.clone());
+        let audit_handle = audit.clone();
         let invites = InviteService::new(InviteServiceParts {
             pools: pools.clone(),
             clock: Arc::new(clock.clone()),
@@ -307,6 +314,7 @@ impl Stack {
             mail,
             email,
             drain,
+            audit: audit_handle,
             limiter: Arc::clone(edge.rate_limits()),
             service,
         }
@@ -1812,6 +1820,7 @@ mod admin_smtp;
 mod admin_users;
 mod authorize;
 mod callback;
+mod deletion_tests;
 mod file_search;
 mod file_writes;
 mod files;

@@ -4,6 +4,8 @@ use crate::domain::error_code::ErrorCode;
 use crate::domain::naming::{CandidateError, InvalidName};
 use crate::domain::time::InvalidTimestamp;
 use crate::features::folders::FolderError;
+
+use super::delete::DeleteError;
 use crate::infra::db::DbError;
 use crate::infra::http::error::ApiError;
 
@@ -20,6 +22,7 @@ pub enum FileError {
     RepositoryInvariant { column: &'static str },
     Db(DbError),
     Time(InvalidTimestamp),
+    Delete(DeleteError),
 }
 
 impl FileError {
@@ -34,6 +37,7 @@ impl FileError {
             Self::RepositoryInvariant { .. } => "file_repository_invariant",
             Self::Db(_) => "file_database_failed",
             Self::Time(_) => "file_time_out_of_range",
+            Self::Delete(error) => error.kind(),
         }
     }
 
@@ -47,7 +51,9 @@ impl FileError {
                 .with_detail("maxItems", i64::try_from(MAX_BATCH_IDS).unwrap_or(i64::MAX)),
             Self::Invalid { fields } => ApiError::validation(fields.iter().copied()),
             Self::Db(error) => ApiError::new(error.api_code()),
-            Self::RepositoryInvariant { .. } | Self::Time(_) => ApiError::internal(),
+            Self::RepositoryInvariant { .. } | Self::Time(_) | Self::Delete(_) => {
+                ApiError::internal()
+            }
         }
     }
 }
@@ -66,6 +72,7 @@ impl fmt::Display for FileError {
             }
             Self::Db(error) => write!(f, "file database operation failed: {error}"),
             Self::Time(error) => write!(f, "file timestamp is out of range: {error}"),
+            Self::Delete(error) => write!(f, "file deletion failed: {error}"),
         }
     }
 }

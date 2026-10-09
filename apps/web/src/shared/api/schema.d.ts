@@ -836,6 +836,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/files/batch/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["batch_delete_files"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/files/batch/deletion-impact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["batch_deletion_impact"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/files/batch/move": {
         parameters: {
             query?: never;
@@ -878,10 +910,26 @@ export interface paths {
         get: operations["get_file"];
         put?: never;
         post?: never;
-        delete?: never;
+        delete: operations["delete_file"];
         options?: never;
         head?: never;
         patch: operations["update_file"];
+        trace?: never;
+    };
+    "/api/v1/files/{id}/deletion-impact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["file_deletion_impact"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/files/{id}/move": {
@@ -958,10 +1006,26 @@ export interface paths {
         get: operations["get_folder"];
         put?: never;
         post?: never;
-        delete?: never;
+        delete: operations["delete_folder"];
         options?: never;
         head?: never;
         patch: operations["update_folder"];
+        trace?: never;
+    };
+    "/api/v1/folders/{id}/deletion-impact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["folder_deletion_impact"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/folders/{id}/move": {
@@ -1426,6 +1490,13 @@ export interface components {
             mode: string;
             quotaBytes: null | components["schemas"]["ByteCount"];
         };
+        AffectedShare: {
+            alias: string;
+            id: string;
+            name: string | null;
+            /** Format: int64 */
+            remainingItems: number;
+        };
         ApiErrorBody: {
             error: components["schemas"]["ApiErrorPayload"];
         };
@@ -1468,6 +1539,15 @@ export interface components {
              */
             generatedAt: string;
         };
+        BatchDeleteFailure: {
+            code: components["schemas"]["ErrorCode"];
+            id: string;
+        };
+        BatchDeleteResult: {
+            failed: components["schemas"]["BatchDeleteFailure"][];
+            /** @description Ids whose deletion is durable. A folder is listed once its deletion claim has committed: the subtree is already invisible and its rows and bytes are removed in the background. */
+            succeeded: string[];
+        };
         BatchMoveRequest: {
             /**
              * @description Files to move. Together with `folderIds` at most 500 ids; no id may repeat.
@@ -1489,6 +1569,17 @@ export interface components {
             files: components["schemas"]["MovedItem"][];
             /** @description Every requested folder, in request order. */
             folders: components["schemas"]["MovedItem"][];
+        };
+        BatchSelectionRequest: {
+            /**
+             * @description Files to select. Together with `folderIds` at most 500 ids and at least one; no id may repeat. Absent is the same as empty.
+             * @example [
+             *       "0192f3a1-0000-7000-8000-000000000001"
+             *     ]
+             */
+            fileIds?: string[];
+            /** @description Folders to select, each with its whole subtree. Absent is the same as empty. */
+            folderIds?: string[];
         };
         BlockerDetail: {
             code: string;
@@ -1682,7 +1773,19 @@ export interface components {
         };
         /** @enum {string} */
         DatabaseHealthStatus: "ok";
-        DetailValue: boolean | number | string | string[] | components["schemas"]["CheckDetail"][] | components["schemas"]["BlockerDetail"][];
+        DeletionImpact: {
+            /** Format: int64 */
+            affectedEmbeds: number;
+            /** Format: int64 */
+            affectedShareCount: number;
+            affectedShares: components["schemas"]["AffectedShare"][];
+            /** Format: int64 */
+            files: number;
+            /** Format: int64 */
+            folders: number;
+            totalBytes: components["schemas"]["ByteCount"];
+        };
+        DetailValue: boolean | number | string | string[] | components["schemas"]["CheckDetail"][] | components["schemas"]["BlockerDetail"][] | components["schemas"]["ItemFailureDetail"][];
         DiscoverRequest: {
             /** @example https://sso.example.com/application/o/palmr/ */
             issuerUrl: string;
@@ -1793,7 +1896,7 @@ export interface components {
             leafFolderId: string;
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "FILE_NAME_CONFLICT" | "FOLDER_NOT_FOUND" | "FOLDER_DEPTH_EXCEEDED" | "FOLDER_CYCLE" | "NAME_INVALID" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "QUOTA_EXCEEDED" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN" | "SMTP_TEST_FAILED" | "PROVIDER_NOT_FOUND" | "PROVIDER_DISABLED" | "PROVIDER_SLUG_TAKEN" | "PROVIDER_DISCOVERY_FAILED" | "PROVIDER_VALIDATION_FAILED" | "PROVIDER_HAS_LINKS" | "PROVIDER_ID_TOKEN_INVALID" | "PROVIDER_USERINFO_FAILED" | "PROVIDER_SUBJECT_MISSING" | "PROVIDER_STATE_INVALID" | "PROVIDER_AUTH_DENIED" | "PROVIDER_CODE_EXCHANGE_FAILED" | "PROVIDER_EMAIL_UNVERIFIED" | "PROVIDER_AUTO_PROVISION_DISABLED" | "PROVIDER_IDENTITY_ALREADY_LINKED" | "PROVIDER_LINK_NOT_FOUND" | "IDENTITY_LINK_LAST_LOGIN_PATH" | "PASSWORD_LOGIN_DISABLE_UNSAFE" | "NO_VALIDATED_PROVIDER" | "AUTH_ACCOUNT_INACTIVE" | "AUTH_EXTERNAL_AMBIGUOUS_IDENTITY" | "AUTH_EXTERNAL_USERNAME_UNAVAILABLE";
+        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "BATCH_DELETE_FAILED" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "FILE_NAME_CONFLICT" | "FOLDER_NOT_FOUND" | "FOLDER_DEPTH_EXCEEDED" | "FOLDER_CYCLE" | "FOLDER_DELETING" | "NAME_INVALID" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "QUOTA_EXCEEDED" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN" | "SMTP_TEST_FAILED" | "PROVIDER_NOT_FOUND" | "PROVIDER_DISABLED" | "PROVIDER_SLUG_TAKEN" | "PROVIDER_DISCOVERY_FAILED" | "PROVIDER_VALIDATION_FAILED" | "PROVIDER_HAS_LINKS" | "PROVIDER_ID_TOKEN_INVALID" | "PROVIDER_USERINFO_FAILED" | "PROVIDER_SUBJECT_MISSING" | "PROVIDER_STATE_INVALID" | "PROVIDER_AUTH_DENIED" | "PROVIDER_CODE_EXCHANGE_FAILED" | "PROVIDER_EMAIL_UNVERIFIED" | "PROVIDER_AUTO_PROVISION_DISABLED" | "PROVIDER_IDENTITY_ALREADY_LINKED" | "PROVIDER_LINK_NOT_FOUND" | "IDENTITY_LINK_LAST_LOGIN_PATH" | "PASSWORD_LOGIN_DISABLE_UNSAFE" | "NO_VALIDATED_PROVIDER" | "AUTH_ACCOUNT_INACTIVE" | "AUTH_EXTERNAL_AMBIGUOUS_IDENTITY" | "AUTH_EXTERNAL_USERNAME_UNAVAILABLE";
         ExternalReauthResponse: {
             accepted: boolean;
             /**
@@ -1996,6 +2099,10 @@ export interface components {
         };
         /** @enum {string} */
         InviteStatus: "pending" | "accepted" | "revoked" | "expired";
+        ItemFailureDetail: {
+            code: components["schemas"]["ErrorCode"];
+            id: string;
+        };
         LoginRequest: {
             /** @example ada@example.com */
             identifier: string;
@@ -7347,6 +7454,182 @@ export interface operations {
             };
         };
     };
+    batch_delete_files: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Deletes every selected file and folder. Unlike batch move this is not atomic: each item is its own short transaction, so a failure leaves the other items deleted and is reported per item. At most 500 ids in total, at least one, and no id may repeat. A folder inside another selected folder is covered by its ancestor and reported as succeeded. Re-deleting an item the caller owned and already deleted succeeds. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BatchSelectionRequest"];
+            };
+        };
+        responses: {
+            /** @description `succeeded` lists the ids whose deletion is durable, in request order (files, then folders); `failed` lists each remaining id with its error `code`. A folder is `succeeded` once its deletion claim has committed: the subtree is invisible at once and its rows and bytes are removed in the background. When no item succeeded the response is never `200`: if every item failed for the same reason it is that error's envelope and status, otherwise `BATCH_DELETE_FAILED` (422); both carry `details.failed`, the per-item `{id, code}` list. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchDeleteResult"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed, or the session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FILE_NOT_FOUND` or `FOLDER_NOT_FOUND` when every item was unknown or belongs to another user; `details.failed` lists each item. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `BATCH_TOO_LARGE` beyond 500 ids, `VALIDATION_ERROR` for no ids or a repeated id, or `BATCH_DELETE_FAILED` when no item succeeded and the items failed for different reasons (`details.failed` lists each `{id, code}`). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    batch_deletion_impact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description At most 500 ids in total across `fileIds` and `folderIds`, at least one, and no id may repeat. A folder counts with its whole subtree. A file that also lies inside a selected folder, and a folder that lies inside another selected folder, are counted once. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BatchSelectionRequest"];
+            };
+        };
+        responses: {
+            /** @description The combined impact of deleting every selected item. Each file contributes its bytes once however it was selected. Read-only and advisory. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeletionImpact"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed, or the session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FILE_NOT_FOUND` or `FOLDER_NOT_FOUND`: an item is unknown, belongs to another user or is being deleted. Nothing is reported for the other items. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `BATCH_TOO_LARGE` beyond 500 ids, or `VALIDATION_ERROR` for no ids or a repeated id. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
     batch_move_files: {
         parameters: {
             query?: never;
@@ -7406,7 +7689,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
-            /** @description `FILE_NAME_CONFLICT`: no unique name could be generated for one item. Nothing moved. */
+            /** @description `FILE_NAME_CONFLICT`: no unique name could be generated for one item, or `FOLDER_DELETING`: an item or the destination is being deleted. Nothing moved. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -7582,6 +7865,63 @@ export interface operations {
             };
         };
     };
+    delete_file: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description File UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The file is permanently deleted: it is gone from every view and its quota is returned in the same transaction, and its bytes are erased by an idempotent background job. Deleting a file the caller owned and already deleted is also `204`. There is no Trash and no restore. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed, or the session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FILE_NOT_FOUND`: the id never existed or never belonged to the caller. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
     update_file: {
         parameters: {
             query?: never;
@@ -7644,7 +7984,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
-            /** @description `FILE_NAME_CONFLICT`: no unique name could be generated. */
+            /** @description `FILE_NAME_CONFLICT`: no unique name could be generated, or `FOLDER_DELETING`: the file or the destination folder is being deleted. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -7664,6 +8004,65 @@ export interface operations {
             };
             /** @description `NAME_INVALID` or `VALIDATION_ERROR`. */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    file_deletion_impact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description File UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description What deleting the file would remove: `files` is 1, `folders` is 0 and `totalBytes` is its stored size. `affectedShares` lists, without duplicates, the caller's Shares that reference the file directly or through a live folder root that contains it, each with `remainingItems`, the number of that Share's root items still present after the deletion; `affectedShareCount` is the total when the list is capped at 100. `affectedEmbeds` counts the active, unexpired embed grants of the file. Read-only and advisory: the state is validated again when the file is deleted. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeletionImpact"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FILE_NOT_FOUND`, including another user's file and a file that is being deleted. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -7744,7 +8143,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
-            /** @description `FILE_NAME_CONFLICT`: no unique name could be generated in the destination. */
+            /** @description `FILE_NAME_CONFLICT`: no unique name could be generated in the destination, or `FOLDER_DELETING`: the file or the destination folder is being deleted. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -7922,7 +8321,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
-            /** @description `FILE_NAME_CONFLICT`: no unique name could be generated. */
+            /** @description `FILE_NAME_CONFLICT`: no unique name could be generated, or `FOLDER_DELETING`: the parent folder is being deleted. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -8022,7 +8421,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
-            /** @description `IDEMPOTENCY_KEY_CONFLICT` or `IDEMPOTENCY_REQUEST_IN_PROGRESS` for a reused key. */
+            /** @description `IDEMPOTENCY_KEY_CONFLICT` or `IDEMPOTENCY_REQUEST_IN_PROGRESS` for a reused key, or `FOLDER_DELETING`: the parent or an existing segment is being deleted. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -8189,6 +8588,63 @@ export interface operations {
             };
         };
     };
+    delete_folder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Folder UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The deletion is durably claimed: the folder and everything below it are invisible at once and further writes into them are refused with `FOLDER_DELETING`. Its rows are removed and its bytes erased in the background in bounded batches, so physical cleanup may still be pending. Deleting a folder the caller owned and already deleted, or that is being deleted, is also `204`. There is no Trash and no restore. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed, or the session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FOLDER_NOT_FOUND`: the id never existed or never belonged to the caller. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
     update_folder: {
         parameters: {
             query?: never;
@@ -8251,7 +8707,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
-            /** @description `FILE_NAME_CONFLICT`: no unique name could be generated. */
+            /** @description `FILE_NAME_CONFLICT`: no unique name could be generated, or `FOLDER_DELETING`: the folder is being deleted. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -8271,6 +8727,65 @@ export interface operations {
             };
             /** @description `NAME_INVALID` or `VALIDATION_ERROR`. */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    folder_deletion_impact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Folder UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description What deleting the folder and everything below it would remove, from one bounded recursive statement: `folders` counts the folder rows that would be deleted, the selected folder included, `files` and `totalBytes` cover the whole subtree. `affectedShares` lists, without duplicates, the caller's Shares that reference the folder, a folder or file inside it, or a live folder root above it, each with `remainingItems`, the number of that Share's root items still present after the deletion; `affectedShareCount` is the total when the list is capped at 100. `affectedEmbeds` counts the active, unexpired embed grants of the files below. Read-only and advisory. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeletionImpact"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FOLDER_NOT_FOUND`, including another user's folder and a folder that is being deleted. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -8351,7 +8866,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
-            /** @description `FILE_NAME_CONFLICT`: no unique name could be generated in the destination. */
+            /** @description `FILE_NAME_CONFLICT`: no unique name could be generated in the destination, or `FOLDER_DELETING`: the folder or the destination is being deleted. */
             409: {
                 headers: {
                     [name: string]: unknown;

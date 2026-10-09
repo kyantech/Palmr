@@ -683,14 +683,16 @@ fn unit_folder_move_and_ensure_path_routes_are_declared() {
     assert_eq!(
         folder_surface,
         [
+            "DELETE /api/v1/folders/{id}",
             "GET /api/v1/folders",
             "GET /api/v1/folders/tree",
             "GET /api/v1/folders/{id}",
+            "GET /api/v1/folders/{id}/deletion-impact",
             "PATCH /api/v1/folders/{id}",
             "POST /api/v1/folders",
             "POST /api/v1/folders/ensure-path",
             "POST /api/v1/folders/{id}/move",
         ],
-        "the folder surface is exactly T02 plus T03"
+        "the folder surface is exactly T02, T03 and T07"
     );
 }

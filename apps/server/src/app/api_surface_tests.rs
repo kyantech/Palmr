@@ -2234,9 +2234,12 @@ fn it_openapi_file_routes_declare_typed_contracts() {
         file_paths,
         [
             "/api/v1/files",
+            "/api/v1/files/batch/delete",
+            "/api/v1/files/batch/deletion-impact",
             "/api/v1/files/batch/move",
             "/api/v1/files/name-check",
             "/api/v1/files/{id}",
+            "/api/v1/files/{id}/deletion-impact",
             "/api/v1/files/{id}/move",
         ]
     );

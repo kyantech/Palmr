@@ -8,9 +8,10 @@ use utoipa::openapi::Required;
 use crate::domain::clock::Clock;
 use crate::domain::naming::NameCandidate;
 use crate::domain::time::Timestamp;
+use crate::features::audit::service::AuditService;
 use crate::features::folders::{
-    count_child_folders, list_child_folders, move_folder_in_tx, resolve_owned_folder, ChildFolder,
-    FolderError, FolderId, FolderItem,
+    count_child_folders, list_child_folders, move_folder_in_tx, resolve_owned_folder,
+    resolve_writable_folder, ChildFolder, FolderError, FolderId, FolderItem,
 };
 use crate::features::users::model::UserId;
 use crate::infra::crypto::hkdf::KeyRing;
@@ -66,9 +67,10 @@ pub struct NameCheckQuery {
 
 #[derive(Clone)]
 pub struct FileService {
-    pools: DbPools,
-    clock: Arc<dyn Clock>,
+    pub(super) pools: DbPools,
+    pub(super) clock: Arc<dyn Clock>,
     keys: Arc<KeyRing>,
+    pub(super) audit: AuditService,
 }
 
 enum Node {
@@ -88,8 +90,18 @@ impl Placed {
 }
 
 impl FileService {
-    pub fn new(pools: DbPools, clock: Arc<dyn Clock>, keys: Arc<KeyRing>) -> Self {
-        Self { pools, clock, keys }
+    pub fn new(
+        pools: DbPools,
+        clock: Arc<dyn Clock>,
+        keys: Arc<KeyRing>,
+        audit: AuditService,
+    ) -> Self {
+        Self {
+            pools,
+            clock,
+            keys,
+            audit,
+        }
     }
 
     pub fn list_parameters() -> Vec<Parameter> {
@@ -346,6 +358,9 @@ async fn update_in_tx(tx: &mut WriteTx<'_>, edit: Edit) -> Result<Option<Placed>
     let current = repo::find_source(tx.executor(), owner, id)
         .await?
         .ok_or(FileError::NotFound)?;
+    if current.hidden {
+        return Err(FileError::Folder(FolderError::Deleting));
+    }
     if let Some(description) = description.filter(|new| *new != current.description) {
         repo::set_description(tx.executor(), owner, id, description.as_deref(), at).await?;
     }
@@ -375,8 +390,11 @@ async fn move_one_in_tx(
     let source = repo::find_source(tx.executor(), owner, id)
         .await?
         .ok_or(FileError::NotFound)?;
+    if source.hidden {
+        return Err(FileError::Folder(FolderError::Deleting));
+    }
     if let Some(folder) = destination {
-        resolve_owned_folder(tx.executor(), owner, folder).await?;
+        resolve_writable_folder(tx.executor(), owner, folder).await?;
     }
     place(
         tx,
@@ -397,7 +415,7 @@ async fn batch_move_in_tx(
     at: Timestamp,
 ) -> Result<BatchMoveResult, FileError> {
     if let Some(folder) = batch.target {
-        resolve_owned_folder(tx.executor(), owner, folder).await?;
+        resolve_writable_folder(tx.executor(), owner, folder).await?;
     }
     let mut folders = Vec::with_capacity(batch.folders.len());
     for id in &batch.folders {
@@ -413,6 +431,9 @@ async fn batch_move_in_tx(
         let source = repo::find_source(tx.executor(), owner, *id)
             .await?
             .ok_or(FileError::NotFound)?;
+        if source.hidden {
+            return Err(FileError::Folder(FolderError::Deleting));
+        }
         let placed = place(
             tx,
             owner,

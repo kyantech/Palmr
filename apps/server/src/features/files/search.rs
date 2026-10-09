@@ -2,6 +2,7 @@ use sqlx::{QueryBuilder, Row, Sqlite};
 
 use crate::domain::error_code::ErrorCode;
 use crate::domain::normalize::normalize;
+use crate::features::folders::visibility::folder_hidden_sql;
 use crate::features::folders::{folder_paths, FolderId};
 use crate::features::users::model::UserId;
 use crate::infra::crypto::hkdf::KeyRing;
@@ -29,6 +30,8 @@ const QUALIFIED_COLUMNS: &str = "f.id AS id, f.folder_id AS folder_id, f.name AS
     f.name_normalized AS name_normalized, f.description AS description, \
     f.size_bytes AS size_bytes, f.mime_type AS mime_type, f.created_at AS created_at, \
     f.updated_at AS updated_at";
+
+const VISIBLE_HIT: &str = concat!(" AND NOT ", folder_hidden_sql!("f.folder_id", "f.owner_id"));
 
 const COLUMNS: &str = "id, folder_id, name, name_normalized, description, size_bytes, mime_type, \
     created_at, updated_at";
@@ -218,6 +221,7 @@ pub(crate) fn push_indexed(query: &mut QueryBuilder<'_, Sqlite>, probe: &Probe<'
             .push_bind(probe.expression.to_owned())
             .push(" AND f.owner_id = ")
             .push_bind(probe.owner.to_string())
+            .push(VISIBLE_HIT)
             .push(") SELECT ")
             .push(COLUMNS)
             .push(", ")
@@ -233,7 +237,8 @@ pub(crate) fn push_indexed(query: &mut QueryBuilder<'_, Sqlite>, probe: &Probe<'
             )
             .push_bind(probe.expression.to_owned())
             .push(" AND f.owner_id = ")
-            .push_bind(probe.owner.to_string());
+            .push_bind(probe.owner.to_string())
+            .push(VISIBLE_HIT);
         order.push_after(query, " AND", probe.after);
     }
     order.push_order(query, probe.fetch);
@@ -246,8 +251,9 @@ pub(crate) fn push_scanned(query: &mut QueryBuilder<'_, Sqlite>, probe: &Probe<'
         .push(COLUMNS)
         .push(" FROM (SELECT ")
         .push(COLUMNS)
-        .push(" FROM files WHERE owner_id = ")
+        .push(" FROM files f WHERE f.owner_id = ")
         .push_bind(probe.owner.to_string())
+        .push(VISIBLE_HIT)
         .push(" ORDER BY created_at DESC, rowid ASC LIMIT ")
         .push_bind(SCAN_WINDOW)
         .push(") WHERE instr(name_normalized, ")

@@ -171,7 +171,14 @@ fn count(statements: &[String], needle: &str) -> usize {
 fn shape(statements: &[String]) -> (usize, usize, usize, usize) {
     (
         statements.len(),
-        count(statements, "RECURSIVE"),
+        statements
+            .iter()
+            .filter(|statement| {
+                statement
+                    .replace("WITH RECURSIVE up(", "")
+                    .contains("RECURSIVE")
+            })
+            .count(),
         count(statements, "UPDATE folders SET parent_id"),
         count(statements, "UPDATE folders SET depth"),
     )

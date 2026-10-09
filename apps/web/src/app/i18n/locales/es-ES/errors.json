@@ -52,6 +52,8 @@
     "folderNotFound": "Esta carpeta ya no existe.",
     "folderDepthExceeded": "Las carpetas pueden anidarse como máximo 64 niveles. Elige una ubicación menos profunda.",
     "folderCycle": "Una carpeta no se puede mover dentro de sí misma ni de una de sus propias subcarpetas.",
+    "folderDeleting": "Esta carpeta se está eliminando.",
+    "batchDeleteFailed": "No se pudo eliminar ninguno de los elementos seleccionados.",
     "rangeNotSatisfiable": "La parte solicitada del archivo no está disponible. Inicia la descarga de nuevo.",
     "storageUnavailable": "El almacenamiento de archivos no está disponible temporalmente. Inténtalo más tarde.",
     "storageFull": "El almacenamiento del servidor está lleno. Contacta con tu administrador.",

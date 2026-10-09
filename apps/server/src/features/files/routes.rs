@@ -16,12 +16,15 @@ use crate::infra::http::extractors::Authenticated;
 use crate::infra::http::json;
 use crate::infra::http::request_id::{tag_error, RequestId};
 
+use super::delete::{BatchDeleteResult, BatchSelection, BatchSelectionRequest, DeletionCaller};
 use super::error::FileError;
 use super::model::{
     BatchMove, BatchMoveRequest, BatchMoveResult, BrowseItem, FileChange, FileId, FileItem,
     FileMove, FileResult, FilesPage, MoveFileRequest, NameCheck, SearchFileItem, UpdateFileRequest,
 };
 use super::service::FileService;
+use crate::features::auth::sessions::routes::client_metadata;
+use crate::features::folders::impact::DeletionImpact;
 
 const READ_ROUTE: RoutePolicy = RoutePolicy::new(
     AuthClass::Authenticated,
@@ -67,6 +70,10 @@ pub fn routes() -> Routes<AppState> {
         .route(WRITE_ROUTE, routes!(update_file))
         .route(WRITE_ROUTE, routes!(move_file))
         .route(WRITE_ROUTE, routes!(batch_move_files))
+        .route(READ_ROUTE, routes!(file_deletion_impact))
+        .route(READ_ROUTE, routes!(batch_deletion_impact))
+        .route(WRITE_ROUTE, routes!(delete_file))
+        .route(WRITE_ROUTE, routes!(batch_delete_files))
 }
 
 #[utoipa::path(
@@ -176,7 +183,7 @@ async fn get_file(
         (status = 401, description = "Authentication required.", body = ApiErrorBody),
         (status = 403, description = "The CSRF proof or origin is missing or not allowed, or the session is restricted.", body = ApiErrorBody),
         (status = 404, description = "`FILE_NOT_FOUND`, including another user's file.", body = ApiErrorBody),
-        (status = 409, description = "`FILE_NAME_CONFLICT`: no unique name could be generated.", body = ApiErrorBody),
+        (status = 409, description = "`FILE_NAME_CONFLICT`: no unique name could be generated, or `FOLDER_DELETING`: the file or the destination folder is being deleted.", body = ApiErrorBody),
         (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
         (status = 422, description = "`NAME_INVALID` or `VALIDATION_ERROR`.", body = ApiErrorBody),
         (status = 429, description = "Rate limited.", body = ApiErrorBody),
@@ -221,7 +228,7 @@ async fn update_file(
         (status = 401, description = "Authentication required.", body = ApiErrorBody),
         (status = 403, description = "The CSRF proof or origin is missing or not allowed, or the session is restricted.", body = ApiErrorBody),
         (status = 404, description = "`FILE_NOT_FOUND`, including another user's file, or `FOLDER_NOT_FOUND` for an unknown or foreign destination.", body = ApiErrorBody),
-        (status = 409, description = "`FILE_NAME_CONFLICT`: no unique name could be generated in the destination.", body = ApiErrorBody),
+        (status = 409, description = "`FILE_NAME_CONFLICT`: no unique name could be generated in the destination, or `FOLDER_DELETING`: the file or the destination folder is being deleted.", body = ApiErrorBody),
         (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
         (status = 422, description = "`VALIDATION_ERROR`.", body = ApiErrorBody),
         (status = 429, description = "Rate limited.", body = ApiErrorBody),
@@ -268,7 +275,7 @@ async fn move_file(
         (status = 401, description = "Authentication required.", body = ApiErrorBody),
         (status = 403, description = "The CSRF proof or origin is missing or not allowed, or the session is restricted.", body = ApiErrorBody),
         (status = 404, description = "`FILE_NOT_FOUND` or `FOLDER_NOT_FOUND`: an item or the destination is unknown or belongs to another user. Nothing moved.", body = ApiErrorBody),
-        (status = 409, description = "`FILE_NAME_CONFLICT`: no unique name could be generated for one item. Nothing moved.", body = ApiErrorBody),
+        (status = 409, description = "`FILE_NAME_CONFLICT`: no unique name could be generated for one item, or `FOLDER_DELETING`: an item or the destination is being deleted. Nothing moved.", body = ApiErrorBody),
         (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
         (status = 422, description = "`BATCH_TOO_LARGE` beyond 500 ids, `FOLDER_CYCLE`, `FOLDER_DEPTH_EXCEEDED`, or `VALIDATION_ERROR` for no ids, a repeated id or a missing `targetFolderId`. Nothing moved.", body = ApiErrorBody),
         (status = 429, description = "Rate limited.", body = ApiErrorBody),
@@ -291,6 +298,162 @@ async fn batch_move_files(
         Ok(moved) => json_response(StatusCode::OK, &moved, request_id.as_ref()),
         Err(error) => file_error(&error, request_id.as_ref()),
     }
+}
+
+#[utoipa::path(
+    get,
+    path = "/api/v1/files/{id}/deletion-impact",
+    tag = "files",
+    params(("id" = String, Path, description = "File UUIDv7")),
+    responses(
+        (status = 200, description = "What deleting the file would remove: `files` is 1, `folders` is 0 and `totalBytes` is its stored size. `affectedShares` lists, without duplicates, the caller's Shares that reference the file directly or through a live folder root that contains it, each with `remainingItems`, the number of that Share's root items still present after the deletion; `affectedShareCount` is the total when the list is capped at 100. `affectedEmbeds` counts the active, unexpired embed grants of the file. Read-only and advisory: the state is validated again when the file is deleted.", body = DeletionImpact),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "The session is restricted.", body = ApiErrorBody),
+        (status = 404, description = "`FILE_NOT_FOUND`, including another user's file and a file that is being deleted.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn file_deletion_impact(
+    Extension(service): Extension<FileService>,
+    Authenticated(principal): Authenticated,
+    Path(id): Path<String>,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let Ok(id) = id.parse::<FileId>() else {
+        return file_error(&FileError::NotFound, request_id.as_ref());
+    };
+    match service.file_impact(principal.user_id, id).await {
+        Ok(impact) => json_response(StatusCode::OK, &impact, request_id.as_ref()),
+        Err(error) => file_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    post,
+    path = "/api/v1/files/batch/deletion-impact",
+    tag = "files",
+    request_body(
+        content = BatchSelectionRequest,
+        content_type = "application/json",
+        description = "At most 500 ids in total across `fileIds` and `folderIds`, at least one, and no id may repeat. A folder counts with its whole subtree. A file that also lies inside a selected folder, and a folder that lies inside another selected folder, are counted once."
+    ),
+    responses(
+        (status = 200, description = "The combined impact of deleting every selected item. Each file contributes its bytes once however it was selected. Read-only and advisory.", body = DeletionImpact),
+        (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "The CSRF proof or origin is missing or not allowed, or the session is restricted.", body = ApiErrorBody),
+        (status = 404, description = "`FILE_NOT_FOUND` or `FOLDER_NOT_FOUND`: an item is unknown, belongs to another user or is being deleted. Nothing is reported for the other items.", body = ApiErrorBody),
+        (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
+        (status = 422, description = "`BATCH_TOO_LARGE` beyond 500 ids, or `VALIDATION_ERROR` for no ids or a repeated id.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn batch_deletion_impact(
+    Extension(service): Extension<FileService>,
+    Authenticated(principal): Authenticated,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let selection = match json::read::<BatchSelectionRequest>(request.into_body()).await {
+        Ok(body) => match BatchSelection::parse(body) {
+            Ok(selection) => selection,
+            Err(error) => return file_error(&error, request_id.as_ref()),
+        },
+        Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
+    };
+    match service
+        .selection_impact(principal.user_id, &selection)
+        .await
+    {
+        Ok(impact) => json_response(StatusCode::OK, &impact, request_id.as_ref()),
+        Err(error) => file_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    delete,
+    path = "/api/v1/files/{id}",
+    tag = "files",
+    params(("id" = String, Path, description = "File UUIDv7")),
+    responses(
+        (status = 204, description = "The file is permanently deleted: it is gone from every view and its quota is returned in the same transaction, and its bytes are erased by an idempotent background job. Deleting a file the caller owned and already deleted is also `204`. There is no Trash and no restore."),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "The CSRF proof or origin is missing or not allowed, or the session is restricted.", body = ApiErrorBody),
+        (status = 404, description = "`FILE_NOT_FOUND`: the id never existed or never belonged to the caller.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn delete_file(
+    Extension(service): Extension<FileService>,
+    Authenticated(principal): Authenticated,
+    Path(id): Path<String>,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let Ok(id) = id.parse::<FileId>() else {
+        return file_error(&FileError::NotFound, request_id.as_ref());
+    };
+    let caller = DeletionCaller {
+        owner: principal.user_id,
+        username: principal.username.clone(),
+        client: client_metadata(&request),
+    };
+    match service.delete_file(&caller, id).await {
+        Ok(_) => no_content(),
+        Err(error) => file_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    post,
+    path = "/api/v1/files/batch/delete",
+    tag = "files",
+    request_body(
+        content = BatchSelectionRequest,
+        content_type = "application/json",
+        description = "Deletes every selected file and folder. Unlike batch move this is not atomic: each item is its own short transaction, so a failure leaves the other items deleted and is reported per item. At most 500 ids in total, at least one, and no id may repeat. A folder inside another selected folder is covered by its ancestor and reported as succeeded. Re-deleting an item the caller owned and already deleted succeeds."
+    ),
+    responses(
+        (status = 200, description = "`succeeded` lists the ids whose deletion is durable, in request order (files, then folders); `failed` lists each remaining id with its error `code`. A folder is `succeeded` once its deletion claim has committed: the subtree is invisible at once and its rows and bytes are removed in the background. When no item succeeded the response is never `200`: if every item failed for the same reason it is that error's envelope and status, otherwise `BATCH_DELETE_FAILED` (422); both carry `details.failed`, the per-item `{id, code}` list.", body = BatchDeleteResult),
+        (status = 400, description = "The body is not parseable JSON.", body = ApiErrorBody),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "The CSRF proof or origin is missing or not allowed, or the session is restricted.", body = ApiErrorBody),
+        (status = 404, description = "`FILE_NOT_FOUND` or `FOLDER_NOT_FOUND` when every item was unknown or belongs to another user; `details.failed` lists each item.", body = ApiErrorBody),
+        (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
+        (status = 422, description = "`BATCH_TOO_LARGE` beyond 500 ids, `VALIDATION_ERROR` for no ids or a repeated id, or `BATCH_DELETE_FAILED` when no item succeeded and the items failed for different reasons (`details.failed` lists each `{id, code}`).", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn batch_delete_files(
+    Extension(service): Extension<FileService>,
+    Authenticated(principal): Authenticated,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let caller = DeletionCaller {
+        owner: principal.user_id,
+        username: principal.username.clone(),
+        client: client_metadata(&request),
+    };
+    let selection = match json::read::<BatchSelectionRequest>(request.into_body()).await {
+        Ok(body) => match BatchSelection::parse(body) {
+            Ok(selection) => selection,
+            Err(error) => return file_error(&error, request_id.as_ref()),
+        },
+        Err(error) => return tag_error(error, request_id.as_ref()).into_response(),
+    };
+    match service.batch_delete(&caller, &selection).await {
+        Ok(result) => match result.zero_success_error() {
+            Some(error) => tag_error(error, request_id.as_ref()).into_response(),
+            None => json_response(StatusCode::OK, &result, request_id.as_ref()),
+        },
+        Err(error) => file_error(&error, request_id.as_ref()),
+    }
+}
+
+fn no_content() -> Response {
+    (StatusCode::NO_CONTENT, [(CACHE_CONTROL, NO_STORE)]).into_response()
 }
 
 fn file_error(error: &FileError, request_id: Option<&RequestId>) -> Response {

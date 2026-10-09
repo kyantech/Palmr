@@ -11,6 +11,8 @@ use crate::app::auth_class::AuthClass;
 use crate::app::openapi::with_query_parameters;
 use crate::app::router::{IdempotencyMode, RateLimitClass, RoutePolicy, Routes, Transport};
 use crate::app::state::AppState;
+use crate::features::auth::sessions::routes::client_metadata;
+use crate::features::files::delete::DeletionCaller;
 use crate::infra::http::error::{ApiError, ApiErrorBody, JSON_CONTENT_TYPE};
 use crate::infra::http::extractors::Authenticated;
 use crate::infra::http::idempotency::{Admission, Claim, IdempotencyRequest};
@@ -19,6 +21,7 @@ use crate::infra::http::pagination::Page;
 use crate::infra::http::request_id::{tag_error, RequestId};
 
 use super::error::FolderError;
+use super::impact::DeletionImpact;
 use super::model::{
     CreateFolderRequest, EnsurePath, EnsurePathRequest, EnsurePathResponse, FolderChange,
     FolderDetail, FolderId, FolderItem, FolderMove, FolderTree, MoveFolderRequest, NewFolder,
@@ -85,6 +88,8 @@ pub fn routes() -> Routes<AppState> {
         .route(WRITE_ROUTE, routes!(update_folder))
         .route(WRITE_ROUTE, routes!(move_folder))
         .route(ENSURE_PATH_ROUTE, routes!(ensure_path))
+        .route(READ_ROUTE, routes!(folder_deletion_impact))
+        .route(WRITE_ROUTE, routes!(delete_folder))
 }
 
 #[utoipa::path(
@@ -166,7 +171,7 @@ async fn folder_tree(
         (status = 401, description = "Authentication required.", body = ApiErrorBody),
         (status = 403, description = "The CSRF proof or origin is missing or not allowed, or the session is restricted.", body = ApiErrorBody),
         (status = 404, description = "`FOLDER_NOT_FOUND`: the parent is unknown or belongs to another user.", body = ApiErrorBody),
-        (status = 409, description = "`FILE_NAME_CONFLICT`: no unique name could be generated.", body = ApiErrorBody),
+        (status = 409, description = "`FILE_NAME_CONFLICT`: no unique name could be generated, or `FOLDER_DELETING`: the parent folder is being deleted.", body = ApiErrorBody),
         (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
         (status = 422, description = "`NAME_INVALID`, `FOLDER_DEPTH_EXCEEDED` or `VALIDATION_ERROR`.", body = ApiErrorBody),
         (status = 429, description = "Rate limited.", body = ApiErrorBody),
@@ -236,7 +241,7 @@ async fn get_folder(
         (status = 401, description = "Authentication required.", body = ApiErrorBody),
         (status = 403, description = "The CSRF proof or origin is missing or not allowed, or the session is restricted.", body = ApiErrorBody),
         (status = 404, description = "`FOLDER_NOT_FOUND`, including another user's folder.", body = ApiErrorBody),
-        (status = 409, description = "`FILE_NAME_CONFLICT`: no unique name could be generated.", body = ApiErrorBody),
+        (status = 409, description = "`FILE_NAME_CONFLICT`: no unique name could be generated, or `FOLDER_DELETING`: the folder is being deleted.", body = ApiErrorBody),
         (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
         (status = 422, description = "`NAME_INVALID` or `VALIDATION_ERROR`.", body = ApiErrorBody),
         (status = 429, description = "Rate limited.", body = ApiErrorBody),
@@ -281,7 +286,7 @@ async fn update_folder(
         (status = 401, description = "Authentication required.", body = ApiErrorBody),
         (status = 403, description = "The CSRF proof or origin is missing or not allowed, or the session is restricted.", body = ApiErrorBody),
         (status = 404, description = "`FOLDER_NOT_FOUND`: the folder or the destination is unknown or belongs to another user.", body = ApiErrorBody),
-        (status = 409, description = "`FILE_NAME_CONFLICT`: no unique name could be generated in the destination.", body = ApiErrorBody),
+        (status = 409, description = "`FILE_NAME_CONFLICT`: no unique name could be generated in the destination, or `FOLDER_DELETING`: the folder or the destination is being deleted.", body = ApiErrorBody),
         (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
         (status = 422, description = "`FOLDER_CYCLE` when the destination is the folder itself or one of its descendants, `FOLDER_DEPTH_EXCEEDED` when the moved subtree would pass depth 64, or `VALIDATION_ERROR`.", body = ApiErrorBody),
         (status = 429, description = "Rate limited.", body = ApiErrorBody),
@@ -331,7 +336,7 @@ async fn move_folder(
         (status = 401, description = "Authentication required.", body = ApiErrorBody),
         (status = 403, description = "The CSRF proof or origin is missing or not allowed, or the session is restricted.", body = ApiErrorBody),
         (status = 404, description = "`FOLDER_NOT_FOUND`: the parent is unknown, malformed or belongs to another user.", body = ApiErrorBody),
-        (status = 409, description = "`IDEMPOTENCY_KEY_CONFLICT` or `IDEMPOTENCY_REQUEST_IN_PROGRESS` for a reused key.", body = ApiErrorBody),
+        (status = 409, description = "`IDEMPOTENCY_KEY_CONFLICT` or `IDEMPOTENCY_REQUEST_IN_PROGRESS` for a reused key, or `FOLDER_DELETING`: the parent or an existing segment is being deleted.", body = ApiErrorBody),
         (status = 415, description = "The request is not JSON.", body = ApiErrorBody),
         (status = 422, description = "`NAME_INVALID` for an invalid segment, `FOLDER_DEPTH_EXCEEDED` when the chain would pass depth 64, or `VALIDATION_ERROR` for a missing, empty or over-long `segments` array.", body = ApiErrorBody),
         (status = 429, description = "Rate limited.", body = ApiErrorBody),
@@ -373,6 +378,69 @@ async fn ensure_path(
             release(&service, claim).await;
             folder_error(&error, request_id.as_ref())
         }
+    }
+}
+
+#[utoipa::path(
+    get,
+    path = "/api/v1/folders/{id}/deletion-impact",
+    tag = "folders",
+    params(("id" = String, Path, description = "Folder UUIDv7")),
+    responses(
+        (status = 200, description = "What deleting the folder and everything below it would remove, from one bounded recursive statement: `folders` counts the folder rows that would be deleted, the selected folder included, `files` and `totalBytes` cover the whole subtree. `affectedShares` lists, without duplicates, the caller's Shares that reference the folder, a folder or file inside it, or a live folder root above it, each with `remainingItems`, the number of that Share's root items still present after the deletion; `affectedShareCount` is the total when the list is capped at 100. `affectedEmbeds` counts the active, unexpired embed grants of the files below. Read-only and advisory.", body = DeletionImpact),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "The session is restricted.", body = ApiErrorBody),
+        (status = 404, description = "`FOLDER_NOT_FOUND`, including another user's folder and a folder that is being deleted.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn folder_deletion_impact(
+    Extension(service): Extension<FolderService>,
+    Authenticated(principal): Authenticated,
+    Path(id): Path<String>,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let Ok(id) = id.parse::<FolderId>() else {
+        return folder_error(&FolderError::NotFound, request_id.as_ref());
+    };
+    match service.folder_impact(principal.user_id, id).await {
+        Ok(impact) => json_response(StatusCode::OK, &impact, request_id.as_ref()),
+        Err(error) => folder_error(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
+    delete,
+    path = "/api/v1/folders/{id}",
+    tag = "folders",
+    params(("id" = String, Path, description = "Folder UUIDv7")),
+    responses(
+        (status = 204, description = "The deletion is durably claimed: the folder and everything below it are invisible at once and further writes into them are refused with `FOLDER_DELETING`. Its rows are removed and its bytes erased in the background in bounded batches, so physical cleanup may still be pending. Deleting a folder the caller owned and already deleted, or that is being deleted, is also `204`. There is no Trash and no restore."),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "The CSRF proof or origin is missing or not allowed, or the session is restricted.", body = ApiErrorBody),
+        (status = 404, description = "`FOLDER_NOT_FOUND`: the id never existed or never belonged to the caller.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+    )
+)]
+async fn delete_folder(
+    Extension(service): Extension<FolderService>,
+    Authenticated(principal): Authenticated,
+    Path(id): Path<String>,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let Ok(id) = id.parse::<FolderId>() else {
+        return folder_error(&FolderError::NotFound, request_id.as_ref());
+    };
+    let caller = DeletionCaller {
+        owner: principal.user_id,
+        username: principal.username.clone(),
+        client: client_metadata(&request),
+    };
+    match service.delete_folder(&caller, id).await {
+        Ok(_) => (StatusCode::NO_CONTENT, [(CACHE_CONTROL, NO_STORE)]).into_response(),
+        Err(error) => folder_error(&error, request_id.as_ref()),
     }
 }
 

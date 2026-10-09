@@ -52,6 +52,8 @@
     "folderNotFound": "Deze map bestaat niet meer.",
     "folderDepthExceeded": "Mappen kunnen maximaal 64 niveaus diep genest zijn. Kies een minder diepe locatie.",
     "folderCycle": "Een map kan niet naar zichzelf of naar een van zijn eigen submappen worden verplaatst.",
+    "folderDeleting": "Deze map wordt momenteel verwijderd.",
+    "batchDeleteFailed": "Geen van de geselecteerde items kon worden verwijderd.",
     "rangeNotSatisfiable": "Het gevraagde deel van het bestand is niet beschikbaar. Start de download opnieuw.",
     "storageUnavailable": "Bestandsopslag is tijdelijk niet beschikbaar. Probeer het later opnieuw.",
     "storageFull": "De opslag van de server is vol. Neem contact op met je beheerder.",

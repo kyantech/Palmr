@@ -14,7 +14,7 @@ const RESTRICT: &str = "RESTRICT";
 const CASCADE: &str = "CASCADE";
 const EXPLICIT_DELETE_ACTIONS: [&str; 3] = [RESTRICT, CASCADE, "SET NULL"];
 
-pub const BOOLEAN_COLUMNS: [(&str, &str); 17] = [
+pub const BOOLEAN_COLUMNS: [(&str, &str); 18] = [
     ("users", "must_change_password"),
     ("users", "is_active"),
     ("users", "totp_enabled"),
@@ -32,6 +32,7 @@ pub const BOOLEAN_COLUMNS: [(&str, &str); 17] = [
     ("tus_uploads", "upload_defer_length"),
     ("app_settings", "is_secret"),
     ("branding_assets", "is_current"),
+    ("folders", "deleting"),
 ];
 
 #[derive(Debug, Clone, PartialEq, Eq)]

@@ -52,6 +52,8 @@
     "folderNotFound": "Den här mappen finns inte längre.",
     "folderDepthExceeded": "Mappar kan vara nästlade på högst 64 nivåer. Välj en plats som ligger grundare.",
     "folderCycle": "En mapp kan inte flyttas in i sig själv eller i någon av sina egna undermappar.",
+    "folderDeleting": "Den här mappen håller på att tas bort.",
+    "batchDeleteFailed": "Inget av de markerade objekten kunde tas bort.",
     "rangeNotSatisfiable": "Den begärda delen av filen är inte tillgänglig. Starta nedladdningen igen.",
     "storageUnavailable": "Fillagringen är tillfälligt otillgänglig. Försök igen senare.",
     "storageFull": "Serverns lagring är full. Kontakta administratören.",
