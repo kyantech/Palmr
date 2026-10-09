@@ -267,7 +267,7 @@ CREATE TABLE folders (
 );
 
 -- table idempotency_records
-CREATE TABLE idempotency_records (
+CREATE TABLE "idempotency_records" (
     id                  TEXT    NOT NULL PRIMARY KEY,
     scope_kind          TEXT    NOT NULL CHECK (scope_kind IN ('user','reverse_share_grant','reverse_share_link')),
     scope_id            TEXT    NOT NULL CHECK (length(scope_id) BETWEEN 1 AND 64),
@@ -281,7 +281,12 @@ CREATE TABLE idempotency_records (
     lease_expires_at    TEXT    NULL,
     response_status     INTEGER NULL CHECK (response_status IS NULL OR response_status BETWEEN 200 AND 599),
     response_json       TEXT    NULL CHECK (response_json IS NULL
-                                            OR (json_valid(response_json) AND length(response_json) <= 16384)),
+                                            OR (json_valid(response_json)
+                                                AND length(CAST(response_json AS BLOB)) <=
+                                                    CASE route_template
+                                                        WHEN '/api/v1/transfers/sessions' THEN 6291456
+                                                        ELSE 16384
+                                                    END)),
     response_ciphertext BLOB    NULL CHECK (response_ciphertext IS NULL OR length(response_ciphertext) <= 16400),
     response_nonce      BLOB    NULL CHECK (response_nonce IS NULL OR length(response_nonce) = 24),
     key_version         INTEGER NULL CHECK (key_version IS NULL OR key_version >= 1),
@@ -1285,6 +1290,9 @@ CREATE INDEX ix_rs_upload_sessions_expiry ON reverse_share_upload_sessions(expir
 -- index ix_rs_upload_sessions_share
 CREATE INDEX ix_rs_upload_sessions_share  ON reverse_share_upload_sessions(reverse_share_id, created_at DESC);
 
+-- index ix_s3mp_abandoned
+CREATE INDEX ix_s3mp_abandoned ON s3_multipart_uploads(id) WHERE state = 'abandoned';
+
 -- index ix_s3mp_expiry
 CREATE INDEX ix_s3mp_expiry    ON s3_multipart_uploads(expires_at) WHERE state IN ('created','in_progress');
 
@@ -1393,6 +1401,9 @@ CREATE INDEX ix_tus_uploads_locks   ON tus_uploads(lock_expires_at) WHERE locked
 
 -- index ix_tus_uploads_owner
 CREATE INDEX ix_tus_uploads_owner   ON tus_uploads(owner_user_id, created_at DESC) WHERE owner_user_id IS NOT NULL;
+
+-- index ix_tus_uploads_terminated
+CREATE INDEX ix_tus_uploads_terminated ON tus_uploads(id) WHERE state = 'terminated';
 
 -- index ix_users_active_admins
 CREATE INDEX ix_users_active_admins ON users(id) WHERE role = 'admin' AND is_active = 1;

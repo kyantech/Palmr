@@ -29,6 +29,8 @@ Post-freeze migrations so far:
 | `0003_authorization_request_contract.sql` | `oauth_auth_requests` purpose vocabulary (`login`, `link`, `reauth`) and the `auth_providers_enabled` setting row |
 | `0004_session_revoked_reason_identity_unlink.sql` | `sessions.revoked_reason` gains `identity_provider_unlinked` |
 | `0005_password_login_enabled.sql` | `app_settings.password_login_enabled` (`security`, `boolean`, `true`; Decision 52): written only by `PUT /api/v1/admin/auth/password-login` |
+| `0006_deletion_lifecycle.sql` | `folders.deleting`, `folder_deletions`, `deletion_receipts`, `transfer_sessions.deleted_target_folder_id` and its immutability trigger (ADR 0018) |
+| `0007_idempotency_transfer_envelope.sql` | Rebuilds `idempotency_records`: the `response_json` CHECK counts UTF-8 bytes and allows 6 MiB for `/api/v1/transfers/sessions` (16 KiB elsewhere). Rows are copied unchanged |
 
 A new migration must keep both of these producing the same normalized schema:
 

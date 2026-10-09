@@ -32,6 +32,7 @@ pub const MIN_KEY_CHARS: usize = 16;
 pub const MAX_KEY_CHARS: usize = 128;
 pub const REPLAY_WINDOW: Duration = Duration::from_secs(24 * 60 * 60);
 pub const MAX_ENVELOPE_BYTES: usize = 16 * 1024;
+pub const TRANSFER_SESSION_ENVELOPE_BYTES: usize = 6 * 1024 * 1024;
 
 const KEY_FIELD: &str = "Idempotency-Key";
 const REPLAYED: HeaderValue = HeaderValue::from_static("true");
@@ -91,6 +92,7 @@ pub struct SupportedRoute {
     pub method: Method,
     pub path: &'static str,
     pub mode: IdempotencyMode,
+    pub envelope_limit: usize,
 }
 
 const fn supported(path: &'static str, mode: IdempotencyMode) -> SupportedRoute {
@@ -98,11 +100,29 @@ const fn supported(path: &'static str, mode: IdempotencyMode) -> SupportedRoute 
         method: Method::POST,
         path,
         mode,
+        envelope_limit: MAX_ENVELOPE_BYTES,
+    }
+}
+
+const fn supported_with_limit(
+    path: &'static str,
+    mode: IdempotencyMode,
+    envelope_limit: usize,
+) -> SupportedRoute {
+    SupportedRoute {
+        method: Method::POST,
+        path,
+        mode,
+        envelope_limit,
     }
 }
 
 pub const SUPPORTED_ROUTES: [SupportedRoute; 12] = [
-    supported("/api/v1/transfers/sessions", IdempotencyMode::Plaintext),
+    supported_with_limit(
+        "/api/v1/transfers/sessions",
+        IdempotencyMode::Plaintext,
+        TRANSFER_SESSION_ENVELOPE_BYTES,
+    ),
     supported(
         "/api/v1/public/reverse-shares/{alias}/sessions",
         IdempotencyMode::Sealed,
@@ -124,6 +144,13 @@ pub fn supported_mode(method: &Method, path: &str) -> IdempotencyMode {
         .iter()
         .find(|route| route.method == method && route.path == path)
         .map_or(IdempotencyMode::None, |route| route.mode)
+}
+
+pub fn envelope_limit(method: &Method, path: &str) -> usize {
+    SUPPORTED_ROUTES
+        .iter()
+        .find(|route| route.method == method && route.path == path)
+        .map_or(MAX_ENVELOPE_BYTES, |route| route.envelope_limit)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -287,6 +314,7 @@ pub(crate) fn replay_aad(id: &str, scope: &IdempotencyScope, route_template: &st
 
 struct Keyed {
     storage: ReplayStorage,
+    envelope_limit: usize,
     lease: Duration,
     template: Arc<str>,
     method: Method,
@@ -362,6 +390,7 @@ where
         Ok(Self {
             keyed: Some(Keyed {
                 storage: route.storage,
+                envelope_limit: envelope_limit(&parts.method, template),
                 lease: route.lease,
                 template: Arc::from(template),
                 method: parts.method.clone(),
@@ -441,7 +470,11 @@ impl ReplayEnvelope {
         self
     }
 
-    fn encode(&self, storage: ReplayStorage) -> Result<Zeroizing<Vec<u8>>, IdempotencyError> {
+    fn encode(
+        &self,
+        storage: ReplayStorage,
+        limit: usize,
+    ) -> Result<Zeroizing<Vec<u8>>, IdempotencyError> {
         if !(200..=599).contains(&self.status.as_u16()) {
             return Err(IdempotencyError::InvalidStatus);
         }
@@ -457,8 +490,8 @@ impl ReplayEnvelope {
         };
         let encoded =
             Zeroizing::new(serde_json::to_vec(&envelope).map_err(|_| IdempotencyError::Encoding)?);
-        if encoded.len() > MAX_ENVELOPE_BYTES {
-            return Err(IdempotencyError::EnvelopeTooLarge);
+        if encoded.len() > limit {
+            return Err(IdempotencyError::EnvelopeTooLarge { limit });
         }
         Ok(encoded)
     }
@@ -568,6 +601,7 @@ struct StoredHeaders {
 struct ClaimedRecord {
     id: String,
     storage: ReplayStorage,
+    envelope_limit: usize,
     scope: IdempotencyScope,
     template: Arc<str>,
     lease: Timestamp,
@@ -672,7 +706,7 @@ impl IdempotencyService {
         let Some(record) = &claim.record else {
             return Ok(());
         };
-        let encoded = envelope.encode(record.storage)?;
+        let encoded = envelope.encode(record.storage, record.envelope_limit)?;
         let completed_at = Timestamp::try_from(self.clock.now())?;
         let (json, sealed) = match record.storage {
             ReplayStorage::Plaintext => {
@@ -872,6 +906,7 @@ fn claimed(keyed: &Keyed, id: String, times: &ClaimTimes) -> ClaimedRecord {
     ClaimedRecord {
         id,
         storage: keyed.storage,
+        envelope_limit: keyed.envelope_limit,
         scope: keyed.scope.clone(),
         template: Arc::clone(&keyed.template),
         lease: times.lease,
@@ -892,7 +927,7 @@ pub enum IdempotencyError {
     InvalidStatus,
     UnrepresentableHeader,
     Encoding,
-    EnvelopeTooLarge,
+    EnvelopeTooLarge { limit: usize },
     CorruptRecord(&'static str),
     ClaimLost,
 }
@@ -907,7 +942,7 @@ impl IdempotencyError {
             Self::InvalidStatus => "idempotency_invalid_status",
             Self::UnrepresentableHeader => "idempotency_unrepresentable_header",
             Self::Encoding => "idempotency_encoding_failed",
-            Self::EnvelopeTooLarge => "idempotency_envelope_too_large",
+            Self::EnvelopeTooLarge { .. } => "idempotency_envelope_too_large",
             Self::CorruptRecord(_) => "idempotency_corrupt_record",
             Self::ClaimLost => "idempotency_claim_lost",
         }
@@ -933,8 +968,8 @@ impl fmt::Display for IdempotencyError {
             Self::InvalidStatus => f.write_str("replay status must be between 200 and 599"),
             Self::UnrepresentableHeader => f.write_str("replay header is not visible ASCII"),
             Self::Encoding => f.write_str("replay envelope could not be encoded"),
-            Self::EnvelopeTooLarge => {
-                write!(f, "replay envelope exceeds {MAX_ENVELOPE_BYTES} bytes")
+            Self::EnvelopeTooLarge { limit } => {
+                write!(f, "replay envelope exceeds {limit} bytes")
             }
             Self::CorruptRecord(column) => {
                 write!(f, "idempotency record has an invalid {column}")
@@ -985,7 +1020,11 @@ mod tests {
     use serde_json::{json, Value};
     use tempfile::TempDir;
 
-    use super::{canonical_json, request_identity, supported_mode, IdempotencyMode};
+    use super::{
+        canonical_json, envelope_limit, request_identity, supported_mode, IdempotencyError,
+        IdempotencyMode, ReplayEnvelope, ReplayStorage, MAX_ENVELOPE_BYTES, SUPPORTED_ROUTES,
+        TRANSFER_SESSION_ENVELOPE_BYTES,
+    };
     use crate::infra::crypto::hash::{sha256_hex, DIGEST_HEX_LEN};
     use crate::infra::crypto::hkdf::{KeyRing, MacPurpose};
     use crate::infra::crypto::instance_key::InstanceKey;
@@ -1005,6 +1044,63 @@ mod tests {
 
     fn parse(text: &str) -> Value {
         serde_json::from_str(text).unwrap()
+    }
+
+    #[test]
+    fn unit_replay_envelope_limit_counts_encoded_bytes_per_route() {
+        let envelope = |padding: &str| {
+            ReplayEnvelope::new(http::StatusCode::CREATED, json!({ "padding": padding }))
+        };
+        let empty = envelope("")
+            .encode(ReplayStorage::Plaintext, usize::MAX)
+            .unwrap()
+            .len();
+        let limit = empty + 100;
+        assert!(envelope(&"x".repeat(100))
+            .encode(ReplayStorage::Plaintext, limit)
+            .is_ok());
+        assert!(matches!(
+            envelope(&"x".repeat(101)).encode(ReplayStorage::Plaintext, limit),
+            Err(IdempotencyError::EnvelopeTooLarge { limit: refused }) if refused == limit
+        ));
+        let wide = "\u{e9}".repeat(51);
+        assert_eq!(wide.chars().count(), 51);
+        assert_eq!(wide.len(), 102);
+        assert!(matches!(
+            envelope(&wide).encode(ReplayStorage::Plaintext, limit),
+            Err(IdempotencyError::EnvelopeTooLarge { .. })
+        ));
+        assert!(envelope(&wide)
+            .encode(ReplayStorage::Plaintext, limit + 2)
+            .is_ok());
+
+        assert_eq!(MAX_ENVELOPE_BYTES, 16 * 1024);
+        assert_eq!(TRANSFER_SESSION_ENVELOPE_BYTES, 6 * 1024 * 1024);
+        assert_eq!(
+            envelope_limit(&Method::POST, "/api/v1/transfers/sessions"),
+            TRANSFER_SESSION_ENVELOPE_BYTES
+        );
+        for route in SUPPORTED_ROUTES
+            .iter()
+            .filter(|route| route.path != "/api/v1/transfers/sessions")
+        {
+            assert_eq!(route.envelope_limit, MAX_ENVELOPE_BYTES, "{}", route.path);
+            assert_eq!(
+                envelope_limit(&route.method, route.path),
+                MAX_ENVELOPE_BYTES
+            );
+        }
+        assert_eq!(
+            envelope_limit(&Method::POST, "/api/v1/not-declared"),
+            MAX_ENVELOPE_BYTES
+        );
+        assert_eq!(
+            envelope_limit(&Method::GET, "/api/v1/transfers/sessions"),
+            MAX_ENVELOPE_BYTES
+        );
+        let migration = include_str!("../../../migrations/0007_idempotency_transfer_envelope.sql");
+        assert!(migration.contains(&TRANSFER_SESSION_ENVELOPE_BYTES.to_string()));
+        assert!(migration.contains(&MAX_ENVELOPE_BYTES.to_string()));
     }
 
     #[test]

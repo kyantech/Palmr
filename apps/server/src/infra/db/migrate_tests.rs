@@ -111,7 +111,9 @@ async fn it_migrate_up_from_empty() {
             "0003_authorization_request_contract.sql",
             "0004_session_revoked_reason_identity_unlink.sql",
             "0005_password_login_enabled.sql",
-            "0006_deletion_lifecycle.sql"
+            "0006_deletion_lifecycle.sql",
+            "0007_idempotency_transfer_envelope.sql",
+            "0008_cancellation_cleanup_discovery.sql"
         ]
     );
     assert_eq!(
@@ -138,6 +140,14 @@ async fn it_migrate_up_from_empty() {
         files[5].1,
         include_str!("../../../migrations/0006_deletion_lifecycle.sql")
     );
+    assert_eq!(
+        files[6].1,
+        include_str!("../../../migrations/0007_idempotency_transfer_envelope.sql")
+    );
+    assert_eq!(
+        files[7].1,
+        include_str!("../../../migrations/0008_cancellation_cleanup_discovery.sql")
+    );
 
     let data = TempDir::new().unwrap();
     let pools = open_pools(data.path()).await;
@@ -147,8 +157,8 @@ async fn it_migrate_up_from_empty() {
     assert_eq!(
         first,
         MigrationStatus {
-            applied: 6,
-            version: Some(6),
+            applied: 8,
+            version: Some(8),
         }
     );
     let again = pools.migrate(&MIGRATOR).await.unwrap();
@@ -156,7 +166,7 @@ async fn it_migrate_up_from_empty() {
         again,
         MigrationStatus {
             applied: 0,
-            version: Some(6),
+            version: Some(8),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -166,7 +176,7 @@ async fn it_migrate_up_from_empty() {
         reopened.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
             applied: 0,
-            version: Some(6),
+            version: Some(8),
         }
     );
     reopened.shutdown().await.checkpoint.unwrap();
@@ -226,8 +236,8 @@ async fn it_migrate_from_0001_derives_email_linking_by_protocol() {
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 5,
-            version: Some(6),
+            applied: 7,
+            version: Some(8),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -261,7 +271,9 @@ async fn it_migrate_from_0001_derives_email_linking_by_protocol() {
             (3, true),
             (4, true),
             (5, true),
-            (6, true)
+            (6, true),
+            (7, true),
+            (8, true)
         ]
     );
     connection.close().await.unwrap();
@@ -327,8 +339,8 @@ async fn it_migrate_oauth_requests_to_reauth_and_extended_path() {
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 4,
-            version: Some(6),
+            applied: 6,
+            version: Some(8),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -598,8 +610,8 @@ async fn it_migrate_session_revoked_reason_accepts_identity_unlink() {
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 3,
-            version: Some(6),
+            applied: 5,
+            version: Some(8),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -760,8 +772,8 @@ async fn it_migrate_password_login_enabled_defaults_on_and_preserves_settings() 
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 2,
-            version: Some(6),
+            applied: 4,
+            version: Some(8),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -846,8 +858,8 @@ async fn it_migrate_deletion_lifecycle_keeps_existing_folders_live_and_checksums
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 1,
-            version: Some(6),
+            applied: 3,
+            version: Some(8),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -878,6 +890,10 @@ async fn it_migrate_deletion_lifecycle_keeps_existing_folders_live_and_checksums
     );
     assert_eq!(recorded[5].version, 6);
     assert!(recorded[5].success);
+    assert_eq!(recorded[6].version, 7);
+    assert!(recorded[6].success);
+    assert_eq!(recorded[7].version, 8);
+    assert!(recorded[7].success);
 
     let violations: Vec<(String, i64, String, i64)> = sqlx::query_as("PRAGMA foreign_key_check")
         .fetch_all(&mut connection)
@@ -940,5 +956,194 @@ async fn it_migrate_deletion_lifecycle_keeps_existing_folders_live_and_checksums
     .await
     .unwrap();
     assert_eq!(tables, ["deletion_receipts", "folder_deletions"]);
+    connection.close().await.unwrap();
+}
+
+const TRANSFER_ROUTE: &str = "/api/v1/transfers/sessions";
+const OTHER_ROUTE: &str = "/api/v1/folders/ensure-path";
+
+fn json_string_of_bytes(bytes: usize) -> String {
+    format!("\"{}\"", "a".repeat(bytes - 2))
+}
+
+async fn insert_completed_record(
+    connection: &mut SqliteConnection,
+    id: &str,
+    route: &str,
+    response: &str,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "INSERT INTO idempotency_records
+            (id, scope_kind, scope_id, http_method, route_template, key_hash, request_hash, state,
+             response_status, response_json, created_at, completed_at, expires_at)
+         VALUES (?1, 'user', 'scope-1', 'POST', ?2, ?3, ?3, 'completed', 201, ?4,
+                 '2026-09-25T12:00:00.000Z', '2026-09-25T12:00:00.000Z', '2026-09-26T12:00:00.000Z')",
+    )
+    .bind(id)
+    .bind(route)
+    .bind(format!("{id:0>64}"))
+    .bind(response)
+    .execute(connection)
+    .await
+    .map(|_| ())
+}
+
+#[tokio::test]
+async fn it_migrate_idempotency_envelope_bound_keeps_records_and_counts_bytes() {
+    let files = embedded_files();
+    let (_directory, released) = fixture_migrator(&files[..6]).await;
+    let data = TempDir::new().unwrap();
+    let pools = open_pools(data.path()).await;
+    assert_eq!(
+        pools.migrate(&released).await.unwrap(),
+        MigrationStatus {
+            applied: 6,
+            version: Some(6),
+        }
+    );
+    pools.shutdown().await.checkpoint.unwrap();
+
+    let mut connection = raw_connection(data.path()).await;
+    insert_completed_record(&mut connection, "kept-1", OTHER_ROUTE, "{\"ids\":[\"a\"]}")
+        .await
+        .unwrap();
+    insert_completed_record(
+        &mut connection,
+        "kept-2",
+        OTHER_ROUTE,
+        &json_string_of_bytes(16_384),
+    )
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO idempotency_records
+            (id, scope_kind, scope_id, http_method, route_template, key_hash, request_hash, state,
+             lease_expires_at, created_at, expires_at)
+         VALUES ('kept-3', 'user', 'scope-2', 'POST', ?1, ?2, ?2, 'in_progress',
+                 '2026-09-25T12:00:30.000Z', '2026-09-25T12:00:00.000Z', '2026-09-26T12:00:00.000Z')",
+    )
+    .bind(TRANSFER_ROUTE)
+    .bind("b".repeat(64))
+    .execute(&mut connection)
+    .await
+    .unwrap();
+    let snapshot = "SELECT id || '|' || scope_kind || '|' || scope_id || '|' || http_method || '|' ||
+                           route_template || '|' || key_hash || '|' || request_hash || '|' || state || '|' ||
+                           ifnull(lease_expires_at, '-') || '|' || ifnull(response_status, '-') || '|' ||
+                           ifnull(response_json, '-') || '|' || created_at || '|' ||
+                           ifnull(completed_at, '-') || '|' || expires_at
+                      FROM idempotency_records ORDER BY id";
+    let before: Vec<String> = sqlx::query_scalar(snapshot)
+        .fetch_all(&mut connection)
+        .await
+        .unwrap();
+    assert_eq!(before.len(), 3);
+    let before_records = recorded_migrations(&mut connection).await;
+    connection.close().await.unwrap();
+
+    let pools = open_pools(data.path()).await;
+    assert_eq!(
+        pools.migrate(&MIGRATOR).await.unwrap(),
+        MigrationStatus {
+            applied: 2,
+            version: Some(8),
+        }
+    );
+    pools.shutdown().await.checkpoint.unwrap();
+
+    let mut connection = raw_connection(data.path()).await;
+    let after: Vec<String> = sqlx::query_scalar(snapshot)
+        .fetch_all(&mut connection)
+        .await
+        .unwrap();
+    assert_eq!(after, before, "every record survives the rebuild unchanged");
+    assert_eq!(
+        recorded_migrations(&mut connection).await[..6],
+        before_records[..],
+        "applied migrations are untouched"
+    );
+    let indexes: Vec<String> = sqlx::query_scalar(
+        "SELECT name FROM sqlite_schema
+          WHERE type = 'index' AND tbl_name = 'idempotency_records' AND name NOT LIKE 'sqlite_%'
+          ORDER BY name",
+    )
+    .fetch_all(&mut connection)
+    .await
+    .unwrap();
+    assert_eq!(indexes, ["ix_idempotency_expiry", "ux_idempotency_scope"]);
+    let leftovers: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM sqlite_schema WHERE name = 'idempotency_records_next'",
+    )
+    .fetch_one(&mut connection)
+    .await
+    .unwrap();
+    assert_eq!(leftovers, 0);
+
+    let limit = 6 * 1024 * 1024;
+    insert_completed_record(
+        &mut connection,
+        "t-exact",
+        TRANSFER_ROUTE,
+        &json_string_of_bytes(limit),
+    )
+    .await
+    .unwrap();
+    assert!(
+        insert_completed_record(
+            &mut connection,
+            "t-over",
+            TRANSFER_ROUTE,
+            &json_string_of_bytes(limit + 1)
+        )
+        .await
+        .is_err(),
+        "one byte over the transfer-session bound is refused"
+    );
+    insert_completed_record(
+        &mut connection,
+        "o-exact",
+        OTHER_ROUTE,
+        &json_string_of_bytes(16_384),
+    )
+    .await
+    .unwrap();
+    assert!(
+        insert_completed_record(
+            &mut connection,
+            "o-over",
+            OTHER_ROUTE,
+            &json_string_of_bytes(16_385)
+        )
+        .await
+        .is_err(),
+        "every other route keeps 16 KiB"
+    );
+    let two_byte_characters = format!("\"{}\"", "\u{e9}".repeat(9_000));
+    assert!(two_byte_characters.chars().count() < 16_384 && two_byte_characters.len() > 16_384);
+    assert!(
+        insert_completed_record(&mut connection, "o-wide", OTHER_ROUTE, &two_byte_characters)
+            .await
+            .is_err(),
+        "the bound counts bytes, not characters"
+    );
+    insert_completed_record(
+        &mut connection,
+        "t-wide",
+        TRANSFER_ROUTE,
+        &two_byte_characters,
+    )
+    .await
+    .unwrap();
+    assert!(
+        insert_completed_record(&mut connection, "t-invalid", TRANSFER_ROUTE, "{not json")
+            .await
+            .is_err()
+    );
+
+    let integrity: String = sqlx::query_scalar("PRAGMA integrity_check")
+        .fetch_one(&mut connection)
+        .await
+        .unwrap();
+    assert_eq!(integrity, "ok");
     connection.close().await.unwrap();
 }

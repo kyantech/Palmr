@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::collections::BTreeMap;
 
 use axum::response::{IntoResponse, Response};
@@ -6,6 +7,7 @@ use http::{HeaderValue, StatusCode};
 use serde::Serialize;
 use utoipa::ToSchema;
 
+use crate::domain::client_key::ClientFileKey;
 use crate::domain::error_code::ErrorCode;
 
 pub const MAX_DETAIL_ENTRIES: usize = 8;
@@ -15,13 +17,16 @@ pub const VALIDATION_FIELDS: &str = "fields";
 pub(crate) const JSON_CONTENT_TYPE: &str = "application/json; charset=utf-8";
 
 // Keys and text values are `&'static str` so runtime strings — source error
-// messages, user input, paths, credentials — cannot reach `details`.
+// messages, user input, paths, credentials — cannot reach `details`. The one
+// exception is a validated `ClientFileKey` (a short ASCII identifier the caller
+// chose for its own item), the only owned text a `Text` detail can carry.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 #[serde(untagged)]
 pub enum DetailValue {
     Bool(bool),
     Integer(i64),
-    Text(&'static str),
+    #[schema(value_type = String)]
+    Text(Cow<'static, str>),
     TextList(Vec<&'static str>),
     Checks(Vec<CheckDetail>),
     Blockers(Vec<BlockerDetail>),
@@ -65,7 +70,13 @@ impl From<i64> for DetailValue {
 
 impl From<&'static str> for DetailValue {
     fn from(value: &'static str) -> Self {
-        Self::Text(value)
+        Self::Text(Cow::Borrowed(value))
+    }
+}
+
+impl From<&ClientFileKey> for DetailValue {
+    fn from(value: &ClientFileKey) -> Self {
+        Self::Text(Cow::Owned(value.as_str().to_owned()))
     }
 }
 

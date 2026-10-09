@@ -63,6 +63,8 @@ const CAPABILITY: &str = "invite-capability-sentinel-b93e0f";
 const GRANT_COOKIE_VALUE: &str = "grant-cookie-sentinel-5d21aa";
 const PLAINTEXT_COOKIE_VALUE: &str = "plaintext-cookie-sentinel-77e0c3";
 const RESPONSE_READ_CAP: usize = 64 * 1024;
+const LARGE_READ_CAP: usize = 16 * 1024 * 1024;
+const TRANSFERS: &str = "/api/v1/transfers/sessions";
 const DATABASE_READ_CAP: u64 = 256 * 1024 * 1024;
 
 enum TestPrincipal {}
@@ -147,6 +149,16 @@ async fn create_grant(
     execute(app, &headers, request, body, "grants").await
 }
 
+#[utoipa::path(post, path = "/api/v1/transfers/sessions", responses((status = 201)))]
+async fn create_transfer_sized(
+    State(app): State<TestApp>,
+    headers: HeaderMap,
+    request: IdempotencyRequest,
+    body: Bytes,
+) -> Response {
+    execute(app, &headers, request, body, "transfers").await
+}
+
 #[utoipa::path(post, path = "/api/v1/test/idempotency/unsupported", responses((status = 201)))]
 async fn create_unsupported(
     State(app): State<TestApp>,
@@ -192,11 +204,12 @@ async fn execute(
             "palmr_rs_0193=grant-cookie-sentinel-5d21aa; Path=/; HttpOnly; Secure",
         ))
     } else {
-        let envelope = ReplayEnvelope::new(
-            StatusCode::CREATED,
-            json!({ "id": effect_id, "name": name, "route": route }),
-        )
-        .with_location(HeaderValue::try_from(format!("{ITEMS}/{effect_id}")).unwrap());
+        let mut payload = json!({ "id": effect_id, "name": name, "route": route });
+        if let Some(padding) = body["padding"].as_u64() {
+            payload["padding"] = Value::String("x".repeat(usize::try_from(padding).unwrap()));
+        }
+        let envelope = ReplayEnvelope::new(StatusCode::CREATED, payload)
+            .with_location(HeaderValue::try_from(format!("{ITEMS}/{effect_id}")).unwrap());
         if body["grantCookie"] == json!(true) {
             envelope.with_grant_cookie(HeaderValue::from_static(
                 "palmr_rs_0194=plaintext-cookie-sentinel-77e0c3; Path=/",
@@ -253,6 +266,7 @@ fn test_routes() -> Routes<TestApp> {
         .route(PLAINTEXT, routes!(create_item))
         .route(PLAINTEXT, routes!(notify_item))
         .route(PLAINTEXT, routes!(create_other))
+        .route(PLAINTEXT, routes!(create_transfer_sized))
         .route(SEALED, routes!(create_grant))
         .route(UNDECLARED, routes!(create_unsupported))
 }
@@ -474,9 +488,17 @@ impl Reply {
 }
 
 async fn read(response: Response) -> Reply {
+    read_up_to(response, RESPONSE_READ_CAP).await
+}
+
+async fn read_large(response: Response) -> Reply {
+    read_up_to(response, LARGE_READ_CAP).await
+}
+
+async fn read_up_to(response: Response, cap: usize) -> Reply {
     let status = response.status();
     let headers = response.headers().clone();
-    let bytes = Limited::new(response.into_body(), RESPONSE_READ_CAP)
+    let bytes = Limited::new(response.into_body(), cap)
         .collect()
         .await
         .unwrap()
@@ -1093,4 +1115,108 @@ async fn it_idempotency_key_bounds_and_scope_isolation() {
     )
     .await
     .replayed());
+}
+
+#[tokio::test]
+async fn it_idempotency_envelope_bound_is_per_route_and_oversize_leaves_no_effect() {
+    let mut harness = Harness::open().await;
+    let user = principal(&harness.clock);
+    let send = |harness: &Harness, path: &'static str, key: &'static str, padding: u64| {
+        let call = Call::user(
+            path,
+            &user,
+            Some(key),
+            &json!({ "name": "big", "padding": padding }),
+        );
+        let request = call.request();
+        let harness_service = harness.service.clone();
+        async move { read_large(harness_service.oneshot(request).await.unwrap()).await }
+    };
+
+    let default_ok = send(&harness, ITEMS, "client-key-0001-default-ok", 12_000).await;
+    assert_eq!(default_ok.status, StatusCode::CREATED);
+    let default_over = send(&harness, ITEMS, "client-key-0002-default-over", 17_000).await;
+    assert_eq!(default_over.status, StatusCode::INTERNAL_SERVER_ERROR);
+    assert_eq!(
+        harness.effects("items").await,
+        1,
+        "the oversize call committed nothing"
+    );
+    assert_eq!(harness.records().await.len(), 1, "its claim was cleared");
+
+    let five_mib = 5 * 1024 * 1024;
+    let large = send(
+        &harness,
+        TRANSFERS,
+        "client-key-0003-transfer-large",
+        five_mib,
+    )
+    .await;
+    assert_eq!(large.status, StatusCode::CREATED);
+    assert!(large.text.len() > five_mib as usize);
+    assert_eq!(harness.effects("transfers").await, 1);
+    let stored_bytes: i64 = sqlx::query_scalar(
+        "SELECT length(CAST(response_json AS BLOB)) FROM idempotency_records WHERE route_template = ?1",
+    )
+    .bind(TRANSFERS)
+    .fetch_one(harness.pools.reader().executor())
+    .await
+    .unwrap();
+    assert!(stored_bytes > i64::try_from(five_mib).unwrap());
+    assert!(stored_bytes <= 6 * 1024 * 1024);
+
+    let replay = send(
+        &harness,
+        TRANSFERS,
+        "client-key-0003-transfer-large",
+        five_mib,
+    )
+    .await;
+    assert_eq!(replay.status, StatusCode::CREATED);
+    assert!(replay.replayed());
+    assert_eq!(replay.text, large.text, "byte-identical large replay");
+    assert_eq!(harness.effects("transfers").await, 1);
+
+    harness = harness.restart().await;
+    let after_restart = send(
+        &harness,
+        TRANSFERS,
+        "client-key-0003-transfer-large",
+        five_mib,
+    )
+    .await;
+    assert!(after_restart.replayed());
+    assert_eq!(after_restart.text, large.text);
+    assert_eq!(harness.effects("transfers").await, 1);
+
+    let six_mib = 6 * 1024 * 1024;
+    let transfer_over = send(
+        &harness,
+        TRANSFERS,
+        "client-key-0004-transfer-over",
+        six_mib,
+    )
+    .await;
+    assert_eq!(transfer_over.status, StatusCode::INTERNAL_SERVER_ERROR);
+    assert_eq!(
+        harness.effects("transfers").await,
+        1,
+        "an oversized response leaves no committed effect"
+    );
+    let completed = harness
+        .records()
+        .await
+        .into_iter()
+        .filter(|record| record.3 == "completed")
+        .count();
+    assert_eq!(
+        harness.records().await.len(),
+        completed,
+        "no claim is left in progress"
+    );
+
+    let corrected = send(&harness, TRANSFERS, "client-key-0004-transfer-over", 1_000).await;
+    assert_eq!(corrected.status, StatusCode::CREATED);
+    assert!(!corrected.replayed());
+    assert_eq!(harness.effects("transfers").await, 2);
 }

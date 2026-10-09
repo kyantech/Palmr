@@ -12,6 +12,7 @@ pub(crate) mod visibility;
 
 pub use browse::{count_child_folders, folder_paths, list_child_folders, ChildFolder};
 pub use delete::{claim_folder_deletion_in_tx, ClaimOutcome};
+pub use ensure_path::ensure_child_in_tx;
 pub use error::FolderError;
 #[cfg_attr(
     not(test),
@@ -21,7 +22,7 @@ pub use error::FolderError;
     )
 )]
 pub use model::OwnedFolder;
-pub use model::{FolderId, FolderItem, FolderPathItem};
+pub use model::{FolderId, FolderItem, FolderPathItem, MAX_FOLDER_DEPTH};
 pub use r#move::move_folder_in_tx;
 pub use service::FolderService;
 pub use service::{resolve_owned_folder, resolve_writable_folder};

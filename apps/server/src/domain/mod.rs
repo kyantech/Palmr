@@ -1,5 +1,6 @@
 pub mod alias;
 pub mod bytes;
+pub mod client_key;
 pub mod clock;
 pub mod content_disposition;
 pub mod email;

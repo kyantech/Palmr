@@ -84,7 +84,7 @@ fn failure_line(error: &StartupError) -> String {
 async fn regression_R093_versioned_migrations_gate_startup() {
     let (_broken_dir, broken) = fixture_migrator(&with_file(
         embedded_files(),
-        "0007_partial_then_broken.sql",
+        "0009_partial_then_broken.sql",
         "CREATE TABLE r093_partial (id INTEGER PRIMARY KEY);\n\
          INSERT INTO r093_partial (id) VALUES (1);\n\
          INSERT INTO r093_missing_table (id) VALUES (1);\n",
@@ -96,7 +96,7 @@ async fn regression_R093_versioned_migrations_gate_startup() {
     assert_eq!(error.code(), Some(STARTUP_MIGRATION_FAILED));
     let text = error.to_string();
     assert!(
-        text.starts_with("STARTUP_MIGRATION_FAILED: schema migration 7 (partial then broken)"),
+        text.starts_with("STARTUP_MIGRATION_FAILED: schema migration 9 (partial then broken)"),
         "{text}"
     );
     assert!(text.contains("r093_missing_table"), "{text}");
@@ -107,7 +107,7 @@ async fn regression_R093_versioned_migrations_gate_startup() {
         .into_iter()
         .map(|migration| migration.version)
         .collect();
-    assert_eq!(recorded, [1, 2, 3, 4, 5, 6]);
+    assert_eq!(recorded, [1, 2, 3, 4, 5, 6, 7, 8]);
     assert!(!schema_objects(&mut connection)
         .await
         .iter()
@@ -174,7 +174,7 @@ async fn regression_R093_versioned_migrations_gate_startup() {
 
     let (_future_dir, future) = fixture_migrator(&with_file(
         embedded_files(),
-        "0007_future_release.sql",
+        "0009_future_release.sql",
         "CREATE TABLE r093_future (id INTEGER PRIMARY KEY);\n",
     ))
     .await;
@@ -185,7 +185,7 @@ async fn regression_R093_versioned_migrations_gate_startup() {
     let text = error.to_string();
     assert!(text.starts_with("DB_SCHEMA_AHEAD_OF_BINARY: "), "{text}");
     assert!(
-        text.contains("records schema migration 7, which this Palmr binary does not contain (its latest is 6)"),
+        text.contains("records schema migration 9, which this Palmr binary does not contain (its latest is 8)"),
         "{text}"
     );
     let mut connection = raw_connection(ahead.path()).await;
@@ -194,7 +194,7 @@ async fn regression_R093_versioned_migrations_gate_startup() {
         .into_iter()
         .map(|migration| migration.version)
         .collect();
-    assert_eq!(recorded, [1, 2, 3, 4, 5, 6, 7]);
+    assert_eq!(recorded, [1, 2, 3, 4, 5, 6, 7, 8, 9]);
     assert!(schema_objects(&mut connection)
         .await
         .iter()

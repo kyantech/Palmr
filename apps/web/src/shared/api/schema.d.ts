@@ -1268,6 +1268,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/transfers/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_sessions"];
+        put?: never;
+        post: operations["create_session"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transfers/sessions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_session"];
+        put?: never;
+        post?: never;
+        delete: operations["cancel_session"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transfers/sessions/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["complete_session"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transfers/sessions/{id}/files/{itemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["cancel_item"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transfers/sessions/{id}/files/{itemId}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["retry_item"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/docs": {
         parameters: {
             query?: never;
@@ -1739,6 +1819,11 @@ export interface components {
             sortOrder?: number | null;
             tokenAuthMethod?: null | components["schemas"]["TokenAuthMethod"];
         };
+        CreateTransferSessionRequest: {
+            /** @description One to 2 000 files. More than 2 000 is `BATCH_TOO_LARGE`. */
+            files: components["schemas"]["TransferFileRequest"][];
+            target: components["schemas"]["TransferTarget"];
+        };
         CreateUserRequest: {
             /** @example grace@example.com */
             email: string;
@@ -1896,7 +1981,7 @@ export interface components {
             leafFolderId: string;
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "BATCH_DELETE_FAILED" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "FILE_NAME_CONFLICT" | "FOLDER_NOT_FOUND" | "FOLDER_DEPTH_EXCEEDED" | "FOLDER_CYCLE" | "FOLDER_DELETING" | "NAME_INVALID" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "QUOTA_EXCEEDED" | "STORAGE_FULL" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN" | "SMTP_TEST_FAILED" | "PROVIDER_NOT_FOUND" | "PROVIDER_DISABLED" | "PROVIDER_SLUG_TAKEN" | "PROVIDER_DISCOVERY_FAILED" | "PROVIDER_VALIDATION_FAILED" | "PROVIDER_HAS_LINKS" | "PROVIDER_ID_TOKEN_INVALID" | "PROVIDER_USERINFO_FAILED" | "PROVIDER_SUBJECT_MISSING" | "PROVIDER_STATE_INVALID" | "PROVIDER_AUTH_DENIED" | "PROVIDER_CODE_EXCHANGE_FAILED" | "PROVIDER_EMAIL_UNVERIFIED" | "PROVIDER_AUTO_PROVISION_DISABLED" | "PROVIDER_IDENTITY_ALREADY_LINKED" | "PROVIDER_LINK_NOT_FOUND" | "IDENTITY_LINK_LAST_LOGIN_PATH" | "PASSWORD_LOGIN_DISABLE_UNSAFE" | "NO_VALIDATED_PROVIDER" | "AUTH_ACCOUNT_INACTIVE" | "AUTH_EXTERNAL_AMBIGUOUS_IDENTITY" | "AUTH_EXTERNAL_USERNAME_UNAVAILABLE";
+        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "BATCH_DELETE_FAILED" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "FILE_NAME_CONFLICT" | "FOLDER_NOT_FOUND" | "FOLDER_DEPTH_EXCEEDED" | "FOLDER_CYCLE" | "FOLDER_DELETING" | "NAME_INVALID" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "QUOTA_EXCEEDED" | "STORAGE_FULL" | "FILE_TOO_LARGE" | "TRANSFER_SESSION_NOT_FOUND" | "TRANSFER_SESSION_STATE_INVALID" | "TRANSFER_SESSION_EXPIRED" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN" | "SMTP_TEST_FAILED" | "PROVIDER_NOT_FOUND" | "PROVIDER_DISABLED" | "PROVIDER_SLUG_TAKEN" | "PROVIDER_DISCOVERY_FAILED" | "PROVIDER_VALIDATION_FAILED" | "PROVIDER_HAS_LINKS" | "PROVIDER_ID_TOKEN_INVALID" | "PROVIDER_USERINFO_FAILED" | "PROVIDER_SUBJECT_MISSING" | "PROVIDER_STATE_INVALID" | "PROVIDER_AUTH_DENIED" | "PROVIDER_CODE_EXCHANGE_FAILED" | "PROVIDER_EMAIL_UNVERIFIED" | "PROVIDER_AUTO_PROVISION_DISABLED" | "PROVIDER_IDENTITY_ALREADY_LINKED" | "PROVIDER_LINK_NOT_FOUND" | "IDENTITY_LINK_LAST_LOGIN_PATH" | "PASSWORD_LOGIN_DISABLE_UNSAFE" | "NO_VALIDATED_PROVIDER" | "AUTH_ACCOUNT_INACTIVE" | "AUTH_EXTERNAL_AMBIGUOUS_IDENTITY" | "AUTH_EXTERNAL_USERNAME_UNAVAILABLE";
         ExternalReauthResponse: {
             accepted: boolean;
             /**
@@ -2422,6 +2507,31 @@ export interface components {
              */
             totalCount: number | null;
         };
+        Page_TransferSessionSummary: {
+            items: {
+                /** Format: int32 */
+                completedFileCount: number;
+                createdAt: string;
+                error: null | components["schemas"]["TransferItemError"];
+                expiresAt: string;
+                /** Format: int32 */
+                fileCount: number;
+                id: string;
+                provider: components["schemas"]["TransferProvider"];
+                reservedBytes: components["schemas"]["ByteCount"];
+                state: components["schemas"]["TransferSessionState"];
+                totalBytes: components["schemas"]["ByteCount"];
+                updatedAt: string;
+                uploadedBytes: components["schemas"]["ByteCount"];
+            }[];
+            /** @description Opaque cursor for the next page; `null` on the last page. */
+            nextCursor: string | null;
+            /**
+             * Format: int64
+             * @description Matching items overall; `null` where counting would require a scan.
+             */
+            totalCount: number | null;
+        };
         PasswordChangeRequest: {
             /**
              * Format: password
@@ -2828,6 +2938,128 @@ export interface components {
         ThumbnailSourceLimitName: "64MiB" | "128MiB" | "256MiB" | "512MiB" | "unlimited";
         /** @enum {string} */
         TokenAuthMethod: "client_secret_basic" | "client_secret_post" | "none";
+        TransferFileRequest: {
+            /**
+             * @description The caller's own opaque key for this file, unique within the request: 1 to 128 characters, none of them a control character. It identifies the item in later responses and is never used as a storage key.
+             * @example c1
+             */
+            clientId: string;
+            /**
+             * @description Advisory MIME type. It is validated for shape only and never decides how the content is stored or served.
+             * @example video/x-matroska
+             */
+            declaredContentType?: string | null;
+            /**
+             * @description The file name, 1 to 255 bytes, with no `/`, `\`, control characters, `.` or `..`.
+             * @example video.mkv
+             */
+            name: string;
+            /**
+             * @description The full path of the file relative to the selected upload root, including the file name, with `/` as the separator. Absent or empty places the file directly in the target folder. When present its last segment must equal `name`.
+             * @example Trip/Day 1/video.mkv
+             */
+            relativePath?: string | null;
+            /**
+             * Format: int64
+             * @description The declared size in bytes, up to 9007199254740991. `null` or absent means the size is not known in advance.
+             * @example 53687091200
+             */
+            sizeBytes?: number | null;
+        };
+        TransferFileView: {
+            /** Format: int32 */
+            attempts: number;
+            clientId: string;
+            error: null | components["schemas"]["TransferItemError"];
+            /** @description The resulting file. Non-null only once the item is `completed` and its file row exists. */
+            fileId: string | null;
+            itemId: string;
+            name: string;
+            protocol: components["schemas"]["TransferProtocol"];
+            /** @description The full relative path including the name; `null` for a file placed directly in the target folder. */
+            relativePath: string | null;
+            s3?: null | components["schemas"]["TransferS3Plan"];
+            sizeBytes: null | components["schemas"]["ByteCount"];
+            /** @description `created` is the durable `pending` state: planned, with no protocol resource yet. */
+            state: components["schemas"]["TransferItemState"];
+            tus?: null | components["schemas"]["TransferTusPlan"];
+            /** @description Persisted, authoritative progress. It is `0` until a protocol resource records bytes. */
+            uploadedBytes: components["schemas"]["ByteCount"];
+        };
+        TransferItemError: {
+            code: components["schemas"]["ErrorCode"];
+            requestId: string | null;
+        };
+        /** @enum {string} */
+        TransferItemState: "created" | "uploading" | "finalizing" | "completed" | "failed" | "canceled" | "expired" | "skipped";
+        /** @enum {string} */
+        TransferProtocol: "tus" | "s3-multipart" | "s3-single";
+        /** @enum {string} */
+        TransferProvider: "local" | "s3";
+        TransferS3Plan: {
+            /**
+             * Format: int32
+             * @description Parts persisted as uploaded. Present only once a multipart upload exists for the item.
+             */
+            completedParts?: number | null;
+            /** Format: int32 */
+            maxPresignBatch: number;
+            /**
+             * Format: int32
+             * @description The planned part count. `null` while the size is unknown.
+             */
+            partCount: number | null;
+            partSizeBytes: null | components["schemas"]["ByteCount"];
+            /** Format: int32 */
+            presignTtlSeconds: number;
+        };
+        /** @enum {string} */
+        TransferSessionState: "created" | "uploading" | "finalizing" | "completed" | "failed" | "canceled" | "expired";
+        TransferSessionSummary: {
+            /** Format: int32 */
+            completedFileCount: number;
+            createdAt: string;
+            error: null | components["schemas"]["TransferItemError"];
+            expiresAt: string;
+            /** Format: int32 */
+            fileCount: number;
+            id: string;
+            provider: components["schemas"]["TransferProvider"];
+            reservedBytes: components["schemas"]["ByteCount"];
+            state: components["schemas"]["TransferSessionState"];
+            totalBytes: components["schemas"]["ByteCount"];
+            updatedAt: string;
+            uploadedBytes: components["schemas"]["ByteCount"];
+        };
+        TransferSessionView: {
+            createdAt: string;
+            error: null | components["schemas"]["TransferItemError"];
+            expiresAt: string;
+            files: components["schemas"]["TransferFileView"][];
+            id: string;
+            provider: components["schemas"]["TransferProvider"];
+            /** @description The quota currently held for the unfinished files; `0` once the reservation settles. */
+            reservedBytes: components["schemas"]["ByteCount"];
+            state: components["schemas"]["TransferSessionState"];
+            /** @description The sum of the declared sizes of the files whose size is known. */
+            totalBytes: components["schemas"]["ByteCount"];
+            updatedAt: string;
+            uploadedBytes: components["schemas"]["ByteCount"];
+        };
+        TransferTarget: {
+            /**
+             * @description The My Files folder the upload lands in. `null` or absent targets the My Files root. The target is fixed when the session is created and can never be changed.
+             * @example 0192f3a1-0000-7000-8000-000000000001
+             */
+            folderId?: string | null;
+            kind: components["schemas"]["TransferTargetKind"];
+        };
+        /** @enum {string} */
+        TransferTargetKind: "my_files";
+        TransferTusPlan: {
+            /** @description Where the TUS upload for this item is created. */
+            createUrl: string;
+        };
         TruncationPoint: {
             /** @description The last node returned. Every node after it in the response order was omitted. */
             afterId: string;
@@ -9770,6 +10002,551 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SetupStatus"];
+                };
+            };
+        };
+    };
+    list_sessions: {
+        parameters: {
+            query?: {
+                state?: ("created" | "uploading" | "finalizing" | "completed" | "failed" | "canceled" | "expired")[];
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The caller's transfer sessions, newest first, as summaries without their files. Server state is authoritative after a reload: fetch a session for its files. `state` may repeat and accepts only the durable server states. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_TransferSessionSummary"];
+                };
+            };
+            /** @description `CURSOR_INVALID`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `VALIDATION_ERROR` for a client-only or unknown `state`, or an invalid `limit`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    create_session: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 16–128 characters. A replay within 24 hours returns the original `201` and body with `Idempotency-Replayed: true` without creating a second session or reserving quota again. */
+                "Idempotency-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Declares the files of one upload. Every pre-flight check runs in one transaction before any byte moves: the account is active, the target folder is yours and not being deleted, each declared size fits the effective maximum file size and the storage provider, the S3 part plan is computable, any directories named by `relativePath` are resolved or created, and the quota covering the declared total is reserved. The server allocates every storage identity and never returns it. The target folder is fixed for the life of the session. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTransferSessionRequest"];
+            };
+        };
+        responses: {
+            /** @description The session, in state `created`, with one item per declared file and the protocol to upload it with. No upload resource exists yet: S3 part sizes and counts are plan metadata only. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferSessionView"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed, the session is restricted, or the account is deactivated (`AUTH_ACCOUNT_INACTIVE`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FOLDER_NOT_FOUND`: the target folder is unknown, malformed or belongs to another user. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FOLDER_DELETING` for a target or directory that is being deleted, or `IDEMPOTENCY_KEY_CONFLICT` / `IDEMPOTENCY_REQUEST_IN_PROGRESS` for a reused key. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FILE_TOO_LARGE`: a declared size exceeds the effective maximum file size or what the storage provider can store. `details` carries `itemClientId`, `declaredBytes`, `reason` and the applicable `maxBytes` and `providerMaxObjectBytes`. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `BATCH_TOO_LARGE` for more than 2 000 files, `NAME_INVALID` for an invalid file name, `FOLDER_DEPTH_EXCEEDED` when a directory chain would pass depth 64, or `VALIDATION_ERROR` for any other invalid field, including a duplicate `clientId`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `STORAGE_UNAVAILABLE`: the storage backend is down. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `QUOTA_EXCEEDED`: used bytes plus held reservations plus this request would pass the effective quota. Not retryable. */
+            507: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    get_session: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Transfer session UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The session and its files with persisted, authoritative progress. Progress is `0` until a protocol resource records bytes; nothing here is read from storage. `fileId` is non-null only for a `completed` item whose file exists. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferSessionView"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_SESSION_NOT_FOUND`, including another user's session. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    cancel_session: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Transfer session UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The session is canceled. Every unfinished item is canceled and the quota still held for them is released in the same transaction; items that already completed stay as ordinary content. Canceling an already canceled session is also `204`. Physical upload resources are marked for the upload adapters to clean up; nothing is deleted from storage here. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed, or the session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_SESSION_NOT_FOUND`, including another user's session. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_SESSION_STATE_INVALID`: the session is `completed` or `expired`. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    complete_session: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Transfer session UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The closed session. Completing is a close, not a finalization: it succeeds only when no item is still in flight and the persisted completed items agree with the session's totals, then settles the quota reservation. Completing an already completed session returns it again. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferSessionView"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed, or the session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_SESSION_NOT_FOUND`, including another user's session. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_SESSION_STATE_INVALID`: an item is still in flight, or the session is `canceled` or `expired`. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_SESSION_EXPIRED`: the session passed its expiry while not completed. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    cancel_item: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Transfer session UUIDv7 */
+                id: string;
+                /** @description Transfer item UUIDv7 */
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The item is canceled and its share of the reservation is released. Canceling an already canceled item is also `204`. When no item is left the session is canceled as well. A completed item is content and is never removed here. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed, or the session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_SESSION_NOT_FOUND` for an unknown session or item, including another user's. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_SESSION_STATE_INVALID`: the item is `completed` or `expired`. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    retry_item: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Transfer session UUIDv7 */
+                id: string;
+                /** @description Transfer item UUIDv7 */
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The item, moved from `failed` back to `uploading` with its attempt count incremented. The declared set is unchanged, so quota is not admitted again. Only an item whose upload resource still exists can be retried. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferFileView"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed, or the session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_SESSION_NOT_FOUND` for an unknown session or item, including another user's. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_SESSION_STATE_INVALID`: the session is terminal, the item is not `failed`, or the item has no upload resource to resume. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_SESSION_EXPIRED`: the session passed its expiry. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
                 };
             };
         };

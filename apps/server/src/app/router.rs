@@ -25,7 +25,7 @@ use crate::features::auth;
 use crate::features::branding;
 use crate::features::files;
 use crate::features::folders;
-use crate::features::{identity_providers, settings, setup, users};
+use crate::features::{identity_providers, settings, setup, transfers, users};
 use crate::infra::http::csrf::{self, AnonymousCsrf, CsrfGuard, RequestContent, RequestGate};
 use crate::infra::http::encoding::{
     reject_undecodable_body, request_decompression, response_compression,
@@ -659,6 +659,7 @@ pub fn application_routes() -> Routes<AppState> {
         .merge(setup::routes::routes())
         .merge(settings::routes::routes())
         .merge(settings::admin_routes::routes())
+        .merge(transfers::routes::routes())
         .merge(users::routes::routes())
         .merge(users::admin_routes::routes())
         .merge(users::email_change_routes::routes())

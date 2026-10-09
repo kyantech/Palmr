@@ -1,5 +1,7 @@
 use http::StatusCode;
 
+use crate::domain::clock::Clock;
+use crate::domain::naming::NameCandidate;
 use crate::domain::time::Timestamp;
 use crate::features::files::naming_insert::Attempt;
 use crate::features::users::model::UserId;
@@ -56,44 +58,21 @@ async fn materialize(
     let mut folder_ids = Vec::with_capacity(request.path.len());
     let mut created = Vec::new();
     for candidate in request.path.segments() {
-        if depth > MAX_FOLDER_DEPTH {
-            return Err(FolderError::DepthExceeded);
-        }
-        let row = NewRow {
-            id: FolderId::generate(service.clock.as_ref()),
+        let step = ensure_child_in_tx(
+            tx,
+            service.clock.as_ref(),
             owner,
             parent,
-            description: None,
-            depth: u8::try_from(depth).map_err(|_| FolderError::DepthExceeded)?,
+            depth,
+            candidate,
             at,
-        };
-        let id = match repo::insert(tx.executor(), &row, candidate).await? {
-            Attempt::Stored(()) => {
-                created.push(row.id.to_string());
-                row.id
-            }
-            Attempt::NameTaken => {
-                let existing = repo::find_child_by_normalized_name(
-                    tx.executor(),
-                    owner,
-                    parent,
-                    candidate.normalized(),
-                )
-                .await?
-                .ok_or(FolderError::RepositoryInvariant {
-                    column: "name_normalized",
-                })?;
-                if existing.hidden {
-                    return Err(FolderError::Deleting);
-                }
-                if i64::from(existing.depth) != depth {
-                    return Err(FolderError::RepositoryInvariant { column: "depth" });
-                }
-                existing.id
-            }
-        };
-        folder_ids.push(id.to_string());
-        parent = Some(id);
+        )
+        .await?;
+        if step.created {
+            created.push(step.id.to_string());
+        }
+        folder_ids.push(step.id.to_string());
+        parent = Some(step.id);
         depth += 1;
     }
     let leaf_folder_id = folder_ids.last().cloned().ok_or(FolderError::Invalid {
@@ -104,4 +83,60 @@ async fn materialize(
         leaf_folder_id,
         created,
     })
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct EnsuredFolder {
+    pub id: FolderId,
+    pub created: bool,
+}
+
+pub async fn ensure_child_in_tx(
+    tx: &mut WriteTx<'_>,
+    clock: &dyn Clock,
+    owner: UserId,
+    parent: Option<FolderId>,
+    depth: i64,
+    candidate: &NameCandidate,
+    at: Timestamp,
+) -> Result<EnsuredFolder, FolderError> {
+    if depth > MAX_FOLDER_DEPTH {
+        return Err(FolderError::DepthExceeded);
+    }
+    let row = NewRow {
+        id: FolderId::generate(clock),
+        owner,
+        parent,
+        description: None,
+        depth: u8::try_from(depth).map_err(|_| FolderError::DepthExceeded)?,
+        at,
+    };
+    match repo::insert(tx.executor(), &row, candidate).await? {
+        Attempt::Stored(()) => Ok(EnsuredFolder {
+            id: row.id,
+            created: true,
+        }),
+        Attempt::NameTaken => {
+            let existing = repo::find_child_by_normalized_name(
+                tx.executor(),
+                owner,
+                parent,
+                candidate.normalized(),
+            )
+            .await?
+            .ok_or(FolderError::RepositoryInvariant {
+                column: "name_normalized",
+            })?;
+            if existing.hidden {
+                return Err(FolderError::Deleting);
+            }
+            if i64::from(existing.depth) != depth {
+                return Err(FolderError::RepositoryInvariant { column: "depth" });
+            }
+            Ok(EnsuredFolder {
+                id: existing.id,
+                created: false,
+            })
+        }
+    }
 }

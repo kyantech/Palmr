@@ -138,6 +138,11 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "FILE_TOO_LARGE",
+    "status": 413,
+    "retryable": false
+  },
+  {
     "code": "FOLDER_CYCLE",
     "status": 422,
     "retryable": false
@@ -450,6 +455,21 @@ source: apps/server/src/domain/error_code.rs
   {
     "code": "TOTP_REQUIRED_BY_POLICY",
     "status": 403,
+    "retryable": false
+  },
+  {
+    "code": "TRANSFER_SESSION_EXPIRED",
+    "status": 410,
+    "retryable": false
+  },
+  {
+    "code": "TRANSFER_SESSION_NOT_FOUND",
+    "status": 404,
+    "retryable": false
+  },
+  {
+    "code": "TRANSFER_SESSION_STATE_INVALID",
+    "status": 409,
     "retryable": false
   },
   {

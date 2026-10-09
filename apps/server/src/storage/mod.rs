@@ -4,6 +4,7 @@ pub mod health;
 pub mod key;
 pub mod lifecycle;
 pub mod local;
+pub mod planning;
 pub mod provider;
 pub mod s3;
 mod stored_key;

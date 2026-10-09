@@ -45,6 +45,7 @@ pub mod quota;
 )]
 pub mod settings;
 pub mod setup;
+pub mod transfers;
 #[allow(
     dead_code,
     reason = "the user repository, password policy, last-admin guard and quota resolver are consumed as auth and admin features are wired"

@@ -73,7 +73,7 @@ const BASE_URL: &str = "https://files.example.test";
 const LOGIN: &str = "/api/v1/auth/login";
 const LOGOUT: &str = "/api/v1/auth/logout";
 const ME: &str = "/api/v1/auth/me";
-const BODY_CAP: usize = 1024 * 1024;
+const BODY_CAP: usize = 16 * 1024 * 1024;
 const PASSWORD: &str = "correct horse battery staple";
 const WRONG: &str = "incorrect horse battery staple";
 const START: OffsetDateTime = datetime!(2026-09-25 12:00 UTC);
@@ -92,6 +92,8 @@ struct Stack {
     invites: InviteService,
     admin_users: AdminUserService,
     folders: FolderService,
+    transfers: crate::features::transfers::TransferService,
+    storage_down: Arc<std::sync::atomic::AtomicBool>,
     providers: IdentityProviderService,
     password_login: PasswordLoginService,
     email_changes: EmailChangeService,
@@ -120,6 +122,24 @@ impl Stack {
         clock: &TestClock,
         extra: Routes<AppState>,
         env: &[(&str, &str)],
+    ) -> Self {
+        Self::start_full(root, clock, extra, env, None).await
+    }
+
+    async fn start_with_storage(
+        root: &Path,
+        clock: &TestClock,
+        storage: crate::features::transfers::TransferStorage,
+    ) -> Self {
+        Self::start_full(root, clock, Routes::new(), &[], Some(storage)).await
+    }
+
+    async fn start_full(
+        root: &Path,
+        clock: &TestClock,
+        extra: Routes<AppState>,
+        env: &[(&str, &str)],
+        transfer_storage: Option<crate::features::transfers::TransferStorage>,
     ) -> Self {
         let vars = std::iter::once(("PALMR_BASE_URL", BASE_URL)).chain(env.iter().copied());
         let config = OperatorConfig::load(&EnvironmentSource::from_vars(vars))
@@ -200,6 +220,24 @@ impl Stack {
             audit.clone(),
         );
         let folders = FolderService::new(pools.clone(), Arc::new(clock.clone()), settings.keys());
+        let storage_down = Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let transfer_storage = transfer_storage.unwrap_or_else(|| {
+            let down = Arc::clone(&storage_down);
+            crate::features::transfers::TransferStorage::local_with(Arc::new(move || {
+                if down.load(std::sync::atomic::Ordering::SeqCst) {
+                    crate::storage::health::StorageHealth::Down
+                } else {
+                    crate::storage::health::StorageHealth::Ok
+                }
+            }))
+        });
+        let transfers = crate::features::transfers::TransferService::new(
+            pools.clone(),
+            Arc::new(clock.clone()),
+            settings.keys(),
+            settings.handle(),
+            transfer_storage,
+        );
         let files = FileService::new(
             pools.clone(),
             Arc::new(clock.clone()),
@@ -267,6 +305,7 @@ impl Stack {
             .layer(Extension(invites.clone()))
             .layer(Extension(admin_users.clone()))
             .layer(Extension(folders.clone()))
+            .layer(Extension(transfers.clone()))
             .layer(Extension(files.clone()))
             .layer(Extension(providers.clone()))
             .layer(Extension(external_login.clone()))
@@ -308,6 +347,8 @@ impl Stack {
             invites,
             admin_users,
             folders,
+            transfers,
+            storage_down,
             providers,
             password_login,
             email_changes,
@@ -502,6 +543,7 @@ impl Stack {
         drop(self.email_changes);
         drop(self.email);
         drop(self.folders);
+        drop(self.transfers);
         drop(self.sessions);
         drop(self.settings);
         drop(self.drain);
@@ -1836,4 +1878,9 @@ mod profile;
 mod rate_limit;
 mod recent_auth;
 mod totp;
+mod transfer_cleanup;
+mod transfer_flows;
+mod transfer_limits;
+mod transfer_reads;
+mod transfers;
 mod trusted_devices;

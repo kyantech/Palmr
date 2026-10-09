@@ -2713,3 +2713,274 @@ fn it_openapi_folder_routes_declare_typed_contracts() {
         json!(["path"])
     );
 }
+
+const TRANSFER_SESSION_ROUTES: [(&str, Method, RateLimitClass, bool); 7] = [
+    (
+        "/api/v1/transfers/sessions",
+        Method::POST,
+        RateLimitClass::TransferControl,
+        true,
+    ),
+    (
+        "/api/v1/transfers/sessions",
+        Method::GET,
+        RateLimitClass::Read,
+        false,
+    ),
+    (
+        "/api/v1/transfers/sessions/{id}",
+        Method::GET,
+        RateLimitClass::Read,
+        false,
+    ),
+    (
+        "/api/v1/transfers/sessions/{id}",
+        Method::DELETE,
+        RateLimitClass::Write,
+        false,
+    ),
+    (
+        "/api/v1/transfers/sessions/{id}/complete",
+        Method::POST,
+        RateLimitClass::TransferControl,
+        false,
+    ),
+    (
+        "/api/v1/transfers/sessions/{id}/files/{itemId}/retry",
+        Method::POST,
+        RateLimitClass::TransferControl,
+        false,
+    ),
+    (
+        "/api/v1/transfers/sessions/{id}/files/{itemId}",
+        Method::DELETE,
+        RateLimitClass::Write,
+        false,
+    ),
+];
+
+#[test]
+fn unit_transfer_session_routes_are_declared_with_their_classes() {
+    let inventory = application_inventory();
+    for (path, method, limit, idempotent) in TRANSFER_SESSION_ROUTES {
+        let matching: Vec<_> = inventory
+            .entries()
+            .iter()
+            .filter(|entry| entry.path() == path && *entry.method() == method)
+            .collect();
+        assert_eq!(matching.len(), 1, "{method} {path}");
+        let policy = matching[0].policy();
+        assert_eq!(policy.auth(), AuthClass::Authenticated, "{method} {path}");
+        assert_eq!(policy.rate_limit(), limit, "{method} {path}");
+        assert_eq!(policy.transport(), Transport::ControlPlane);
+        assert_eq!(
+            policy.idempotency(),
+            if idempotent {
+                IdempotencyMode::Plaintext
+            } else {
+                IdempotencyMode::None
+            },
+            "{method} {path}"
+        );
+    }
+    let transfer_routes = inventory
+        .entries()
+        .iter()
+        .filter(|entry| entry.path().starts_with("/api/v1/transfers/"))
+        .count();
+    assert_eq!(transfer_routes, TRANSFER_SESSION_ROUTES.len());
+    for forbidden in [
+        "/api/v1/uploads/tus",
+        "/api/v1/public/uploads/tus",
+        "/s3/multipart",
+    ] {
+        assert!(
+            !inventory
+                .entries()
+                .iter()
+                .any(|entry| entry.path().contains(forbidden)),
+            "{forbidden} belongs to a later task"
+        );
+    }
+}
+
+fn schema_property_names(document: &Value, schema: &Value, names: &mut Vec<String>, depth: usize) {
+    if depth > 12 {
+        return;
+    }
+    if let Some(reference) = schema["$ref"].as_str() {
+        schema_property_names(document, resolve(document, reference), names, depth + 1);
+        return;
+    }
+    if let Some(properties) = schema["properties"].as_object() {
+        for (name, property) in properties {
+            names.push(name.clone());
+            schema_property_names(document, property, names, depth + 1);
+        }
+    }
+    for key in ["items", "additionalProperties"] {
+        if schema[key].is_object() {
+            schema_property_names(document, &schema[key], names, depth + 1);
+        }
+    }
+    for key in ["allOf", "anyOf", "oneOf"] {
+        if let Some(variants) = schema[key].as_array() {
+            for variant in variants {
+                schema_property_names(document, variant, names, depth + 1);
+            }
+        }
+    }
+}
+
+#[test]
+fn it_openapi_transfer_session_contract_exposes_no_storage_identity() {
+    let document = application_document();
+    let paths = &document["paths"];
+    let create = &paths["/api/v1/transfers/sessions"]["post"];
+    assert_eq!(
+        create["requestBody"]["content"]["application/json"]["schema"]["$ref"],
+        "#/components/schemas/CreateTransferSessionRequest"
+    );
+    assert_eq!(
+        create["responses"]["201"]["content"]["application/json"]["schema"]["$ref"],
+        "#/components/schemas/TransferSessionView"
+    );
+    assert_eq!(parameter(create, "Idempotency-Key")["in"], "header");
+    for (status, code) in [
+        ("404", "FOLDER_NOT_FOUND"),
+        ("409", "FOLDER_DELETING"),
+        ("413", "FILE_TOO_LARGE"),
+        ("422", "BATCH_TOO_LARGE"),
+        ("503", "STORAGE_UNAVAILABLE"),
+        ("507", "QUOTA_EXCEEDED"),
+    ] {
+        assert!(
+            create["responses"][status]["description"]
+                .as_str()
+                .unwrap_or_default()
+                .contains(code),
+            "{status} documents {code}"
+        );
+    }
+    for status in ["400", "401", "403", "415", "429"] {
+        assert!(create["responses"][status].is_object(), "{status}");
+    }
+    let request = &document["components"]["schemas"]["CreateTransferSessionRequest"];
+    assert_eq!(request["additionalProperties"], false);
+    assert_eq!(request["required"], json!(["target", "files"]));
+    assert_eq!(
+        document["components"]["schemas"]["TransferFileRequest"]["additionalProperties"],
+        false
+    );
+    assert_eq!(
+        document["components"]["schemas"]["TransferTarget"]["additionalProperties"],
+        false
+    );
+
+    let list = &paths["/api/v1/transfers/sessions"]["get"];
+    let state = parameter(list, "state");
+    assert_eq!(state["schema"]["type"], "array");
+    assert_eq!(
+        state["schema"]["items"]["enum"],
+        json!([
+            "created",
+            "uploading",
+            "finalizing",
+            "completed",
+            "failed",
+            "canceled",
+            "expired"
+        ])
+    );
+    assert_eq!(state["explode"], true);
+    parameter(list, "cursor");
+    parameter(list, "limit");
+    assert!(list["parameters"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .all(|parameter| parameter["name"] != "sort" && parameter["name"] != "offset"));
+
+    for (path, method) in [
+        ("/api/v1/transfers/sessions/{id}", "get"),
+        ("/api/v1/transfers/sessions/{id}", "delete"),
+        ("/api/v1/transfers/sessions/{id}/complete", "post"),
+        (
+            "/api/v1/transfers/sessions/{id}/files/{itemId}/retry",
+            "post",
+        ),
+        ("/api/v1/transfers/sessions/{id}/files/{itemId}", "delete"),
+    ] {
+        let operation = &paths[path][method];
+        assert!(
+            operation["responses"]["404"]["description"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("TRANSFER_SESSION_NOT_FOUND"),
+            "{method} {path}"
+        );
+        assert_eq!(parameter(operation, "id")["in"], "path");
+    }
+
+    let mut response_properties = Vec::new();
+    for root in [
+        "TransferSessionView",
+        "TransferSessionSummary",
+        "TransferFileView",
+    ] {
+        let schema = json!({ "$ref": format!("#/components/schemas/{root}") });
+        schema_property_names(&document, &schema, &mut response_properties, 0);
+    }
+    assert!(response_properties.iter().any(|name| name == "itemId"));
+    let forbidden = [
+        "objectKey",
+        "object_key",
+        "storageObjectId",
+        "finalObjectId",
+        "finalObjectKey",
+        "bucket",
+        "stagingPath",
+        "uploadId",
+        "s3UploadId",
+        "multipartUploadId",
+        "presignedUrl",
+        "ownerId",
+        "userId",
+    ];
+    for name in &response_properties {
+        assert!(!forbidden.contains(&name.as_str()), "{name} is exposed");
+    }
+
+    let states = &document["components"]["schemas"]["TransferSessionState"];
+    assert_eq!(
+        states["enum"],
+        json!([
+            "created",
+            "uploading",
+            "finalizing",
+            "completed",
+            "failed",
+            "canceled",
+            "expired"
+        ])
+    );
+    let item_states = &document["components"]["schemas"]["TransferItemState"];
+    assert_eq!(
+        item_states["enum"],
+        json!([
+            "created",
+            "uploading",
+            "finalizing",
+            "completed",
+            "failed",
+            "canceled",
+            "expired",
+            "skipped"
+        ])
+    );
+    let protocols = &document["components"]["schemas"]["TransferProtocol"];
+    assert_eq!(
+        protocols["enum"],
+        json!(["tus", "s3-multipart", "s3-single"])
+    );
+}

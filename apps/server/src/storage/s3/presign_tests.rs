@@ -791,3 +791,17 @@ async fn regression_381_provider_checksum_rejection() {
     let stat = s3.complete_multipart(&handle, &[uploaded]).await.unwrap();
     assert_eq!(stat.size, bytes.len() as u64);
 }
+
+#[test]
+fn unit_presign_limits_match_the_transfer_session_plan_metadata() {
+    use crate::features::transfers::model::{MAX_PRESIGN_BATCH, PRESIGN_TTL_SECONDS};
+
+    assert_eq!(
+        usize::try_from(MAX_PRESIGN_BATCH).unwrap(),
+        super::presign::MAX_PART_URLS_PER_CALL
+    );
+    assert_eq!(
+        u64::from(PRESIGN_TTL_SECONDS),
+        super::presign::MAX_PART_URL_TTL.as_secs()
+    );
+}

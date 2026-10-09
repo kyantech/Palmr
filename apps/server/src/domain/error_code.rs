@@ -180,6 +180,14 @@ error_catalog! {
         "The storage quota would be exceeded";
     StorageFull = "STORAGE_FULL", INSUFFICIENT_STORAGE, retryable: true,
         "The storage device is out of space";
+    FileTooLarge = "FILE_TOO_LARGE", PAYLOAD_TOO_LARGE, retryable: false,
+        "The file exceeds the maximum size that can be stored";
+    TransferSessionNotFound = "TRANSFER_SESSION_NOT_FOUND", NOT_FOUND, retryable: false,
+        "The transfer session was not found";
+    TransferSessionStateInvalid = "TRANSFER_SESSION_STATE_INVALID", CONFLICT, retryable: false,
+        "The transfer session cannot take this transition from its current state";
+    TransferSessionExpired = "TRANSFER_SESSION_EXPIRED", GONE, retryable: false,
+        "The transfer session has expired";
     StorageProviderMismatch = "STORAGE_PROVIDER_MISMATCH", INTERNAL_SERVER_ERROR, retryable: false,
         "The stored object belongs to a different storage provider";
     StorageSizeMismatch = "STORAGE_SIZE_MISMATCH", INTERNAL_SERVER_ERROR, retryable: false,
