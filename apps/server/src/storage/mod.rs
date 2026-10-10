@@ -7,6 +7,7 @@ pub mod local;
 pub mod planning;
 pub mod provider;
 pub mod s3;
+pub mod staging;
 mod stored_key;
 
 use std::fmt;

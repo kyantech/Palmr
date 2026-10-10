@@ -342,7 +342,12 @@ async fn svc_rate_limit_class_enforced_on_every_session_keyed_route() {
     let exhausted = stack.signed_in("ada", 10).await;
 
     let inventory = application_routes().build().unwrap().inventory;
-    let swept: Vec<(Method, String, RateLimitClass)> = inventory
+    let swept: Vec<(
+        Method,
+        String,
+        RateLimitClass,
+        crate::infra::http::csrf::RequestContent,
+    )> = inventory
         .entries()
         .iter()
         .filter(|entry| entry.policy().rate_limit().has_buckets_at(Stage::Session))
@@ -351,6 +356,7 @@ async fn svc_rate_limit_class_enforced_on_every_session_keyed_route() {
                 entry.method().clone(),
                 entry.path().to_owned(),
                 entry.policy().rate_limit(),
+                entry.policy().request_content(),
             )
         })
         .collect();
@@ -368,13 +374,13 @@ async fn svc_rate_limit_class_enforced_on_every_session_keyed_route() {
         (Method::POST, "/api/v1/admin/users/{id}/deactivate"),
     ] {
         assert!(
-            swept.iter().any(|(m, p, _)| *m == method && p == path),
+            swept.iter().any(|(m, p, _, _)| *m == method && p == path),
             "{method} {path} is not session-keyed"
         );
     }
 
     let mut exhausted_classes = Vec::new();
-    for (index, (method, path, class)) in swept.iter().enumerate() {
+    for (index, (method, path, class, content)) in swept.iter().enumerate() {
         if !exhausted_classes.contains(class) {
             stack.exhaust_session_bucket(*class, &exhausted).await;
             exhausted_classes.push(*class);
@@ -391,20 +397,24 @@ async fn svc_rate_limit_class_enforced_on_every_session_keyed_route() {
             .collect::<Vec<_>>()
             .join("/");
         let host = 100 + u8::try_from(index).unwrap();
-        let fetched = stack
-            .call(Call::new(method.clone(), &concrete, &exhausted), host)
-            .await;
+        let mut call = Call::new(method.clone(), &concrete, &exhausted);
+        if *content != crate::infra::http::csrf::RequestContent::Json {
+            call.content_type = None;
+        }
+        let fetched = stack.call(call, host).await;
         assert_eq!(
             fetched.status,
             StatusCode::TOO_MANY_REQUESTS,
             "{method} {path} did not admit its {class} session bucket: {}",
             fetched.text()
         );
-        assert_eq!(
-            fetched.json()["error"]["details"]["scope"],
-            class.as_str(),
-            "{method} {path}"
-        );
+        if *method != Method::HEAD {
+            assert_eq!(
+                fetched.json()["error"]["details"]["scope"],
+                class.as_str(),
+                "{method} {path}"
+            );
+        }
     }
     assert_eq!(
         stack

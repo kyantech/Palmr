@@ -14,6 +14,8 @@ mod repo;
 pub mod routes;
 pub mod service;
 pub mod state;
+pub mod tus;
 
 pub use admission::TransferStorage;
 pub use service::TransferService;
+pub use tus::{TusLimits, TusService, TusServiceParts};

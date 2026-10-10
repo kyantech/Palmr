@@ -1348,6 +1348,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/uploads/tus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["create_upload"];
+        delete?: never;
+        options: operations["options_capabilities"];
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/uploads/tus/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["override_upload"];
+        delete: operations["terminate_upload"];
+        options?: never;
+        head: operations["head_upload"];
+        patch?: never;
+        trace?: never;
+    };
     "/docs": {
         parameters: {
             query?: never;
@@ -1981,7 +2013,7 @@ export interface components {
             leafFolderId: string;
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "BATCH_DELETE_FAILED" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "FILE_NAME_CONFLICT" | "FOLDER_NOT_FOUND" | "FOLDER_DEPTH_EXCEEDED" | "FOLDER_CYCLE" | "FOLDER_DELETING" | "NAME_INVALID" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "QUOTA_EXCEEDED" | "STORAGE_FULL" | "FILE_TOO_LARGE" | "TRANSFER_SESSION_NOT_FOUND" | "TRANSFER_SESSION_STATE_INVALID" | "TRANSFER_SESSION_EXPIRED" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN" | "SMTP_TEST_FAILED" | "PROVIDER_NOT_FOUND" | "PROVIDER_DISABLED" | "PROVIDER_SLUG_TAKEN" | "PROVIDER_DISCOVERY_FAILED" | "PROVIDER_VALIDATION_FAILED" | "PROVIDER_HAS_LINKS" | "PROVIDER_ID_TOKEN_INVALID" | "PROVIDER_USERINFO_FAILED" | "PROVIDER_SUBJECT_MISSING" | "PROVIDER_STATE_INVALID" | "PROVIDER_AUTH_DENIED" | "PROVIDER_CODE_EXCHANGE_FAILED" | "PROVIDER_EMAIL_UNVERIFIED" | "PROVIDER_AUTO_PROVISION_DISABLED" | "PROVIDER_IDENTITY_ALREADY_LINKED" | "PROVIDER_LINK_NOT_FOUND" | "IDENTITY_LINK_LAST_LOGIN_PATH" | "PASSWORD_LOGIN_DISABLE_UNSAFE" | "NO_VALIDATED_PROVIDER" | "AUTH_ACCOUNT_INACTIVE" | "AUTH_EXTERNAL_AMBIGUOUS_IDENTITY" | "AUTH_EXTERNAL_USERNAME_UNAVAILABLE";
+        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "BATCH_DELETE_FAILED" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "FILE_NAME_CONFLICT" | "FOLDER_NOT_FOUND" | "FOLDER_DEPTH_EXCEEDED" | "FOLDER_CYCLE" | "FOLDER_DELETING" | "NAME_INVALID" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "QUOTA_EXCEEDED" | "STORAGE_FULL" | "FILE_TOO_LARGE" | "TRANSFER_SESSION_NOT_FOUND" | "TRANSFER_SESSION_STATE_INVALID" | "TRANSFER_SESSION_EXPIRED" | "TUS_VERSION_UNSUPPORTED" | "TUS_EXTENSION_UNSUPPORTED" | "UPLOAD_METADATA_INVALID" | "UPLOAD_SESSION_EXPIRED" | "UPLOAD_LENGTH_MISMATCH" | "STORAGE_WRITE_FAILED" | "TRANSFER_IDLE_TIMEOUT" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN" | "SMTP_TEST_FAILED" | "PROVIDER_NOT_FOUND" | "PROVIDER_DISABLED" | "PROVIDER_SLUG_TAKEN" | "PROVIDER_DISCOVERY_FAILED" | "PROVIDER_VALIDATION_FAILED" | "PROVIDER_HAS_LINKS" | "PROVIDER_ID_TOKEN_INVALID" | "PROVIDER_USERINFO_FAILED" | "PROVIDER_SUBJECT_MISSING" | "PROVIDER_STATE_INVALID" | "PROVIDER_AUTH_DENIED" | "PROVIDER_CODE_EXCHANGE_FAILED" | "PROVIDER_EMAIL_UNVERIFIED" | "PROVIDER_AUTO_PROVISION_DISABLED" | "PROVIDER_IDENTITY_ALREADY_LINKED" | "PROVIDER_LINK_NOT_FOUND" | "IDENTITY_LINK_LAST_LOGIN_PATH" | "PASSWORD_LOGIN_DISABLE_UNSAFE" | "NO_VALIDATED_PROVIDER" | "AUTH_ACCOUNT_INACTIVE" | "AUTH_EXTERNAL_AMBIGUOUS_IDENTITY" | "AUTH_EXTERNAL_USERNAME_UNAVAILABLE";
         ExternalReauthResponse: {
             accepted: boolean;
             /**
@@ -10533,6 +10565,522 @@ export interface operations {
             };
             /** @description `TRANSFER_SESSION_EXPIRED`: the session passed its expiry. */
             410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    create_upload: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Must be `1.0.0`. */
+                "Tus-Resumable": string;
+                /** @description The total size in bytes. Exactly one of `Upload-Length` and `Upload-Defer-Length` is required. */
+                "Upload-Length"?: number | null;
+                /** @description `1` when the size is not known yet. Allowed only for a file planned without a size. */
+                "Upload-Defer-Length"?: number | null;
+                /** @description TUS metadata, at most 8 KiB: `filename`, `transferSessionId` and `itemId` are required; `filetype` is advisory; `relativePath` is required for a file inside a directory; `folderId`, when present, must be the session's target folder. Unknown keys are ignored. `filename` and `relativePath` must match the planned item and are never used as paths. */
+                "Upload-Metadata": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Optional initial bytes (`creation-with-upload`), streamed through a bounded buffer and never collected. */
+        requestBody?: {
+            content: {
+                "application/offset+octet-stream": unknown;
+            };
+        };
+        responses: {
+            /** @description The upload resource exists for the planned item. A repeated creation for the same item returns the existing resource. `Upload-Offset` is the number of bytes durably persisted. */
+            201: {
+                headers: {
+                    /** @description `no-store`. */
+                    "Cache-Control"?: string;
+                    /** @description Absolute URL of the upload, built from the configured public base URL. */
+                    Location?: string;
+                    /** @description `1.0.0`. */
+                    "Tus-Resumable"?: string;
+                    /** @description RFC 7231 IMF-fixdate. */
+                    "Upload-Expires"?: string;
+                    /** @description Bytes durably persisted. */
+                    "Upload-Offset"?: number;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `UPLOAD_METADATA_INVALID`: a header is missing or malformed; `details.key` names it. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_SESSION_NOT_FOUND`: the session or item is unknown or belongs to another user. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_IDLE_TIMEOUT`: no body frame arrived within the per-frame idle timeout (never a function of file size); the persisted offset is kept and the upload can be resumed. */
+            408: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_SESSION_STATE_INVALID` or `FOLDER_DELETING`. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_SESSION_EXPIRED` or `UPLOAD_SESSION_EXPIRED`. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TUS_VERSION_UNSUPPORTED`; the response carries `Tus-Version`. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FILE_TOO_LARGE`: the length exceeds the effective maximum, or the body exceeded the declared length. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `UNSUPPORTED_MEDIA_TYPE`: the body is not `application/offset+octet-stream`. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `UPLOAD_LENGTH_MISMATCH`: the declared length differs from the planned file. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TUS_EXTENSION_UNSUPPORTED`: `Upload-Concat` was supplied. */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `STORAGE_UNAVAILABLE`. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `QUOTA_EXCEEDED` or `STORAGE_WRITE_FAILED`. */
+            507: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    options_capabilities: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The TUS 1.0 capabilities of this instance. `Tus-Max-Size` is the effective maximum file size and is omitted when no limit applies. `concatenation` is never advertised. The request does not need `Tus-Resumable`. */
+            204: {
+                headers: {
+                    /** @description `sha256`. */
+                    "Tus-Checksum-Algorithm"?: string;
+                    /** @description `creation,creation-with-upload,expiration,termination,checksum`. */
+                    "Tus-Extension"?: string;
+                    /** @description Effective maximum file size in bytes; absent when unlimited. */
+                    "Tus-Max-Size"?: number | null;
+                    /** @description `1.0.0`. */
+                    "Tus-Resumable"?: string;
+                    /** @description `1.0.0`. */
+                    "Tus-Version"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `NOT_FOUND`: this instance does not store uploads locally. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    override_upload: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Must be `1.0.0`. */
+                "Tus-Resumable": string;
+                /** @description `HEAD` or `DELETE`, for clients behind proxies that strip those methods. `PATCH` is recognised but not available yet and answers `METHOD_NOT_ALLOWED`. Any other value is `UPLOAD_METADATA_INVALID`. Authorization and CSRF are those of this `POST`. */
+                "X-HTTP-Method-Override": string;
+            };
+            path: {
+                /** @description Opaque upload id. It is not a storage key. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description As `HEAD` when overridden with `HEAD`. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description As `DELETE` when overridden with `DELETE`. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `UPLOAD_METADATA_INVALID`: the override value is not permitted. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `NOT_FOUND`: the upload is unknown or belongs to another user. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `METHOD_NOT_ALLOWED`: no override was supplied, or it names `PATCH`. */
+            405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `UPLOAD_SESSION_EXPIRED`. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TUS_VERSION_UNSUPPORTED`; the response carries `Tus-Version`. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    terminate_upload: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Must be `1.0.0`. */
+                "Tus-Resumable": string;
+            };
+            path: {
+                /** @description Opaque upload id. It is not a storage key. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The upload is terminated: its item is canceled, its share of the quota reservation is released and the staging bytes are marked for removal. Terminating a terminated upload is also `204`. A finalized file is never removed here. */
+            204: {
+                headers: {
+                    /** @description `1.0.0`. */
+                    "Tus-Resumable"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `NOT_FOUND`: the upload is unknown or belongs to another user. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `UPLOAD_SESSION_EXPIRED`: the upload already expired. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TUS_VERSION_UNSUPPORTED`; the response carries `Tus-Version`. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    head_upload: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Must be `1.0.0`. */
+                "Tus-Resumable": string;
+            };
+            path: {
+                /** @description Opaque upload id. It is not a storage key. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The authoritative offset: the lower of the recorded offset and the bytes on disk. A known length is `Upload-Length`; a deferred one is `Upload-Defer-Length: 1`. */
+            200: {
+                headers: {
+                    /** @description `no-store`. */
+                    "Cache-Control"?: string;
+                    /** @description `1.0.0`. */
+                    "Tus-Resumable"?: string;
+                    /** @description `1` while the length is not known. */
+                    "Upload-Defer-Length"?: number | null;
+                    /** @description RFC 7231 IMF-fixdate. */
+                    "Upload-Expires"?: string;
+                    /** @description Present when the length is known. */
+                    "Upload-Length"?: number | null;
+                    /** @description Authoritative offset in bytes. */
+                    "Upload-Offset"?: number;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `NOT_FOUND`: the upload is unknown or belongs to another user. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `UPLOAD_SESSION_EXPIRED`: the upload expired or was terminated. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TUS_VERSION_UNSUPPORTED`; the response carries `Tus-Version`. */
+            412: {
                 headers: {
                     [name: string]: unknown;
                 };

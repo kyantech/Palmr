@@ -824,10 +824,22 @@ async fn restricted_code(
     if status == StatusCode::NO_CONTENT {
         return (status, None);
     }
-    let code = response_json(response).await["error"]["code"]
-        .as_str()
-        .map(ToOwned::to_owned);
+    let bytes = Limited::new(response.into_body(), RESPONSE_READ_CAP)
+        .collect()
+        .await
+        .unwrap()
+        .to_bytes();
+    if bytes.is_empty() {
+        return (status, None);
+    }
+    let body: Value = serde_json::from_slice(&bytes).unwrap();
+    let code = body["error"]["code"].as_str().map(ToOwned::to_owned);
     (status, code)
+}
+
+fn refusal(method: &Method, code: &str) -> (StatusCode, Option<String>) {
+    let body_code = (*method != Method::HEAD).then(|| code.to_owned());
+    (StatusCode::FORBIDDEN, body_code)
 }
 
 fn concrete(path: &str, clock: &TestClock) -> String {
@@ -1062,9 +1074,10 @@ async fn svc_restricted_session_allowlist() {
             } else {
                 application.clone()
             };
+            let observed = restricted_code(service, entry.method().clone(), &path, token).await;
             assert_eq!(
-                restricted_code(service, entry.method().clone(), &path, token).await,
-                (StatusCode::FORBIDDEN, Some(code.to_owned())),
+                observed,
+                refusal(entry.method(), code),
                 "{} {}",
                 entry.method(),
                 entry.path()
@@ -1173,7 +1186,7 @@ async fn svc_restricted_session_allowlist() {
             }
             assert_eq!(
                 restricted_code(application.clone(), entry.method().clone(), &path, session).await,
-                (StatusCode::FORBIDDEN, Some(expected.to_owned())),
+                refusal(entry.method(), expected),
                 "stale {restriction:?}: {} {}",
                 entry.method(),
                 entry.path()

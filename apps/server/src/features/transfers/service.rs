@@ -36,7 +36,8 @@ use super::model::{
 };
 use super::presentation::{file_view, session_view, summary};
 use super::repo::{
-    self, FinalizeStage, ItemRow, LiveItem, NewItem, NewSession, SessionMove, SessionRow,
+    self, ErrorParts, FinalizeStage, ItemRow, LiveItem, NewItem, NewSession, SessionMove,
+    SessionRow,
 };
 use super::state::{
     has_expired, item_transition, session_transition, ItemState, Outcome, TransferSessionState,
@@ -48,6 +49,7 @@ const CANCEL_TRANSACTION: &str = "transfers.cancel_session";
 const COMPLETE_TRANSACTION: &str = "transfers.complete_session";
 const RETRY_TRANSACTION: &str = "transfers.retry_item";
 const CANCEL_ITEM_TRANSACTION: &str = "transfers.cancel_item";
+const FAIL_ITEM_TRANSACTION: &str = "transfers.fail_item";
 
 pub const STATE_PARAM: &str = "state";
 
@@ -578,6 +580,60 @@ impl TransferService {
                     .find(|row| row.id == item_id)
                     .map(|row| file_view(row, &self.storage))
                     .ok_or(TransferError::SessionNotFound)
+            })
+            .await
+    }
+
+    pub async fn fail_item(
+        &self,
+        owner: UserId,
+        id: TransferSessionId,
+        item_id: SessionItemId,
+        failure: ErrorParts,
+    ) -> Result<(), TransferError> {
+        let now = self.now()?;
+        self.pools
+            .write_tx(self.clock.as_ref(), FAIL_ITEM_TRANSACTION, async |tx| {
+                let session = repo::find_session(tx.executor(), owner, id)
+                    .await?
+                    .ok_or(TransferError::SessionNotFound)?;
+                let item = repo::one_item(tx.executor(), id, item_id)
+                    .await?
+                    .ok_or(TransferError::SessionNotFound)?;
+                let outcome = item_transition(item.state, Trigger::Failed)
+                    .map_err(|_| TransferError::StateInvalid)?;
+                if !outcome.moved() {
+                    return Ok(());
+                }
+                let session_outcome = session_transition(session.state, Trigger::Failed)
+                    .map_err(|_| TransferError::StateInvalid)?;
+                if !repo::fail_item(tx.executor(), id, item_id, &failure, now).await? {
+                    return Err(TransferError::StateInvalid);
+                }
+                match session_outcome {
+                    Outcome::Moved(to) => {
+                        let moved = repo::move_session(
+                            tx.executor(),
+                            owner,
+                            id,
+                            &SessionMove {
+                                from: session.state,
+                                to,
+                                now,
+                                finished: false,
+                                cancel_requested: false,
+                            },
+                        )
+                        .await?;
+                        if !moved {
+                            return Err(TransferError::Invariant {
+                                what: "session_state",
+                            });
+                        }
+                    }
+                    Outcome::Unchanged(_) => repo::touch_session(tx.executor(), id, now).await?,
+                }
+                repo::record_session_error(tx.executor(), id, &failure).await
             })
             .await
     }

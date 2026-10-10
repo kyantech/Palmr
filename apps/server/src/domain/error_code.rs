@@ -188,6 +188,20 @@ error_catalog! {
         "The transfer session cannot take this transition from its current state";
     TransferSessionExpired = "TRANSFER_SESSION_EXPIRED", GONE, retryable: false,
         "The transfer session has expired";
+    TusVersionUnsupported = "TUS_VERSION_UNSUPPORTED", PRECONDITION_FAILED, retryable: false,
+        "The Tus-Resumable header is missing or names an unsupported version";
+    TusExtensionUnsupported = "TUS_EXTENSION_UNSUPPORTED", NOT_IMPLEMENTED, retryable: false,
+        "The requested TUS extension is not supported";
+    UploadMetadataInvalid = "UPLOAD_METADATA_INVALID", BAD_REQUEST, retryable: false,
+        "A TUS request header is missing or malformed";
+    UploadSessionExpired = "UPLOAD_SESSION_EXPIRED", GONE, retryable: false,
+        "The upload expired or was terminated";
+    UploadLengthMismatch = "UPLOAD_LENGTH_MISMATCH", UNPROCESSABLE_ENTITY, retryable: false,
+        "The upload length does not match the planned file";
+    StorageWriteFailed = "STORAGE_WRITE_FAILED", INSUFFICIENT_STORAGE, retryable: true,
+        "A write to storage failed";
+    TransferIdleTimeout = "TRANSFER_IDLE_TIMEOUT", REQUEST_TIMEOUT, retryable: true,
+        "No upload data arrived within the idle timeout";
     StorageProviderMismatch = "STORAGE_PROVIDER_MISMATCH", INTERNAL_SERVER_ERROR, retryable: false,
         "The stored object belongs to a different storage provider";
     StorageSizeMismatch = "STORAGE_SIZE_MISMATCH", INTERNAL_SERVER_ERROR, retryable: false,
@@ -359,6 +373,8 @@ mod tests {
                 "SERVICE_UNAVAILABLE",
                 "STORAGE_FULL",
                 "STORAGE_UNAVAILABLE",
+                "STORAGE_WRITE_FAILED",
+                "TRANSFER_IDLE_TIMEOUT",
             ])
         );
 

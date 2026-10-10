@@ -433,6 +433,11 @@ source: apps/server/src/domain/error_code.rs
     "retryable": true
   },
   {
+    "code": "STORAGE_WRITE_FAILED",
+    "status": 507,
+    "retryable": true
+  },
+  {
     "code": "TOTP_ALREADY_ENABLED",
     "status": 409,
     "retryable": false
@@ -456,6 +461,11 @@ source: apps/server/src/domain/error_code.rs
     "code": "TOTP_REQUIRED_BY_POLICY",
     "status": 403,
     "retryable": false
+  },
+  {
+    "code": "TRANSFER_IDLE_TIMEOUT",
+    "status": 408,
+    "retryable": true
   },
   {
     "code": "TRANSFER_SESSION_EXPIRED",
@@ -483,8 +493,33 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "TUS_EXTENSION_UNSUPPORTED",
+    "status": 501,
+    "retryable": false
+  },
+  {
+    "code": "TUS_VERSION_UNSUPPORTED",
+    "status": 412,
+    "retryable": false
+  },
+  {
     "code": "UNSUPPORTED_MEDIA_TYPE",
     "status": 415,
+    "retryable": false
+  },
+  {
+    "code": "UPLOAD_LENGTH_MISMATCH",
+    "status": 422,
+    "retryable": false
+  },
+  {
+    "code": "UPLOAD_METADATA_INVALID",
+    "status": 400,
+    "retryable": false
+  },
+  {
+    "code": "UPLOAD_SESSION_EXPIRED",
+    "status": 410,
     "retryable": false
   },
   {

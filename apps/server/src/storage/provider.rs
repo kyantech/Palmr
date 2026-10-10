@@ -13,6 +13,7 @@ use super::caps::StorageCapabilities;
 use super::error::StorageError;
 use super::health::{ProbeDepth, SelfTestReport};
 use super::key::ObjectKey;
+use super::staging::StagingStorage;
 use super::ProviderKind;
 
 pub type ObjectBody = Pin<Box<dyn AsyncRead + Send>>;
@@ -260,6 +261,10 @@ pub trait StorageProvider: Send + Sync + 'static {
     }
 
     fn as_presign(&self) -> Option<&dyn PresignStorage> {
+        None
+    }
+
+    fn as_staging(&self) -> Option<&dyn StagingStorage> {
         None
     }
 }

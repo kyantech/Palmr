@@ -1578,3 +1578,110 @@ fn unit_local_no_whole_object_read_paths() {
         }
     }
 }
+
+#[test]
+fn unit_staging_ensure_is_idempotent_and_never_follows_links() {
+    let fixture = Fixture::with_buffer(SMALL_BUFFER);
+    let id = upload_id();
+    assert_eq!(fixture.provider.staged_len(&id).unwrap(), None);
+
+    let mut first = fixture.provider.ensure_staging(&id).unwrap();
+    first.append(b"abc").unwrap();
+    drop(first);
+    let mut again = fixture.provider.ensure_staging(&id).unwrap();
+    assert_eq!(
+        again.staged_len().unwrap(),
+        3,
+        "ensure keeps existing bytes"
+    );
+    again.append(b"def").unwrap();
+    drop(again);
+    assert_eq!(fixture.provider.staged_len(&id).unwrap(), Some(6));
+    assert_eq!(mode(&fixture.staging_dir(&id)), u32::from(DIRECTORY_MODE));
+    assert_eq!(mode(&fixture.staging_blob(&id)), u32::from(FILE_MODE));
+
+    let torn = upload_id();
+    fs::create_dir(fixture.staging_dir(&torn)).unwrap();
+    assert_eq!(fixture.provider.staged_len(&torn).unwrap(), None);
+    let healed = fixture.provider.ensure_staging(&torn).unwrap();
+    assert_eq!(
+        healed.staged_len().unwrap(),
+        0,
+        "a directory without a blob is healed"
+    );
+
+    let (outside, snapshot) = outside_fixture();
+    let linked_dir = upload_id();
+    symlink(outside.path(), fixture.staging_dir(&linked_dir)).unwrap();
+    assert!(matches!(
+        fixture.provider.ensure_staging(&linked_dir),
+        Err(StorageError::PermissionDenied)
+    ));
+    assert!(matches!(
+        fixture.provider.staged_len(&linked_dir),
+        Err(StorageError::PermissionDenied)
+    ));
+    assert!(matches!(
+        fixture.provider.write_staging_hint(&linked_dir, b"{}"),
+        Err(StorageError::PermissionDenied)
+    ));
+
+    let linked_blob = upload_id();
+    fs::create_dir(fixture.staging_dir(&linked_blob)).unwrap();
+    symlink(
+        outside.path().join("victim"),
+        fixture.staging_blob(&linked_blob),
+    )
+    .unwrap();
+    assert!(matches!(
+        fixture.provider.ensure_staging(&linked_blob),
+        Err(StorageError::PermissionDenied)
+    ));
+    assert!(matches!(
+        fixture.provider.staged_len(&linked_blob),
+        Err(StorageError::PermissionDenied)
+    ));
+    assert_eq!(
+        tree(outside.path()),
+        snapshot,
+        "nothing outside the root is touched"
+    );
+}
+
+#[test]
+fn unit_staging_hint_is_a_bounded_replaceable_sidecar() {
+    let fixture = Fixture::new();
+    let id = upload_id();
+    let missing = fixture.provider.write_staging_hint(&id, b"{}");
+    assert!(
+        matches!(missing, Err(StorageError::NotFound)),
+        "{missing:?}"
+    );
+
+    fixture.provider.ensure_staging(&id).unwrap();
+    fixture
+        .provider
+        .write_staging_hint(&id, b"{\"v\":1}")
+        .unwrap();
+    fixture
+        .provider
+        .write_staging_hint(&id, b"{\"v\":2}")
+        .unwrap();
+    let hint = fixture.staging_dir(&id).join("meta.json");
+    assert_eq!(
+        io::read_to_string(File::open(&hint).unwrap().take(1_024)).unwrap(),
+        "{\"v\":2}"
+    );
+    assert_eq!(mode(&hint), u32::from(FILE_MODE));
+    assert!(matches!(
+        fixture.provider.write_staging_hint(&id, &[b'x'; 4_097]),
+        Err(StorageError::Config(_))
+    ));
+    assert_eq!(
+        fixture.provider.staged_len(&id).unwrap(),
+        Some(0),
+        "the hint is not the blob"
+    );
+    assert!(fixture.provider.remove_staging(&id).unwrap());
+    assert!(!exists(&hint));
+}

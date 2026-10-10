@@ -2789,11 +2789,7 @@ fn unit_transfer_session_routes_are_declared_with_their_classes() {
         .filter(|entry| entry.path().starts_with("/api/v1/transfers/"))
         .count();
     assert_eq!(transfer_routes, TRANSFER_SESSION_ROUTES.len());
-    for forbidden in [
-        "/api/v1/uploads/tus",
-        "/api/v1/public/uploads/tus",
-        "/s3/multipart",
-    ] {
+    for forbidden in ["/api/v1/public/uploads/tus", "/s3/multipart"] {
         assert!(
             !inventory
                 .entries()
@@ -2802,6 +2798,142 @@ fn unit_transfer_session_routes_are_declared_with_their_classes() {
             "{forbidden} belongs to a later task"
         );
     }
+}
+
+const TUS_ROUTES: [(&str, Method, RateLimitClass, bool); 5] = [
+    (
+        "/api/v1/uploads/tus",
+        Method::OPTIONS,
+        RateLimitClass::TransferControl,
+        false,
+    ),
+    (
+        "/api/v1/uploads/tus",
+        Method::POST,
+        RateLimitClass::TransferControl,
+        true,
+    ),
+    (
+        "/api/v1/uploads/tus/{id}",
+        Method::HEAD,
+        RateLimitClass::TransferControl,
+        false,
+    ),
+    (
+        "/api/v1/uploads/tus/{id}",
+        Method::DELETE,
+        RateLimitClass::Write,
+        false,
+    ),
+    (
+        "/api/v1/uploads/tus/{id}",
+        Method::POST,
+        RateLimitClass::TransferControl,
+        false,
+    ),
+];
+
+#[test]
+fn unit_tus_routes_are_declared_with_their_classes() {
+    let inventory = application_inventory();
+    for (path, method, limit, byte_path) in TUS_ROUTES {
+        let matching: Vec<_> = inventory
+            .entries()
+            .iter()
+            .filter(|entry| entry.path() == path && *entry.method() == method)
+            .collect();
+        assert_eq!(matching.len(), 1, "{method} {path}");
+        let policy = matching[0].policy();
+        assert_eq!(policy.auth(), AuthClass::Authenticated, "{method} {path}");
+        assert_eq!(policy.rate_limit(), limit, "{method} {path}");
+        assert_eq!(
+            policy.transport().is_byte_path(),
+            byte_path,
+            "{method} {path}"
+        );
+        assert_eq!(
+            policy.idempotency(),
+            IdempotencyMode::None,
+            "{method} {path}"
+        );
+        assert_eq!(
+            policy.protocol(),
+            crate::app::router::ProtocolHeaders::Tus,
+            "{method} {path}"
+        );
+    }
+    let tus_routes = inventory
+        .entries()
+        .iter()
+        .filter(|entry| entry.path().starts_with("/api/v1/uploads/tus"))
+        .count();
+    assert_eq!(
+        tus_routes,
+        TUS_ROUTES.len(),
+        "PATCH belongs to a later task"
+    );
+    let create = inventory
+        .get(&Method::POST, "/api/v1/uploads/tus")
+        .unwrap()
+        .policy();
+    assert_eq!(
+        create.transport().request_body(),
+        crate::app::router::RequestBody::Streamed
+    );
+    assert_eq!(
+        create.transport().deadline(),
+        crate::app::router::Deadline::IdleOnly
+    );
+}
+
+#[test]
+fn it_openapi_tus_contract_exposes_no_storage_identity() {
+    let document = application_document();
+    for (path, method) in [
+        ("/api/v1/uploads/tus", "options"),
+        ("/api/v1/uploads/tus", "post"),
+        ("/api/v1/uploads/tus/{id}", "head"),
+        ("/api/v1/uploads/tus/{id}", "delete"),
+        ("/api/v1/uploads/tus/{id}", "post"),
+    ] {
+        let operation = &document["paths"][path][method];
+        assert!(operation.is_object(), "{method} {path} is documented");
+        assert!(
+            operation["responses"]
+                .as_object()
+                .is_some_and(|r| !r.is_empty()),
+            "{method} {path}"
+        );
+    }
+    let create = &document["paths"]["/api/v1/uploads/tus"]["post"];
+    assert!(create["requestBody"]["content"]["application/offset+octet-stream"].is_object());
+    let names: Vec<&str> = create["parameters"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(|parameter| parameter["name"].as_str())
+        .collect();
+    for header in [
+        "Tus-Resumable",
+        "Upload-Length",
+        "Upload-Defer-Length",
+        "Upload-Metadata",
+    ] {
+        assert!(names.contains(&header), "{header}");
+    }
+    let text = document.to_string();
+    for forbidden in [
+        "objectKey",
+        "storageKey",
+        "finalObjectKey",
+        "stagingPath",
+        "staging_path",
+    ] {
+        assert!(!text.contains(&format!("\"{forbidden}\"")), "{forbidden}");
+    }
+    assert!(document["paths"]["/api/v1/uploads/tus/{id}"]
+        .get("patch")
+        .is_none());
 }
 
 fn schema_property_names(document: &Value, schema: &Value, names: &mut Vec<String>, depth: usize) {

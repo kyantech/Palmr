@@ -59,7 +59,9 @@ use crate::features::settings::{
     SettingsService, SmtpTestService,
 };
 use crate::features::setup::SetupService;
-use crate::features::transfers::{TransferService, TransferStorage};
+use crate::features::transfers::{
+    TransferService, TransferStorage, TusLimits, TusService, TusServiceParts,
+};
 use crate::features::users::{AdminUserService, EmailChangeService, ProfileService};
 use crate::infra::crypto::hkdf::KeyRing;
 use crate::infra::crypto::instance_key::{InstanceKey, InstanceKeyError, KeyOrigin};
@@ -844,8 +846,18 @@ async fn initialize(
         Arc::clone(&clock),
         Arc::clone(&email_keys),
         settings.clone(),
-        transfer_storage,
+        transfer_storage.clone(),
     );
+    let tus = TusService::new(TusServiceParts {
+        pools: database.pools().clone(),
+        clock: Arc::clone(&clock),
+        settings: settings.clone(),
+        storage: transfer_storage,
+        transfers: transfers.clone(),
+        base_url: config.base_url.clone(),
+        holder: instance.instance_id().to_string(),
+        limits: TusLimits::production(config.upload_buffer_bytes as usize),
+    });
     let identity_providers = IdentityProviderService::new(
         database.pools().clone(),
         Arc::clone(&clock),
@@ -912,6 +924,7 @@ async fn initialize(
         folders,
         files,
         transfers,
+        tus,
         identity_providers,
         external_login,
         password_login,
@@ -1176,6 +1189,7 @@ struct RequestServices {
     folders: FolderService,
     files: FileService,
     transfers: TransferService,
+    tus: TusService,
     identity_providers: IdentityProviderService,
     external_login: ExternalLoginService,
     password_login: PasswordLoginService,
@@ -1218,6 +1232,7 @@ fn composed_router(
             .layer(axum::Extension(services.folders))
             .layer(axum::Extension(services.files))
             .layer(axum::Extension(services.transfers))
+            .layer(axum::Extension(services.tus))
             .layer(axum::Extension(services.identity_providers))
             .layer(axum::Extension(services.external_login))
             .layer(axum::Extension(services.password_login))

@@ -9,6 +9,7 @@ use crate::storage::planning::{
     PartLayout, Rejection, RejectionReason, UploadMethod, UploadPlanner,
 };
 use crate::storage::provider::StorageProvider;
+use crate::storage::staging::{ProviderStaging, StagingStorage};
 
 use super::error::{FileTooLarge, TooLargeReason, TransferError};
 use super::model::{
@@ -23,6 +24,7 @@ pub struct TransferStorage {
     planner: UploadPlanner,
     provider: TransferProvider,
     health: HealthProbe,
+    staging: Option<Arc<dyn StagingStorage>>,
 }
 
 impl std::fmt::Debug for TransferStorage {
@@ -41,7 +43,18 @@ impl TransferStorage {
             planner,
             provider,
             health,
+            staging: None,
         }
+    }
+
+    #[must_use]
+    pub fn with_staging(mut self, staging: Arc<dyn StagingStorage>) -> Self {
+        self.staging = Some(staging);
+        self
+    }
+
+    pub fn staging(&self) -> Option<&Arc<dyn StagingStorage>> {
+        self.staging.as_ref()
     }
 
     #[cfg(test)]
@@ -54,10 +67,15 @@ impl TransferStorage {
         provider: Arc<dyn StorageProvider>,
         status: StorageStatus,
     ) -> Self {
-        Self::new(
+        let staging = ProviderStaging::of(&provider);
+        let storage = Self::new(
             UploadPlanner::from_operator(config, provider),
             Arc::new(move || status.snapshot().health),
-        )
+        );
+        match staging {
+            Some(staging) => storage.with_staging(staging),
+            None => storage,
+        }
     }
 
     pub const fn provider(&self) -> TransferProvider {

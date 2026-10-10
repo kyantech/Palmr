@@ -127,7 +127,7 @@ impl LocalProvider {
         );
     }
 
-    fn writer(&self, file: File) -> StagingWriter {
+    pub(super) fn writer(&self, file: File) -> StagingWriter {
         StagingWriter {
             file,
             buffer_bytes: self.buffer_bytes,

@@ -7,6 +7,7 @@ mod paths;
 mod probe;
 mod provider;
 mod read;
+mod staging;
 mod write;
 
 use std::fs::File;

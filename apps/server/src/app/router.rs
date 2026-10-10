@@ -199,6 +199,12 @@ impl TransportLayers {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ProtocolHeaders {
+    None,
+    Tus,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RoutePolicy {
     auth: AuthClass,
     rate_limit: RateLimitClass,
@@ -210,6 +216,7 @@ pub struct RoutePolicy {
     anonymous_csrf: AnonymousCsrf,
     absent_session: AbsentSession,
     recent_auth_waiver: RecentAuthWaiver,
+    protocol: ProtocolHeaders,
 }
 
 impl RoutePolicy {
@@ -225,7 +232,17 @@ impl RoutePolicy {
             anonymous_csrf: AnonymousCsrf::None,
             absent_session: AbsentSession::Reject,
             recent_auth_waiver: RecentAuthWaiver::None,
+            protocol: ProtocolHeaders::None,
         }
+    }
+
+    pub const fn with_tus_protocol(mut self) -> Self {
+        self.protocol = ProtocolHeaders::Tus;
+        self
+    }
+
+    pub const fn protocol(&self) -> ProtocolHeaders {
+        self.protocol
     }
 
     pub const fn with_security(mut self, security: SecurityPolicy) -> Self {
@@ -586,6 +603,9 @@ where
                     .security
                     .apply(layers.apply(handler, policy.rate_limit)),
             );
+            if policy.protocol == ProtocolHeaders::Tus {
+                handler = handler.route_layer(from_fn(transfers::tus::routes::protocol_headers));
+            }
             if let Some(route) = layers
                 .deadline()
                 .and_then(|lease| IdempotencyRoute::new(policy.idempotency, lease))
@@ -660,6 +680,7 @@ pub fn application_routes() -> Routes<AppState> {
         .merge(settings::routes::routes())
         .merge(settings::admin_routes::routes())
         .merge(transfers::routes::routes())
+        .merge(transfers::tus::routes::routes())
         .merge(users::routes::routes())
         .merge(users::admin_routes::routes())
         .merge(users::email_change_routes::routes())

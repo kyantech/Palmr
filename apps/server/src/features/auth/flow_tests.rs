@@ -93,6 +93,7 @@ struct Stack {
     admin_users: AdminUserService,
     folders: FolderService,
     transfers: crate::features::transfers::TransferService,
+    data_dir: std::path::PathBuf,
     storage_down: Arc<std::sync::atomic::AtomicBool>,
     providers: IdentityProviderService,
     password_login: PasswordLoginService,
@@ -103,6 +104,29 @@ struct Stack {
     audit: audit::service::AuditService,
     limiter: Arc<RateLimiter>,
     service: BoxedService,
+}
+
+struct TusSetup {
+    staging: Option<Arc<dyn crate::storage::staging::StagingStorage>>,
+    limits: crate::features::transfers::TusLimits,
+}
+
+impl Default for TusSetup {
+    fn default() -> Self {
+        Self {
+            staging: None,
+            limits: crate::features::transfers::TusLimits::production(262_144),
+        }
+    }
+}
+
+impl TusSetup {
+    fn staging_for(&self, root: &Path) -> Arc<dyn crate::storage::staging::StagingStorage> {
+        if let Some(staging) = &self.staging {
+            return Arc::clone(staging);
+        }
+        crate::storage::staging::temporary_local(root)
+    }
 }
 
 #[derive(Clone)]
@@ -140,6 +164,29 @@ impl Stack {
         extra: Routes<AppState>,
         env: &[(&str, &str)],
         transfer_storage: Option<crate::features::transfers::TransferStorage>,
+    ) -> Self {
+        Self::start_with_setup(
+            root,
+            clock,
+            extra,
+            env,
+            transfer_storage,
+            TusSetup::default(),
+        )
+        .await
+    }
+
+    async fn start_with_tus(root: &Path, clock: &TestClock, setup: TusSetup) -> Self {
+        Self::start_with_setup(root, clock, Routes::new(), &[], None, setup).await
+    }
+
+    async fn start_with_setup(
+        root: &Path,
+        clock: &TestClock,
+        extra: Routes<AppState>,
+        env: &[(&str, &str)],
+        transfer_storage: Option<crate::features::transfers::TransferStorage>,
+        tus_setup: TusSetup,
     ) -> Self {
         let vars = std::iter::once(("PALMR_BASE_URL", BASE_URL)).chain(env.iter().copied());
         let config = OperatorConfig::load(&EnvironmentSource::from_vars(vars))
@@ -223,20 +270,34 @@ impl Stack {
         let storage_down = Arc::new(std::sync::atomic::AtomicBool::new(false));
         let transfer_storage = transfer_storage.unwrap_or_else(|| {
             let down = Arc::clone(&storage_down);
-            crate::features::transfers::TransferStorage::local_with(Arc::new(move || {
-                if down.load(std::sync::atomic::Ordering::SeqCst) {
-                    crate::storage::health::StorageHealth::Down
-                } else {
-                    crate::storage::health::StorageHealth::Ok
-                }
-            }))
+            let storage =
+                crate::features::transfers::TransferStorage::local_with(Arc::new(move || {
+                    if down.load(std::sync::atomic::Ordering::SeqCst) {
+                        crate::storage::health::StorageHealth::Down
+                    } else {
+                        crate::storage::health::StorageHealth::Ok
+                    }
+                }));
+            storage.with_staging(tus_setup.staging_for(root))
         });
         let transfers = crate::features::transfers::TransferService::new(
             pools.clone(),
             Arc::new(clock.clone()),
             settings.keys(),
             settings.handle(),
-            transfer_storage,
+            transfer_storage.clone(),
+        );
+        let tus = crate::features::transfers::TusService::new(
+            crate::features::transfers::TusServiceParts {
+                pools: pools.clone(),
+                clock: Arc::new(clock.clone()),
+                settings: settings.handle(),
+                storage: transfer_storage,
+                transfers: transfers.clone(),
+                base_url: config.base_url.clone(),
+                holder: "test-instance".to_owned(),
+                limits: tus_setup.limits,
+            },
         );
         let files = FileService::new(
             pools.clone(),
@@ -306,6 +367,7 @@ impl Stack {
             .layer(Extension(admin_users.clone()))
             .layer(Extension(folders.clone()))
             .layer(Extension(transfers.clone()))
+            .layer(Extension(tus.clone()))
             .layer(Extension(files.clone()))
             .layer(Extension(providers.clone()))
             .layer(Extension(external_login.clone()))
@@ -348,6 +410,7 @@ impl Stack {
             admin_users,
             folders,
             transfers,
+            data_dir: root.to_path_buf(),
             storage_down,
             providers,
             password_login,
@@ -1884,3 +1947,8 @@ mod transfer_limits;
 mod transfer_reads;
 mod transfers;
 mod trusted_devices;
+mod tus;
+mod tus_create;
+mod tus_head_delete;
+mod tus_security;
+mod tus_stream;

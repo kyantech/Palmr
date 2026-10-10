@@ -105,6 +105,13 @@ const PROTOCOL_PRESENT: &str = "SELECT EXISTS(SELECT 1 FROM tus_uploads
       OR EXISTS(SELECT 1 FROM s3_multipart_uploads
         WHERE transfer_session_file_id = ?1 AND state IN ('created', 'in_progress'))";
 
+const FAIL_ITEM: &str = "UPDATE transfer_session_files
+      SET state = 'failed', error_code = ?3, error_request_id = ?4, updated_at = ?5
+    WHERE id = ?1 AND transfer_session_id = ?2 AND state IN ('uploading', 'finalizing')";
+
+const RECORD_SESSION_ERROR: &str =
+    "UPDATE transfer_sessions SET error_code = ?2, error_request_id = ?3 WHERE id = ?1";
+
 const COUNT_IN_FLIGHT: &str = "SELECT COUNT(*) FROM transfer_session_files
     WHERE transfer_session_id = ?1 AND state IN ('pending', 'uploading', 'finalizing')";
 
@@ -214,23 +221,23 @@ pub struct NewItem<'a> {
     pub final_object_key: &'a str,
 }
 
-fn invariant(what: &'static str) -> TransferError {
+pub(super) fn invariant(what: &'static str) -> TransferError {
     TransferError::Invariant { what }
 }
 
-fn column<'r, T>(row: &'r SqliteRow, name: &'static str) -> Result<T, TransferError>
+pub(super) fn column<'r, T>(row: &'r SqliteRow, name: &'static str) -> Result<T, TransferError>
 where
     T: sqlx::Decode<'r, Sqlite> + sqlx::Type<Sqlite>,
 {
     row.try_get(name).map_err(|_| invariant(name))
 }
 
-fn parsed<T: FromStr>(row: &SqliteRow, name: &'static str) -> Result<T, TransferError> {
+pub(super) fn parsed<T: FromStr>(row: &SqliteRow, name: &'static str) -> Result<T, TransferError> {
     let text: String = column(row, name)?;
     text.parse().map_err(|_| invariant(name))
 }
 
-fn optional_parsed<T: FromStr>(
+pub(super) fn optional_parsed<T: FromStr>(
     row: &SqliteRow,
     name: &'static str,
 ) -> Result<Option<T>, TransferError> {
@@ -239,12 +246,15 @@ fn optional_parsed<T: FromStr>(
         .transpose()
 }
 
-fn bytes(row: &SqliteRow, name: &'static str) -> Result<ByteSize, TransferError> {
+pub(super) fn bytes(row: &SqliteRow, name: &'static str) -> Result<ByteSize, TransferError> {
     let value: i64 = column(row, name)?;
     ByteSize::try_from(value).map_err(|_| invariant(name))
 }
 
-fn optional_bytes(row: &SqliteRow, name: &'static str) -> Result<Option<ByteSize>, TransferError> {
+pub(super) fn optional_bytes(
+    row: &SqliteRow,
+    name: &'static str,
+) -> Result<Option<ByteSize>, TransferError> {
     let value: Option<i64> = column(row, name)?;
     value
         .map(|value| ByteSize::try_from(value).map_err(|_| invariant(name)))
@@ -551,6 +561,39 @@ pub async fn retry_item(
         .await?
         .rows_affected();
     Ok(affected == 1)
+}
+
+pub async fn fail_item(
+    connection: &mut SqliteConnection,
+    session: TransferSessionId,
+    item: SessionItemId,
+    failure: &ErrorParts,
+    now: Timestamp,
+) -> Result<bool, TransferError> {
+    let affected = sqlx::query(FAIL_ITEM)
+        .bind(item.to_string())
+        .bind(session.to_string())
+        .bind(&failure.code)
+        .bind(failure.request_id.as_deref())
+        .bind(now.to_string())
+        .execute(connection)
+        .await?
+        .rows_affected();
+    Ok(affected == 1)
+}
+
+pub async fn record_session_error(
+    connection: &mut SqliteConnection,
+    session: TransferSessionId,
+    failure: &ErrorParts,
+) -> Result<(), TransferError> {
+    sqlx::query(RECORD_SESSION_ERROR)
+        .bind(session.to_string())
+        .bind(&failure.code)
+        .bind(failure.request_id.as_deref())
+        .execute(connection)
+        .await?;
+    Ok(())
 }
 
 pub async fn protocol_resource_present(

@@ -10,6 +10,7 @@ use crate::storage::key::ObjectKey;
 use crate::storage::provider::{
     ListCursor, ListPage, ObjectBody, ObjectStat, PutHint, StorageDescriptor, StorageProvider,
 };
+use crate::storage::staging::StagingStorage;
 
 impl LocalProvider {
     #[cfg(test)]
@@ -140,5 +141,9 @@ impl StorageProvider for LocalProvider {
 
     async fn self_test(&self, depth: ProbeDepth) -> SelfTestReport {
         self.run_self_test(depth).await
+    }
+
+    fn as_staging(&self) -> Option<&dyn StagingStorage> {
+        Some(self)
     }
 }

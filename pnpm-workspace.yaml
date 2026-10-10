@@ -2,6 +2,7 @@ packages:
   - apps/web
   - tests/e2e
   - tests/engine-harness
+  - tests/tus-conformance
 allowBuilds:
   msw: false
   unrs-resolver: false

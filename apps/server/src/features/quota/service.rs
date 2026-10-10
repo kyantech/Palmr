@@ -91,6 +91,19 @@ impl QuotaService {
         evaluate(usage, in_flight)
     }
 
+    pub async fn running_headroom(
+        &self,
+        connection: &mut SqliteConnection,
+        owner: UserId,
+        session: TransferSessionId,
+    ) -> Result<Option<ByteSize>, QuotaError> {
+        let usage = self.usage(connection, owner, Some(session), false).await?;
+        let committed = add(usage.used, usage.held, "used_plus_held")?;
+        Ok(usage
+            .quota
+            .map(|quota| quota.checked_sub(committed).unwrap_or(ByteSize::ZERO)))
+    }
+
     pub async fn hold(
         &self,
         tx: &mut WriteTx<'_>,

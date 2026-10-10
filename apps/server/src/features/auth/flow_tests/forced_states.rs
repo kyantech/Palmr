@@ -157,9 +157,21 @@ impl Stack {
                 continue;
             }
             let path = concrete(entry.path(), &self.clock);
-            let fetched = self
-                .call(Call::new(entry.method().clone(), &path, creds), 40)
-                .await;
+            let mut call = Call::new(entry.method().clone(), &path, creds);
+            if entry.policy().request_content() != crate::infra::http::csrf::RequestContent::Json {
+                call.content_type = None;
+            }
+            let fetched = self.call(call, 40).await;
+            if *entry.method() == Method::HEAD {
+                assert_eq!(
+                    (fetched.status, fetched.body.len()),
+                    (StatusCode::FORBIDDEN, 0),
+                    "HEAD {}: a HEAD response is refused without a body",
+                    entry.path()
+                );
+                denied += 1;
+                continue;
+            }
             assert_eq!(
                 (fetched.status, fetched.error_code()),
                 (StatusCode::FORBIDDEN, code.to_owned()),
