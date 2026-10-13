@@ -1,4 +1,7 @@
-use http::header::{HeaderMap, HeaderName, HeaderValue, CACHE_CONTROL};
+use base64ct::{Base64, Encoding};
+use http::header::{
+    HeaderMap, HeaderName, HeaderValue, CACHE_CONTROL, CONTENT_LENGTH, CONTENT_TYPE,
+};
 use time::format_description::BorrowedFormatItem;
 use time::macros::format_description;
 use url::Url;
@@ -20,6 +23,7 @@ pub const UPLOAD_OFFSET: HeaderName = HeaderName::from_static("upload-offset");
 pub const UPLOAD_METADATA: HeaderName = HeaderName::from_static("upload-metadata");
 pub const UPLOAD_EXPIRES: HeaderName = HeaderName::from_static("upload-expires");
 pub const UPLOAD_CONCAT: HeaderName = HeaderName::from_static("upload-concat");
+pub const UPLOAD_CHECKSUM: HeaderName = HeaderName::from_static("upload-checksum");
 pub const METHOD_OVERRIDE: HeaderName = HeaderName::from_static("x-http-method-override");
 
 pub const PROTOCOL_VERSION: &str = "1.0.0";
@@ -31,6 +35,11 @@ pub const HEADER_LENGTH: &str = "Upload-Length";
 pub const HEADER_DEFER_LENGTH: &str = "Upload-Defer-Length";
 pub const HEADER_METADATA: &str = "Upload-Metadata";
 pub const HEADER_OVERRIDE: &str = "X-HTTP-Method-Override";
+pub const HEADER_OFFSET: &str = "Upload-Offset";
+pub const HEADER_CHECKSUM: &str = "Upload-Checksum";
+pub const OFFSET_OCTET_STREAM: &str = "application/offset+octet-stream";
+const CHECKSUM_ENCODED_LEN: usize = 44;
+pub const CHECKSUM_DIGEST_LEN: usize = 32;
 
 const IMF_FIXDATE: &[BorrowedFormatItem<'_>] = format_description!(
     "[weekday repr:short], [day padding:zero] [month repr:short] [year] [hour padding:zero]:[minute padding:zero]:[second padding:zero] GMT"
@@ -129,6 +138,89 @@ pub fn declared_length(headers: &HeaderMap) -> Result<DeclaredLength, TusError> 
     }
 }
 
+pub fn upload_offset(headers: &HeaderMap) -> Result<u64, TusError> {
+    let invalid = || TusError::Header { key: HEADER_OFFSET };
+    let value = single(headers, &UPLOAD_OFFSET, HEADER_OFFSET)?.ok_or_else(invalid)?;
+    value
+        .to_str()
+        .ok()
+        .filter(|text| is_canonical_integer(text))
+        .and_then(|digits| digits.parse().ok())
+        .ok_or_else(invalid)
+}
+
+pub fn require_offset_content_type(headers: &HeaderMap) -> Result<(), TusError> {
+    let mut values = headers.get_all(CONTENT_TYPE).iter();
+    match (values.next(), values.next()) {
+        (Some(value), None)
+            if value
+                .to_str()
+                .is_ok_and(|text| text.eq_ignore_ascii_case(OFFSET_OCTET_STREAM)) =>
+        {
+            Ok(())
+        }
+        _ => Err(TusError::UnsupportedMedia),
+    }
+}
+
+pub fn upload_checksum(headers: &HeaderMap) -> Result<Option<[u8; CHECKSUM_DIGEST_LEN]>, TusError> {
+    let invalid = || TusError::Header {
+        key: HEADER_CHECKSUM,
+    };
+    let Some(value) = single(headers, &UPLOAD_CHECKSUM, HEADER_CHECKSUM)? else {
+        return Ok(None);
+    };
+    let text = value.to_str().map_err(|_| invalid())?;
+    let (algorithm, digest) = text.split_once(' ').ok_or_else(invalid)?;
+    if algorithm != CHECKSUM_ALGORITHM
+        || digest.len() != CHECKSUM_ENCODED_LEN
+        || digest.contains(' ')
+    {
+        return Err(invalid());
+    }
+    let mut decoded = [0_u8; CHECKSUM_DIGEST_LEN];
+    match Base64::decode(digest, &mut decoded) {
+        Ok(bytes) if bytes.len() == CHECKSUM_DIGEST_LEN => Ok(Some(decoded)),
+        _ => Err(invalid()),
+    }
+}
+
+pub fn patch_length(headers: &HeaderMap) -> Result<Option<ByteSize>, TusError> {
+    if headers.contains_key(UPLOAD_DEFER_LENGTH) {
+        return Err(TusError::Header {
+            key: HEADER_DEFER_LENGTH,
+        });
+    }
+    let Some(value) = single(headers, &UPLOAD_LENGTH, HEADER_LENGTH)? else {
+        return Ok(None);
+    };
+    let digits = value
+        .to_str()
+        .ok()
+        .filter(|text| is_canonical_integer(text))
+        .ok_or(TusError::Header { key: HEADER_LENGTH })?;
+    let bytes: u64 = digits
+        .parse()
+        .map_err(|_| TusError::Header { key: HEADER_LENGTH })?;
+    ByteSize::try_from(bytes)
+        .ok()
+        .filter(|size| size.to_i64() <= MAX_WIRE_BYTES)
+        .map(Some)
+        .ok_or(TusError::LengthBeyondRange)
+}
+
+pub fn content_length(headers: &HeaderMap) -> Option<u64> {
+    let mut values = headers.get_all(CONTENT_LENGTH).iter();
+    match (values.next(), values.next()) {
+        (Some(value), None) => value
+            .to_str()
+            .ok()
+            .filter(|text| is_canonical_integer(text))
+            .and_then(|digits| digits.parse().ok()),
+        _ => None,
+    }
+}
+
 fn single<'h>(
     headers: &'h HeaderMap,
     name: &HeaderName,
@@ -181,9 +273,10 @@ mod tests {
     use time::macros::datetime;
 
     use super::{
-        declared_length, imf_fixdate, method_override, reject_concatenation, require_version,
-        upload_location, DeclaredLength, MethodOverride, METHOD_OVERRIDE, TUS_RESUMABLE,
-        UPLOAD_CONCAT, UPLOAD_DEFER_LENGTH, UPLOAD_LENGTH,
+        content_length, declared_length, imf_fixdate, method_override, patch_length,
+        reject_concatenation, require_offset_content_type, require_version, upload_checksum,
+        upload_location, upload_offset, DeclaredLength, MethodOverride, METHOD_OVERRIDE,
+        TUS_RESUMABLE, UPLOAD_CONCAT, UPLOAD_DEFER_LENGTH, UPLOAD_LENGTH,
     };
     use crate::domain::bytes::ByteSize;
     use crate::domain::time::Timestamp;
@@ -345,6 +438,145 @@ mod tests {
         ]);
         assert!(method_override(&twice).is_err());
         assert_eq!(METHOD_OVERRIDE.as_str(), "x-http-method-override");
+    }
+
+    #[test]
+    fn unit_upload_offset_is_one_canonical_unsigned_integer() {
+        let one = |value: &str| upload_offset(&headers(&[("upload-offset", value)]));
+        assert_eq!(one("0").unwrap(), 0);
+        assert_eq!(one("5368709120").unwrap(), 5_368_709_120);
+        assert_eq!(one("18446744073709551615").unwrap(), u64::MAX);
+        for bad in [
+            "",
+            "-1",
+            "+1",
+            "01",
+            "1.0",
+            "1e3",
+            " 1",
+            "1 ",
+            "0x1",
+            "18446744073709551616",
+        ] {
+            assert!(
+                matches!(
+                    one(bad),
+                    Err(TusError::Header {
+                        key: "Upload-Offset"
+                    })
+                ),
+                "{bad:?}"
+            );
+        }
+        assert!(upload_offset(&HeaderMap::new()).is_err());
+        let twice = headers(&[("upload-offset", "1"), ("upload-offset", "1")]);
+        assert!(upload_offset(&twice).is_err());
+    }
+
+    #[test]
+    fn unit_patch_content_type_is_exactly_the_offset_stream() {
+        let one = |value: &str| require_offset_content_type(&headers(&[("content-type", value)]));
+        assert!(one("application/offset+octet-stream").is_ok());
+        assert!(one("Application/Offset+Octet-Stream").is_ok());
+        for bad in [
+            "application/octet-stream",
+            "application/json",
+            "application/offset+octet-stream; charset=utf-8",
+            "application/offset+octet-stream, text/plain",
+            "",
+        ] {
+            assert!(
+                matches!(one(bad), Err(TusError::UnsupportedMedia)),
+                "{bad:?}"
+            );
+        }
+        assert!(matches!(
+            require_offset_content_type(&HeaderMap::new()),
+            Err(TusError::UnsupportedMedia)
+        ));
+    }
+
+    #[test]
+    fn unit_upload_checksum_is_strict_sha256_with_a_32_byte_digest() {
+        let valid = "sha256 47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=";
+        let parsed = upload_checksum(&headers(&[("upload-checksum", valid)]))
+            .unwrap()
+            .unwrap();
+        assert_eq!(parsed[0], 0xE3);
+        assert_eq!(parsed[31], 0x55);
+        assert!(upload_checksum(&HeaderMap::new()).unwrap().is_none());
+        for bad in [
+            "",
+            "sha256",
+            "sha256 ",
+            "sha1 47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+            "SHA256 47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+            "md5 1B2M2Y8AsgTpgAmY7PhCfg==",
+            "sha256 47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU",
+            "sha256 47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU==",
+            "sha256 47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU=",
+            "sha256 47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuF=",
+            "sha256 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+            "sha256 47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU= x",
+            "sha256  47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+        ] {
+            assert!(
+                matches!(
+                    upload_checksum(&headers(&[("upload-checksum", bad)])),
+                    Err(TusError::Header {
+                        key: "Upload-Checksum"
+                    })
+                ),
+                "{bad:?}"
+            );
+        }
+        let twice = headers(&[("upload-checksum", valid), ("upload-checksum", valid)]);
+        assert!(upload_checksum(&twice).is_err());
+    }
+
+    #[test]
+    fn unit_patch_length_only_sets_a_canonical_length() {
+        assert!(patch_length(&HeaderMap::new()).unwrap().is_none());
+        assert_eq!(
+            patch_length(&headers(&[("upload-length", "100")]))
+                .unwrap()
+                .unwrap(),
+            size(100)
+        );
+        for bad in ["", "-1", "01", "1.5", "abc"] {
+            assert!(
+                matches!(
+                    patch_length(&headers(&[("upload-length", bad)])),
+                    Err(TusError::Header {
+                        key: "Upload-Length"
+                    })
+                ),
+                "{bad:?}"
+            );
+        }
+        assert!(matches!(
+            patch_length(&headers(&[("upload-length", "9007199254740992")])),
+            Err(TusError::LengthBeyondRange)
+        ));
+        assert!(matches!(
+            patch_length(&headers(&[("upload-defer-length", "1")])),
+            Err(TusError::Header {
+                key: "Upload-Defer-Length"
+            })
+        ));
+    }
+
+    #[test]
+    fn unit_content_length_is_advisory_and_canonical_only() {
+        assert_eq!(
+            content_length(&headers(&[("content-length", "42")])),
+            Some(42)
+        );
+        assert_eq!(content_length(&HeaderMap::new()), None);
+        assert_eq!(content_length(&headers(&[("content-length", "-1")])), None);
+        assert_eq!(content_length(&headers(&[("content-length", "007")])), None);
+        let twice = headers(&[("content-length", "1"), ("content-length", "1")]);
+        assert_eq!(content_length(&twice), None);
     }
 
     #[test]

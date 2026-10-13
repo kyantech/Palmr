@@ -2585,6 +2585,7 @@ dependencies = [
  "lettre",
  "mime_guess",
  "minijinja",
+ "palmr-stress",
  "percent-encoding",
  "proptest",
  "rand 0.9.5",

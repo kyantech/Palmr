@@ -3,7 +3,10 @@ use std::time::Duration;
 
 use axum::body::Body;
 use http_body_util::BodyExt;
-use tokio::time::{timeout, Instant};
+use sha2::{Digest, Sha256};
+use subtle::ConstantTimeEq;
+use tokio::time::{sleep_until, Instant};
+use tokio_util::sync::CancellationToken;
 
 use crate::domain::clock::Clock;
 use crate::domain::time::Timestamp;
@@ -16,7 +19,8 @@ use crate::storage::staging::StagingAppend;
 use super::super::error::TransferError;
 use super::super::model::{SessionItemId, TransferSessionId};
 use super::error::TusError;
-use super::repo::{self, OffsetWrite, TusUploadId};
+use super::headers::CHECKSUM_DIGEST_LEN;
+use super::repo::{self, OffsetWrite, TusState, TusUploadId};
 
 const PERSIST_TRANSACTION: &str = "tus.persist_offset";
 
@@ -28,6 +32,8 @@ pub struct TusLimits {
     pub idle_timeout: Duration,
     pub lease_ttl: Duration,
     pub upload_ttl: Duration,
+    pub patch_concurrency: usize,
+    pub permit_wait: Duration,
 }
 
 impl TusLimits {
@@ -36,6 +42,8 @@ impl TusLimits {
     pub const IDLE_TIMEOUT: Duration = Duration::from_secs(60);
     pub const LEASE_TTL: Duration = Duration::from_secs(60);
     pub const UPLOAD_TTL: Duration = Duration::from_secs(24 * 60 * 60);
+    pub const PATCH_CONCURRENCY: usize = 64;
+    pub const PERMIT_WAIT: Duration = Duration::from_secs(5);
 
     pub const fn production(buffer_bytes: usize) -> Self {
         Self {
@@ -45,7 +53,13 @@ impl TusLimits {
             idle_timeout: Self::IDLE_TIMEOUT,
             lease_ttl: Self::LEASE_TTL,
             upload_ttl: Self::UPLOAD_TTL,
+            patch_concurrency: Self::PATCH_CONCURRENCY,
+            permit_wait: Self::PERMIT_WAIT,
         }
+    }
+
+    pub fn heartbeat_interval(&self) -> Duration {
+        self.lease_ttl / 3
     }
 }
 
@@ -59,6 +73,7 @@ pub struct StreamPlan {
     pub declared: Option<u64>,
     pub max: Option<u64>,
     pub running_quota: bool,
+    pub checksum: Option<[u8; CHECKSUM_DIGEST_LEN]>,
 }
 
 #[derive(Debug)]
@@ -69,14 +84,18 @@ pub enum StreamEnd {
     Quota(QuotaError),
     Disconnected,
     Idle,
+    Shutdown,
     WriteFailed,
     Gone,
+    LeaseLost,
+    ChecksumMismatch,
     Internal(TusError),
 }
 
 #[derive(Debug)]
 pub struct StreamOutcome {
     pub durable: u64,
+    pub expires_at: Option<Timestamp>,
     pub end: StreamEnd,
 }
 
@@ -87,6 +106,7 @@ pub struct Streamer {
     quota: QuotaService,
     holder: Arc<str>,
     limits: TusLimits,
+    shutdown: CancellationToken,
 }
 
 #[derive(Clone, Copy)]
@@ -123,6 +143,8 @@ struct Progress {
     buffer: Vec<u8>,
     written: u64,
     durable: u64,
+    expires_at: Option<Timestamp>,
+    hasher: Option<Sha256>,
     write_failed: bool,
 }
 
@@ -132,6 +154,13 @@ impl Progress {
     }
 }
 
+enum Step {
+    Shutdown,
+    Frame(Option<Result<http_body::Frame<bytes::Bytes>, axum::Error>>),
+    Tick,
+    Idle,
+}
+
 impl Streamer {
     pub fn new(
         pools: DbPools,
@@ -139,6 +168,7 @@ impl Streamer {
         quota: QuotaService,
         holder: Arc<str>,
         limits: TusLimits,
+        shutdown: CancellationToken,
     ) -> Self {
         Self {
             pools,
@@ -146,6 +176,7 @@ impl Streamer {
             quota,
             holder,
             limits,
+            shutdown,
         }
     }
 
@@ -159,6 +190,8 @@ impl Streamer {
             buffer: Vec::with_capacity(self.limits.buffer_bytes),
             written: plan.start,
             durable: plan.start,
+            expires_at: None,
+            hasher: plan.checksum.map(|_| Sha256::new()),
             write_failed: false,
         };
         let end = self
@@ -166,6 +199,16 @@ impl Streamer {
             .await;
         self.settle(&plan, writer.as_mut(), &mut progress, end)
             .await
+    }
+
+    pub async fn release(&self, id: TusUploadId) -> Result<(), TusError> {
+        let now = Timestamp::try_from(self.clock.now()).map_err(TransferError::from)?;
+        self.pools
+            .write_tx(self.clock.as_ref(), RELEASE_TRANSACTION, async |tx| {
+                repo::release_lease(tx.executor(), id, &self.holder, now).await
+            })
+            .await?;
+        Ok(())
     }
 
     async fn drive(
@@ -186,40 +229,73 @@ impl Streamer {
                 Err(error) => return StreamEnd::Internal(error),
             }
         }
+        let heartbeat = self.limits.heartbeat_interval();
         let mut since_flush = 0_u64;
         let mut last_flush = Instant::now();
+        let mut last_frame = Instant::now();
         loop {
-            let frame = match timeout(self.limits.idle_timeout, body.frame()).await {
-                Err(_elapsed) => return StreamEnd::Idle,
-                Ok(None) => return StreamEnd::Finished,
-                Ok(Some(Err(_))) => return StreamEnd::Disconnected,
-                Ok(Some(Ok(frame))) => frame,
+            let tick_at = last_flush
+                + if since_flush > 0 {
+                    self.limits.flush_interval
+                } else {
+                    heartbeat
+                };
+            let idle_at = last_frame + self.limits.idle_timeout;
+            let step = tokio::select! {
+                biased;
+                () = self.shutdown.cancelled() => Step::Shutdown,
+                frame = body.frame() => Step::Frame(frame),
+                () = sleep_until(tick_at) => Step::Tick,
+                () = sleep_until(idle_at) => Step::Idle,
             };
-            let Ok(data) = frame.into_data() else {
-                continue;
-            };
-            let mut rest: &[u8] = &data;
-            while !rest.is_empty() {
-                let (room, stop) = ceilings.room(progress.accepted());
-                if room == 0 {
-                    return match stop {
-                        Stop::Overrun => StreamEnd::Overrun,
-                        Stop::TooLarge => StreamEnd::TooLarge,
-                        Stop::Quota => StreamEnd::Quota(self.quota_exceeded(plan, progress).await),
+            let mut due = false;
+            match step {
+                Step::Shutdown => return StreamEnd::Shutdown,
+                Step::Idle => return StreamEnd::Idle,
+                Step::Tick => due = true,
+                Step::Frame(None) => return StreamEnd::Finished,
+                Step::Frame(Some(Err(_))) => return StreamEnd::Disconnected,
+                Step::Frame(Some(Ok(frame))) => {
+                    last_frame = Instant::now();
+                    let Ok(data) = frame.into_data() else {
+                        continue;
                     };
+                    let mut rest: &[u8] = &data;
+                    while !rest.is_empty() {
+                        let (room, stop) = ceilings.room(progress.accepted());
+                        if room == 0 {
+                            return match stop {
+                                Stop::Overrun => StreamEnd::Overrun,
+                                Stop::TooLarge => StreamEnd::TooLarge,
+                                Stop::Quota => {
+                                    StreamEnd::Quota(self.quota_exceeded(plan, progress).await)
+                                }
+                            };
+                        }
+                        let take =
+                            usize::try_from(room).map_or(rest.len(), |room| room.min(rest.len()));
+                        let (head, tail) = rest.split_at(take);
+                        if !self.buffer(writer, progress, head).await {
+                            return StreamEnd::WriteFailed;
+                        }
+                        since_flush += head.len() as u64;
+                        rest = tail;
+                    }
                 }
-                let take = usize::try_from(room).map_or(rest.len(), |room| room.min(rest.len()));
-                let (head, tail) = rest.split_at(take);
-                if !self.buffer(writer, progress, head).await {
-                    return StreamEnd::WriteFailed;
-                }
-                since_flush += head.len() as u64;
-                rest = tail;
             }
-            if since_flush >= self.limits.flush_bytes
-                || last_flush.elapsed() >= self.limits.flush_interval
+            if due
+                || since_flush >= self.limits.flush_bytes
+                || last_flush.elapsed()
+                    >= if since_flush > 0 {
+                        self.limits.flush_interval
+                    } else {
+                        heartbeat
+                    }
             {
-                if let Some(end) = self.checkpoint(plan, writer, progress).await {
+                if let Some(end) = self
+                    .checkpoint(plan, writer, progress, since_flush > 0)
+                    .await
+                {
                     return end;
                 }
                 if plan.running_quota {
@@ -243,6 +319,9 @@ impl Streamer {
         while !part.is_empty() {
             let space = self.limits.buffer_bytes - progress.buffer.len();
             let (now, later) = part.split_at(space.min(part.len()));
+            if let Some(hasher) = progress.hasher.as_mut() {
+                hasher.update(now);
+            }
             progress.buffer.extend_from_slice(now);
             part = later;
             if progress.buffer.len() == self.limits.buffer_bytes
@@ -281,24 +360,33 @@ impl Streamer {
         plan: &StreamPlan,
         writer: &mut dyn StagingAppend,
         progress: &mut Progress,
+        dirty: bool,
     ) -> Option<StreamEnd> {
-        if !self.drain(writer, progress).await {
-            return Some(StreamEnd::WriteFailed);
+        if dirty {
+            if !self.drain(writer, progress).await {
+                return Some(StreamEnd::WriteFailed);
+            }
+            if let Err(error) = writer.flush().await {
+                tracing::warn!(
+                    storage_error = error.kind(),
+                    "upload staging could not be synced"
+                );
+                progress.write_failed = true;
+                return Some(StreamEnd::WriteFailed);
+            }
         }
-        if let Err(error) = writer.flush().await {
-            tracing::warn!(
-                storage_error = error.kind(),
-                "upload staging could not be synced"
-            );
-            progress.write_failed = true;
-            return Some(StreamEnd::WriteFailed);
-        }
-        match self.persist(plan, progress.written, false).await {
-            Ok(true) => {
-                progress.durable = progress.written;
+        let acknowledged = if plan.checksum.is_some() {
+            progress.durable
+        } else {
+            progress.written
+        };
+        match self.persist(plan.upload, acknowledged, false).await {
+            Ok(Some(expires)) => {
+                progress.durable = acknowledged;
+                progress.expires_at = Some(expires);
                 None
             }
-            Ok(false) => Some(StreamEnd::Gone),
+            Ok(None) => Some(self.lost(plan).await),
             Err(error) => Some(StreamEnd::Internal(error)),
         }
     }
@@ -310,52 +398,120 @@ impl Streamer {
         progress: &mut Progress,
         end: StreamEnd,
     ) -> StreamOutcome {
-        if matches!(end, StreamEnd::Gone) {
+        if matches!(end, StreamEnd::Gone | StreamEnd::LeaseLost) {
             return StreamOutcome {
                 durable: progress.durable,
+                expires_at: progress.expires_at,
                 end,
             };
         }
         let drained = !progress.write_failed && self.drain(writer, progress).await;
         let flushed = writer.flush().await.is_ok();
-        let offset = if flushed {
-            progress.written
-        } else {
-            progress.durable
+        let (offset, end) = match plan.checksum {
+            None => (
+                if flushed {
+                    progress.written
+                } else {
+                    progress.durable
+                },
+                if drained { end } else { StreamEnd::WriteFailed },
+            ),
+            Some(expected) => {
+                self.verify(plan, writer, progress, end, expected, drained && flushed)
+                    .await
+            }
         };
-        let mut end = if drained { end } else { StreamEnd::WriteFailed };
-        match self.persist(plan, offset, true).await {
-            Ok(true) => progress.durable = offset,
-            Ok(false) => end = StreamEnd::Gone,
-            Err(error) => end = StreamEnd::Internal(error),
-        }
+        let end = match self.persist(plan.upload, offset, true).await {
+            Ok(Some(expires)) => {
+                progress.durable = offset;
+                progress.expires_at = Some(expires);
+                end
+            }
+            Ok(None) => self.lost(plan).await,
+            Err(error) => StreamEnd::Internal(error),
+        };
         StreamOutcome {
             durable: progress.durable,
+            expires_at: progress.expires_at,
             end,
         }
     }
 
-    async fn persist(
+    async fn verify(
         &self,
         plan: &StreamPlan,
+        writer: &mut dyn StagingAppend,
+        progress: &mut Progress,
+        end: StreamEnd,
+        expected: [u8; CHECKSUM_DIGEST_LEN],
+        intact: bool,
+    ) -> (u64, StreamEnd) {
+        let verified = matches!(end, StreamEnd::Finished)
+            && intact
+            && progress.hasher.take().is_some_and(|hasher| {
+                let digest = hasher.finalize();
+                bool::from(digest.as_slice().ct_eq(expected.as_slice()))
+            });
+        if verified {
+            return (progress.written, end);
+        }
+        if let Err(error) = writer.truncate(plan.start).await {
+            tracing::warn!(
+                storage_error = error.kind(),
+                "an unverified upload chunk could not be truncated; the next request reconciles it"
+            );
+        }
+        progress.written = plan.start;
+        let end = if !intact {
+            StreamEnd::WriteFailed
+        } else if matches!(end, StreamEnd::Finished) {
+            StreamEnd::ChecksumMismatch
+        } else {
+            end
+        };
+        (plan.start, end)
+    }
+
+    async fn lost(&self, plan: &StreamPlan) -> StreamEnd {
+        let mut connection = match self.pools.reader().executor().acquire().await {
+            Ok(connection) => connection,
+            Err(error) => {
+                return StreamEnd::Internal(TusError::from(crate::infra::db::DbError::from(error)))
+            }
+        };
+        match repo::find_upload(&mut connection, plan.owner, plan.upload).await {
+            Ok(Some(row)) if matches!(row.state, TusState::Created | TusState::InProgress) => {
+                StreamEnd::LeaseLost
+            }
+            Ok(_) => StreamEnd::Gone,
+            Err(error) => StreamEnd::Internal(error.into()),
+        }
+    }
+
+    pub async fn persist(
+        &self,
+        id: TusUploadId,
         offset: u64,
         release: bool,
-    ) -> Result<bool, TusError> {
+    ) -> Result<Option<Timestamp>, TusError> {
         let now = Timestamp::try_from(self.clock.now()).map_err(TransferError::from)?;
         let lease_until =
             Timestamp::try_from(now.get() + self.limits.lease_ttl).map_err(TransferError::from)?;
+        let extend_to =
+            Timestamp::try_from(now.get() + self.limits.upload_ttl).map_err(TransferError::from)?;
         let written = self
             .pools
             .write_tx(self.clock.as_ref(), PERSIST_TRANSACTION, async |tx| {
                 repo::persist_offset(
                     tx.executor(),
                     &OffsetWrite {
-                        id: plan.upload,
+                        id,
                         offset,
                         holder: &self.holder,
                         lease_until,
                         release,
                         now,
+                        extend_to,
                     },
                 )
                 .await
@@ -404,3 +560,5 @@ impl Streamer {
         }
     }
 }
+
+const RELEASE_TRANSACTION: &str = "tus.release_lease";

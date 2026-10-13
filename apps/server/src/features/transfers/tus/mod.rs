@@ -1,7 +1,11 @@
 pub mod append;
 pub mod error;
 pub mod headers;
+pub mod lease;
 pub mod metadata;
+mod patch;
+pub mod permits;
+pub mod reconcile;
 mod repo;
 pub mod routes;
 pub mod service;

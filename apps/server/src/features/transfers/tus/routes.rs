@@ -1,7 +1,7 @@
 use axum::extract::{Extension, Path, Request};
 use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
-use http::header::{CONTENT_LENGTH, LOCATION, TRANSFER_ENCODING};
+use http::header::{CONTENT_LENGTH, LOCATION, RETRY_AFTER, TRANSFER_ENCODING};
 use http::{HeaderMap, HeaderValue, StatusCode};
 use utoipa_axum::routes;
 
@@ -24,6 +24,7 @@ use super::headers::{
     UPLOAD_OFFSET,
 };
 use super::metadata::UploadMetadata;
+use super::patch::PatchInput;
 use super::repo::TusUploadId;
 use super::service::{CreateInput, TusService};
 
@@ -55,13 +56,26 @@ const CREATE_ROUTE: RoutePolicy = RoutePolicy::new(
 .with_request_content(RequestContent::OffsetOctetStream)
 .with_tus_protocol();
 
+const PATCH_ROUTE: RoutePolicy = RoutePolicy::new(
+    AuthClass::Authenticated,
+    RateLimitClass::TransferData,
+    Transport::BytePath(BytePath::new(
+        RequestBody::Streamed,
+        ResponseEncoding::Identity,
+        Deadline::IdleOnly,
+    )),
+)
+.with_request_content(RequestContent::OffsetOctetStream)
+.with_tus_protocol();
+
 pub fn routes() -> Routes<AppState> {
     Routes::new()
         .route(CONTROL_ROUTE, routes!(options_capabilities))
         .route(CREATE_ROUTE, routes!(create_upload))
         .route(CONTROL_ROUTE, routes!(head_upload))
+        .route(PATCH_ROUTE, routes!(patch_upload))
         .route(WRITE_ROUTE, routes!(terminate_upload))
-        .route(CONTROL_ROUTE, routes!(override_upload))
+        .route(CREATE_ROUTE, routes!(override_upload))
 }
 
 pub async fn protocol_headers(request: Request, next: Next) -> Response {
@@ -79,10 +93,23 @@ fn failure(error: &TusError, request_id: Option<&RequestId>) -> Response {
         tracing::error!(kind = error.kind(), "upload request failed");
     }
     let mut response = tag_error(api_error, request_id).into_response();
-    if matches!(error, TusError::VersionUnsupported) {
-        response
-            .headers_mut()
-            .insert(TUS_VERSION, HeaderValue::from_static(PROTOCOL_VERSION));
+    match error {
+        TusError::VersionUnsupported => {
+            response
+                .headers_mut()
+                .insert(TUS_VERSION, HeaderValue::from_static(PROTOCOL_VERSION));
+        }
+        TusError::OffsetMismatch { expected } => {
+            response
+                .headers_mut()
+                .insert(UPLOAD_OFFSET, number_header(*expected));
+        }
+        TusError::Backpressure { retry_after } => {
+            response
+                .headers_mut()
+                .insert(RETRY_AFTER, number_header(*retry_after));
+        }
+        _ => {}
     }
     response
 }
@@ -250,6 +277,45 @@ async fn head(
     Ok(response)
 }
 
+async fn patch(
+    service: &TusService,
+    principal: &Authenticated,
+    raw_id: &str,
+    request_headers: &HeaderMap,
+    body: axum::body::Body,
+    request_id: Option<&RequestId>,
+) -> Result<Response, TusError> {
+    headers::require_version(request_headers)?;
+    headers::reject_concatenation(request_headers)?;
+    let id = upload_id(raw_id)?;
+    headers::require_offset_content_type(request_headers)?;
+    let client_offset = headers::upload_offset(request_headers)?;
+    let checksum = headers::upload_checksum(request_headers)?;
+    let length = headers::patch_length(request_headers)?;
+    let patched = service
+        .patch(
+            principal.0.user_id,
+            id,
+            PatchInput {
+                client_offset,
+                checksum,
+                length,
+                content_length: headers::content_length(request_headers),
+                body,
+                request_id: request_id.map(|id| id.as_str().to_owned()),
+            },
+        )
+        .await?;
+    let mut response = StatusCode::NO_CONTENT.into_response();
+    let headers = response.headers_mut();
+    headers.insert(UPLOAD_OFFSET, number_header(patched.offset));
+    headers.insert(
+        UPLOAD_EXPIRES,
+        text_header(&imf_fixdate(patched.expires_at)),
+    );
+    Ok(response)
+}
+
 async fn terminate(
     service: &TusService,
     principal: &Authenticated,
@@ -303,6 +369,72 @@ async fn head_upload(
 }
 
 #[utoipa::path(
+    patch,
+    path = "/api/v1/uploads/tus/{id}",
+    tag = "uploads",
+    params(
+        ("id" = String, Path, description = "Opaque upload id. It is not a storage key."),
+        ("Tus-Resumable" = String, Header, description = "Must be `1.0.0`."),
+        ("Upload-Offset" = i64, Header, description = "The offset the body continues from. It must equal the authoritative offset (`min(recorded offset, bytes on disk)`), otherwise the request is `409` and no byte is accepted."),
+        ("Upload-Checksum" = Option<String>, Header, description = "`sha256 <base64 digest>` of this request's body. A mismatch answers `460` and the upload keeps the offset it had before this request: a verified request advances the persisted offset only after its whole body verified. Without the header the offset is persisted every 8 MiB or 2 s."),
+        ("Upload-Length" = Option<i64>, Header, description = "Sets the length of an upload created with `Upload-Defer-Length`. It must not be below the current offset or above the effective maximum, and may not change a length that is already fixed."),
+    ),
+    request_body(
+        content_type = "application/offset+octet-stream",
+        description = "The bytes, streamed through one bounded buffer per request and never collected. There is no whole-transfer deadline: only a 60 s gap between frames ends the request."
+    ),
+    responses(
+        (status = 204, description = "The bytes were accepted. `Upload-Offset` is the offset that is durable: persisted after an `fdatasync` of the staging file. A shutdown or a stream that ended early answers `204` with the offset reached so far. A completed length does not finalize the upload here.",
+            headers(
+                ("Tus-Resumable" = String, description = "`1.0.0`."),
+                ("Upload-Offset" = i64, description = "Durable offset in bytes."),
+                ("Upload-Expires" = String, description = "RFC 7231 IMF-fixdate; extended on activity and never beyond the transfer session."),
+                ("Cache-Control" = String, description = "`no-store`."),
+            )),
+        (status = 400, description = "`UPLOAD_METADATA_INVALID`: `Upload-Offset`, `Upload-Checksum` (syntax, algorithm other than `sha256`, wrong digest size) or `Upload-Length` is missing or malformed; `details.key` names it.", body = ApiErrorBody),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "The CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
+        (status = 404, description = "`NOT_FOUND`: the upload is unknown or belongs to another user.", body = ApiErrorBody),
+        (status = 408, description = "`TRANSFER_IDLE_TIMEOUT`: no body frame arrived within 60 s (never a function of file size); the durable offset is kept.", body = ApiErrorBody),
+        (status = 409, description = "`UPLOAD_OFFSET_MISMATCH` (the response carries the true `Upload-Offset`; `details.expectedOffset`) or `TRANSFER_SESSION_STATE_INVALID`.", body = ApiErrorBody,
+            headers(("Upload-Offset" = i64, description = "Authoritative offset; present on `UPLOAD_OFFSET_MISMATCH`."))),
+        (status = 410, description = "`UPLOAD_SESSION_EXPIRED`: the upload or its session expired or was terminated.", body = ApiErrorBody),
+        (status = 412, description = "`TUS_VERSION_UNSUPPORTED`; the response carries `Tus-Version`.", body = ApiErrorBody),
+        (status = 413, description = "`FILE_TOO_LARGE`: the body exceeds the declared length or the maximum file size.", body = ApiErrorBody),
+        (status = 415, description = "`UNSUPPORTED_MEDIA_TYPE`: the body is not `application/offset+octet-stream`.", body = ApiErrorBody),
+        (status = 422, description = "`UPLOAD_LENGTH_MISMATCH`: `Upload-Length` conflicts with the length of the upload.", body = ApiErrorBody),
+        (status = 423, description = "`UPLOAD_LOCKED`: another request holds the upload; retry after a `HEAD`.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+        (status = 460, description = "`UPLOAD_CHECKSUM_MISMATCH`: the body did not match `Upload-Checksum`; the offset is unchanged and the bytes were discarded.", body = ApiErrorBody),
+        (status = 503, description = "`TRANSFER_BACKPRESSURE` (carries `Retry-After`; no byte was accepted), `STORAGE_UNAVAILABLE` or `SERVICE_UNAVAILABLE` while the server shuts down.", body = ApiErrorBody,
+            headers(("Retry-After" = i64, description = "Seconds to wait; present on `TRANSFER_BACKPRESSURE`."))),
+        (status = 507, description = "`QUOTA_EXCEEDED` (the accepted prefix is kept) or `STORAGE_WRITE_FAILED`.", body = ApiErrorBody),
+    )
+)]
+async fn patch_upload(
+    Extension(service): Extension<TusService>,
+    principal: Authenticated,
+    Path(id): Path<String>,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let (parts, body) = request.into_parts();
+    match patch(
+        &service,
+        &principal,
+        &id,
+        &parts.headers,
+        body,
+        request_id.as_ref(),
+    )
+    .await
+    {
+        Ok(response) => response,
+        Err(error) => failure(&error, request_id.as_ref()),
+    }
+}
+
+#[utoipa::path(
     delete,
     path = "/api/v1/uploads/tus/{id}",
     tag = "uploads",
@@ -341,16 +473,24 @@ async fn terminate_upload(
     params(
         ("id" = String, Path, description = "Opaque upload id. It is not a storage key."),
         ("Tus-Resumable" = String, Header, description = "Must be `1.0.0`."),
-        ("X-HTTP-Method-Override" = String, Header, description = "`HEAD` or `DELETE`, for clients behind proxies that strip those methods. `PATCH` is recognised but not available yet and answers `METHOD_NOT_ALLOWED`. Any other value is `UPLOAD_METADATA_INVALID`. Authorization and CSRF are those of this `POST`."),
+        ("X-HTTP-Method-Override" = String, Header, description = "`HEAD`, `DELETE` or `PATCH`, for clients behind proxies that strip those methods. `PATCH` takes the same headers and the same bounded streaming path as a real `PATCH`; this route has no body limit and no whole-request deadline. Any other value is `UPLOAD_METADATA_INVALID`. Authorization, CSRF and rate limiting are those of this `POST`."),
     ),
     responses(
         (status = 200, description = "As `HEAD` when overridden with `HEAD`."),
-        (status = 204, description = "As `DELETE` when overridden with `DELETE`."),
-        (status = 400, description = "`UPLOAD_METADATA_INVALID`: the override value is not permitted.", body = ApiErrorBody),
+        (status = 204, description = "As `DELETE` when overridden with `DELETE`, or as `PATCH` when overridden with `PATCH` (with `Upload-Offset` and `Upload-Expires`)."),
+        (status = 400, description = "`UPLOAD_METADATA_INVALID`: the override value, or a `PATCH` header, is not permitted.", body = ApiErrorBody),
         (status = 401, description = "Authentication required.", body = ApiErrorBody),
         (status = 403, description = "The CSRF proof or origin is missing or not allowed.", body = ApiErrorBody),
         (status = 404, description = "`NOT_FOUND`: the upload is unknown or belongs to another user.", body = ApiErrorBody),
-        (status = 405, description = "`METHOD_NOT_ALLOWED`: no override was supplied, or it names `PATCH`.", body = ApiErrorBody),
+        (status = 408, description = "`TRANSFER_IDLE_TIMEOUT` (overridden `PATCH`).", body = ApiErrorBody),
+        (status = 413, description = "`FILE_TOO_LARGE` (overridden `PATCH`).", body = ApiErrorBody),
+        (status = 415, description = "`UNSUPPORTED_MEDIA_TYPE` (overridden `PATCH`).", body = ApiErrorBody),
+        (status = 422, description = "`UPLOAD_LENGTH_MISMATCH` (overridden `PATCH`).", body = ApiErrorBody),
+        (status = 423, description = "`UPLOAD_LOCKED` (overridden `PATCH`).", body = ApiErrorBody),
+        (status = 460, description = "`UPLOAD_CHECKSUM_MISMATCH` (overridden `PATCH`).", body = ApiErrorBody),
+        (status = 503, description = "`TRANSFER_BACKPRESSURE`, `STORAGE_UNAVAILABLE` or `SERVICE_UNAVAILABLE` (overridden `PATCH`).", body = ApiErrorBody),
+        (status = 507, description = "`QUOTA_EXCEEDED` or `STORAGE_WRITE_FAILED` (overridden `PATCH`).", body = ApiErrorBody),
+        (status = 405, description = "`METHOD_NOT_ALLOWED`: no override was supplied.", body = ApiErrorBody),
         (status = 410, description = "`UPLOAD_SESSION_EXPIRED`.", body = ApiErrorBody),
         (status = 412, description = "`TUS_VERSION_UNSUPPORTED`; the response carries `Tus-Version`.", body = ApiErrorBody),
         (status = 429, description = "Rate limited.", body = ApiErrorBody),
@@ -363,7 +503,7 @@ async fn override_upload(
     request: Request,
 ) -> Response {
     let request_id = RequestId::of(&request);
-    let (parts, _body) = request.into_parts();
+    let (parts, body) = request.into_parts();
     let outcome = async {
         headers::require_version(&parts.headers)?;
         match method_override(&parts.headers)? {
@@ -371,7 +511,18 @@ async fn override_upload(
             Some(MethodOverride::Delete) => {
                 terminate(&service, &principal, &id, &parts.headers).await
             }
-            Some(MethodOverride::Patch) | None => Err(TusError::MethodNotAllowed),
+            Some(MethodOverride::Patch) => {
+                patch(
+                    &service,
+                    &principal,
+                    &id,
+                    &parts.headers,
+                    body,
+                    request_id.as_ref(),
+                )
+                .await
+            }
+            None => Err(TusError::MethodNotAllowed),
         }
     }
     .await;

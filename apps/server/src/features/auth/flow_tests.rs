@@ -93,6 +93,7 @@ struct Stack {
     admin_users: AdminUserService,
     folders: FolderService,
     transfers: crate::features::transfers::TransferService,
+    tus: crate::features::transfers::TusService,
     data_dir: std::path::PathBuf,
     storage_down: Arc<std::sync::atomic::AtomicBool>,
     providers: IdentityProviderService,
@@ -109,6 +110,7 @@ struct Stack {
 struct TusSetup {
     staging: Option<Arc<dyn crate::storage::staging::StagingStorage>>,
     limits: crate::features::transfers::TusLimits,
+    shutdown: tokio_util::sync::CancellationToken,
 }
 
 impl Default for TusSetup {
@@ -116,6 +118,7 @@ impl Default for TusSetup {
         Self {
             staging: None,
             limits: crate::features::transfers::TusLimits::production(262_144),
+            shutdown: tokio_util::sync::CancellationToken::new(),
         }
     }
 }
@@ -297,6 +300,7 @@ impl Stack {
                 base_url: config.base_url.clone(),
                 holder: "test-instance".to_owned(),
                 limits: tus_setup.limits,
+                shutdown: tus_setup.shutdown.clone(),
             },
         );
         let files = FileService::new(
@@ -410,6 +414,7 @@ impl Stack {
             admin_users,
             folders,
             transfers,
+            tus,
             data_dir: root.to_path_buf(),
             storage_down,
             providers,
@@ -1950,5 +1955,7 @@ mod trusted_devices;
 mod tus;
 mod tus_create;
 mod tus_head_delete;
+mod tus_patch;
+mod tus_patch_control;
 mod tus_security;
 mod tus_stream;

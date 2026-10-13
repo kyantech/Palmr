@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use axum::body::Body;
+use tokio_util::sync::CancellationToken;
 
 use crate::config::PublicBaseUrl;
 use crate::domain::bytes::ByteSize;
@@ -26,7 +27,10 @@ use super::super::state::{
 use super::append::{StreamEnd, StreamPlan, Streamer, TusLimits};
 use super::error::TusError;
 use super::headers::{upload_location, DeclaredLength};
+use super::lease::UploadLocks;
 use super::metadata::UploadMetadata;
+use super::permits::PatchPermits;
+use super::reconcile;
 use super::repo::{
     self, CreateBinding, ExistingUpload, NewUpload, TusState, TusUploadId, UploadRow,
 };
@@ -35,15 +39,18 @@ const CREATE_TRANSACTION: &str = "tus.create_upload";
 
 #[derive(Clone)]
 pub struct TusService {
-    pools: DbPools,
-    clock: Arc<dyn Clock>,
-    settings: SettingsHandle,
-    storage: TransferStorage,
-    transfers: TransferService,
+    pub(super) pools: DbPools,
+    pub(super) clock: Arc<dyn Clock>,
+    pub(super) settings: SettingsHandle,
+    pub(super) storage: TransferStorage,
+    pub(super) transfers: TransferService,
     base_url: PublicBaseUrl,
-    streamer: Streamer,
-    holder: Arc<str>,
-    limits: TusLimits,
+    pub(super) streamer: Streamer,
+    pub(super) holder: Arc<str>,
+    pub(super) limits: TusLimits,
+    pub(super) locks: UploadLocks,
+    pub(super) permits: PatchPermits,
+    pub(super) shutdown: CancellationToken,
 }
 
 pub struct TusServiceParts {
@@ -55,6 +62,7 @@ pub struct TusServiceParts {
     pub base_url: PublicBaseUrl,
     pub holder: String,
     pub limits: TusLimits,
+    pub shutdown: CancellationToken,
 }
 
 pub struct CreateInput {
@@ -114,7 +122,7 @@ enum Committed {
     Existing(ExistingUpload),
 }
 
-fn state_invalid() -> TusError {
+pub(super) fn state_invalid() -> TusError {
     TusError::Transfer(TransferError::StateInvalid)
 }
 
@@ -264,6 +272,7 @@ impl TusService {
             quota,
             Arc::clone(&holder),
             parts.limits,
+            parts.shutdown.clone(),
         );
         Self {
             pools: parts.pools,
@@ -275,14 +284,27 @@ impl TusService {
             streamer,
             holder,
             limits: parts.limits,
+            locks: UploadLocks::default(),
+            permits: PatchPermits::new(parts.limits.patch_concurrency, parts.limits.permit_wait),
+            shutdown: parts.shutdown,
         }
     }
 
-    fn now(&self) -> Result<Timestamp, TusError> {
+    #[cfg(test)]
+    pub fn available_patch_permits(&self) -> usize {
+        self.permits.available()
+    }
+
+    #[cfg(test)]
+    pub fn upload_lock_entries(&self) -> usize {
+        self.locks.len()
+    }
+
+    pub(super) fn now(&self) -> Result<Timestamp, TusError> {
         Ok(Timestamp::try_from(self.clock.now()).map_err(TransferError::from)?)
     }
 
-    fn local_staging(&self) -> Result<Arc<dyn StagingStorage>, TusError> {
+    pub(super) fn local_staging(&self) -> Result<Arc<dyn StagingStorage>, TusError> {
         if self.storage.provider() != TransferProvider::Local {
             return Err(TusError::NotAvailable);
         }
@@ -292,7 +314,7 @@ impl TusService {
             .ok_or(TusError::NotAvailable)
     }
 
-    fn max_size(&self) -> Option<ByteSize> {
+    pub(super) fn max_size(&self) -> Option<ByteSize> {
         self.storage
             .effective_max_file_size(self.settings.load().quotas.max_file_size_bytes)
     }
@@ -360,11 +382,15 @@ impl TusService {
 
         let streamer = self.streamer.clone();
         let plan = fresh.plan;
-        let outcome = tokio::spawn(async move { streamer.run(plan, writer, body).await })
-            .await
-            .map_err(|_| TransferError::Invariant {
-                what: "upload_stream",
-            })?;
+        let guard = self.locks.acquire(fresh.id).await;
+        let outcome = tokio::spawn(async move {
+            let _guard = guard;
+            streamer.run(plan, writer, body).await
+        })
+        .await
+        .map_err(|_| TransferError::Invariant {
+            what: "upload_stream",
+        })?;
         self.conclude(owner, &fresh.plan, outcome.end, request_id)
             .await?;
         Ok(created(outcome.durable))
@@ -508,6 +534,7 @@ impl TusService {
                 declared: length.map(ByteSize::get),
                 max: ctx.max.map(ByteSize::get),
                 running_quota,
+                checksum: None,
             },
             hint: staging_hint(id, metadata, owner, ctx.now),
             streaming,
@@ -532,7 +559,7 @@ impl TusService {
         })
     }
 
-    async fn confirm_live(
+    pub(super) async fn confirm_live(
         &self,
         staging: &Arc<dyn StagingStorage>,
         owner: UserId,
@@ -555,10 +582,10 @@ impl TusService {
         recorded: ByteSize,
     ) -> Result<u64, TusError> {
         let on_disk = staging.staged_len(hex).await?.unwrap_or(0);
-        Ok(recorded.get().min(on_disk))
+        Ok(reconcile::authoritative(recorded.get(), on_disk))
     }
 
-    async fn conclude(
+    pub(super) async fn conclude(
         &self,
         owner: UserId,
         plan: &StreamPlan,
@@ -566,8 +593,10 @@ impl TusService {
         request_id: Option<String>,
     ) -> Result<(), TusError> {
         match end {
-            StreamEnd::Finished | StreamEnd::Disconnected => Ok(()),
+            StreamEnd::Finished | StreamEnd::Disconnected | StreamEnd::Shutdown => Ok(()),
             StreamEnd::Idle => Err(TusError::IdleTimeout),
+            StreamEnd::LeaseLost => Err(TusError::Locked),
+            StreamEnd::ChecksumMismatch => Err(TusError::ChecksumMismatch { offset: plan.start }),
             StreamEnd::WriteFailed => Err(TusError::WriteFailed),
             StreamEnd::Gone => Err(TusError::Gone),
             StreamEnd::Internal(error) => Err(error),
@@ -645,7 +674,7 @@ impl TusService {
             .ok_or(TusError::NotFound)
     }
 
-    async fn live_row(
+    pub(super) async fn live_row(
         &self,
         owner: UserId,
         id: TusUploadId,
@@ -698,7 +727,7 @@ impl TusService {
         Ok(())
     }
 
-    async fn discard(&self, staging: &Arc<dyn StagingStorage>, hex: &UploadId) {
+    pub(super) async fn discard(&self, staging: &Arc<dyn StagingStorage>, hex: &UploadId) {
         if let Err(error) = staging.remove(hex).await {
             tracing::warn!(
                 storage_error = error.kind(),
@@ -708,7 +737,7 @@ impl TusService {
     }
 }
 
-fn upload_hex(id: TusUploadId) -> Result<UploadId, TusError> {
+pub(super) fn upload_hex(id: TusUploadId) -> Result<UploadId, TusError> {
     UploadId::parse(&id.to_string().replace('-', ""))
         .map_err(|_| TusError::Storage(StorageError::InvalidKey))
 }

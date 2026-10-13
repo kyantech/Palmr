@@ -412,6 +412,7 @@ pub struct Application {
     jobs: JobRuntime,
     database: Database,
     instance: InstanceLock,
+    uploads_stop: CancellationToken,
     _data_dir: DataDir,
     _instance_key: InstanceKey,
 }
@@ -486,6 +487,7 @@ impl Application {
             jobs: initialized.jobs,
             database: initialized.database,
             instance: initialized.instance,
+            uploads_stop: initialized.uploads_stop,
             _data_dir: initialized.data_dir,
             _instance_key: initialized.instance_key,
         })
@@ -503,10 +505,12 @@ impl Application {
             jobs,
             database,
             instance,
+            uploads_stop,
             _data_dir: data_dir,
             _instance_key: instance_key,
         } = self;
         jobs.stop_claiming();
+        uploads_stop.cancel();
         let (drain, jobs_drain, ()) = tokio::join!(
             server.shutdown(grace),
             jobs.shutdown(grace),
@@ -527,12 +531,14 @@ struct InitializedApplication {
     jobs: JobRuntime,
     database: Database,
     instance: InstanceLock,
+    uploads_stop: CancellationToken,
     data_dir: DataDir,
     instance_key: InstanceKey,
 }
 
 impl InitializedApplication {
     async fn abandon(self, error: StartupError) -> StartupError {
+        self.uploads_stop.cancel();
         self.storage_health.stop().await;
         log_jobs_stopped(self.jobs.shutdown(Duration::ZERO).await);
         abandon_startup(self.database, self.instance, error).await
@@ -681,6 +687,7 @@ pub async fn run(source: &EnvironmentSource, mut signals: ShutdownSignals) -> Ex
         ended = &mut application.server.task => {
             application.readiness.mark_not_ready();
             tracing::error!(outcome = ?ended.map(|result| result.map_err(|error| error.kind())), "the HTTP server stopped unexpectedly");
+            application.uploads_stop.cancel();
             application.storage_health.stop().await;
             log_jobs_stopped(application.jobs.shutdown(config.shutdown_grace).await);
             log_database_closed(&application.database.close().await);
@@ -848,6 +855,7 @@ async fn initialize(
         settings.clone(),
         transfer_storage.clone(),
     );
+    let uploads_stop = CancellationToken::new();
     let tus = TusService::new(TusServiceParts {
         pools: database.pools().clone(),
         clock: Arc::clone(&clock),
@@ -857,6 +865,7 @@ async fn initialize(
         base_url: config.base_url.clone(),
         holder: instance.instance_id().to_string(),
         limits: TusLimits::production(config.upload_buffer_bytes as usize),
+        shutdown: uploads_stop.clone(),
     });
     let identity_providers = IdentityProviderService::new(
         database.pools().clone(),
@@ -992,6 +1001,7 @@ async fn initialize(
         jobs,
         database,
         instance,
+        uploads_stop,
         data_dir,
         instance_key,
     })

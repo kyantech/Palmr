@@ -86,6 +86,7 @@ workspace = true
 
 [dev-dependencies]
 insta = "1"
+palmr-stress = { path = "../../tests/stress" }
 percent-encoding = "2"
 proptest = { version = "1", default-features = false, features = ["std"] }
 rand = { version = "0.9", default-features = false, features = ["std_rng"] }

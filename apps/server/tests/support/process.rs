@@ -35,6 +35,15 @@ impl ServerProcess {
         })
     }
 
+    pub const fn port(&self) -> u16 {
+        self.port
+    }
+
+    pub fn kill_hard(mut self) -> Result<ExitStatus> {
+        self.child.kill().context("send SIGKILL to palmr")?;
+        self.child.wait().context("reap the killed palmr")
+    }
+
     pub async fn is_ready(&self) -> bool {
         let url = format!("http://127.0.0.1:{}/health/ready", self.port);
         matches!(

@@ -24,6 +24,8 @@ pub trait StagingAppend: Send {
 
     async fn flush(&mut self) -> Result<(), StorageError>;
 
+    async fn truncate(&mut self, len: u64) -> Result<(), StorageError>;
+
     async fn len(&mut self) -> Result<u64, StorageError>;
 }
 

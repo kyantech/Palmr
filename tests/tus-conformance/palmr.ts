@@ -45,7 +45,7 @@ export function cookieHeader(principal: Principal): string {
 export class Palmr {
   readonly baseUrl: string;
   private readonly child: ChildProcess;
-  private readonly dataDir: string;
+  readonly dataDir: string;
   private log = "";
 
   private constructor(baseUrl: string, child: ChildProcess, dataDir: string) {

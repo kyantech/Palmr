@@ -18,6 +18,7 @@ async fn streaming_stack(root: &Path) -> (Stack, Arc<TestStaging>) {
         TusSetup {
             staging: Some(staging.clone()),
             limits: small_limits(),
+            ..TusSetup::default()
         },
     )
     .await;
@@ -492,7 +493,7 @@ async fn it_tus_creation_with_upload_stops_when_the_upload_is_terminated() {
     assert_eq!(stack.item_state(&planned.item).await, "canceled");
 }
 
-async fn stack_with_limits(
+pub(super) async fn stack_with_limits(
     root: &Path,
     limits: crate::features::transfers::TusLimits,
 ) -> (Stack, Arc<TestStaging>) {
@@ -504,6 +505,7 @@ async fn stack_with_limits(
         TusSetup {
             staging: Some(staging.clone()),
             limits,
+            ..TusSetup::default()
         },
     )
     .await;
@@ -699,7 +701,7 @@ async fn it_tus_creation_with_upload_flushes_on_the_interval_not_only_on_size() 
     assert_eq!(stack.tus_row(&id).await.offset, 5_000);
 }
 
-async fn upload_of(stack: &Stack, item: &str) -> String {
+pub(super) async fn upload_of(stack: &Stack, item: &str) -> String {
     loop {
         if let Some(found) = sqlx::query_scalar::<_, String>(
             "SELECT id FROM tus_uploads WHERE transfer_session_file_id = ?1",
@@ -715,7 +717,7 @@ async fn upload_of(stack: &Stack, item: &str) -> String {
     }
 }
 
-async fn assert_terminal_and_quiet(
+pub(super) async fn assert_terminal_and_quiet(
     stack: &Stack,
     planned: &super::tus::Planned,
     id: &str,

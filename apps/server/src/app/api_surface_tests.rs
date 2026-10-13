@@ -2800,7 +2800,7 @@ fn unit_transfer_session_routes_are_declared_with_their_classes() {
     }
 }
 
-const TUS_ROUTES: [(&str, Method, RateLimitClass, bool); 5] = [
+const TUS_ROUTES: [(&str, Method, RateLimitClass, bool); 6] = [
     (
         "/api/v1/uploads/tus",
         Method::OPTIONS,
@@ -2821,6 +2821,12 @@ const TUS_ROUTES: [(&str, Method, RateLimitClass, bool); 5] = [
     ),
     (
         "/api/v1/uploads/tus/{id}",
+        Method::PATCH,
+        RateLimitClass::TransferData,
+        true,
+    ),
+    (
+        "/api/v1/uploads/tus/{id}",
         Method::DELETE,
         RateLimitClass::Write,
         false,
@@ -2829,7 +2835,7 @@ const TUS_ROUTES: [(&str, Method, RateLimitClass, bool); 5] = [
         "/api/v1/uploads/tus/{id}",
         Method::POST,
         RateLimitClass::TransferControl,
-        false,
+        true,
     ),
 ];
 
@@ -2867,11 +2873,29 @@ fn unit_tus_routes_are_declared_with_their_classes() {
         .iter()
         .filter(|entry| entry.path().starts_with("/api/v1/uploads/tus"))
         .count();
-    assert_eq!(
-        tus_routes,
-        TUS_ROUTES.len(),
-        "PATCH belongs to a later task"
-    );
+    assert_eq!(tus_routes, TUS_ROUTES.len());
+    for (method, path) in [
+        (Method::PATCH, "/api/v1/uploads/tus/{id}"),
+        (Method::POST, "/api/v1/uploads/tus/{id}"),
+        (Method::POST, "/api/v1/uploads/tus"),
+    ] {
+        let transport = inventory.get(&method, path).unwrap().policy().transport();
+        assert_eq!(
+            transport.request_body(),
+            crate::app::router::RequestBody::Streamed,
+            "{method} {path}"
+        );
+        assert_eq!(
+            transport.deadline(),
+            crate::app::router::Deadline::IdleOnly,
+            "{method} {path}"
+        );
+        assert_eq!(
+            transport.response_encoding(),
+            crate::app::router::ResponseEncoding::Identity,
+            "{method} {path}"
+        );
+    }
     let create = inventory
         .get(&Method::POST, "/api/v1/uploads/tus")
         .unwrap()
@@ -2893,6 +2917,7 @@ fn it_openapi_tus_contract_exposes_no_storage_identity() {
         ("/api/v1/uploads/tus", "options"),
         ("/api/v1/uploads/tus", "post"),
         ("/api/v1/uploads/tus/{id}", "head"),
+        ("/api/v1/uploads/tus/{id}", "patch"),
         ("/api/v1/uploads/tus/{id}", "delete"),
         ("/api/v1/uploads/tus/{id}", "post"),
     ] {
@@ -2931,9 +2956,33 @@ fn it_openapi_tus_contract_exposes_no_storage_identity() {
     ] {
         assert!(!text.contains(&format!("\"{forbidden}\"")), "{forbidden}");
     }
-    assert!(document["paths"]["/api/v1/uploads/tus/{id}"]
-        .get("patch")
-        .is_none());
+    let patch = &document["paths"]["/api/v1/uploads/tus/{id}"]["patch"];
+    assert!(patch["requestBody"]["content"]["application/offset+octet-stream"].is_object());
+    let names: Vec<&str> = patch["parameters"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(|parameter| parameter["name"].as_str())
+        .collect();
+    for header in [
+        "Tus-Resumable",
+        "Upload-Offset",
+        "Upload-Checksum",
+        "Upload-Length",
+    ] {
+        assert!(names.contains(&header), "{header}");
+    }
+    let responses = patch["responses"].as_object().unwrap();
+    for status in [
+        "204", "400", "401", "403", "404", "408", "409", "410", "412", "413", "415", "422", "423",
+        "429", "460", "503", "507",
+    ] {
+        assert!(responses.contains_key(status), "PATCH documents {status}");
+    }
+    assert!(responses["204"]["headers"]["Upload-Offset"].is_object());
+    assert!(responses["204"]["headers"]["Upload-Expires"].is_object());
+    assert!(responses["409"]["headers"]["Upload-Offset"].is_object());
+    assert!(responses["503"]["headers"]["Retry-After"].is_object());
 }
 
 fn schema_property_names(document: &Value, schema: &Value, names: &mut Vec<String>, depth: usize) {

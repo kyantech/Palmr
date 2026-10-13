@@ -10,7 +10,7 @@ Introduced in M14-T01. It implements TEST_STRATEGY §5 (P4: no committed giant f
 | Node/TypeScript twin, File-like source, manifest loader | `tests/engine-harness` (package `@palmr/engine-harness`) |
 | G7 gate script | `scripts/check-generator-manifest.sh` |
 
-Both implementations are test-only. Neither is imported by `apps/server/src` or `apps/web/src`, and `palmr-server` does not depend on `palmr-stress`.
+Both implementations are test-only. Neither is imported by `apps/server/src` or `apps/web/src`, and `palmr-server` depends on `palmr-stress` only as a dev-dependency, for the real-HTTP integration tests (`apps/server/tests/it_tus_patch.rs`); the production binary does not link it.
 
 ## Generator identity
 

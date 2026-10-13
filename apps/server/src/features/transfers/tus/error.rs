@@ -29,6 +29,18 @@ pub enum TusError {
         declared: ByteSize,
     },
     IdleTimeout,
+    OffsetMismatch {
+        expected: u64,
+    },
+    Locked,
+    ChecksumMismatch {
+        offset: u64,
+    },
+    Backpressure {
+        retry_after: u64,
+    },
+    UnsupportedMedia,
+    ShuttingDown,
     NotAvailable,
     NotFound,
     Gone,
@@ -49,6 +61,12 @@ impl TusError {
             Self::LengthMismatch { .. } => "tus_length_mismatch",
             Self::Overrun { .. } => "tus_body_exceeds_length",
             Self::IdleTimeout => "tus_idle_timeout",
+            Self::OffsetMismatch { .. } => "tus_offset_mismatch",
+            Self::Locked => "tus_upload_locked",
+            Self::ChecksumMismatch { .. } => "tus_checksum_mismatch",
+            Self::Backpressure { .. } => "tus_backpressure",
+            Self::UnsupportedMedia => "tus_unsupported_media",
+            Self::ShuttingDown => "tus_shutting_down",
             Self::NotAvailable => "tus_not_available",
             Self::NotFound => "tus_upload_not_found",
             Self::Gone => "tus_upload_gone",
@@ -92,6 +110,18 @@ impl TusError {
                 .with_detail("reason", "upload_length")
                 .with_detail("declaredBytes", declared.to_i64()),
             Self::IdleTimeout => ApiError::new(ErrorCode::TransferIdleTimeout),
+            Self::OffsetMismatch { expected } => ApiError::new(ErrorCode::UploadOffsetMismatch)
+                .with_detail(
+                    "expectedOffset",
+                    i64::try_from(*expected).unwrap_or(i64::MAX),
+                ),
+            Self::Locked => ApiError::new(ErrorCode::UploadLocked),
+            Self::ChecksumMismatch { offset } => ApiError::new(ErrorCode::UploadChecksumMismatch)
+                .with_detail("algorithm", "sha256")
+                .with_detail("offset", i64::try_from(*offset).unwrap_or(i64::MAX)),
+            Self::Backpressure { .. } => ApiError::new(ErrorCode::TransferBackpressure),
+            Self::UnsupportedMedia => ApiError::new(ErrorCode::UnsupportedMediaType),
+            Self::ShuttingDown => ApiError::new(ErrorCode::ServiceUnavailable),
             Self::NotAvailable | Self::NotFound => ApiError::new(ErrorCode::NotFound),
             Self::Gone => ApiError::new(ErrorCode::UploadSessionExpired),
             Self::MethodNotAllowed => ApiError::new(ErrorCode::MethodNotAllowed),
@@ -115,6 +145,20 @@ impl fmt::Display for TusError {
             }
             Self::Overrun { .. } => f.write_str("the upload body exceeds the declared length"),
             Self::IdleTimeout => f.write_str("the upload body stalled"),
+            Self::OffsetMismatch { .. } => {
+                f.write_str("the upload offset does not match the server state")
+            }
+            Self::Locked => f.write_str("another request is writing to the upload"),
+            Self::ChecksumMismatch { .. } => {
+                f.write_str("the uploaded chunk failed checksum verification")
+            }
+            Self::Backpressure { .. } => {
+                f.write_str("the server is handling the maximum number of concurrent uploads")
+            }
+            Self::UnsupportedMedia => {
+                f.write_str("the request content type is not application/offset+octet-stream")
+            }
+            Self::ShuttingDown => f.write_str("the server is shutting down"),
             Self::NotAvailable => f.write_str("local resumable uploads are not available"),
             Self::NotFound => f.write_str("the upload does not exist"),
             Self::Gone => f.write_str("the upload expired or was terminated"),

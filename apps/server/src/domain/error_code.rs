@@ -2,10 +2,22 @@ use http::StatusCode;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+macro_rules! status_of {
+    ($name:ident) => {
+        StatusCode::$name
+    };
+    ($code:literal) => {
+        match StatusCode::from_u16($code) {
+            Ok(status) => status,
+            Err(_) => panic!("the status is not a valid HTTP status"),
+        }
+    };
+}
+
 // Every property of a code is generated from its single row, so a code cannot
 // be rendered with a second status or a second wire spelling anywhere.
 macro_rules! error_catalog {
-    ($($variant:ident = $wire:literal, $status:ident, retryable: $retryable:literal, $message:literal;)+) => {
+    ($($variant:ident = $wire:literal, $status:tt, retryable: $retryable:literal, $message:literal;)+) => {
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, ToSchema)]
         pub enum ErrorCode {
             $(#[serde(rename = $wire)] #[schema(rename = $wire)] $variant,)+
@@ -22,7 +34,7 @@ macro_rules! error_catalog {
 
             pub const fn status(self) -> StatusCode {
                 match self {
-                    $(Self::$variant => StatusCode::$status,)+
+                    $(Self::$variant => status_of!($status),)+
                 }
             }
 
@@ -198,6 +210,14 @@ error_catalog! {
         "The upload expired or was terminated";
     UploadLengthMismatch = "UPLOAD_LENGTH_MISMATCH", UNPROCESSABLE_ENTITY, retryable: false,
         "The upload length does not match the planned file";
+    UploadOffsetMismatch = "UPLOAD_OFFSET_MISMATCH", CONFLICT, retryable: false,
+        "The upload offset does not match the server state";
+    UploadLocked = "UPLOAD_LOCKED", LOCKED, retryable: true,
+        "Another request is writing to this upload";
+    UploadChecksumMismatch = "UPLOAD_CHECKSUM_MISMATCH", 460, retryable: true,
+        "The uploaded chunk failed checksum verification";
+    TransferBackpressure = "TRANSFER_BACKPRESSURE", SERVICE_UNAVAILABLE, retryable: true,
+        "The server is handling the maximum number of concurrent transfers";
     StorageWriteFailed = "STORAGE_WRITE_FAILED", INSUFFICIENT_STORAGE, retryable: true,
         "A write to storage failed";
     TransferIdleTimeout = "TRANSFER_IDLE_TIMEOUT", REQUEST_TIMEOUT, retryable: true,
@@ -374,7 +394,10 @@ mod tests {
                 "STORAGE_FULL",
                 "STORAGE_UNAVAILABLE",
                 "STORAGE_WRITE_FAILED",
+                "TRANSFER_BACKPRESSURE",
                 "TRANSFER_IDLE_TIMEOUT",
+                "UPLOAD_CHECKSUM_MISMATCH",
+                "UPLOAD_LOCKED",
             ])
         );
 

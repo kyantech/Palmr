@@ -122,7 +122,7 @@ jobs:
       - run: pnpm --filter @palmr/engine-harness test
 
   tus-conformance:
-    name: TUS conformance (supported surface)
+    name: TUS conformance (tus-js-client against real Palmr)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -141,6 +141,8 @@ jobs:
       - run: pnpm --filter @palmr/tus-conformance lint
       - run: pnpm --filter @palmr/tus-conformance typecheck
       - run: cargo build --locked --package palmr-server --bin palmr
+      - name: No skipped or todo conformance test
+        run: "! grep -rnE '\\b(it|test|describe)\\.(todo|skip|skipIf)\\b' tests/tus-conformance/test"
       - name: Third-party TUS client against a real Palmr process
         run: PALMR_BIN="$PWD/target/debug/palmr" pnpm --filter @palmr/tus-conformance test
 

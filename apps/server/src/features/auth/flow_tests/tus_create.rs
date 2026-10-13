@@ -750,6 +750,7 @@ async fn it_tus_create_recovers_from_staging_and_database_failures() {
         TusSetup {
             staging: Some(staging.clone()),
             limits: small_limits(),
+            ..TusSetup::default()
         },
     )
     .await;

@@ -45,6 +45,14 @@ impl StagingWriter {
     pub fn sync(&self) -> Result<(), StorageError> {
         self.file.sync_all().map_err(StorageError::from)
     }
+
+    pub fn sync_data(&self) -> Result<(), StorageError> {
+        self.file.sync_data().map_err(StorageError::from)
+    }
+
+    pub fn truncate(&self, len: u64) -> Result<(), StorageError> {
+        self.file.set_len(len).map_err(StorageError::from)
+    }
 }
 
 impl LocalProvider {

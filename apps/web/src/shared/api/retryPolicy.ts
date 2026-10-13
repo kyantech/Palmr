@@ -21,6 +21,9 @@ export const RETRY_CLASS: Readonly<Record<ErrorCode, RetryClass>> = {
   STORAGE_FULL: "serverFault",
   STORAGE_WRITE_FAILED: "serverFault",
   TRANSFER_IDLE_TIMEOUT: "transient",
+  UPLOAD_LOCKED: "transient",
+  UPLOAD_CHECKSUM_MISMATCH: "transient",
+  TRANSFER_BACKPRESSURE: "rateLimited",
 
   RATE_LIMITED: "rateLimited",
   IDEMPOTENCY_REQUEST_IN_PROGRESS: "rateLimited",
@@ -97,6 +100,7 @@ export const RETRY_CLASS: Readonly<Record<ErrorCode, RetryClass>> = {
   UPLOAD_METADATA_INVALID: "never",
   UPLOAD_SESSION_EXPIRED: "never",
   UPLOAD_LENGTH_MISMATCH: "never",
+  UPLOAD_OFFSET_MISMATCH: "never",
   STORAGE_PROVIDER_MISMATCH: "never",
   STORAGE_SIZE_MISMATCH: "never",
   BRANDING_ASSET_UNKNOWN: "never",

@@ -198,6 +198,7 @@ async fn it_tus_delete_terminates_once_and_releases_the_quota_share() {
         TusSetup {
             staging: Some(staging.clone()),
             limits: small_limits(),
+            ..TusSetup::default()
         },
     )
     .await;
@@ -339,6 +340,7 @@ async fn it_tus_delete_is_atomic_and_cleanup_survives_a_restart() {
         TusSetup {
             staging: Some(staging.clone()),
             limits: small_limits(),
+            ..TusSetup::default()
         },
     )
     .await;
@@ -450,6 +452,7 @@ async fn it_tus_delete_between_row_commit_and_staging_leaves_no_staging() {
         TusSetup {
             staging: Some(staging.clone()),
             limits: small_limits(),
+            ..TusSetup::default()
         },
     )
     .await;

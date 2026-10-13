@@ -463,6 +463,11 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "TRANSFER_BACKPRESSURE",
+    "status": 503,
+    "retryable": true
+  },
+  {
     "code": "TRANSFER_IDLE_TIMEOUT",
     "status": 408,
     "retryable": true
@@ -508,13 +513,28 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "UPLOAD_CHECKSUM_MISMATCH",
+    "status": 460,
+    "retryable": true
+  },
+  {
     "code": "UPLOAD_LENGTH_MISMATCH",
     "status": 422,
     "retryable": false
   },
   {
+    "code": "UPLOAD_LOCKED",
+    "status": 423,
+    "retryable": true
+  },
+  {
     "code": "UPLOAD_METADATA_INVALID",
     "status": 400,
+    "retryable": false
+  },
+  {
+    "code": "UPLOAD_OFFSET_MISMATCH",
+    "status": 409,
     "retryable": false
   },
   {

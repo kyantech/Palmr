@@ -86,7 +86,11 @@ impl StagingAppend for StagingWriter {
     }
 
     async fn flush(&mut self) -> Result<(), StorageError> {
-        blocking(|| self.sync())
+        blocking(|| self.sync_data())
+    }
+
+    async fn truncate(&mut self, len: u64) -> Result<(), StorageError> {
+        blocking(|| StagingWriter::truncate(self, len))
     }
 
     async fn len(&mut self) -> Result<u64, StorageError> {

@@ -5,7 +5,7 @@ use time::macros::datetime;
 
 use super::{
     jobs_step, ReconcileContext, ReconcileError, ReconcileRegistry, StepFuture, JOBS_STEP,
-    QUOTA_SCHEDULE_STEP,
+    QUOTA_SCHEDULE_STEP, TUS_LEASES_STEP,
 };
 use crate::config::SqliteSynchronous;
 use crate::domain::clock::TestClock;
@@ -277,4 +277,137 @@ async fn it_startup_reconcile_schedules_quota_reconcile_idempotently() {
         1,
         "a still-pending schedule from an earlier bucket is not duplicated"
     );
+}
+
+const TUS_FILE_IDS: [&str; 4] = [
+    "01996fc4-6a33-7c1e-9d2b-4f1a8e3c5d01",
+    "01996fc4-6a33-7c1e-9d2b-4f1a8e3c5d02",
+    "01996fc4-6a33-7c1e-9d2b-4f1a8e3c5d03",
+    "01996fc4-6a33-7c1e-9d2b-4f1a8e3c5d04",
+];
+const TUS_IDS: [&str; 4] = [
+    "01996fc4-6a33-7c1e-9d2b-4f1a8e3c5e01",
+    "01996fc4-6a33-7c1e-9d2b-4f1a8e3c5e02",
+    "01996fc4-6a33-7c1e-9d2b-4f1a8e3c5e03",
+    "01996fc4-6a33-7c1e-9d2b-4f1a8e3c5e04",
+];
+const TUS_SESSION: &str = "01996fc4-6a33-7c1e-9d2b-4f1a8e3c5d00";
+
+const TUS_ROWS: &str = "SELECT id || '|' || state || '|' || upload_offset || '|' || COALESCE(upload_length, '') || '|' || staging_path || '|' || metadata_json || '|' || transfer_session_file_id || '|' || owner_user_id || '|' || created_at || '|' || updated_at || '|' || expires_at || '|' || COALESCE(last_patch_at, '') FROM tus_uploads ORDER BY id";
+const TUS_LEASES: &str = "SELECT id || '|' || COALESCE(locked_by, '') || '|' || COALESCE(lock_expires_at, '') FROM tus_uploads ORDER BY id";
+const TUS_NEIGHBOURS: [&str; 4] = [
+    "SELECT id || '|' || state || '|' || COALESCE(finalize_stage, '') FROM transfer_session_files ORDER BY id",
+    "SELECT id || '|' || state FROM transfer_sessions ORDER BY id",
+    "SELECT id || '|' || used_bytes FROM users ORDER BY id",
+    "SELECT COUNT(*) || '|' || (SELECT COUNT(*) FROM storage_objects) || '|' || (SELECT COUNT(*) FROM files) || '|' || (SELECT COUNT(*) FROM quota_reservations) FROM file_deletion_queue",
+];
+
+async fn seed_tus(harness: &Harness) {
+    let own = harness.instance.to_string();
+    let mut sql = format!(
+        "INSERT INTO users (id, email, email_normalized, username, username_normalized, created_at, updated_at)
+         VALUES ('{USER}', 'u@example.test', 'u@example.test', 'user', 'user', '{NOW}', '{NOW}');
+         INSERT INTO transfer_sessions
+             (id, context, user_id, provider, state, created_at, updated_at, expires_at)
+         VALUES ('{TUS_SESSION}', 'my_files', '{USER}', 'local', 'uploading', '{NOW}', '{NOW}', '{FUTURE}');"
+    );
+    let rows: [(&str, &str, i64, String, &str); 4] = [
+        (
+            "in_progress",
+            "40",
+            40,
+            "'previous-instance'".to_owned(),
+            FUTURE,
+        ),
+        ("in_progress", "40", 40, format!("'{own}'"), FUTURE),
+        (
+            "terminated",
+            "40",
+            40,
+            "'previous-instance'".to_owned(),
+            FUTURE,
+        ),
+        ("created", "0", 0, "NULL".to_owned(), "NULL"),
+    ];
+    for (n, (state, _, offset, holder, lease_until)) in rows.iter().enumerate() {
+        let until = if *lease_until == "NULL" {
+            "NULL".to_owned()
+        } else {
+            format!("'{lease_until}'")
+        };
+        sql.push_str(&format!(
+            "INSERT INTO transfer_session_files
+                 (id, transfer_session_id, ordinal, client_file_key, display_name, relative_path,
+                  upload_kind, state, finalize_stage, final_object_id, final_object_key, created_at, updated_at)
+             VALUES ('{file}', '{TUS_SESSION}', {n}, 'k{n}', 'f{n}.bin', '', 'tus', 'uploading', 'none',
+                     '01996fc4-6a33-7c1e-9d2b-4f1a8e3c5f0{n}', 'objects/00/0{n}/00112233445566778899aabbccddeef{n}',
+                     '{NOW}', '{NOW}');
+             INSERT INTO tus_uploads
+                 (id, transfer_session_file_id, owner_user_id, upload_length, upload_offset, staging_path,
+                  state, locked_by, lock_expires_at, created_at, updated_at, expires_at)
+             VALUES ('{id}', '{file}', '{USER}', 100, {offset}, 'uploads/{id_hex}/blob', '{state}',
+                     {holder}, {until}, '{NOW}', '{NOW}', '{FUTURE}');",
+            file = TUS_FILE_IDS[n],
+            id = TUS_IDS[n],
+            id_hex = TUS_IDS[n].replace('-', ""),
+        ));
+    }
+    harness.seed(&sql).await;
+}
+
+async fn snapshot(harness: &Harness, queries: &[&str]) -> Vec<Vec<String>> {
+    let mut all = Vec::new();
+    for sql in queries {
+        all.push(harness.strings(sql).await);
+    }
+    all
+}
+
+#[tokio::test]
+async fn it_startup_reconcile_releases_orphan_tus_leases_and_nothing_else() {
+    let harness = Harness::open().await;
+    seed_tus(&harness).await;
+    let own = harness.instance.to_string();
+    let rows_before = harness.strings(TUS_ROWS).await;
+    let neighbours_before = snapshot(&harness, &TUS_NEIGHBOURS).await;
+    let leases_before = harness.strings(TUS_LEASES).await;
+    assert!(leases_before[0].contains("previous-instance"));
+
+    let report = ReconcileRegistry::new()
+        .register(TUS_LEASES_STEP, super::tus_leases_step)
+        .run(&harness.context())
+        .await;
+    assert_eq!(report.failed(), 0);
+    assert_eq!(report.outcome(TUS_LEASES_STEP), Some(&Ok(1)));
+
+    assert_eq!(
+        harness.strings(TUS_ROWS).await,
+        rows_before,
+        "offsets, lengths, staging paths, bindings, states and timestamps are untouched"
+    );
+    assert_eq!(snapshot(&harness, &TUS_NEIGHBOURS).await, neighbours_before);
+    let leases = harness.strings(TUS_LEASES).await;
+    assert_eq!(
+        leases[0],
+        format!("{}||", TUS_IDS[0]),
+        "the orphan lease is released"
+    );
+    assert_eq!(
+        leases[1], leases_before[1],
+        "a lease naming this instance is not touched"
+    );
+    assert!(leases[1].contains(&own));
+    assert_eq!(
+        leases[2], leases_before[2],
+        "a terminated row is not touched"
+    );
+    assert_eq!(leases[3], leases_before[3]);
+
+    let again = ReconcileRegistry::new()
+        .register(TUS_LEASES_STEP, super::tus_leases_step)
+        .run(&harness.context())
+        .await;
+    assert_eq!(again.outcome(TUS_LEASES_STEP), Some(&Ok(0)), "idempotent");
+    assert_eq!(harness.strings(TUS_ROWS).await, rows_before);
+    assert_eq!(harness.strings(TUS_LEASES).await, leases);
 }

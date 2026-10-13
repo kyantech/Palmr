@@ -12,6 +12,7 @@ use crate::infra::jobs::JobsError;
 
 pub const JOBS_STEP: &str = "jobs";
 pub const QUOTA_SCHEDULE_STEP: &str = "quota.schedule_reconcile";
+pub const TUS_LEASES_STEP: &str = "tus.release_orphan_leases";
 
 const REQUEUE_STALE_CLAIMS: &str = "UPDATE jobs
         SET state = 'pending', claimed_by = NULL, lease_expires_at = NULL, updated_at = ?1
@@ -20,6 +21,14 @@ const REQUEUE_STALE_CLAIMS: &str = "UPDATE jobs
                       AND (lease_expires_at <= ?1
                            OR substr(claimed_by, 1, length(?2)) <> ?2)
                     LIMIT ?3)";
+
+const RELEASE_ORPHAN_TUS_LEASES: &str = "UPDATE tus_uploads
+        SET locked_by = NULL, lock_expires_at = NULL
+      WHERE id IN (SELECT id FROM tus_uploads
+                    WHERE locked_by IS NOT NULL
+                      AND locked_by <> ?1
+                      AND state IN ('created', 'in_progress')
+                    LIMIT ?2)";
 
 type StepFuture = Pin<Box<dyn Future<Output = Result<u64, ReconcileError>> + Send>>;
 type StepFn = Arc<dyn Fn(ReconcileContext) -> StepFuture + Send + Sync>;
@@ -88,6 +97,7 @@ impl ReconcileRegistry {
         Self::new()
             .register(JOBS_STEP, jobs_step)
             .register(QUOTA_SCHEDULE_STEP, quota_schedule_step)
+            .register(TUS_LEASES_STEP, tus_leases_step)
     }
 
     #[must_use]
@@ -192,6 +202,44 @@ fn quota_schedule_step(context: ReconcileContext) -> StepFuture {
             Err(error) => Err(ReconcileError::new(error.kind(), error.to_string())),
         }
     })
+}
+
+// Runs only after the exclusive instance lock is held: that lock proves the
+// previous single-host writer is gone, so a lease naming any other holder is
+// orphaned. Only the two lease columns change; offsets, staging, sessions and
+// reservations are left to the accepted min(db_offset, fstat) reconciliation.
+fn tus_leases_step(context: ReconcileContext) -> StepFuture {
+    Box::pin(async move {
+        release_orphan_tus_leases(&context)
+            .await
+            .map_err(|error| ReconcileError::new(error.kind(), error.to_string()))
+    })
+}
+
+async fn release_orphan_tus_leases(context: &ReconcileContext) -> Result<u64, JobsError> {
+    let instance = context.instance.to_string();
+    let mut released = 0_u64;
+    loop {
+        let batch = context
+            .pools
+            .write_tx(
+                context.clock.as_ref(),
+                "tus.reconcile_orphan_leases",
+                async |tx| {
+                    let updated = sqlx::query(RELEASE_ORPHAN_TUS_LEASES)
+                        .bind(instance.as_str())
+                        .bind(i64::from(MAX_ROWS_PER_TX))
+                        .execute(tx.executor())
+                        .await?;
+                    Ok::<_, JobsError>(updated.rows_affected())
+                },
+            )
+            .await?;
+        released = released.saturating_add(batch);
+        if batch < u64::from(MAX_ROWS_PER_TX) {
+            return Ok(released);
+        }
+    }
 }
 
 fn jobs_step(context: ReconcileContext) -> StepFuture {

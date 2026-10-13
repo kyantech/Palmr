@@ -31,32 +31,8 @@ impl TestApplication {
             .prefix("palmr-it-")
             .tempdir()
             .context("create isolated data directory")?;
-        let listener = TcpListener::bind("127.0.0.1:0")
-            .await
-            .context("bind ephemeral test listener")?;
-        let address = listener
-            .local_addr()
-            .context("read test listener address")?;
-        let base_url = Url::parse(&format!("http://{address}/"))?;
-        let port = address.port().to_string();
-        let data_path = data_dir.path().as_os_str().to_owned();
-        let source = EnvironmentSource::from_vars([
-            (OsString::from("PALMR_HOST"), OsString::from("127.0.0.1")),
-            (OsString::from("PALMR_PORT"), OsString::from(port)),
-            (
-                OsString::from("PALMR_BASE_URL"),
-                OsString::from(base_url.as_str()),
-            ),
-            (OsString::from("PALMR_DATA_DIR"), data_path),
-        ]);
-        let config = OperatorConfig::load(&source)
-            .context("load test application configuration")?
-            .config;
         let clock = TestClock::new(datetime!(2026-01-01 00:00 UTC));
-        let injected_clock: Arc<dyn Clock> = Arc::new(clock.clone());
-        let application = Application::start(listener, &config, injected_clock)
-            .await
-            .with_context(|| format!("start application for {test_name}"))?;
+        let (application, base_url) = launch(data_dir.path(), &clock, test_name).await?;
         let cookies = Arc::new(Jar::default());
         let client = Client::builder()
             .cookie_provider(Arc::clone(&cookies))
@@ -70,6 +46,40 @@ impl TestApplication {
             client,
             cookies,
         })
+    }
+
+    pub async fn restart(self, grace: Duration) -> Result<(Drain, Self)> {
+        let Self {
+            application,
+            data_dir,
+            clock,
+            base_url: _,
+            client,
+            cookies,
+        } = self;
+        let drain = application.shutdown(grace).await;
+        let (application, base_url) = launch(data_dir.path(), &clock, "restart").await?;
+        Ok((
+            drain,
+            Self {
+                application,
+                data_dir,
+                clock,
+                base_url,
+                client,
+                cookies,
+            },
+        ))
+    }
+
+    pub async fn second_instance_starts(&self) -> Result<bool> {
+        match launch(self.data_dir.path(), &self.clock, "second instance").await {
+            Ok((application, _)) => {
+                application.shutdown(Duration::from_secs(5)).await;
+                Ok(true)
+            }
+            Err(_) => Ok(false),
+        }
     }
 
     pub fn data_dir(&self) -> &Path {
@@ -120,4 +130,37 @@ impl TestApplication {
         drop(data_dir);
         drain
     }
+}
+
+async fn launch(data_dir: &Path, clock: &TestClock, test_name: &str) -> Result<(Application, Url)> {
+    let listener = TcpListener::bind("127.0.0.1:0")
+        .await
+        .context("bind ephemeral test listener")?;
+    let address = listener
+        .local_addr()
+        .context("read test listener address")?;
+    let base_url = Url::parse(&format!("http://{address}/"))?;
+    let source = EnvironmentSource::from_vars([
+        (OsString::from("PALMR_HOST"), OsString::from("127.0.0.1")),
+        (
+            OsString::from("PALMR_PORT"),
+            OsString::from(address.port().to_string()),
+        ),
+        (
+            OsString::from("PALMR_BASE_URL"),
+            OsString::from(base_url.as_str()),
+        ),
+        (
+            OsString::from("PALMR_DATA_DIR"),
+            data_dir.as_os_str().to_owned(),
+        ),
+    ]);
+    let config = OperatorConfig::load(&source)
+        .context("load test application configuration")?
+        .config;
+    let injected_clock: Arc<dyn Clock> = Arc::new(clock.clone());
+    let application = Application::start(listener, &config, injected_clock)
+        .await
+        .with_context(|| format!("start application for {test_name}"))?;
+    Ok((application, base_url))
 }

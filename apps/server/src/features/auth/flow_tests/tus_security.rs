@@ -211,9 +211,17 @@ async fn it_tus_method_override_is_scoped_to_the_resource_route() {
     assert_eq!(header(&head, "upload-length"), "10");
 
     let patch = stack.tus_send(post("PATCH")).await;
-    assert_tus_error(&patch, StatusCode::METHOD_NOT_ALLOWED, "METHOD_NOT_ALLOWED");
+    assert_tus_error(
+        &patch,
+        StatusCode::UNSUPPORTED_MEDIA_TYPE,
+        "UNSUPPORTED_MEDIA_TYPE",
+    );
     let real_patch = stack.tus_send(resource(&alice, &id, Method::PATCH)).await;
-    assert_eq!(real_patch.status, StatusCode::METHOD_NOT_ALLOWED);
+    assert_tus_error(
+        &real_patch,
+        StatusCode::UNSUPPORTED_MEDIA_TYPE,
+        "UNSUPPORTED_MEDIA_TYPE",
+    );
     for value in ["GET", "PUT", "OPTIONS", "head", "TRACE", ""] {
         let rejected = stack.tus_send(post(value)).await;
         assert_tus_error(

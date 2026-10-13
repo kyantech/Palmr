@@ -23,6 +23,8 @@ pub(super) fn small_limits() -> TusLimits {
         idle_timeout: Duration::from_secs(60),
         lease_ttl: Duration::from_secs(60),
         upload_ttl: Duration::from_secs(24 * 60 * 60),
+        patch_concurrency: 64,
+        permit_wait: Duration::from_millis(200),
     }
 }
 
@@ -143,7 +145,7 @@ impl Gate {
         })
     }
 
-    async fn pass(&self) {
+    pub(super) async fn pass(&self) {
         self.entered.add_permits(1);
         self.release.acquire().await.unwrap().forget();
     }
@@ -169,6 +171,7 @@ pub(super) struct TestStaging {
     pub(super) fail_remove: AtomicBool,
     pub(super) ensure_gate: SharedGate,
     pub(super) write_gate: SharedGate,
+    pub(super) flush_gate: SharedGate,
     pub(super) max_chunk: Arc<AtomicUsize>,
     pub(super) flushes: Arc<AtomicUsize>,
     clock: TestClock,
@@ -186,6 +189,7 @@ impl TestStaging {
             fail_remove: AtomicBool::new(false),
             ensure_gate: Arc::new(Mutex::new(None)),
             write_gate: Arc::new(Mutex::new(None)),
+            flush_gate: Arc::new(Mutex::new(None)),
             max_chunk: Arc::new(AtomicUsize::new(0)),
             flushes: Arc::new(AtomicUsize::new(0)),
             clock: clock.clone(),
@@ -210,6 +214,7 @@ impl TestStaging {
 
 struct TestAppend {
     gate: SharedGate,
+    flush_gate: SharedGate,
     inner: Box<dyn StagingAppend>,
     budget: Arc<AtomicI64>,
     max_chunk: Arc<AtomicUsize>,
@@ -237,7 +242,15 @@ impl StagingAppend for TestAppend {
 
     async fn flush(&mut self) -> Result<(), StorageError> {
         self.flushes.fetch_add(1, Ordering::SeqCst);
+        let gate = self.flush_gate.lock().unwrap().clone();
+        if let Some(gate) = gate {
+            gate.pass().await;
+        }
         self.inner.flush().await
+    }
+
+    async fn truncate(&mut self, len: u64) -> Result<(), StorageError> {
+        self.inner.truncate(len).await
     }
 
     async fn len(&mut self) -> Result<u64, StorageError> {
@@ -261,6 +274,7 @@ impl StagingStorage for TestStaging {
         let inner = self.inner.ensure(id).await?;
         Ok(Box::new(TestAppend {
             gate: Arc::clone(&self.write_gate),
+            flush_gate: Arc::clone(&self.flush_gate),
             inner,
             budget,
             max_chunk: Arc::clone(&self.max_chunk),
