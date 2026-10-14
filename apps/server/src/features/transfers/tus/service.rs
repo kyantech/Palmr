@@ -18,7 +18,7 @@ use crate::storage::staging::{StagingStorage, UploadId};
 
 use super::super::admission::TransferStorage;
 use super::super::error::TransferError;
-use super::super::model::{TransferProvider, UploadKind};
+use super::super::model::{SessionItemId, TransferProvider, UploadKind};
 use super::super::repo::{self as transfer_repo, ErrorParts, SessionMove};
 use super::super::service::TransferService;
 use super::super::state::{
@@ -132,9 +132,10 @@ pub fn decide(
     length: DeclaredLength,
     ctx: &DecideContext,
 ) -> Result<Decision, TusError> {
+    let finalized = binding.existing.as_ref().is_some_and(is_finalized);
     if binding.item.kind != UploadKind::Tus
-        || binding.session_state.is_terminal()
-        || binding.target_detached
+        || (binding.session_state.is_terminal() && !finalized)
+        || (binding.target_detached && !finalized)
     {
         return Err(state_invalid());
     }
@@ -144,9 +145,13 @@ pub fn decide(
     check_metadata(binding, metadata)?;
     check_length(binding, length, ctx.max)?;
     match (&binding.existing, binding.item.state) {
-        (Some(existing), ItemState::Pending | ItemState::Uploading) => {
-            existing_decision(existing, length, ctx.now)
-        }
+        (
+            Some(existing),
+            ItemState::Pending
+            | ItemState::Uploading
+            | ItemState::Finalizing
+            | ItemState::Completed,
+        ) => existing_decision(existing, length, ctx.now),
         (None, ItemState::Pending) => {
             let session_next = session_transition(binding.session_state, Trigger::ProtocolStarted)
                 .map_err(|_| state_invalid())?;
@@ -240,10 +245,9 @@ fn existing_decision(
 ) -> Result<Decision, TusError> {
     match existing.state {
         TusState::Terminated | TusState::Expired => return Err(TusError::Gone),
-        TusState::Completed => return Err(state_invalid()),
-        TusState::Created | TusState::InProgress => {}
+        TusState::Completed | TusState::Created | TusState::InProgress => {}
     }
-    if has_expired(now, existing.expires_at) {
+    if !is_finalized(existing) && has_expired(now, existing.expires_at) {
         return Err(TusError::Gone);
     }
     let compatible = match length {
@@ -260,6 +264,14 @@ fn existing_decision(
         });
     }
     Ok(Decision::Existing(existing.clone()))
+}
+
+fn is_finalized(existing: &ExistingUpload) -> bool {
+    existing.state == TusState::Completed
+        || matches!(
+            existing.item_state,
+            ItemState::Finalizing | ItemState::Completed
+        )
 }
 
 impl TusService {
@@ -344,7 +356,9 @@ impl TusService {
         };
 
         if let Some(existing) = self.precheck(owner, &metadata, length, &ctx).await? {
-            return self.resume(&staging, owner, existing).await;
+            return self
+                .resume(&staging, owner, metadata.item_id, existing)
+                .await;
         }
         let streaming = body.is_some();
         let committed = self
@@ -355,7 +369,11 @@ impl TusService {
             })
             .await?;
         let fresh = match committed {
-            Committed::Existing(existing) => return self.resume(&staging, owner, existing).await,
+            Committed::Existing(existing) => {
+                return self
+                    .resume(&staging, owner, metadata.item_id, existing)
+                    .await
+            }
             Committed::New(fresh) => fresh,
         };
 
@@ -377,6 +395,10 @@ impl TusService {
         };
         let Some(body) = body.filter(|_| fresh.streaming) else {
             drop(writer);
+            if fresh.plan.declared == Some(0) {
+                self.transfers
+                    .finalize_when_complete(metadata.item_id, request_id);
+            }
             return Ok(created(0));
         };
 
@@ -391,8 +413,12 @@ impl TusService {
         .map_err(|_| TransferError::Invariant {
             what: "upload_stream",
         })?;
-        self.conclude(owner, &fresh.plan, outcome.end, request_id)
+        self.conclude(owner, &fresh.plan, outcome.end, request_id.clone())
             .await?;
+        if fresh.plan.declared == Some(outcome.durable) {
+            self.transfers
+                .finalize_when_complete(metadata.item_id, request_id);
+        }
         Ok(created(outcome.durable))
     }
 
@@ -545,12 +571,24 @@ impl TusService {
         &self,
         staging: &Arc<dyn StagingStorage>,
         owner: UserId,
+        item: SessionItemId,
         existing: ExistingUpload,
     ) -> Result<Created, TusError> {
+        if is_finalized(&existing) {
+            return Ok(Created {
+                id: existing.id,
+                offset: existing.offset.get(),
+                expires_at: existing.expires_at,
+                location: upload_location(self.base_url.url(), &existing.id.to_string()),
+            });
+        }
         let hex = upload_hex(existing.id)?;
         drop(staging.ensure(&hex).await?);
         self.confirm_live(staging, owner, existing.id, &hex).await?;
         let offset = self.reconciled(staging, &hex, existing.offset).await?;
+        if existing.length.is_some_and(|length| length.get() == offset) {
+            self.transfers.finalize_when_complete(item, None);
+        }
         Ok(Created {
             id: existing.id,
             offset,
@@ -653,7 +691,13 @@ impl TusService {
         let now = self.now()?;
         let row = self.live_row(owner, id, now).await?;
         let hex = upload_hex(row.id)?;
-        let offset = self.reconciled(&staging, &hex, row.offset).await?;
+        let offset = if matches!(row.item_state, ItemState::Finalizing | ItemState::Completed)
+            || row.state == TusState::Completed
+        {
+            row.offset.get()
+        } else {
+            self.reconciled(&staging, &hex, row.offset).await?
+        };
         Ok(Head {
             offset,
             length: row.length,

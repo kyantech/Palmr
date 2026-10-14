@@ -193,7 +193,12 @@ impl TusService {
             outcome.end,
             StreamEnd::Gone | StreamEnd::LeaseLost | StreamEnd::Internal(_)
         );
-        self.conclude(owner, &plan, outcome.end, request_id).await?;
+        self.conclude(owner, &plan, outcome.end, request_id.clone())
+            .await?;
+        if declared == Some(outcome.durable) {
+            self.transfers
+                .finalize_when_complete(leased.row.item, request_id);
+        }
         let expires_at = outcome
             .expires_at
             .ok_or(TransferError::Invariant { what: "expires_at" })?;

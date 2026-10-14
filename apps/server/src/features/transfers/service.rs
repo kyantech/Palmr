@@ -30,6 +30,7 @@ use crate::storage::lifecycle::{
 
 use super::admission::{exceeds_depth, plan_files, reservation, TransferStorage};
 use super::error::TransferError;
+use super::finalize::Finalizer;
 use super::model::{
     SessionItemId, TransferFileView, TransferProvider, TransferSessionId, TransferSessionSummary,
     TransferSessionView, ValidatedSession, SESSION_TTL,
@@ -77,6 +78,7 @@ pub struct TransferService {
     quota: QuotaService,
     storage: TransferStorage,
     idempotency: IdempotencyService,
+    finalizer: Option<Finalizer>,
 }
 
 impl TransferService {
@@ -98,6 +100,19 @@ impl TransferService {
             quota,
             storage,
             idempotency,
+            finalizer: None,
+        }
+    }
+
+    #[must_use]
+    pub fn with_finalizer(mut self, finalizer: Finalizer) -> Self {
+        self.finalizer = Some(finalizer);
+        self
+    }
+
+    pub fn finalize_when_complete(&self, item: SessionItemId, request_id: Option<String>) {
+        if let Some(finalizer) = &self.finalizer {
+            finalizer.trigger(item, request_id);
         }
     }
 
@@ -526,7 +541,8 @@ impl TransferService {
         item_id: SessionItemId,
     ) -> Result<TransferFileView, TransferError> {
         let now = self.now()?;
-        self.pools
+        let retried = self
+            .pools
             .write_tx(self.clock.as_ref(), RETRY_TRANSACTION, async |tx| {
                 let session = repo::find_session(tx.executor(), owner, id)
                     .await?
@@ -581,7 +597,9 @@ impl TransferService {
                     .map(|row| file_view(row, &self.storage))
                     .ok_or(TransferError::SessionNotFound)
             })
-            .await
+            .await?;
+        self.finalize_when_complete(item_id, None);
+        Ok(retried)
     }
 
     pub async fn fail_item(

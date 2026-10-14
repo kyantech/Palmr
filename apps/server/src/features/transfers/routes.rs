@@ -257,7 +257,7 @@ async fn complete_session(
         ("itemId" = String, Path, description = "Transfer item UUIDv7")
     ),
     responses(
-        (status = 200, description = "The item, moved from `failed` back to `uploading` with its attempt count incremented. The declared set is unchanged, so quota is not admitted again. Only an item whose upload resource still exists can be retried.", body = TransferFileView),
+        (status = 200, description = "The item, moved from `failed` back to `uploading` with its attempt count incremented. The declared set is unchanged, so quota is not admitted again. Only an item whose upload resource still exists can be retried. When all bytes were already stored (an item that failed with `STORAGE_WRITE_FAILED` or `STORAGE_UNAVAILABLE` while being finalized) the retry restarts finalization without retransmitting anything.", body = TransferFileView),
         (status = 401, description = "Authentication required.", body = ApiErrorBody),
         (status = 403, description = "The CSRF proof or origin is missing or not allowed, or the session is restricted.", body = ApiErrorBody),
         (status = 404, description = "`TRANSFER_SESSION_NOT_FOUND` for an unknown session or item, including another user's.", body = ApiErrorBody),

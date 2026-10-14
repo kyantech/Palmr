@@ -10518,7 +10518,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The item, moved from `failed` back to `uploading` with its attempt count incremented. The declared set is unchanged, so quota is not admitted again. Only an item whose upload resource still exists can be retried. */
+            /** @description The item, moved from `failed` back to `uploading` with its attempt count incremented. The declared set is unchanged, so quota is not admitted again. Only an item whose upload resource still exists can be retried. When all bytes were already stored (an item that failed with `STORAGE_WRITE_FAILED` or `STORAGE_UNAVAILABLE` while being finalized) the retry restarts finalization without retransmitting anything. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -11197,7 +11197,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The bytes were accepted. `Upload-Offset` is the offset that is durable: persisted after an `fdatasync` of the staging file. A shutdown or a stream that ended early answers `204` with the offset reached so far. A completed length does not finalize the upload here. */
+            /** @description The bytes were accepted. `Upload-Offset` is the offset that is durable: persisted after an `fdatasync` of the staging file. A shutdown or a stream that ended early answers `204` with the offset reached so far. When the offset reaches the upload length the server finalizes the file after this response: `204` says only that the bytes are durable, the item becomes `finalizing` and then `completed`, and the transfer session shows its `fileId`. A rejection (`UPLOAD_LENGTH_MISMATCH`, `FILE_TOO_LARGE`, `QUOTA_EXCEEDED`, `TRANSFER_SESSION_EXPIRED`, `AUTH_ACCOUNT_INACTIVE`, `FOLDER_NOT_FOUND`, `FOLDER_DELETING`) or a storage failure at that stage cannot change this answer; it is recorded as the item's `error`. Once an upload is `finalizing` or `completed`, a further `PATCH` is `409 TRANSFER_SESSION_STATE_INVALID`. */
             204: {
                 headers: {
                     /** @description `no-store`. */

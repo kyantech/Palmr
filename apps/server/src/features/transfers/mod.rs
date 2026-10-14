@@ -8,6 +8,7 @@ pub mod admission;
 )]
 pub mod cleanup;
 pub mod error;
+pub mod finalize;
 pub mod model;
 mod presentation;
 mod repo;

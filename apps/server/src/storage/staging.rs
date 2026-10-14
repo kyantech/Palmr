@@ -1,11 +1,33 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use tokio_util::sync::CancellationToken;
 
 use super::error::StorageError;
+use super::key::ObjectKey;
 use super::provider::StorageProvider;
 
 pub use super::local::UploadId;
+
+pub const MIME_PREFIX_BYTES: usize = 8192;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StagedObject {
+    pub size: u64,
+    pub prefix: Vec<u8>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PlaceRoute {
+    Rename,
+    CrossDeviceCopy,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Placed {
+    pub size: u64,
+    pub route: PlaceRoute,
+}
 
 #[async_trait]
 pub trait StagingStorage: Send + Sync {
@@ -16,6 +38,19 @@ pub trait StagingStorage: Send + Sync {
     async fn staged_len(&self, id: &UploadId) -> Result<Option<u64>, StorageError>;
 
     async fn remove(&self, id: &UploadId) -> Result<bool, StorageError>;
+
+    async fn measure(&self, id: &UploadId) -> Result<Option<StagedObject>, StorageError>;
+
+    async fn inspect(&self, key: &ObjectKey) -> Result<Option<StagedObject>, StorageError>;
+
+    async fn staged_matches(&self, id: &UploadId, key: &ObjectKey) -> Result<bool, StorageError>;
+
+    async fn place(
+        &self,
+        id: &UploadId,
+        key: &ObjectKey,
+        cancel: &CancellationToken,
+    ) -> Result<Placed, StorageError>;
 }
 
 #[async_trait]
@@ -75,5 +110,26 @@ impl StagingStorage for ProviderStaging {
 
     async fn remove(&self, id: &UploadId) -> Result<bool, StorageError> {
         self.staging()?.remove(id).await
+    }
+
+    async fn measure(&self, id: &UploadId) -> Result<Option<StagedObject>, StorageError> {
+        self.staging()?.measure(id).await
+    }
+
+    async fn inspect(&self, key: &ObjectKey) -> Result<Option<StagedObject>, StorageError> {
+        self.staging()?.inspect(key).await
+    }
+
+    async fn staged_matches(&self, id: &UploadId, key: &ObjectKey) -> Result<bool, StorageError> {
+        self.staging()?.staged_matches(id, key).await
+    }
+
+    async fn place(
+        &self,
+        id: &UploadId,
+        key: &ObjectKey,
+        cancel: &CancellationToken,
+    ) -> Result<Placed, StorageError> {
+        self.staging()?.place(id, key, cancel).await
     }
 }

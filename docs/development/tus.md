@@ -1,6 +1,6 @@
 # TUS protocol surface (local uploads)
 
-Introduced in M14-T03 and completed by M14-T04. It implements TRANSFER_ENGINE §3.1 to §3.9 and API_DESIGN §2.15.1: capability discovery, resource creation with `creation-with-upload`, offset discovery, the streaming `PATCH`, termination, the two-layer lease and offset reconciliation for the `local` provider. Finalization (M14-T05), reapers (M14-T06), S3 multipart and the anonymous Reverse Share mount (M20) are not part of it.
+Introduced in M14-T03 and completed by M14-T04; M14-T05 connects it to finalization (`finalization.md`). It implements TRANSFER_ENGINE §3.1 to §3.9 and API_DESIGN §2.15.1: capability discovery, resource creation with `creation-with-upload`, offset discovery, the streaming `PATCH`, termination, the two-layer lease and offset reconciliation for the `local` provider. Reapers (M14-T06), S3 multipart and the anonymous Reverse Share mount (M20) are not part of it.
 
 | Artefact | Location |
 |---|---|
@@ -26,7 +26,7 @@ The durable intent comes first because every reaper in the plan acts on rows. A 
 
 `append.rs` is the one loop shared by `POST` (creation-with-upload) and `PATCH`. It copies each frame through one `PALMR_UPLOAD_BUFFER_BYTES` buffer, flushes every 8 MiB or 2 s (sync, then one short transaction that persists the offset and renews the 60 s lease), applies a per-frame idle timeout (`408 TRANSFER_IDLE_TIMEOUT`, never a whole-transfer deadline), and runs in a spawned task so a client disconnect still persists the final offset and releases the lease. Ceilings are applied before a byte is accepted: the declared length, the effective maximum for a deferred length, and the owner's quota headroom for items whose size was never reserved. Bytes past a ceiling are not stored.
 
-When the body fills `Upload-Length` the row is `in_progress` with `upload_offset = upload_length` and the item stays `uploading`. That predicate is the finalizer's input (M14-T05); nothing in this task reports a stored file.
+When the body fills `Upload-Length` the row is `in_progress` with `upload_offset = upload_length` and the item is `uploading`; that predicate is the finalizer's input and the completion of the request starts it (see the boundary below).
 
 ## `PATCH`
 
@@ -48,7 +48,7 @@ A checkpoint is `fdatasync` of the staging file, then one short transaction that
 
 ### `Upload-Checksum`
 
-The digest is accumulated over the bytes of the request body only, never over the file. A request that carries one persists no offset at its checkpoints: the staging file is synced and the lease renewed, but `upload_offset` stays where it was before the request and advances only after the whole body matched. On a mismatch, an idle timeout, a disconnect, a shutdown or any other early end the staging file is truncated back to the offset the request started from and the response never claims more. **Recovery exception.** The 8 MiB / 2 s recovery bound applies to a `PATCH` without `Upload-Checksum`. A checksummed request is one verification unit: if it ends before verification (crash, disconnect, idle timeout, shutdown, mismatch) the whole request body is retransmitted, so no bounded retransmission window is claimed for a single large checksummed request. A client gets a smaller window by sending smaller checksummed requests; the server imposes no size limit on a valid request and persists no SHA-256 midstate. Crash recovery is unchanged because `min(recorded, fstat)` removes the unverified tail. A per-request digest is never stored as a whole-file digest (`client_checksum` stays `NULL`; whole-file assignment belongs to M14-T05).
+The digest is accumulated over the bytes of the request body only, never over the file. A request that carries one persists no offset at its checkpoints: the staging file is synced and the lease renewed, but `upload_offset` stays where it was before the request and advances only after the whole body matched. On a mismatch, an idle timeout, a disconnect, a shutdown or any other early end the staging file is truncated back to the offset the request started from and the response never claims more. **Recovery exception.** The 8 MiB / 2 s recovery bound applies to a `PATCH` without `Upload-Checksum`. A checksummed request is one verification unit: if it ends before verification (crash, disconnect, idle timeout, shutdown, mismatch) the whole request body is retransmitted, so no bounded retransmission window is claimed for a single large checksummed request. A client gets a smaller window by sending smaller checksummed requests; the server imposes no size limit on a valid request and persists no SHA-256 midstate. Crash recovery is unchanged because `min(recorded, fstat)` removes the unverified tail. A per-request digest is never stored as a whole-file digest (`client_checksum` stays `NULL`, and finalization leaves `storage_objects.checksum` `NULL` because no whole-file digest is verified).
 
 ### Shutdown
 
@@ -62,7 +62,7 @@ Known gap: the canonical audit catalogue has no action for a downward offset rep
 
 ### The boundary with finalization
 
-When the offset reaches the length nothing is finalized: the row stays `in_progress`, the item `uploading`, no `files` or `storage_objects` row exists and no job is enqueued. That durable state is the input of M14-T05.
+When the offset reaches the length the request ends exactly as before (`204`, `Upload-Offset`, no JSON body) and starts a detached finalization of the item. The same happens for a zero-byte upload, for a repeated `POST` of an already complete upload and after an item retry; a startup step covers anything a crash interrupted. `204` is a statement about bytes only: the file exists once the item is `completed` and the session view carries its `fileId`. While the item is `finalizing` or `completed`, `HEAD` reports the recorded offset (the full length) instead of reconciling it with the staging file, which has moved. Further `PATCH` requests on such an upload are `409 TRANSFER_SESSION_STATE_INVALID`; `DELETE` of a completed upload is `204` and never removes the file. The per-request `Upload-Checksum` digest is still never stored as a whole-file digest (`client_checksum` stays `NULL`).
 
 ## Termination while a body is streaming
 

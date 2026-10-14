@@ -69,3 +69,6 @@ The `mock-idp` compose service shares the `palmr` network namespace (`network_mo
 
 Providers, the lowered recent-auth window and the second provider are created through the supported admin HTTP API with a logged-in admin session; no database access and no new fixture subcommand is involved. The mock never ships in the release image.
 
+## Finalization pause hook (M14-T05)
+
+The same `e2e-fixture` feature also compiles one test seam into the `palmr` binary itself: when `PALMR_E2E_FINALIZE_PAUSE_AT` names a finalization point (`claimed`, `staging_synced`, `measured`, `mime_resolved`, `intent_committed`, `before_place`, `after_place`, `before_commit`, `after_commit` or `before_cleanup`) and `PALMR_E2E_FINALIZE_PAUSE_FILE` names a path, the finalizer writes that point's name to the file and parks there forever. `apps/server/tests/it_finalize_process.rs` uses it to `SIGKILL` the real process at a controlled boundary and to prove the restart recovery. It is read only from the environment of a process built with the feature, it changes no behaviour when the variables are absent, and neither the release build nor the Dockerfile enables the feature, so the production binary contains no trace of it. The two tests carry `e2e_fixture` in their names and run in the canonical `--features e2e-fixture -E 'test(e2e_fixture)'` job.

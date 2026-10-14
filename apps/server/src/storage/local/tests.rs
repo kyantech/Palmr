@@ -1685,3 +1685,240 @@ fn unit_staging_hint_is_a_bounded_replaceable_sidecar() {
     assert!(fixture.provider.remove_staging(&id).unwrap());
     assert!(!exists(&hint));
 }
+
+#[test]
+fn it_local_measure_staged_is_synced_bounded_and_authoritative() {
+    let fixture = Fixture::new();
+    let large = pattern(3 * 1024 * 1024 + 17, 41);
+    let id = fixture.stage(&large);
+
+    let measured = fixture.provider.measure_staged(&id).unwrap().unwrap();
+
+    assert_eq!(measured.size, large.len() as u64, "fstat is the size");
+    assert_eq!(measured.prefix.len(), 8_192, "the prefix is bounded");
+    assert_eq!(measured.prefix, large[..8_192]);
+    let steps = fixture.recorder.steps();
+    assert!(
+        steps.contains(&Step::SyncStaging),
+        "the staging file is fsynced first"
+    );
+    assert!(
+        fixture.recorder.writes().is_empty(),
+        "measuring writes nothing"
+    );
+
+    let short = fixture.stage(b"tiny");
+    let measured = fixture.provider.measure_staged(&short).unwrap().unwrap();
+    assert_eq!(
+        (measured.size, measured.prefix.as_slice()),
+        (4, b"tiny".as_slice())
+    );
+
+    let empty = fixture.stage(&[]);
+    let measured = fixture.provider.measure_staged(&empty).unwrap().unwrap();
+    assert_eq!((measured.size, measured.prefix.len()), (0, 0));
+
+    assert!(fixture
+        .provider
+        .measure_staged(&upload_id())
+        .unwrap()
+        .is_none());
+    let hollow = upload_id();
+    fs::create_dir(fixture.staging_dir(&hollow)).unwrap();
+    assert!(fixture.provider.measure_staged(&hollow).unwrap().is_none());
+}
+
+#[test]
+fn it_local_measure_staged_fsync_failure_is_an_error_not_a_size() {
+    let fixture = Fixture::new();
+    let id = fixture.stage(&pattern(10_000, 5));
+    fixture.recorder.fail(Step::SyncStaging, 0, Errno::IO);
+
+    let error = fixture.provider.measure_staged(&id).unwrap_err();
+
+    assert!(matches!(error, StorageError::Io(_)), "{error:?}");
+    let retried = fixture.provider.measure_staged(&id).unwrap().unwrap();
+    assert_eq!(retried.size, 10_000);
+}
+
+#[test]
+fn it_local_inspect_object_and_staged_matches_never_trust_size_alone() {
+    let fixture = Fixture::new();
+    let bytes = pattern(1_000_000, 12);
+    let key = place(&fixture, &bytes);
+
+    let inspected = fixture.provider.inspect_object(&key).unwrap().unwrap();
+    assert_eq!(inspected.size, bytes.len() as u64);
+    assert_eq!(inspected.prefix, bytes[..8_192]);
+    assert!(fixture
+        .provider
+        .inspect_object(&objects_key())
+        .unwrap()
+        .is_none());
+
+    let same = fixture.stage(&bytes);
+    assert!(fixture.provider.staged_matches_object(&same, &key).unwrap());
+    let mut flipped = bytes.clone();
+    *flipped.last_mut().unwrap() ^= 0xFF;
+    let other = fixture.stage(&flipped);
+    assert!(
+        !fixture
+            .provider
+            .staged_matches_object(&other, &key)
+            .unwrap(),
+        "equal sizes with different bytes are not the same object"
+    );
+    let shorter = fixture.stage(&bytes[..bytes.len() - 1]);
+    assert!(!fixture
+        .provider
+        .staged_matches_object(&shorter, &key)
+        .unwrap());
+    assert!(!fixture
+        .provider
+        .staged_matches_object(&upload_id(), &key)
+        .unwrap());
+    assert!(!fixture
+        .provider
+        .staged_matches_object(&same, &objects_key())
+        .unwrap());
+}
+
+#[test]
+fn it_local_new_primitives_refuse_symlinked_entries() {
+    let fixture = Fixture::new();
+    let (outside, snapshot) = outside_fixture();
+    let id = upload_id();
+    symlink(outside.path(), fixture.staging_dir(&id)).unwrap();
+    assert!(matches!(
+        fixture.provider.measure_staged(&id),
+        Err(StorageError::PermissionDenied)
+    ));
+
+    let key = objects_key();
+    let final_path = fixture.final_path(&key);
+    fs::create_dir_all(final_path.parent().unwrap()).unwrap();
+    symlink(outside.path().join("victim"), &final_path).unwrap();
+    assert!(matches!(
+        fixture.provider.inspect_object(&key),
+        Err(StorageError::PermissionDenied)
+    ));
+    assert_eq!(tree(outside.path()), snapshot);
+}
+
+#[test]
+fn it_local_finalize_copy_stops_at_a_safe_boundary_when_canceled() {
+    use tokio_util::sync::CancellationToken;
+    let fixture = Fixture::with_buffer(4 * 1024 * 1024);
+    fixture.recorder.exdev.store(true, Ordering::SeqCst);
+    let bytes = pattern(70 * 1024 * 1024, 77);
+    let id = fixture.stage(&bytes);
+    let key = objects_key();
+    let token = CancellationToken::new();
+    {
+        let token = token.clone();
+        let copied = Arc::new(AtomicUsize::new(0));
+        fixture.recorder.observe(move |step| {
+            if step == Step::WriteTemp && copied.fetch_add(1, Ordering::SeqCst) == 2 {
+                token.cancel();
+            }
+        });
+    }
+
+    let error = fixture
+        .provider
+        .finalize_staged_until(&id, &key, &token)
+        .unwrap_err();
+
+    assert!(matches!(error, StorageError::Canceled), "{error:?}");
+    assert!(
+        !exists(&fixture.final_path(&key)),
+        "no partial object is visible"
+    );
+    assert!(
+        !exists(&fixture.copy_temp_path(&key)),
+        "no temp object is left"
+    );
+    assert!(!exists(&fixture.temp_path(&key, &id)));
+    assert_eq!(
+        fs::metadata(fixture.staging_blob(&id)).unwrap().len(),
+        bytes.len() as u64,
+        "the staging bytes are intact"
+    );
+    let writes = fixture.recorder.writes().len();
+    assert!(
+        writes < bytes.len().div_ceil(4 * 1024 * 1024),
+        "it stopped early: {writes}"
+    );
+
+    let fresh = CancellationToken::new();
+    fixture.recorder.observe(|_| {});
+    let finalized = fixture
+        .provider
+        .finalize_staged_until(&id, &key, &fresh)
+        .unwrap();
+    assert_eq!(finalized.route, FinalizeRoute::CrossDeviceCopy);
+    assert_eq!(file_digest(&fixture.final_path(&key)), digest(&bytes));
+}
+
+#[test]
+fn it_local_finalize_failure_boundaries_leave_a_recoverable_state() {
+    let bytes = pattern(400_000, 19);
+
+    let fixture = Fixture::new();
+    let id = fixture.stage(&bytes);
+    let key = objects_key();
+    fixture.recorder.fail(Step::SyncStaging, 0, Errno::IO);
+    assert!(fixture.provider.finalize_staged(&id, &key).is_err());
+    assert!(
+        !exists(&fixture.final_path(&key)),
+        "no placement after a failed fsync"
+    );
+    assert_staging_intact(&fixture, &id, &bytes);
+
+    let fixture = Fixture::new();
+    let id = fixture.stage(&bytes);
+    let key = objects_key();
+    fixture.recorder.fail(Step::RenameStaging, 0, Errno::NOSPC);
+    let error = fixture.provider.finalize_staged(&id, &key).unwrap_err();
+    assert!(matches!(error, StorageError::QuotaOnDevice), "{error:?}");
+    assert!(!exists(&fixture.final_path(&key)));
+    assert_staging_intact(&fixture, &id, &bytes);
+
+    let fixture = Fixture::new();
+    let id = fixture.stage(&bytes);
+    let key = objects_key();
+    fixture.recorder.fail(Step::SyncLeaf, 0, Errno::IO);
+    assert!(fixture.provider.finalize_staged(&id, &key).is_err());
+    assert_eq!(
+        file_digest(&fixture.final_path(&key)),
+        digest(&bytes),
+        "the renamed object is complete even though its directory sync failed"
+    );
+    assert!(!exists(&fixture.staging_blob(&id)));
+    let inspected = fixture.provider.inspect_object(&key).unwrap().unwrap();
+    assert_eq!(inspected.size, bytes.len() as u64);
+}
+
+#[test]
+fn it_local_interrupted_copy_temp_is_discarded_on_the_next_attempt() {
+    let fixture = Fixture::with_buffer(SMALL_BUFFER);
+    fixture.recorder.exdev.store(true, Ordering::SeqCst);
+    let bytes = pattern(300_000, 31);
+    let id = fixture.stage(&bytes);
+    let key = objects_key();
+    fixture.recorder.fail(Step::WriteTemp, 10, Errno::IO);
+    assert!(fixture.provider.finalize_staged(&id, &key).is_err());
+    assert!(
+        !exists(&fixture.final_path(&key)),
+        "a partial copy is never a key"
+    );
+    assert!(!exists(&fixture.copy_temp_path(&key)));
+
+    let stale = fixture.temp_path(&key, &id);
+    fs::create_dir_all(stale.parent().unwrap()).unwrap();
+    fs::write(&stale, b"half a copy").unwrap();
+    let finalized = fixture.provider.finalize_staged(&id, &key).unwrap();
+    assert_eq!(finalized.route, FinalizeRoute::CrossDeviceCopy);
+    assert_eq!(file_digest(&fixture.final_path(&key)), digest(&bytes));
+    assert!(!exists(&stale), "the stale temp was discarded");
+}

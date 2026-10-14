@@ -10,7 +10,9 @@ use super::transfers::{request_body, sized, unsized_file};
 use super::*;
 use crate::features::transfers::TusLimits;
 use crate::storage::error::StorageError;
-use crate::storage::staging::{StagingAppend, StagingStorage, UploadId};
+use crate::storage::key::ObjectKey;
+use crate::storage::staging::{Placed, StagedObject, StagingAppend, StagingStorage, UploadId};
+use tokio_util::sync::CancellationToken;
 
 pub(super) const TUS: &str = "/api/v1/uploads/tus";
 pub(super) const OCTET: &str = "application/offset+octet-stream";
@@ -126,6 +128,7 @@ impl<'a> TusReq<'a> {
     }
 }
 
+#[derive(Clone)]
 pub(super) struct Planned {
     pub(super) session: String,
     pub(super) item: String,
@@ -161,6 +164,32 @@ impl Gate {
 
 type SharedGate = Arc<Mutex<Option<Arc<Gate>>>>;
 
+#[derive(Clone, Copy)]
+pub(super) enum Fault {
+    NoSpace,
+    Denied,
+    Io,
+}
+
+impl Fault {
+    fn error(self) -> StorageError {
+        match self {
+            Self::NoSpace => StorageError::QuotaOnDevice,
+            Self::Denied => StorageError::PermissionDenied,
+            Self::Io => StorageError::Io(std::io::Error::other("injected")),
+        }
+    }
+}
+
+type SharedFault = Mutex<Option<(usize, Fault)>>;
+
+fn take_fault(slot: &SharedFault) -> Option<StorageError> {
+    let mut slot = slot.lock().unwrap();
+    let (remaining, fault) = (*slot)?;
+    *slot = (remaining > 1).then_some((remaining - 1, fault));
+    Some(fault.error())
+}
+
 pub(super) struct TestStaging {
     inner: Arc<dyn StagingStorage>,
     pub(super) fail_ensure: AtomicBool,
@@ -174,6 +203,14 @@ pub(super) struct TestStaging {
     pub(super) flush_gate: SharedGate,
     pub(super) max_chunk: Arc<AtomicUsize>,
     pub(super) flushes: Arc<AtomicUsize>,
+    pub(super) measure_gate: SharedGate,
+    pub(super) place_gate: SharedGate,
+    pub(super) measure_fault: SharedFault,
+    pub(super) place_fault: SharedFault,
+    pub(super) place_after_fault: SharedFault,
+    pub(super) measure_calls: AtomicUsize,
+    pub(super) place_calls: AtomicUsize,
+    pub(super) fail_inspect: AtomicBool,
     clock: TestClock,
 }
 
@@ -192,6 +229,14 @@ impl TestStaging {
             flush_gate: Arc::new(Mutex::new(None)),
             max_chunk: Arc::new(AtomicUsize::new(0)),
             flushes: Arc::new(AtomicUsize::new(0)),
+            measure_gate: Arc::new(Mutex::new(None)),
+            place_gate: Arc::new(Mutex::new(None)),
+            measure_fault: Mutex::new(None),
+            place_fault: Mutex::new(None),
+            place_after_fault: Mutex::new(None),
+            measure_calls: AtomicUsize::new(0),
+            place_calls: AtomicUsize::new(0),
+            fail_inspect: AtomicBool::new(false),
             clock: clock.clone(),
         })
     }
@@ -296,6 +341,54 @@ impl StagingStorage for TestStaging {
             return Err(StorageError::PermissionDenied);
         }
         self.inner.remove(id).await
+    }
+
+    async fn measure(&self, id: &UploadId) -> Result<Option<StagedObject>, StorageError> {
+        self.measure_calls.fetch_add(1, Ordering::SeqCst);
+        self.probe_for_open_transaction().await;
+        let gate = self.measure_gate.lock().unwrap().clone();
+        if let Some(gate) = gate {
+            gate.pass().await;
+        }
+        if let Some(error) = take_fault(&self.measure_fault) {
+            return Err(error);
+        }
+        self.inner.measure(id).await
+    }
+
+    async fn inspect(&self, key: &ObjectKey) -> Result<Option<StagedObject>, StorageError> {
+        self.probe_for_open_transaction().await;
+        if self.fail_inspect.load(Ordering::SeqCst) {
+            return Err(StorageError::Io(std::io::Error::other("injected")));
+        }
+        self.inner.inspect(key).await
+    }
+
+    async fn staged_matches(&self, id: &UploadId, key: &ObjectKey) -> Result<bool, StorageError> {
+        self.probe_for_open_transaction().await;
+        self.inner.staged_matches(id, key).await
+    }
+
+    async fn place(
+        &self,
+        id: &UploadId,
+        key: &ObjectKey,
+        cancel: &CancellationToken,
+    ) -> Result<Placed, StorageError> {
+        self.place_calls.fetch_add(1, Ordering::SeqCst);
+        self.probe_for_open_transaction().await;
+        let gate = self.place_gate.lock().unwrap().clone();
+        if let Some(gate) = gate {
+            gate.pass().await;
+        }
+        if let Some(error) = take_fault(&self.place_fault) {
+            return Err(error);
+        }
+        let placed = self.inner.place(id, key, cancel).await?;
+        if let Some(error) = take_fault(&self.place_after_fault) {
+            return Err(error);
+        }
+        Ok(placed)
     }
 }
 

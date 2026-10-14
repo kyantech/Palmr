@@ -740,6 +740,7 @@ async fn shutdown_stack(root: &Path) -> (Stack, Arc<TestStaging>, CancellationTo
             staging: Some(staging.clone()),
             limits: small_limits(),
             shutdown: token.clone(),
+            ..TusSetup::default()
         },
     )
     .await;

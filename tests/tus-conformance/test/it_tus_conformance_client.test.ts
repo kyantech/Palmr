@@ -107,10 +107,38 @@ function uploadId(url: string | null): string {
   return id;
 }
 
-function stagedBlob(url: string | null): Buffer {
-  return readFileSync(
-    join(palmr.dataDir, "uploads", uploadId(url).replaceAll("-", ""), "blob"),
-  );
+interface SessionView {
+  state: string;
+  files: { state: string; fileId: string | null; uploadedBytes: number }[];
+}
+
+async function completedSession(sessionId: string): Promise<SessionView> {
+  let view: SessionView = { state: "unknown", files: [] };
+  for (let attempt = 0; attempt < 200; attempt += 1) {
+    const response = await palmr.api(
+      alice,
+      "GET",
+      `/api/v1/transfers/sessions/${sessionId}`,
+    );
+    view = JSON.parse(response.body.toString()) as SessionView;
+    if (view.state === "completed") {
+      return view;
+    }
+    await new Promise((settle) => setTimeout(settle, 50));
+  }
+  return view;
+}
+
+async function storedBlob(url: string | null): Promise<Buffer> {
+  const id = uploadId(url);
+  for (let attempt = 0; attempt < 200; attempt += 1) {
+    const path = palmr.storedPath(id);
+    if (path !== null) {
+      return readFileSync(path);
+    }
+    await new Promise((settle) => setTimeout(settle, 50));
+  }
+  throw new Error("the completed upload was never finalized");
 }
 
 function stagedLength(url: string | null): number {
@@ -219,7 +247,11 @@ function patchOnce(
 describe("TUS 1.0 supported surface against a real Palmr process", () => {
   it("advertises exactly the supported extensions on OPTIONS", async () => {
     const response = await palmr.raw("OPTIONS", TUS_PATH, {
-      headers: { cookie: cookieHeader(alice) },
+      headers: {
+        cookie: cookieHeader(alice),
+        origin: palmr.baseUrl,
+        "x-palmr-csrf": alice.csrf,
+      },
     });
     expect(response.status).toBe(204);
     expect(response.body.length).toBe(0);
@@ -413,7 +445,39 @@ describe("TUS 1.0 supported surface against a real Palmr process", () => {
     expect(patches).toBe(4);
     expect(offsets).toEqual(["0", "300000", "600000", "900000"]);
     expect(await headOffset(alice, client.url)).toBe(payload.length);
-    expect(sha256(stagedBlob(client.url))).toBe(sha256(payload));
+    expect(sha256(await storedBlob(client.url))).toBe(sha256(payload));
+  });
+
+  it("turns a completed upload into a real Palmr file", async () => {
+    const payload = randomBytes(640_000);
+    const item = await planned(alice, "becomes-a-file.txt", payload.length);
+    const client = await upload(alice, payload, item, {
+      uploadDataDuringCreation: false,
+      chunkSize: 200_000,
+    });
+    expect(await headOffset(alice, client.url)).toBe(payload.length);
+
+    const session = await completedSession(item.sessionId);
+    expect(session.state).toBe("completed");
+    const fileId = session.files[0]?.fileId;
+    expect(fileId).toBeTruthy();
+    expect(session.files[0]?.state).toBe("completed");
+
+    const file = await palmr.api(alice, "GET", `/api/v1/files/${fileId}`);
+    expect(file.status).toBe(200);
+    const body = JSON.parse(file.body.toString()) as {
+      name: string;
+      sizeBytes: number;
+      contentType: string;
+    };
+    expect(body.name).toBe("becomes-a-file.txt");
+    expect(body.sizeBytes).toBe(payload.length);
+    expect(body.contentType).toBe("text/plain");
+    expect(sha256(await storedBlob(client.url))).toBe(sha256(payload));
+    expect(JSON.stringify(session)).not.toMatch(/objects\/|staging/);
+
+    const foreign = await palmr.api(bob, "GET", `/api/v1/files/${fileId}`);
+    expect(foreign.status).toBe(404);
   });
 
   it("streams one long PATCH and reports the protocol headers", async () => {
@@ -422,7 +486,7 @@ describe("TUS 1.0 supported surface against a real Palmr process", () => {
     const client = await upload(alice, payload, item, {
       uploadDataDuringCreation: false,
     });
-    expect(sha256(stagedBlob(client.url))).toBe(sha256(payload));
+    expect(sha256(await storedBlob(client.url))).toBe(sha256(payload));
 
     const probe = await planned(alice, "headers.bin", 10);
     const { path } = await creation(alice, probe, 10);
@@ -467,7 +531,7 @@ describe("TUS 1.0 supported surface against a real Palmr process", () => {
     });
     expect(head.headers["upload-length"]).toBe(String(payload.length));
     expect(head.headers["upload-defer-length"]).toBeUndefined();
-    expect(sha256(stagedBlob(client.url))).toBe(sha256(payload));
+    expect(sha256(await storedBlob(client.url))).toBe(sha256(payload));
   });
 
   it("verifies Upload-Checksum per PATCH body", async () => {
@@ -486,7 +550,7 @@ describe("TUS 1.0 supported surface against a real Palmr process", () => {
         }
       },
     });
-    expect(sha256(stagedBlob(client.url))).toBe(sha256(payload));
+    expect(sha256(await storedBlob(client.url))).toBe(sha256(payload));
 
     const other = await planned(alice, "mismatch.bin", 100_000);
     const { path, url } = await creation(alice, other, 100_000);
@@ -593,7 +657,7 @@ describe("TUS 1.0 supported surface against a real Palmr process", () => {
     const finished = await first.done;
     expect(finished.status).toBe(204);
     expect(held).toBeGreaterThan(0);
-    expect(sha256(stagedBlob(url))).toBe(sha256(payload));
+    expect(sha256(await storedBlob(url))).toBe(sha256(payload));
     expect(await headOffset(alice, url)).toBe(payload.length);
   });
 
@@ -628,7 +692,7 @@ describe("TUS 1.0 supported surface against a real Palmr process", () => {
     });
     expect(resumed.url).toBe(url);
     expect(await headOffset(alice, url)).toBe(payload.length);
-    expect(sha256(stagedBlob(url))).toBe(sha256(payload));
+    expect(sha256(await storedBlob(url))).toBe(sha256(payload));
   });
 
   it("rejects bytes beyond the declared length with 413", async () => {
@@ -656,6 +720,6 @@ describe("TUS 1.0 supported surface against a real Palmr process", () => {
     });
     expect(response.status).toBe(204);
     expect(response.headers["upload-offset"]).toBe("2000");
-    expect(sha256(stagedBlob(url))).toBe(sha256(body));
+    expect(sha256(await storedBlob(url))).toBe(sha256(body));
   });
 });

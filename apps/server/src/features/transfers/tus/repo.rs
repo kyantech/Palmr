@@ -40,6 +40,7 @@ const SELECT_BINDING: &str = "SELECT ts.state AS session_state, ts.target_folder
      WHERE ts.id = ?1 AND ts.user_id = ?2 AND t.id = ?3";
 
 const SELECT_UPLOAD: &str = "SELECT tu.id, tu.transfer_session_file_id, t.transfer_session_id,
+        t.state AS item_state,
         tu.upload_length, tu.upload_defer_length, tu.upload_offset, tu.state, tu.expires_at
       FROM tus_uploads tu
       JOIN transfer_session_files t ON t.id = tu.transfer_session_file_id
@@ -92,6 +93,7 @@ const ACQUIRE_LEASE: &str = concat!(
 );
 
 const SELECT_LEASED: &str = "SELECT tu.id, tu.transfer_session_file_id, t.transfer_session_id,
+        t.state AS item_state,
         tu.upload_length, tu.upload_defer_length, tu.upload_offset, tu.state, tu.expires_at,
         ts.expires_at AS session_expires_at, t.declared_size_bytes, t.reserved_bytes
       FROM tus_uploads tu
@@ -157,6 +159,7 @@ pub struct ItemBinding {
 #[derive(Debug, Clone)]
 pub struct ExistingUpload {
     pub id: TusUploadId,
+    pub item_state: ItemState,
     pub length: Option<ByteSize>,
     pub defer: bool,
     pub offset: ByteSize,
@@ -179,6 +182,7 @@ pub struct UploadRow {
     pub id: TusUploadId,
     pub item: SessionItemId,
     pub session: TransferSessionId,
+    pub item_state: ItemState,
     pub length: Option<ByteSize>,
     pub defer: bool,
     pub offset: ByteSize,
@@ -214,6 +218,7 @@ fn binding_from(row: &SqliteRow) -> Result<CreateBinding, TransferError> {
             let defer: i64 = column(row, "upload_defer_length")?;
             Some(ExistingUpload {
                 id,
+                item_state: ItemState::parse(&item_state).ok_or_else(|| invariant("item_state"))?,
                 length: optional_bytes(row, "upload_length")?,
                 defer: defer != 0,
                 offset: bytes(row, "upload_offset")?,
@@ -245,6 +250,10 @@ fn upload_from(row: &SqliteRow) -> Result<UploadRow, TransferError> {
         id: parsed(row, "id")?,
         item: parsed(row, "transfer_session_file_id")?,
         session: parsed(row, "transfer_session_id")?,
+        item_state: {
+            let state: String = column(row, "item_state")?;
+            ItemState::parse(&state).ok_or_else(|| invariant("item_state"))?
+        },
         length: optional_bytes(row, "upload_length")?,
         defer: column::<i64>(row, "upload_defer_length")? != 0,
         offset: bytes(row, "upload_offset")?,

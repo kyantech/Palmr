@@ -25,7 +25,9 @@ use self::data_dir::{
 use self::database::{log_database_closed, Database};
 use super::health::{Health, StorageState};
 use super::openapi::{ApiDocs, ApiDocsError};
-use super::reconcile::{ReconcileContext, ReconcileRegistry, ReconcileReport};
+use super::reconcile::{
+    ReconcileContext, ReconcileError, ReconcileRegistry, ReconcileReport, RedriveStarter,
+};
 use super::router::{
     application_routes, serve_unmatched, with_middleware, HttpEdge, RouteBuildError,
 };
@@ -59,6 +61,11 @@ use crate::features::settings::{
     SettingsService, SmtpTestService,
 };
 use crate::features::setup::SetupService;
+#[cfg(feature = "e2e-fixture")]
+use crate::features::transfers::finalize::PauseHook;
+use crate::features::transfers::finalize::{
+    FinalizeHooks, FinalizeLimits, Finalizer, FinalizerParts,
+};
 use crate::features::transfers::{
     TransferService, TransferStorage, TusLimits, TusService, TusServiceParts,
 };
@@ -413,6 +420,7 @@ pub struct Application {
     database: Database,
     instance: InstanceLock,
     uploads_stop: CancellationToken,
+    finalizer: Finalizer,
     _data_dir: DataDir,
     _instance_key: InstanceKey,
 }
@@ -488,6 +496,7 @@ impl Application {
             database: initialized.database,
             instance: initialized.instance,
             uploads_stop: initialized.uploads_stop,
+            finalizer: initialized.finalizer,
             _data_dir: initialized.data_dir,
             _instance_key: initialized.instance_key,
         })
@@ -506,16 +515,23 @@ impl Application {
             database,
             instance,
             uploads_stop,
+            finalizer,
             _data_dir: data_dir,
             _instance_key: instance_key,
         } = self;
         jobs.stop_claiming();
         uploads_stop.cancel();
-        let (drain, jobs_drain, ()) = tokio::join!(
+        let (drain, jobs_drain, (), finalized) = tokio::join!(
             server.shutdown(grace),
             jobs.shutdown(grace),
-            storage_health.stop()
+            storage_health.stop(),
+            finalizer.drain(grace)
         );
+        if !finalized {
+            tracing::warn!(
+                "upload finalizations were still running at the end of the shutdown grace; they resume from their durable stage on the next start"
+            );
+        }
         log_jobs_stopped(jobs_drain);
         log_database_closed(&database.close().await);
         release_instance_lock(instance);
@@ -532,6 +548,7 @@ struct InitializedApplication {
     database: Database,
     instance: InstanceLock,
     uploads_stop: CancellationToken,
+    finalizer: Finalizer,
     data_dir: DataDir,
     instance_key: InstanceKey,
 }
@@ -539,6 +556,7 @@ struct InitializedApplication {
 impl InitializedApplication {
     async fn abandon(self, error: StartupError) -> StartupError {
         self.uploads_stop.cancel();
+        self.finalizer.drain(Duration::ZERO).await;
         self.storage_health.stop().await;
         log_jobs_stopped(self.jobs.shutdown(Duration::ZERO).await);
         abandon_startup(self.database, self.instance, error).await
@@ -782,14 +800,6 @@ async fn initialize(
     let transfer_storage =
         TransferStorage::from_operator(&config.storage, Arc::clone(&provider), monitor.status());
     let storage = StorageRuntime::new(storage, monitor.status());
-    let report = ReconcileRegistry::production()
-        .run(&ReconcileContext::new(
-            database.pools().clone(),
-            Arc::clone(&clock),
-            instance.instance_id(),
-        ))
-        .await;
-    log_reconciliation(&report);
     let settings_service = settings;
     let settings = settings_service.handle();
     let sessions = SessionService::new(
@@ -848,14 +858,38 @@ async fn initialize(
         Arc::clone(&email_keys),
         audit_service.clone(),
     );
+    let uploads_stop = CancellationToken::new();
+    let finalizer = Finalizer::new(FinalizerParts {
+        pools: database.pools().clone(),
+        clock: Arc::clone(&clock),
+        settings: settings.clone(),
+        storage: transfer_storage.clone(),
+        audit: audit_service.clone(),
+        holder: instance.instance_id().to_string(),
+        stop: uploads_stop.clone(),
+        limits: FinalizeLimits::production(),
+        hooks: finalize_hooks(),
+    });
     let transfers = TransferService::new(
         database.pools().clone(),
         Arc::clone(&clock),
         Arc::clone(&email_keys),
         settings.clone(),
         transfer_storage.clone(),
-    );
-    let uploads_stop = CancellationToken::new();
+    )
+    .with_finalizer(finalizer.clone());
+    let report = ReconcileRegistry::production()
+        .run(
+            &ReconcileContext::new(
+                database.pools().clone(),
+                Arc::clone(&clock),
+                instance.instance_id(),
+            )
+            .with_redrive(redrive_starter(&finalizer)),
+        )
+        .await;
+    log_reconciliation(&report);
+    finalizer.spawn_sweeper(FinalizeLimits::production().sweep_interval);
     let tus = TusService::new(TusServiceParts {
         pools: database.pools().clone(),
         clock: Arc::clone(&clock),
@@ -1002,9 +1036,33 @@ async fn initialize(
         database,
         instance,
         uploads_stop,
+        finalizer,
         data_dir,
         instance_key,
     })
+}
+
+fn redrive_starter(finalizer: &Finalizer) -> RedriveStarter {
+    let finalizer = finalizer.clone();
+    RedriveStarter::new(move || {
+        let finalizer = finalizer.clone();
+        Box::pin(async move {
+            finalizer
+                .start_redrive()
+                .await
+                .map_err(|error| ReconcileError::new(error.kind(), error.to_string()))
+        })
+    })
+}
+
+#[cfg(feature = "e2e-fixture")]
+fn finalize_hooks() -> Option<Arc<dyn FinalizeHooks>> {
+    PauseHook::from_environment().map(|hook| Arc::new(hook) as Arc<dyn FinalizeHooks>)
+}
+
+#[cfg(not(feature = "e2e-fixture"))]
+fn finalize_hooks() -> Option<Arc<dyn FinalizeHooks>> {
+    None
 }
 
 fn storage_monitor(

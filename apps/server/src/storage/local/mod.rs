@@ -2,6 +2,7 @@ mod capacity;
 mod copy;
 mod delete;
 mod finalize;
+mod inspect;
 mod list;
 mod paths;
 mod probe;

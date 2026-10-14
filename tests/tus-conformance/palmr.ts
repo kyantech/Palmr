@@ -1,5 +1,6 @@
 import { type ChildProcess, spawn } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
+import { DatabaseSync } from "node:sqlite";
 import http from "node:http";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
@@ -102,6 +103,27 @@ export class Palmr {
     throw new Error(`palmr did not become live: ${this.log}`);
   }
 
+  storedPath(uploadId: string): string | null {
+    const database = new DatabaseSync(join(this.dataDir, "palmr.db"), {
+      readOnly: true,
+    });
+    try {
+      const row = database
+        .prepare(
+          `SELECT t.final_object_key AS key, t.state AS state
+             FROM transfer_session_files t
+             JOIN tus_uploads u ON u.transfer_session_file_id = t.id
+            WHERE u.id = ?`,
+        )
+        .get(uploadId) as { key: string; state: string } | undefined;
+      return row?.state === "completed"
+        ? join(this.dataDir, "storage", row.key)
+        : null;
+    } finally {
+      database.close();
+    }
+  }
+
   async stop() {
     this.child.kill("SIGTERM");
     await new Promise((settle) => {
@@ -168,14 +190,17 @@ export class Palmr {
     path: string,
     body: unknown,
   ): Promise<RawResponse> {
+    const headers: Record<string, string> = {
+      cookie: cookieHeader(principal),
+      origin: this.baseUrl,
+      "x-palmr-csrf": principal.csrf,
+    };
+    if (body !== undefined) {
+      headers["content-type"] = "application/json";
+    }
     const response = await this.raw(method, path, {
-      headers: {
-        "content-type": "application/json",
-        cookie: cookieHeader(principal),
-        origin: this.baseUrl,
-        "x-palmr-csrf": principal.csrf,
-      },
-      body: JSON.stringify(body),
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
     });
     this.remember(principal, response);
     return response;
@@ -226,7 +251,12 @@ export class Palmr {
     path: string,
     body?: unknown,
   ) {
-    return await this.json(principal, method, path, body ?? {});
+    return await this.json(
+      principal,
+      method,
+      path,
+      method === "GET" ? undefined : (body ?? {}),
+    );
   }
 
   async plan(

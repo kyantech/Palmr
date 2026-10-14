@@ -6,6 +6,7 @@ use std::sync::Arc;
 use crate::domain::clock::Clock;
 use crate::domain::time::Timestamp;
 use crate::features::quota::reconcile as quota_reconcile;
+use crate::features::transfers::finalize;
 use crate::infra::db::{DbPools, InstanceId};
 use crate::infra::jobs::claim::{Enqueued, MAX_ROWS_PER_TX};
 use crate::infra::jobs::JobsError;
@@ -13,6 +14,7 @@ use crate::infra::jobs::JobsError;
 pub const JOBS_STEP: &str = "jobs";
 pub const QUOTA_SCHEDULE_STEP: &str = "quota.schedule_reconcile";
 pub const TUS_LEASES_STEP: &str = "tus.release_orphan_leases";
+pub const FINALIZE_REDRIVE_STEP: &str = "transfers.finalize_redrive";
 
 const REQUEUE_STALE_CLAIMS: &str = "UPDATE jobs
         SET state = 'pending', claimed_by = NULL, lease_expires_at = NULL, updated_at = ?1
@@ -30,7 +32,7 @@ const RELEASE_ORPHAN_TUS_LEASES: &str = "UPDATE tus_uploads
                       AND state IN ('created', 'in_progress')
                     LIMIT ?2)";
 
-type StepFuture = Pin<Box<dyn Future<Output = Result<u64, ReconcileError>> + Send>>;
+pub type StepFuture = Pin<Box<dyn Future<Output = Result<u64, ReconcileError>> + Send>>;
 type StepFn = Arc<dyn Fn(ReconcileContext) -> StepFuture + Send + Sync>;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -61,10 +63,20 @@ impl fmt::Display for ReconcileError {
 impl std::error::Error for ReconcileError {}
 
 #[derive(Clone)]
+pub struct RedriveStarter(Arc<dyn Fn() -> StepFuture + Send + Sync>);
+
+impl RedriveStarter {
+    pub fn new(start: impl Fn() -> StepFuture + Send + Sync + 'static) -> Self {
+        Self(Arc::new(start))
+    }
+}
+
+#[derive(Clone)]
 pub struct ReconcileContext {
     pools: DbPools,
     clock: Arc<dyn Clock>,
     instance: InstanceId,
+    redrive: Option<RedriveStarter>,
 }
 
 impl ReconcileContext {
@@ -73,7 +85,14 @@ impl ReconcileContext {
             pools,
             clock,
             instance,
+            redrive: None,
         }
+    }
+
+    #[must_use]
+    pub fn with_redrive(mut self, redrive: RedriveStarter) -> Self {
+        self.redrive = Some(redrive);
+        self
     }
 }
 
@@ -98,6 +117,7 @@ impl ReconcileRegistry {
             .register(JOBS_STEP, jobs_step)
             .register(QUOTA_SCHEDULE_STEP, quota_schedule_step)
             .register(TUS_LEASES_STEP, tus_leases_step)
+            .register(FINALIZE_REDRIVE_STEP, finalize_redrive_step)
     }
 
     #[must_use]
@@ -240,6 +260,17 @@ async fn release_orphan_tus_leases(context: &ReconcileContext) -> Result<u64, Jo
             return Ok(released);
         }
     }
+}
+
+fn finalize_redrive_step(context: ReconcileContext) -> StepFuture {
+    Box::pin(async move {
+        match &context.redrive {
+            Some(starter) => (starter.0)().await,
+            None => finalize::pending_redrive(&context.pools, context.clock.as_ref())
+                .await
+                .map_err(|error| ReconcileError::new(error.kind(), error.to_string())),
+        }
+    })
 }
 
 fn jobs_step(context: ReconcileContext) -> StepFuture {

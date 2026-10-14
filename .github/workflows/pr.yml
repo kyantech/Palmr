@@ -81,7 +81,7 @@ jobs:
         with:
           tool: cargo-nextest@0.9.146
       - run: cargo nextest run --locked --profile ci
-      - run: cargo nextest run --locked --profile ci --features e2e-fixture -E 'test(e2e_fixture)'
+      - run: cargo nextest run --locked --profile ci --features e2e-fixture -E 'test(e2e_fixture) | binary(it_finalize_process)'
       - run: cargo run --locked --bin palmr -- --version
 
   web:

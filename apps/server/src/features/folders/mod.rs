@@ -1,5 +1,6 @@
 mod browse;
 pub mod delete;
+mod destination;
 mod ensure_path;
 mod error;
 pub mod impact;
@@ -12,6 +13,7 @@ pub(crate) mod visibility;
 
 pub use browse::{count_child_folders, folder_paths, list_child_folders, ChildFolder};
 pub use delete::{claim_folder_deletion_in_tx, ClaimOutcome};
+pub use destination::resolve_existing_destination;
 pub use ensure_path::ensure_child_in_tx;
 pub use error::FolderError;
 #[cfg_attr(

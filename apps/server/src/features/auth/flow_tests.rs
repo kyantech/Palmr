@@ -94,6 +94,8 @@ struct Stack {
     folders: FolderService,
     transfers: crate::features::transfers::TransferService,
     tus: crate::features::transfers::TusService,
+    finalizer: Option<crate::features::transfers::finalize::Finalizer>,
+    transfer_storage_handle: crate::features::transfers::TransferStorage,
     data_dir: std::path::PathBuf,
     storage_down: Arc<std::sync::atomic::AtomicBool>,
     providers: IdentityProviderService,
@@ -111,6 +113,31 @@ struct TusSetup {
     staging: Option<Arc<dyn crate::storage::staging::StagingStorage>>,
     limits: crate::features::transfers::TusLimits,
     shutdown: tokio_util::sync::CancellationToken,
+    finalize: Option<FinalizeSetup>,
+}
+
+#[derive(Clone)]
+struct FinalizeSetup {
+    hooks: Option<Arc<dyn crate::features::transfers::finalize::FinalizeHooks>>,
+    limits: crate::features::transfers::finalize::FinalizeLimits,
+    holder: String,
+}
+
+impl Default for FinalizeSetup {
+    fn default() -> Self {
+        Self {
+            hooks: None,
+            limits: crate::features::transfers::finalize::FinalizeLimits {
+                heartbeat: Duration::from_millis(50),
+                busy_wait: Duration::from_secs(10),
+                busy_poll: Duration::from_millis(5),
+                attempts: 3,
+                backoff: Duration::from_millis(10),
+                ..crate::features::transfers::finalize::FinalizeLimits::production()
+            },
+            holder: "test-instance".to_owned(),
+        }
+    }
 }
 
 impl Default for TusSetup {
@@ -119,6 +146,7 @@ impl Default for TusSetup {
             staging: None,
             limits: crate::features::transfers::TusLimits::production(262_144),
             shutdown: tokio_util::sync::CancellationToken::new(),
+            finalize: None,
         }
     }
 }
@@ -283,6 +311,21 @@ impl Stack {
                 }));
             storage.with_staging(tus_setup.staging_for(root))
         });
+        let finalizer = tus_setup.finalize.as_ref().map(|setup| {
+            crate::features::transfers::finalize::Finalizer::new(
+                crate::features::transfers::finalize::FinalizerParts {
+                    pools: pools.clone(),
+                    clock: Arc::new(clock.clone()),
+                    settings: settings.handle(),
+                    storage: transfer_storage.clone(),
+                    audit: audit.clone(),
+                    holder: setup.holder.clone(),
+                    stop: tus_setup.shutdown.clone(),
+                    limits: setup.limits,
+                    hooks: setup.hooks.clone(),
+                },
+            )
+        });
         let transfers = crate::features::transfers::TransferService::new(
             pools.clone(),
             Arc::new(clock.clone()),
@@ -290,6 +333,11 @@ impl Stack {
             settings.handle(),
             transfer_storage.clone(),
         );
+        let transfers = match &finalizer {
+            Some(finalizer) => transfers.with_finalizer(finalizer.clone()),
+            None => transfers,
+        };
+        let transfer_storage_handle = transfer_storage.clone();
         let tus = crate::features::transfers::TusService::new(
             crate::features::transfers::TusServiceParts {
                 pools: pools.clone(),
@@ -415,6 +463,8 @@ impl Stack {
             folders,
             transfers,
             tus,
+            finalizer,
+            transfer_storage_handle,
             data_dir: root.to_path_buf(),
             storage_down,
             providers,
@@ -427,6 +477,10 @@ impl Stack {
             limiter: Arc::clone(edge.rate_limits()),
             service,
         }
+    }
+
+    fn transfer_storage(&self) -> crate::features::transfers::TransferStorage {
+        self.transfer_storage_handle.clone()
     }
 
     async fn send(&self, request: Request) -> Fetched {
@@ -1934,6 +1988,9 @@ mod deletion_tests;
 mod file_search;
 mod file_writes;
 mod files;
+mod finalize;
+mod finalize_crash;
+mod finalize_policy;
 mod folder_moves;
 mod folder_paths;
 mod folders;

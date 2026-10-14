@@ -38,7 +38,7 @@ impl LocalProvider {
             .stage(&mut writer, body, declared_len)
             .await
             .and_then(|()| blocking(|| writer.sync()))
-            .and_then(|()| blocking(|| self.finalize_at(&upload_id, location)));
+            .and_then(|()| blocking(|| self.finalize_at(&upload_id, location, None)));
         drop(writer);
         if let Err(error) = self.remove_staging(&upload_id) {
             tracing::warn!(

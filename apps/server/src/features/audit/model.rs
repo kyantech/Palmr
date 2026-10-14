@@ -310,6 +310,7 @@ pub enum AuditAction {
     IdentityLinkRemoved,
     PasswordLoginDisabled,
     PasswordLoginEnabled,
+    FileUploaded,
     FileDeleted,
     FolderDeleted,
 }
@@ -358,6 +359,7 @@ impl AuditAction {
         Self::IdentityLinkRemoved,
         Self::PasswordLoginDisabled,
         Self::PasswordLoginEnabled,
+        Self::FileUploaded,
         Self::FileDeleted,
         Self::FolderDeleted,
     ];
@@ -406,6 +408,7 @@ impl AuditAction {
             Self::IdentityLinkRemoved => "IDENTITY_LINK_REMOVED",
             Self::PasswordLoginDisabled => "PASSWORD_LOGIN_DISABLED",
             Self::PasswordLoginEnabled => "PASSWORD_LOGIN_ENABLED",
+            Self::FileUploaded => "FILE_UPLOADED",
             Self::FileDeleted => "FILE_DELETED",
             Self::FolderDeleted => "FOLDER_DELETED",
         }
@@ -455,6 +458,7 @@ impl AuditAction {
             | Self::IdentityLinkRemoved
             | Self::PasswordLoginDisabled
             | Self::PasswordLoginEnabled
+            | Self::FileUploaded
             | Self::FileDeleted
             | Self::FolderDeleted => WritePath::InTransaction,
         }
@@ -472,6 +476,14 @@ impl ClientMetadata {
     pub const fn none() -> Self {
         Self {
             request_id: None,
+            client_ip: None,
+            user_agent: None,
+        }
+    }
+
+    pub fn request_only(request_id: &str) -> Self {
+        Self {
+            request_id: Some(bounded(request_id, MAX_REQUEST_ID)),
             client_ip: None,
             user_agent: None,
         }

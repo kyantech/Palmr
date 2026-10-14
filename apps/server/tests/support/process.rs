@@ -19,9 +19,17 @@ pub struct ServerProcess {
 
 impl ServerProcess {
     pub fn spawn(data_dir: &Path) -> Result<Self> {
+        Self::spawn_with(data_dir, &[])
+    }
+
+    pub fn spawn_with(data_dir: &Path, env: &[(&str, &std::ffi::OsStr)]) -> Result<Self> {
         let port = free_port()?;
         let errors = data_dir.with_extension("server.stderr");
-        let child = palmr_command(data_dir, port)
+        let mut command = palmr_command(data_dir, port);
+        for (name, value) in env {
+            command.env(name, value);
+        }
+        let child = command
             .env("PALMR_LOG_LEVEL", "warn")
             .stdin(Stdio::null())
             .stdout(Stdio::null())

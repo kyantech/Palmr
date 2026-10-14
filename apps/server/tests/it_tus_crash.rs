@@ -110,16 +110,18 @@ async fn it_tus_real_process_crash_recovers_without_a_lease_wait() -> Result<()>
 
     for upload in [&unchecked, &checked] {
         assert_eq!(second.offset(upload).await?, size);
-        let (staged, digest) = second.blob_digest(upload)?;
+        second.wait_finalized(upload).await?;
+        let (staged, digest) = second.blob_digest(upload).await?;
         assert_eq!((staged, digest), (size, expected.clone()));
     }
-    assert_eq!(second.db.scalar_i64("SELECT COUNT(*) FROM files").await?, 0);
+    assert_eq!(second.db.scalar_i64("SELECT COUNT(*) FROM files").await?, 2);
     assert_eq!(
         second
             .db
             .scalar_i64("SELECT COUNT(*) FROM storage_objects")
             .await?,
-        0
+        2,
+        "both completed uploads were finalized exactly once"
     );
     let exit = restarted.stop().await?;
     assert!(exit.success());

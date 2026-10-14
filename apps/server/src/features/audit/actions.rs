@@ -782,6 +782,27 @@ pub fn file_deleted(facts: &FileDeletedFacts) -> ActionSpec {
     ActionSpec::new(AuditAction::FileDeleted, metadata)
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FileUploadedFacts<'a> {
+    pub size_bytes: u64,
+    pub mime_type: &'a str,
+    pub transfer_session_id: &'a str,
+    pub provider: &'static str,
+}
+
+pub fn file_uploaded(facts: &FileUploadedFacts<'_>) -> ActionSpec {
+    let metadata = Metadata::json(&[
+        ("size_bytes", Value::from(facts.size_bytes)),
+        ("mime_type", Value::from(facts.mime_type)),
+        (
+            "transfer_session_id",
+            Value::from(facts.transfer_session_id),
+        ),
+        ("provider", Value::from(facts.provider)),
+    ]);
+    ActionSpec::new(AuditAction::FileUploaded, metadata)
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FolderDeletedFacts {
     pub files: u64,

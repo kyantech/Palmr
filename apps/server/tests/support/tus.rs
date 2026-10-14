@@ -67,7 +67,7 @@ impl TusWorld {
         }
     }
 
-    pub async fn upload(&self, name: &str, length: u64) -> Result<Upload> {
+    pub async fn plan(&self, name: &str, length: u64) -> Result<(String, String)> {
         let session = self
             .http
             .send(
@@ -89,12 +89,21 @@ impl TusWorld {
                 "SELECT id FROM transfer_session_files WHERE transfer_session_id = '{session}'"
             ))
             .await?;
-        let metadata = format!(
+        Ok((session, item))
+    }
+
+    fn metadata(name: &str, session: &str, item: &str) -> String {
+        format!(
             "filename {},transferSessionId {},itemId {}",
             b64(name),
-            b64(&session),
-            b64(&item)
-        );
+            b64(session),
+            b64(item)
+        )
+    }
+
+    pub async fn upload(&self, name: &str, length: u64) -> Result<Upload> {
+        let (session, item) = self.plan(name, length).await?;
+        let metadata = Self::metadata(name, &session, &item);
         let created = self
             .http
             .send_with_headers(
@@ -115,6 +124,38 @@ impl TusWorld {
             .get("location")
             .context("location")?
             .to_str()?;
+        Ok(Upload {
+            id: location.rsplit('/').next().context("id")?.to_owned(),
+        })
+    }
+
+    pub async fn create_with_body(&self, name: &str, length: u64) -> Result<Upload> {
+        let (session, item) = self.plan(name, length).await?;
+        let base = self.base.clone();
+        let host = base.host_str().context("host")?;
+        let port = base.port().context("port")?;
+        let mut stream = TcpStream::connect((host, port)).await?;
+        let head = format!(
+            "POST {TUS} HTTP/1.1\r\nHost: {host}:{port}\r\nOrigin: {origin}\r\n\
+             Cookie: palmr_session={session}; palmr_csrf={csrf}\r\nX-Palmr-CSRF: {csrf}\r\n\
+             Tus-Resumable: 1.0.0\r\nUpload-Length: {length}\r\nUpload-Metadata: {metadata}\r\n\
+             Content-Type: application/offset+octet-stream\r\nTransfer-Encoding: chunked\r\n\r\n",
+            origin = base.origin().ascii_serialization(),
+            session = self.creds.session,
+            csrf = self.creds.csrf,
+            metadata = Self::metadata(name, &session, &item),
+        );
+        stream.write_all(head.as_bytes()).await?;
+        let mut request = RawPatch { stream };
+        send_range(&mut request, length, 0, length).await?;
+        request.finish().await?;
+        let response = request.response().await?;
+        ensure!(response.status == 201, "{}", response.body);
+        ensure!(
+            response.headers.get("upload-offset").map(String::as_str) == Some(&*length.to_string()),
+            "the creation body was not fully acknowledged"
+        );
+        let location = response.headers.get("location").context("location")?;
         Ok(Upload {
             id: location.rsplit('/').next().context("id")?.to_owned(),
         })
@@ -197,8 +238,45 @@ impl TusWorld {
         Ok(RawPatch { stream })
     }
 
-    pub fn blob_digest(&self, upload: &Upload) -> Result<(u64, Vec<u8>)> {
-        let mut file = std::fs::File::open(self.blob(upload))?;
+    pub async fn final_path(&self, upload: &Upload) -> Result<PathBuf> {
+        let key = self
+            .db
+            .scalar_string(&format!(
+                "SELECT t.final_object_key FROM transfer_session_files t
+                   JOIN tus_uploads u ON u.transfer_session_file_id = t.id
+                  WHERE u.id = '{}'",
+                upload.id
+            ))
+            .await?;
+        Ok(self.data_dir.join("storage").join(key))
+    }
+
+    pub async fn item_state(&self, upload: &Upload) -> Result<String> {
+        self.db
+            .scalar_string(&format!(
+                "SELECT t.state FROM transfer_session_files t
+                   JOIN tus_uploads u ON u.transfer_session_file_id = t.id
+                  WHERE u.id = '{}'",
+                upload.id
+            ))
+            .await
+    }
+
+    pub async fn wait_finalized(&self, upload: &Upload) -> Result<()> {
+        wait_until("the upload to be finalized", || async {
+            Ok(self.item_state(upload).await? == "completed")
+        })
+        .await
+    }
+
+    pub async fn blob_digest(&self, upload: &Upload) -> Result<(u64, Vec<u8>)> {
+        let path = if self.blob(upload).exists() {
+            self.blob(upload)
+        } else {
+            self.wait_finalized(upload).await?;
+            self.final_path(upload).await?
+        };
+        let mut file = std::fs::File::open(path)?;
         let mut hasher = Sha256::new();
         let mut buffer = vec![0_u8; MIB as usize];
         let mut total = 0_u64;

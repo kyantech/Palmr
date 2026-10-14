@@ -4,13 +4,18 @@ use std::os::fd::AsFd;
 use async_trait::async_trait;
 use rustix::fs::{Mode, OFlags};
 use rustix::io::Errno;
+use tokio_util::sync::CancellationToken;
 
 use super::paths::{open_dir, open_regular, UploadId, STAGING_BLOB, STAGING_META};
 use super::read::stat_regular;
 use super::StagingWriter;
-use super::{blocking, classify, sync_directory, LocalProvider, Step, DIRECTORY_MODE, FILE_MODE};
+use super::{
+    blocking, classify, sync_directory, FinalizeRoute, LocalProvider, Step, DIRECTORY_MODE,
+    FILE_MODE,
+};
 use crate::storage::error::StorageError;
-use crate::storage::staging::{StagingAppend, StagingStorage};
+use crate::storage::key::ObjectKey;
+use crate::storage::staging::{PlaceRoute, Placed, StagedObject, StagingAppend, StagingStorage};
 
 const MAX_HINT_BYTES: usize = 4_096;
 
@@ -115,5 +120,33 @@ impl StagingStorage for LocalProvider {
 
     async fn remove(&self, id: &UploadId) -> Result<bool, StorageError> {
         blocking(|| self.remove_staging(id))
+    }
+
+    async fn measure(&self, id: &UploadId) -> Result<Option<StagedObject>, StorageError> {
+        blocking(|| self.measure_staged(id))
+    }
+
+    async fn inspect(&self, key: &ObjectKey) -> Result<Option<StagedObject>, StorageError> {
+        blocking(|| self.inspect_object(key))
+    }
+
+    async fn staged_matches(&self, id: &UploadId, key: &ObjectKey) -> Result<bool, StorageError> {
+        blocking(|| self.staged_matches_object(id, key))
+    }
+
+    async fn place(
+        &self,
+        id: &UploadId,
+        key: &ObjectKey,
+        cancel: &CancellationToken,
+    ) -> Result<Placed, StorageError> {
+        let finalized = blocking(|| self.finalize_staged_until(id, key, cancel))?;
+        Ok(Placed {
+            size: finalized.stat.size,
+            route: match finalized.route {
+                FinalizeRoute::Rename => PlaceRoute::Rename,
+                FinalizeRoute::CrossDeviceCopy => PlaceRoute::CrossDeviceCopy,
+            },
+        })
     }
 }

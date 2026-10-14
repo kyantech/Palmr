@@ -77,6 +77,7 @@ pub(in crate::storage) fn diagnose(error: &StorageError) -> Diagnosis {
         StorageError::NotFound
         | StorageError::AlreadyExists
         | StorageError::InvalidKey
+        | StorageError::Canceled
         | StorageError::Io(_)
         | StorageError::S3(_) => Diagnosis::ProviderError,
     }

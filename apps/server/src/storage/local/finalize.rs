@@ -4,6 +4,7 @@ use std::os::fd::{AsFd, BorrowedFd};
 
 use rustix::fs::{Mode, OFlags};
 use rustix::io::Errno;
+use tokio_util::sync::CancellationToken;
 
 use super::paths::{
     ensure_leaf_dir, open_dir, open_regular, ObjectLocation, UploadId, STAGING_BLOB,
@@ -15,6 +16,8 @@ use super::{
 use crate::storage::error::StorageError;
 use crate::storage::key::ObjectKey;
 use crate::storage::provider::ObjectStat;
+
+const CANCEL_POLL_BYTES: u64 = 64 * 1024 * 1024;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FinalizeRoute {
@@ -34,13 +37,23 @@ impl LocalProvider {
         upload_id: &UploadId,
         final_key: &ObjectKey,
     ) -> Result<Finalized, StorageError> {
-        self.finalize_at(upload_id, &ObjectLocation::of(final_key))
+        self.finalize_at(upload_id, &ObjectLocation::of(final_key), None)
+    }
+
+    pub fn finalize_staged_until(
+        &self,
+        upload_id: &UploadId,
+        final_key: &ObjectKey,
+        cancel: &CancellationToken,
+    ) -> Result<Finalized, StorageError> {
+        self.finalize_at(upload_id, &ObjectLocation::of(final_key), Some(cancel))
     }
 
     pub(super) fn finalize_at(
         &self,
         upload_id: &UploadId,
         location: &ObjectLocation<'_>,
+        cancel: Option<&CancellationToken>,
     ) -> Result<Finalized, StorageError> {
         let staging_dir = open_dir(self.uploads.as_fd(), upload_id.as_str())?;
         let staging = open_regular(
@@ -74,6 +87,7 @@ impl LocalProvider {
                     staging_dir.as_fd(),
                     &staging,
                     &destination,
+                    cancel,
                 );
             }
             Err(error) => return Err(StorageError::from(error)),
@@ -93,6 +107,7 @@ impl LocalProvider {
         staging_dir: BorrowedFd<'_>,
         staging: &File,
         destination: &Destination<'_>,
+        cancel: Option<&CancellationToken>,
     ) -> Result<Finalized, StorageError> {
         tracing::warn!(
             event = "storage.finalize.cross_device_copy",
@@ -103,7 +118,7 @@ impl LocalProvider {
         let temp = self.create_temp(destination.leaf_dir, &temp_name)?;
 
         let placed = self
-            .fill_temp(staging, &temp)
+            .fill_temp(staging, &temp, cancel)
             .and_then(|()| {
                 self.ops
                     .fsync(temp.as_fd(), Step::SyncTemp)
@@ -168,11 +183,23 @@ impl LocalProvider {
         }
     }
 
-    fn fill_temp(&self, mut staging: &File, temp: &File) -> Result<(), StorageError> {
+    fn fill_temp(
+        &self,
+        mut staging: &File,
+        temp: &File,
+        cancel: Option<&CancellationToken>,
+    ) -> Result<(), StorageError> {
         let expected = staging.metadata()?.len();
         let mut buffer = vec![0_u8; self.buffer_bytes];
         let mut copied = 0_u64;
+        let mut since_poll = 0_u64;
         loop {
+            if since_poll >= CANCEL_POLL_BYTES {
+                since_poll = 0;
+                if cancel.is_some_and(CancellationToken::is_cancelled) {
+                    return Err(StorageError::Canceled);
+                }
+            }
             let read = match staging.read(&mut buffer) {
                 Ok(0) => break,
                 Ok(read) => read,
@@ -180,7 +207,9 @@ impl LocalProvider {
                 Err(error) => return Err(StorageError::from(error)),
             };
             self.ops.write_all(temp, &buffer[..read], Step::WriteTemp)?;
-            copied += u64::try_from(read).unwrap_or(u64::MAX);
+            let read = u64::try_from(read).unwrap_or(u64::MAX);
+            copied += read;
+            since_poll += read;
         }
         if copied == expected {
             Ok(())

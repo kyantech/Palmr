@@ -43,6 +43,8 @@ pub enum StorageError {
     },
     #[error("storage object measured {actual} bytes, expected {expected}")]
     SizeMismatch { expected: u64, actual: u64 },
+    #[error("storage operation was canceled")]
+    Canceled,
     #[error("storage i/o failure")]
     Io(#[source] io::Error),
     #[error("storage provider request failed")]
@@ -54,7 +56,9 @@ impl StorageError {
         match self {
             Self::NotFound => ErrorCode::FileNotFound,
             Self::RangeNotSatisfiable { .. } => ErrorCode::RangeNotSatisfiable,
-            Self::AlreadyExists | Self::InvalidKey | Self::Config(_) => ErrorCode::InternalError,
+            Self::AlreadyExists | Self::InvalidKey | Self::Config(_) | Self::Canceled => {
+                ErrorCode::InternalError
+            }
             Self::QuotaOnDevice => ErrorCode::StorageFull,
             Self::PermissionDenied | Self::ProviderUnavailable(_) | Self::Io(_) | Self::S3(_) => {
                 ErrorCode::StorageUnavailable
@@ -77,7 +81,8 @@ impl StorageError {
             | Self::InvalidKey
             | Self::Config(_)
             | Self::ProviderMismatch { .. }
-            | Self::SizeMismatch { .. } => false,
+            | Self::SizeMismatch { .. }
+            | Self::Canceled => false,
         }
     }
 
@@ -100,6 +105,7 @@ impl StorageError {
             Self::Config(_) => "config",
             Self::ProviderMismatch { .. } => "provider_mismatch",
             Self::SizeMismatch { .. } => "size_mismatch",
+            Self::Canceled => "canceled",
             Self::Io(_) => "io",
             Self::S3(_) => "s3",
         }
@@ -176,6 +182,7 @@ mod tests {
                 expected: 1_024,
                 actual: 1_023,
             },
+            StorageError::Canceled,
             StorageError::Io(io::Error::other(format!("/data/storage/{SENTINEL}"))),
             StorageError::S3(Box::new(io::Error::other(SENTINEL))),
         ]
@@ -185,9 +192,10 @@ mod tests {
         match error {
             StorageError::NotFound => ("FILE_NOT_FOUND", 404, false),
             StorageError::RangeNotSatisfiable { .. } => ("RANGE_NOT_SATISFIABLE", 416, false),
-            StorageError::AlreadyExists | StorageError::InvalidKey | StorageError::Config(_) => {
-                ("INTERNAL_ERROR", 500, false)
-            }
+            StorageError::AlreadyExists
+            | StorageError::InvalidKey
+            | StorageError::Config(_)
+            | StorageError::Canceled => ("INTERNAL_ERROR", 500, false),
             StorageError::QuotaOnDevice => ("STORAGE_FULL", 507, true),
             StorageError::PermissionDenied
             | StorageError::ProviderUnavailable(_)
