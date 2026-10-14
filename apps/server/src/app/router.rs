@@ -680,6 +680,7 @@ pub fn application_routes() -> Routes<AppState> {
         .merge(settings::routes::routes())
         .merge(settings::admin_routes::routes())
         .merge(transfers::routes::routes())
+        .merge(transfers::s3::routes::routes())
         .merge(transfers::tus::routes::routes())
         .merge(users::routes::routes())
         .merge(users::admin_routes::routes())

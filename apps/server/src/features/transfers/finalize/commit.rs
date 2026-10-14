@@ -27,7 +27,7 @@ use crate::storage::lifecycle::{
 
 use super::super::admission::TransferStorage;
 use super::super::error::TransferError;
-use super::super::model::{SessionItemId, TransferProvider, TransferSessionId};
+use super::super::model::{SessionItemId, TransferProvider, TransferSessionId, UploadKind};
 use super::super::repo::{self as transfer_repo, ErrorParts, FinalizeStage, SessionMove};
 use super::super::state::{has_expired, session_transition, ItemState, Outcome as Moved, Trigger};
 use super::repo::{self, ItemContext};
@@ -42,6 +42,7 @@ pub enum RejectCause {
     FolderNotFound,
     FolderDeleting,
     NameExhausted,
+    MultipartLost,
 }
 
 impl RejectCause {
@@ -55,6 +56,7 @@ impl RejectCause {
             Self::FolderNotFound => ErrorCode::FolderNotFound,
             Self::FolderDeleting => ErrorCode::FolderDeleting,
             Self::NameExhausted => ErrorCode::FileNameConflict,
+            Self::MultipartLost => ErrorCode::MultipartNotFound,
         }
     }
 
@@ -67,7 +69,8 @@ impl RejectCause {
             | Self::AccountInactive
             | Self::FolderNotFound
             | Self::FolderDeleting
-            | Self::NameExhausted => DeletionReason::UploadRejected,
+            | Self::NameExhausted
+            | Self::MultipartLost => DeletionReason::UploadRejected,
         }
     }
 }
@@ -88,6 +91,7 @@ pub struct FinalizationProof {
     pub(super) size: ByteSize,
     pub(super) mime: ResolvedMime,
     pub(super) checksum: Option<VerifiedChecksum>,
+    pub(super) final_etag: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -295,7 +299,7 @@ impl Committer {
             .await?;
 
         complete_item(tx, proof.item, file_id, now).await?;
-        complete_upload(tx, proof.item, now).await?;
+        complete_upload(tx, proof, now).await?;
         self.advance_session(tx, &ctx, proof.size, now).await?;
         self.record_upload(tx, &ctx, proof, file_id, &name, client, now)
             .await?;
@@ -306,8 +310,13 @@ impl Committer {
     }
 
     fn check_size(&self, ctx: &ItemContext, proof: &FinalizationProof) -> Result<(), Stop> {
-        let tus = ctx.tus.as_ref().ok_or_else(|| invariant("tus_upload"))?;
-        let matches_length = tus.length == Some(proof.size);
+        let matches_length = match ctx.kind {
+            UploadKind::Tus => {
+                let tus = ctx.tus.as_ref().ok_or_else(|| invariant("tus_upload"))?;
+                tus.length == Some(proof.size)
+            }
+            UploadKind::S3Multipart | UploadKind::S3Single => ctx.declared.is_some(),
+        };
         let matches_declared = ctx.declared.is_none_or(|declared| declared == proof.size);
         if !matches_length || !matches_declared {
             return Err(Stop::Reject(RejectCause::LengthMismatch));
@@ -590,6 +599,16 @@ impl Committer {
                 .bind(now.to_string())
                 .execute(tx.executor())
                 .await?;
+                sqlx::query(
+                    "UPDATE s3_multipart_uploads
+                        SET state = 'abandoned', updated_at = ?2
+                      WHERE transfer_session_file_id = ?1
+                        AND state IN ('created', 'in_progress', 'completing')",
+                )
+                .bind(ctx.item.to_string())
+                .bind(now.to_string())
+                .execute(tx.executor())
+                .await?;
             }
             Disposition::Retryable => {
                 sqlx::query(
@@ -714,7 +733,7 @@ async fn complete_item(
 
 async fn complete_upload(
     tx: &mut WriteTx<'_>,
-    item: SessionItemId,
+    proof: &FinalizationProof,
     now: Timestamp,
 ) -> Result<(), Stop> {
     sqlx::query(
@@ -723,8 +742,23 @@ async fn complete_upload(
                 locked_by = NULL, lock_expires_at = NULL
           WHERE transfer_session_file_id = ?1 AND state IN ('created', 'in_progress')",
     )
-    .bind(item.to_string())
+    .bind(proof.item.to_string())
     .bind(now.to_string())
+    .execute(tx.executor())
+    .await?;
+    let etag = proof
+        .final_etag
+        .as_deref()
+        .filter(|etag| etag.chars().count() <= 128);
+    sqlx::query(
+        "UPDATE s3_multipart_uploads
+            SET state = 'completed', final_etag = ?3, completed_at = ?2, updated_at = ?2
+          WHERE transfer_session_file_id = ?1
+            AND state IN ('created', 'in_progress', 'completing')",
+    )
+    .bind(proof.item.to_string())
+    .bind(now.to_string())
+    .bind(etag)
     .execute(tx.executor())
     .await?;
     Ok(())

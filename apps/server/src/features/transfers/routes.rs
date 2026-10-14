@@ -44,7 +44,7 @@ const CONTROL_ROUTE: RoutePolicy = RoutePolicy::new(
 
 const CREATE_ROUTE: RoutePolicy = CONTROL_ROUTE.with_idempotency(IdempotencyMode::Plaintext);
 
-const NO_STORE: HeaderValue = HeaderValue::from_static("no-store");
+pub(super) const NO_STORE: HeaderValue = HeaderValue::from_static("no-store");
 
 pub fn routes() -> Routes<AppState> {
     Routes::new()
@@ -342,7 +342,7 @@ async fn release(service: &TransferService, claim: Claim) {
     }
 }
 
-fn transfer_error(error: &TransferError, request_id: Option<&RequestId>) -> Response {
+pub(super) fn transfer_error(error: &TransferError, request_id: Option<&RequestId>) -> Response {
     let api_error = error.api_error();
     if api_error.status().is_server_error() {
         tracing::error!(kind = error.kind(), "transfer request failed");
@@ -350,7 +350,7 @@ fn transfer_error(error: &TransferError, request_id: Option<&RequestId>) -> Resp
     tag_error(api_error, request_id).into_response()
 }
 
-fn json_response<T: serde::Serialize>(
+pub(super) fn json_response<T: serde::Serialize>(
     status: StatusCode,
     body: &T,
     request_id: Option<&RequestId>,

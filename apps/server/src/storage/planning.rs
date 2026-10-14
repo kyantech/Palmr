@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::Duration;
 
 use crate::config::StorageConfig;
 
@@ -11,6 +12,22 @@ use super::s3::profile::{ProfileLimits, ProviderProfile};
 use super::ProviderKind;
 
 pub type ProxyProbe = Arc<dyn Fn() -> bool + Send + Sync>;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ObjectStoreSettings {
+    pub bucket: String,
+    pub multipart_ttl: Duration,
+}
+
+pub fn object_store_settings(config: &StorageConfig) -> Option<ObjectStoreSettings> {
+    match config {
+        StorageConfig::Local => None,
+        StorageConfig::S3(s3) => Some(ObjectStoreSettings {
+            bucket: s3.bucket.clone(),
+            multipart_ttl: s3.multipart_ttl,
+        }),
+    }
+}
 
 #[derive(Clone)]
 pub struct UploadPlanner {
@@ -107,6 +124,10 @@ impl UploadPlanner {
 
     pub const fn provider_key(&self) -> &'static str {
         self.kind.as_str()
+    }
+
+    pub fn is_proxied(&self) -> bool {
+        (self.proxied)()
     }
 
     fn limits(&self) -> Option<ProfileLimits> {

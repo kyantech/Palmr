@@ -10,10 +10,12 @@ mod repo;
 #[cfg(test)]
 pub use repo::ErrorParts;
 pub mod routes;
+pub mod s3;
 pub mod service;
 pub mod state;
 pub mod tus;
 
 pub use admission::TransferStorage;
+pub use s3::{S3Service, S3ServiceParts};
 pub use service::TransferService;
 pub use tus::{TusLimits, TusService, TusServiceParts};

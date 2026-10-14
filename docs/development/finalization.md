@@ -1,17 +1,17 @@
-# Upload finalization (local)
+# Upload finalization (local and S3)
 
-Introduced in M14-T05. It turns a completed local TUS upload into a durable, user-visible file and defines the one metadata transaction that the S3 (M14-T07) and Received (M20-T06) finalizers reuse. It implements TRANSFER_ENGINE §3.9 to §3.10, DATABASE_SCHEMA §5.10 and §5.12, and STORAGE_DESIGN's local placement.
+Introduced in M14-T05 for local TUS uploads and extended by M14-T07 for S3 multipart (see [s3-multipart.md](./s3-multipart.md)). It turns a completed upload into a durable, user-visible file and defines the one metadata transaction that every finalizer shares (the Received finalizer of M20-T06 reuses it too). It implements TRANSFER_ENGINE §3.9 to §3.10, DATABASE_SCHEMA §5.10 and §5.12, and STORAGE_DESIGN's local placement.
 
 | Artefact | Location |
 |---|---|
-| Module | `apps/server/src/features/transfers/finalize/{service,local,commit,repo,hooks}.rs` |
+| Module | `apps/server/src/features/transfers/finalize/{service,local,s3,commit,repo,hooks}.rs` (`local.rs` the TUS half, `s3.rs` the S3 half) |
 | Storage primitives | `StagingStorage::{measure, inspect, staged_matches, place}` (`apps/server/src/storage/staging.rs`, `storage/local/{inspect,finalize,staging}.rs`) |
 | Audit action | `FILE_UPLOADED` (`features/audit`), recorded inside the commit transaction |
 | Startup step | `transfers.finalize_redrive`, registered last in `ReconcileRegistry::production()` |
 | Flow tests | `apps/server/src/features/auth/flow_tests/finalize*.rs` |
 | Process tests | `apps/server/tests/it_finalize.rs`, `it_finalize_process.rs` (feature `e2e-fixture`) |
 
-No route, no job kind and no migration was added. There is no public finalize endpoint.
+No job kind and no migration was added. There is no public finalize endpoint: local finalization starts from the TUS request, S3 finalization from `POST …/s3/multipart/complete`, and both are recovered by the same re-drive.
 
 ## What starts a finalization
 
@@ -31,9 +31,11 @@ The closed job-kind set has no finalization kind, so no job is enqueued: the dur
 
 The detached task is only a latency optimization; losing it never loses an upload. The durable fact is `tus_uploads.upload_offset = upload_length` on an `in_progress` row of an `uploading` item, persisted (after `fdatasync`) before the request ends. Three recoveries read exactly that fact:
 
-1. **Startup**: `transfers.finalize_redrive` runs the paginated candidate query (`repo::redrive_page`, 100 rows, keyset on the item id) and finalizes each candidate through the normal claim. It selects `finalizing` items and `uploading` items whose bytes are complete, only for `upload_kind = 'tus'`, only while the TUS row is `created`/`in_progress`, the session is `created|uploading|finalizing|failed`, is not `cancel_requested` and has not passed its `expires_at` (an expired session belongs to the reaper). Partial uploads, uploads of unknown final length, terminated or expired TUS rows, canceled, failed, completed and S3 items never match; a checksummed `PATCH` persists its offset only after verification, so unverified bytes never make an upload complete.
+1. **Startup**: `transfers.finalize_redrive` runs the paginated candidate query (`repo::redrive_page`, 100 rows, keyset on the item id) and finalizes each candidate through the normal claim. It selects `finalizing` items and `uploading` items whose bytes are complete, only for `upload_kind = 'tus'`, only while the TUS row is `created`/`in_progress`, the session is `created|uploading|finalizing|failed`, is not `cancel_requested` and has not passed its `expires_at` (an expired session belongs to the reaper). Partial uploads, uploads of unknown final length, terminated or expired TUS rows, canceled, failed and completed items never match; a checksummed `PATCH` persists its offset only after verification, so unverified bytes never make an upload complete.
 2. **While running**: a periodic sweep (every 5 minutes, `FinalizeLimits::sweep_interval`, one pass at a time, started after startup reconciliation and stopped by the shutdown token) runs the same query when it counts a candidate. It exists for a live process whose detached task gave up after its bounded retries.
 3. **Explicit retry**: `POST …/retry` triggers the finalizer again.
+
+**S3 items** have their own candidate query (`repo::s3_redrive_page`/`s3_redrive_count`): `upload_kind IN ('s3_multipart','s3_single')`, item `finalizing`, session `created|uploading|finalizing|failed`, not `cancel_requested`, not past `expires_at`. An S3 item that is only `uploading` is never finalized by the server: the browser's `complete` call is the trigger, exactly because the server cannot know the parts are final (`ListParts` is the truth). The same startup step and the same sweep drive both sets, TUS first.
 
 Concurrent finalizers are safe because every path goes through the same claim (guarded item transition plus the TUS-row lease). `it_finalize_crash_before_detached_task_claim` proves the first recovery with a real process: the hook point `dispatched` parks the task before its claim, the process is `SIGKILL`ed, and the restart finalizes the upload exactly once. Removing the `uploading` branch of the query makes that test fail.
 
@@ -124,4 +126,24 @@ The cancel transaction and the commit transaction serialize on the write lock, s
 
 - A crash between the commit and the staging cleanup leaves an empty staging directory; the staging sweep reclaims it.
 - Expiry reapers, the periodic `tus.expire_stale` and the session reaper are implemented in M14-T06 ([transfer-reaper.md](./transfer-reaper.md)); they never expire an item that is `finalizing`, or `uploading` with every byte received, before its session's 7-day bound.
-- A permanent database fault during the commit leaves the item `finalizing` until the next start or retry; no periodic re-drive exists yet.
+- A permanent database fault during the commit leaves the item `finalizing` until the next sweep, start or retry.
+
+## S3 multipart (M14-T07)
+
+`finalize/s3.rs` implements the provider-specific half and calls the same `Committer` as the local path; only "measure the object", "read the MIME prefix" and "place the object" differ.
+
+| Step | Local | S3 multipart | S3 zero-byte |
+|---|---|---|---|
+| ownership | TUS-row lease | in-process active set + durable claim/intent transitions | same |
+| claim tx | `uploading → finalizing` | `uploading → finalizing` after a clean `ListParts` | `pending → finalizing` |
+| intent tx | `finalize_stage = placing` | `placing` and multipart `completing` in one statement pair | `placing` |
+| place | `rename` / EXDEV copy | `CompleteMultipartUpload` (strictly ascending manifest from `ListParts`) | server `PutObject` of an empty body |
+| measure | `fstat` | `HeadObject` | `HeadObject` |
+| MIME | ≤ 8 KiB file prefix | ≤ 8 KiB ranged `GetObject` | empty prefix, extension decides |
+| commit | shared | shared; also `s3_multipart_uploads → completed` and `final_etag` | shared |
+
+`check_size` in the commit takes the TUS length for local items and the declared size for S3 items; the measured size is always the proof's. A terminal rejection also moves the multipart row to `abandoned`; a rejection that happens before anything was placed additionally aborts the still-open provider upload at once (best effort; the abandoned-upload cleanup is the guarantee). `RejectCause::MultipartLost` (`MULTIPART_NOT_FOUND`) covers an upload the provider no longer knows without an object at the key.
+
+Crash windows: before the intent the item is `finalizing/none` or `uploading` and the multipart `in_progress` (nothing was placed); after the intent and before the provider answer the multipart is `completing` and the object may or may not exist; after the provider answer and before the commit the object exists and the item is `finalizing/placing` (the `before_commit` pause point); after the commit nothing is owed. The re-drive probes `HeadObject` of the recorded key first, so each window converges to exactly one file.
+
+Test seams: the existing hook points apply (`dispatched`, `claimed`, `intent_committed`, `before_place`, `after_place`, `measured`, `mime_resolved`, `before_commit`, `after_commit`); `PALMR_E2E_FINALIZE_PAUSE_AT=before_commit` pauses after the provider completed and before the metadata commit, which `it_s3_finalize_process.rs` uses to `SIGKILL` a real `palmr` against a real MinIO.

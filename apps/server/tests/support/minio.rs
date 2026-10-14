@@ -80,6 +80,41 @@ impl MinioServer {
         Ok(bucket)
     }
 
+    #[allow(
+        dead_code,
+        reason = "only the process tests read objects through the container"
+    )]
+    pub async fn read_object(&self, bucket: &str, key: &str) -> Result<Vec<u8>> {
+        let target = format!("palmr/{bucket}/{key}");
+        let mut result = self
+            .container
+            .exec(
+                ExecCommand::new(["mc", "--quiet", "cat", target.as_str()])
+                    .with_cmd_ready_condition(CmdWaitFor::exit()),
+            )
+            .await?;
+        match result.exit_code().await? {
+            Some(0) => Ok(result.stdout_to_vec().await?),
+            code => {
+                let stderr = result.stderr_to_vec().await.unwrap_or_default();
+                bail!(
+                    "mc cat exited with {code:?}: {}",
+                    String::from_utf8_lossy(&stderr).trim()
+                )
+            }
+        }
+    }
+
+    #[allow(
+        dead_code,
+        reason = "only the process tests probe objects through the container"
+    )]
+    pub async fn object_exists(&self, bucket: &str, key: &str) -> bool {
+        self.mc(&["stat", &format!("palmr/{bucket}/{key}")])
+            .await
+            .is_ok()
+    }
+
     async fn mc(&self, args: &[&str]) -> Result<()> {
         let mut command = vec!["mc", "--quiet"];
         command.extend_from_slice(args);

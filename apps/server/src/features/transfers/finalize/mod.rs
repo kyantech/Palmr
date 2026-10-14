@@ -1,17 +1,17 @@
 mod commit;
 mod hooks;
 mod local;
-mod repo;
+pub(in crate::features::transfers) mod repo;
+mod s3;
 mod service;
 
+pub(in crate::features::transfers) use commit::destination_of;
 pub use hooks::FinalizeHooks;
 #[cfg(feature = "e2e-fixture")]
 pub use hooks::PauseHook;
 #[cfg(test)]
 pub use hooks::{Flow, Point};
-#[cfg(test)]
-pub use service::FinalizeOutcome;
-pub use service::{FinalizeLimits, Finalizer, FinalizerParts};
+pub use service::{FinalizeError, FinalizeLimits, FinalizeOutcome, Finalizer, FinalizerParts};
 
 use crate::domain::clock::Clock;
 use crate::domain::time::Timestamp;
@@ -27,7 +27,9 @@ pub async fn pending_redrive(pools: &DbPools, clock: &dyn Clock) -> Result<u64, 
         .acquire()
         .await
         .map_err(DbError::from)?;
-    repo::redrive_count(&mut connection, now).await
+    let local = repo::redrive_count(&mut connection, now).await?;
+    let s3 = repo::s3_redrive_count(&mut connection, now).await?;
+    Ok(local.saturating_add(s3))
 }
 
 #[cfg(test)]
@@ -37,11 +39,12 @@ mod tests {
     use crate::domain::error_code::ErrorCode;
     use crate::storage::lifecycle::DeletionReason;
 
-    const SOURCES: [(&str, &str); 6] = [
+    const SOURCES: [(&str, &str); 7] = [
         ("commit.rs", include_str!("commit.rs")),
         ("hooks.rs", include_str!("hooks.rs")),
         ("local.rs", include_str!("local.rs")),
         ("repo.rs", include_str!("repo.rs")),
+        ("s3.rs", include_str!("s3.rs")),
         ("service.rs", include_str!("service.rs")),
         ("mod.rs", include_str!("mod.rs")),
     ];

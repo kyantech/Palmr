@@ -1348,6 +1348,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/transfers/sessions/{sid}/files/{itemId}/s3/multipart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["create_multipart"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transfers/sessions/{sid}/files/{itemId}/s3/multipart/abort": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["abort_multipart"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transfers/sessions/{sid}/files/{itemId}/s3/multipart/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["complete_multipart"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transfers/sessions/{sid}/files/{itemId}/s3/multipart/parts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_parts"];
+        put?: never;
+        post: operations["report_parts"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transfers/sessions/{sid}/files/{itemId}/s3/multipart/presign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["presign_parts"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/uploads/tus": {
         parameters: {
             query?: never;
@@ -1763,6 +1843,20 @@ export interface components {
             /** @example preferred_username */
             username?: string | null;
         };
+        CompleteResponse: {
+            contentType: string;
+            fileId: string;
+            sizeBytes: components["schemas"]["ByteCount"];
+            state: components["schemas"]["CompletedState"];
+        };
+        CompletedPartView: {
+            etag: string;
+            /** Format: int32 */
+            partNumber: number;
+            sizeBytes: components["schemas"]["ByteCount"];
+        };
+        /** @enum {string} */
+        CompletedState: "completed";
         CreateFolderRequest: {
             description?: string | null;
             /** @example 2026 */
@@ -1805,6 +1899,20 @@ export interface components {
              * @example https://palmr.example.com/invite/9f3c…
              */
             inviteUrl: string;
+        };
+        CreateMultipartResponse: {
+            /** @description `true` when the storage profile requires checksum headers that a browser cannot produce. Parts then go through the server-proxied path and part URLs are not issued. */
+            checksumHeadersRequired: boolean;
+            /** Format: int32 */
+            maxPresignBatch: number;
+            /** @description The Palmr handle of the multipart upload. It is not the provider's upload id and addresses nothing by itself: every route is addressed by session and item. */
+            multipartId: string;
+            /** Format: int32 */
+            partCount: number;
+            /** @description The size of every part except the last. */
+            partSizeBytes: components["schemas"]["ByteCount"];
+            /** Format: int32 */
+            presignTtlSeconds: number;
         };
         CreateProviderRequest: {
             /** @description Defaults to `true` for `oidc` and `false` for `oauth2`. */
@@ -1902,7 +2010,7 @@ export interface components {
             folders: number;
             totalBytes: components["schemas"]["ByteCount"];
         };
-        DetailValue: boolean | number | string | string[] | components["schemas"]["CheckDetail"][] | components["schemas"]["BlockerDetail"][] | components["schemas"]["ItemFailureDetail"][];
+        DetailValue: boolean | number | number[] | string | string[] | components["schemas"]["CheckDetail"][] | components["schemas"]["BlockerDetail"][] | components["schemas"]["ItemFailureDetail"][];
         DiscoverRequest: {
             /** @example https://sso.example.com/application/o/palmr/ */
             issuerUrl: string;
@@ -2013,7 +2121,7 @@ export interface components {
             leafFolderId: string;
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "BATCH_DELETE_FAILED" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "FILE_NAME_CONFLICT" | "FOLDER_NOT_FOUND" | "FOLDER_DEPTH_EXCEEDED" | "FOLDER_CYCLE" | "FOLDER_DELETING" | "NAME_INVALID" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "QUOTA_EXCEEDED" | "STORAGE_FULL" | "FILE_TOO_LARGE" | "TRANSFER_SESSION_NOT_FOUND" | "TRANSFER_SESSION_STATE_INVALID" | "TRANSFER_SESSION_EXPIRED" | "TUS_VERSION_UNSUPPORTED" | "TUS_EXTENSION_UNSUPPORTED" | "UPLOAD_METADATA_INVALID" | "UPLOAD_SESSION_EXPIRED" | "UPLOAD_LENGTH_MISMATCH" | "UPLOAD_OFFSET_MISMATCH" | "UPLOAD_LOCKED" | "UPLOAD_CHECKSUM_MISMATCH" | "TRANSFER_BACKPRESSURE" | "STORAGE_WRITE_FAILED" | "TRANSFER_IDLE_TIMEOUT" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN" | "SMTP_TEST_FAILED" | "PROVIDER_NOT_FOUND" | "PROVIDER_DISABLED" | "PROVIDER_SLUG_TAKEN" | "PROVIDER_DISCOVERY_FAILED" | "PROVIDER_VALIDATION_FAILED" | "PROVIDER_HAS_LINKS" | "PROVIDER_ID_TOKEN_INVALID" | "PROVIDER_USERINFO_FAILED" | "PROVIDER_SUBJECT_MISSING" | "PROVIDER_STATE_INVALID" | "PROVIDER_AUTH_DENIED" | "PROVIDER_CODE_EXCHANGE_FAILED" | "PROVIDER_EMAIL_UNVERIFIED" | "PROVIDER_AUTO_PROVISION_DISABLED" | "PROVIDER_IDENTITY_ALREADY_LINKED" | "PROVIDER_LINK_NOT_FOUND" | "IDENTITY_LINK_LAST_LOGIN_PATH" | "PASSWORD_LOGIN_DISABLE_UNSAFE" | "NO_VALIDATED_PROVIDER" | "AUTH_ACCOUNT_INACTIVE" | "AUTH_EXTERNAL_AMBIGUOUS_IDENTITY" | "AUTH_EXTERNAL_USERNAME_UNAVAILABLE";
+        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "BATCH_DELETE_FAILED" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "FILE_NAME_CONFLICT" | "FOLDER_NOT_FOUND" | "FOLDER_DEPTH_EXCEEDED" | "FOLDER_CYCLE" | "FOLDER_DELETING" | "NAME_INVALID" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "QUOTA_EXCEEDED" | "STORAGE_FULL" | "FILE_TOO_LARGE" | "TRANSFER_SESSION_NOT_FOUND" | "TRANSFER_SESSION_STATE_INVALID" | "TRANSFER_SESSION_EXPIRED" | "TUS_VERSION_UNSUPPORTED" | "TUS_EXTENSION_UNSUPPORTED" | "UPLOAD_METADATA_INVALID" | "UPLOAD_SESSION_EXPIRED" | "UPLOAD_LENGTH_MISMATCH" | "UPLOAD_OFFSET_MISMATCH" | "UPLOAD_LOCKED" | "UPLOAD_CHECKSUM_MISMATCH" | "TRANSFER_BACKPRESSURE" | "MULTIPART_NOT_FOUND" | "MULTIPART_ALREADY_CREATED" | "MULTIPART_ALREADY_COMPLETED" | "MULTIPART_INCOMPLETE" | "MULTIPART_PART_INVALID" | "PRESIGN_BATCH_TOO_LARGE" | "STORAGE_UPSTREAM_ERROR" | "STORAGE_WRITE_FAILED" | "TRANSFER_IDLE_TIMEOUT" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_SIZE_MISMATCH" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN" | "SMTP_TEST_FAILED" | "PROVIDER_NOT_FOUND" | "PROVIDER_DISABLED" | "PROVIDER_SLUG_TAKEN" | "PROVIDER_DISCOVERY_FAILED" | "PROVIDER_VALIDATION_FAILED" | "PROVIDER_HAS_LINKS" | "PROVIDER_ID_TOKEN_INVALID" | "PROVIDER_USERINFO_FAILED" | "PROVIDER_SUBJECT_MISSING" | "PROVIDER_STATE_INVALID" | "PROVIDER_AUTH_DENIED" | "PROVIDER_CODE_EXCHANGE_FAILED" | "PROVIDER_EMAIL_UNVERIFIED" | "PROVIDER_AUTO_PROVISION_DISABLED" | "PROVIDER_IDENTITY_ALREADY_LINKED" | "PROVIDER_LINK_NOT_FOUND" | "IDENTITY_LINK_LAST_LOGIN_PATH" | "PASSWORD_LOGIN_DISABLE_UNSAFE" | "NO_VALIDATED_PROVIDER" | "AUTH_ACCOUNT_INACTIVE" | "AUTH_EXTERNAL_AMBIGUOUS_IDENTITY" | "AUTH_EXTERNAL_USERNAME_UNAVAILABLE";
         ExternalReauthResponse: {
             accepted: boolean;
             /**
@@ -2564,6 +2672,17 @@ export interface components {
              */
             totalCount: number | null;
         };
+        PartsResponse: {
+            /** @description The parts the storage provider holds, with the sizes it reports. */
+            completedParts: components["schemas"]["CompletedPartView"][];
+            /** @description The parts of the plan the provider does not hold, ascending. Only these are signed and uploaded again. */
+            missingPartNumbers: number[];
+            /** Format: int32 */
+            partCount: number;
+            partSizeBytes: components["schemas"]["ByteCount"];
+            /** @description The sum of the provider-reported sizes of the held parts. */
+            uploadedBytes: components["schemas"]["ByteCount"];
+        };
         PasswordChangeRequest: {
             /**
              * Format: password
@@ -2616,6 +2735,30 @@ export interface components {
             protocol: components["schemas"]["Protocol"];
             scopes: string[];
             tokenAuthMethod: components["schemas"]["TokenAuthMethod"];
+        };
+        PresignRequest: {
+            /**
+             * @description One to 16 part numbers in `1..=partCount`, without repeats.
+             * @example [
+             *       1,
+             *       2,
+             *       3
+             *     ]
+             */
+            partNumbers: number[];
+        };
+        PresignResponse: {
+            expiresAt: string;
+            parts: components["schemas"]["PresignedPart"][];
+            /** Format: int32 */
+            ttlSeconds: number;
+        };
+        PresignedPart: {
+            expiresAt: string;
+            /** Format: int32 */
+            partNumber: number;
+            /** @description A presigned `PUT` for exactly this part. It signs no header besides `host`: send the part bytes and nothing else. Never store it. */
+            url: string;
         };
         ProfileRequest: {
             /** @example Ada */
@@ -2736,6 +2879,27 @@ export interface components {
             password?: string | null;
             /** @example 492013 */
             totpCode?: string | null;
+        };
+        ReportPartsRequest: {
+            /** @description One to 1 000 parts the storage provider acknowledged. A hint only: reconciliation against the provider decides what exists. */
+            parts: components["schemas"]["ReportedPart"][];
+        };
+        ReportedPart: {
+            /**
+             * @description The `ETag` response header of the part upload, verbatim, quotes included.
+             * @example "9b2cf535f27731c974343645a3985328"
+             */
+            etag: string;
+            /**
+             * Format: int64
+             * @example 1
+             */
+            partNumber: number;
+            /**
+             * Format: int64
+             * @example 8388608
+             */
+            sizeBytes: number;
         };
         ResetCheckRequest: {
             /** @description The opaque token from the e-mailed `/reset-password/{token}` link. */
@@ -10574,6 +10738,666 @@ export interface operations {
             };
             /** @description Rate limited. */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    create_multipart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Transfer session UUIDv7 */
+                sid: string;
+                /** @description Transfer item UUIDv7 */
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The multipart upload now exists at the storage provider. The part plan was computed from the declared size before any byte moved; `multipartId` is Palmr's handle, never the provider's upload id. No bucket, object key or provider upload id is ever returned. `checksumHeadersRequired` is `true` only when the storage profile demands checksum headers a browser cannot produce: parts then use the server-proxied path and no part URL is issued. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateMultipartResponse"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed, the session is restricted, or the account is deactivated (`AUTH_ACCOUNT_INACTIVE`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_SESSION_NOT_FOUND` for an unknown session or item, including another user's; `FOLDER_NOT_FOUND` when the target folder is gone. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `MULTIPART_ALREADY_CREATED` when the item already has a multipart upload (read it with `GET …/parts`), or `TRANSFER_SESSION_STATE_INVALID` when the item does not use S3 multipart, is not startable or its session is terminal; `FOLDER_DELETING` when the target is being deleted. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_SESSION_EXPIRED`: the session passed its expiry. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FILE_TOO_LARGE`: the declared size no longer fits the effective maximum file size or the storage provider. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `MULTIPART_PART_INVALID` with `details.reason`: the size is unknown, which needs the server-mediated upload path. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `STORAGE_UPSTREAM_ERROR`: the storage provider rejected the request. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `STORAGE_UNAVAILABLE`: the storage backend is unreachable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    abort_multipart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Transfer session UUIDv7 */
+                sid: string;
+                /** @description Transfer item UUIDv7 */
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The item is canceled, its share of the quota reservation is released and the provider upload is aborted. A provider that no longer knows the upload counts as aborted. Aborting twice is also `204`. A committed file is never touched. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed, or the session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `MULTIPART_NOT_FOUND`, including another user's upload. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `MULTIPART_ALREADY_COMPLETED`: the item was committed first and stays a file; `TRANSFER_SESSION_STATE_INVALID`. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `STORAGE_UPSTREAM_ERROR`: the cancellation is recorded and the abort is retried by the abandoned-upload cleanup; call again to retry at once. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `STORAGE_UNAVAILABLE`: as `502`. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    complete_multipart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Transfer session UUIDv7 */
+                sid: string;
+                /** @description Transfer item UUIDv7 */
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The item is committed as a file. The body carries no manifest: Palmr rebuilds it from the provider's `ListParts`, completes the upload in strictly ascending part order, measures the object with `HeadObject` and commits exactly once. A zero-byte item is written by the server with an empty `PutObject` and completed here too. Completing a completed item returns the original file again. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompleteResponse"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed, the session is restricted, or the account is deactivated. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `MULTIPART_NOT_FOUND`, including another user's upload; `FOLDER_NOT_FOUND` when the target folder is gone. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `MULTIPART_INCOMPLETE` with `details.missingPartNumbers`; `TRANSFER_SESSION_STATE_INVALID` for a canceled item or session; `FOLDER_DELETING`. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_SESSION_EXPIRED`. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FILE_TOO_LARGE`: the object exceeds the effective maximum file size. The object is tombstoned. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `MULTIPART_PART_INVALID`: a part has the wrong size or the provider refused one; `UPLOAD_LENGTH_MISMATCH`: the measured object size differs from the declared size and the object is tombstoned. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `STORAGE_UPSTREAM_ERROR`. Completion is durable and resumes: ask again or let the server re-drive it. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `STORAGE_UNAVAILABLE`, or `TRANSFER_BACKPRESSURE` while another request is still completing this item. Retry. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `QUOTA_EXCEEDED`: the measured size passes the quota. The object is tombstoned and nothing is charged. */
+            507: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    list_parts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Transfer session UUIDv7 */
+                sid: string;
+                /** @description Transfer item UUIDv7 */
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The storage provider's authoritative view of the upload, read from `ListParts` across every page and written back to Palmr's cache. `uploadedBytes` is the sum of the provider-reported part sizes. Only `missingPartNumbers` need to be signed and uploaded again; a held part of the wrong size is listed in `completedParts` with its real size. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartsResponse"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `MULTIPART_NOT_FOUND`, including another user's upload and an upload the provider no longer holds. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `MULTIPART_ALREADY_COMPLETED`, or `TRANSFER_SESSION_STATE_INVALID`. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_SESSION_EXPIRED`. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `STORAGE_UPSTREAM_ERROR`. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `STORAGE_UNAVAILABLE`. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    report_parts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Transfer session UUIDv7 */
+                sid: string;
+                /** @description Transfer item UUIDv7 */
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        /** @description Parts the storage provider acknowledged, with each `ETag` verbatim. These are hints that let progress survive a reload: the provider's `ListParts` decides which parts exist, and a reported part the provider does not hold is discarded when the upload is reconciled. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportPartsRequest"];
+            };
+        };
+        responses: {
+            /** @description The hints are recorded. Repeating a report is safe. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed, or the session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `MULTIPART_NOT_FOUND`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `MULTIPART_ALREADY_COMPLETED`, or `TRANSFER_SESSION_STATE_INVALID`. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_SESSION_EXPIRED`. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `MULTIPART_PART_INVALID` for a part outside the plan, with an unusable `ETag` or of the wrong size; `VALIDATION_ERROR` for an empty or malformed body. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    presign_parts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Transfer session UUIDv7 */
+                sid: string;
+                /** @description Transfer item UUIDv7 */
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        /** @description One to 16 distinct part numbers in `1..=partCount`. Ask again at any time for any part that is not uploaded yet: signing is local, unmetered and never cached on the server. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PresignRequest"];
+            };
+        };
+        responses: {
+            /** @description A presigned `PUT` URL for each requested part, valid for 15 minutes and signed against the public storage endpoint. The URL signs only `host`: send the part bytes and no other header. Read the part's `ETag` from the response and report it. Never store a URL. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PresignResponse"];
+                };
+            };
+            /** @description The body is not parseable JSON. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed, or the session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `MULTIPART_NOT_FOUND`: unknown, aborted or another user's upload. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `MULTIPART_ALREADY_COMPLETED`, or `TRANSFER_SESSION_STATE_INVALID` while the upload is being completed or its session is terminal. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_SESSION_EXPIRED`. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not JSON. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PRESIGN_BATCH_TOO_LARGE` for more than 16 part numbers; `MULTIPART_PART_INVALID` for a number outside `1..=partCount`, a repeated or malformed number, or when the storage profile needs the server-proxied part path; `VALIDATION_ERROR` for an empty or malformed body. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `STORAGE_UPSTREAM_ERROR`. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `STORAGE_UNAVAILABLE`. */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

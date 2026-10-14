@@ -43,7 +43,7 @@ enum Located {
     Conflict,
 }
 
-enum Preflight {
+pub(super) enum Preflight {
     Proceed,
     Reject(RejectCause),
     Superseded,
@@ -162,7 +162,7 @@ impl Finalizer {
         }
     }
 
-    async fn busy(
+    pub(super) async fn busy(
         &self,
         item: SessionItemId,
         wait: bool,
@@ -207,7 +207,10 @@ impl Finalizer {
         }
     }
 
-    async fn read_context(&self, item: SessionItemId) -> Result<ItemContext, FinalizeError> {
+    pub(super) async fn read_context(
+        &self,
+        item: SessionItemId,
+    ) -> Result<ItemContext, FinalizeError> {
         let mut connection = self
             .inner
             .pools
@@ -309,7 +312,7 @@ impl Finalizer {
         Ok(claim)
     }
 
-    async fn reached(&self, point: Point) -> Result<(), FinalizeError> {
+    pub(super) async fn reached(&self, point: Point) -> Result<(), FinalizeError> {
         match self.inner.hooks.reached(point).await {
             Flow::Continue => Ok(()),
             Flow::Crash => Err(FinalizeError::Interrupted),
@@ -466,6 +469,7 @@ impl Finalizer {
             size,
             mime,
             checksum: None,
+            final_etag: None,
         };
         self.reached(Point::BeforeCommit).await?;
         let client = request_id.map_or_else(ClientMetadata::none, ClientMetadata::request_only);
@@ -540,7 +544,7 @@ impl Finalizer {
             .then_some(RejectCause::FileTooLarge)
     }
 
-    async fn preflight(
+    pub(super) async fn preflight(
         &self,
         ctx: &ItemContext,
         owner: UserId,
@@ -576,7 +580,10 @@ impl Finalizer {
         }
     }
 
-    async fn preflight_cancel(&self, ctx: &ItemContext) -> Result<Preflight, FinalizeError> {
+    pub(super) async fn preflight_cancel(
+        &self,
+        ctx: &ItemContext,
+    ) -> Result<Preflight, FinalizeError> {
         let fresh = self.read_context(ctx.item).await?;
         if matches!(fresh.item_state, ItemState::Finalizing)
             && !fresh.cancel_requested
@@ -627,7 +634,7 @@ impl Finalizer {
         Ok(matches!(fresh.item_state, ItemState::Finalizing) && !fresh.cancel_requested)
     }
 
-    async fn settled_elsewhere(
+    pub(super) async fn settled_elsewhere(
         &self,
         item: SessionItemId,
     ) -> Result<FinalizeOutcome, FinalizeError> {
@@ -652,7 +659,7 @@ impl Finalizer {
         }
     }
 
-    fn target(
+    pub(super) fn target(
         &self,
         ctx: &ItemContext,
         measured: Option<u64>,

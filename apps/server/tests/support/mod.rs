@@ -1,5 +1,6 @@
 mod application;
 pub mod client;
+pub mod minio;
 pub mod mock_idp;
 mod process;
 mod rng;

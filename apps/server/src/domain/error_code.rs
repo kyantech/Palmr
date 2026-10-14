@@ -218,6 +218,20 @@ error_catalog! {
         "The uploaded chunk failed checksum verification";
     TransferBackpressure = "TRANSFER_BACKPRESSURE", SERVICE_UNAVAILABLE, retryable: true,
         "The server is handling the maximum number of concurrent transfers";
+    MultipartNotFound = "MULTIPART_NOT_FOUND", NOT_FOUND, retryable: false,
+        "The multipart upload was not found";
+    MultipartAlreadyCreated = "MULTIPART_ALREADY_CREATED", CONFLICT, retryable: false,
+        "A multipart upload already exists for this item";
+    MultipartAlreadyCompleted = "MULTIPART_ALREADY_COMPLETED", CONFLICT, retryable: false,
+        "The multipart upload is already complete";
+    MultipartIncomplete = "MULTIPART_INCOMPLETE", CONFLICT, retryable: false,
+        "The multipart upload is missing parts";
+    MultipartPartInvalid = "MULTIPART_PART_INVALID", UNPROCESSABLE_ENTITY, retryable: false,
+        "A multipart part number or part size is not valid";
+    PresignBatchTooLarge = "PRESIGN_BATCH_TOO_LARGE", UNPROCESSABLE_ENTITY, retryable: false,
+        "More part URLs were requested than one batch allows";
+    StorageUpstreamError = "STORAGE_UPSTREAM_ERROR", BAD_GATEWAY, retryable: true,
+        "The storage provider rejected the request";
     StorageWriteFailed = "STORAGE_WRITE_FAILED", INSUFFICIENT_STORAGE, retryable: true,
         "A write to storage failed";
     TransferIdleTimeout = "TRANSFER_IDLE_TIMEOUT", REQUEST_TIMEOUT, retryable: true,
@@ -393,6 +407,7 @@ mod tests {
                 "SERVICE_UNAVAILABLE",
                 "STORAGE_FULL",
                 "STORAGE_UNAVAILABLE",
+                "STORAGE_UPSTREAM_ERROR",
                 "STORAGE_WRITE_FAILED",
                 "TRANSFER_BACKPRESSURE",
                 "TRANSFER_IDLE_TIMEOUT",

@@ -1,6 +1,6 @@
 # Transfer sessions (control plane)
 
-Introduced in M14-T02. It implements the authenticated My Files control plane of TRANSFER_ENGINE §2, §6 and §7 and API_DESIGN §2.15: sessions, admission, the durable state machine, cancel, close and retry. It moves no bytes. TUS (see `tus.md` for the protocol surface), the local finalization engine (M14-T05, see `finalization.md`) and S3 multipart (M14-T07) attach to it.
+Introduced in M14-T02. It implements the authenticated My Files control plane of TRANSFER_ENGINE §2, §6 and §7 and API_DESIGN §2.15: sessions, admission, the durable state machine, cancel, close and retry. It moves no bytes. TUS (see `tus.md` for the protocol surface), the local finalization engine (M14-T05, see `finalization.md`) and S3 multipart (M14-T07, see `s3-multipart.md`) attach to it.
 
 | Artefact | Location |
 |---|---|

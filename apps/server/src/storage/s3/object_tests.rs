@@ -23,7 +23,7 @@ use crate::storage::key::{KeyNamespace, ObjectKey};
 use crate::storage::provider::{ListCursor, ObjectBody, MAX_LIST_PAGE_SIZE};
 
 #[path = "../../../tests/support/minio.rs"]
-pub(super) mod minio;
+pub(crate) mod minio;
 
 use minio::MinioServer;
 

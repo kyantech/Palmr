@@ -68,7 +68,8 @@ use crate::features::transfers::finalize::{
 };
 use crate::features::transfers::reaper::{self as transfer_reaper, ReaperContext};
 use crate::features::transfers::{
-    TransferService, TransferStorage, TusLimits, TusService, TusServiceParts,
+    S3Service, S3ServiceParts, TransferService, TransferStorage, TusLimits, TusService,
+    TusServiceParts,
 };
 use crate::features::users::{AdminUserService, EmailChangeService, ProfileService};
 use crate::infra::crypto::hkdf::KeyRing;
@@ -893,6 +894,14 @@ async fn initialize(
         .await;
     log_reconciliation(&report);
     finalizer.spawn_sweeper(FinalizeLimits::production().sweep_interval);
+    let s3 = S3Service::new(S3ServiceParts {
+        pools: database.pools().clone(),
+        clock: Arc::clone(&clock),
+        settings: settings.clone(),
+        storage: transfer_storage.clone(),
+        transfers: transfers.clone(),
+        finalizer: finalizer.clone(),
+    });
     let tus = TusService::new(TusServiceParts {
         pools: database.pools().clone(),
         clock: Arc::clone(&clock),
@@ -970,6 +979,7 @@ async fn initialize(
         folders,
         files,
         transfers,
+        s3,
         tus,
         identity_providers,
         external_login,
@@ -1273,6 +1283,7 @@ struct RequestServices {
     folders: FolderService,
     files: FileService,
     transfers: TransferService,
+    s3: S3Service,
     tus: TusService,
     identity_providers: IdentityProviderService,
     external_login: ExternalLoginService,
@@ -1316,6 +1327,7 @@ fn composed_router(
             .layer(axum::Extension(services.folders))
             .layer(axum::Extension(services.files))
             .layer(axum::Extension(services.transfers))
+            .layer(axum::Extension(services.s3))
             .layer(axum::Extension(services.tus))
             .layer(axum::Extension(services.identity_providers))
             .layer(axum::Extension(services.external_login))

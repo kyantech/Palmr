@@ -21,6 +21,7 @@ use super::super::model::SessionItemId;
 use super::commit::Committer;
 use super::hooks::{FinalizeHooks, NoHooks};
 use super::repo;
+use super::s3::S3Origin;
 
 const REDRIVE_PAGE_SIZE: u32 = 100;
 
@@ -123,6 +124,12 @@ impl From<crate::domain::time::InvalidTimestamp> for FinalizeError {
     fn from(error: crate::domain::time::InvalidTimestamp) -> Self {
         Self::Transfer(error.into())
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Redrive {
+    Local,
+    S3,
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -237,6 +244,27 @@ impl Finalizer {
         self.run_local(item, request_id, true).await
     }
 
+    pub async fn complete_s3(
+        &self,
+        item: SessionItemId,
+        request_id: Option<String>,
+    ) -> Result<FinalizeOutcome, FinalizeError> {
+        let (sender, receiver) = tokio::sync::oneshot::channel();
+        let this = self.clone();
+        self.spawn(async move {
+            let Ok(_permit) = this.inner.permits.acquire().await else {
+                return;
+            };
+            let outcome = this
+                .run_s3(item, request_id.as_deref(), S3Origin::Complete)
+                .await;
+            if sender.send(outcome).is_err() {
+                tracing::debug!("the caller of an S3 completion went away; the work finished");
+            }
+        });
+        receiver.await.map_err(|_| FinalizeError::Interrupted)?
+    }
+
     pub fn trigger(&self, item: SessionItemId, request_id: Option<String>) {
         let this = self.clone();
         self.spawn(async move { this.drive(item, request_id).await });
@@ -287,52 +315,75 @@ impl Finalizer {
 
     pub async fn redrive(&self) -> Result<RedriveReport, TransferError> {
         let mut report = RedriveReport::default();
-        let mut after: Option<String> = None;
-        loop {
-            let page = {
-                let mut connection = self
-                    .inner
-                    .pools
-                    .reader()
-                    .executor()
-                    .acquire()
-                    .await
-                    .map_err(DbError::from)?;
-                repo::redrive_page(
-                    &mut connection,
-                    after.as_deref(),
-                    REDRIVE_PAGE_SIZE,
-                    Timestamp::try_from(self.inner.clock.now())?,
-                )
-                .await?
-            };
-            let Some(last) = page.last().copied() else {
-                return Ok(report);
-            };
-            for item in &page {
-                if self.inner.stop.is_cancelled() {
-                    return Ok(report);
-                }
-                report.visited += 1;
-                match self.run_local(*item, None, false).await {
-                    Ok(FinalizeOutcome::Committed { .. }) => report.committed += 1,
-                    Ok(FinalizeOutcome::Failed { .. }) => report.failed += 1,
-                    Ok(FinalizeOutcome::Superseded) => report.superseded += 1,
-                    Ok(FinalizeOutcome::NotReady | FinalizeOutcome::Busy) => report.skipped += 1,
-                    Err(error) => {
-                        report.errors += 1;
-                        tracing::warn!(
-                            kind = error.kind(),
-                            "an upload finalization could not be re-driven"
-                        );
+        for origin in [Redrive::Local, Redrive::S3] {
+            let mut after: Option<String> = None;
+            loop {
+                let page = {
+                    let mut connection = self
+                        .inner
+                        .pools
+                        .reader()
+                        .executor()
+                        .acquire()
+                        .await
+                        .map_err(DbError::from)?;
+                    let now = Timestamp::try_from(self.inner.clock.now())?;
+                    match origin {
+                        Redrive::Local => {
+                            repo::redrive_page(
+                                &mut connection,
+                                after.as_deref(),
+                                REDRIVE_PAGE_SIZE,
+                                now,
+                            )
+                            .await?
+                        }
+                        Redrive::S3 => {
+                            repo::s3_redrive_page(
+                                &mut connection,
+                                after.as_deref(),
+                                REDRIVE_PAGE_SIZE,
+                                now,
+                            )
+                            .await?
+                        }
+                    }
+                };
+                let Some(last) = page.last().copied() else {
+                    break;
+                };
+                for item in &page {
+                    if self.inner.stop.is_cancelled() {
+                        return Ok(report);
+                    }
+                    report.visited += 1;
+                    let outcome = match origin {
+                        Redrive::Local => self.run_local(*item, None, false).await,
+                        Redrive::S3 => self.run_s3(*item, None, S3Origin::Redrive).await,
+                    };
+                    match outcome {
+                        Ok(FinalizeOutcome::Committed { .. }) => report.committed += 1,
+                        Ok(FinalizeOutcome::Failed { .. }) => report.failed += 1,
+                        Ok(FinalizeOutcome::Superseded) => report.superseded += 1,
+                        Ok(FinalizeOutcome::NotReady | FinalizeOutcome::Busy) => {
+                            report.skipped += 1;
+                        }
+                        Err(error) => {
+                            report.errors += 1;
+                            tracing::warn!(
+                                kind = error.kind(),
+                                "an upload finalization could not be re-driven"
+                            );
+                        }
                     }
                 }
-            }
-            after = Some(last.to_string());
-            if page.len() < usize::try_from(REDRIVE_PAGE_SIZE).unwrap_or(usize::MAX) {
-                return Ok(report);
+                after = Some(last.to_string());
+                if page.len() < usize::try_from(REDRIVE_PAGE_SIZE).unwrap_or(usize::MAX) {
+                    break;
+                }
             }
         }
+        Ok(report)
     }
 
     pub async fn pending_redrive(&self) -> Result<u64, TransferError> {
@@ -344,11 +395,10 @@ impl Finalizer {
             .acquire()
             .await
             .map_err(DbError::from)?;
-        repo::redrive_count(
-            &mut connection,
-            Timestamp::try_from(self.inner.clock.now())?,
-        )
-        .await
+        let now = Timestamp::try_from(self.inner.clock.now())?;
+        let local = repo::redrive_count(&mut connection, now).await?;
+        let s3 = repo::s3_redrive_count(&mut connection, now).await?;
+        Ok(local.saturating_add(s3))
     }
 
     pub async fn start_redrive(&self) -> Result<u64, TransferError> {

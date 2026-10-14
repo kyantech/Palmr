@@ -339,6 +339,16 @@ impl Stack {
             None => transfers,
         };
         let transfer_storage_handle = transfer_storage.clone();
+        let s3 = finalizer.as_ref().map(|finalizer| {
+            crate::features::transfers::S3Service::new(crate::features::transfers::S3ServiceParts {
+                pools: pools.clone(),
+                clock: Arc::new(clock.clone()),
+                settings: settings.handle(),
+                storage: transfer_storage.clone(),
+                transfers: transfers.clone(),
+                finalizer: finalizer.clone(),
+            })
+        });
         let tus = crate::features::transfers::TusService::new(
             crate::features::transfers::TusServiceParts {
                 pools: pools.clone(),
@@ -447,6 +457,10 @@ impl Stack {
             SecurityHeaders::new(&config),
             CsrfGuard::new(&config.base_url),
         );
+        let router = match &s3 {
+            Some(s3) => router.layer(Extension(s3.clone())),
+            None => router,
+        };
         let service = BoxedService(tower::util::BoxCloneSyncService::new(with_middleware(
             router, &edge,
         )));
@@ -2003,6 +2017,8 @@ mod password_reset;
 mod profile;
 mod rate_limit;
 mod recent_auth;
+mod s3_multipart;
+mod s3_multipart_faults;
 mod totp;
 mod transfer_audit;
 mod transfer_cleanup;

@@ -12,11 +12,12 @@ use super::super::model::{SessionItemId, TransferProvider, TransferSessionId, Up
 use super::super::repo::{
     bytes, column, invariant, optional_bytes, optional_parsed, parsed, FinalizeStage,
 };
+use super::super::s3::model::{MultipartState, S3Ref};
 use super::super::state::{ItemState, TransferSessionState};
 use super::super::tus::repo::{TusState, TusUploadId};
 
 const LOAD_CONTEXT: &str = "SELECT t.id, t.transfer_session_id, t.state AS item_state,
-        t.finalize_stage, t.upload_kind, t.display_name, t.relative_path,
+        t.finalize_stage, t.upload_kind, t.client_file_key, t.display_name, t.relative_path,
         t.declared_size_bytes, t.reserved_bytes, t.final_object_id, t.final_object_key,
         t.resulting_file_id, t.error_code,
         ts.context, ts.user_id, ts.provider, ts.state AS session_state, ts.cancel_requested,
@@ -24,11 +25,15 @@ const LOAD_CONTEXT: &str = "SELECT t.id, t.transfer_session_id, t.state AS item_
         ts.completed_file_count, ts.completed_bytes,
         u.username AS owner_label,
         tu.id AS tus_id, tu.state AS tus_state, tu.upload_length, tu.upload_offset,
-        tu.metadata_json
+        tu.metadata_json,
+        s3.id AS s3_id, s3.s3_upload_id, s3.bucket AS s3_bucket, s3.object_key AS s3_object_key,
+        s3.total_size_bytes AS s3_total, s3.part_size_bytes AS s3_part_size,
+        s3.part_count AS s3_part_count, s3.state AS s3_state
       FROM transfer_session_files t
       JOIN transfer_sessions ts ON ts.id = t.transfer_session_id
       LEFT JOIN users u ON u.id = ts.user_id
       LEFT JOIN tus_uploads tu ON tu.transfer_session_file_id = t.id
+      LEFT JOIN s3_multipart_uploads s3 ON s3.transfer_session_file_id = t.id
      WHERE t.id = ?1";
 
 const ACQUIRE_FINALIZE_LEASE: &str = "UPDATE tus_uploads
@@ -57,6 +62,26 @@ const RECORD_INTENT: &str = "UPDATE transfer_session_files
       AND EXISTS (SELECT 1 FROM transfer_sessions ts
                    WHERE ts.id = transfer_session_files.transfer_session_id
                      AND ts.cancel_requested = 0)";
+
+const S3_REDRIVE_PAGE: &str = "SELECT t.id
+      FROM transfer_session_files t
+      JOIN transfer_sessions ts ON ts.id = t.transfer_session_id
+     WHERE t.upload_kind IN ('s3_multipart', 's3_single') AND t.id > ?1
+       AND t.state = 'finalizing'
+       AND ts.state IN ('created', 'uploading', 'finalizing', 'failed')
+       AND ts.cancel_requested = 0
+       AND ts.expires_at > ?3
+     ORDER BY t.id
+     LIMIT ?2";
+
+const S3_REDRIVE_COUNT: &str = "SELECT COUNT(*)
+      FROM transfer_session_files t
+      JOIN transfer_sessions ts ON ts.id = t.transfer_session_id
+     WHERE t.upload_kind IN ('s3_multipart', 's3_single')
+       AND t.state = 'finalizing'
+       AND ts.state IN ('created', 'uploading', 'finalizing', 'failed')
+       AND ts.cancel_requested = 0
+       AND ts.expires_at > ?1";
 
 const COUNT_STARTING: &str = "SELECT COUNT(*) FROM transfer_session_files
     WHERE transfer_session_id = ?1 AND id <> ?2 AND state IN ('pending', 'uploading')";
@@ -107,6 +132,7 @@ pub struct ItemContext {
     pub context: String,
     pub provider: TransferProvider,
     pub kind: UploadKind,
+    pub client_key: String,
     pub item_state: ItemState,
     pub stage: FinalizeStage,
     pub name: String,
@@ -124,6 +150,7 @@ pub struct ItemContext {
     pub completed_files: u32,
     pub completed_bytes: ByteSize,
     pub tus: Option<TusRef>,
+    pub s3: Option<S3Ref>,
 }
 
 impl ItemContext {
@@ -162,6 +189,24 @@ fn context_from(row: &SqliteRow) -> Result<ItemContext, TransferError> {
             })
         }
     };
+    let s3 = match optional_parsed(row, "s3_id")? {
+        None => None,
+        Some(id) => {
+            let state: String = column(row, "s3_state")?;
+            let part_size: i64 = column(row, "s3_part_size")?;
+            let part_count: i64 = column(row, "s3_part_count")?;
+            Some(S3Ref {
+                id,
+                upload_id: column(row, "s3_upload_id")?,
+                bucket: column(row, "s3_bucket")?,
+                object_key: column(row, "s3_object_key")?,
+                total: optional_bytes(row, "s3_total")?,
+                part_size: u64::try_from(part_size).map_err(|_| invariant("part_size"))?,
+                part_count: u32::try_from(part_count).map_err(|_| invariant("part_count"))?,
+                state: MultipartState::parse(&state).ok_or_else(|| invariant("s3_state"))?,
+            })
+        }
+    };
     Ok(ItemContext {
         item: parsed(row, "id")?,
         session: parsed(row, "transfer_session_id")?,
@@ -170,6 +215,7 @@ fn context_from(row: &SqliteRow) -> Result<ItemContext, TransferError> {
         context: column(row, "context")?,
         provider: TransferProvider::parse(&provider).ok_or_else(|| invariant("provider"))?,
         kind: UploadKind::parse(&kind).ok_or_else(|| invariant("upload_kind"))?,
+        client_key: column(row, "client_file_key")?,
         item_state: ItemState::parse(&item_state).ok_or_else(|| invariant("state"))?,
         stage: match stage.as_str() {
             "none" => FinalizeStage::None,
@@ -194,6 +240,7 @@ fn context_from(row: &SqliteRow) -> Result<ItemContext, TransferError> {
             .map_err(|_| invariant("completed_file_count"))?,
         completed_bytes: bytes(row, "completed_bytes")?,
         tus,
+        s3,
     })
 }
 
@@ -324,6 +371,34 @@ pub async fn redrive_count(
     now: Timestamp,
 ) -> Result<u64, TransferError> {
     let total: i64 = sqlx::query_scalar(REDRIVE_COUNT)
+        .bind(now.to_string())
+        .fetch_one(connection)
+        .await?;
+    u64::try_from(total).map_err(|_| invariant("count"))
+}
+
+pub async fn s3_redrive_page(
+    connection: &mut SqliteConnection,
+    after: Option<&str>,
+    limit: u32,
+    now: Timestamp,
+) -> Result<Vec<SessionItemId>, TransferError> {
+    let rows: Vec<String> = sqlx::query_scalar(S3_REDRIVE_PAGE)
+        .bind(after.unwrap_or_default())
+        .bind(i64::from(limit.clamp(1, 1_000)))
+        .bind(now.to_string())
+        .fetch_all(connection)
+        .await?;
+    rows.iter()
+        .map(|id| id.parse().map_err(|_| invariant("id")))
+        .collect()
+}
+
+pub async fn s3_redrive_count(
+    connection: &mut SqliteConnection,
+    now: Timestamp,
+) -> Result<u64, TransferError> {
+    let total: i64 = sqlx::query_scalar(S3_REDRIVE_COUNT)
         .bind(now.to_string())
         .fetch_one(connection)
         .await?;

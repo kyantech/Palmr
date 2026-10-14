@@ -9,6 +9,7 @@ use crate::features::quota::error::QuotaError;
 use crate::infra::db::DbError;
 use crate::infra::http::error::ApiError;
 use crate::infra::http::idempotency::IdempotencyError;
+use crate::storage::error::StorageError;
 use crate::storage::lifecycle::LifecycleError;
 
 use super::model::MAX_FILES_PER_SESSION;
@@ -54,6 +55,15 @@ pub enum TransferError {
     SessionNotFound,
     StateInvalid,
     Expired,
+    MultipartNotFound,
+    MultipartAlreadyCreated,
+    MultipartAlreadyCompleted,
+    MultipartIncomplete { missing: Vec<u32> },
+    MultipartPartInvalid { reason: &'static str },
+    PresignBatchTooLarge,
+    Recorded(ErrorCode),
+    CompletionBusy,
+    Storage(StorageError),
     Lifecycle(LifecycleError),
     Idempotency(IdempotencyError),
     Invariant { what: &'static str },
@@ -75,6 +85,15 @@ impl TransferError {
             Self::SessionNotFound => "transfer_session_not_found",
             Self::StateInvalid => "transfer_session_state_invalid",
             Self::Expired => "transfer_session_expired",
+            Self::MultipartNotFound => "multipart_not_found",
+            Self::MultipartAlreadyCreated => "multipart_already_created",
+            Self::MultipartAlreadyCompleted => "multipart_already_completed",
+            Self::MultipartIncomplete { .. } => "multipart_incomplete",
+            Self::MultipartPartInvalid { .. } => "multipart_part_invalid",
+            Self::PresignBatchTooLarge => "presign_batch_too_large",
+            Self::Recorded(_) => "transfer_item_failed",
+            Self::CompletionBusy => "transfer_completion_busy",
+            Self::Storage(error) => error.kind(),
             Self::Lifecycle(_) => "transfer_lifecycle_failed",
             Self::Idempotency(error) => error.kind(),
             Self::Invariant { .. } => "transfer_repository_invariant",
@@ -111,6 +130,25 @@ impl TransferError {
             Self::SessionNotFound => ApiError::new(ErrorCode::TransferSessionNotFound),
             Self::StateInvalid => ApiError::new(ErrorCode::TransferSessionStateInvalid),
             Self::Expired => ApiError::new(ErrorCode::TransferSessionExpired),
+            Self::MultipartNotFound => ApiError::new(ErrorCode::MultipartNotFound),
+            Self::MultipartAlreadyCreated => ApiError::new(ErrorCode::MultipartAlreadyCreated),
+            Self::MultipartAlreadyCompleted => ApiError::new(ErrorCode::MultipartAlreadyCompleted),
+            Self::MultipartIncomplete { missing } => ApiError::new(ErrorCode::MultipartIncomplete)
+                .with_detail(
+                    "missingPartNumbers",
+                    missing
+                        .iter()
+                        .map(|part| i64::from(*part))
+                        .collect::<Vec<i64>>(),
+                ),
+            Self::MultipartPartInvalid { reason } => {
+                ApiError::new(ErrorCode::MultipartPartInvalid).with_detail("reason", *reason)
+            }
+            Self::PresignBatchTooLarge => ApiError::new(ErrorCode::PresignBatchTooLarge)
+                .with_detail("maxItems", i64::from(super::model::MAX_PRESIGN_BATCH)),
+            Self::Recorded(code) => ApiError::new(*code),
+            Self::CompletionBusy => ApiError::new(ErrorCode::TransferBackpressure),
+            Self::Storage(error) => ApiError::new(upstream_code(error)),
             Self::Db(error) => ApiError::new(error.api_code()),
             Self::Idempotency(error) => ApiError::new(error.api_code()),
             Self::Lifecycle(_) | Self::Invariant { .. } | Self::Time(_) => ApiError::internal(),
@@ -141,6 +179,21 @@ impl fmt::Display for TransferError {
                 f.write_str("the transfer session cannot take this transition from its state")
             }
             Self::Expired => f.write_str("the transfer session has expired"),
+            Self::MultipartNotFound => f.write_str("the multipart upload does not exist"),
+            Self::MultipartAlreadyCreated => {
+                f.write_str("a multipart upload already exists for this item")
+            }
+            Self::MultipartAlreadyCompleted => f.write_str("the multipart upload is complete"),
+            Self::MultipartIncomplete { missing } => {
+                write!(f, "the multipart upload is missing {} parts", missing.len())
+            }
+            Self::MultipartPartInvalid { reason } => {
+                write!(f, "a multipart part is not valid ({reason})")
+            }
+            Self::PresignBatchTooLarge => f.write_str("too many part URLs were requested"),
+            Self::Recorded(code) => write!(f, "the transfer item failed ({})", code.as_str()),
+            Self::CompletionBusy => f.write_str("the transfer item is still being completed"),
+            Self::Storage(error) => write!(f, "the storage provider failed: {error}"),
             Self::Lifecycle(error) => write!(f, "transfer cleanup intent failed: {error}"),
             Self::Idempotency(error) => write!(f, "transfer replay record failed: {error}"),
             Self::Invariant { what } => {
@@ -153,6 +206,22 @@ impl fmt::Display for TransferError {
 }
 
 impl std::error::Error for TransferError {}
+
+pub fn upstream_code(error: &StorageError) -> ErrorCode {
+    match error {
+        StorageError::ProviderUnavailable(_) | StorageError::Io(_) => ErrorCode::StorageUnavailable,
+        StorageError::S3(_) | StorageError::PermissionDenied | StorageError::NotFound => {
+            ErrorCode::StorageUpstreamError
+        }
+        other => other.api_code(),
+    }
+}
+
+impl From<StorageError> for TransferError {
+    fn from(error: StorageError) -> Self {
+        Self::Storage(error)
+    }
+}
 
 impl From<DbError> for TransferError {
     fn from(error: DbError) -> Self {

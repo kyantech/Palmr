@@ -2714,6 +2714,33 @@ fn it_openapi_folder_routes_declare_typed_contracts() {
     );
 }
 
+const S3_MULTIPART_ROUTES: [(&str, Method); 6] = [
+    (
+        "/api/v1/transfers/sessions/{sid}/files/{itemId}/s3/multipart",
+        Method::POST,
+    ),
+    (
+        "/api/v1/transfers/sessions/{sid}/files/{itemId}/s3/multipart/presign",
+        Method::POST,
+    ),
+    (
+        "/api/v1/transfers/sessions/{sid}/files/{itemId}/s3/multipart/parts",
+        Method::POST,
+    ),
+    (
+        "/api/v1/transfers/sessions/{sid}/files/{itemId}/s3/multipart/parts",
+        Method::GET,
+    ),
+    (
+        "/api/v1/transfers/sessions/{sid}/files/{itemId}/s3/multipart/complete",
+        Method::POST,
+    ),
+    (
+        "/api/v1/transfers/sessions/{sid}/files/{itemId}/s3/multipart/abort",
+        Method::POST,
+    ),
+];
+
 const TRANSFER_SESSION_ROUTES: [(&str, Method, RateLimitClass, bool); 7] = [
     (
         "/api/v1/transfers/sessions",
@@ -2783,13 +2810,37 @@ fn unit_transfer_session_routes_are_declared_with_their_classes() {
             "{method} {path}"
         );
     }
+    for (path, method) in S3_MULTIPART_ROUTES {
+        let matching: Vec<_> = inventory
+            .entries()
+            .iter()
+            .filter(|entry| entry.path() == path && *entry.method() == method)
+            .collect();
+        assert_eq!(matching.len(), 1, "{method} {path}");
+        let policy = matching[0].policy();
+        assert_eq!(policy.auth(), AuthClass::Authenticated, "{method} {path}");
+        assert_eq!(
+            policy.rate_limit(),
+            RateLimitClass::TransferControl,
+            "{method} {path}"
+        );
+        assert_eq!(policy.transport(), Transport::ControlPlane);
+        assert_eq!(policy.idempotency(), IdempotencyMode::None);
+    }
     let transfer_routes = inventory
         .entries()
         .iter()
         .filter(|entry| entry.path().starts_with("/api/v1/transfers/"))
         .count();
-    assert_eq!(transfer_routes, TRANSFER_SESSION_ROUTES.len());
-    for forbidden in ["/api/v1/public/uploads/tus", "/s3/multipart"] {
+    assert_eq!(
+        transfer_routes,
+        TRANSFER_SESSION_ROUTES.len() + S3_MULTIPART_ROUTES.len()
+    );
+    for forbidden in [
+        "/api/v1/public/uploads/tus",
+        "/api/v1/public/reverse-shares",
+        "/api/v1/public/transfers",
+    ] {
         assert!(
             !inventory
                 .entries()

@@ -25,6 +25,7 @@ pub(crate) const JSON_CONTENT_TYPE: &str = "application/json; charset=utf-8";
 pub enum DetailValue {
     Bool(bool),
     Integer(i64),
+    IntegerList(Vec<i64>),
     #[schema(value_type = String)]
     Text(Cow<'static, str>),
     TextList(Vec<&'static str>),
@@ -65,6 +66,12 @@ impl From<bool> for DetailValue {
 impl From<i64> for DetailValue {
     fn from(value: i64) -> Self {
         Self::Integer(value)
+    }
+}
+
+impl From<Vec<i64>> for DetailValue {
+    fn from(value: Vec<i64>) -> Self {
+        Self::IntegerList(value)
     }
 }
 
@@ -576,6 +583,7 @@ mod tests {
             json!([
                 { "type": "boolean" },
                 { "type": "integer", "format": "int64" },
+                { "type": "array", "items": { "type": "integer", "format": "int64" } },
                 { "type": "string" },
                 { "type": "array", "items": { "type": "string" } },
                 { "type": "array", "items": { "$ref": "#/components/schemas/CheckDetail" } },

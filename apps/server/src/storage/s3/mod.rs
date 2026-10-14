@@ -330,7 +330,7 @@ fn sanitize_code(code: &str) -> String {
 mod tests;
 
 #[cfg(test)]
-mod object_tests;
+pub(crate) mod object_tests;
 
 #[cfg(test)]
 mod plan_tests;

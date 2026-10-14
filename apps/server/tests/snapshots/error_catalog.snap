@@ -223,6 +223,31 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "MULTIPART_ALREADY_COMPLETED",
+    "status": 409,
+    "retryable": false
+  },
+  {
+    "code": "MULTIPART_ALREADY_CREATED",
+    "status": 409,
+    "retryable": false
+  },
+  {
+    "code": "MULTIPART_INCOMPLETE",
+    "status": 409,
+    "retryable": false
+  },
+  {
+    "code": "MULTIPART_NOT_FOUND",
+    "status": 404,
+    "retryable": false
+  },
+  {
+    "code": "MULTIPART_PART_INVALID",
+    "status": 422,
+    "retryable": false
+  },
+  {
     "code": "NAME_INVALID",
     "status": 422,
     "retryable": false
@@ -254,6 +279,11 @@ source: apps/server/src/domain/error_code.rs
   },
   {
     "code": "PASSWORD_POLICY_VIOLATION",
+    "status": 422,
+    "retryable": false
+  },
+  {
+    "code": "PRESIGN_BATCH_TOO_LARGE",
     "status": 422,
     "retryable": false
   },
@@ -430,6 +460,11 @@ source: apps/server/src/domain/error_code.rs
   {
     "code": "STORAGE_UNAVAILABLE",
     "status": 503,
+    "retryable": true
+  },
+  {
+    "code": "STORAGE_UPSTREAM_ERROR",
+    "status": 502,
     "retryable": true
   },
   {

@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::Duration;
 
 use crate::config::StorageConfig;
 use crate::domain::bytes::ByteSize;
@@ -6,9 +7,9 @@ use crate::features::folders::MAX_FOLDER_DEPTH;
 use crate::infra::http::pagination::MAX_WIRE_BYTES;
 use crate::storage::health::{StorageHealth, StorageStatus};
 use crate::storage::planning::{
-    PartLayout, Rejection, RejectionReason, UploadMethod, UploadPlanner,
+    object_store_settings, PartLayout, Rejection, RejectionReason, UploadMethod, UploadPlanner,
 };
-use crate::storage::provider::StorageProvider;
+use crate::storage::provider::{MultipartStorage, StorageProvider};
 use crate::storage::staging::{ProviderStaging, StagingStorage};
 
 use super::error::{FileTooLarge, TooLargeReason, TransferError};
@@ -19,12 +20,22 @@ use super::model::{
 
 pub type HealthProbe = Arc<dyn Fn() -> StorageHealth + Send + Sync>;
 
+const DEFAULT_MULTIPART_TTL: Duration = Duration::from_secs(24 * 60 * 60);
+
+#[derive(Clone)]
+struct ObjectStore {
+    provider: Arc<dyn StorageProvider>,
+    bucket: String,
+    multipart_ttl: Duration,
+}
+
 #[derive(Clone)]
 pub struct TransferStorage {
     planner: UploadPlanner,
     provider: TransferProvider,
     health: HealthProbe,
     staging: Option<Arc<dyn StagingStorage>>,
+    store: Option<ObjectStore>,
 }
 
 impl std::fmt::Debug for TransferStorage {
@@ -44,7 +55,23 @@ impl TransferStorage {
             provider,
             health,
             staging: None,
+            store: None,
         }
+    }
+
+    #[must_use]
+    pub fn with_object_store(
+        mut self,
+        provider: Arc<dyn StorageProvider>,
+        bucket: impl Into<String>,
+        multipart_ttl: Duration,
+    ) -> Self {
+        self.store = Some(ObjectStore {
+            provider,
+            bucket: bucket.into(),
+            multipart_ttl,
+        });
+        self
     }
 
     #[must_use]
@@ -68,14 +95,57 @@ impl TransferStorage {
         status: StorageStatus,
     ) -> Self {
         let staging = ProviderStaging::of(&provider);
+        let object_store = object_store_settings(config).map(|settings| {
+            (
+                Arc::clone(&provider),
+                settings.bucket,
+                settings.multipart_ttl,
+            )
+        });
         let storage = Self::new(
             UploadPlanner::from_operator(config, provider),
             Arc::new(move || status.snapshot().health),
         );
-        match staging {
+        let storage = match staging {
             Some(staging) => storage.with_staging(staging),
             None => storage,
+        };
+        match object_store {
+            Some((provider, bucket, ttl)) => storage.with_object_store(provider, bucket, ttl),
+            None => storage,
         }
+    }
+
+    pub fn provider_handle(&self) -> Option<&Arc<dyn StorageProvider>> {
+        self.store.as_ref().map(|store| &store.provider)
+    }
+
+    pub fn multipart(&self) -> Option<&dyn MultipartStorage> {
+        self.store
+            .as_ref()
+            .and_then(|store| store.provider.as_multipart())
+    }
+
+    pub fn bucket(&self) -> Option<&str> {
+        self.store.as_ref().map(|store| store.bucket.as_str())
+    }
+
+    pub fn multipart_ttl(&self) -> Duration {
+        self.store
+            .as_ref()
+            .map_or(DEFAULT_MULTIPART_TTL, |store| store.multipart_ttl)
+    }
+
+    pub fn part_layout(&self, size: ByteSize) -> Option<(u64, u64)> {
+        let PartLayout {
+            part_size,
+            part_count,
+        } = self.planner.part_layout(Some(size.get()));
+        Some((part_size?, part_count?))
+    }
+
+    pub fn requires_proxied_parts(&self) -> bool {
+        self.planner.is_proxied()
     }
 
     pub const fn provider(&self) -> TransferProvider {
