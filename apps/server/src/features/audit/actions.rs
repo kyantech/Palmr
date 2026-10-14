@@ -819,6 +819,67 @@ pub fn folder_deleted(facts: &FolderDeletedFacts) -> ActionSpec {
     ActionSpec::new(AuditAction::FolderDeleted, metadata)
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TransferScope {
+    Session,
+    Item,
+    Upload,
+}
+
+impl TransferScope {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Session => "session",
+            Self::Item => "item",
+            Self::Upload => "upload",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TransferEndedFacts<'a> {
+    pub scope: TransferScope,
+    pub transfer_session_id: &'a str,
+    pub item_id: Option<&'a str>,
+    pub provider: &'static str,
+    pub items_ended: u64,
+    pub completed_items_kept: u64,
+    pub session_closed: bool,
+    pub owner_id: Option<&'a str>,
+}
+
+fn transfer_ended(action: AuditAction, facts: &TransferEndedFacts<'_>) -> ActionSpec {
+    let mut fields = vec![
+        ("scope", Value::from(facts.scope.as_str())),
+        (
+            "transfer_session_id",
+            Value::from(facts.transfer_session_id),
+        ),
+        ("provider", Value::from(facts.provider)),
+        ("items_ended", Value::from(facts.items_ended)),
+        (
+            "completed_items_kept",
+            Value::from(facts.completed_items_kept),
+        ),
+        ("session_closed", Value::from(facts.session_closed)),
+    ];
+    if let Some(item) = facts.item_id {
+        fields.push(("item_id", Value::from(item)));
+    }
+    if let Some(owner) = facts.owner_id {
+        fields.push(("owner_id", Value::from(owner)));
+    }
+    ActionSpec::new(action, Metadata::json(&fields))
+}
+
+pub fn transfer_canceled(facts: &TransferEndedFacts<'_>) -> ActionSpec {
+    transfer_ended(AuditAction::TransferCanceled, facts)
+}
+
+pub fn transfer_expired(facts: &TransferEndedFacts<'_>) -> ActionSpec {
+    transfer_ended(AuditAction::TransferExpired, facts)
+}
+
 #[cfg(test)]
 mod tests {
     use serde_json::Value;
@@ -901,6 +962,59 @@ mod tests {
         assert_eq!(folder.action(), AuditAction::FolderDeleted);
         assert_eq!(folder.action().write_path(), WritePath::InTransaction);
         assert_eq!(fields(&folder), ["bytes_released", "files", "folders"]);
+    }
+
+    #[test]
+    fn unit_transfer_lifecycle_metadata_is_closed_bounded_and_secret_free() {
+        let facts = TransferEndedFacts {
+            scope: TransferScope::Item,
+            transfer_session_id: "0192f3a1-0000-7000-8000-000000000001",
+            item_id: Some("0192f3a1-0000-7000-8000-000000000002"),
+            provider: "local",
+            items_ended: u64::MAX,
+            completed_items_kept: u64::MAX,
+            session_closed: true,
+            owner_id: Some("0192f3a1-0000-7000-8000-000000000003"),
+        };
+        let canceled = transfer_canceled(&facts);
+        assert_eq!(canceled.action(), AuditAction::TransferCanceled);
+        assert_eq!(canceled.action().write_path(), WritePath::InTransaction);
+        let expired = transfer_expired(&facts);
+        assert_eq!(expired.action(), AuditAction::TransferExpired);
+        assert_eq!(expired.action().write_path(), WritePath::Enqueued);
+        for spec in [&canceled, &expired] {
+            assert_eq!(
+                fields(spec),
+                [
+                    "completed_items_kept",
+                    "item_id",
+                    "items_ended",
+                    "owner_id",
+                    "provider",
+                    "scope",
+                    "session_closed",
+                    "transfer_session_id"
+                ]
+            );
+            assert!(spec.metadata().bytes() < MAX_METADATA_BYTES / 4);
+        }
+        let session = transfer_canceled(&TransferEndedFacts {
+            scope: TransferScope::Session,
+            item_id: None,
+            owner_id: None,
+            ..facts
+        });
+        assert_eq!(
+            fields(&session),
+            [
+                "completed_items_kept",
+                "items_ended",
+                "provider",
+                "scope",
+                "session_closed",
+                "transfer_session_id"
+            ]
+        );
     }
 
     #[test]

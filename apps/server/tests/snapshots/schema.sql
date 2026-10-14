@@ -1048,7 +1048,7 @@ CREATE TABLE tus_uploads (
     updated_at                      TEXT    NOT NULL,
     last_patch_at                   TEXT    NULL,
     expires_at                      TEXT    NOT NULL,
-    completed_at                    TEXT    NULL,
+    completed_at                    TEXT    NULL, staging_removed_at TEXT NULL,
 
     CHECK ( (upload_defer_length = 1 AND upload_length IS NULL)
          OR (upload_defer_length = 0 AND upload_length IS NOT NULL) ),
@@ -1365,9 +1365,17 @@ CREATE INDEX ix_totp_backup_codes_unused    ON totp_backup_codes(user_id) WHERE 
 CREATE INDEX ix_transfer_sessions_expiry ON transfer_sessions(expires_at)
     WHERE state IN ('created','uploading','finalizing');
 
+-- index ix_transfer_sessions_failed_expiry
+CREATE INDEX ix_transfer_sessions_failed_expiry ON transfer_sessions(expires_at)
+    WHERE state = 'failed';
+
 -- index ix_transfer_sessions_live
 CREATE INDEX ix_transfer_sessions_live   ON transfer_sessions(user_id, updated_at DESC)
     WHERE state IN ('created','uploading','finalizing');
+
+-- index ix_transfer_sessions_retention
+CREATE INDEX ix_transfer_sessions_retention ON transfer_sessions(completed_at)
+    WHERE state IN ('completed','canceled','expired') AND completed_at IS NOT NULL;
 
 -- index ix_transfer_sessions_rs
 CREATE INDEX ix_transfer_sessions_rs     ON transfer_sessions(reverse_share_upload_session_id)
@@ -1393,6 +1401,10 @@ CREATE INDEX ix_tsf_live               ON transfer_session_files(transfer_sessio
 -- index ix_tsf_session_ordinal
 CREATE INDEX ix_tsf_session_ordinal    ON transfer_session_files(transfer_session_id, ordinal);
 
+-- index ix_tus_uploads_cleanup
+CREATE INDEX ix_tus_uploads_cleanup ON tus_uploads(id)
+    WHERE state IN ('completed','terminated','expired') AND staging_removed_at IS NULL;
+
 -- index ix_tus_uploads_expiry
 CREATE INDEX ix_tus_uploads_expiry  ON tus_uploads(expires_at) WHERE state IN ('created','in_progress');
 
@@ -1401,6 +1413,10 @@ CREATE INDEX ix_tus_uploads_locks   ON tus_uploads(lock_expires_at) WHERE locked
 
 -- index ix_tus_uploads_owner
 CREATE INDEX ix_tus_uploads_owner   ON tus_uploads(owner_user_id, created_at DESC) WHERE owner_user_id IS NOT NULL;
+
+-- index ix_tus_uploads_retention
+CREATE INDEX ix_tus_uploads_retention ON tus_uploads(staging_removed_at)
+    WHERE staging_removed_at IS NOT NULL;
 
 -- index ix_tus_uploads_terminated
 CREATE INDEX ix_tus_uploads_terminated ON tus_uploads(id) WHERE state = 'terminated';

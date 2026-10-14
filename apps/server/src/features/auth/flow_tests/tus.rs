@@ -198,6 +198,7 @@ pub(super) struct TestStaging {
     pub(super) probe: Mutex<Option<crate::infra::db::DbPools>>,
     pub(super) overlapped_transaction: AtomicBool,
     pub(super) fail_remove: AtomicBool,
+    pub(super) remove_fault: SharedFault,
     pub(super) ensure_gate: SharedGate,
     pub(super) write_gate: SharedGate,
     pub(super) flush_gate: SharedGate,
@@ -224,6 +225,7 @@ impl TestStaging {
             probe: Mutex::new(None),
             overlapped_transaction: AtomicBool::new(false),
             fail_remove: AtomicBool::new(false),
+            remove_fault: Mutex::new(None),
             ensure_gate: Arc::new(Mutex::new(None)),
             write_gate: Arc::new(Mutex::new(None)),
             flush_gate: Arc::new(Mutex::new(None)),
@@ -339,6 +341,9 @@ impl StagingStorage for TestStaging {
         self.probe_for_open_transaction().await;
         if self.fail_remove.load(Ordering::SeqCst) {
             return Err(StorageError::PermissionDenied);
+        }
+        if let Some(error) = take_fault(&self.remove_fault) {
+            return Err(error);
         }
         self.inner.remove(id).await
     }

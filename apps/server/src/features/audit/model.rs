@@ -313,6 +313,8 @@ pub enum AuditAction {
     FileUploaded,
     FileDeleted,
     FolderDeleted,
+    TransferCanceled,
+    TransferExpired,
 }
 
 impl AuditAction {
@@ -362,6 +364,8 @@ impl AuditAction {
         Self::FileUploaded,
         Self::FileDeleted,
         Self::FolderDeleted,
+        Self::TransferCanceled,
+        Self::TransferExpired,
     ];
 
     pub const fn as_str(self) -> &'static str {
@@ -411,6 +415,8 @@ impl AuditAction {
             Self::FileUploaded => "FILE_UPLOADED",
             Self::FileDeleted => "FILE_DELETED",
             Self::FolderDeleted => "FOLDER_DELETED",
+            Self::TransferCanceled => "TRANSFER_CANCELED",
+            Self::TransferExpired => "TRANSFER_EXPIRED",
         }
     }
 
@@ -422,7 +428,8 @@ impl AuditAction {
             | Self::LoginSucceeded
             | Self::LoginFailed
             | Self::LoginLockedOut
-            | Self::Logout => WritePath::Enqueued,
+            | Self::Logout
+            | Self::TransferExpired => WritePath::Enqueued,
             Self::SettingChanged
             | Self::SmtpSettingsChanged
             | Self::SecurityPolicyChanged
@@ -460,7 +467,8 @@ impl AuditAction {
             | Self::PasswordLoginEnabled
             | Self::FileUploaded
             | Self::FileDeleted
-            | Self::FolderDeleted => WritePath::InTransaction,
+            | Self::FolderDeleted
+            | Self::TransferCanceled => WritePath::InTransaction,
         }
     }
 }

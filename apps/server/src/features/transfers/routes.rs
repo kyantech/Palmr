@@ -8,6 +8,7 @@ use crate::app::auth_class::AuthClass;
 use crate::app::openapi::with_query_parameters;
 use crate::app::router::{IdempotencyMode, RateLimitClass, RoutePolicy, Routes, Transport};
 use crate::app::state::AppState;
+use crate::features::auth::sessions::routes::client_metadata;
 use crate::infra::http::error::{ApiError, ApiErrorBody, JSON_CONTENT_TYPE};
 use crate::infra::http::extractors::Authenticated;
 use crate::infra::http::idempotency::{Admission, Claim, IdempotencyRequest};
@@ -15,6 +16,7 @@ use crate::infra::http::json;
 use crate::infra::http::pagination::Page;
 use crate::infra::http::request_id::{tag_error, RequestId};
 
+use super::cancel::TransferCaller;
 use super::error::TransferError;
 use super::model::{
     CreateTransferSessionRequest, SessionItemId, TransferFileView, TransferSessionId,
@@ -211,7 +213,12 @@ async fn cancel_session(
     let Ok(id) = id.parse::<TransferSessionId>() else {
         return transfer_error(&TransferError::SessionNotFound, request_id.as_ref());
     };
-    match service.cancel(principal.user_id, id).await {
+    let caller = TransferCaller {
+        owner: principal.user_id,
+        username: principal.username.clone(),
+        client: client_metadata(&request),
+    };
+    match service.cancel(&caller, id).await {
         Ok(()) => (StatusCode::NO_CONTENT, [(CACHE_CONTROL, NO_STORE)]).into_response(),
         Err(error) => transfer_error(&error, request_id.as_ref()),
     }
@@ -315,7 +322,12 @@ async fn cancel_item(
     ) else {
         return transfer_error(&TransferError::SessionNotFound, request_id.as_ref());
     };
-    match service.cancel_item(principal.user_id, id, item_id).await {
+    let caller = TransferCaller {
+        owner: principal.user_id,
+        username: principal.username.clone(),
+        client: client_metadata(&request),
+    };
+    match service.cancel_item(&caller, id, item_id).await {
         Ok(()) => (StatusCode::NO_CONTENT, [(CACHE_CONTROL, NO_STORE)]).into_response(),
         Err(error) => transfer_error(&error, request_id.as_ref()),
     }

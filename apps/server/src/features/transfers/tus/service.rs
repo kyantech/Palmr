@@ -17,6 +17,7 @@ use crate::storage::error::StorageError;
 use crate::storage::staging::{StagingStorage, UploadId};
 
 use super::super::admission::TransferStorage;
+use super::super::cancel::TransferCaller;
 use super::super::error::TransferError;
 use super::super::model::{SessionItemId, TransferProvider, UploadKind};
 use super::super::repo::{self as transfer_repo, ErrorParts, SessionMove};
@@ -738,7 +739,12 @@ impl TusService {
         }
     }
 
-    pub async fn terminate(&self, owner: UserId, id: TusUploadId) -> Result<(), TusError> {
+    pub async fn terminate(
+        &self,
+        caller: &TransferCaller,
+        id: TusUploadId,
+    ) -> Result<(), TusError> {
+        let owner = caller.owner;
         let staging = self.local_staging()?;
         let row = self.read_row(owner, id).await?;
         let hex = upload_hex(row.id)?;
@@ -753,7 +759,7 @@ impl TusService {
         }
         match self
             .transfers
-            .cancel_item(owner, row.session, row.item)
+            .cancel_item(caller, row.session, row.item)
             .await
         {
             Ok(()) => {}

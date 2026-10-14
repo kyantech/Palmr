@@ -4,8 +4,8 @@ use tempfile::TempDir;
 use time::macros::datetime;
 
 use super::{
-    jobs_step, ReconcileContext, ReconcileError, ReconcileRegistry, StepFuture, JOBS_STEP,
-    QUOTA_SCHEDULE_STEP, TUS_LEASES_STEP,
+    jobs_step, tus_expire_step, ReconcileContext, ReconcileError, ReconcileRegistry, StepFuture,
+    JOBS_STEP, QUOTA_SCHEDULE_STEP, TUS_EXPIRE_STEP, TUS_LEASES_STEP,
 };
 use crate::config::SqliteSynchronous;
 use crate::domain::clock::TestClock;
@@ -263,7 +263,9 @@ async fn it_startup_reconcile_schedules_quota_reconcile_idempotently() {
     assert_eq!(second.outcome(QUOTA_SCHEDULE_STEP), Some(&Ok(0)));
 
     let rows = harness
-        .strings("SELECT kind || '|' || state || '|' || run_at FROM jobs")
+        .strings(
+            "SELECT kind || '|' || state || '|' || run_at FROM jobs WHERE kind = 'quota.reconcile'",
+        )
         .await;
     assert_eq!(rows, ["quota.reconcile|pending|2026-09-25T00:00:00.000Z"]);
 
@@ -273,9 +275,91 @@ async fn it_startup_reconcile_schedules_quota_reconcile_idempotently() {
     let third = registry.run(&harness.context()).await;
     assert_eq!(third.outcome(QUOTA_SCHEDULE_STEP), Some(&Ok(0)));
     assert_eq!(
-        harness.strings("SELECT id FROM jobs").await.len(),
+        harness
+            .strings("SELECT id FROM jobs WHERE kind = 'quota.reconcile'")
+            .await
+            .len(),
         1,
         "a still-pending schedule from an earlier bucket is not duplicated"
+    );
+}
+
+#[tokio::test]
+async fn it_startup_reconcile_schedules_tus_expire_stale_idempotently() {
+    let harness = Harness::open().await;
+    let registry = ReconcileRegistry::production();
+
+    let first = registry.run(&harness.context()).await;
+    assert_eq!(first.failed(), 0);
+    assert_eq!(first.outcome(TUS_EXPIRE_STEP), Some(&Ok(1)));
+    let second = registry.run(&harness.context()).await;
+    assert_eq!(second.outcome(TUS_EXPIRE_STEP), Some(&Ok(0)));
+
+    let rows = harness
+        .strings("SELECT kind || '|' || state || '|' || run_at FROM jobs WHERE kind = 'tus.expire_stale'")
+        .await;
+    assert_eq!(
+        rows,
+        ["tus.expire_stale|pending|2026-09-24T12:00:00.000Z"],
+        "the first run is due now, so a start after long downtime reaps promptly"
+    );
+
+    harness
+        .seed("UPDATE jobs SET state = 'dead', attempts = max_attempts WHERE kind = 'tus.expire_stale'")
+        .await;
+    harness.clock.advance(std::time::Duration::from_secs(60));
+    let revived = registry.run(&harness.context()).await;
+    assert_eq!(
+        revived.outcome(TUS_EXPIRE_STEP),
+        Some(&Ok(1)),
+        "a dead chain is replaced by the successor bucket"
+    );
+    let rows = harness
+        .strings("SELECT state || '|' || run_at FROM jobs WHERE kind = 'tus.expire_stale' ORDER BY run_at")
+        .await;
+    assert_eq!(
+        rows,
+        [
+            "dead|2026-09-24T12:00:00.000Z",
+            "pending|2026-09-24T12:15:00.000Z"
+        ]
+    );
+    let again = registry.run(&harness.context()).await;
+    assert_eq!(again.outcome(TUS_EXPIRE_STEP), Some(&Ok(0)));
+}
+
+#[tokio::test]
+async fn it_startup_reconcile_tus_expire_step_changes_no_transfer_row() {
+    let harness = Harness::open().await;
+    harness
+        .seed(&format!(
+            "INSERT INTO users (id, email, email_normalized, username, username_normalized, created_at, updated_at)
+             VALUES ('{USER}', 'u@example.test', 'u@example.test', 'user', 'user', '{NOW}', '{NOW}');
+             INSERT INTO transfer_sessions
+                 (id, context, user_id, provider, state, created_at, updated_at, expires_at)
+             VALUES ('{TUS_SESSION}', 'my_files', '{USER}', 'local', 'uploading', '{PAST}', '{PAST}', '{PAST}');"
+        ))
+        .await;
+    let before = harness
+        .strings("SELECT id || '|' || state || '|' || updated_at || '|' || expires_at FROM transfer_sessions")
+        .await;
+    let report = ReconcileRegistry::new()
+        .register(TUS_EXPIRE_STEP, tus_expire_step)
+        .run(&harness.context())
+        .await;
+    assert_eq!(report.failed(), 0);
+    assert_eq!(
+        harness
+            .strings("SELECT id || '|' || state || '|' || updated_at || '|' || expires_at FROM transfer_sessions")
+            .await,
+        before,
+        "startup only schedules: a past-due session is expired by the job, never by reconciliation"
+    );
+    assert_eq!(
+        harness
+            .strings("SELECT kind FROM jobs WHERE kind = 'tus.expire_stale'")
+            .await,
+        ["tus.expire_stale"]
     );
 }
 

@@ -165,15 +165,25 @@ fn include_current(raw_query: Option<&str>) -> Result<bool, ApiError> {
 }
 
 pub(crate) fn client_metadata(request: &Request) -> ClientMetadata {
-    let user_agent = request
-        .headers()
+    client_metadata_from(
+        request.headers(),
+        request.extensions(),
+        RequestId::of(request).as_ref(),
+    )
+}
+
+pub(crate) fn client_metadata_from(
+    headers: &http::HeaderMap,
+    extensions: &http::Extensions,
+    request_id: Option<&RequestId>,
+) -> ClientMetadata {
+    let user_agent = headers
         .get(USER_AGENT)
         .and_then(|value| value.to_str().ok());
-    request
-        .extensions()
+    extensions
         .get::<ResolvedClient>()
         .map_or_else(ClientMetadata::none, |client| {
-            ClientMetadata::from_request(client, RequestId::of(request).as_ref(), user_agent)
+            ClientMetadata::from_request(client, request_id, user_agent)
         })
 }
 

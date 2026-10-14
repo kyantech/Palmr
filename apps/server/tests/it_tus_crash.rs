@@ -127,3 +127,119 @@ async fn it_tus_real_process_crash_recovers_without_a_lease_wait() -> Result<()>
     assert!(exit.success());
     Ok(())
 }
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn it_tus_restart_after_downtime_expires_abandoned_uploads_without_a_client_request(
+) -> Result<()> {
+    let root = TempDir::new()?;
+    let data_dir = root.path().join("data");
+    std::fs::create_dir(&data_dir)?;
+    let size = 8 * MIB;
+
+    let mut process = ServerProcess::spawn(&data_dir)?;
+    process.wait_ready().await?;
+    let first = world(&process, &data_dir, None).await?;
+    let abandoned = first.upload("abandoned.bin", size).await?;
+    let live = first.upload("live.bin", size).await?;
+    let mut writer = first.open(&abandoned, 0, None).await?;
+    send_range(&mut writer, size, 0, 2 * MIB).await?;
+    wait_until("a durable checkpoint of the abandoned upload", || async {
+        Ok(first.offset(&abandoned).await? >= 2 * MIB)
+    })
+    .await?;
+    drop(writer);
+    wait_until("the dropped request to release its lease", || async {
+        Ok(!first.locked(&abandoned).await?)
+    })
+    .await?;
+    let session = first
+        .db
+        .scalar_string(&format!(
+            "SELECT t.transfer_session_id FROM transfer_session_files t
+               JOIN tus_uploads tu ON tu.transfer_session_file_id = t.id WHERE tu.id = '{}'",
+            abandoned.id
+        ))
+        .await?;
+    let live_session = first
+        .db
+        .scalar_string(&format!(
+            "SELECT t.transfer_session_id FROM transfer_session_files t
+               JOIN tus_uploads tu ON tu.transfer_session_file_id = t.id WHERE tu.id = '{}'",
+            live.id
+        ))
+        .await?;
+    assert!(first.blob(&abandoned).exists());
+    let status = process.stop().await?;
+    assert!(status.success());
+
+    first
+        .db
+        .execute(&format!(
+            "UPDATE tus_uploads SET expires_at = '2020-01-01T00:00:00.000Z' WHERE id = '{}'",
+            abandoned.id
+        ))
+        .await?;
+    first
+        .db
+        .execute(
+            "UPDATE jobs SET run_at = '2020-01-01T00:00:00.000Z' WHERE kind = 'tus.expire_stale' AND state = 'pending'",
+        )
+        .await?;
+    let held_before = first
+        .db
+        .scalar_i64("SELECT COUNT(*) FROM quota_reservations WHERE state = 'held'")
+        .await?;
+    assert_eq!(held_before, 2);
+
+    let mut restarted = ServerProcess::spawn(&data_dir)?;
+    restarted.wait_ready().await?;
+    let second = world(&restarted, &data_dir, Some(&first)).await?;
+    wait_until("the reaper to expire the abandoned upload", || async {
+        Ok(second
+            .db
+            .scalar_string(&format!(
+                "SELECT state FROM tus_uploads WHERE id = '{}'",
+                abandoned.id
+            ))
+            .await?
+            == "expired")
+    })
+    .await?;
+    wait_until("the abandoned staging to be removed", || async {
+        Ok(!second.blob(&abandoned).exists())
+    })
+    .await?;
+    assert_eq!(
+        second
+            .db
+            .scalar_string(&format!(
+                "SELECT state || '/' || release_reason FROM quota_reservations WHERE transfer_session_id = '{session}'"
+            ))
+            .await?,
+        "released/expired"
+    );
+    assert_eq!(
+        second
+            .db
+            .scalar_string(&format!(
+                "SELECT state FROM quota_reservations WHERE transfer_session_id = '{live_session}'"
+            ))
+            .await?,
+        "held",
+        "the live upload's hold is untouched"
+    );
+    assert_eq!(
+        second
+            .db
+            .scalar_string(&format!(
+                "SELECT state FROM tus_uploads WHERE id = '{}'",
+                live.id
+            ))
+            .await?,
+        "created"
+    );
+    assert_eq!(second.head(&live).await?, 0);
+    let exit = restarted.stop().await?;
+    assert!(exit.success());
+    Ok(())
+}

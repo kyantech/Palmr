@@ -7,6 +7,8 @@ use utoipa::openapi::path::Parameter;
 
 use crate::domain::clock::Clock;
 use crate::domain::time::Timestamp;
+use crate::features::audit::actions::TransferScope;
+use crate::features::audit::service::AuditService;
 use crate::features::folders::MAX_FOLDER_DEPTH;
 use crate::features::folders::{
     ensure_child_in_tx, resolve_writable_folder, FolderError, FolderId,
@@ -24,22 +26,18 @@ use crate::infra::http::pagination::{
     QueryParams, SortAllowlist, SortDirection, SortField, SortKeyKind, SortValue, TotalCount,
 };
 use crate::storage::key::{KeyNamespace, ObjectKey};
-use crate::storage::lifecycle::{
-    parse_provider, tombstone_uncommitted, DeletionReason, PlacedObject, StorageObjectId,
-};
+use crate::storage::lifecycle::StorageObjectId;
 
 use super::admission::{exceeds_depth, plan_files, reservation, TransferStorage};
+use super::cancel::{self, Ended, Ending, TransferCaller};
 use super::error::TransferError;
 use super::finalize::Finalizer;
 use super::model::{
-    SessionItemId, TransferFileView, TransferProvider, TransferSessionId, TransferSessionSummary,
+    SessionItemId, TransferFileView, TransferSessionId, TransferSessionSummary,
     TransferSessionView, ValidatedSession, SESSION_TTL,
 };
 use super::presentation::{file_view, session_view, summary};
-use super::repo::{
-    self, ErrorParts, FinalizeStage, ItemRow, LiveItem, NewItem, NewSession, SessionMove,
-    SessionRow,
-};
+use super::repo::{self, ErrorParts, ItemRow, NewItem, NewSession, SessionMove, SessionRow};
 use super::state::{
     has_expired, item_transition, session_transition, ItemState, Outcome, TransferSessionState,
     Trigger,
@@ -78,6 +76,7 @@ pub struct TransferService {
     quota: QuotaService,
     storage: TransferStorage,
     idempotency: IdempotencyService,
+    audit: AuditService,
     finalizer: Option<Finalizer>,
 }
 
@@ -88,6 +87,7 @@ impl TransferService {
         keys: Arc<KeyRing>,
         settings: SettingsHandle,
         storage: TransferStorage,
+        audit: AuditService,
     ) -> Self {
         let quota = QuotaService::new(settings.clone(), Arc::clone(&clock));
         let idempotency =
@@ -100,6 +100,7 @@ impl TransferService {
             quota,
             storage,
             idempotency,
+            audit,
             finalizer: None,
         }
     }
@@ -383,8 +384,13 @@ impl TransferService {
         session_view(&session, &items, &self.storage)
     }
 
-    pub async fn cancel(&self, owner: UserId, id: TransferSessionId) -> Result<(), TransferError> {
+    pub async fn cancel(
+        &self,
+        caller: &TransferCaller,
+        id: TransferSessionId,
+    ) -> Result<(), TransferError> {
         let now = self.now()?;
+        let owner = caller.owner;
         self.pools
             .write_tx(self.clock.as_ref(), CANCEL_TRANSACTION, async |tx| {
                 let session = repo::find_session(tx.executor(), owner, id)
@@ -394,7 +400,22 @@ impl TransferService {
                     Err(_) => Err(TransferError::StateInvalid),
                     Ok(Outcome::Unchanged(_)) => Ok(()),
                     Ok(Outcome::Moved(_)) => {
-                        self.cancel_session_in_tx(tx, owner, &session, now).await
+                        let items_ended =
+                            self.cancel_session_in_tx(tx, owner, &session, now).await?;
+                        cancel::record_canceled(
+                            tx,
+                            &self.audit,
+                            caller,
+                            Ended {
+                                scope: TransferScope::Session,
+                                session: &session,
+                                item_id: None,
+                                items_ended,
+                                session_closed: true,
+                            },
+                            now,
+                        )
+                        .await
                     }
                 }
             })
@@ -407,15 +428,21 @@ impl TransferService {
         owner: UserId,
         session: &SessionRow,
         now: Timestamp,
-    ) -> Result<(), TransferError> {
+    ) -> Result<u64, TransferError> {
         let live = repo::live_items(tx.executor(), session.id).await?;
-        let ids: Vec<SessionItemId> = live.iter().map(|item| item.id).collect();
-        repo::cancel_items(tx.executor(), &ids, now).await?;
-        self.tombstone_placed(tx, session.provider, &live).await?;
+        let ended = cancel::end_items(
+            tx,
+            self.clock.as_ref(),
+            session.provider,
+            &live,
+            Ending::Canceled,
+            now,
+        )
+        .await?;
         self.close_session(tx, owner, session, TransferSessionState::Canceled, now)
             .await?;
-        self.settle_reservation(tx, session, ReleaseReason::Canceled)
-            .await
+        cancel::settle_session(tx, &self.quota, session, ReleaseReason::Canceled).await?;
+        Ok(ended)
     }
 
     async fn close_session(
@@ -460,38 +487,6 @@ impl TransferService {
                 .await?;
         } else {
             self.quota.release(tx, session.id, reason).await?;
-        }
-        Ok(())
-    }
-
-    async fn tombstone_placed(
-        &self,
-        tx: &mut WriteTx<'_>,
-        provider: TransferProvider,
-        items: &[LiveItem],
-    ) -> Result<(), TransferError> {
-        let kind = parse_provider(provider.as_str())
-            .ok_or(TransferError::Invariant { what: "provider" })?;
-        for item in items
-            .iter()
-            .filter(|item| item.finalize_stage == FinalizeStage::Placing)
-        {
-            let key =
-                ObjectKey::parse(&item.final_object_key).map_err(|_| TransferError::Invariant {
-                    what: "final_object_key",
-                })?;
-            tombstone_uncommitted(
-                tx,
-                self.clock.as_ref(),
-                &PlacedObject {
-                    id: item.final_object_id,
-                    key: &key,
-                    provider: kind,
-                    measured_size: None,
-                },
-                DeletionReason::UploadAbandoned,
-            )
-            .await?;
         }
         Ok(())
     }
@@ -658,11 +653,12 @@ impl TransferService {
 
     pub async fn cancel_item(
         &self,
-        owner: UserId,
+        caller: &TransferCaller,
         id: TransferSessionId,
         item_id: SessionItemId,
     ) -> Result<(), TransferError> {
         let now = self.now()?;
+        let owner = caller.owner;
         self.pools
             .write_tx(self.clock.as_ref(), CANCEL_ITEM_TRANSACTION, async |tx| {
                 let session = repo::find_session(tx.executor(), owner, id)
@@ -676,24 +672,51 @@ impl TransferService {
                 if !outcome.moved() {
                     return Ok(());
                 }
-                repo::cancel_items(tx.executor(), &[item_id], now).await?;
-                self.tombstone_placed(tx, session.provider, std::slice::from_ref(&item))
-                    .await?;
+                let ended = cancel::end_items(
+                    tx,
+                    self.clock.as_ref(),
+                    session.provider,
+                    std::slice::from_ref(&item),
+                    Ending::Canceled,
+                    now,
+                )
+                .await?;
+                let mut session_closed = false;
                 if session.state.is_terminal() {
                     repo::touch_session(tx.executor(), id, now).await?;
-                    return Ok(());
-                }
-                if item.state.holds_reservation() {
-                    self.quota.release_share(tx, id, item.reserved).await?;
-                }
-                if repo::remaining_items(tx.executor(), id).await? == 0 {
-                    self.close_session(tx, owner, &session, TransferSessionState::Canceled, now)
-                        .await?;
-                    self.quota.release(tx, id, ReleaseReason::Canceled).await?;
                 } else {
-                    repo::touch_session(tx.executor(), id, now).await?;
+                    if item.state.holds_reservation() {
+                        self.quota.release_share(tx, id, item.reserved).await?;
+                    }
+                    if repo::remaining_items(tx.executor(), id).await? == 0 {
+                        self.close_session(
+                            tx,
+                            owner,
+                            &session,
+                            TransferSessionState::Canceled,
+                            now,
+                        )
+                        .await?;
+                        self.quota.release(tx, id, ReleaseReason::Canceled).await?;
+                        session_closed = true;
+                    } else {
+                        repo::touch_session(tx.executor(), id, now).await?;
+                    }
                 }
-                Ok(())
+                cancel::record_canceled(
+                    tx,
+                    &self.audit,
+                    caller,
+                    Ended {
+                        scope: TransferScope::Item,
+                        session: &session,
+                        item_id: Some(item_id.to_string()),
+                        items_ended: ended,
+                        session_closed,
+                    },
+                    now,
+                )
+                .await
             })
             .await
     }

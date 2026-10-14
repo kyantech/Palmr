@@ -518,9 +518,32 @@ async fn it_tus_startup_recovery_never_runs_against_a_live_instance() -> Result<
         .await?;
     assert!(!holder.is_empty());
 
+    let scheduled = world
+        .db
+        .scalar_i64("SELECT COUNT(*) FROM jobs WHERE kind = 'tus.expire_stale'")
+        .await?;
     assert!(
         !world.app.second_instance_starts().await?,
         "a second instance cannot take the data directory, so it cannot run startup recovery"
+    );
+    assert_eq!(
+        world
+            .db
+            .scalar_i64("SELECT COUNT(*) FROM jobs WHERE kind = 'tus.expire_stale'")
+            .await?,
+        scheduled,
+        "a refused second instance schedules and reaps nothing"
+    );
+    let state = world
+        .db
+        .scalar_string(&format!(
+            "SELECT state FROM tus_uploads WHERE id = '{}'",
+            upload.id
+        ))
+        .await?;
+    assert!(
+        matches!(state.as_str(), "created" | "in_progress"),
+        "the live upload is still open: {state}"
     );
     assert_eq!(
         world

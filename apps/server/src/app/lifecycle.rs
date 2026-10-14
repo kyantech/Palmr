@@ -66,6 +66,7 @@ use crate::features::transfers::finalize::PauseHook;
 use crate::features::transfers::finalize::{
     FinalizeHooks, FinalizeLimits, Finalizer, FinalizerParts,
 };
+use crate::features::transfers::reaper::{self as transfer_reaper, ReaperContext};
 use crate::features::transfers::{
     TransferService, TransferStorage, TusLimits, TusService, TusServiceParts,
 };
@@ -90,6 +91,7 @@ use crate::storage::health::{Schedule, StorageMonitor, HEALTH_CHECK_PERIOD};
 use crate::storage::lifecycle::{self as storage_lifecycle, thumbnails::ThumbnailCache};
 use crate::storage::provider::StorageProvider;
 use crate::storage::s3::config::STORAGE_CONFIG_INVALID;
+use crate::storage::staging::ProviderStaging;
 use crate::storage::ProviderBuildError;
 
 pub const STARTUP_BIND_FAILED: &str = "STARTUP_BIND_FAILED";
@@ -876,6 +878,7 @@ async fn initialize(
         Arc::clone(&email_keys),
         settings.clone(),
         transfer_storage.clone(),
+        audit_service.clone(),
     )
     .with_finalizer(finalizer.clone());
     let report = ReconcileRegistry::production()
@@ -1006,6 +1009,7 @@ async fn initialize(
         &settings,
         &email_keys,
         provider,
+        uploads_stop.clone(),
         (audit_service, audit_drain),
     );
     let router = match StaticAssets::built(&config.base_url)
@@ -1094,6 +1098,7 @@ fn start_jobs(
     settings: &SettingsHandle,
     keys: &Arc<KeyRing>,
     provider: Arc<dyn StorageProvider>,
+    uploads_stop: CancellationToken,
     (audit_service, audit_drain): (AuditService, AuditDrain),
 ) -> JobRuntime {
     let timing = RuntimeTiming::DEFAULT;
@@ -1117,6 +1122,17 @@ fn start_jobs(
         crate::features::auth::sessions::register_jobs(registry, pools.clone(), Arc::clone(clock));
     let registry =
         prune_tokens::register_jobs(registry, pools.clone(), Arc::clone(clock), settings.clone());
+    let registry = transfer_reaper::register_jobs(
+        registry,
+        ReaperContext::new(
+            pools.clone(),
+            Arc::clone(clock),
+            settings.clone(),
+            audit_service.clone(),
+            ProviderStaging::of(&provider),
+            uploads_stop,
+        ),
+    );
     let registry = storage_lifecycle::register_jobs(
         registry,
         storage_lifecycle::LifecycleContext::new(

@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use tokio_util::sync::CancellationToken;
+
 use super::error::CliError;
 use super::ownership::{Access, DataAccess};
 use crate::app::lifecycle::StartupError;
@@ -11,6 +13,7 @@ use crate::features::email::{self, EmailService, SmtpTransport};
 use crate::features::folders::delete::{self as folder_deletion, DeleteTreeContext};
 use crate::features::quota::reconcile::{self as quota_reconcile, QuotaReconcileContext};
 use crate::features::settings::SettingsService;
+use crate::features::transfers::reaper::{self as transfer_reaper, ReaperContext};
 use crate::infra::crypto::instance_key::InstanceKey;
 use crate::infra::db::DbPools;
 use crate::infra::jobs::cli::{run_once, RunOnceReport};
@@ -20,6 +23,7 @@ use crate::infra::jobs::{
 };
 use crate::storage;
 use crate::storage::lifecycle::{self as storage_lifecycle, thumbnails::ThumbnailCache};
+use crate::storage::staging::ProviderStaging;
 
 pub async fn run_once_command(
     config: &OperatorConfig,
@@ -88,10 +92,21 @@ async fn execute(
     );
     let registry = if matches!(
         kind,
-        JobKind::StorageDeleteBlob | JobKind::StorageOrphanSweep
+        JobKind::StorageDeleteBlob | JobKind::StorageOrphanSweep | JobKind::TusExpireStale
     ) {
         let provider =
             storage::build_provider(config, Arc::clone(&clock)).map_err(StartupError::from)?;
+        let registry = transfer_reaper::register_jobs(
+            registry,
+            ReaperContext::new(
+                pools.clone(),
+                Arc::clone(&clock),
+                settings.handle(),
+                audit_service.clone(),
+                ProviderStaging::of(&provider),
+                CancellationToken::new(),
+            ),
+        );
         storage_lifecycle::register_jobs(
             registry,
             storage_lifecycle::LifecycleContext::new(

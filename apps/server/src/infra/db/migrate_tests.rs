@@ -113,7 +113,8 @@ async fn it_migrate_up_from_empty() {
             "0005_password_login_enabled.sql",
             "0006_deletion_lifecycle.sql",
             "0007_idempotency_transfer_envelope.sql",
-            "0008_cancellation_cleanup_discovery.sql"
+            "0008_cancellation_cleanup_discovery.sql",
+            "0009_tus_staging_cleanup_and_expiry_indexes.sql"
         ]
     );
     assert_eq!(
@@ -148,6 +149,10 @@ async fn it_migrate_up_from_empty() {
         files[7].1,
         include_str!("../../../migrations/0008_cancellation_cleanup_discovery.sql")
     );
+    assert_eq!(
+        files[8].1,
+        include_str!("../../../migrations/0009_tus_staging_cleanup_and_expiry_indexes.sql")
+    );
 
     let data = TempDir::new().unwrap();
     let pools = open_pools(data.path()).await;
@@ -157,8 +162,8 @@ async fn it_migrate_up_from_empty() {
     assert_eq!(
         first,
         MigrationStatus {
-            applied: 8,
-            version: Some(8),
+            applied: 9,
+            version: Some(9),
         }
     );
     let again = pools.migrate(&MIGRATOR).await.unwrap();
@@ -166,7 +171,7 @@ async fn it_migrate_up_from_empty() {
         again,
         MigrationStatus {
             applied: 0,
-            version: Some(8),
+            version: Some(9),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -176,7 +181,7 @@ async fn it_migrate_up_from_empty() {
         reopened.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
             applied: 0,
-            version: Some(8),
+            version: Some(9),
         }
     );
     reopened.shutdown().await.checkpoint.unwrap();
@@ -236,8 +241,8 @@ async fn it_migrate_from_0001_derives_email_linking_by_protocol() {
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 7,
-            version: Some(8),
+            applied: 8,
+            version: Some(9),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -273,7 +278,8 @@ async fn it_migrate_from_0001_derives_email_linking_by_protocol() {
             (5, true),
             (6, true),
             (7, true),
-            (8, true)
+            (8, true),
+            (9, true)
         ]
     );
     connection.close().await.unwrap();
@@ -339,8 +345,8 @@ async fn it_migrate_oauth_requests_to_reauth_and_extended_path() {
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 6,
-            version: Some(8),
+            applied: 7,
+            version: Some(9),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -610,8 +616,8 @@ async fn it_migrate_session_revoked_reason_accepts_identity_unlink() {
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 5,
-            version: Some(8),
+            applied: 6,
+            version: Some(9),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -772,8 +778,8 @@ async fn it_migrate_password_login_enabled_defaults_on_and_preserves_settings() 
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 4,
-            version: Some(8),
+            applied: 5,
+            version: Some(9),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -858,8 +864,8 @@ async fn it_migrate_deletion_lifecycle_keeps_existing_folders_live_and_checksums
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 3,
-            version: Some(8),
+            applied: 4,
+            version: Some(9),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -894,6 +900,8 @@ async fn it_migrate_deletion_lifecycle_keeps_existing_folders_live_and_checksums
     assert!(recorded[6].success);
     assert_eq!(recorded[7].version, 8);
     assert!(recorded[7].success);
+    assert_eq!(recorded[8].version, 9);
+    assert!(recorded[8].success);
 
     let violations: Vec<(String, i64, String, i64)> = sqlx::query_as("PRAGMA foreign_key_check")
         .fetch_all(&mut connection)
@@ -1045,8 +1053,8 @@ async fn it_migrate_idempotency_envelope_bound_keeps_records_and_counts_bytes() 
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 2,
-            version: Some(8),
+            applied: 3,
+            version: Some(9),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();

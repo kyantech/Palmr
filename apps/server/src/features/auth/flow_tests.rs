@@ -332,6 +332,7 @@ impl Stack {
             settings.keys(),
             settings.handle(),
             transfer_storage.clone(),
+            audit.clone(),
         );
         let transfers = match &finalizer {
             Some(finalizer) => transfers.with_finalizer(finalizer.clone()),
@@ -2003,10 +2004,14 @@ mod profile;
 mod rate_limit;
 mod recent_auth;
 mod totp;
+mod transfer_audit;
 mod transfer_cleanup;
 mod transfer_flows;
 mod transfer_limits;
 mod transfer_reads;
+mod transfer_reaper;
+mod transfer_reaper_races;
+mod transfer_reaper_scale;
 mod transfers;
 mod trusted_devices;
 mod tus;

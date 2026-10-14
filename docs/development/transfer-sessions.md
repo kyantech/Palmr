@@ -46,13 +46,13 @@ The session hold equals the sum of the shares of items that are `pending`, `uplo
 
 ## Cancel keeps completed items
 
-Cancel marks unfinished items `canceled`, marks any live `tus_uploads` row `terminated` and any live `s3_multipart_uploads` row `abandoned`, tombstone-inserts an object whose `finalize_stage` is `placing`, and settles the reservation: `committed` for the bytes of completed items, otherwise `released`. It performs no storage I/O and enqueues no abort job.
+Cancel marks unfinished items `canceled`, marks any live `tus_uploads` row `terminated` and any live `s3_multipart_uploads` row `abandoned`, tombstone-inserts an object whose `finalize_stage` is `placing`, and settles the reservation: `committed` for the bytes of completed items, otherwise `released`. It performs no storage I/O and enqueues no abort job; the shared primitive is `features/transfers/cancel.rs`, which the reaper reuses with the `expired` labels.
 
 ### Cleanup contract for the adapters
 
 - A placed object goes through the existing deletion lifecycle: `storage_objects` (tombstoned) plus `file_deletion_queue` plus a `storage.delete_blob` job, which a registered handler runs after the one-hour grace. A resource that never reached `placing` gets no object row.
 - No `s3.abort_abandoned_multipart` handler exists before M14-T09, so no such job is enqueued. The durable contract is the row: the provider identity is untouched, the state stays `abandoned` (multipart) or `terminated` (TUS) until cleanup succeeds, and the foreign keys from `transfer_session_files` are `RESTRICT`, so retention cannot drop a session that still awaits cleanup.
-- `features/transfers/cleanup.rs` is the discovery contract: `abandoned_multipart_page` and `terminated_tus_page` page by `id` (at most 1 000 rows), served by the partial indexes of migration `0008`. M14-T09 aborts what the first returns; M14-T06 removes staging for what the second returns.
+- `features/transfers/cleanup.rs` is the discovery contract: `abandoned_multipart_page` and `terminated_tus_page` page by `id` (at most 1 000 rows), served by the partial indexes of migration `0008`. M14-T09 aborts what the first returns. The reaper of M14-T06 removes staging for every terminal TUS row (`completed`, `terminated`, `expired`) through `tus_staging_page`, served by `ix_tus_uploads_cleanup` of migration `0009`; a row leaves that list only when `staging_removed_at` is set after a successful removal. See [transfer-reaper.md](./transfer-reaper.md).
 - Repeating a cancel changes zero rows. The rows, their identity and the tombstone survive a restart (`it_transfer_cancel_keeps_every_protocol_row_discoverable_for_cleanup`).
 
 ## Replay envelope
@@ -72,7 +72,7 @@ The first response and every replay are rendered by the same `ReplayEnvelope`, s
 
 ## Advisory metadata and audit
 
-`declaredContentType` is validated for shape and not stored. The TUS adapter receives the same hint as `Upload-Metadata` `filetype`, and S3 finalization decides the MIME by bounded sniffing, so durable persistence is not needed. No transfer audit action exists yet; the task that adds the first one (FILE_UPLOADED in M14-T05, then the cancel and expiry events) must enqueue it in the same transaction as the state change.
+`declaredContentType` is validated for shape and not stored. The TUS adapter receives the same hint as `Upload-Metadata` `filetype`, and S3 finalization decides the MIME by bounded sniffing, so durable persistence is not needed. Transfer lifecycle audit: `FILE_UPLOADED` (M14-T05), `TRANSFER_CANCELED` (in the owner's cancel transaction) and `TRANSFER_EXPIRED` (system actor, enqueued after the reaper's transaction); see [transfer-reaper.md](./transfer-reaper.md#audit).
 
 ## Client keys
 

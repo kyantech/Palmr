@@ -56,7 +56,7 @@ async fn connect(data: &Path) -> SqliteConnection {
 
 async fn jobs(data: &Path) -> Vec<JobRow> {
     let mut connection = connect(data).await;
-    sqlx::query("SELECT id, kind, state, run_at, dedup_key FROM jobs ORDER BY run_at, id")
+    sqlx::query("SELECT id, kind, state, run_at, dedup_key FROM jobs WHERE kind = 'quota.reconcile' ORDER BY run_at, id")
         .fetch_all(&mut connection)
         .await
         .unwrap()

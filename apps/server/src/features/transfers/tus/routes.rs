@@ -11,11 +11,14 @@ use crate::app::router::{
     Transport,
 };
 use crate::app::state::AppState;
+use crate::features::audit::model::ClientMetadata;
+use crate::features::auth::sessions::routes::{client_metadata, client_metadata_from};
 use crate::infra::http::csrf::RequestContent;
 use crate::infra::http::error::ApiErrorBody;
 use crate::infra::http::extractors::Authenticated;
 use crate::infra::http::request_id::{tag_error, RequestId};
 
+use super::super::cancel::TransferCaller;
 use super::error::TusError;
 use super::headers::{
     self, imf_fixdate, method_override, no_store, number_header, protocol_header, text_header,
@@ -321,11 +324,15 @@ async fn terminate(
     principal: &Authenticated,
     raw_id: &str,
     request_headers: &HeaderMap,
+    client: ClientMetadata,
 ) -> Result<Response, TusError> {
     headers::require_version(request_headers)?;
-    service
-        .terminate(principal.0.user_id, upload_id(raw_id)?)
-        .await?;
+    let caller = TransferCaller {
+        owner: principal.0.user_id,
+        username: principal.0.username.clone(),
+        client,
+    };
+    service.terminate(&caller, upload_id(raw_id)?).await?;
     Ok(StatusCode::NO_CONTENT.into_response())
 }
 
@@ -460,7 +467,8 @@ async fn terminate_upload(
     request: Request,
 ) -> Response {
     let request_id = RequestId::of(&request);
-    match terminate(&service, &principal, &id, request.headers()).await {
+    let client = client_metadata(&request);
+    match terminate(&service, &principal, &id, request.headers(), client).await {
         Ok(response) => response,
         Err(error) => failure(&error, request_id.as_ref()),
     }
@@ -509,7 +517,9 @@ async fn override_upload(
         match method_override(&parts.headers)? {
             Some(MethodOverride::Head) => head(&service, &principal, &id, &parts.headers).await,
             Some(MethodOverride::Delete) => {
-                terminate(&service, &principal, &id, &parts.headers).await
+                let client =
+                    client_metadata_from(&parts.headers, &parts.extensions, request_id.as_ref());
+                terminate(&service, &principal, &id, &parts.headers, client).await
             }
             Some(MethodOverride::Patch) => {
                 patch(

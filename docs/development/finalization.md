@@ -123,5 +123,5 @@ The cancel transaction and the commit transaction serialize on the write lock, s
 ## Known deferrals
 
 - A crash between the commit and the staging cleanup leaves an empty staging directory; the staging sweep reclaims it.
-- Expiry reapers, the periodic `tus.expire_stale` and the session reaper are M14-T06.
+- Expiry reapers, the periodic `tus.expire_stale` and the session reaper are implemented in M14-T06 ([transfer-reaper.md](./transfer-reaper.md)); they never expire an item that is `finalizing`, or `uploading` with every byte received, before its session's 7-day bound.
 - A permanent database fault during the commit leaves the item `finalizing` until the next start or retry; no periodic re-drive exists yet.

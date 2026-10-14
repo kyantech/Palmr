@@ -10,6 +10,7 @@ use crate::features::users::model::UserId;
 use crate::infra::http::pagination::{Conjunction, PageRequest};
 use crate::storage::lifecycle::StorageObjectId;
 
+use super::cancel::Ending;
 use super::error::TransferError;
 use super::model::{SessionItemId, TransferProvider, TransferSessionId, UploadKind};
 use super::state::{ItemState, TransferSessionState};
@@ -27,14 +28,25 @@ const HELD_JOIN: &str =
 
 const IN_FLIGHT_PROGRESS: &str = "'uploading', 'finalizing', 'failed'";
 
-const SELECT_SESSION: &str = "SELECT ts.id, ts.provider, ts.state, ts.target_folder_id,
+macro_rules! select_session {
+    ($filter:literal) => {
+        concat!(
+            "SELECT ts.id, ts.provider, ts.state, ts.target_folder_id,
         ts.deleted_target_folder_id, ts.declared_file_count, ts.declared_bytes,
         ts.completed_file_count, ts.completed_bytes, ts.error_code, ts.error_request_id,
         ts.created_at, ts.updated_at, ts.expires_at,
         COALESCE(q.reserved_bytes, 0) AS held_bytes, 0 AS tus_bytes, 0 AS s3_bytes
       FROM transfer_sessions ts
       LEFT JOIN quota_reservations q ON q.transfer_session_id = ts.id AND q.state = 'held'
-     WHERE ts.id = ?1 AND ts.user_id = ?2";
+     WHERE ",
+            $filter
+        )
+    };
+}
+
+const SELECT_SESSION: &str = select_session!("ts.id = ?1 AND ts.user_id = ?2");
+
+const SELECT_SESSION_UNOWNED: &str = select_session!("ts.id = ?1");
 
 const SELECT_ITEMS: &str = "SELECT t.id, t.ordinal, t.client_file_key, t.display_name,
         t.relative_path, t.declared_size_bytes, t.reserved_bytes, t.upload_kind, t.state,
@@ -73,12 +85,12 @@ const ONE_ITEM: &str = "SELECT id, state, finalize_stage, reserved_bytes, final_
         final_object_key
       FROM transfer_session_files WHERE id = ?1 AND transfer_session_id = ?2";
 
-const CANCEL_ITEMS: &str = "UPDATE transfer_session_files
-      SET state = 'canceled', updated_at = ?2
+const END_ITEMS: &str = "UPDATE transfer_session_files
+      SET state = ?3, updated_at = ?2
     WHERE id IN (SELECT value FROM json_each(?1))
       AND state IN ('pending', 'uploading', 'finalizing', 'failed')";
 
-const TERMINATE_TUS: &str = "UPDATE tus_uploads SET state = 'terminated', updated_at = ?2
+const END_TUS: &str = "UPDATE tus_uploads SET state = ?3, updated_at = ?2
     WHERE transfer_session_file_id IN (SELECT value FROM json_each(?1))
       AND state IN ('created', 'in_progress')";
 
@@ -92,6 +104,15 @@ const MOVE_SESSION: &str = "UPDATE transfer_sessions
           error_code = CASE WHEN ?3 = 'uploading' THEN NULL ELSE error_code END,
           error_request_id = CASE WHEN ?3 = 'uploading' THEN NULL ELSE error_request_id END
     WHERE id = ?1 AND user_id = ?2 AND state = ?7";
+
+const EXPIRE_SESSION: &str = "UPDATE transfer_sessions
+      SET state = 'expired', updated_at = ?2, completed_at = ?2
+    WHERE id = ?1 AND state = ?3 AND (?4 = 0 OR expires_at <= ?2)";
+
+const RESERVATION_HELD: &str = "SELECT EXISTS(SELECT 1 FROM quota_reservations
+        WHERE transfer_session_id = ?1 AND state = 'held')";
+
+const SESSION_OWNER: &str = "SELECT user_id FROM transfer_sessions WHERE id = ?1";
 
 const TOUCH_SESSION: &str = "UPDATE transfer_sessions SET updated_at = ?2 WHERE id = ?1";
 
@@ -154,7 +175,7 @@ pub enum FinalizeStage {
 }
 
 impl FinalizeStage {
-    fn parse(text: &str) -> Option<Self> {
+    pub(super) fn parse(text: &str) -> Option<Self> {
         match text {
             "none" => Some(Self::None),
             "placing" => Some(Self::Placing),
@@ -451,6 +472,17 @@ pub async fn find_session(
     row.as_ref().map(session_from).transpose()
 }
 
+pub async fn find_session_unowned(
+    connection: &mut SqliteConnection,
+    id: TransferSessionId,
+) -> Result<Option<SessionRow>, TransferError> {
+    let row = sqlx::query(SELECT_SESSION_UNOWNED)
+        .bind(id.to_string())
+        .fetch_optional(connection)
+        .await?;
+    row.as_ref().map(session_from).transpose()
+}
+
 pub async fn session_items(
     connection: &mut SqliteConnection,
     id: TransferSessionId,
@@ -486,24 +518,27 @@ pub async fn one_item(
     row.as_ref().map(live_from).transpose()
 }
 
-pub async fn cancel_items(
+pub async fn end_items(
     connection: &mut SqliteConnection,
     items: &[SessionItemId],
+    ending: Ending,
     now: Timestamp,
 ) -> Result<u64, TransferError> {
     if items.is_empty() {
         return Ok(0);
     }
     let list = json_list(items);
-    let canceled = sqlx::query(CANCEL_ITEMS)
+    let ended = sqlx::query(END_ITEMS)
         .bind(&list)
         .bind(now.to_string())
+        .bind(ending.item_state().as_str())
         .execute(&mut *connection)
         .await?
         .rows_affected();
-    sqlx::query(TERMINATE_TUS)
+    sqlx::query(END_TUS)
         .bind(&list)
         .bind(now.to_string())
+        .bind(ending.tus_state())
         .execute(&mut *connection)
         .await?;
     sqlx::query(ABANDON_MULTIPART)
@@ -511,7 +546,7 @@ pub async fn cancel_items(
         .bind(now.to_string())
         .execute(connection)
         .await?;
-    Ok(canceled)
+    Ok(ended)
 }
 
 fn json_list(items: &[SessionItemId]) -> String {
@@ -545,6 +580,46 @@ pub async fn move_session(
         .await?
         .rows_affected();
     Ok(affected == 1)
+}
+
+pub async fn expire_session(
+    connection: &mut SqliteConnection,
+    id: TransferSessionId,
+    from: TransferSessionState,
+    now: Timestamp,
+    require_due: bool,
+) -> Result<bool, TransferError> {
+    let affected = sqlx::query(EXPIRE_SESSION)
+        .bind(id.to_string())
+        .bind(now.to_string())
+        .bind(from.as_str())
+        .bind(i64::from(require_due))
+        .execute(connection)
+        .await?
+        .rows_affected();
+    Ok(affected == 1)
+}
+
+pub async fn session_owner(
+    connection: &mut SqliteConnection,
+    session: TransferSessionId,
+) -> Result<Option<String>, TransferError> {
+    let owner: Option<Option<String>> = sqlx::query_scalar(SESSION_OWNER)
+        .bind(session.to_string())
+        .fetch_optional(connection)
+        .await?;
+    Ok(owner.flatten())
+}
+
+pub async fn reservation_held(
+    connection: &mut SqliteConnection,
+    session: TransferSessionId,
+) -> Result<bool, TransferError> {
+    let held: i64 = sqlx::query_scalar(RESERVATION_HELD)
+        .bind(session.to_string())
+        .fetch_one(connection)
+        .await?;
+    Ok(held != 0)
 }
 
 pub async fn retry_item(

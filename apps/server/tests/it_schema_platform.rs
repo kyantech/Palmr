@@ -626,7 +626,7 @@ async fn it_schema_jobs_dedup_partial_unique() -> Result<()> {
     );
     assert_eq!(
         database
-            .count("SELECT count(*) FROM jobs WHERE kind <> 'quota.reconcile'")
+            .count("SELECT count(*) FROM jobs WHERE kind NOT IN ('quota.reconcile', 'tus.expire_stale')")
             .await?,
         7
     );
