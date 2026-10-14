@@ -96,6 +96,7 @@ struct Stack {
     tus: crate::features::transfers::TusService,
     finalizer: Option<crate::features::transfers::finalize::Finalizer>,
     transfer_storage_handle: crate::features::transfers::TransferStorage,
+    s3_handle: Option<crate::features::transfers::S3Service>,
     data_dir: std::path::PathBuf,
     storage_down: Arc<std::sync::atomic::AtomicBool>,
     providers: IdentityProviderService,
@@ -114,6 +115,7 @@ struct TusSetup {
     limits: crate::features::transfers::TusLimits,
     shutdown: tokio_util::sync::CancellationToken,
     finalize: Option<FinalizeSetup>,
+    proxy: crate::features::transfers::ProxyLimits,
 }
 
 #[derive(Clone)]
@@ -147,6 +149,7 @@ impl Default for TusSetup {
             limits: crate::features::transfers::TusLimits::production(262_144),
             shutdown: tokio_util::sync::CancellationToken::new(),
             finalize: None,
+            proxy: crate::features::transfers::ProxyLimits::production(),
         }
     }
 }
@@ -347,6 +350,8 @@ impl Stack {
                 storage: transfer_storage.clone(),
                 transfers: transfers.clone(),
                 finalizer: finalizer.clone(),
+                proxy: tus_setup.proxy,
+                shutdown: tus_setup.shutdown.clone(),
             })
         });
         let tus = crate::features::transfers::TusService::new(
@@ -457,6 +462,7 @@ impl Stack {
             SecurityHeaders::new(&config),
             CsrfGuard::new(&config.base_url),
         );
+        let s3_handle = s3.clone();
         let router = match &s3 {
             Some(s3) => router.layer(Extension(s3.clone())),
             None => router,
@@ -480,6 +486,7 @@ impl Stack {
             tus,
             finalizer,
             transfer_storage_handle,
+            s3_handle,
             data_dir: root.to_path_buf(),
             storage_down,
             providers,
@@ -1999,6 +2006,7 @@ mod admin_smtp;
 mod admin_users;
 mod authorize;
 mod callback;
+mod checksum_gate;
 mod deletion_tests;
 mod file_search;
 mod file_writes;
@@ -2019,6 +2027,7 @@ mod rate_limit;
 mod recent_auth;
 mod s3_multipart;
 mod s3_multipart_faults;
+mod s3_proxied;
 mod totp;
 mod transfer_audit;
 mod transfer_cleanup;

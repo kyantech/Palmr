@@ -218,33 +218,43 @@ impl S3Provider {
         let first = match direct {
             Some(part) => part,
             None => {
-                self.upload_part_body(
-                    target,
-                    1,
-                    PROBE_PART_BYTES,
-                    ProbePattern::new(seed, 0, PROBE_PART_BYTES).body(),
-                )
-                .await?
+                self.probe_part(target, 1, ProbePattern::new(seed, 0, PROBE_PART_BYTES))
+                    .await?
             }
         };
         let second = self
-            .upload_part_body(
+            .probe_part(
                 target,
                 2,
-                PROBE_PART_BYTES,
-                ProbePattern::new(seed, PROBE_PART_BYTES, PROBE_PART_BYTES).body(),
+                ProbePattern::new(seed, PROBE_PART_BYTES, PROBE_PART_BYTES),
             )
             .await?;
         let third = self
-            .upload_part_body(
+            .probe_part(
                 target,
                 3,
-                PROBE_TAIL_BYTES,
-                ProbePattern::new(seed, 2 * PROBE_PART_BYTES, PROBE_TAIL_BYTES).body(),
+                ProbePattern::new(seed, 2 * PROBE_PART_BYTES, PROBE_TAIL_BYTES),
             )
             .await?;
         self.list_uploads_probe(run, target).await;
         self.complete_upload(target, &[first, second, third]).await
+    }
+
+    async fn probe_part(
+        &self,
+        target: UploadTarget<'_>,
+        number: u32,
+        pattern: ProbePattern,
+    ) -> Result<UploadedPart, StorageError> {
+        let len = pattern.len();
+        if !self.effective_caps().requires_checksum_headers {
+            return self
+                .upload_part_body(target, number, len, pattern.body())
+                .await;
+        }
+        let checksum = pattern.checksum().await?;
+        self.upload_part_with(target, number, len, pattern.body(), Some(checksum))
+            .await
     }
 
     async fn direct_part(
@@ -331,6 +341,11 @@ impl S3Provider {
             tracing::info!(
                 profile = self.clients.shared().profile().as_str(),
                 "the provider accepted a browser-shaped part upload without checksum headers; parts go directly from the browser for this process"
+            );
+        } else if accepted && self.checksum_forced() && self.caps.requires_checksum_headers {
+            tracing::info!(
+                profile = self.clients.shared().profile().as_str(),
+                "the provider accepted a browser-shaped part upload, but PALMR_S3_REQUIRE_PART_CHECKSUMS is set: parts keep going through this server"
             );
         }
         run.fact(FactReport {

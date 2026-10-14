@@ -18,7 +18,7 @@ use crate::domain::clock::TestClock;
 use crate::infra::telemetry::build_dispatch;
 use crate::storage::build_provider;
 use crate::storage::health::{ProbeDepth, Schedule, SelfTestResult};
-use crate::storage::s3::fake_server::{FakeS3, BUCKET};
+use crate::storage::s3::fake_server::{FakeS3, PresignFault, BUCKET};
 
 const ACCESS_KEY: &str = "AKIA-startup-access-sentinel";
 const SECRET_KEY: &str = "startup-secret-sentinel-81c4";
@@ -63,21 +63,35 @@ fn load(vars: &[(&str, &str)]) -> OperatorConfig {
 }
 
 fn s3_config(data: &Path, address: SocketAddr, endpoint: &str) -> OperatorConfig {
+    s3_config_with(data, address, endpoint, ("minio", None))
+}
+
+fn s3_config_with(
+    data: &Path,
+    address: SocketAddr,
+    endpoint: &str,
+    (profile, forced): (&str, Option<&str>),
+) -> OperatorConfig {
     let port = address.port().to_string();
     let base_url = format!("http://{address}");
-    load(&[
-        ("PALMR_HOST", "127.0.0.1"),
-        ("PALMR_PORT", &port),
-        ("PALMR_BASE_URL", &base_url),
-        ("PALMR_DATA_DIR", data.to_str().unwrap()),
-        ("PALMR_STORAGE_PROVIDER", "s3"),
-        ("PALMR_S3_ENDPOINT", endpoint),
-        ("PALMR_S3_REGION", "us-east-1"),
-        ("PALMR_S3_BUCKET", BUCKET),
-        ("PALMR_S3_ACCESS_KEY", ACCESS_KEY),
-        ("PALMR_S3_SECRET_KEY", SECRET_KEY),
-        ("PALMR_S3_PROFILE", "minio"),
-    ])
+    load(
+        &[
+            ("PALMR_HOST", "127.0.0.1"),
+            ("PALMR_PORT", &port),
+            ("PALMR_BASE_URL", &base_url),
+            ("PALMR_DATA_DIR", data.to_str().unwrap()),
+            ("PALMR_STORAGE_PROVIDER", "s3"),
+            ("PALMR_S3_ENDPOINT", endpoint),
+            ("PALMR_S3_REGION", "us-east-1"),
+            ("PALMR_S3_BUCKET", BUCKET),
+            ("PALMR_S3_ACCESS_KEY", ACCESS_KEY),
+            ("PALMR_S3_SECRET_KEY", SECRET_KEY),
+            ("PALMR_S3_PROFILE", profile),
+        ]
+        .into_iter()
+        .chain(forced.map(|value| ("PALMR_S3_REQUIRE_PART_CHECKSUMS", value)))
+        .collect::<Vec<_>>(),
+    )
 }
 
 async fn tick(ticks: &mpsc::Sender<oneshot::Sender<()>>) {
@@ -225,6 +239,179 @@ async fn it_startup_s3_down_degraded_not_fatal() {
     );
 }
 
+async fn start_with_profile(
+    profile: &str,
+    fault: PresignFault,
+    output: &Capture,
+) -> (Application, SocketAddr, FakeS3, TempDir) {
+    start_configured((profile, None), fault, output).await
+}
+
+async fn start_configured(
+    selection: (&str, Option<&str>),
+    fault: PresignFault,
+    output: &Capture,
+) -> (Application, SocketAddr, FakeS3, TempDir) {
+    let dispatch = build_dispatch(
+        EnvFilter::new("palmr_server=debug"),
+        LogFormat::Json,
+        output.clone(),
+        (),
+        false,
+    );
+    let guard = tracing::dispatcher::set_default(&dispatch);
+    let data = TempDir::new().unwrap();
+    let fake = FakeS3::start().await;
+    fake.set_fault(fault);
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let address = listener.local_addr().unwrap();
+    let config = s3_config_with(data.path(), address, &fake.endpoint(), selection);
+    let (_ticks, schedule) = mpsc::channel(1);
+    let application = Application::start_with_schedule(
+        listener,
+        &config,
+        Arc::new(TestClock::new(datetime!(2026-09-25 12:00 UTC))),
+        Schedule::Manual(schedule),
+    )
+    .await
+    .unwrap();
+    drop(guard);
+    (application, address, fake, data)
+}
+
+fn log_lines(output: &Capture) -> Vec<Value> {
+    String::from_utf8(
+        output
+            .0
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .clone(),
+    )
+    .unwrap()
+    .lines()
+    .filter_map(|line| serde_json::from_str(line).ok())
+    .collect()
+}
+
+fn proxied_warnings(lines: &[Value]) -> Vec<&Value> {
+    lines
+        .iter()
+        .filter(|line| line["data_plane"] == "proxied")
+        .collect()
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn it_startup_warns_once_when_the_provider_requires_proxied_parts() {
+    let output = Capture::default();
+    let (application, address, _fake, _data) =
+        start_with_profile("r2", PresignFault::SignatureMismatch, &output).await;
+
+    let (_, ready) = fetch(address, "/health/ready").await;
+    let ready = json(&ready);
+    assert_eq!(ready["dataPlane"], "proxied", "{ready}");
+    assert_eq!(ready["proxyCeilingBytes"], 83_047_219_200_u64);
+
+    let lines = log_lines(&output);
+    let warnings = proxied_warnings(&lines);
+    assert_eq!(warnings.len(), 1, "one startup warning, never one per part");
+    let warning = warnings[0];
+    assert_eq!(warning["checksum_requirement"], "profile");
+    assert_eq!(warning["level"], "WARN");
+    assert_eq!(warning["part_size_bytes"], 8_388_608);
+    assert_eq!(warning["max_concurrent_parts"], 8);
+    assert_eq!(warning["max_object_bytes"], 83_047_219_200_u64);
+    let text = warning["message"].as_str().unwrap();
+    assert!(text.contains("slower"), "{text}");
+    let logs = serde_json::to_string(&lines).unwrap();
+    for leaked in [
+        ACCESS_KEY,
+        SECRET_KEY,
+        "X-Amz-Signature",
+        "Authorization",
+        "objects/",
+    ] {
+        assert!(!logs.contains(leaked), "{leaked} leaked");
+    }
+    assert_eq!(
+        application.shutdown(Duration::from_secs(5)).await,
+        Drain::Completed
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn it_startup_keeps_direct_parts_when_the_self_test_proves_them_for_a_checksum_profile() {
+    let output = Capture::default();
+    let (application, address, _fake, _data) =
+        start_with_profile("r2", PresignFault::None, &output).await;
+
+    let (_, ready) = fetch(address, "/health/ready").await;
+    let ready = json(&ready);
+    assert_eq!(ready["dataPlane"], "direct", "{ready}");
+    assert!(ready.get("proxyCeilingBytes").is_none(), "{ready}");
+    let lines = log_lines(&output);
+    assert!(proxied_warnings(&lines).is_empty(), "no stale warning");
+    assert!(lines.iter().any(|line| line["message"]
+        .as_str()
+        .is_some_and(|message| message.contains("parts go directly from the browser"))));
+
+    let (application_minio, address, _fake, _data) =
+        start_with_profile("minio", PresignFault::None, &Capture::default()).await;
+    let (_, ready) = fetch(address, "/health/ready").await;
+    assert_eq!(json(&ready)["dataPlane"], "direct");
+    for application in [application, application_minio] {
+        assert_eq!(
+            application.shutdown(Duration::from_secs(5)).await,
+            Drain::Completed
+        );
+    }
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn it_startup_honors_an_explicit_checksum_requirement_over_profile_and_self_test() {
+    let output = Capture::default();
+    let (forced_on, address, _fake, _data) =
+        start_configured(("generic", Some("true")), PresignFault::None, &output).await;
+    let (_, ready) = fetch(address, "/health/ready").await;
+    let ready = json(&ready);
+    assert_eq!(
+        ready["dataPlane"], "proxied",
+        "a tolerant provider does not undo the operator's setting: {ready}"
+    );
+    assert_eq!(ready["proxyCeilingBytes"], 83_047_219_200_u64);
+    let lines = log_lines(&output);
+    let warnings = proxied_warnings(&lines);
+    assert_eq!(warnings.len(), 1);
+    assert_eq!(warnings[0]["checksum_requirement"], "operator");
+    assert!(
+        !lines.iter().any(|line| line["message"]
+            .as_str()
+            .is_some_and(|message| message.contains("parts go directly from the browser"))),
+        "no relaxation is logged"
+    );
+    assert!(lines.iter().any(|line| line["message"]
+        .as_str()
+        .is_some_and(|message| message.contains("PALMR_S3_REQUIRE_PART_CHECKSUMS is set"))));
+
+    let (forced_off, address, _fake, _data) = start_configured(
+        ("r2", Some("false")),
+        PresignFault::SignatureMismatch,
+        &Capture::default(),
+    )
+    .await;
+    let (_, ready) = fetch(address, "/health/ready").await;
+    assert_eq!(
+        json(&ready)["dataPlane"],
+        "direct",
+        "an explicit false beats the r2 default even when the probe fails"
+    );
+    for application in [forced_on, forced_off] {
+        assert_eq!(
+            application.shutdown(Duration::from_secs(5)).await,
+            Drain::Completed
+        );
+    }
+}
+
 #[tokio::test(flavor = "multi_thread")]
 async fn it_startup_installs_local_provider_and_probes_it() {
     let data = TempDir::new().unwrap();
@@ -249,6 +436,10 @@ async fn it_startup_installs_local_provider_and_probes_it() {
     let (status, body) = fetch(address, "/health/ready").await;
     assert_eq!(status, 200, "{body}");
     assert_eq!(json(&body)["storage"], "ok");
+    assert!(
+        json(&body).get("dataPlane").is_none(),
+        "local storage has no object-store data plane: {body}"
+    );
     let probes = data.path().join("storage").join("_palmr").join("probe");
     assert!(probes.is_dir());
     assert_eq!(std::fs::read_dir(&probes).unwrap().count(), 0);

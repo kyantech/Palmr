@@ -1,13 +1,17 @@
 use axum::extract::{Extension, Path, Request};
 use axum::response::{IntoResponse, Response};
-use http::header::CACHE_CONTROL;
-use http::StatusCode;
+use http::header::{CACHE_CONTROL, CONTENT_LENGTH, RETRY_AFTER};
+use http::{HeaderValue, StatusCode};
 use utoipa_axum::routes;
 
 use crate::app::auth_class::AuthClass;
-use crate::app::router::{RateLimitClass, RoutePolicy, Routes, Transport};
+use crate::app::router::{
+    BytePath, Deadline, RateLimitClass, RequestBody, ResponseEncoding, RoutePolicy, Routes,
+    Transport,
+};
 use crate::app::state::AppState;
 use crate::features::auth::sessions::routes::client_metadata;
+use crate::infra::http::csrf::RequestContent;
 use crate::infra::http::error::ApiErrorBody;
 use crate::infra::http::extractors::Authenticated;
 use crate::infra::http::json;
@@ -18,9 +22,10 @@ use super::super::error::TransferError;
 use super::super::model::{SessionItemId, TransferSessionId};
 use super::super::routes::{json_response, transfer_error, NO_STORE};
 use super::model::{
-    CompleteResponse, CreateMultipartResponse, PartsResponse, PresignRequest, PresignResponse,
-    ReportPartsRequest,
+    CompleteResponse, CompletedPartView, CreateMultipartResponse, PartsResponse, PresignRequest,
+    PresignResponse, ReportPartsRequest,
 };
+use super::proxied::{ProxiedPart, ProxyError};
 use super::service::S3Service;
 
 const CONTROL_ROUTE: RoutePolicy = RoutePolicy::new(
@@ -29,11 +34,23 @@ const CONTROL_ROUTE: RoutePolicy = RoutePolicy::new(
     Transport::ControlPlane,
 );
 
+const PART_ROUTE: RoutePolicy = RoutePolicy::new(
+    AuthClass::Authenticated,
+    RateLimitClass::TransferData,
+    Transport::BytePath(BytePath::new(
+        RequestBody::Streamed,
+        ResponseEncoding::Identity,
+        Deadline::IdleOnly,
+    )),
+)
+.with_request_content(RequestContent::OctetStream);
+
 pub fn routes() -> Routes<AppState> {
     Routes::new()
         .route(CONTROL_ROUTE, routes!(create_multipart))
         .route(CONTROL_ROUTE, routes!(presign_parts))
         .route(CONTROL_ROUTE, routes!(report_parts, list_parts))
+        .route(PART_ROUTE, routes!(upload_part))
         .route(CONTROL_ROUTE, routes!(complete_multipart))
         .route(CONTROL_ROUTE, routes!(abort_multipart))
 }
@@ -279,5 +296,100 @@ async fn abort_multipart(
     match service.abort(&caller, id, item_id).await {
         Ok(()) => (StatusCode::NO_CONTENT, [(CACHE_CONTROL, NO_STORE)]).into_response(),
         Err(error) => transfer_error(&error, request_id.as_ref()),
+    }
+}
+
+fn proxy_failure(error: &ProxyError, request_id: Option<&RequestId>) -> Response {
+    let api_error = error.api_error();
+    if api_error.status().is_server_error() {
+        tracing::error!(kind = error.kind(), "proxied part upload failed");
+    }
+    let mut response = tag_error(api_error, request_id).into_response();
+    if let Some(retry_after) = error.retry_after() {
+        response
+            .headers_mut()
+            .insert(RETRY_AFTER, HeaderValue::from(retry_after));
+    }
+    response
+}
+
+#[utoipa::path(
+    put,
+    path = "/api/v1/transfers/sessions/{sid}/files/{itemId}/s3/multipart/parts/{partNumber}",
+    tag = "transfers",
+    params(
+        ("sid" = String, Path, description = "Transfer session UUIDv7"),
+        ("itemId" = String, Path, description = "Transfer item UUIDv7"),
+        ("partNumber" = u32, Path, description = "The part to upload, `1..=partCount`, in canonical decimal form."),
+    ),
+    request_body(
+        content_type = "application/octet-stream",
+        description = "Exactly the bytes of this part and nothing else: `partSizeBytes` for every part but the last, the remainder for the last. The body is streamed into one bounded buffer, hashed with SHA-256 and forwarded to the storage provider with that checksum; it is never collected beyond the one part. There is no whole-request deadline and no limit on the total duration: only a 60 s gap between frames ends the request with `TRANSFER_IDLE_TIMEOUT`. Only available while the storage profile requires checksum headers (`checksumHeadersRequired: true` on create); otherwise parts go straight to the provider with a presigned URL."
+    ),
+    responses(
+        (status = 200, description = "The provider stored the part. `etag` is the provider's verbatim, `sizeBytes` the stored length. The part is recorded only after the provider answered; `GET …/parts` and completion still trust `ListParts` alone. Uploading the same part again replaces it.", body = CompletedPartView),
+        (status = 401, description = "Authentication required.", body = ApiErrorBody),
+        (status = 403, description = "The CSRF proof or origin is missing or not allowed, the session is restricted, or the account is deactivated (`AUTH_ACCOUNT_INACTIVE`).", body = ApiErrorBody),
+        (status = 404, description = "`MULTIPART_NOT_FOUND`: unknown, aborted or another user's upload, an item that is not an S3 multipart upload, or a provider that no longer knows the upload.", body = ApiErrorBody),
+        (status = 408, description = "`TRANSFER_IDLE_TIMEOUT`: no frame arrived for 60 s. Nothing was sent to the provider; upload the part again.", body = ApiErrorBody),
+        (status = 409, description = "`MULTIPART_ALREADY_COMPLETED`, or `TRANSFER_SESSION_STATE_INVALID` while the upload is being completed, canceled or its session is terminal. A part the provider accepted after such a transition is not recorded.", body = ApiErrorBody),
+        (status = 410, description = "`TRANSFER_SESSION_EXPIRED`.", body = ApiErrorBody),
+        (status = 415, description = "The request is not `application/octet-stream`.", body = ApiErrorBody),
+        (status = 422, description = "`MULTIPART_PART_INVALID` with `details.reason`: `part_number` (outside the plan or not a canonical integer), `content_length_mismatch`, `body_too_long`, `body_too_short`, `body_interrupted`, `direct_part_upload` (the profile does not require checksum headers: use a presigned URL), `part_size_exceeds_proxy_buffer` (the upload was planned with parts larger than the 8 MiB proxy buffer: abort it and start a new upload). No byte reached the provider.", body = ApiErrorBody),
+        (status = 423, description = "`UPLOAD_LOCKED`: another request is uploading this part right now. Retry after it ends.", body = ApiErrorBody),
+        (status = 429, description = "Rate limited.", body = ApiErrorBody),
+        (status = 502, description = "`STORAGE_UPSTREAM_ERROR`: the provider rejected the part; `details.reason = checksum_rejected` when it refused the SHA-256 checksum.", body = ApiErrorBody),
+        (status = 503, description = "`TRANSFER_BACKPRESSURE` (with `Retry-After`) while eight parts are already being proxied by this instance, `STORAGE_UNAVAILABLE` or `SERVICE_UNAVAILABLE`. Retry.", body = ApiErrorBody),
+    )
+)]
+async fn upload_part(
+    Extension(service): Extension<S3Service>,
+    Authenticated(principal): Authenticated,
+    Path((id, item_id, part)): Path<(String, String, String)>,
+    request: Request,
+) -> Response {
+    let request_id = RequestId::of(&request);
+    let Some((id, item_id)) = ids(&id, &item_id) else {
+        return transfer_error(&TransferError::MultipartNotFound, request_id.as_ref());
+    };
+    let (parts, body) = request.into_parts();
+    let content_length = match declared_length(&parts.headers) {
+        Ok(declared) => declared,
+        Err(error) => return proxy_failure(&ProxyError::Transfer(error), request_id.as_ref()),
+    };
+    let outcome = service
+        .upload_part_proxied(
+            principal.user_id,
+            id,
+            item_id,
+            ProxiedPart {
+                part_number: part,
+                content_length,
+                body,
+            },
+        )
+        .await;
+    match outcome {
+        Ok(view) => json_response(StatusCode::OK, &view, request_id.as_ref()),
+        Err(error) => proxy_failure(&error, request_id.as_ref()),
+    }
+}
+
+fn declared_length(headers: &http::HeaderMap) -> Result<Option<u64>, TransferError> {
+    let mut values = headers.get_all(CONTENT_LENGTH).iter();
+    match (values.next(), values.next()) {
+        (None, _) => Ok(None),
+        (Some(value), None) => value
+            .to_str()
+            .ok()
+            .filter(|text| !text.is_empty() && text.bytes().all(|byte| byte.is_ascii_digit()))
+            .and_then(|digits| digits.parse().ok())
+            .map(Some)
+            .ok_or(TransferError::MultipartPartInvalid {
+                reason: "content_length_mismatch",
+            }),
+        (Some(_), Some(_)) => Err(TransferError::MultipartPartInvalid {
+            reason: "content_length_mismatch",
+        }),
     }
 }

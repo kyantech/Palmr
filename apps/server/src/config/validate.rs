@@ -376,6 +376,8 @@ impl<'a> Validator<'a> {
             integer(S3_MULTIPART_TTL_HOURS_RANGE),
         );
 
+        let require_part_checksums = self.optional(Variable::S3RequirePartChecksums, boolean);
+
         Some(S3Config {
             profile: profile.unwrap_or(S3Profile::Generic),
             endpoint: endpoint?,
@@ -394,6 +396,7 @@ impl<'a> Validator<'a> {
             multipart_ttl: Duration::from_secs(
                 u64::from(multipart_ttl_hours.unwrap_or(DEFAULT_S3_MULTIPART_TTL_HOURS)) * 3_600,
             ),
+            require_part_checksums,
         })
     }
 }
@@ -633,6 +636,12 @@ mod tests {
     )]
     #[case::force_path_style("PALMR_S3_FORCE_PATH_STYLE", "maybe", Constraint::Boolean)]
     #[case::reject_unauthorized("PALMR_S3_REJECT_UNAUTHORIZED", "0", Constraint::Boolean)]
+    #[case::require_part_checksums("PALMR_S3_REQUIRE_PART_CHECKSUMS", "1", Constraint::Boolean)]
+    #[case::require_part_checksums_word(
+        "PALMR_S3_REQUIRE_PART_CHECKSUMS",
+        "auto",
+        Constraint::Boolean
+    )]
     #[case::multipart_ttl_zero("PALMR_S3_MULTIPART_TTL_HOURS", "0", integer(1, 720))]
     #[case::multipart_ttl_too_long("PALMR_S3_MULTIPART_TTL_HOURS", "721", integer(1, 720))]
     fn unit_config_rejects_invalid_s3_value(
@@ -815,6 +824,38 @@ mod tests {
             panic!("expected S3 storage");
         };
         assert_eq!(s3.profile, S3Profile::Garage);
+    }
+
+    #[rstest]
+    #[case::unset(None, None)]
+    #[case::forced_on(Some("true"), Some(true))]
+    #[case::forced_on_any_case(Some("TRUE"), Some(true))]
+    #[case::forced_off(Some("false"), Some(false))]
+    fn it_s3_part_checksum_requirement_is_a_tri_state(
+        #[case] value: Option<&'static str>,
+        #[case] expected: Option<bool>,
+    ) {
+        let overrides: Vec<(&str, &str)> = value
+            .into_iter()
+            .map(|value| ("PALMR_S3_REQUIRE_PART_CHECKSUMS", value))
+            .collect();
+        let loaded = load_owned(with(COMPLETE_S3, &overrides)).unwrap();
+        let StorageConfig::S3(s3) = loaded.config.storage else {
+            panic!("expected S3 storage");
+        };
+        assert_eq!(s3.require_part_checksums, expected);
+        assert_eq!(s3.profile, S3Profile::Generic, "the profile is untouched");
+    }
+
+    #[test]
+    fn it_s3_part_checksum_requirement_is_ignored_with_a_warning_for_local_storage() {
+        let loaded = load(&[("PALMR_S3_REQUIRE_PART_CHECKSUMS", "true")]).unwrap();
+        assert!(matches!(loaded.config.storage, StorageConfig::Local));
+        assert!(
+            format!("{:?}", loaded.warnings).contains("S3RequirePartChecksums"),
+            "{:?}",
+            loaded.warnings
+        );
     }
 
     #[rstest]

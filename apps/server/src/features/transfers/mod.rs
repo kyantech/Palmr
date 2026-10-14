@@ -16,6 +16,7 @@ pub mod state;
 pub mod tus;
 
 pub use admission::TransferStorage;
+pub use s3::proxied::{ProxyLimits, S3_PROXY_CONCURRENCY};
 pub use s3::{S3Service, S3ServiceParts};
 pub use service::TransferService;
 pub use tus::{TusLimits, TusService, TusServiceParts};

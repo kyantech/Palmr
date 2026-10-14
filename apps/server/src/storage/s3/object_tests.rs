@@ -358,6 +358,7 @@ fn provider_for(
         ca_file: None,
         tls_verification: S3TlsVerification::Enabled,
         multipart_ttl: Duration::from_secs(24 * 60 * 60),
+        require_part_checksums: None,
     };
     let clients = S3Clients::build(&StorageConfig::S3(Box::new(config)))
         .unwrap()

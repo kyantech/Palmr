@@ -2,9 +2,10 @@ use std::io;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
+use sha2::{Digest, Sha256};
 use tokio::io::{AsyncRead, AsyncReadExt as _, ReadBuf};
 
-use crate::storage::provider::ObjectBody;
+use crate::storage::provider::{ObjectBody, PartChecksum};
 
 const COMPARE_CHUNK: usize = 8 * 1024;
 
@@ -32,8 +33,25 @@ impl ProbePattern {
         }
     }
 
+    pub(in crate::storage) const fn len(&self) -> u64 {
+        self.end.saturating_sub(self.position)
+    }
+
     pub(in crate::storage) fn body(self) -> ObjectBody {
         Box::pin(self)
+    }
+
+    pub(in crate::storage) async fn checksum(self) -> io::Result<PartChecksum> {
+        let mut body = self.body();
+        let mut hasher = Sha256::new();
+        let mut buffer = [0_u8; COMPARE_CHUNK];
+        loop {
+            let read = body.read(&mut buffer).await?;
+            if read == 0 {
+                return Ok(PartChecksum::sha256(hasher.finalize().into()));
+            }
+            hasher.update(&buffer[..read]);
+        }
     }
 }
 

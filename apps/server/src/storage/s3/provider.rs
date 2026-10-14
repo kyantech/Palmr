@@ -34,8 +34,12 @@ impl S3Provider {
         self.verified_caps.get().unwrap_or(&self.caps)
     }
 
+    pub(super) const fn checksum_forced(&self) -> bool {
+        self.checksum_forced
+    }
+
     pub(super) fn relax_checksum_requirement(&self) -> bool {
-        if !self.caps.requires_checksum_headers {
+        if self.checksum_forced || !self.caps.requires_checksum_headers {
             return false;
         }
         let relaxed = StorageCapabilities {

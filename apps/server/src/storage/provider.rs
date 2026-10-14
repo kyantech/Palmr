@@ -4,6 +4,7 @@ use std::pin::Pin;
 use std::time::Duration;
 
 use async_trait::async_trait;
+use base64ct::{Base64, Encoding};
 use http::{HeaderMap, HeaderValue, Method};
 use time::OffsetDateTime;
 use tokio::io::AsyncRead;
@@ -143,6 +144,25 @@ pub struct UploadedPart {
     pub part_number: u32,
     pub etag: ETag,
     pub size: u64,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub struct PartChecksum([u8; 32]);
+
+impl PartChecksum {
+    pub const fn sha256(digest: [u8; 32]) -> Self {
+        Self(digest)
+    }
+
+    pub fn to_base64(self) -> String {
+        Base64::encode_string(&self.0)
+    }
+}
+
+impl fmt::Debug for PartChecksum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("PartChecksum(sha256)")
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -293,6 +313,15 @@ pub trait MultipartStorage: Send + Sync {
         part_number: u32,
         len: u64,
         body: ObjectBody,
+    ) -> Result<UploadedPart, StorageError>;
+
+    async fn upload_part_checksummed(
+        &self,
+        handle: &MultipartHandle,
+        part_number: u32,
+        len: u64,
+        body: ObjectBody,
+        checksum: PartChecksum,
     ) -> Result<UploadedPart, StorageError>;
 
     async fn upload_part_copy(

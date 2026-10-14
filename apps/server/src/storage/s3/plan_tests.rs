@@ -382,6 +382,61 @@ fn unit_proxy_ceiling_exact_bytes() {
 }
 
 #[test]
+fn unit_proxy_ceiling_respects_stricter_provider_limits() {
+    let strict_object = ProfileLimits {
+        max_object: 50 * GIB,
+        ..ProfileLimits::BASELINE
+    };
+    assert_eq!(proxy_ceiling_bytes(&strict_object), Ok(50 * GIB));
+    assert!(proxy_admit(50 * GIB, &strict_object).is_ok());
+    let error = proxy_admit(50 * GIB + 1, &strict_object).unwrap_err();
+    assert_eq!(error.reason(), Some(FileTooLargeReason::ObjectSize));
+    assert_eq!(error.provider_max_bytes(), Some(50 * GIB));
+
+    let few_parts = ProfileLimits {
+        max_parts: 1_000,
+        ..ProfileLimits::BASELINE
+    };
+    let ceiling = proxy_ceiling_bytes(&few_parts).unwrap();
+    assert_eq!(ceiling, 8 * MIB * 900);
+    assert!(proxy_admit(ceiling, &few_parts).is_ok());
+    let error = proxy_admit(ceiling + 1, &few_parts).unwrap_err();
+    assert_eq!(error.reason(), Some(FileTooLargeReason::ProxyPartCount));
+    assert_eq!(error.provider_max_bytes(), Some(ceiling));
+
+    let wide_margin = ProfileLimits {
+        safety_margin: 5_000,
+        ..ProfileLimits::BASELINE
+    };
+    assert_eq!(proxy_ceiling_bytes(&wide_margin), Ok(8 * MIB * 5_000));
+
+    let no_usable_parts = ProfileLimits {
+        safety_margin: 10_000,
+        ..ProfileLimits::BASELINE
+    };
+    assert_eq!(
+        proxy_ceiling_bytes(&no_usable_parts),
+        Err(PartPlanError::InvalidProfile)
+    );
+    assert_eq!(
+        proxy_admit(1, &no_usable_parts),
+        Err(PartPlanError::InvalidProfile)
+    );
+
+    let widest = ProfileLimits {
+        max_parts: u32::MAX,
+        safety_margin: 0,
+        max_object: u64::MAX,
+        ..ProfileLimits::BASELINE
+    };
+    assert_eq!(
+        proxy_ceiling_bytes(&widest),
+        Ok(8 * MIB * u64::from(u32::MAX)),
+        "checked arithmetic never wraps at the widest legal profile"
+    );
+}
+
+#[test]
 fn unit_plan_is_deterministic() {
     let profile = ProviderProfile::Generic;
     for size in [

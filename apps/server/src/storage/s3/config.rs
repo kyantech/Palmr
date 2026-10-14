@@ -87,6 +87,7 @@ pub struct ResolvedS3Config {
     pub ca_file: Option<PathBuf>,
     pub verify_certificates: bool,
     pub multipart_ttl: Duration,
+    pub require_part_checksums: Option<bool>,
 }
 
 impl ResolvedS3Config {
@@ -106,6 +107,7 @@ impl ResolvedS3Config {
             ca_file: s3.ca_file.clone(),
             verify_certificates: s3.tls_verification == S3TlsVerification::Enabled,
             multipart_ttl: s3.multipart_ttl,
+            require_part_checksums: s3.require_part_checksums,
         }
     }
 
@@ -131,6 +133,7 @@ impl fmt::Debug for ResolvedS3Config {
             .field("ca_file", &self.ca_file)
             .field("verify_certificates", &self.verify_certificates)
             .field("multipart_ttl", &self.multipart_ttl)
+            .field("require_part_checksums", &self.require_part_checksums)
             .finish()
     }
 }

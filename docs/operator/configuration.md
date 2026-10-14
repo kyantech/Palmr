@@ -41,8 +41,15 @@ Palmr boots with no environment variables at all. An empty value (`PALMR_BASE_UR
 | `PALMR_S3_CA_FILE` | — | path to a PEM bundle trusted by the S3 client only |
 | `PALMR_S3_REJECT_UNAUTHORIZED` | `true` | `true`, `false` |
 | `PALMR_S3_MULTIPART_TTL_HOURS` | `24` | `1`–`720` |
+| `PALMR_S3_REQUIRE_PART_CHECKSUMS` | profile default | `true`, `false` |
 
 The provider profile is never inferred from the endpoint hostname: set `PALMR_S3_PROFILE` explicitly.
+
+A provider that requires a checksum on every uploaded part cannot take browser-direct uploads, because a browser cannot compute the checksum. Palmr then uploads parts itself (browser → Palmr → S3): slower, bounded to eight 8 MiB parts in flight, and limited to files of 83 047 219 200 bytes (77.34375 GiB). Palmr logs one `WARN` at startup (`data_plane=proxied`, `checksum_requirement=operator|profile`) and `/health/ready` reports `"dataPlane": "proxied"` and `"proxyCeilingBytes"`.
+
+Set `PALMR_S3_REQUIRE_PART_CHECKSUMS=true` to turn this mode on for a provider that has no matching profile (for example `generic`), or `false` to force direct uploads even on `r2`. Unset, the profile decides (`r2` requires checksums; every other profile does not). Precedence: the explicit variable, then the profile default, then the storage self-test: the self-test tries a browser-shaped part at startup and switches an `r2`-defaulted deployment back to direct uploads if the provider accepts it (`"dataPlane": "direct"`, no warning), but it never overrides an explicit value and never turns the mode on. Existing uploads keep the part plan they were created with: an upload with 8 MiB parts can continue in either mode, an upload with larger parts cannot be proxied and must be restarted.
+
+Uploads are never cut off for taking long. A part that stops sending data for 60 seconds is refused and the browser retries it.
 
 ## Startup failures and warnings
 

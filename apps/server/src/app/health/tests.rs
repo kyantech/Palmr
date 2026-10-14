@@ -33,7 +33,10 @@ use crate::infra::http::headers::{SecurityHeaders, SecurityPolicy};
 use crate::infra::http::proxy::TrustedProxies;
 use crate::infra::http::trace::RequestLog;
 use crate::infra::telemetry::build_dispatch;
+use crate::storage::caps::PartUpload;
+use crate::storage::planning::DataPlaneStatus;
 
+const PROXY_CEILING: u64 = 83_047_219_200;
 const PATHS: [&str; 3] = ["/health/live", "/health/ready", "/health"];
 const BODY_CAP: usize = 4096;
 
@@ -260,19 +263,38 @@ fn every_dependency_state() -> Vec<(bool, DependencyHealth)> {
         for database in database {
             for migrations in migrations {
                 for storage in storage {
-                    states.push((
-                        ready,
-                        DependencyHealth {
-                            database,
-                            migrations,
-                            storage,
-                        },
-                    ));
+                    for data_plane in data_planes() {
+                        states.push((
+                            ready,
+                            DependencyHealth {
+                                database,
+                                migrations,
+                                storage,
+                                data_plane,
+                            },
+                        ));
+                    }
                 }
             }
         }
     }
     states
+}
+
+fn data_planes() -> [Option<DataPlaneStatus>; 3] {
+    [
+        None,
+        Some(DataPlaneStatus {
+            part_upload: PartUpload::BrowserDirect,
+            proxy_ceiling_bytes: None,
+            operator_forced: false,
+        }),
+        Some(DataPlaneStatus {
+            part_upload: PartUpload::ServerProxied,
+            proxy_ceiling_bytes: Some(PROXY_CEILING),
+            operator_forced: false,
+        }),
+    ]
 }
 
 fn collect_strings(value: &Value, keys: &mut BTreeSet<String>, strings: &mut BTreeSet<String>) {
@@ -305,6 +327,8 @@ async fn it_health_bodies_disclose_no_internals() {
         "storage",
         "database",
         "migrations",
+        "dataPlane",
+        "proxyCeilingBytes",
         "reason",
         "version",
     ]
@@ -316,6 +340,8 @@ async fn it_health_bodies_disclose_no_internals() {
         "degraded",
         "down",
         "current",
+        "direct",
+        "proxied",
         "storage_down",
         "storage_unreachable",
         "database_not_writable",
@@ -342,6 +368,7 @@ async fn it_health_bodies_disclose_no_internals() {
         if let Some(state) = dependencies.storage {
             health.checks().set_storage(state);
         }
+        health.checks().set_data_plane(dependencies.data_plane);
         assert_eq!(health.checks().snapshot(), dependencies);
 
         for path in PATHS {
@@ -482,6 +509,40 @@ async fn it_health_ready_reports_database_before_migrations_before_storage() {
             "version": VERSION,
         })
     );
+}
+
+#[tokio::test]
+async fn it_health_ready_reports_the_data_plane_without_any_storage_io() {
+    let (_, health) = ready_health();
+    health.checks().set_database(DatabaseState::Writable);
+    health.checks().set_migrations(MigrationState::Current);
+    health.checks().set_storage(StorageState::Ok);
+
+    let (_, _, ready) = fetch(&health, "/health/ready").await;
+    assert!(ready.get("dataPlane").is_none(), "{ready}");
+    assert!(ready.get("proxyCeilingBytes").is_none(), "{ready}");
+
+    let [_, direct, proxied] = data_planes();
+    health.checks().set_data_plane(direct);
+    let (status, _, ready) = fetch(&health, "/health/ready").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(ready["dataPlane"], "direct");
+    assert!(ready.get("proxyCeilingBytes").is_none(), "{ready}");
+
+    health.checks().set_data_plane(proxied);
+    let before = snapshot_reads(&health);
+    let (status, _, ready) = fetch(&health, "/health/ready").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(ready["dataPlane"], "proxied");
+    assert_eq!(ready["proxyCeilingBytes"], PROXY_CEILING);
+    assert_eq!(
+        ready["storage"], "ok",
+        "a proxied data plane is not a fault"
+    );
+    assert_eq!(snapshot_reads(&health), before + 1);
+
+    let (_, _, summary) = fetch(&health, "/health").await;
+    assert!(summary.get("dataPlane").is_none(), "{summary}");
 }
 
 #[tokio::test]

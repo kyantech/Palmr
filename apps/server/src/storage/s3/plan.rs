@@ -298,7 +298,10 @@ pub fn unknown_parts_to_reach_max_object(
 }
 
 pub fn proxy_ceiling_bytes(profile: &ProfileLimits) -> Result<u64, PartPlanError> {
-    Ok(PROXY_PART_SIZE.saturating_mul(usable_parts(profile)?))
+    PROXY_PART_SIZE
+        .checked_mul(usable_parts(profile)?)
+        .map(|ceiling| ceiling.min(profile.max_object))
+        .ok_or(PartPlanError::InvalidProfile)
 }
 
 pub fn proxy_admit(size: u64, profile: &ProfileLimits) -> Result<(), PartPlanError> {

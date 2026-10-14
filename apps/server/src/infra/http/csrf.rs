@@ -25,12 +25,14 @@ const FORM_URLENCODED: &str = "application/x-www-form-urlencoded";
 const JSON: &str = "application/json";
 const MULTIPART: &str = "multipart/form-data";
 const OFFSET_OCTET_STREAM: &str = "application/offset+octet-stream";
+const OCTET_STREAM: &str = "application/octet-stream";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RequestContent {
     Json,
     Multipart,
     OffsetOctetStream,
+    OctetStream,
     JsonOrOffsetOctetStream,
 }
 
@@ -40,6 +42,7 @@ impl RequestContent {
             Self::Json => media.is_json(),
             Self::Multipart => media.essence_is(MULTIPART),
             Self::OffsetOctetStream => media.is_bare(OFFSET_OCTET_STREAM),
+            Self::OctetStream => media.is_bare(OCTET_STREAM),
             Self::JsonOrOffsetOctetStream => media.is_json() || media.is_bare(OFFSET_OCTET_STREAM),
         }
     }

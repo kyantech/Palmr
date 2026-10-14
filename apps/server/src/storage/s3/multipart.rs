@@ -2,6 +2,7 @@ use std::ops::RangeInclusive;
 use std::time::Duration;
 
 use async_trait::async_trait;
+use aws_sdk_s3::config::timeout::TimeoutConfig;
 use aws_sdk_s3::primitives::ByteStream;
 use aws_sdk_s3::types::{CompletedMultipartUpload, CompletedPart, Part};
 use aws_smithy_types::body::SdkBody;
@@ -16,8 +17,8 @@ use crate::storage::health::ProbeKey;
 use crate::storage::key::ObjectKey;
 use crate::storage::provider::{
     ETag, ListCursor, MultipartHandle, MultipartStorage, MultipartUploadPage, ObjectBody,
-    ObjectStat, PartPlanEntry, PendingMultipart, PresignedRequest, PutHint, UploadedPart,
-    MAX_LIST_PAGE_SIZE,
+    ObjectStat, PartChecksum, PartPlanEntry, PendingMultipart, PresignedRequest, PutHint,
+    UploadedPart, MAX_LIST_PAGE_SIZE,
 };
 use crate::storage::stored_key::StoredKey;
 
@@ -101,6 +102,24 @@ impl MultipartStorage for S3Provider {
     ) -> Result<UploadedPart, StorageError> {
         self.upload_part_body(UploadTarget::of(handle), part_number, len, body)
             .await
+    }
+
+    async fn upload_part_checksummed(
+        &self,
+        handle: &MultipartHandle,
+        part_number: u32,
+        len: u64,
+        body: ObjectBody,
+        checksum: PartChecksum,
+    ) -> Result<UploadedPart, StorageError> {
+        self.upload_part_with(
+            UploadTarget::of(handle),
+            part_number,
+            len,
+            body,
+            Some(checksum),
+        )
+        .await
     }
 
     async fn upload_part_copy(
@@ -270,12 +289,25 @@ impl S3Provider {
         len: u64,
         body: ObjectBody,
     ) -> Result<UploadedPart, StorageError> {
+        self.upload_part_with(target, part_number, len, body, None)
+            .await
+    }
+
+    pub(super) async fn upload_part_with(
+        &self,
+        target: UploadTarget<'_>,
+        part_number: u32,
+        len: u64,
+        body: ObjectBody,
+        checksum: Option<PartChecksum>,
+    ) -> Result<UploadedPart, StorageError> {
         const OP: Operation = Operation::UploadPart;
         let limits = self.limits();
         let number = provider_part_number(OP, part_number, &limits)?;
         let content_length = provider_part_len(OP, len, &limits)?;
         let sized = SizedBody::new(body, len, self.buffer_bytes);
-        let output = self
+        let proxied = checksum.is_some();
+        let operation = self
             .internal()
             .upload_part()
             .bucket(self.bucket())
@@ -283,7 +315,21 @@ impl S3Provider {
             .upload_id(target.upload_id())
             .part_number(number)
             .content_length(content_length)
+            .set_checksum_sha256(checksum.map(PartChecksum::to_base64))
             .body(ByteStream::new(SdkBody::from_body_1_x(sized)))
+            .customize();
+        let operation = if proxied {
+            operation.config_override(
+                aws_sdk_s3::config::Builder::new().timeout_config(
+                    TimeoutConfig::builder()
+                        .read_timeout(self.response_wait)
+                        .build(),
+                ),
+            )
+        } else {
+            operation
+        };
+        let output = operation
             .send()
             .await
             .map_err(|error| classify(OP, error))?;

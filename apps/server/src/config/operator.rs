@@ -38,6 +38,7 @@ pub enum Variable {
     S3CaFile,
     S3RejectUnauthorized,
     S3MultipartTtlHours,
+    S3RequirePartChecksums,
     DbReadConnections,
     DbSynchronous,
     ZipMaxEntries,
@@ -50,7 +51,7 @@ pub enum Variable {
 }
 
 impl Variable {
-    pub const ALL: [Self; 28] = [
+    pub const ALL: [Self; 29] = [
         Self::Host,
         Self::Port,
         Self::BaseUrl,
@@ -70,6 +71,7 @@ impl Variable {
         Self::S3CaFile,
         Self::S3RejectUnauthorized,
         Self::S3MultipartTtlHours,
+        Self::S3RequirePartChecksums,
         Self::DbReadConnections,
         Self::DbSynchronous,
         Self::ZipMaxEntries,
@@ -102,6 +104,7 @@ impl Variable {
             Self::S3CaFile => "PALMR_S3_CA_FILE",
             Self::S3RejectUnauthorized => "PALMR_S3_REJECT_UNAUTHORIZED",
             Self::S3MultipartTtlHours => "PALMR_S3_MULTIPART_TTL_HOURS",
+            Self::S3RequirePartChecksums => "PALMR_S3_REQUIRE_PART_CHECKSUMS",
             Self::DbReadConnections => "PALMR_DB_READ_CONNECTIONS",
             Self::DbSynchronous => "PALMR_DB_SYNCHRONOUS",
             Self::ZipMaxEntries => "PALMR_ZIP_MAX_ENTRIES",
@@ -132,6 +135,7 @@ impl Variable {
                 | Self::S3CaFile
                 | Self::S3RejectUnauthorized
                 | Self::S3MultipartTtlHours
+                | Self::S3RequirePartChecksums
         )
     }
 
@@ -237,6 +241,7 @@ pub struct S3Config {
     pub ca_file: Option<PathBuf>,
     pub tls_verification: S3TlsVerification,
     pub multipart_ttl: Duration,
+    pub require_part_checksums: Option<bool>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -801,6 +806,7 @@ pub(super) mod tests {
                 "PALMR_S3_CA_FILE",
                 "PALMR_S3_REJECT_UNAUTHORIZED",
                 "PALMR_S3_MULTIPART_TTL_HOURS",
+                "PALMR_S3_REQUIRE_PART_CHECKSUMS",
                 "PALMR_DB_READ_CONNECTIONS",
                 "PALMR_DB_SYNCHRONOUS",
                 "PALMR_ZIP_MAX_ENTRIES",

@@ -5,6 +5,7 @@ use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 use axum::body::Body;
 use axum::extract::{Request, State};
 use axum::response::Response;
+use base64ct::{Base64, Encoding};
 use http::header::{
     ACCESS_CONTROL_ALLOW_HEADERS, ACCESS_CONTROL_ALLOW_METHODS, ACCESS_CONTROL_ALLOW_ORIGIN,
     ACCESS_CONTROL_EXPOSE_HEADERS, ACCESS_CONTROL_MAX_AGE, ACCESS_CONTROL_REQUEST_METHOD,
@@ -12,6 +13,7 @@ use http::header::{
 };
 use http::{HeaderValue, Method, StatusCode};
 use http_body_util::{BodyExt as _, Limited};
+use sha2::{Digest, Sha256};
 use time::format_description::well_known::Rfc3339;
 use time::macros::{datetime, format_description};
 use time::OffsetDateTime;
@@ -85,6 +87,7 @@ struct FakeState {
     seen: Vec<Seen>,
     cors: CorsMode,
     fault: PresignFault,
+    require_part_checksum: bool,
     now: OffsetDateTime,
 }
 
@@ -114,6 +117,7 @@ impl FakeS3 {
             seen: Vec::new(),
             cors: CorsMode::Recommended,
             fault: PresignFault::None,
+            require_part_checksum: false,
             now: datetime!(2026-09-25 12:00 UTC),
         }));
         let router = axum::Router::new()
@@ -135,6 +139,10 @@ impl FakeS3 {
 
     pub(crate) fn set_cors(&self, cors: CorsMode) {
         lock(&self.state).cors = cors;
+    }
+
+    pub(crate) fn require_part_checksums(&self) {
+        lock(&self.state).require_part_checksum = true;
     }
 
     pub(crate) fn set_fault(&self, fault: PresignFault) {
@@ -328,6 +336,14 @@ fn upload_part(state: &mut FakeState, seen: &Seen, body: Vec<u8>) -> Response {
         .query_value("partNumber")
         .and_then(|number| number.parse().ok())
         .unwrap_or_default();
+    if state.require_part_checksum {
+        let Some(claimed) = seen.header("x-amz-checksum-sha256") else {
+            return error(StatusCode::BAD_REQUEST, "InvalidRequest");
+        };
+        if claimed != Base64::encode_string(&Sha256::digest(&body)) {
+            return error(StatusCode::BAD_REQUEST, "XAmzContentChecksumMismatch");
+        }
+    }
     match state.uploads.get_mut(&upload_id) {
         Some(upload) => {
             upload.parts.insert(number, body);

@@ -3,6 +3,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use serde_json::Value;
+use tokio_util::sync::CancellationToken;
 
 use crate::domain::bytes::ByteSize;
 use crate::domain::client_key::ClientFileKey;
@@ -34,6 +35,7 @@ use super::model::{
     MultipartId, MultipartState, PartsResponse, PresignRequest, PresignResponse, PresignedPart,
     ReportPartsRequest, S3Ref, MAX_ETAG_CHARS, MAX_REPORTED_PARTS,
 };
+use super::proxied::{ProxyLimits, ProxyUploads};
 use super::reconcile::{analyze, Analysis, PartLayout};
 use super::repo::{self, NewMultipart};
 use crate::features::transfers::finalize::repo::{load_context, ItemContext};
@@ -50,22 +52,25 @@ pub struct S3ServiceParts {
     pub storage: TransferStorage,
     pub transfers: TransferService,
     pub finalizer: Finalizer,
+    pub proxy: ProxyLimits,
+    pub shutdown: CancellationToken,
 }
 
 #[derive(Clone)]
 pub struct S3Service {
-    pools: DbPools,
-    clock: Arc<dyn Clock>,
+    pub(super) pools: DbPools,
+    pub(super) clock: Arc<dyn Clock>,
     settings: SettingsHandle,
-    storage: TransferStorage,
+    pub(super) storage: TransferStorage,
     transfers: TransferService,
     finalizer: Finalizer,
+    pub(super) proxy: ProxyUploads,
 }
 
-struct Open {
-    s3: S3Ref,
-    layout: PartLayout,
-    handle: MultipartHandle,
+pub(super) struct Open {
+    pub(super) s3: S3Ref,
+    pub(super) layout: PartLayout,
+    pub(super) handle: MultipartHandle,
 }
 
 fn recorded(code: Option<&str>) -> TransferError {
@@ -75,7 +80,7 @@ fn recorded(code: Option<&str>) -> TransferError {
         })
 }
 
-fn part_invalid(reason: &'static str) -> TransferError {
+pub(super) fn part_invalid(reason: &'static str) -> TransferError {
     TransferError::MultipartPartInvalid { reason }
 }
 
@@ -134,6 +139,7 @@ impl S3Service {
             storage: parts.storage,
             transfers: parts.transfers,
             finalizer: parts.finalizer,
+            proxy: ProxyUploads::new(parts.proxy, parts.shutdown),
         }
     }
 
@@ -199,7 +205,7 @@ impl S3Service {
         Ok(Open { s3, layout, handle })
     }
 
-    async fn open(
+    pub(super) async fn open(
         &self,
         owner: UserId,
         session: TransferSessionId,
@@ -539,7 +545,7 @@ impl S3Service {
         })
     }
 
-    async fn after_race(
+    pub(super) async fn after_race(
         &self,
         owner: UserId,
         session: TransferSessionId,

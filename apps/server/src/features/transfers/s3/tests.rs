@@ -13,7 +13,7 @@ use crate::storage::error::{Retryable, StorageError};
 const PREFIX: &str = "/api/v1/transfers/sessions/{sid}/files/{itemId}/s3/multipart";
 
 #[test]
-fn unit_s3_routes_are_the_six_authenticated_control_plane_routes() {
+fn unit_s3_routes_are_six_control_routes_and_one_proxied_byte_route() {
     let inventory = application_routes().build().unwrap().inventory;
     let mut found: Vec<(String, String)> = inventory
         .entries()
@@ -21,8 +21,14 @@ fn unit_s3_routes_are_the_six_authenticated_control_plane_routes() {
         .filter(|entry| entry.path().starts_with(PREFIX))
         .map(|entry| {
             assert_eq!(entry.policy().auth(), AuthClass::Authenticated);
-            assert_eq!(entry.policy().rate_limit(), RateLimitClass::TransferControl);
-            assert_eq!(entry.policy().transport(), Transport::ControlPlane);
+            if entry.path().ends_with("/parts/{partNumber}") {
+                assert_eq!(entry.policy().rate_limit(), RateLimitClass::TransferData);
+                assert!(entry.policy().transport().is_byte_path());
+                assert_eq!(*entry.method(), http::Method::PUT);
+            } else {
+                assert_eq!(entry.policy().rate_limit(), RateLimitClass::TransferControl);
+                assert_eq!(entry.policy().transport(), Transport::ControlPlane);
+            }
             (
                 entry.method().to_string(),
                 entry.path().trim_start_matches(PREFIX).to_owned(),
@@ -37,6 +43,7 @@ fn unit_s3_routes_are_the_six_authenticated_control_plane_routes() {
         ("POST", "/complete"),
         ("POST", "/parts"),
         ("POST", "/presign"),
+        ("PUT", "/parts/{partNumber}"),
     ]
     .into_iter()
     .map(|(method, tail)| (method.to_owned(), tail.to_owned()))
@@ -90,7 +97,7 @@ fn unit_s3_contract_exposes_no_storage_identity_field() {
             }
         }
     }
-    assert_eq!(checked, 6);
+    assert_eq!(checked, 7);
     let schemas = document["components"]["schemas"].as_object().unwrap();
     for name in [
         "CreateMultipartResponse",
@@ -230,9 +237,10 @@ fn unit_s3_error_mapping_is_stable_and_never_leaks_storage_detail() {
     );
 }
 
-const SOURCES: [(&str, &str); 7] = [
+const SOURCES: [(&str, &str); 8] = [
     ("abort.rs", include_str!("abort.rs")),
     ("model.rs", include_str!("model.rs")),
+    ("proxied.rs", include_str!("proxied.rs")),
     ("reconcile.rs", include_str!("reconcile.rs")),
     ("repo.rs", include_str!("repo.rs")),
     ("routes.rs", include_str!("routes.rs")),
@@ -276,4 +284,90 @@ fn unit_s3_control_plane_has_no_forbidden_construction() {
         !repo.contains("storage_objects"),
         "only the commit creates object rows"
     );
+}
+
+fn position(source: &str, needle: &str) -> usize {
+    source
+        .find(needle)
+        .unwrap_or_else(|| panic!("proxied.rs lost {needle}"))
+}
+
+#[test]
+fn unit_proxied_part_path_is_bounded_ordered_and_global() {
+    let source = production(include_str!("proxied.rs"));
+    assert_eq!(
+        source.matches("Semaphore::new(").count(),
+        1,
+        "one process-wide pool"
+    );
+    assert_eq!(source.matches("BytesMut::with_capacity(").count(), 1);
+    assert!(source.contains("BytesMut::with_capacity(expected)"));
+    for token in [
+        "Vec::with_capacity",
+        "vec![",
+        ".reserve(",
+        "BytesMut::new()",
+        "extend(",
+        "BytesMut::from",
+        "to_vec()",
+        "Bytes::copy_from_slice",
+        "tokio::time::sleep(",
+        "BEGIN IMMEDIATE",
+    ] {
+        assert!(!source.contains(token), "proxied.rs contains {token}");
+    }
+
+    let upload = position(source, "pub async fn upload_part_proxied(");
+    let authorize = position(&source[upload..], ".admit_part(") + upload;
+    let claim = position(&source[upload..], ".claim(") + upload;
+    let admit = position(&source[upload..], "self.proxy.admit().await") + upload;
+    let spawn = position(&source[upload..], "tokio::spawn(") + upload;
+    assert!(
+        authorize < claim && claim < admit && admit < spawn,
+        "authorize, claim the part, take a permit, and only then spawn the transfer"
+    );
+
+    let transfer = position(source, "async fn transfer_part(");
+    let lease = position(&source[transfer..], "BufferLease::new(") + transfer;
+    let read = position(&source[transfer..], "receive(") + transfer;
+    let upload_call = position(&source[transfer..], "upload_part_checksummed(") + transfer;
+    let record = position(&source[transfer..], "self.record_part(") + transfer;
+    assert!(
+        lease < read && read < upload_call && upload_call < record,
+        "buffer, receive, provider, then durable state"
+    );
+    assert_eq!(source.matches("upload_part_checksummed(").count(), 1);
+    assert_eq!(source.matches(".write_tx(").count(), 1);
+    let guard = position(source, "async fn record_part(");
+    assert!(
+        !source[..guard].contains(".write_tx("),
+        "no transaction is open while bytes move or the provider is called"
+    );
+    assert!(
+        source.contains("repo::touch_open("),
+        "an abandoned or completing upload is never revived"
+    );
+}
+
+#[test]
+fn unit_proxied_part_route_is_a_streamed_byte_path_with_csrf_and_data_rate_limit() {
+    let routes = production(include_str!("routes.rs"));
+    let policy = position(routes, "const PART_ROUTE: RoutePolicy");
+    let end = position(
+        &routes[policy..],
+        ".with_request_content(RequestContent::OctetStream);",
+    ) + policy;
+    let declaration = &routes[policy..end];
+    for required in [
+        "AuthClass::Authenticated",
+        "RateLimitClass::TransferData",
+        "RequestBody::Streamed",
+        "ResponseEncoding::Identity",
+        "Deadline::IdleOnly",
+    ] {
+        assert!(declaration.contains(required), "{required}");
+    }
+    assert!(!declaration.contains("with_security"));
+    assert_eq!(routes.matches("routes!(upload_part)").count(), 1);
+    assert!(routes.contains("PART_ROUTE, routes!(upload_part)"));
 }

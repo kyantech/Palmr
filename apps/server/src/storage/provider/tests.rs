@@ -245,6 +245,21 @@ impl MultipartStorage for S3Shaped {
         })
     }
 
+    async fn upload_part_checksummed(
+        &self,
+        _handle: &MultipartHandle,
+        part_number: u32,
+        _len: u64,
+        body: ObjectBody,
+        _checksum: crate::storage::provider::PartChecksum,
+    ) -> Result<UploadedPart, StorageError> {
+        Ok(UploadedPart {
+            part_number,
+            etag: ETag::new(format!("\"part-{part_number}\"")),
+            size: measure(body).await?,
+        })
+    }
+
     async fn upload_part_copy(
         &self,
         _handle: &MultipartHandle,

@@ -60,6 +60,7 @@ pub(super) struct TusReq<'a> {
     version: bool,
     csrf: bool,
     host: u8,
+    origin: String,
 }
 
 impl<'a> TusReq<'a> {
@@ -73,6 +74,7 @@ impl<'a> TusReq<'a> {
             version: true,
             csrf: true,
             host: HOST_WORK,
+            origin: BASE_URL.to_owned(),
         }
     }
 
@@ -86,7 +88,13 @@ impl<'a> TusReq<'a> {
             version: true,
             csrf: true,
             host: HOST_WORK,
+            origin: BASE_URL.to_owned(),
         }
+    }
+
+    pub(super) fn origin(mut self, origin: &str) -> Self {
+        origin.clone_into(&mut self.origin);
+        self
     }
 
     pub(super) fn header(mut self, name: &str, value: &str) -> Self {
@@ -412,7 +420,7 @@ impl Stack {
         let mut builder = Request::builder()
             .method(request.method.clone())
             .uri(request.path)
-            .header(ORIGIN, BASE_URL);
+            .header(ORIGIN, request.origin.as_str());
         if request.version {
             builder = builder.header("tus-resumable", "1.0.0");
         }

@@ -3,10 +3,11 @@ use std::time::Duration;
 
 use crate::config::StorageConfig;
 
+use super::caps::{PartUpload, StorageCapabilities};
 use super::provider::StorageProvider;
 use super::s3::plan::{
-    ceil_div, plan_parts_with_limits, proxy_admit, FileTooLargeReason, PartPlan, PartPlanError,
-    PROXY_PART_SIZE,
+    ceil_div, plan_parts_with_limits, proxy_admit, proxy_ceiling_bytes, FileTooLargeReason,
+    PartPlan, PartPlanError, PROXY_PART_SIZE,
 };
 use super::s3::profile::{ProfileLimits, ProviderProfile};
 use super::ProviderKind;
@@ -26,6 +27,33 @@ pub fn object_store_settings(config: &StorageConfig) -> Option<ObjectStoreSettin
             bucket: s3.bucket.clone(),
             multipart_ttl: s3.multipart_ttl,
         }),
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DataPlaneStatus {
+    pub part_upload: PartUpload,
+    pub proxy_ceiling_bytes: Option<u64>,
+    pub operator_forced: bool,
+}
+
+impl DataPlaneStatus {
+    pub fn of(config: &StorageConfig, caps: &StorageCapabilities) -> Option<Self> {
+        let StorageConfig::S3(s3) = config else {
+            return None;
+        };
+        let part_upload = caps.part_upload();
+        let proxy_ceiling_bytes = match part_upload {
+            PartUpload::BrowserDirect => None,
+            PartUpload::ServerProxied => {
+                proxy_ceiling_bytes(&ProviderProfile::from_config(s3.profile).limits()).ok()
+            }
+        };
+        Some(Self {
+            part_upload,
+            proxy_ceiling_bytes,
+            operator_forced: s3.require_part_checksums.is_some(),
+        })
     }
 }
 

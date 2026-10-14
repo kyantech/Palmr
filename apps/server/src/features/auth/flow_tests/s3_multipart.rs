@@ -9,6 +9,7 @@ use sha2::{Digest, Sha256};
 use tokio::io::AsyncReadExt as _;
 use url::Url;
 
+use super::checksum_gate::ChecksumGate;
 use super::finalize::Hooks;
 use super::folders::{Member, HOST_A};
 use super::transfers::sized;
@@ -17,7 +18,7 @@ use super::*;
 use crate::config::{S3Config, S3Profile, S3TlsVerification, StorageConfig};
 use crate::domain::clock::Clock as _;
 use crate::features::transfers::finalize::{FinalizeLimits, Finalizer, FinalizerParts, Point};
-use crate::features::transfers::TransferStorage;
+use crate::features::transfers::{ProxyLimits, TransferStorage};
 use crate::infra::db::DbPools;
 use crate::storage::caps::StorageCapabilities;
 use crate::storage::error::{Retryable, StorageError};
@@ -26,8 +27,8 @@ use crate::storage::key::ObjectKey;
 use crate::storage::planning::UploadPlanner;
 use crate::storage::provider::{
     ListCursor, ListPage, MultipartHandle, MultipartStorage, MultipartUploadPage, ObjectBody,
-    ObjectStat, PartPlanEntry, PresignStorage, PresignedRequest, PutHint, StorageDescriptor,
-    StorageProvider, UploadedPart,
+    ObjectStat, PartChecksum, PartPlanEntry, PresignStorage, PresignedRequest, PutHint,
+    StorageDescriptor, StorageProvider, UploadedPart,
 };
 use crate::storage::s3::client::S3Clients;
 use crate::storage::s3::profile::{ProviderProfile, MIB};
@@ -61,6 +62,25 @@ pub(super) fn upstream() -> StorageError {
     )
 }
 
+pub(super) enum PartFault {
+    Before(fn() -> StorageError),
+    After(fn() -> StorageError),
+}
+
+pub(super) struct PartGate {
+    pub(super) entered: tokio::sync::Semaphore,
+    pub(super) release: tokio::sync::Semaphore,
+}
+
+impl PartGate {
+    pub(super) fn new() -> Arc<Self> {
+        Arc::new(Self {
+            entered: tokio::sync::Semaphore::new(0),
+            release: tokio::sync::Semaphore::new(0),
+        })
+    }
+}
+
 pub(super) enum CompleteFault {
     Before(fn() -> StorageError),
     After(fn() -> StorageError),
@@ -71,6 +91,10 @@ pub(super) struct Faults {
     pub(super) complete: Mutex<VecDeque<CompleteFault>>,
     pub(super) list_parts: Mutex<VecDeque<fn() -> StorageError>>,
     pub(super) abort: Mutex<VecDeque<fn() -> StorageError>>,
+    pub(super) part: Mutex<VecDeque<PartFault>>,
+    pub(super) part_gate: Mutex<Option<Arc<PartGate>>>,
+    pub(super) part_log: Mutex<Vec<(u32, u64, PartChecksum)>>,
+    pub(super) part_calls: AtomicUsize,
     pub(super) stat_size: Mutex<Option<u64>>,
     pub(super) creates: AtomicUsize,
     pub(super) completes: AtomicUsize,
@@ -231,6 +255,43 @@ impl MultipartStorage for Faulty {
             .await
     }
 
+    async fn upload_part_checksummed(
+        &self,
+        handle: &MultipartHandle,
+        part_number: u32,
+        len: u64,
+        body: ObjectBody,
+        checksum: PartChecksum,
+    ) -> Result<UploadedPart, StorageError> {
+        self.faults.guard().await;
+        self.faults.part_calls.fetch_add(1, Ordering::SeqCst);
+        self.faults
+            .part_log
+            .lock()
+            .unwrap()
+            .push((part_number, len, checksum));
+        let gate = self.faults.part_gate.lock().unwrap().clone();
+        if let Some(gate) = gate {
+            gate.entered.add_permits(1);
+            gate.release.acquire().await.unwrap().forget();
+        }
+        let fault = self.faults.part.lock().unwrap().pop_front();
+        match fault {
+            Some(PartFault::Before(error)) => Err(error()),
+            Some(PartFault::After(error)) => {
+                self.inner
+                    .upload_part_checksummed(handle, part_number, len, body, checksum)
+                    .await?;
+                Err(error())
+            }
+            None => {
+                self.inner
+                    .upload_part_checksummed(handle, part_number, len, body, checksum)
+                    .await
+            }
+        }
+    }
+
     async fn upload_part_copy(
         &self,
         handle: &MultipartHandle,
@@ -281,9 +342,25 @@ impl MultipartStorage for Faulty {
 }
 
 fn provider_for(server: &MinioServer, bucket: &str, public: Option<&str>) -> S3Provider {
+    provider_with(
+        server,
+        server.endpoint(),
+        bucket,
+        public,
+        (S3Profile::Minio, None),
+    )
+}
+
+fn provider_with(
+    server: &MinioServer,
+    endpoint: &str,
+    bucket: &str,
+    public: Option<&str>,
+    (profile, require_part_checksums): (S3Profile, Option<bool>),
+) -> S3Provider {
     let config = S3Config {
-        profile: S3Profile::Minio,
-        endpoint: Url::parse(server.endpoint()).unwrap(),
+        profile,
+        endpoint: Url::parse(endpoint).unwrap(),
         public_endpoint: public.map(|public| Url::parse(public).unwrap()),
         region: "us-east-1".to_owned(),
         bucket: bucket.to_owned(),
@@ -293,6 +370,7 @@ fn provider_for(server: &MinioServer, bucket: &str, public: Option<&str>) -> S3P
         ca_file: None,
         tls_verification: S3TlsVerification::Enabled,
         multipart_ttl: Duration::from_secs(24 * 60 * 60),
+        require_part_checksums,
     };
     let clients = S3Clients::build(&StorageConfig::S3(Box::new(config)))
         .unwrap()
@@ -313,44 +391,101 @@ pub(super) struct S3Rig {
     pub(super) faults: Arc<Faults>,
     pub(super) hooks: Arc<Hooks>,
     pub(super) proxied: Arc<AtomicBool>,
+    pub(super) gate: Option<ChecksumGate>,
     pub(super) alice: Member,
     pub(super) bob: Member,
     pub(super) http: reqwest::Client,
     _dir: TempDir,
 }
 
+#[derive(Clone, Default)]
+pub(super) struct RigOptions {
+    pub(super) public: bool,
+    pub(super) checksum_gate: bool,
+    pub(super) proxy: Option<ProxyLimits>,
+    pub(super) shutdown: Option<tokio_util::sync::CancellationToken>,
+    pub(super) profile: Option<S3Profile>,
+    pub(super) require_part_checksums: Option<bool>,
+}
+
 impl S3Rig {
     pub(super) async fn new() -> Self {
-        Self::build(false).await
+        Self::build(RigOptions::default()).await
     }
 
     pub(super) async fn with_public_host() -> Self {
-        Self::build(true).await
+        Self::build(RigOptions {
+            public: true,
+            ..RigOptions::default()
+        })
+        .await
     }
 
-    async fn build(public: bool) -> Self {
+    pub(super) async fn checksum_demanding() -> Self {
+        Self::build(RigOptions {
+            checksum_gate: true,
+            ..RigOptions::default()
+        })
+        .await
+    }
+
+    pub(super) async fn build(options: RigOptions) -> Self {
+        let RigOptions {
+            public,
+            checksum_gate,
+            proxy,
+            shutdown,
+            profile,
+            require_part_checksums,
+        } = options;
         let dir = TempDir::new().unwrap();
         let clock = TestClock::new(START);
         let minio = MinioServer::start().await.unwrap();
         let bucket = minio.create_bucket("s3mp").await.unwrap();
         let minio_port = Url::parse(minio.endpoint()).unwrap().port().unwrap();
         let public_endpoint = public.then(|| format!("http://{PUBLIC_HOST}:{minio_port}"));
-        let provider = Arc::new(provider_for(&minio, &bucket, public_endpoint.as_deref()));
+        let gate = if checksum_gate {
+            Some(ChecksumGate::start(minio.endpoint()).await)
+        } else {
+            None
+        };
+        let configured = profile.is_some() || require_part_checksums.is_some();
+        let profile = profile.unwrap_or(if gate.is_some() {
+            S3Profile::R2
+        } else {
+            S3Profile::Minio
+        });
+        let endpoint = gate
+            .as_ref()
+            .map_or_else(|| minio.endpoint().to_owned(), ChecksumGate::endpoint);
+        let provider = Arc::new(provider_with(
+            &minio,
+            &endpoint,
+            &bucket,
+            public_endpoint.as_deref(),
+            (profile, require_part_checksums),
+        ));
         let faults = Arc::new(Faults::default());
         let faulty: Arc<dyn StorageProvider> = Arc::new(Faulty {
             inner: Arc::clone(&provider),
             faults: Arc::clone(&faults),
         });
         let proxied = Arc::new(AtomicBool::new(false));
-        let probe = {
+        let planner = if gate.is_some() || configured {
+            let capabilities = Arc::clone(&provider);
+            UploadPlanner::s3(
+                ProviderProfile::from_config(profile),
+                Arc::new(move || capabilities.caps().requires_checksum_headers),
+            )
+        } else {
             let proxied = Arc::clone(&proxied);
-            Arc::new(move || proxied.load(Ordering::SeqCst))
+            UploadPlanner::s3(
+                ProviderProfile::Minio,
+                Arc::new(move || proxied.load(Ordering::SeqCst)),
+            )
         };
-        let storage = TransferStorage::new(
-            UploadPlanner::s3(ProviderProfile::Minio, probe),
-            Arc::new(|| StorageHealth::Ok),
-        )
-        .with_object_store(faulty, bucket.clone(), Duration::from_secs(24 * 60 * 60));
+        let storage = TransferStorage::new(planner, Arc::new(|| StorageHealth::Ok))
+            .with_object_store(faulty, bucket.clone(), Duration::from_secs(24 * 60 * 60));
         let hooks = Arc::new(Hooks::default());
         let setup = FinalizeSetup {
             hooks: Some(hooks.clone()),
@@ -364,6 +499,8 @@ impl S3Rig {
             Some(storage),
             TusSetup {
                 finalize: Some(setup),
+                proxy: proxy.unwrap_or_else(ProxyLimits::production),
+                shutdown: shutdown.unwrap_or_default(),
                 ..TusSetup::default()
             },
         )
@@ -379,6 +516,7 @@ impl S3Rig {
             faults,
             hooks,
             proxied,
+            gate,
             alice,
             bob,
             http: {

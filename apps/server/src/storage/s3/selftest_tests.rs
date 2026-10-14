@@ -84,9 +84,10 @@ impl Capture {
     }
 }
 
-fn config(fake: &FakeS3, profile: &str) -> OperatorConfig {
+fn config_forced(fake: &FakeS3, profile: &str, forced: Option<&str>) -> OperatorConfig {
     let endpoint = fake.endpoint();
-    OperatorConfig::load(&EnvironmentSource::from_vars([
+    let forced = forced.map(|value| ("PALMR_S3_REQUIRE_PART_CHECKSUMS", value));
+    OperatorConfig::load(&EnvironmentSource::from_vars(forced.into_iter().chain([
         ("PALMR_BASE_URL", BASE_URL),
         ("PALMR_STORAGE_PROVIDER", "s3"),
         ("PALMR_S3_ENDPOINT", endpoint.as_str()),
@@ -95,13 +96,22 @@ fn config(fake: &FakeS3, profile: &str) -> OperatorConfig {
         ("PALMR_S3_ACCESS_KEY", ACCESS_KEY),
         ("PALMR_S3_SECRET_KEY", SECRET_KEY),
         ("PALMR_S3_PROFILE", profile),
-    ]))
+    ])))
     .unwrap()
     .config
 }
 
 fn provider_with(fake: &FakeS3, profile: &str, clock: &TestClock) -> S3Provider {
-    let config = config(fake, profile);
+    provider_forced(fake, profile, None, clock)
+}
+
+fn provider_forced(
+    fake: &FakeS3,
+    profile: &str,
+    forced: Option<&str>,
+    clock: &TestClock,
+) -> S3Provider {
+    let config = config_forced(fake, profile, forced);
     let clients = S3Clients::build(&config.storage).unwrap().unwrap();
     S3Provider::new(clients, 64 * 1024, config.base_url.url())
         .unwrap()
@@ -492,6 +502,123 @@ async fn it_selftest_relaxes_only_verified_checksum_requirement() {
     let fact = report.fact(Fact::RequiresChecksumHeaders).unwrap();
     assert_eq!((fact.verified, fact.applied), (None, false));
     assert_eq!(*s3.caps(), assumed);
+}
+
+#[tokio::test]
+async fn it_selftest_probes_multipart_with_checksums_when_the_profile_requires_them() {
+    let fake = FakeS3::start().await;
+    fake.require_part_checksums();
+    let s3 = provider_with(&fake, "r2", &TestClock::new(NOW));
+    let assumed = *s3.caps();
+    assert!(assumed.requires_checksum_headers);
+
+    let report = s3.self_test(ProbeDepth::Full).await;
+    assert_eq!(
+        status(&report, CheckName::PresignedPart).0,
+        CheckStatus::Failed,
+        "a browser-shaped part has no checksum and is refused"
+    );
+    assert_eq!(
+        status(&report, CheckName::Multipart),
+        (CheckStatus::Passed, None),
+        "the server-side probe carries the checksum the provider demands"
+    );
+    let fact = report.fact(Fact::RequiresChecksumHeaders).unwrap();
+    assert_eq!(
+        (fact.assumed, fact.verified, fact.applied),
+        (Some(true), None, false)
+    );
+    assert_eq!(*s3.caps(), assumed, "nothing relaxes the requirement");
+
+    let parts: Vec<Seen> = fake
+        .seen()
+        .into_iter()
+        .filter(|request| request.method == "PUT" && request.query.contains("partNumber"))
+        .filter(|request| !request.presigned())
+        .collect();
+    assert_eq!(parts.len(), 3);
+    for part in &parts {
+        assert!(
+            part.header("x-amz-checksum-sha256")
+                .is_some_and(|digest| digest.len() == 44),
+            "{part:?}"
+        );
+    }
+
+    let plain = FakeS3::start().await;
+    plain.require_part_checksums();
+    let s3 = provider_with(&plain, "minio", &TestClock::new(NOW));
+    let report = s3.self_test(ProbeDepth::Full).await;
+    assert_eq!(
+        status(&report, CheckName::Multipart),
+        (CheckStatus::Failed, Some(Diagnosis::MultipartRejected)),
+        "a profile that does not know about the requirement still fails"
+    );
+}
+
+#[tokio::test]
+async fn it_explicit_checksum_requirement_beats_profile_and_self_test() {
+    let tolerant = FakeS3::start().await;
+    let s3 = provider_forced(&tolerant, "generic", Some("true"), &TestClock::new(NOW));
+    let forced = *s3.caps();
+    assert!(
+        forced.requires_checksum_headers,
+        "forced on a generic profile"
+    );
+    assert!(!forced.supports_presigned_put);
+    let report = s3.self_test(ProbeDepth::Full).await;
+    assert_eq!(
+        status(&report, CheckName::PresignedPart).0,
+        CheckStatus::Passed,
+        "the provider would take a browser-shaped part"
+    );
+    let fact = report.fact(Fact::RequiresChecksumHeaders).unwrap();
+    assert_eq!(
+        (fact.assumed, fact.verified, fact.applied),
+        (Some(true), Some(false), false),
+        "an unrelated successful probe never silently disables an explicit setting"
+    );
+    assert_eq!(*s3.caps(), forced);
+    assert_eq!(
+        status(&report, CheckName::Multipart),
+        (CheckStatus::Passed, None)
+    );
+
+    let r2 = provider_forced(&tolerant, "r2", Some("false"), &TestClock::new(NOW));
+    assert!(
+        !r2.caps().requires_checksum_headers && r2.caps().supports_presigned_put,
+        "an explicit false beats the r2 profile default"
+    );
+    let report = r2.self_test(ProbeDepth::Full).await;
+    let fact = report.fact(Fact::RequiresChecksumHeaders).unwrap();
+    assert_eq!((fact.assumed, fact.applied), (Some(false), false));
+
+    let demanding = FakeS3::start().await;
+    demanding.require_part_checksums();
+    let s3 = provider_forced(&demanding, "generic", Some("true"), &TestClock::new(NOW));
+    let report = s3.self_test(ProbeDepth::Full).await;
+    assert_eq!(
+        status(&report, CheckName::PresignedPart).0,
+        CheckStatus::Failed
+    );
+    assert_eq!(
+        status(&report, CheckName::Multipart),
+        (CheckStatus::Passed, None),
+        "a forced requirement makes the server-side probe checksum-aware on any profile"
+    );
+    assert!(s3.caps().requires_checksum_headers);
+
+    let unforced = provider_forced(&tolerant, "generic", None, &TestClock::new(NOW));
+    assert!(
+        !unforced.caps().requires_checksum_headers,
+        "the default stays direct"
+    );
+    let report = unforced.self_test(ProbeDepth::Full).await;
+    let fact = report.fact(Fact::RequiresChecksumHeaders).unwrap();
+    assert_eq!(
+        (fact.assumed, fact.verified, fact.applied),
+        (Some(false), Some(false), false)
+    );
 }
 
 #[tokio::test]

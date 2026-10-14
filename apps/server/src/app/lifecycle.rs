@@ -33,7 +33,7 @@ use super::router::{
 };
 use super::state::{AppState, StorageRuntime};
 use crate::config::{
-    ConfigError, ConfigWarning, EnvironmentSource, LoadedConfig, OperatorConfig,
+    ConfigError, ConfigWarning, EnvironmentSource, LoadedConfig, OperatorConfig, StorageConfig,
     STARTUP_BASE_URL_DEFAULTED,
 };
 use crate::domain::clock::{Clock, SystemClock};
@@ -68,8 +68,8 @@ use crate::features::transfers::finalize::{
 };
 use crate::features::transfers::reaper::{self as transfer_reaper, ReaperContext};
 use crate::features::transfers::{
-    S3Service, S3ServiceParts, TransferService, TransferStorage, TusLimits, TusService,
-    TusServiceParts,
+    ProxyLimits, S3Service, S3ServiceParts, TransferService, TransferStorage, TusLimits,
+    TusService, TusServiceParts, S3_PROXY_CONCURRENCY,
 };
 use crate::features::users::{AdminUserService, EmailChangeService, ProfileService};
 use crate::infra::crypto::hkdf::KeyRing;
@@ -90,8 +90,10 @@ use crate::infra::telemetry::{self, write_startup_failure, TelemetryInitError};
 use crate::storage;
 use crate::storage::health::{Schedule, StorageMonitor, HEALTH_CHECK_PERIOD};
 use crate::storage::lifecycle::{self as storage_lifecycle, thumbnails::ThumbnailCache};
+use crate::storage::planning::DataPlaneStatus;
 use crate::storage::provider::StorageProvider;
 use crate::storage::s3::config::STORAGE_CONFIG_INVALID;
+use crate::storage::s3::plan::PROXY_PART_SIZE;
 use crate::storage::staging::ProviderStaging;
 use crate::storage::ProviderBuildError;
 
@@ -793,10 +795,11 @@ async fn initialize(
         Ok(storage) => storage,
         Err(error) => return Err(abandon_startup(database, instance, error.into()).await),
     };
-    let monitor = storage_monitor(&storage, &clock, &health);
+    let monitor = storage_monitor(&storage, &clock, &health, &config.storage);
     monitor
         .startup(Some(database.pools().reader().clone()))
         .await;
+    log_data_plane(&config.storage, &storage);
     let storage_health = StorageHealthTask::start(&monitor, schedule);
     let provider = Arc::clone(&storage);
     let branding = BrandingService::new(database.pools().reader().clone(), Arc::clone(&storage));
@@ -901,6 +904,8 @@ async fn initialize(
         storage: transfer_storage.clone(),
         transfers: transfers.clone(),
         finalizer: finalizer.clone(),
+        proxy: ProxyLimits::production(),
+        shutdown: uploads_stop.clone(),
     });
     let tus = TusService::new(TusServiceParts {
         pools: database.pools().clone(),
@@ -1083,17 +1088,42 @@ fn storage_monitor(
     storage: &Arc<dyn StorageProvider>,
     clock: &Arc<dyn Clock>,
     health: &Health,
+    config: &StorageConfig,
 ) -> Arc<StorageMonitor> {
     let health = health.clone();
+    let provider = Arc::clone(storage);
+    let config = config.clone();
     Arc::new(StorageMonitor::new(
         Arc::clone(storage),
         Arc::clone(clock),
         Arc::new(move |signal| {
-            health
-                .checks()
-                .set_storage(StorageState::from_signal(signal));
+            let checks = health.checks();
+            checks.set_storage(StorageState::from_signal(signal));
+            checks.set_data_plane(DataPlaneStatus::of(&config, provider.caps()));
         }),
     ))
+}
+
+fn log_data_plane(config: &StorageConfig, storage: &Arc<dyn StorageProvider>) {
+    let Some(status) = DataPlaneStatus::of(config, storage.caps()) else {
+        return;
+    };
+    let Some(ceiling) = status.proxy_ceiling_bytes else {
+        return;
+    };
+    let requirement = if status.operator_forced {
+        "operator"
+    } else {
+        "profile"
+    };
+    tracing::warn!(
+        data_plane = "proxied",
+        checksum_requirement = requirement,
+        part_size_bytes = PROXY_PART_SIZE,
+        max_concurrent_parts = S3_PROXY_CONCURRENCY,
+        max_object_bytes = ceiling,
+        "the storage provider requires checksum headers on part uploads, so every part is uploaded through this server instead of straight from the browser: uploads are slower, each in-flight part holds an 8 MiB buffer, and files above the proxy ceiling are refused before any byte moves"
+    );
 }
 
 #[expect(
@@ -1250,7 +1280,7 @@ pub fn application_router(
     let assets = StaticAssets::built(&config.base_url)?;
     let health = Health::new(readiness.clone());
     let storage = storage::build_provider(config, Arc::clone(&clock))?;
-    let status = storage_monitor(&storage, &clock, &health).status();
+    let status = storage_monitor(&storage, &clock, &health, &config.storage).status();
     composed_router(
         config,
         health,

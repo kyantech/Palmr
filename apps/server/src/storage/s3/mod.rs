@@ -16,6 +16,7 @@ pub mod tls;
 use std::error::Error;
 use std::fmt;
 use std::sync::{Arc, OnceLock};
+use std::time::Duration;
 
 use aws_sdk_s3::error::{ProvideErrorMetadata, SdkError};
 use aws_smithy_runtime_api::client::orchestrator::HttpResponse;
@@ -32,14 +33,17 @@ use super::error::{Retryable, StorageError};
 use crate::domain::clock::{Clock, SystemClock};
 
 const MAX_ERROR_CODE_LEN: usize = 64;
+const PROXIED_RESPONSE_WAIT: Duration = Duration::from_secs(60);
 
 pub struct S3Provider {
     clients: S3Clients,
     limits: ProfileLimits,
     caps: StorageCapabilities,
     verified_caps: OnceLock<StorageCapabilities>,
+    checksum_forced: bool,
     single_copy_max: u64,
     buffer_bytes: usize,
+    response_wait: Duration,
     clock: Arc<dyn Clock>,
     browser_origin: String,
     public_probe: PublicProbe,
@@ -57,15 +61,21 @@ impl S3Provider {
             .ok_or_else(|| {
                 StorageError::Config("the upload buffer must hold at least one byte".to_owned())
             })?;
-        let limits = clients.shared().profile().limits();
+        let override_ = clients.shared().part_checksums_override();
+        let mut limits = clients.shared().profile().limits();
+        if let Some(required) = override_ {
+            limits.requires_part_checksums = required;
+        }
         let public_probe = PublicProbe::new(&clients);
         Ok(Self {
             clients,
             limits,
             caps: capabilities(&limits),
             verified_caps: OnceLock::new(),
+            checksum_forced: override_.is_some(),
             single_copy_max: SINGLE_COPY_MAX,
             buffer_bytes,
+            response_wait: PROXIED_RESPONSE_WAIT,
             clock: Arc::new(SystemClock),
             browser_origin: base_url.origin().ascii_serialization(),
             public_probe,
@@ -91,6 +101,13 @@ impl S3Provider {
     #[must_use]
     pub(crate) const fn with_single_copy_max(mut self, single_copy_max: u64) -> Self {
         self.single_copy_max = single_copy_max;
+        self
+    }
+
+    #[cfg(test)]
+    #[must_use]
+    pub(crate) const fn with_response_wait(mut self, wait: Duration) -> Self {
+        self.response_wait = wait;
         self
     }
 
@@ -308,6 +325,18 @@ pub(crate) fn service_code(error: &StorageError) -> Option<&str> {
     }
 }
 
+pub(crate) fn is_checksum_rejection(error: &StorageError) -> bool {
+    matches!(
+        service_code(error),
+        Some(
+            "BadDigest"
+                | "InvalidDigest"
+                | "XAmzContentSHA256Mismatch"
+                | "XAmzContentChecksumMismatch"
+        )
+    )
+}
+
 fn source_body_error(error: &(dyn Error + 'static)) -> Option<std::io::Error> {
     let mut current = Some(error);
     while let Some(error) = current {
@@ -337,6 +366,9 @@ mod plan_tests;
 
 #[cfg(test)]
 mod multipart_tests;
+
+#[cfg(test)]
+mod timeout_tests;
 
 #[cfg(test)]
 mod presign_tests;

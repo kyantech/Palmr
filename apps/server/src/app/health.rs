@@ -16,7 +16,9 @@ use super::router::{RateLimitClass, RoutePolicy, Routes, Transport};
 use super::state::AppState;
 use crate::infra::http::error::JSON_CONTENT_TYPE;
 use crate::infra::http::trace::RequestLog;
+use crate::storage::caps::PartUpload;
 use crate::storage::health::{HealthSignal, StorageHealth};
+use crate::storage::planning::DataPlaneStatus;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -133,6 +135,7 @@ pub struct DependencyHealth {
     pub database: Option<DatabaseState>,
     pub migrations: Option<MigrationState>,
     pub storage: Option<StorageState>,
+    pub data_plane: Option<DataPlaneStatus>,
 }
 
 impl DependencyHealth {
@@ -165,6 +168,10 @@ impl DependencyChecks {
 
     pub fn set_storage(&self, state: StorageState) {
         self.update(|health| health.storage = Some(state));
+    }
+
+    pub fn set_data_plane(&self, status: Option<DataPlaneStatus>) {
+        self.update(|health| health.data_plane = status);
     }
 
     pub fn snapshot(&self) -> DependencyHealth {
@@ -259,6 +266,22 @@ pub enum StorageHealthStatus {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, ToSchema)]
+#[serde(rename_all = "lowercase")]
+pub enum HealthDataPlane {
+    Direct,
+    Proxied,
+}
+
+impl From<PartUpload> for HealthDataPlane {
+    fn from(part_upload: PartUpload) -> Self {
+        match part_upload {
+            PartUpload::BrowserDirect => Self::Direct,
+            PartUpload::ServerProxied => Self::Proxied,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum DatabaseHealthStatus {
     Ok,
@@ -292,6 +315,13 @@ pub struct HealthReady {
     database: Option<DatabaseHealthStatus>,
     #[serde(skip_serializing_if = "Option::is_none")]
     migrations: Option<MigrationHealthStatus>,
+    /// How part uploads reach the object store: `direct` from the browser, or `proxied` through this server because the provider requires checksum headers (slower, one 8 MiB buffer per part, at most eight at a time). Absent for local storage.
+    #[serde(rename = "dataPlane", skip_serializing_if = "Option::is_none")]
+    data_plane: Option<HealthDataPlane>,
+    /// The largest object the proxied data plane accepts; present only when `dataPlane` is `proxied`.
+    #[serde(rename = "proxyCeilingBytes", skip_serializing_if = "Option::is_none")]
+    #[schema(minimum = 0)]
+    proxy_ceiling_bytes: Option<u64>,
     version: &'static str,
 }
 
@@ -302,6 +332,12 @@ impl HealthReady {
             storage: dependencies.storage.map(StorageState::status),
             database: dependencies.database.and_then(DatabaseState::status),
             migrations: dependencies.migrations.and_then(MigrationState::status),
+            data_plane: dependencies
+                .data_plane
+                .map(|plane| HealthDataPlane::from(plane.part_upload)),
+            proxy_ceiling_bytes: dependencies
+                .data_plane
+                .and_then(|plane| plane.proxy_ceiling_bytes),
             version: VERSION,
         }
     }

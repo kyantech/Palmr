@@ -2714,6 +2714,9 @@ fn it_openapi_folder_routes_declare_typed_contracts() {
     );
 }
 
+const S3_PROXIED_PART_ROUTE: &str =
+    "/api/v1/transfers/sessions/{sid}/files/{itemId}/s3/multipart/parts/{partNumber}";
+
 const S3_MULTIPART_ROUTES: [(&str, Method); 6] = [
     (
         "/api/v1/transfers/sessions/{sid}/files/{itemId}/s3/multipart",
@@ -2827,6 +2830,27 @@ fn unit_transfer_session_routes_are_declared_with_their_classes() {
         assert_eq!(policy.transport(), Transport::ControlPlane);
         assert_eq!(policy.idempotency(), IdempotencyMode::None);
     }
+    let part_upload = inventory
+        .get(&Method::PUT, S3_PROXIED_PART_ROUTE)
+        .unwrap()
+        .policy();
+    assert_eq!(part_upload.auth(), AuthClass::Authenticated);
+    assert_eq!(part_upload.rate_limit(), RateLimitClass::TransferData);
+    assert_eq!(part_upload.idempotency(), IdempotencyMode::None);
+    assert_eq!(
+        part_upload.request_content(),
+        crate::infra::http::csrf::RequestContent::OctetStream
+    );
+    let transport = part_upload.transport();
+    assert_eq!(
+        transport.request_body(),
+        crate::app::router::RequestBody::Streamed
+    );
+    assert_eq!(transport.deadline(), crate::app::router::Deadline::IdleOnly);
+    assert_eq!(
+        transport.response_encoding(),
+        crate::app::router::ResponseEncoding::Identity
+    );
     let transfer_routes = inventory
         .entries()
         .iter()
@@ -2834,7 +2858,7 @@ fn unit_transfer_session_routes_are_declared_with_their_classes() {
         .count();
     assert_eq!(
         transfer_routes,
-        TRANSFER_SESSION_ROUTES.len() + S3_MULTIPART_ROUTES.len()
+        TRANSFER_SESSION_ROUTES.len() + S3_MULTIPART_ROUTES.len() + 1
     );
     for forbidden in [
         "/api/v1/public/uploads/tus",

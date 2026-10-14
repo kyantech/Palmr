@@ -28,6 +28,7 @@ use crate::config::{S3Config, S3Profile, S3TlsVerification, StorageConfig};
 use crate::domain::secret::Secret;
 use crate::storage::error::StorageError;
 use crate::storage::key::{KeyNamespace, ObjectKey};
+use crate::storage::provider::PartChecksum;
 use crate::storage::provider::{
     ETag, ListCursor, MultipartHandle, MultipartStorage, ObjectBody, PutHint, UploadedPart,
 };
@@ -121,6 +122,7 @@ type Responder = dyn Fn(&Recorded) -> Canned + Send + Sync;
 struct FakeS3 {
     requests: Arc<Mutex<Vec<Recorded>>>,
     responder: Arc<Responder>,
+    delay: Duration,
 }
 
 impl Debug for FakeS3 {
@@ -134,7 +136,13 @@ impl FakeS3 {
         Self {
             requests: Arc::new(Mutex::new(Vec::new())),
             responder: Arc::new(responder),
+            delay: Duration::ZERO,
         }
+    }
+
+    fn slow(mut self, delay: Duration) -> Self {
+        self.delay = delay;
+        self
     }
 
     fn requests(&self) -> Vec<Recorded> {
@@ -157,6 +165,7 @@ impl FakeS3 {
             ca_file: None,
             tls_verification: S3TlsVerification::Enabled,
             multipart_ttl: Duration::from_secs(24 * 60 * 60),
+            require_part_checksums: None,
         };
         let clients = S3Clients::build(&StorageConfig::S3(Box::new(config)))
             .unwrap()
@@ -201,6 +210,9 @@ impl HttpConnector for FakeS3 {
                 body: bytes,
                 largest_frame,
             };
+            if !fake.delay.is_zero() {
+                tokio::time::sleep(fake.delay).await;
+            }
             let canned = (fake.responder)(&recorded);
             fake.requests
                 .lock()
@@ -529,6 +541,7 @@ async fn it_abort_nosuchupload_is_success() {
             ca_file: None,
             tls_verification: S3TlsVerification::Enabled,
             multipart_ttl: Duration::from_secs(3_600),
+            require_part_checksums: None,
         })))
         .unwrap()
         .unwrap(),
@@ -970,6 +983,172 @@ async fn unit_upload_part_stream_is_bounded() {
     ));
 }
 
+fn digest_of(bytes: &[u8]) -> PartChecksum {
+    PartChecksum::sha256(Sha256::digest(bytes).into())
+}
+
+#[tokio::test]
+async fn unit_upload_part_checksummed_sends_the_digest_of_the_exact_bytes() {
+    let fake = FakeS3::new(|_| Canned {
+        status: 200,
+        headers: vec![("etag", "\"part-2\"".to_owned())],
+        body: String::new(),
+    });
+    let s3 = fake.provider();
+    let handle = handle();
+    let bytes = payload(usize::try_from(3 * MIB + 17).unwrap());
+    let checksum = digest_of(&bytes);
+    let part = s3
+        .upload_part_checksummed(
+            &handle,
+            2,
+            bytes.len() as u64,
+            Box::pin(std::io::Cursor::new(bytes::Bytes::from(bytes.clone()))),
+            checksum,
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        part,
+        UploadedPart {
+            part_number: 2,
+            etag: ETag::new("\"part-2\""),
+            size: bytes.len() as u64,
+        }
+    );
+    let requests = fake.requests();
+    assert_eq!(requests.len(), 1);
+    let request = &requests[0];
+    assert_eq!(request.method, "PUT");
+    assert_eq!(request.url.host_str(), Some("s3.internal.palmr.test"));
+    assert_eq!(request.query("partNumber").as_deref(), Some("2"));
+    assert_eq!(request.query("uploadId").as_deref(), Some(UPLOAD_ID));
+    assert_eq!(request.body, bytes);
+    assert!(
+        request.largest_frame <= BUFFER_BYTES as usize,
+        "the part reaches the SDK in bounded frames"
+    );
+    assert_eq!(
+        request.header("content-length"),
+        Some(bytes.len().to_string().as_str())
+    );
+    assert_eq!(
+        request.header("x-amz-checksum-sha256"),
+        Some(checksum.to_base64().as_str())
+    );
+    let sent: Vec<&str> = request
+        .headers
+        .iter()
+        .map(|(name, _)| name.as_str())
+        .filter(|name| name.starts_with("x-amz-checksum") || name.contains("checksum-algorithm"))
+        .collect();
+    assert_eq!(
+        sent,
+        ["x-amz-checksum-sha256"],
+        "exactly one checksum header"
+    );
+
+    let before = fake.requests().len();
+    for (part_number, len) in [(0, 1), (10_001, 1), (1, 0), (1, 5 * GIB + 1)] {
+        rejected(
+            s3.upload_part_checksummed(
+                &handle,
+                part_number,
+                len,
+                Box::pin(tokio::io::empty()),
+                checksum,
+            )
+            .await,
+            Operation::UploadPart,
+        );
+    }
+    let short: ObjectBody = Box::pin(tokio::io::repeat(0).take(2));
+    let error = s3
+        .upload_part_checksummed(&handle, 1, 3, short, checksum)
+        .await
+        .unwrap_err();
+    assert!(
+        matches!(&error, StorageError::Io(io) if io.kind() == io::ErrorKind::UnexpectedEof),
+        "a body shorter than its declared length never completes: {error:?}"
+    );
+    assert_eq!(fake.requests().len(), before, "nothing invalid is sent");
+}
+
+#[tokio::test]
+async fn unit_upload_part_checksummed_classifies_provider_answers_by_structure() {
+    let checksum = digest_of(b"abc");
+    let upload = |canned: fn() -> Canned| {
+        let fake = FakeS3::new(move |_| canned());
+        async move {
+            fake.provider()
+                .upload_part_checksummed(
+                    &handle(),
+                    1,
+                    3,
+                    Box::pin(std::io::Cursor::new(b"abc".to_vec())),
+                    checksum,
+                )
+                .await
+        }
+    };
+    let bad_digest = upload(|| reply(400, error_body("BadDigest")))
+        .await
+        .unwrap_err();
+    assert_eq!(
+        service_code(&bad_digest),
+        Some((400, Some("BadDigest".to_owned())))
+    );
+    assert!(super::is_checksum_rejection(&bad_digest));
+    let other = upload(|| reply(400, error_body("InvalidRequest")))
+        .await
+        .unwrap_err();
+    assert!(!super::is_checksum_rejection(&other));
+    let gone = upload(|| reply(404, error_body("NoSuchUpload")))
+        .await
+        .unwrap_err();
+    assert!(matches!(gone, StorageError::NotFound));
+    let down = upload(|| reply(503, error_body("ServiceUnavailable")))
+        .await
+        .unwrap_err();
+    assert!(matches!(down, StorageError::ProviderUnavailable(_)));
+    let denied = upload(|| reply(403, error_body("AccessDenied")))
+        .await
+        .unwrap_err();
+    assert!(matches!(denied, StorageError::PermissionDenied));
+    let no_etag = upload(|| reply(200, "")).await.unwrap_err();
+    assert!(matches!(
+        s3_failure(&no_etag).map(|failure| &failure.failure),
+        Some(Failure::MalformedResponse(_))
+    ));
+}
+
+#[tokio::test(start_paused = true)]
+async fn unit_upload_part_checksummed_has_no_absolute_operation_deadline() {
+    let fake = FakeS3::new(|_| Canned {
+        status: 200,
+        headers: vec![("etag", "\"slow\"".to_owned())],
+        body: String::new(),
+    })
+    .slow(Duration::from_secs(3_600));
+    let s3 = fake.provider().with_response_wait(Duration::from_secs(60));
+    let started = tokio::time::Instant::now();
+    let part = s3
+        .upload_part_checksummed(
+            &handle(),
+            1,
+            3,
+            Box::pin(std::io::Cursor::new(b"abc".to_vec())),
+            digest_of(b"abc"),
+        )
+        .await
+        .expect("a progressing provider is never cut off by the total duration");
+    assert_eq!(part.etag, ETag::new("\"slow\""));
+    assert!(
+        started.elapsed() >= Duration::from_secs(3_600),
+        "the call outlived the removed 120 s operation deadline"
+    );
+}
+
 #[tokio::test]
 async fn unit_create_multipart_uses_caller_key() {
     let fake = FakeS3::new(|_| {
@@ -1115,6 +1294,7 @@ fn minio_provider(server: &MinioServer, bucket: &str, force_path_style: bool) ->
         ca_file: None,
         tls_verification: S3TlsVerification::Enabled,
         multipart_ttl: Duration::from_secs(24 * 60 * 60),
+        require_part_checksums: None,
     };
     let clients = S3Clients::build(&StorageConfig::S3(Box::new(config)))
         .unwrap()

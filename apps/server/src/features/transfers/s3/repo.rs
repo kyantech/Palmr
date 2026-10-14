@@ -46,6 +46,10 @@ const RECORD_REPORTS: &str = "UPDATE s3_multipart_parts
       AND s3_multipart_parts.part_number = reported.part_number
       AND s3_multipart_parts.state IN ('planned', 'signed', 'failed', 'uploaded')";
 
+const RECORD_PROXIED_PART: &str = "UPDATE s3_multipart_parts
+      SET state = 'uploaded', etag = ?3, size_bytes = ?4, uploaded_at = ?5, attempts = attempts + 1
+    WHERE s3_multipart_upload_id = ?1 AND part_number = ?2";
+
 const VERIFY_PRESENT: &str = "UPDATE s3_multipart_parts
       SET state = 'verified', etag = held.etag, size_bytes = held.size,
           uploaded_at = COALESCE(uploaded_at, ?3)
@@ -219,6 +223,25 @@ pub async fn record_reports(
             .execute(&mut *connection)
             .await?;
     }
+    Ok(())
+}
+
+pub async fn record_proxied_part(
+    connection: &mut SqliteConnection,
+    id: MultipartId,
+    part_number: u32,
+    etag: &str,
+    size: u64,
+    now: Timestamp,
+) -> Result<(), TransferError> {
+    sqlx::query(RECORD_PROXIED_PART)
+        .bind(id.to_string())
+        .bind(i64::from(part_number))
+        .bind(etag)
+        .bind(bound(size)?)
+        .bind(now.to_string())
+        .execute(connection)
+        .await?;
     Ok(())
 }
 

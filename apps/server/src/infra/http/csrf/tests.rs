@@ -331,6 +331,21 @@ fn unit_csrf_authority_follows_auth_class() {
 #[case::tus_patch(RequestContent::OffsetOctetStream, OFFSET_OCTET_STREAM, true)]
 #[case::tus_patch_json(RequestContent::OffsetOctetStream, "application/json", false)]
 #[case::tus_patch_form(RequestContent::OffsetOctetStream, FORM, false)]
+#[case::part_upload(RequestContent::OctetStream, "application/octet-stream", true)]
+#[case::part_upload_upper(RequestContent::OctetStream, "Application/Octet-Stream", true)]
+#[case::part_upload_parameter(
+    RequestContent::OctetStream,
+    "application/octet-stream; charset=utf-8",
+    false
+)]
+#[case::part_upload_json(RequestContent::OctetStream, "application/json", false)]
+#[case::part_upload_form(RequestContent::OctetStream, FORM, false)]
+#[case::part_upload_tus(RequestContent::OctetStream, OFFSET_OCTET_STREAM, false)]
+#[case::tus_patch_plain_octets(
+    RequestContent::OffsetOctetStream,
+    "application/octet-stream",
+    false
+)]
 #[case::tus_create_json(RequestContent::JsonOrOffsetOctetStream, "application/json", true)]
 #[case::tus_create_octets(RequestContent::JsonOrOffsetOctetStream, OFFSET_OCTET_STREAM, true)]
 #[case::tus_create_form(RequestContent::JsonOrOffsetOctetStream, FORM, false)]

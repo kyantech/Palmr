@@ -1,10 +1,14 @@
 use std::borrow::Cow;
 use std::fmt;
+use std::pin::Pin;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::task::{Context, Poll};
 use std::time::Duration;
 
 use aws_sdk_s3::config::{
     BehaviorVersion, Config, Credentials, Region, RequestChecksumCalculation,
+    StalledStreamProtectionConfig,
 };
 use aws_sdk_s3::presigning::PresigningConfig;
 use aws_smithy_runtime_api::client::connector_metadata::ConnectorMetadata;
@@ -27,6 +31,9 @@ use super::profile::ProviderProfile;
 use super::tls::{self, S3TlsConfig, S3TlsPolicy};
 
 const CREDENTIALS_PROVIDER_NAME: &str = "palmr-static";
+pub(super) const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
+pub(super) const STALL_GRACE: Duration = Duration::from_secs(60);
+pub(super) const SEND_BUFFER_BYTES: u32 = 256 * 1024;
 
 pub struct S3Shared {
     resolved: ResolvedS3Config,
@@ -55,6 +62,10 @@ impl S3Shared {
 
     pub const fn multipart_ttl(&self) -> Duration {
         self.resolved.multipart_ttl
+    }
+
+    pub const fn part_checksums_override(&self) -> Option<bool> {
+        self.resolved.require_part_checksums
     }
 
     pub(crate) fn access_key(&self) -> &Secret<String> {
@@ -184,6 +195,11 @@ impl S3Clients {
             .credentials_provider(shared.credentials())
             .force_path_style(shared.force_path_style())
             .request_checksum_calculation(RequestChecksumCalculation::WhenRequired)
+            .stalled_stream_protection(
+                StalledStreamProtectionConfig::enabled()
+                    .grace_period(STALL_GRACE)
+                    .build(),
+            )
             .build();
 
         let internal = InternalClient {
@@ -263,9 +279,11 @@ fn client_for(base: &Config, endpoint: &Url, tls: &S3TlsConfig) -> aws_sdk_s3::C
     aws_sdk_s3::Client::from_conf(config)
 }
 
-fn http_client(tls: &S3TlsConfig) -> SharedHttpClient {
+pub(super) fn http_client(tls: &S3TlsConfig) -> SharedHttpClient {
     let mut http = hyper_util::client::legacy::connect::HttpConnector::new();
     http.enforce_http(false);
+    http.set_connect_timeout(Some(CONNECT_TIMEOUT));
+    http.set_send_buffer_size(Some(SEND_BUFFER_BYTES as usize));
     let https = hyper_rustls::HttpsConnectorBuilder::new()
         .with_tls_config((**tls.config()).clone())
         .https_or_http()
@@ -275,7 +293,10 @@ fn http_client(tls: &S3TlsConfig) -> SharedHttpClient {
     let client = hyper_util::client::legacy::Client::builder(hyper_util::rt::TokioExecutor::new())
         .build(https);
     SharedHttpClient::new(S3HttpClient {
-        connector: S3HttpConnector { client },
+        connector: S3HttpConnector {
+            client,
+            response_wait: None,
+        },
     })
 }
 
@@ -287,6 +308,7 @@ type HyperS3Client = hyper_util::client::legacy::Client<
 #[derive(Clone)]
 struct S3HttpConnector {
     client: HyperS3Client,
+    response_wait: Option<Duration>,
 }
 
 impl fmt::Debug for S3HttpConnector {
@@ -303,14 +325,129 @@ impl HttpConnector for S3HttpConnector {
                 return HttpConnectorFuture::ready(Err(ConnectorError::user(error.into())))
             }
         };
+        let sent = Arc::new(SentSignal::default());
+        let request = request.map(|body| {
+            SdkBody::from_body_1_x(SentBody {
+                remaining: http_body::Body::size_hint(&body).exact(),
+                inner: body,
+                signal: Arc::clone(&sent),
+            })
+        });
+        sent.mark_if_empty(&request);
         let mut client = self.client.clone();
         let future = client.call(request);
+        let response_wait = self.response_wait;
         HttpConnectorFuture::new(async move {
-            let response = future.await.map_err(connector_error)?;
+            let response = match response_wait {
+                None => future.await,
+                Some(limit) => {
+                    tokio::pin!(future);
+                    tokio::select! {
+                        outcome = &mut future => outcome,
+                        () = sent.elapsed_since_sent(limit) => {
+                            return Err(ConnectorError::timeout(
+                                std::io::Error::from(std::io::ErrorKind::TimedOut).into(),
+                            ));
+                        }
+                    }
+                }
+            }
+            .map_err(connector_error)?;
             let response = response.map(SdkBody::from_body_1_x);
             HttpResponse::try_from(response)
                 .map_err(|error| ConnectorError::other(error.into(), None))
         })
+    }
+}
+
+struct SentSignal {
+    started: tokio::time::Instant,
+    sent: AtomicBool,
+    sent_after: std::sync::Mutex<Duration>,
+    notify: tokio::sync::Notify,
+}
+
+impl Default for SentSignal {
+    fn default() -> Self {
+        Self {
+            started: tokio::time::Instant::now(),
+            sent: AtomicBool::new(false),
+            sent_after: std::sync::Mutex::new(Duration::ZERO),
+            notify: tokio::sync::Notify::new(),
+        }
+    }
+}
+
+impl SentSignal {
+    fn mark(&self) {
+        if !self.sent.swap(true, Ordering::SeqCst) {
+            *self
+                .sent_after
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner) = self.started.elapsed();
+        }
+        self.notify.notify_waiters();
+    }
+
+    fn mark_if_empty(&self, request: &http::Request<SdkBody>) {
+        if http_body::Body::is_end_stream(request.body()) {
+            self.mark();
+        }
+    }
+
+    async fn elapsed_since_sent(&self, limit: Duration) {
+        loop {
+            let notified = self.notify.notified();
+            if self.sent.load(Ordering::SeqCst) {
+                break;
+            }
+            notified.await;
+        }
+        let uploading = *self
+            .sent_after
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        tokio::time::sleep(limit.saturating_add(uploading)).await;
+    }
+}
+
+struct SentBody {
+    inner: SdkBody,
+    remaining: Option<u64>,
+    signal: Arc<SentSignal>,
+}
+
+impl http_body::Body for SentBody {
+    type Data = bytes::Bytes;
+    type Error = <SdkBody as http_body::Body>::Error;
+
+    fn poll_frame(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<Option<Result<http_body::Frame<Self::Data>, Self::Error>>> {
+        let this = &mut *self;
+        let polled = Pin::new(&mut this.inner).poll_frame(cx);
+        match &polled {
+            Poll::Ready(None) => this.signal.mark(),
+            Poll::Ready(Some(Ok(frame))) => {
+                if let (Some(remaining), Some(data)) = (this.remaining.as_mut(), frame.data_ref()) {
+                    *remaining = remaining.saturating_sub(data.len() as u64);
+                    if *remaining == 0 {
+                        this.signal.mark();
+                    }
+                }
+            }
+            Poll::Ready(Some(Err(_))) | Poll::Pending => {}
+        }
+        polled
+    }
+
+    fn is_end_stream(&self) -> bool {
+        self.inner.is_end_stream()
+    }
+
+    fn size_hint(&self) -> http_body::SizeHint {
+        self.inner.size_hint()
     }
 }
 
@@ -328,10 +465,13 @@ impl fmt::Debug for S3HttpClient {
 impl HttpClient for S3HttpClient {
     fn http_connector(
         &self,
-        _settings: &HttpConnectorSettings,
+        settings: &HttpConnectorSettings,
         _components: &RuntimeComponents,
     ) -> SharedHttpConnector {
-        SharedHttpConnector::new(self.connector.clone())
+        SharedHttpConnector::new(S3HttpConnector {
+            response_wait: settings.read_timeout(),
+            ..self.connector.clone()
+        })
     }
 
     fn connector_metadata(&self) -> Option<ConnectorMetadata> {

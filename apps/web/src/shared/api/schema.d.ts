@@ -1412,6 +1412,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/transfers/sessions/{sid}/files/{itemId}/s3/multipart/parts/{partNumber}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["upload_part"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/transfers/sessions/{sid}/files/{itemId}/s3/multipart/presign": {
         parameters: {
             query?: never;
@@ -2238,6 +2254,8 @@ export interface components {
             poweredByVisible: boolean;
             thumbnailSourceLimit: components["schemas"]["ThumbnailSourceLimitName"];
         };
+        /** @enum {string} */
+        HealthDataPlane: "direct" | "proxied";
         HealthLive: {
             status: components["schemas"]["HealthLiveStatus"];
             version: string;
@@ -2252,8 +2270,14 @@ export interface components {
         /** @enum {string} */
         HealthNotReadyStatus: "not_ready";
         HealthReady: {
+            dataPlane?: null | components["schemas"]["HealthDataPlane"];
             database?: null | components["schemas"]["DatabaseHealthStatus"];
             migrations?: null | components["schemas"]["MigrationHealthStatus"];
+            /**
+             * Format: int64
+             * @description The largest object the proxied data plane accepts; present only when `dataPlane` is `proxied`.
+             */
+            proxyCeilingBytes?: number | null;
             status: components["schemas"]["HealthReadyStatus"];
             storage?: null | components["schemas"]["StorageHealthStatus"];
             version: string;
@@ -11269,6 +11293,146 @@ export interface operations {
             };
             /** @description Rate limited. */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    upload_part: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Transfer session UUIDv7 */
+                sid: string;
+                /** @description Transfer item UUIDv7 */
+                itemId: string;
+                /** @description The part to upload, `1..=partCount`, in canonical decimal form. */
+                partNumber: number;
+            };
+            cookie?: never;
+        };
+        /** @description Exactly the bytes of this part and nothing else: `partSizeBytes` for every part but the last, the remainder for the last. The body is streamed into one bounded buffer, hashed with SHA-256 and forwarded to the storage provider with that checksum; it is never collected beyond the one part. There is no whole-request deadline and no limit on the total duration: only a 60 s gap between frames ends the request with `TRANSFER_IDLE_TIMEOUT`. Only available while the storage profile requires checksum headers (`checksumHeadersRequired: true` on create); otherwise parts go straight to the provider with a presigned URL. */
+        requestBody?: {
+            content: {
+                "application/octet-stream": unknown;
+            };
+        };
+        responses: {
+            /** @description The provider stored the part. `etag` is the provider's verbatim, `sizeBytes` the stored length. The part is recorded only after the provider answered; `GET …/parts` and completion still trust `ListParts` alone. Uploading the same part again replaces it. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompletedPartView"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The CSRF proof or origin is missing or not allowed, the session is restricted, or the account is deactivated (`AUTH_ACCOUNT_INACTIVE`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `MULTIPART_NOT_FOUND`: unknown, aborted or another user's upload, an item that is not an S3 multipart upload, or a provider that no longer knows the upload. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_IDLE_TIMEOUT`: no frame arrived for 60 s. Nothing was sent to the provider; upload the part again. */
+            408: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `MULTIPART_ALREADY_COMPLETED`, or `TRANSFER_SESSION_STATE_INVALID` while the upload is being completed, canceled or its session is terminal. A part the provider accepted after such a transition is not recorded. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_SESSION_EXPIRED`. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The request is not `application/octet-stream`. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `MULTIPART_PART_INVALID` with `details.reason`: `part_number` (outside the plan or not a canonical integer), `content_length_mismatch`, `body_too_long`, `body_too_short`, `body_interrupted`, `direct_part_upload` (the profile does not require checksum headers: use a presigned URL), `part_size_exceeds_proxy_buffer` (the upload was planned with parts larger than the 8 MiB proxy buffer: abort it and start a new upload). No byte reached the provider. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `UPLOAD_LOCKED`: another request is uploading this part right now. Retry after it ends. */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `STORAGE_UPSTREAM_ERROR`: the provider rejected the part; `details.reason = checksum_rejected` when it refused the SHA-256 checksum. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `TRANSFER_BACKPRESSURE` (with `Retry-After`) while eight parts are already being proxied by this instance, `STORAGE_UNAVAILABLE` or `SERVICE_UNAVAILABLE`. Retry. */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
