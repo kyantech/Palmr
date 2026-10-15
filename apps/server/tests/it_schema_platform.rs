@@ -614,7 +614,7 @@ async fn it_schema_jobs_dedup_partial_unique() -> Result<()> {
 
     assert_eq!(
         database
-            .count("SELECT count(*) FROM jobs WHERE dedup_key IS NULL")
+            .count("SELECT count(*) FROM jobs WHERE dedup_key IS NULL AND kind = 'storage.delete_blob'")
             .await?,
         4
     );
@@ -626,7 +626,7 @@ async fn it_schema_jobs_dedup_partial_unique() -> Result<()> {
     );
     assert_eq!(
         database
-            .count("SELECT count(*) FROM jobs WHERE kind NOT IN ('quota.reconcile', 'tus.expire_stale')")
+            .count("SELECT count(*) FROM jobs WHERE kind = 'storage.delete_blob'")
             .await?,
         7
     );

@@ -387,7 +387,11 @@ async fn it_reaper_settles_each_item_share_once_and_keeps_a_retryable_hold() {
         "only C's share was released"
     );
     assert_eq!(rig.stack.used_bytes(alice.id).await, 100);
-    assert_eq!(rig.stack.session_row(&session).await.0, "failed");
+    assert_eq!(
+        rig.stack.session_row(&session).await.0,
+        "uploading",
+        "B is still uploading, so D's retryable failure does not fail the session"
+    );
 
     let admitted = rig
         .stack
@@ -422,7 +426,11 @@ async fn it_reaper_settles_each_item_share_once_and_keeps_a_retryable_hold() {
         ("held", 0),
         "the completed item keeps the session open"
     );
-    assert_eq!(rig.stack.session_row(&session).await.0, "failed");
+    assert_eq!(
+        rig.stack.session_row(&session).await.0,
+        "uploading",
+        "the reaper expires items without failing the session"
+    );
 
     rig.stack.clock.advance(SESSION_TTL);
     let last = pass(&rig).await;

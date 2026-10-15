@@ -13,6 +13,7 @@ pub mod routes;
 pub mod s3;
 pub mod service;
 pub mod state;
+pub mod tree;
 pub mod tus;
 
 pub use admission::TransferStorage;

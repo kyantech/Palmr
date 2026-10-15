@@ -33,6 +33,7 @@ Post-freeze migrations so far:
 | `0007_idempotency_transfer_envelope.sql` | Rebuilds `idempotency_records`: the `response_json` CHECK counts UTF-8 bytes and allows 6 MiB for `/api/v1/transfers/sessions` (16 KiB elsewhere). Rows are copied unchanged |
 | `0008_cancellation_cleanup_discovery.sql` | Keyset discovery indexes `ix_s3mp_abandoned` and `ix_tus_uploads_terminated` for the cancellation cleanup contract |
 | `0009_tus_staging_cleanup_and_expiry_indexes.sql` | `tus_uploads.staging_removed_at` (proof that physical staging cleanup finished), the cleanup and retention indexes `ix_tus_uploads_cleanup` / `ix_tus_uploads_retention`, and the session indexes `ix_transfer_sessions_failed_expiry` / `ix_transfer_sessions_retention` that the `tus.expire_stale` reaper needs (M14-T06) |
+| `0010_relative_path_exact_dot_segments.sql` | Rebuilds `transfer_session_files` with `relative_path` refusing a `..` segment instead of any `..` substring, together with the three RESTRICT/CASCADE children `tus_uploads`, `s3_multipart_uploads` and `s3_multipart_parts` (copied through `*_held` tables inside the migration transaction; rows, keys and indexes are preserved). SQLite cannot alter a CHECK in place, and the RESTRICT keys forbid dropping the parent while children hold rows (M14-T10) |
 
 A new migration must keep both of these producing the same normalized schema:
 

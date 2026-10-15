@@ -2008,6 +2008,7 @@ mod authorize;
 mod callback;
 mod checksum_gate;
 mod deletion_tests;
+mod directory_tree;
 mod file_search;
 mod file_writes;
 mod files;

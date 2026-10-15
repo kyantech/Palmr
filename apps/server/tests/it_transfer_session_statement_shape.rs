@@ -1,104 +1,21 @@
 pub mod support;
 
-use std::sync::{Arc, Mutex, PoisonError};
 use std::time::Instant;
 
 use anyhow::{ensure, Context, Result};
 use reqwest::{Method, StatusCode};
 use serde_json::{json, Value};
-use tracing::field::{Field, Visit};
-use tracing::{Event, Subscriber};
-use tracing_subscriber::layer::{Context as LayerContext, Layer, SubscriberExt};
+use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::Registry;
 
 use support::client::{Creds, Http};
+use support::statements::{about, Recorded, Recorder};
 use support::TestApplication;
 
 const SESSIONS: &str = "/api/v1/transfers/sessions";
 const DIRECTORIES: usize = 40;
 const SMALL: usize = 200;
 const LARGE: usize = 2_000;
-
-#[derive(Clone, Default)]
-struct Recorded(Arc<Mutex<Captured>>);
-
-#[derive(Default)]
-struct Captured {
-    statements: Vec<String>,
-    transactions: Vec<(String, u64)>,
-}
-
-impl Recorded {
-    fn clear(&self) {
-        let mut captured = self.0.lock().unwrap_or_else(PoisonError::into_inner);
-        captured.statements.clear();
-        captured.transactions.clear();
-    }
-
-    fn statements(&self) -> Vec<String> {
-        self.0
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
-            .statements
-            .clone()
-    }
-
-    fn transactions(&self) -> Vec<(String, u64)> {
-        self.0
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
-            .transactions
-            .clone()
-    }
-}
-
-struct Recorder(Recorded);
-
-#[derive(Default)]
-struct Fields {
-    text: String,
-    transaction: Option<String>,
-    elapsed_ms: Option<u64>,
-}
-
-impl Visit for Fields {
-    fn record_str(&mut self, field: &Field, value: &str) {
-        match field.name() {
-            "summary" | "db.statement" => {
-                self.text.push(' ');
-                self.text.push_str(value);
-            }
-            "transaction" => self.transaction = Some(value.to_owned()),
-            _ => {}
-        }
-    }
-
-    fn record_u64(&mut self, field: &Field, value: u64) {
-        if field.name() == "elapsed_ms" {
-            self.elapsed_ms = Some(value);
-        }
-    }
-
-    fn record_debug(&mut self, field: &Field, value: &dyn std::fmt::Debug) {
-        if field.name() == "transaction" && self.transaction.is_none() {
-            self.transaction = Some(format!("{value:?}").trim_matches('"').to_owned());
-        }
-    }
-}
-
-impl<S: Subscriber> Layer<S> for Recorder {
-    fn on_event(&self, event: &Event<'_>, _context: LayerContext<'_, S>) {
-        let target = event.metadata().target();
-        let mut fields = Fields::default();
-        event.record(&mut fields);
-        let mut captured = self.0 .0.lock().unwrap_or_else(PoisonError::into_inner);
-        if target == "sqlx::query" {
-            captured.statements.push(fields.text);
-        } else if let (Some(name), Some(elapsed)) = (fields.transaction, fields.elapsed_ms) {
-            captured.transactions.push((name, elapsed));
-        }
-    }
-}
 
 fn files(count: usize, tag: &str) -> Vec<Value> {
     (0..count)
@@ -151,13 +68,6 @@ async fn create(
         transactions: recorded.transactions(),
         wall_ms,
     })
-}
-
-fn about(statements: &[String], needle: &str) -> usize {
-    statements
-        .iter()
-        .filter(|statement| statement.contains(needle))
-        .count()
 }
 
 #[tokio::test(flavor = "multi_thread")]

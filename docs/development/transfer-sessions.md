@@ -4,17 +4,18 @@ Introduced in M14-T02. It implements the authenticated My Files control plane of
 
 | Artefact | Location |
 |---|---|
-| Module | `apps/server/src/features/transfers` (`routes`, `service`, `repo`, `model`, `state`, `admission`, `presentation`, `error`) and `apps/server/src/storage/planning.rs` |
+| Module | `apps/server/src/features/transfers` (`routes`, `service`, `repo`, `model`, `state`, `admission`, `tree`, `presentation`, `error`) and `apps/server/src/storage/planning.rs` |
 | Routes | `POST/GET /api/v1/transfers/sessions`, `GET/DELETE …/{id}`, `POST …/{id}/complete`, `POST …/{id}/files/{itemId}/retry`, `DELETE …/{id}/files/{itemId}` |
 | Flow tests | `apps/server/src/features/auth/flow_tests/transfer*.rs` |
-| Statement-shape proof | `apps/server/tests/it_transfer_session_statement_shape.rs` |
+| Statement-shape proof | `apps/server/tests/it_transfer_session_statement_shape.rs`, `apps/server/tests/it_directory_tree_statement_shape.rs` |
+| Directory-tree tests | `apps/server/src/features/auth/flow_tests/directory_tree.rs`, `apps/server/tests/it_directory_tree_s3_process.rs` (MinIO, `e2e-fixture`) |
 | Replay-envelope migration | `apps/server/migrations/0007_idempotency_transfer_envelope.sql` |
 
 ## Admission is one transaction
 
 `POST` runs a single `BEGIN IMMEDIATE`: account active, storage health, target folder, per-file size policy and provider plan, directory depth, the checked reservation total, folder-chain creation, quota admission, then the session, its items in batches of 200 rows, the one `held` reservation and the idempotency completion. Any failure rolls back all of it, including folders created earlier in the same transaction. Error precedence follows that order and is asserted by `it_transfer_session_error_precedence_is_fixed`.
 
-The statement count does not grow with the file count: items are inserted 200 per statement and a directory shared by many files is created once (the chain is memoized inside the transaction).
+The statement count does not grow with the file count: items are inserted 200 per statement and a directory shared by many files is created once (`tree.rs` plans the distinct directories of the whole selection, see [Directory trees](#directory-trees)).
 
 ## Provider differences stay in `storage`
 
@@ -77,3 +78,19 @@ The first response and every replay are rendered by the same `ReplayEnvelope`, s
 ## Client keys
 
 `clientId` is an opaque string of 1 to 128 characters with no control character. It is not narrowed further. When it appears in `FILE_TOO_LARGE` details it is carried as a validated owned string and serialized by the JSON encoder, which escapes every unsafe character.
+
+## Directory trees
+
+A dropped directory is one session with one item per file. The wire `relativePath` is the whole path including the leaf; the item stores the directory prefix in `relative_path` (no trailing slash, `''` at the root) and the leaf in `display_name`, so the leaf never becomes a folder. `RelativePath::parse` (folds `\` to `/`, NFC per segment, at most 32 segments and 1 024 bytes, no `.`/`..`, NUL, controls, drive letter, UNC, leading, trailing or repeated separators) is the only parser; an invalid path, a `name` that disagrees with the leaf, or a depth beyond 64 is refused before anything is written.
+
+`tree.rs` builds a `TreePlan` of the distinct normalized prefixes (parents first) and `materialize` ensures each one inside the admission transaction with `ensure_child_in_tx`. Two spellings that normalize equally merge into the first folder (`Photos`/`photos`, `café`/`cafe\u0301`), an existing folder is reused (`Project` is never suffixed to `Project (1)`), and a folder and a file may share a name. A new session for the same tree, with or without an `Idempotency-Key`, reuses the same folder rows; the same key replays the original session byte for byte. Keep-both applies only to files, at finalization, inside the commit transaction.
+
+The target folder is fixed at admission. Finalization resolves `target_folder_id` plus the stored prefix by normalized names (`destination_of`) and never creates a folder, so a later `folderId` in TUS metadata or any other request cannot redirect an item (`folderId` that differs is `UPLOAD_METADATA_INVALID`). Renaming or moving the target keeps working; an intermediate folder renamed, moved away or deleted before an item finalizes fails that item with `FOLDER_NOT_FOUND` or `FOLDER_DELETING`, places nothing and releases its share, and completed siblings stay.
+
+`client_file_key` is the wire `clientId`, stored verbatim and unique within the session. The whole set is admitted against quota once (`it_directory_tree_quota_whole_batch`).
+
+A failed item no longer strands the rest of the tree. The item keeps its own `failed` state and error; the session becomes `failed` only once nothing is `pending`, `uploading` or `finalizing` (`repo::failure_move`, shared by the finalizer, `fail_item` and the S3 lost-multipart reaper), so pending siblings still start and open ones keep sending in the same session. When the last live item completes while a failed one remains, the finalizer moves the session to `failed` as the aggregate and the reservation stays `held` for retryable shares; the owner then retries, closes (`POST …/complete`) or cancels. Completed files, quota charges and `FILE_UPLOADED` events are never repeated (`it_directory_tree_failed_item_does_not_strand_a_pending_sibling`, `it_directory_tree_failed_item_does_not_stop_an_uploading_sibling`, and the MinIO variant `it_e2e_fixture_directory_tree_s3_failed_item_does_not_strand_siblings`).
+
+`transfer_session_files.relative_path` is checked for a `..` segment (exactly `..`), not a `..` substring, since migration `0010`: `versions..old/file.txt` and `project...backup/readme.md` are valid, `../x`, `a/../b` and `a/..` are refused at the schema as well as by the parser (`it_directory_tree_double_dot_components_are_valid_and_persisted`, `it_migrate_relative_path_exact_dot_segments_rebuilds_transfer_tables_without_loss`).
+
+The folder picker, directory drag-and-drop and Transfer Center UI are frontend milestones.

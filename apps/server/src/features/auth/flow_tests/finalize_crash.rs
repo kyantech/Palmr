@@ -823,7 +823,11 @@ async fn it_finalize_terminal_rejection_releases_only_its_own_share() {
         1_000,
         "only the completed file is charged"
     );
-    assert_eq!(rig.stack.session_row(&session).await.0, "failed");
+    assert_eq!(
+        rig.stack.session_row(&session).await.0,
+        "uploading",
+        "the live sibling keeps the session running"
+    );
 
     assert_eq!(
         rig.stack.cancel_session(&rig.alice, &session).await.status,

@@ -13,7 +13,7 @@ use crate::storage::lifecycle::StorageObjectId;
 use super::cancel::Ending;
 use super::error::TransferError;
 use super::model::{SessionItemId, TransferProvider, TransferSessionId, UploadKind};
-use super::state::{ItemState, TransferSessionState};
+use super::state::{session_transition, ItemState, Outcome, TransferSessionState, Trigger};
 
 const INSERT_BATCH_ROWS: usize = 200;
 
@@ -701,6 +701,20 @@ pub async fn remaining_items(
     session: TransferSessionId,
 ) -> Result<u32, TransferError> {
     counted(connection, COUNT_REMAINING, session).await
+}
+
+pub async fn failure_move(
+    connection: &mut SqliteConnection,
+    session: TransferSessionId,
+    from: TransferSessionState,
+) -> Result<Option<TransferSessionState>, TransferError> {
+    if in_flight_items(connection, session).await? > 0 {
+        return Ok(None);
+    }
+    Ok(match session_transition(from, Trigger::Failed) {
+        Ok(Outcome::Moved(to)) => Some(to),
+        Ok(Outcome::Unchanged(_)) | Err(_) => None,
+    })
 }
 
 async fn counted(

@@ -414,13 +414,34 @@ impl Committer {
         .await?;
         let live = transfer_repo::in_flight_items(tx.executor(), ctx.session).await?;
         let failed = transfer_repo::failed_items(tx.executor(), ctx.session).await?;
-        if live > 0 || failed > 0 {
+        if live > 0 {
+            return Ok(());
+        }
+        let owner = ctx.owner.ok_or_else(|| invariant("owner"))?;
+        if failed > 0 {
+            if let Ok(Moved::Moved(to)) = session_transition(ctx.session_state, Trigger::Failed) {
+                let moved = transfer_repo::move_session(
+                    tx.executor(),
+                    owner,
+                    ctx.session,
+                    &SessionMove {
+                        from: ctx.session_state,
+                        to,
+                        now,
+                        finished: false,
+                        cancel_requested: false,
+                    },
+                )
+                .await?;
+                if !moved {
+                    return Err(invariant("session_state"));
+                }
+            }
             return Ok(());
         }
         let Ok(Moved::Moved(to)) = session_transition(ctx.session_state, Trigger::Close) else {
             return Ok(());
         };
-        let owner = ctx.owner.ok_or_else(|| invariant("owner"))?;
         let moved = transfer_repo::move_session(
             tx.executor(),
             owner,
@@ -634,8 +655,8 @@ impl Committer {
         failure: &ErrorParts,
         now: Timestamp,
     ) -> Result<(), Stop> {
-        match session_transition(ctx.session_state, Trigger::Failed) {
-            Ok(Moved::Moved(to)) => {
+        match transfer_repo::failure_move(tx.executor(), ctx.session, ctx.session_state).await? {
+            Some(to) => {
                 let moved = transfer_repo::move_session(
                     tx.executor(),
                     owner,
@@ -653,9 +674,7 @@ impl Committer {
                     return Err(invariant("session_state"));
                 }
             }
-            Ok(Moved::Unchanged(_)) | Err(_) => {
-                transfer_repo::touch_session(tx.executor(), ctx.session, now).await?;
-            }
+            None => transfer_repo::touch_session(tx.executor(), ctx.session, now).await?,
         }
         transfer_repo::record_session_error(tx.executor(), ctx.session, failure).await?;
         Ok(())

@@ -5,9 +5,7 @@ use crate::storage::provider::MultipartHandle;
 
 use super::super::super::error::TransferError;
 use super::super::super::repo::{self as transfer_repo, ErrorParts, FinalizeStage, SessionMove};
-use super::super::super::state::{
-    has_expired, session_transition, ItemState, Outcome as Moved, Trigger,
-};
+use super::super::super::state::{has_expired, ItemState};
 use super::super::model::{MultipartId, MultipartState};
 use super::super::reconcile::{analyze, PartLayout};
 use super::super::repo as s3_repo;
@@ -136,8 +134,9 @@ async fn confirm_lost(
                     .release_share(tx, row.session, row.item.reserved)
                     .await?;
             }
-            match session_transition(row.session_state, Trigger::Failed) {
-                Ok(Moved::Moved(to)) => {
+            match transfer_repo::failure_move(tx.executor(), row.session, row.session_state).await?
+            {
+                Some(to) => {
                     let moved = transfer_repo::move_session(
                         tx.executor(),
                         owner,
@@ -157,7 +156,7 @@ async fn confirm_lost(
                         });
                     }
                 }
-                Ok(Moved::Unchanged(_)) | Err(_) => {
+                None => {
                     transfer_repo::touch_session(tx.executor(), row.session, now).await?;
                 }
             }

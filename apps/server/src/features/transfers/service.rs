@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::sync::Arc;
 
 use http::StatusCode;
@@ -9,10 +8,7 @@ use crate::domain::clock::Clock;
 use crate::domain::time::Timestamp;
 use crate::features::audit::actions::TransferScope;
 use crate::features::audit::service::AuditService;
-use crate::features::folders::MAX_FOLDER_DEPTH;
-use crate::features::folders::{
-    ensure_child_in_tx, resolve_writable_folder, FolderError, FolderId,
-};
+use crate::features::folders::{resolve_writable_folder, FolderError};
 use crate::features::quota::model::{HoldRequest, ReleaseReason, ReservationContext};
 use crate::features::quota::service::QuotaService;
 use crate::features::settings::SettingsHandle;
@@ -28,7 +24,7 @@ use crate::infra::http::pagination::{
 use crate::storage::key::{KeyNamespace, ObjectKey};
 use crate::storage::lifecycle::StorageObjectId;
 
-use super::admission::{exceeds_depth, plan_files, reservation, TransferStorage};
+use super::admission::{plan_files, reservation, TransferStorage};
 use super::cancel::{self, Ended, Ending, TransferCaller};
 use super::error::TransferError;
 use super::finalize::Finalizer;
@@ -42,6 +38,7 @@ use super::state::{
     has_expired, item_transition, session_transition, ItemState, Outcome, TransferSessionState,
     Trigger,
 };
+use super::tree::{exceeds_depth, materialize, TreePlan};
 
 const CREATE_TRANSACTION: &str = "transfers.create_session";
 const CANCEL_TRANSACTION: &str = "transfers.cancel_session";
@@ -211,8 +208,16 @@ impl TransferService {
             &request.files,
             self.storage.effective_max_file_size(policy_max),
         )?;
-        self.materialize_folders(tx, owner, request, base_depth, now)
-            .await?;
+        materialize(
+            tx,
+            self.clock.as_ref(),
+            owner,
+            request.target,
+            base_depth,
+            &TreePlan::of(&request.files),
+            now,
+        )
+        .await?;
         self.quota.admit(tx, owner, reserved.total).await?;
 
         let file_count = u32::try_from(request.files.len())
@@ -278,43 +283,6 @@ impl TransferService {
             )
             .await?;
         self.view_in_tx(tx, owner, id).await
-    }
-
-    async fn materialize_folders(
-        &self,
-        tx: &mut WriteTx<'_>,
-        owner: UserId,
-        request: &ValidatedSession,
-        base_depth: i64,
-        now: Timestamp,
-    ) -> Result<(), TransferError> {
-        let mut known: HashMap<String, (FolderId, i64)> = HashMap::new();
-        for file in &request.files {
-            let mut key = String::new();
-            let mut parent = request.target;
-            let mut depth = base_depth;
-            for segment in file.directory.segments() {
-                if !key.is_empty() {
-                    key.push('/');
-                }
-                key.push_str(segment.normalized());
-                if let Some((folder, folder_depth)) = known.get(&key).copied() {
-                    parent = Some(folder);
-                    depth = folder_depth + 1;
-                    continue;
-                }
-                if depth > MAX_FOLDER_DEPTH {
-                    return Err(TransferError::Folder(FolderError::DepthExceeded));
-                }
-                let step =
-                    ensure_child_in_tx(tx, self.clock.as_ref(), owner, parent, depth, segment, now)
-                        .await?;
-                known.insert(key.clone(), (step.id, depth));
-                parent = Some(step.id);
-                depth += 1;
-            }
-        }
-        Ok(())
     }
 
     async fn view_in_tx(
@@ -623,8 +591,14 @@ impl TransferService {
                 if !repo::fail_item(tx.executor(), id, item_id, &failure, now).await? {
                     return Err(TransferError::StateInvalid);
                 }
-                match session_outcome {
-                    Outcome::Moved(to) => {
+                let next = match session_outcome {
+                    Outcome::Moved(_) => {
+                        repo::failure_move(tx.executor(), id, session.state).await?
+                    }
+                    Outcome::Unchanged(_) => None,
+                };
+                match next {
+                    Some(to) => {
                         let moved = repo::move_session(
                             tx.executor(),
                             owner,
@@ -644,7 +618,7 @@ impl TransferService {
                             });
                         }
                     }
-                    Outcome::Unchanged(_) => repo::touch_session(tx.executor(), id, now).await?,
+                    None => repo::touch_session(tx.executor(), id, now).await?,
                 }
                 repo::record_session_error(tx.executor(), id, &failure).await
             })

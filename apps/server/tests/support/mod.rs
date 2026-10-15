@@ -7,6 +7,7 @@ mod process;
 mod rng;
 pub mod schema;
 mod service;
+pub mod statements;
 pub mod tus;
 
 pub use application::TestApplication;

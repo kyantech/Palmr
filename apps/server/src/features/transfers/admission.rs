@@ -3,7 +3,6 @@ use std::time::Duration;
 
 use crate::config::StorageConfig;
 use crate::domain::bytes::ByteSize;
-use crate::features::folders::MAX_FOLDER_DEPTH;
 use crate::infra::http::pagination::MAX_WIRE_BYTES;
 use crate::storage::health::{StorageHealth, StorageStatus};
 use crate::storage::planning::{
@@ -319,13 +318,6 @@ pub fn reservation(
     })
 }
 
-pub fn exceeds_depth(base_depth: i64, files: &[PlannedFile]) -> bool {
-    files.iter().any(|file| {
-        let segments = i64::try_from(file.directory.len()).unwrap_or(i64::MAX);
-        segments > 0 && base_depth.saturating_add(segments - 1) > MAX_FOLDER_DEPTH
-    })
-}
-
 #[cfg(test)]
 mod tests {
     use std::sync::atomic::{AtomicBool, Ordering};
@@ -498,21 +490,5 @@ mod tests {
         assert!(storage.is_available());
         down.store(true, Ordering::SeqCst);
         assert!(!storage.is_available());
-    }
-
-    #[test]
-    fn unit_depth_guard_counts_the_target_ancestry() {
-        let nested = crate::features::transfers::model::ValidatedSession::parse(
-            serde_json::from_value(serde_json::json!({
-                "target": { "kind": "my_files" },
-                "files": [{ "clientId": "c1", "name": "f", "relativePath": "a/b/c/f" }],
-            }))
-            .unwrap(),
-        )
-        .unwrap();
-        assert!(!super::exceeds_depth(61, &nested.files));
-        assert!(super::exceeds_depth(63, &nested.files));
-        let flat = [file(0, Some(1))];
-        assert!(!super::exceeds_depth(1_000, &flat));
     }
 }

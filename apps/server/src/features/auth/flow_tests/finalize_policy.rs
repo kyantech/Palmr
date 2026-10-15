@@ -569,7 +569,11 @@ async fn it_finalize_partial_session_settles_each_item_once() {
         "{}",
         overrun.text()
     );
-    assert_eq!(rig.stack.session_row(&session).await.0, "failed");
+    assert_eq!(
+        rig.stack.session_row(&session).await.0,
+        "uploading",
+        "B is still finalizing, so C's failure does not fail the session"
+    );
     hold.open();
     rig.settle().await;
 

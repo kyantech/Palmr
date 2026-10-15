@@ -931,7 +931,7 @@ CREATE TABLE totp_secrets (
 );
 
 -- table transfer_session_files
-CREATE TABLE transfer_session_files (
+CREATE TABLE "transfer_session_files" (
     id                        TEXT    NOT NULL PRIMARY KEY,
     transfer_session_id       TEXT    NOT NULL,
     ordinal                   INTEGER NOT NULL CHECK (ordinal >= 0),
@@ -940,7 +940,10 @@ CREATE TABLE transfer_session_files (
                                                       AND display_name NOT LIKE '%/%'),
     relative_path             TEXT    NOT NULL DEFAULT '' CHECK (
                                           length(relative_path) <= 1024
-                                          AND relative_path NOT LIKE '%..%'
+                                          AND relative_path <> '..'
+                                          AND relative_path NOT LIKE '../%'
+                                          AND relative_path NOT LIKE '%/..'
+                                          AND relative_path NOT LIKE '%/../%'
                                           AND relative_path NOT GLOB '/*'),
     declared_size_bytes       INTEGER NULL CHECK (declared_size_bytes IS NULL OR declared_size_bytes >= 0),
     reserved_bytes            INTEGER NOT NULL DEFAULT 0 CHECK (reserved_bytes >= 0),
@@ -1048,7 +1051,8 @@ CREATE TABLE tus_uploads (
     updated_at                      TEXT    NOT NULL,
     last_patch_at                   TEXT    NULL,
     expires_at                      TEXT    NOT NULL,
-    completed_at                    TEXT    NULL, staging_removed_at TEXT NULL,
+    completed_at                    TEXT    NULL,
+    staging_removed_at              TEXT    NULL,
 
     CHECK ( (upload_defer_length = 1 AND upload_length IS NULL)
          OR (upload_defer_length = 0 AND upload_length IS NOT NULL) ),

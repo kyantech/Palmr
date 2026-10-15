@@ -114,7 +114,8 @@ async fn it_migrate_up_from_empty() {
             "0006_deletion_lifecycle.sql",
             "0007_idempotency_transfer_envelope.sql",
             "0008_cancellation_cleanup_discovery.sql",
-            "0009_tus_staging_cleanup_and_expiry_indexes.sql"
+            "0009_tus_staging_cleanup_and_expiry_indexes.sql",
+            "0010_relative_path_exact_dot_segments.sql"
         ]
     );
     assert_eq!(
@@ -153,6 +154,10 @@ async fn it_migrate_up_from_empty() {
         files[8].1,
         include_str!("../../../migrations/0009_tus_staging_cleanup_and_expiry_indexes.sql")
     );
+    assert_eq!(
+        files[9].1,
+        include_str!("../../../migrations/0010_relative_path_exact_dot_segments.sql")
+    );
 
     let data = TempDir::new().unwrap();
     let pools = open_pools(data.path()).await;
@@ -162,8 +167,8 @@ async fn it_migrate_up_from_empty() {
     assert_eq!(
         first,
         MigrationStatus {
-            applied: 9,
-            version: Some(9),
+            applied: 10,
+            version: Some(10),
         }
     );
     let again = pools.migrate(&MIGRATOR).await.unwrap();
@@ -171,7 +176,7 @@ async fn it_migrate_up_from_empty() {
         again,
         MigrationStatus {
             applied: 0,
-            version: Some(9),
+            version: Some(10),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -181,7 +186,7 @@ async fn it_migrate_up_from_empty() {
         reopened.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
             applied: 0,
-            version: Some(9),
+            version: Some(10),
         }
     );
     reopened.shutdown().await.checkpoint.unwrap();
@@ -241,8 +246,8 @@ async fn it_migrate_from_0001_derives_email_linking_by_protocol() {
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 8,
-            version: Some(9),
+            applied: 9,
+            version: Some(10),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -279,7 +284,8 @@ async fn it_migrate_from_0001_derives_email_linking_by_protocol() {
             (6, true),
             (7, true),
             (8, true),
-            (9, true)
+            (9, true),
+            (10, true)
         ]
     );
     connection.close().await.unwrap();
@@ -345,8 +351,8 @@ async fn it_migrate_oauth_requests_to_reauth_and_extended_path() {
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 7,
-            version: Some(9),
+            applied: 8,
+            version: Some(10),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -616,8 +622,8 @@ async fn it_migrate_session_revoked_reason_accepts_identity_unlink() {
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 6,
-            version: Some(9),
+            applied: 7,
+            version: Some(10),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -778,8 +784,8 @@ async fn it_migrate_password_login_enabled_defaults_on_and_preserves_settings() 
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 5,
-            version: Some(9),
+            applied: 6,
+            version: Some(10),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -864,8 +870,8 @@ async fn it_migrate_deletion_lifecycle_keeps_existing_folders_live_and_checksums
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 4,
-            version: Some(9),
+            applied: 5,
+            version: Some(10),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -1053,8 +1059,8 @@ async fn it_migrate_idempotency_envelope_bound_keeps_records_and_counts_bytes() 
     assert_eq!(
         pools.migrate(&MIGRATOR).await.unwrap(),
         MigrationStatus {
-            applied: 3,
-            version: Some(9),
+            applied: 4,
+            version: Some(10),
         }
     );
     pools.shutdown().await.checkpoint.unwrap();
@@ -1154,4 +1160,234 @@ async fn it_migrate_idempotency_envelope_bound_keeps_records_and_counts_bytes() 
         .unwrap();
     assert_eq!(integrity, "ok");
     connection.close().await.unwrap();
+}
+
+const TSF_USER: &str = "0192f3a1-0000-7000-8000-000000000001";
+const TSF_SESSION: &str = "0192f3a1-0000-7000-8000-0000000000c1";
+const TSF_ITEM_ONE: &str = "0192f3a1-0000-7000-8000-0000000000d1";
+const TSF_ITEM_TWO: &str = "0192f3a1-0000-7000-8000-0000000000d2";
+const TSF_STAMP: &str = "'2026-09-25T12:00:00.000Z', '2026-09-25T12:00:00.000Z'";
+
+fn transfer_item_insert(id: &str, ordinal: u32, prefix: &str, key_tail: &str) -> String {
+    format!(
+        "INSERT INTO transfer_session_files
+             (id, transfer_session_id, ordinal, client_file_key, display_name, relative_path,
+              declared_size_bytes, reserved_bytes, upload_kind, final_object_id, final_object_key,
+              created_at, updated_at)
+         VALUES ('{id}', '{TSF_SESSION}', {ordinal}, 'key-{ordinal}', 'file-{ordinal}.bin',
+                 '{prefix}', 100, 100, 'tus', '0192f3a1-0000-7000-8000-0000000000e{ordinal}',
+                 'objects/ab/cd/{key_tail}', {TSF_STAMP})"
+    )
+}
+
+const TRANSFER_TABLES: [&str; 4] = [
+    "transfer_session_files",
+    "tus_uploads",
+    "s3_multipart_uploads",
+    "s3_multipart_parts",
+];
+
+async fn transfer_shape(connection: &mut SqliteConnection) -> Vec<String> {
+    let mut shape = Vec::new();
+    for table in TRANSFER_TABLES {
+        let columns: Vec<(String, String, i64, i64)> = sqlx::query_as(&format!(
+            "SELECT name, type, \"notnull\", pk FROM pragma_table_info('{table}')"
+        ))
+        .fetch_all(&mut *connection)
+        .await
+        .unwrap();
+        let foreign_keys: Vec<(String, String, String, String)> = sqlx::query_as(&format!(
+            "SELECT \"from\", \"table\", \"to\", on_delete FROM pragma_foreign_key_list('{table}')
+              ORDER BY \"from\", \"table\""
+        ))
+        .fetch_all(&mut *connection)
+        .await
+        .unwrap();
+        let indexes: Vec<(String, Option<String>)> = sqlx::query_as(&format!(
+            "SELECT name, sql FROM sqlite_schema WHERE type = 'index' AND tbl_name = '{table}'
+                AND sql IS NOT NULL ORDER BY name"
+        ))
+        .fetch_all(&mut *connection)
+        .await
+        .unwrap();
+        shape.push(format!("{table} {columns:?} {foreign_keys:?} {indexes:?}"));
+    }
+    shape
+}
+
+async fn transfer_rows(connection: &mut SqliteConnection) -> Vec<String> {
+    let mut rows = Vec::new();
+    for sql in [
+        "SELECT json_group_array(json_object('id', id, 'session', transfer_session_id, 'ordinal', ordinal,
+            'key', client_file_key, 'name', display_name, 'path', relative_path, 'size', declared_size_bytes,
+            'reserved', reserved_bytes, 'kind', upload_kind, 'state', state, 'stage', finalize_stage,
+            'oid', final_object_id, 'okey', final_object_key, 'attempts', attempts, 'created', created_at))
+           FROM (SELECT * FROM transfer_session_files ORDER BY id)",
+        "SELECT json_group_array(json_object('id', id, 'item', transfer_session_file_id, 'owner', owner_user_id,
+            'length', upload_length, 'offset', upload_offset, 'staging', staging_path, 'state', state,
+            'removed', staging_removed_at, 'expires', expires_at))
+           FROM (SELECT * FROM tus_uploads ORDER BY id)",
+        "SELECT json_group_array(json_object('id', id, 'item', transfer_session_file_id, 'upload', s3_upload_id,
+            'bucket', bucket, 'key', object_key, 'owner', owner_user_id, 'part', part_size_bytes,
+            'count', part_count, 'state', state, 'reconciled', last_reconciled_at))
+           FROM (SELECT * FROM s3_multipart_uploads ORDER BY id)",
+        "SELECT json_group_array(json_object('upload', s3_multipart_upload_id, 'n', part_number,
+            'size', size_bytes, 'etag', etag, 'state', state, 'attempts', attempts))
+           FROM (SELECT * FROM s3_multipart_parts ORDER BY s3_multipart_upload_id, part_number)",
+    ] {
+        rows.push(
+            sqlx::query_scalar::<_, String>(sql)
+                .fetch_one(&mut *connection)
+                .await
+                .unwrap(),
+        );
+    }
+    rows
+}
+
+#[tokio::test]
+async fn it_migrate_relative_path_exact_dot_segments_rebuilds_transfer_tables_without_loss() {
+    let files = embedded_files();
+    let (_directory, released) = fixture_migrator(&files[..9]).await;
+    let data = TempDir::new().unwrap();
+    let pools = open_pools(data.path()).await;
+    assert_eq!(
+        pools.migrate(&released).await.unwrap(),
+        MigrationStatus {
+            applied: 9,
+            version: Some(9),
+        }
+    );
+    pools.shutdown().await.checkpoint.unwrap();
+
+    let mut connection = raw_connection(data.path()).await;
+    let item_one = transfer_item_insert(TSF_ITEM_ONE, 1, "photos/2026", &"a".repeat(32));
+    let item_two = transfer_item_insert(TSF_ITEM_TWO, 2, "", &"b".repeat(32));
+    for statement in [
+        format!(
+            "INSERT INTO users (id, email, email_normalized, username, username_normalized, created_at, updated_at)
+             VALUES ('{TSF_USER}', 'a@example.test', 'a@example.test', 'ada', 'ada', {TSF_STAMP})"
+        ),
+        format!(
+            "INSERT INTO transfer_sessions (id, context, user_id, provider, state, created_at, updated_at, expires_at)
+             VALUES ('{TSF_SESSION}', 'my_files', '{TSF_USER}', 'local', 'uploading', {TSF_STAMP},
+                     '2026-10-02T12:00:00.000Z')"
+        ),
+        item_one,
+        item_two,
+        format!(
+            "INSERT INTO tus_uploads (id, transfer_session_file_id, owner_user_id, upload_length, upload_offset,
+                 staging_path, state, created_at, updated_at, expires_at, staging_removed_at)
+             VALUES ('tus-1', '{TSF_ITEM_ONE}', '{TSF_USER}', 100, 40, 'uploads/tus-1/blob', 'in_progress',
+                     {TSF_STAMP}, '2026-09-26T12:00:00.000Z', '2026-09-25T13:00:00.000Z')"
+        ),
+        format!(
+            "INSERT INTO s3_multipart_uploads (id, transfer_session_file_id, s3_upload_id, bucket, object_key,
+                 owner_user_id, total_size_bytes, part_size_bytes, part_count, state, created_at, updated_at,
+                 expires_at, last_reconciled_at)
+             VALUES ('s3mp-1', '{TSF_ITEM_TWO}', 'provider-upload', 'bucket', 'objects/ab/cd/{}', '{TSF_USER}',
+                     5243000, 5242880, 2, 'in_progress', {TSF_STAMP}, '2026-09-26T12:00:00.000Z',
+                     '2026-09-25T14:00:00.000Z')",
+            "b".repeat(32)
+        ),
+        "INSERT INTO s3_multipart_parts (s3_multipart_upload_id, part_number, size_bytes, etag, state, attempts)
+         VALUES ('s3mp-1', 1, 5242880, 'etag-1', 'uploaded', 1), ('s3mp-1', 2, 120, NULL, 'planned', 0)"
+            .to_owned(),
+    ] {
+        sqlx::query(&statement).execute(&mut connection).await.unwrap();
+    }
+    let rows_before = transfer_rows(&mut connection).await;
+    let shape_before = transfer_shape(&mut connection).await;
+    let records_before = recorded_migrations(&mut connection).await;
+    connection.close().await.unwrap();
+
+    let pools = open_pools(data.path()).await;
+    assert_eq!(
+        pools.migrate(&MIGRATOR).await.unwrap(),
+        MigrationStatus {
+            applied: 1,
+            version: Some(10),
+        }
+    );
+    pools.shutdown().await.checkpoint.unwrap();
+
+    let mut connection = raw_connection(data.path()).await;
+    assert_eq!(
+        transfer_rows(&mut connection).await,
+        rows_before,
+        "every row of the four rebuilt tables survives unchanged"
+    );
+    let shape_after = transfer_shape(&mut connection).await;
+    assert_eq!(
+        shape_after.len(),
+        shape_before.len(),
+        "the same four tables"
+    );
+    for (before, after) in shape_before.iter().zip(&shape_after) {
+        assert_eq!(
+            before, after,
+            "columns, foreign keys and indexes are identical"
+        );
+    }
+    assert_eq!(
+        recorded_migrations(&mut connection).await[..9],
+        records_before[..],
+        "applied migrations are untouched"
+    );
+    let violations: Vec<(String, i64, String, i64)> =
+        sqlx::query_as("SELECT * FROM pragma_foreign_key_check")
+            .fetch_all(&mut connection)
+            .await
+            .unwrap();
+    assert!(violations.is_empty(), "{violations:?}");
+    let leftovers: Vec<String> = sqlx::query_scalar(
+        "SELECT name FROM sqlite_schema
+          WHERE type = 'table' AND (name LIKE '%\\_held' ESCAPE '\\' OR name LIKE '%\\_next' ESCAPE '\\')",
+    )
+    .fetch_all(&mut connection)
+    .await
+    .unwrap();
+    assert_eq!(leftovers, Vec::<String>::new());
+
+    let restricted = sqlx::query("DELETE FROM transfer_session_files WHERE id = ?1")
+        .bind(TSF_ITEM_ONE)
+        .execute(&mut connection)
+        .await;
+    assert!(
+        restricted.is_err(),
+        "the RESTRICT keys from the protocol rows still protect their item"
+    );
+    for (ordinal, prefix) in [
+        (3, "versions..old"),
+        (4, "project...backup/readme..d"),
+        (5, "a/..hidden"),
+        (6, "x/mid..dle/y"),
+    ] {
+        sqlx::query(&transfer_item_insert(
+            &format!("0192f3a1-0000-7000-8000-0000000000f{ordinal}"),
+            ordinal,
+            prefix,
+            &format!("{ordinal:0>32}"),
+        ))
+        .execute(&mut connection)
+        .await
+        .unwrap_or_else(|error| panic!("{prefix:?} must be accepted: {error}"));
+    }
+    for (ordinal, prefix) in [
+        (7, ".."),
+        (8, "../x"),
+        (9, "x/.."),
+        (10, "x/../y"),
+        (11, "/abs"),
+    ] {
+        let refused = sqlx::query(&transfer_item_insert(
+            &format!("0192f3a1-0000-7000-8000-0000000000f{ordinal}"),
+            ordinal,
+            prefix,
+            &format!("{ordinal:0>32}"),
+        ))
+        .execute(&mut connection)
+        .await;
+        assert!(refused.is_err(), "{prefix:?} must still be refused");
+    }
 }
