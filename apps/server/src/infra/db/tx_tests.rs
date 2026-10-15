@@ -307,3 +307,83 @@ async fn it_slow_write_tx_warns() {
     assert_eq!(order, ["within_budget", "over_budget"]);
     pools.shutdown().await.checkpoint.unwrap();
 }
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn it_cancelled_write_tx_never_poisons_the_writer() {
+    const CANCELLERS: u64 = 4;
+    const ATTEMPTS: u64 = 600;
+    const HONEST: u64 = 2;
+    let root = TempDir::new().unwrap();
+    let pools = open(&root).await;
+    let clock = Arc::new(SystemClock);
+    create_ledger(&pools, clock.as_ref()).await;
+
+    let mut tasks = JoinSet::new();
+    for canceller in 0..CANCELLERS {
+        let pools = pools.clone();
+        let clock = Arc::clone(&clock);
+        tasks.spawn(async move {
+            for attempt in 0..ATTEMPTS {
+                let budget = Duration::from_micros((attempt * 37 + canceller * 11) % 1_500);
+                let _ = tokio::time::timeout(
+                    budget,
+                    pools.write_tx(clock.as_ref(), "test.cancelled", async |tx| {
+                        let observed = read_counter(tx).await?;
+                        commit_increment(tx, observed, "cancelled").await?;
+                        Ok::<_, DbError>(())
+                    }),
+                )
+                .await;
+            }
+            Vec::new()
+        });
+    }
+    for honest in 0..HONEST {
+        let pools = pools.clone();
+        let clock = Arc::clone(&clock);
+        tasks.spawn(async move {
+            let mut failures = Vec::new();
+            for _ in 0..ATTEMPTS {
+                let outcome = pools
+                    .write_tx(clock.as_ref(), "test.honest", async |tx| {
+                        let observed = read_counter(tx).await?;
+                        commit_increment(tx, observed, &format!("honest-{honest}")).await?;
+                        Ok::<_, DbError>(())
+                    })
+                    .await;
+                if let Err(error) = outcome {
+                    failures.push(format!("{error:?}"));
+                }
+            }
+            failures
+        });
+    }
+    let mut failures = Vec::new();
+    let drained = tokio::time::timeout(Duration::from_secs(60), async {
+        while let Some(joined) = tasks.join_next().await {
+            failures.extend(joined.unwrap());
+        }
+    })
+    .await;
+    assert!(
+        drained.is_ok(),
+        "the writer stopped making progress after cancellations ({} failures so far: {:?})",
+        failures.len(),
+        failures.iter().take(3).collect::<Vec<_>>()
+    );
+    assert!(
+        failures.is_empty(),
+        "{} honest writes failed after cancellations: {:?}",
+        failures.len(),
+        failures.iter().take(3).collect::<Vec<_>>()
+    );
+    let value = counter_snapshot(pools.reader()).await.unwrap();
+    let rows: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM commits")
+        .fetch_one(pools.reader().executor())
+        .await
+        .unwrap();
+    assert_eq!(
+        value, rows,
+        "every committed increment left exactly one row"
+    );
+}

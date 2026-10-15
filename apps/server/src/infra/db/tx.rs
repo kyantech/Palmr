@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use sqlx::pool::PoolConnection;
 use sqlx::{Connection, Sqlite, SqliteConnection, SqlitePool, Transaction};
 use tracing::Instrument;
 
@@ -77,15 +78,41 @@ where
     E: From<DbError>,
 {
     let queued = clock.monotonic();
-    let mut connection = pool.acquire().await.map_err(DbError::from)?;
+    let mut checkout = Checkout::new(pool.acquire().await.map_err(DbError::from)?);
     let pool_wait = clock.monotonic().saturating_duration_since(queued);
 
-    let finished = run_immediate(&mut connection, clock, name, work).await?;
-    if finished.discard_connection {
-        connection.close_on_drop();
-    }
+    let finished = match run_immediate(&mut checkout.connection, clock, name, work).await {
+        Ok(finished) => finished,
+        Err(error) => {
+            checkout.keep = true;
+            return Err(error.into());
+        }
+    };
+    checkout.keep = !finished.discard_connection;
     report(name, pool_wait, finished.elapsed, finished.outcome);
     finished.result
+}
+
+struct Checkout {
+    connection: PoolConnection<Sqlite>,
+    keep: bool,
+}
+
+impl Checkout {
+    const fn new(connection: PoolConnection<Sqlite>) -> Self {
+        Self {
+            connection,
+            keep: false,
+        }
+    }
+}
+
+impl Drop for Checkout {
+    fn drop(&mut self) {
+        if !self.keep {
+            self.connection.close_on_drop();
+        }
+    }
 }
 
 struct Finished<T, E> {

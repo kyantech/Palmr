@@ -32,13 +32,6 @@ pub struct PendingCleanup {
     pub transfer_session_file_id: String,
 }
 
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "the S3 reaper pages through abandoned multipart rows with this query when M14-T09 wires its adapter"
-    )
-)]
 pub async fn abandoned_multipart_page(
     connection: &mut SqliteConnection,
     after: Option<&str>,

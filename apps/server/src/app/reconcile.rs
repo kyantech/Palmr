@@ -8,6 +8,7 @@ use crate::domain::time::Timestamp;
 use crate::features::quota::reconcile as quota_reconcile;
 use crate::features::transfers::finalize;
 use crate::features::transfers::reaper as transfer_reaper;
+use crate::features::transfers::s3::reapers as s3_reapers;
 use crate::infra::db::{DbPools, InstanceId};
 use crate::infra::jobs::claim::{Enqueued, MAX_ROWS_PER_TX};
 use crate::infra::jobs::JobsError;
@@ -17,6 +18,7 @@ pub const QUOTA_SCHEDULE_STEP: &str = "quota.schedule_reconcile";
 pub const TUS_LEASES_STEP: &str = "tus.release_orphan_leases";
 pub const FINALIZE_REDRIVE_STEP: &str = "transfers.finalize_redrive";
 pub const TUS_EXPIRE_STEP: &str = "tus.schedule_expire_stale";
+pub const S3_REAPERS_STEP: &str = "s3.schedule_multipart_reapers";
 
 const REQUEUE_STALE_CLAIMS: &str = "UPDATE jobs
         SET state = 'pending', claimed_by = NULL, lease_expires_at = NULL, updated_at = ?1
@@ -121,6 +123,7 @@ impl ReconcileRegistry {
             .register(TUS_LEASES_STEP, tus_leases_step)
             .register(FINALIZE_REDRIVE_STEP, finalize_redrive_step)
             .register(TUS_EXPIRE_STEP, tus_expire_step)
+            .register(S3_REAPERS_STEP, s3_reapers_step)
     }
 
     #[must_use]
@@ -272,6 +275,14 @@ fn tus_expire_step(context: ReconcileContext) -> StepFuture {
             Ok(Enqueued::Deduplicated) => Ok(0),
             Err(error) => Err(ReconcileError::new(error.kind(), error.to_string())),
         }
+    })
+}
+
+fn s3_reapers_step(context: ReconcileContext) -> StepFuture {
+    Box::pin(async move {
+        s3_reapers::schedule_startup(&context.pools, context.clock.as_ref(), context.instance)
+            .await
+            .map_err(|error| ReconcileError::new(error.kind(), error.to_string()))
     })
 }
 

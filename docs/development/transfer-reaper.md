@@ -47,7 +47,7 @@ Removal runs outside every transaction and only through `UploadId::parse(<tus_up
 
 ## S3
 
-Session expiry marks live multipart rows `abandoned` and leaves `bucket`, `object_key` and `s3_upload_id` untouched. No abort job exists before M14-T09, so none is enqueued, and retention keeps a session that still has a multipart row.
+Session expiry marks live multipart rows `abandoned` and leaves `bucket`, `object_key` and `s3_upload_id` untouched. The session reaper enqueues no abort job: the hourly abort sweep of M14-T09 (`s3.abort_abandoned_multipart`, [s3-multipart.md](./s3-multipart.md#reapers-and-restart-reconciliation-m14-t09)) finds every `abandoned` row through `ix_s3mp_abandoned` and aborts it by its recorded identity. Retention keeps a session that still has a multipart row; that row is deleted 7 days after its confirmed abort.
 
 ## Audit
 

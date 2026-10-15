@@ -184,6 +184,14 @@ impl ProxyUploads {
         })
     }
 
+    pub fn in_flight(&self, upload: MultipartId) -> bool {
+        self.claimed
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .iter()
+            .any(|(claimed, _)| *claimed == upload)
+    }
+
     async fn admit(&self) -> Result<Admitted, ProxyError> {
         match timeout(
             self.limits.permit_wait,

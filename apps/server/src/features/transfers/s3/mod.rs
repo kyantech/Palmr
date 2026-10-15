@@ -1,6 +1,7 @@
 pub mod abort;
 pub mod model;
 pub mod proxied;
+pub mod reapers;
 pub mod reconcile;
 pub(in crate::features::transfers) mod repo;
 pub mod routes;

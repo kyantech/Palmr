@@ -3,20 +3,14 @@ use sqlx::SqliteConnection;
 
 use crate::domain::bytes::ByteSize;
 use crate::domain::time::Timestamp;
-use crate::features::quota::model::ReleaseReason;
-use crate::infra::db::WriteTx;
 
 use super::super::cancel::{self, Ending, Expired};
 use super::super::error::TransferError;
 use super::super::model::{TransferProvider, TransferSessionId};
 use super::super::repo::{
-    self, bytes, column, invariant, optional_bytes, optional_parsed, parsed, FinalizeStage,
-    LiveItem,
+    bytes, column, invariant, optional_bytes, optional_parsed, parsed, FinalizeStage, LiveItem,
 };
-use super::super::state::{
-    has_expired, item_transition, session_transition, ItemState, Outcome, TransferSessionState,
-    Trigger,
-};
+use super::super::state::{has_expired, item_transition, ItemState, TransferSessionState, Trigger};
 use super::super::tus::repo::{TusState, TusUploadId};
 use super::{ReapReport, ReaperContext, PAGE_SIZE, PASS_LIMIT};
 use crate::features::audit::actions::TransferScope;
@@ -227,7 +221,14 @@ pub async fn expire_upload(
                 now,
             )
             .await?;
-            let settled = settle_share(context, tx, &upload, now).await?;
+            let settled = cancel::settle_expired_item(
+                tx,
+                &context.quota,
+                (upload.session, upload.session_state),
+                &upload.item,
+                now,
+            )
+            .await?;
             Ok::<_, TransferError>((
                 UploadOutcome::Expired,
                 Some((
@@ -257,52 +258,4 @@ pub async fn expire_upload(
         );
     }
     Ok(outcome)
-}
-
-struct Settled {
-    session_closed: bool,
-    completed_kept: u64,
-}
-
-async fn settle_share(
-    context: &ReaperContext,
-    tx: &mut WriteTx<'_>,
-    upload: &Loaded,
-    now: Timestamp,
-) -> Result<Settled, TransferError> {
-    let mut settled = Settled {
-        session_closed: false,
-        completed_kept: 0,
-    };
-    if upload.session_state.is_terminal() {
-        return Ok(settled);
-    }
-    let session = repo::find_session_unowned(tx.executor(), upload.session)
-        .await?
-        .ok_or(TransferError::SessionNotFound)?;
-    settled.completed_kept = u64::from(session.completed_file_count);
-    if repo::reservation_held(tx.executor(), upload.session).await? {
-        if upload.item.state.holds_reservation() {
-            context
-                .quota
-                .release_share(tx, upload.session, upload.item.reserved)
-                .await?;
-        }
-        if repo::remaining_items(tx.executor(), upload.session).await? == 0 {
-            if let Ok(Outcome::Moved(_)) = session_transition(session.state, Trigger::Expire) {
-                let moved =
-                    repo::expire_session(tx.executor(), upload.session, session.state, now, false)
-                        .await?;
-                if !moved {
-                    return Err(invariant("session_state"));
-                }
-                cancel::settle_session(tx, &context.quota, &session, ReleaseReason::Expired)
-                    .await?;
-                settled.session_closed = true;
-                return Ok(settled);
-            }
-        }
-    }
-    repo::touch_session(tx.executor(), upload.session, now).await?;
-    Ok(settled)
 }

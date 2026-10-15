@@ -2028,6 +2028,8 @@ mod recent_auth;
 mod s3_multipart;
 mod s3_multipart_faults;
 mod s3_proxied;
+mod s3_reapers;
+mod s3_reapers_orphans;
 mod totp;
 mod transfer_audit;
 mod transfer_cleanup;

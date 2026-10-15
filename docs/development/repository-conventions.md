@@ -36,7 +36,7 @@ pools
     .await
 ```
 
-`write_tx` waits in the write pool's FIFO queue, issues `BEGIN IMMEDIATE`, runs the closure, then commits on `Ok` or rolls back on `Err`. If the future is dropped or panics mid-transaction, sqlx rolls the connection back before reuse. The closure's error type must implement `From<DbError>`.
+`write_tx` waits in the write pool's FIFO queue, issues `BEGIN IMMEDIATE`, runs the closure, then commits on `Ok` or rolls back on `Err`. If the future is dropped or panics before the transaction finished, the write connection is discarded instead of being returned to the pool, and the pool opens a fresh one: sqlx 0.8 alone does not roll back a custom `BEGIN IMMEDIATE` whose caller is cancelled between the statement and the creation of the `Transaction`, which left the single writer inside an open transaction so that every later `write_tx` failed with `InvalidSavePointStatement` (found by `it_s3_proxied_part_memory_bounded` under CPU contention, pinned by `it_cancelled_write_tx_never_poisons_the_writer`). The closure's error type must implement `From<DbError>`.
 
 - The name is a `&'static str` in the form `feature.action`. It appears in logs, so it must never contain runtime data.
 - `BEGIN IMMEDIATE` takes the write lock up front, so every read inside the closure runs under that lock.

@@ -27,8 +27,8 @@ use crate::storage::key::ObjectKey;
 use crate::storage::planning::UploadPlanner;
 use crate::storage::provider::{
     ListCursor, ListPage, MultipartHandle, MultipartStorage, MultipartUploadPage, ObjectBody,
-    ObjectStat, PartChecksum, PartPlanEntry, PresignStorage, PresignedRequest, PutHint,
-    StorageDescriptor, StorageProvider, UploadedPart,
+    ObjectStat, PartChecksum, PartPlanEntry, PendingMultipart, PresignStorage, PresignedRequest,
+    PutHint, StorageDescriptor, StorageProvider, UploadedPart,
 };
 use crate::storage::s3::client::S3Clients;
 use crate::storage::s3::profile::{ProviderProfile, MIB};
@@ -86,8 +86,30 @@ pub(super) enum CompleteFault {
     After(fn() -> StorageError),
 }
 
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
+pub(super) enum ListMode {
+    #[default]
+    Native,
+    PrefixAware,
+    ExactOnly,
+    NotImplemented,
+}
+
+#[derive(Clone, Default)]
+pub(super) struct Listing {
+    pub(super) mode: ListMode,
+    pub(super) page_size: Option<usize>,
+    pub(super) fail_page: Option<usize>,
+    pub(super) repeat_cursor: bool,
+}
+
 #[derive(Default)]
 pub(super) struct Faults {
+    pub(super) listing: Mutex<Listing>,
+    pub(super) list_uploads_calls: AtomicUsize,
+    pub(super) abort_after: Mutex<VecDeque<fn() -> StorageError>>,
+    pub(super) abort_log: Mutex<Vec<(String, String)>>,
+    pub(super) abort_gate: Mutex<Option<Arc<PartGate>>>,
     pub(super) complete: Mutex<VecDeque<CompleteFault>>,
     pub(super) list_parts: Mutex<VecDeque<fn() -> StorageError>>,
     pub(super) abort: Mutex<VecDeque<fn() -> StorageError>>,
@@ -323,13 +345,34 @@ impl MultipartStorage for Faulty {
     }
 
     async fn abort_multipart(&self, handle: &MultipartHandle) -> Result<(), StorageError> {
+        if handle
+            .key()
+            .as_str()
+            .starts_with(crate::features::transfers::s3::reapers::SENTINEL_PREFIX)
+        {
+            return self.inner.abort_multipart(handle).await;
+        }
         self.faults.guard().await;
         self.faults.aborts.fetch_add(1, Ordering::SeqCst);
+        self.faults.abort_log.lock().unwrap().push((
+            handle.key().as_str().to_owned(),
+            handle.upload_id().to_owned(),
+        ));
+        let gate = self.faults.abort_gate.lock().unwrap().clone();
+        if let Some(gate) = gate {
+            gate.entered.add_permits(1);
+            gate.release.acquire().await.unwrap().forget();
+        }
         let fault = self.faults.abort.lock().unwrap().pop_front();
         if let Some(fault) = fault {
             return Err(fault());
         }
-        self.inner.abort_multipart(handle).await
+        self.inner.abort_multipart(handle).await?;
+        let after = self.faults.abort_after.lock().unwrap().pop_front();
+        match after {
+            Some(fault) => Err(fault()),
+            None => Ok(()),
+        }
     }
 
     async fn list_multipart_uploads(
@@ -337,7 +380,62 @@ impl MultipartStorage for Faulty {
         prefix: &str,
         cursor: Option<ListCursor>,
     ) -> Result<MultipartUploadPage, StorageError> {
-        self.inner.list_multipart_uploads(prefix, cursor).await
+        self.faults.guard().await;
+        self.faults
+            .list_uploads_calls
+            .fetch_add(1, Ordering::SeqCst);
+        let listing = self.faults.listing.lock().unwrap().clone();
+        match listing.mode {
+            ListMode::NotImplemented => {
+                return Err(classify_failure(
+                    Operation::ListMultipartUploads,
+                    Failure::Service {
+                        status: 501,
+                        code: Some("NotImplemented".to_owned()),
+                    },
+                ))
+            }
+            ListMode::ExactOnly if prefix.is_empty() => {
+                return Ok(MultipartUploadPage {
+                    uploads: Vec::new(),
+                    next: None,
+                })
+            }
+            ListMode::ExactOnly => return self.inner.list_multipart_uploads(prefix, cursor).await,
+            ListMode::Native if listing.page_size.is_none() && !listing.repeat_cursor => {
+                return self.inner.list_multipart_uploads(prefix, cursor).await
+            }
+            _ => {}
+        }
+        let mut all: Vec<PendingMultipart> = Vec::new();
+        let mut inner_cursor = None;
+        loop {
+            let page = self.inner.list_multipart_uploads("", inner_cursor).await?;
+            all.extend(page.uploads);
+            match page.next {
+                Some(next) => inner_cursor = Some(next),
+                None => break,
+            }
+        }
+        all.retain(|upload| match listing.mode {
+            ListMode::PrefixAware => upload.handle.key().as_str().starts_with(prefix),
+            _ => prefix.is_empty() || upload.handle.key().as_str() == prefix,
+        });
+        let size = listing.page_size.unwrap_or(1_000);
+        let offset = cursor
+            .as_ref()
+            .map_or(0, |cursor| cursor.as_str().parse::<usize>().unwrap_or(0));
+        if listing.fail_page == Some(offset / size + 1) {
+            return Err(timeout());
+        }
+        let end = (offset + size).min(all.len());
+        let uploads = all.get(offset..end).unwrap_or_default().to_vec();
+        let next = if listing.repeat_cursor {
+            Some(ListCursor::new("0"))
+        } else {
+            (end < all.len()).then(|| ListCursor::new(end.to_string()))
+        };
+        Ok(MultipartUploadPage { uploads, next })
     }
 }
 
@@ -385,6 +483,7 @@ fn provider_with(
 
 pub(super) struct S3Rig {
     pub(super) stack: Stack,
+    pub(super) storage: TransferStorage,
     pub(super) minio: MinioServer,
     pub(super) bucket: String,
     pub(super) provider: Arc<S3Provider>,
@@ -486,6 +585,7 @@ impl S3Rig {
         };
         let storage = TransferStorage::new(planner, Arc::new(|| StorageHealth::Ok))
             .with_object_store(faulty, bucket.clone(), Duration::from_secs(24 * 60 * 60));
+        let reaper_storage = storage.clone();
         let hooks = Arc::new(Hooks::default());
         let setup = FinalizeSetup {
             hooks: Some(hooks.clone()),
@@ -510,6 +610,7 @@ impl S3Rig {
         let bob = stack.member("bob", HOST_A).await;
         Self {
             stack,
+            storage: reaper_storage,
             minio,
             bucket,
             provider,

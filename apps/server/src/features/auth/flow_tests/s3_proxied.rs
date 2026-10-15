@@ -37,11 +37,11 @@ fn limits(permit_wait: Duration, idle: Duration) -> ProxyLimits {
     }
 }
 
-fn steady() -> ProxyLimits {
+pub(super) fn steady() -> ProxyLimits {
     limits(Duration::from_millis(150), Duration::from_secs(5))
 }
 
-async fn proxied_rig(proxy: ProxyLimits) -> S3Rig {
+pub(super) async fn proxied_rig(proxy: ProxyLimits) -> S3Rig {
     let rig = S3Rig::build(RigOptions {
         proxy: Some(proxy),
         ..RigOptions::default()

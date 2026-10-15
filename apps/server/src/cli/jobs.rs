@@ -14,6 +14,8 @@ use crate::features::folders::delete::{self as folder_deletion, DeleteTreeContex
 use crate::features::quota::reconcile::{self as quota_reconcile, QuotaReconcileContext};
 use crate::features::settings::SettingsService;
 use crate::features::transfers::reaper::{self as transfer_reaper, ReaperContext};
+use crate::features::transfers::s3::reapers::{self as s3_reapers, S3ReaperContext, S3ReaperParts};
+use crate::features::transfers::TransferStorage;
 use crate::infra::crypto::instance_key::InstanceKey;
 use crate::infra::db::DbPools;
 use crate::infra::jobs::cli::{run_once, RunOnceReport};
@@ -92,7 +94,11 @@ async fn execute(
     );
     let registry = if matches!(
         kind,
-        JobKind::StorageDeleteBlob | JobKind::StorageOrphanSweep | JobKind::TusExpireStale
+        JobKind::StorageDeleteBlob
+            | JobKind::StorageOrphanSweep
+            | JobKind::TusExpireStale
+            | JobKind::S3AbortAbandonedMultipart
+            | JobKind::S3ReconcileMultipart
     ) {
         let provider =
             storage::build_provider(config, Arc::clone(&clock)).map_err(StartupError::from)?;
@@ -106,6 +112,19 @@ async fn execute(
                 ProviderStaging::of(&provider),
                 CancellationToken::new(),
             ),
+        );
+        let registry = s3_reapers::register_jobs(
+            registry,
+            S3ReaperContext::new(S3ReaperParts {
+                pools: pools.clone(),
+                clock: Arc::clone(&clock),
+                settings: settings.handle(),
+                audit: audit_service.clone(),
+                storage: TransferStorage::for_jobs(&config.storage, Arc::clone(&provider)),
+                proxy: None,
+                stop: CancellationToken::new(),
+                hooks: None,
+            }),
         );
         storage_lifecycle::register_jobs(
             registry,

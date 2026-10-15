@@ -143,6 +143,10 @@ impl S3Service {
         }
     }
 
+    pub fn proxy_uploads(&self) -> ProxyUploads {
+        self.proxy.clone()
+    }
+
     fn now(&self) -> Result<Timestamp, TransferError> {
         Ok(Timestamp::try_from(self.clock.now())?)
     }

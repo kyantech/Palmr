@@ -15,9 +15,11 @@ use crate::storage::lifecycle::{
 };
 
 use super::error::TransferError;
-use super::model::TransferProvider;
+use super::model::{TransferProvider, TransferSessionId};
 use super::repo::{self, FinalizeStage, LiveItem, SessionRow};
-use super::state::ItemState;
+use super::state::{
+    session_transition, ItemState, Outcome as Moved, TransferSessionState, Trigger,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Ending {
@@ -116,6 +118,51 @@ pub async fn settle_if_held(
     Ok(true)
 }
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct ExpiredShare {
+    pub session_closed: bool,
+    pub completed_kept: u64,
+}
+
+pub async fn settle_expired_item(
+    tx: &mut WriteTx<'_>,
+    quota: &QuotaService,
+    session: (TransferSessionId, TransferSessionState),
+    item: &LiveItem,
+    now: Timestamp,
+) -> Result<ExpiredShare, TransferError> {
+    let (session_id, session_state) = session;
+    let mut settled = ExpiredShare::default();
+    if session_state.is_terminal() {
+        return Ok(settled);
+    }
+    let row = repo::find_session_unowned(tx.executor(), session_id)
+        .await?
+        .ok_or(TransferError::SessionNotFound)?;
+    settled.completed_kept = u64::from(row.completed_file_count);
+    if repo::reservation_held(tx.executor(), session_id).await? {
+        if item.state.holds_reservation() {
+            quota.release_share(tx, session_id, item.reserved).await?;
+        }
+        if repo::remaining_items(tx.executor(), session_id).await? == 0 {
+            if let Ok(Moved::Moved(_)) = session_transition(row.state, Trigger::Expire) {
+                let moved =
+                    repo::expire_session(tx.executor(), session_id, row.state, now, false).await?;
+                if !moved {
+                    return Err(TransferError::Invariant {
+                        what: "session_state",
+                    });
+                }
+                settle_session(tx, quota, &row, ReleaseReason::Expired).await?;
+                settled.session_closed = true;
+                return Ok(settled);
+            }
+        }
+    }
+    repo::touch_session(tx.executor(), session_id, now).await?;
+    Ok(settled)
+}
+
 #[derive(Debug, Clone)]
 pub struct TransferCaller {
     pub owner: UserId,
@@ -186,9 +233,10 @@ pub fn record_expired(audit: &AuditService, expired: &Expired<'_>, at: Timestamp
         session_closed: expired.session_closed,
         owner_id: expired.owner,
     });
-    let target = match expired.upload {
-        Some(upload) => Target::new(TargetType::TusUpload).id(upload),
-        None => Target::new(TargetType::Session).id(expired.session),
+    let target = match (expired.upload, expired.provider) {
+        (Some(upload), "s3") => Target::new(TargetType::S3MultipartUpload).id(upload),
+        (Some(upload), _) => Target::new(TargetType::TusUpload).id(upload),
+        (None, _) => Target::new(TargetType::Session).id(expired.session),
     };
     audit.record_async(
         AuditEvent::new(spec, Actor::system(), Outcome::Success, at).with_target(target),

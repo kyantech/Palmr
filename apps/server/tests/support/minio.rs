@@ -115,6 +115,41 @@ impl MinioServer {
             .is_ok()
     }
 
+    #[allow(
+        dead_code,
+        reason = "only the reaper process tests count incomplete uploads through the container"
+    )]
+    pub async fn incomplete_uploads(&self, bucket: &str) -> Result<usize> {
+        let target = format!("palmr/{bucket}");
+        let mut result = self
+            .container
+            .exec(
+                ExecCommand::new([
+                    "mc",
+                    "--quiet",
+                    "ls",
+                    "--incomplete",
+                    "--recursive",
+                    target.as_str(),
+                ])
+                .with_cmd_ready_condition(CmdWaitFor::exit()),
+            )
+            .await?;
+        match result.exit_code().await? {
+            Some(0) => Ok(String::from_utf8_lossy(&result.stdout_to_vec().await?)
+                .lines()
+                .filter(|line| !line.trim().is_empty())
+                .count()),
+            code => {
+                let stderr = result.stderr_to_vec().await.unwrap_or_default();
+                bail!(
+                    "mc ls --incomplete exited with {code:?}: {}",
+                    String::from_utf8_lossy(&stderr).trim()
+                )
+            }
+        }
+    }
+
     async fn mc(&self, args: &[&str]) -> Result<()> {
         let mut command = vec!["mc", "--quiet"];
         command.extend_from_slice(args);

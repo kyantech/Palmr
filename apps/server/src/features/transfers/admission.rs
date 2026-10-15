@@ -116,6 +116,19 @@ impl TransferStorage {
         }
     }
 
+    pub fn for_jobs(config: &StorageConfig, provider: Arc<dyn StorageProvider>) -> Self {
+        let storage = Self::new(
+            UploadPlanner::from_operator(config, Arc::clone(&provider)),
+            Arc::new(|| StorageHealth::Ok),
+        );
+        match object_store_settings(config) {
+            Some(settings) => {
+                storage.with_object_store(provider, settings.bucket, settings.multipart_ttl)
+            }
+            None => storage,
+        }
+    }
+
     pub fn provider_handle(&self) -> Option<&Arc<dyn StorageProvider>> {
         self.store.as_ref().map(|store| &store.provider)
     }

@@ -67,6 +67,12 @@ use crate::features::transfers::finalize::{
     FinalizeHooks, FinalizeLimits, Finalizer, FinalizerParts,
 };
 use crate::features::transfers::reaper::{self as transfer_reaper, ReaperContext};
+use crate::features::transfers::s3::proxied::ProxyUploads;
+#[cfg(feature = "e2e-fixture")]
+use crate::features::transfers::s3::reapers::PauseHook as S3PauseHook;
+use crate::features::transfers::s3::reapers::{
+    self as s3_reapers, ReaperHooks, S3ReaperContext, S3ReaperParts,
+};
 use crate::features::transfers::{
     ProxyLimits, S3Service, S3ServiceParts, TransferService, TransferStorage, TusLimits,
     TusService, TusServiceParts, S3_PROXY_CONCURRENCY,
@@ -907,11 +913,12 @@ async fn initialize(
         proxy: ProxyLimits::production(),
         shutdown: uploads_stop.clone(),
     });
+    let proxy_uploads = s3.proxy_uploads();
     let tus = TusService::new(TusServiceParts {
         pools: database.pools().clone(),
         clock: Arc::clone(&clock),
         settings: settings.clone(),
-        storage: transfer_storage,
+        storage: transfer_storage.clone(),
         transfers: transfers.clone(),
         base_url: config.base_url.clone(),
         holder: instance.instance_id().to_string(),
@@ -1023,7 +1030,7 @@ async fn initialize(
         &instance,
         &settings,
         &email_keys,
-        provider,
+        (provider, transfer_storage, proxy_uploads),
         uploads_stop.clone(),
         (audit_service, audit_drain),
     );
@@ -1072,6 +1079,16 @@ fn redrive_starter(finalizer: &Finalizer) -> RedriveStarter {
                 .map_err(|error| ReconcileError::new(error.kind(), error.to_string()))
         })
     })
+}
+
+#[cfg(feature = "e2e-fixture")]
+fn s3_reaper_hooks() -> Option<Arc<dyn ReaperHooks>> {
+    S3PauseHook::from_environment().map(|hook| Arc::new(hook) as Arc<dyn ReaperHooks>)
+}
+
+#[cfg(not(feature = "e2e-fixture"))]
+fn s3_reaper_hooks() -> Option<Arc<dyn ReaperHooks>> {
+    None
 }
 
 #[cfg(feature = "e2e-fixture")]
@@ -1137,7 +1154,11 @@ fn start_jobs(
     instance: &InstanceLock,
     settings: &SettingsHandle,
     keys: &Arc<KeyRing>,
-    provider: Arc<dyn StorageProvider>,
+    (provider, transfer_storage, proxy_uploads): (
+        Arc<dyn StorageProvider>,
+        TransferStorage,
+        ProxyUploads,
+    ),
     uploads_stop: CancellationToken,
     (audit_service, audit_drain): (AuditService, AuditDrain),
 ) -> JobRuntime {
@@ -1170,8 +1191,21 @@ fn start_jobs(
             settings.clone(),
             audit_service.clone(),
             ProviderStaging::of(&provider),
-            uploads_stop,
+            uploads_stop.clone(),
         ),
+    );
+    let registry = s3_reapers::register_jobs(
+        registry,
+        S3ReaperContext::new(S3ReaperParts {
+            pools: pools.clone(),
+            clock: Arc::clone(clock),
+            settings: settings.clone(),
+            audit: audit_service.clone(),
+            storage: transfer_storage,
+            proxy: Some(proxy_uploads),
+            stop: uploads_stop,
+            hooks: s3_reaper_hooks(),
+        }),
     );
     let registry = storage_lifecycle::register_jobs(
         registry,
