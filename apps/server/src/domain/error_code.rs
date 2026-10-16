@@ -186,6 +186,10 @@ error_catalog! {
         "The name is not valid";
     RangeNotSatisfiable = "RANGE_NOT_SATISFIABLE", RANGE_NOT_SATISFIABLE, retryable: false,
         "The requested range is not satisfiable";
+    PreviewTooLarge = "PREVIEW_TOO_LARGE", PAYLOAD_TOO_LARGE, retryable: false,
+        "The requested preview is larger than the preview limit";
+    PreviewUnsupported = "PREVIEW_UNSUPPORTED", UNSUPPORTED_MEDIA_TYPE, retryable: false,
+        "This file type cannot be previewed safely; download it instead";
     StorageUnavailable = "STORAGE_UNAVAILABLE", SERVICE_UNAVAILABLE, retryable: true,
         "The storage backend is temporarily unavailable";
     QuotaExceeded = "QUOTA_EXCEEDED", INSUFFICIENT_STORAGE, retryable: false,

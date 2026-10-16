@@ -55,6 +55,8 @@
     "folderDeleting": "Den här mappen håller på att tas bort.",
     "batchDeleteFailed": "Inget av de markerade objekten kunde tas bort.",
     "rangeNotSatisfiable": "Den begärda delen av filen är inte tillgänglig. Starta nedladdningen igen.",
+    "previewUnsupported": "Den här filtypen kan inte förhandsgranskas. Ladda ner den för att öppna den.",
+    "previewTooLarge": "Filen är för stor för att förhandsgranskas. Ladda ner den för att se hela.",
     "storageUnavailable": "Fillagringen är tillfälligt otillgänglig. Försök igen senare.",
     "storageFull": "Serverns lagring är full. Kontakta administratören.",
     "quotaExceeded": "Det här skulle överskrida din lagringskvot. Frigör utrymme eller be administratören att höja den.",

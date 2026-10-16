@@ -391,7 +391,7 @@ async fn it_api_unknown_path_json_404() {
         "/api/",
         "/api/v1",
         "/api/v1/does-not-exist",
-        "/api/v1/files/0192f3a7/preview",
+        "/api/v1/files/0192f3a7/thumbnail",
         "/api/v2/anything",
         "/API/v1/does-not-exist",
         "/api/../index.html",

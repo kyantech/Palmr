@@ -55,6 +55,8 @@
     "folderDeleting": "Esta carpeta se está eliminando.",
     "batchDeleteFailed": "No se pudo eliminar ninguno de los elementos seleccionados.",
     "rangeNotSatisfiable": "La parte solicitada del archivo no está disponible. Inicia la descarga de nuevo.",
+    "previewUnsupported": "Este tipo de archivo no se puede previsualizar. Descárgalo para abrirlo.",
+    "previewTooLarge": "Este archivo es demasiado grande para previsualizarlo. Descárgalo para verlo completo.",
     "storageUnavailable": "El almacenamiento de archivos no está disponible temporalmente. Inténtalo más tarde.",
     "storageFull": "El almacenamiento del servidor está lleno. Contacta con tu administrador.",
     "quotaExceeded": "Esto superaría tu cuota de almacenamiento. Libera espacio o pide a tu administrador que la aumente.",

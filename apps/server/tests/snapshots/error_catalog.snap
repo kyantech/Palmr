@@ -293,6 +293,16 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "PREVIEW_TOO_LARGE",
+    "status": 413,
+    "retryable": false
+  },
+  {
+    "code": "PREVIEW_UNSUPPORTED",
+    "status": 415,
+    "retryable": false
+  },
+  {
     "code": "PROVIDER_AUTH_DENIED",
     "status": 401,
     "retryable": false

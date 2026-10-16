@@ -55,6 +55,8 @@
     "folderDeleting": "Bu klasör siliniyor.",
     "batchDeleteFailed": "Seçilen öğelerin hiçbiri silinemedi.",
     "rangeNotSatisfiable": "Dosyanın istenen bölümü kullanılamıyor. İndirmeyi yeniden başlatın.",
+    "previewUnsupported": "Bu dosya türü önizlenemiyor. Açmak için indirin.",
+    "previewTooLarge": "Bu dosya önizleme için çok büyük. Tamamını görmek için indirin.",
     "storageUnavailable": "Dosya depolama geçici olarak kullanılamıyor. Daha sonra tekrar deneyin.",
     "storageFull": "Sunucunun depolama alanı dolu. Yöneticinize başvurun.",
     "quotaExceeded": "Bu işlem depolama kotanızı aşardı. Yer açın veya yöneticinizden kotayı artırmasını isteyin.",

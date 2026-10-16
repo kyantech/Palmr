@@ -55,6 +55,8 @@
     "folderDeleting": "Questa cartella è in corso di eliminazione.",
     "batchDeleteFailed": "Nessuno degli elementi selezionati è stato eliminato.",
     "rangeNotSatisfiable": "La parte richiesta del file non è disponibile. Avvia di nuovo il download.",
+    "previewUnsupported": "Non è possibile visualizzare l'anteprima di questo tipo di file. Scaricalo per aprirlo.",
+    "previewTooLarge": "Questo file è troppo grande per l'anteprima. Scaricalo per vederlo per intero.",
     "storageUnavailable": "L'archiviazione dei file è temporaneamente non disponibile. Riprova più tardi.",
     "storageFull": "Lo spazio di archiviazione del server è pieno. Contatta l'amministratore.",
     "quotaExceeded": "Questo supererebbe la tua quota di archiviazione. Libera spazio o chiedi all'amministratore di aumentarla.",

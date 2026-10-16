@@ -114,6 +114,8 @@ export const ERROR_PRESENTATION: Readonly<Record<ErrorCode, ErrorPresentation>> 
   FOLDER_CYCLE: entry("message.folderCycle", inline()),
   FOLDER_DELETING: entry("message.folderDeleting", inline("warning")),
   RANGE_NOT_SATISFIABLE: entry("message.rangeNotSatisfiable", inline()),
+  PREVIEW_UNSUPPORTED: entry("message.previewUnsupported", inline("info")),
+  PREVIEW_TOO_LARGE: entry("message.previewTooLarge", inline("info")),
   QUOTA_EXCEEDED: entry("message.quotaExceeded", inline("warning")),
   FILE_TOO_LARGE: entry("message.fileTooLarge", inline()),
   TRANSFER_SESSION_NOT_FOUND: entry("message.transferSessionNotFound", inline("warning")),

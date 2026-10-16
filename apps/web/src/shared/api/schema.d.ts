@@ -964,6 +964,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/files/{id}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["preview_file"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/folders": {
         parameters: {
             query?: never;
@@ -2153,7 +2169,7 @@ export interface components {
             leafFolderId: string;
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "BATCH_DELETE_FAILED" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "FILE_NAME_CONFLICT" | "FOLDER_NOT_FOUND" | "FOLDER_DEPTH_EXCEEDED" | "FOLDER_CYCLE" | "FOLDER_DELETING" | "NAME_INVALID" | "RANGE_NOT_SATISFIABLE" | "STORAGE_UNAVAILABLE" | "QUOTA_EXCEEDED" | "STORAGE_FULL" | "FILE_TOO_LARGE" | "TRANSFER_SESSION_NOT_FOUND" | "TRANSFER_SESSION_STATE_INVALID" | "TRANSFER_SESSION_EXPIRED" | "TUS_VERSION_UNSUPPORTED" | "TUS_EXTENSION_UNSUPPORTED" | "UPLOAD_METADATA_INVALID" | "UPLOAD_SESSION_EXPIRED" | "UPLOAD_LENGTH_MISMATCH" | "UPLOAD_OFFSET_MISMATCH" | "UPLOAD_LOCKED" | "UPLOAD_CHECKSUM_MISMATCH" | "TRANSFER_BACKPRESSURE" | "MULTIPART_NOT_FOUND" | "MULTIPART_ALREADY_CREATED" | "MULTIPART_ALREADY_COMPLETED" | "MULTIPART_INCOMPLETE" | "MULTIPART_PART_INVALID" | "MULTIPART_PART_REJECTED" | "PRESIGN_BATCH_TOO_LARGE" | "STORAGE_UPSTREAM_ERROR" | "STORAGE_WRITE_FAILED" | "TRANSFER_IDLE_TIMEOUT" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_PERMISSION_DENIED" | "STORAGE_SIZE_MISMATCH" | "STORAGE_OBJECT_MISSING" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN" | "SMTP_TEST_FAILED" | "PROVIDER_NOT_FOUND" | "PROVIDER_DISABLED" | "PROVIDER_SLUG_TAKEN" | "PROVIDER_DISCOVERY_FAILED" | "PROVIDER_VALIDATION_FAILED" | "PROVIDER_HAS_LINKS" | "PROVIDER_ID_TOKEN_INVALID" | "PROVIDER_USERINFO_FAILED" | "PROVIDER_SUBJECT_MISSING" | "PROVIDER_STATE_INVALID" | "PROVIDER_AUTH_DENIED" | "PROVIDER_CODE_EXCHANGE_FAILED" | "PROVIDER_EMAIL_UNVERIFIED" | "PROVIDER_AUTO_PROVISION_DISABLED" | "PROVIDER_IDENTITY_ALREADY_LINKED" | "PROVIDER_LINK_NOT_FOUND" | "IDENTITY_LINK_LAST_LOGIN_PATH" | "PASSWORD_LOGIN_DISABLE_UNSAFE" | "NO_VALIDATED_PROVIDER" | "AUTH_ACCOUNT_INACTIVE" | "AUTH_EXTERNAL_AMBIGUOUS_IDENTITY" | "AUTH_EXTERNAL_USERNAME_UNAVAILABLE";
+        ErrorCode: "VALIDATION_ERROR" | "INVALID_JSON" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "FORBIDDEN" | "UNSUPPORTED_MEDIA_TYPE" | "REQUEST_BODY_TOO_LARGE" | "REQUEST_TIMEOUT" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "CURSOR_INVALID" | "RATE_LIMITED" | "CSRF_TOKEN_MISSING" | "CSRF_TOKEN_INVALID" | "ORIGIN_NOT_ALLOWED" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_REQUEST_IN_PROGRESS" | "BATCH_TOO_LARGE" | "BATCH_DELETE_FAILED" | "FEATURE_UNAVAILABLE_SMTP" | "SETUP_ALREADY_COMPLETED" | "AUTH_REQUIRED" | "AUTH_INVALID_CREDENTIALS" | "AUTH_LOCKED" | "AUTH_PASSWORD_LOGIN_DISABLED" | "AUTH_RECENT_AUTH_REQUIRED" | "AUTH_PASSWORD_CHANGE_REQUIRED" | "AUTH_2FA_ENROLLMENT_REQUIRED" | "AUTH_2FA_REQUIRED" | "AUTH_2FA_INVALID" | "AUTH_2FA_CHALLENGE_EXPIRED" | "BACKUP_CODE_INVALID" | "TOTP_CODE_REPLAYED" | "TOTP_ALREADY_ENABLED" | "TOTP_NOT_ENROLLED" | "TOTP_REQUIRED_BY_POLICY" | "TOTP_ENROLLMENT_PENDING_MISSING" | "SESSION_NOT_FOUND" | "TRUSTED_DEVICE_DISABLED" | "TRUSTED_DEVICE_NOT_FOUND" | "PASSWORD_CURRENT_INVALID" | "PASSWORD_POLICY_VIOLATION" | "RESET_TOKEN_INVALID" | "RESET_TOKEN_EXPIRED" | "RESET_TOKEN_USED" | "EMAIL_VERIFICATION_TOKEN_INVALID" | "EMAIL_VERIFICATION_TOKEN_EXPIRED" | "EMAIL_VERIFICATION_NOT_PENDING" | "INVITE_NOT_FOUND" | "INVITE_EXPIRED" | "INVITE_ALREADY_USED" | "INVITE_REVOKED" | "USER_NOT_FOUND" | "USER_EMAIL_TAKEN" | "USER_USERNAME_TAKEN" | "LAST_ADMIN_PROTECTED" | "USER_HAS_NO_LOCAL_AUTH" | "DATABASE_BUSY" | "FILE_NOT_FOUND" | "FILE_NAME_CONFLICT" | "FOLDER_NOT_FOUND" | "FOLDER_DEPTH_EXCEEDED" | "FOLDER_CYCLE" | "FOLDER_DELETING" | "NAME_INVALID" | "RANGE_NOT_SATISFIABLE" | "PREVIEW_TOO_LARGE" | "PREVIEW_UNSUPPORTED" | "STORAGE_UNAVAILABLE" | "QUOTA_EXCEEDED" | "STORAGE_FULL" | "FILE_TOO_LARGE" | "TRANSFER_SESSION_NOT_FOUND" | "TRANSFER_SESSION_STATE_INVALID" | "TRANSFER_SESSION_EXPIRED" | "TUS_VERSION_UNSUPPORTED" | "TUS_EXTENSION_UNSUPPORTED" | "UPLOAD_METADATA_INVALID" | "UPLOAD_SESSION_EXPIRED" | "UPLOAD_LENGTH_MISMATCH" | "UPLOAD_OFFSET_MISMATCH" | "UPLOAD_LOCKED" | "UPLOAD_CHECKSUM_MISMATCH" | "TRANSFER_BACKPRESSURE" | "MULTIPART_NOT_FOUND" | "MULTIPART_ALREADY_CREATED" | "MULTIPART_ALREADY_COMPLETED" | "MULTIPART_INCOMPLETE" | "MULTIPART_PART_INVALID" | "MULTIPART_PART_REJECTED" | "PRESIGN_BATCH_TOO_LARGE" | "STORAGE_UPSTREAM_ERROR" | "STORAGE_WRITE_FAILED" | "TRANSFER_IDLE_TIMEOUT" | "STORAGE_PROVIDER_MISMATCH" | "STORAGE_PERMISSION_DENIED" | "STORAGE_SIZE_MISMATCH" | "STORAGE_OBJECT_MISSING" | "SETTING_UNKNOWN" | "SETTING_VALUE_INVALID" | "SETTING_BELOW_FLOOR" | "BRANDING_ASSET_UNKNOWN" | "SMTP_TEST_FAILED" | "PROVIDER_NOT_FOUND" | "PROVIDER_DISABLED" | "PROVIDER_SLUG_TAKEN" | "PROVIDER_DISCOVERY_FAILED" | "PROVIDER_VALIDATION_FAILED" | "PROVIDER_HAS_LINKS" | "PROVIDER_ID_TOKEN_INVALID" | "PROVIDER_USERINFO_FAILED" | "PROVIDER_SUBJECT_MISSING" | "PROVIDER_STATE_INVALID" | "PROVIDER_AUTH_DENIED" | "PROVIDER_CODE_EXCHANGE_FAILED" | "PROVIDER_EMAIL_UNVERIFIED" | "PROVIDER_AUTO_PROVISION_DISABLED" | "PROVIDER_IDENTITY_ALREADY_LINKED" | "PROVIDER_LINK_NOT_FOUND" | "IDENTITY_LINK_LAST_LOGIN_PATH" | "PASSWORD_LOGIN_DISABLE_UNSAFE" | "NO_VALIDATED_PROVIDER" | "AUTH_ACCOUNT_INACTIVE" | "AUTH_EXTERNAL_AMBIGUOUS_IDENTITY" | "AUTH_EXTERNAL_USERNAME_UNAVAILABLE";
         ExternalReauthResponse: {
             accepted: boolean;
             /**
@@ -8809,6 +8825,176 @@ export interface operations {
             /** @description Rate limited. */
             429: {
                 headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+        };
+    };
+    preview_file: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description File UUIDv7 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The whole file, inline, streamed with an exact `Content-Length` and no content encoding. `Content-Type` is the server-detected type stored at upload for an image, video, audio or PDF; text and code are always `text/plain; charset=utf-8`. `X-Content-Type-Options: nosniff` is always present, the response is `Cache-Control: private, no-cache`, and it carries a strong `ETag`. A text or code response never carries more than 5 MiB. */
+            200: {
+                headers: {
+                    /** @description `bytes`. */
+                    "Accept-Ranges"?: string;
+                    /** @description `private, no-cache`. */
+                    "Cache-Control"?: string;
+                    /** @description `inline` with an RFC 6266 ASCII `filename` fallback and an RFC 5987 `filename*`. */
+                    "Content-Disposition"?: string;
+                    /** @description The exact size of the response body in bytes. */
+                    "Content-Length"?: number;
+                    /** @description Strong validator of the stored object. */
+                    ETag?: string;
+                    /** @description When the stored object was written. */
+                    "Last-Modified"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": components["schemas"]["FileBytes"];
+                };
+            };
+            /** @description The satisfiable first byte range of `Range`, honoured when `If-Range` is absent or matches; the same rules as `GET /api/v1/files/{id}/content`. A text or code range is answered only when its resolved length is at most 5 MiB; the SPA asks for `bytes=0-524287`. */
+            206: {
+                headers: {
+                    /** @description `bytes`. */
+                    "Accept-Ranges"?: string;
+                    /** @description `inline`, as for `200`. */
+                    "Content-Disposition"?: string;
+                    /** @description `last - first + 1`. */
+                    "Content-Length"?: number;
+                    /** @description `bytes <first>-<last>/<size>`, both bounds inclusive. */
+                    "Content-Range"?: string;
+                    /** @description Strong validator of the stored object. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": components["schemas"]["FileBytes"];
+                };
+            };
+            /** @description S3 storage only, and only for an image, video, audio or PDF: the caller owns the file, its type is previewable, and `Location` is a presigned `GET` signed against the public S3 endpoint for 300 seconds with `response-content-disposition` (`inline`) and `response-content-type` pinned into the signature. The same conditions as `GET /api/v1/files/{id}/content` decide between this redirect and a Palmr-streamed answer. Text and code are never redirected: their bytes are always relayed by Palmr within the 5 MiB limit, because a presigned URL cannot enforce it. */
+            302: {
+                headers: {
+                    /** @description `no-store`. */
+                    "Cache-Control"?: string;
+                    /** @description The short-lived presigned URL; a capability, never logged or stored. */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `If-None-Match` matched the current `ETag`; evaluated only after ownership, previewability and the text size limit are established. */
+            304: {
+                headers: {
+                    /** @description `private, no-cache`. */
+                    "Cache-Control"?: string;
+                    /** @description Strong validator of the stored object. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description The session is restricted. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `FILE_NOT_FOUND`: the id is malformed, unknown, deleted or another user's file. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PREVIEW_TOO_LARGE`: a text or code response would carry more than 5 MiB, because the request has no `Range`, an open-ended or suffix `Range`, or a `Range` that resolves to more than 5 MiB. `details.prefixBytes` is the 524288-byte prefix the SPA requests with `Range: bytes=0-524287`. No file bytes are sent. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `PREVIEW_UNSUPPORTED`: the file's stored type has no safe inline rendering (active content such as HTML, XML and SVG, or an unknown or binary type). `details.reason` is `unsafe_content` or `unsupported_type`. No file bytes are sent and no presigned URL is issued; the client offers `GET /api/v1/files/{id}/content`. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `RANGE_NOT_SATISFIABLE`: the first range starts at or beyond the end of the file, or asks for a zero-length suffix, or the file is empty. */
+            416: {
+                headers: {
+                    /** @description `bytes *\/<size>` with the authoritative size. */
+                    "Content-Range"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `STORAGE_PERMISSION_DENIED`, `STORAGE_PROVIDER_MISMATCH`, `STORAGE_SIZE_MISMATCH` or `INTERNAL_ERROR`. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `STORAGE_OBJECT_MISSING` or `STORAGE_UPSTREAM_ERROR`. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
+            /** @description `STORAGE_UNAVAILABLE`, or `TRANSFER_BACKPRESSURE` (with `Retry-After`) while every download slot is busy. */
+            503: {
+                headers: {
+                    /** @description Seconds to wait; present on `TRANSFER_BACKPRESSURE`. */
+                    "Retry-After"?: number;
                     [name: string]: unknown;
                 };
                 content: {

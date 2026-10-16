@@ -1146,6 +1146,12 @@ fn unit_file_routes_are_declared_with_their_classes() {
             AuthClass::Authenticated,
             RateLimitClass::TransferData,
         ),
+        (
+            Method::GET,
+            format!("{FILES}/{{id}}/preview"),
+            AuthClass::Authenticated,
+            RateLimitClass::TransferData,
+        ),
     ];
     let order = |entry: &(Method, String, AuthClass, RateLimitClass)| {
         (entry.1.clone(), entry.0.to_string())
@@ -1154,7 +1160,7 @@ fn unit_file_routes_are_declared_with_their_classes() {
     declared.sort_by_key(order);
     assert_eq!(
         declared, expected,
-        "no preview or thumbnail route belongs to this task"
+        "no thumbnail route belongs to this task"
     );
 }
 
@@ -1176,13 +1182,10 @@ async fn it_file_static_routes_are_not_swallowed_by_the_id_route() {
         .await;
     assert_code(&batch, StatusCode::NOT_FOUND, "FILE_NOT_FOUND");
     assert!(batch.json()["error"]["code"] != "METHOD_NOT_ALLOWED");
-    for (method, path) in [
-        (Method::GET, format!("{FILES}/{}/preview", stack.fresh_id())),
-        (
-            Method::GET,
-            format!("{FILES}/{}/thumbnail", stack.fresh_id()),
-        ),
-    ] {
+    for (method, path) in [(
+        Method::GET,
+        format!("{FILES}/{}/thumbnail", stack.fresh_id()),
+    )] {
         let absent = stack.api(method, &path, &alice, None).await;
         assert!(
             absent.status == StatusCode::NOT_FOUND

@@ -1,5 +1,6 @@
 use std::fmt;
 
+use super::preview::TEXT_PREVIEW_PREFIX_BYTES;
 use crate::domain::error_code::ErrorCode;
 use crate::infra::db::DbError;
 use crate::infra::http::error::ApiError;
@@ -10,6 +11,12 @@ pub enum DownloadError {
     NotFound,
     RangeNotSatisfiable {
         size: u64,
+    },
+    PreviewUnsupported {
+        reason: &'static str,
+    },
+    PreviewTooLarge {
+        limit: u64,
     },
     ObjectMissing,
     SizeMismatch {
@@ -35,6 +42,8 @@ impl DownloadError {
         match self {
             Self::NotFound => "download_file_not_found",
             Self::RangeNotSatisfiable { .. } => "download_range_not_satisfiable",
+            Self::PreviewUnsupported { .. } => "preview_unsupported",
+            Self::PreviewTooLarge { .. } => "preview_too_large",
             Self::ObjectMissing => "download_object_missing",
             Self::SizeMismatch { .. } => "download_size_mismatch",
             Self::ProviderMismatch { .. } => "download_provider_mismatch",
@@ -49,6 +58,15 @@ impl DownloadError {
         match self {
             Self::NotFound => ApiError::new(ErrorCode::FileNotFound),
             Self::RangeNotSatisfiable { .. } => ApiError::new(ErrorCode::RangeNotSatisfiable),
+            Self::PreviewUnsupported { reason } => {
+                ApiError::new(ErrorCode::PreviewUnsupported).with_detail("reason", *reason)
+            }
+            Self::PreviewTooLarge { limit } => ApiError::new(ErrorCode::PreviewTooLarge)
+                .with_detail("limitBytes", i64::try_from(*limit).unwrap_or(i64::MAX))
+                .with_detail(
+                    "prefixBytes",
+                    i64::try_from(TEXT_PREVIEW_PREFIX_BYTES).unwrap_or(i64::MAX),
+                ),
             Self::ObjectMissing => ApiError::new(ErrorCode::StorageObjectMissing),
             Self::SizeMismatch { .. } => ApiError::new(ErrorCode::StorageSizeMismatch),
             Self::ProviderMismatch { .. } => ApiError::new(ErrorCode::StorageProviderMismatch),
@@ -79,6 +97,12 @@ impl fmt::Display for DownloadError {
             Self::NotFound => f.write_str("the file does not exist for this owner"),
             Self::RangeNotSatisfiable { size } => {
                 write!(f, "the requested range lies outside {size} bytes")
+            }
+            Self::PreviewUnsupported { reason } => {
+                write!(f, "the file cannot be previewed safely ({reason})")
+            }
+            Self::PreviewTooLarge { limit } => {
+                write!(f, "the preview response would exceed {limit} bytes")
             }
             Self::ObjectMissing => f.write_str("the storage backend has no such object"),
             Self::SizeMismatch { recorded, actual } => write!(

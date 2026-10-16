@@ -30,7 +30,7 @@ use super::service::{Content, Delivery, DownloadRequest, DownloadService, Repres
 #[derive(utoipa::ToSchema)]
 #[schema(value_type = String, format = Binary)]
 #[allow(dead_code, reason = "the type only names the binary response schema")]
-struct FileBytes(Vec<u8>);
+pub(super) struct FileBytes(Vec<u8>);
 
 const CONTENT_ROUTE: RoutePolicy = RoutePolicy::new(
     AuthClass::Authenticated,
@@ -64,10 +64,12 @@ fn disposition_parameters() -> Vec<Parameter> {
 }
 
 pub fn routes() -> Routes<AppState> {
-    Routes::new().route(
-        CONTENT_ROUTE,
-        with_query_parameters(routes!(download_content), &disposition_parameters()),
-    )
+    Routes::new()
+        .route(
+            CONTENT_ROUTE,
+            with_query_parameters(routes!(download_content), &disposition_parameters()),
+        )
+        .route(CONTENT_ROUTE, super::preview::routes())
 }
 
 #[utoipa::path(
@@ -139,11 +141,18 @@ async fn download_content(
             headers: request.headers(),
         })
         .await;
+    respond(delivery, request_id.as_ref())
+}
+
+pub(super) fn respond(
+    delivery: Result<Delivery, DownloadError>,
+    request_id: Option<&RequestId>,
+) -> Response {
     match delivery {
         Ok(Delivery::Redirect(location)) => redirect(location),
         Ok(Delivery::NotModified(representation)) => not_modified(&representation),
-        Ok(Delivery::Content(content)) => content_response(content, request_id.as_ref()),
-        Err(error) => failure(&error, request_id.as_ref()),
+        Ok(Delivery::Content(content)) => content_response(content, request_id),
+        Err(error) => failure(&error, request_id),
     }
 }
 

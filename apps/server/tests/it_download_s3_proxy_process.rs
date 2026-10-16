@@ -3,20 +3,12 @@
 pub mod support;
 
 use std::ffi::OsString;
-use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use anyhow::{ensure, Context, Result};
-use axum::body::Body;
-use axum::extract::{Request, State};
-use axum::response::Response;
-use http::header::{CONNECTION, CONTENT_LENGTH, TRANSFER_ENCODING};
-use http::StatusCode;
 use percent_encoding::percent_decode_str;
 use tempfile::TempDir;
 use tokio::io::AsyncReadExt;
-use tokio::net::TcpListener;
-use tokio::task::JoinHandle;
 use unicode_normalization::UnicodeNormalization;
 use url::Url;
 use uuid::Uuid;
@@ -26,131 +18,12 @@ use support::download::{
     content_path, expected_bytes, raw_get, read_head, upload_s3, Fetch, Fetcher,
 };
 use support::minio::MinioServer;
+use support::tap::Tap;
 use support::tus::{generated_digest, MIB};
 use support::ServerProcess;
 
 const NAME: &str = "Relatório Anual (2026).pdf";
 const SIZE: u64 = 12 * MIB + 4_321;
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-struct Seen {
-    method: String,
-    target: String,
-    range: Option<String>,
-    served: Option<u64>,
-}
-
-#[derive(Clone)]
-struct Recorder {
-    upstream: String,
-    client: reqwest::Client,
-    seen: Arc<Mutex<Vec<Seen>>>,
-}
-
-struct Tap {
-    address: std::net::SocketAddr,
-    seen: Arc<Mutex<Vec<Seen>>>,
-    task: JoinHandle<()>,
-}
-
-impl Tap {
-    async fn start(upstream: &str) -> Result<Self> {
-        let listener = TcpListener::bind(("127.0.0.1", 0)).await?;
-        let address = listener.local_addr()?;
-        let seen = Arc::new(Mutex::new(Vec::new()));
-        let recorder = Recorder {
-            upstream: upstream.trim_end_matches('/').to_owned(),
-            client: reqwest::Client::new(),
-            seen: Arc::clone(&seen),
-        };
-        let app = axum::Router::new().fallback(relay).with_state(recorder);
-        let task = tokio::spawn(async move {
-            let _ = axum::serve(listener, app).await;
-        });
-        Ok(Self {
-            address,
-            seen,
-            task,
-        })
-    }
-
-    fn endpoint(&self) -> String {
-        format!("http://{}", self.address)
-    }
-
-    fn clear(&self) {
-        self.seen
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .clear();
-    }
-
-    fn object_reads(&self) -> Vec<Seen> {
-        self.seen
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .iter()
-            .filter(|seen| seen.method == "GET" && seen.target.contains("/objects/"))
-            .cloned()
-            .collect()
-    }
-}
-
-impl Drop for Tap {
-    fn drop(&mut self) {
-        self.task.abort();
-    }
-}
-
-async fn relay(State(recorder): State<Recorder>, request: Request) -> Response {
-    let (parts, body) = request.into_parts();
-    let bytes = http_body_util::BodyExt::collect(body)
-        .await
-        .map(http_body_util::Collected::to_bytes)
-        .unwrap_or_default();
-    let target = parts
-        .uri
-        .path_and_query()
-        .map_or("/", http::uri::PathAndQuery::as_str)
-        .to_owned();
-    let mut upstream = recorder.client.request(
-        parts.method.clone(),
-        format!("{}{target}", recorder.upstream),
-    );
-    for (name, value) in &parts.headers {
-        if name != CONTENT_LENGTH && name != CONNECTION && name != TRANSFER_ENCODING {
-            upstream = upstream.header(name, value);
-        }
-    }
-    let Ok(answered) = upstream.body(bytes).send().await else {
-        return Response::builder()
-            .status(StatusCode::BAD_GATEWAY)
-            .body(Body::empty())
-            .unwrap_or_default();
-    };
-    let mut response = Response::builder().status(answered.status());
-    for (name, value) in answered.headers() {
-        if name != CONNECTION && name != TRANSFER_ENCODING {
-            response = response.header(name, value);
-        }
-    }
-    let payload = answered.bytes().await.unwrap_or_default();
-    recorder
-        .seen
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner)
-        .push(Seen {
-            method: parts.method.to_string(),
-            target,
-            range: parts
-                .headers
-                .get("range")
-                .and_then(|value| value.to_str().ok())
-                .map(str::to_owned),
-            served: Some(payload.len() as u64),
-        });
-    response.body(Body::from(payload)).unwrap_or_default()
-}
 
 struct Rig {
     _root: TempDir,

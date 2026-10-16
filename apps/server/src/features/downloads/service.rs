@@ -75,6 +75,13 @@ pub enum Delivery {
     Content(Content),
 }
 
+pub(super) struct Plan {
+    pub content_type: String,
+    pub disposition: DispositionType,
+    pub redirect: bool,
+    pub max_length: Option<u64>,
+}
+
 impl DownloadService {
     pub fn new(pools: DbPools, storage: Arc<dyn StorageProvider>) -> Self {
         Self {
@@ -85,7 +92,27 @@ impl DownloadService {
     }
 
     pub async fn deliver(&self, request: DownloadRequest<'_>) -> Result<Delivery, DownloadError> {
-        let stored = self.resolve(request.owner, request.file).await?;
+        let requested = request.disposition;
+        self.serve(request.owner, request.file, request.headers, |stored| {
+            let content_type = served_content_type(&stored.mime_type).to_owned();
+            Ok(Plan {
+                disposition: effective_disposition(requested, &content_type),
+                content_type,
+                redirect: true,
+                max_length: None,
+            })
+        })
+        .await
+    }
+
+    pub(super) async fn serve(
+        &self,
+        owner: UserId,
+        file: FileId,
+        headers: &HeaderMap,
+        plan: impl FnOnce(&StoredFile) -> Result<Plan, DownloadError>,
+    ) -> Result<Delivery, DownloadError> {
+        let stored = self.resolve(owner, file).await?;
         let configured = self.storage.describe().provider.as_str();
         if stored.provider != configured {
             return Err(DownloadError::ProviderMismatch {
@@ -97,14 +124,11 @@ impl DownloadService {
             ObjectKey::parse(&stored.object_key).map_err(|_| DownloadError::CorruptRecord {
                 column: "object_key",
             })?;
-        let content_type = served_content_type(&stored.mime_type).to_owned();
-        let disposition = ContentDisposition::new(
-            effective_disposition(request.disposition, &content_type),
-            &stored.name,
-        );
+        let plan = plan(&stored)?;
+        let content_type = plan.content_type;
+        let disposition = ContentDisposition::new(plan.disposition, &stored.name);
 
-        let headers = request.headers;
-        let can_redirect = self.storage.as_presign().is_some();
+        let can_redirect = plan.redirect && self.storage.as_presign().is_some();
         let has_validator_request = headers.contains_key(IF_NONE_MATCH);
         let provider_cannot_decide = headers.contains_key(RANGE) && headers.contains_key(IF_RANGE);
 
@@ -124,7 +148,7 @@ impl DownloadService {
 
         let stat = match self.storage.stat(&key).await {
             Ok(stat) => stat,
-            Err(error) => return Err(self.read_failure(request.owner, request.file, error).await),
+            Err(error) => return Err(self.read_failure(owner, file, error).await),
         };
         if stat.size != stored.size_bytes {
             return Err(DownloadError::SizeMismatch {
@@ -147,6 +171,21 @@ impl DownloadService {
             etag,
             modified_at: stat.modified_at,
         };
+        let decision = http_range::decide(
+            single_header(headers, &RANGE),
+            if_range,
+            CurrentValidators {
+                etag: Some(current_tag.as_str()),
+                last_modified: Some(stat.modified_at),
+            },
+            stat.size,
+        );
+        if let (Some(limit), Some(length)) = (plan.max_length, decided_length(&decision, stat.size))
+        {
+            if length > limit {
+                return Err(DownloadError::PreviewTooLarge { limit });
+            }
+        }
         let tags = [Some(representation.etag.as_str()), provider_tag.as_deref()];
         if tags
             .into_iter()
@@ -157,15 +196,6 @@ impl DownloadService {
             return Ok(Delivery::NotModified(representation));
         }
 
-        let decision = http_range::decide(
-            single_header(headers, &RANGE),
-            if_range,
-            CurrentValidators {
-                etag: Some(current_tag.as_str()),
-                last_modified: Some(stat.modified_at),
-            },
-            stat.size,
-        );
         let range = match decision {
             RangeDecision::Full => None,
             RangeDecision::Partial(range) => Some(range),
@@ -205,7 +235,7 @@ impl DownloadService {
         };
         let (opened, body) = match opening {
             Ok(opened) => opened,
-            Err(error) => return Err(self.read_failure(request.owner, request.file, error).await),
+            Err(error) => return Err(self.read_failure(owner, file, error).await),
         };
         if opened.size != stat.size {
             return Err(DownloadError::SizeMismatch {
@@ -283,6 +313,14 @@ impl DownloadService {
             }
         }
         failure
+    }
+}
+
+fn decided_length(decision: &RangeDecision, size: u64) -> Option<u64> {
+    match decision {
+        RangeDecision::Full => Some(size),
+        RangeDecision::Partial(range) => Some(range.length()),
+        RangeDecision::Unsatisfiable(_) => None,
     }
 }
 

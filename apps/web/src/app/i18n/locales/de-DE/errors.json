@@ -55,6 +55,8 @@
     "folderDeleting": "Dieser Ordner wird gerade gelöscht.",
     "batchDeleteFailed": "Keines der ausgewählten Elemente konnte gelöscht werden.",
     "rangeNotSatisfiable": "Der angeforderte Teil der Datei ist nicht verfügbar. Starte den Download erneut.",
+    "previewUnsupported": "Dieser Dateityp kann nicht in der Vorschau angezeigt werden. Lade ihn herunter, um ihn zu öffnen.",
+    "previewTooLarge": "Diese Datei ist für die Vorschau zu groß. Lade sie herunter, um sie vollständig zu sehen.",
     "storageUnavailable": "Der Dateispeicher ist vorübergehend nicht verfügbar. Versuche es später erneut.",
     "storageFull": "Der Speicher des Servers ist voll. Wende dich an deine Administration.",
     "quotaExceeded": "Das würde dein Speicherkontingent überschreiten. Gib Speicherplatz frei oder bitte deine Administration, es zu erhöhen.",

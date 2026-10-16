@@ -55,6 +55,8 @@
     "folderDeleting": "Esta pasta está sendo excluída.",
     "batchDeleteFailed": "Nenhum dos itens selecionados pôde ser excluído.",
     "rangeNotSatisfiable": "A parte solicitada do arquivo não está disponível. Inicie o download novamente.",
+    "previewUnsupported": "Este tipo de arquivo não pode ser visualizado. Baixe-o para abri-lo.",
+    "previewTooLarge": "Este arquivo é grande demais para visualizar. Baixe-o para ver tudo.",
     "storageUnavailable": "O armazenamento de arquivos está temporariamente indisponível. Tente novamente mais tarde.",
     "storageFull": "O armazenamento do servidor está cheio. Entre em contato com o administrador.",
     "quotaExceeded": "Isso excederia a sua cota de armazenamento. Libere espaço ou peça ao administrador para aumentá-la.",

@@ -13,6 +13,10 @@ use super::model::{
     effective_disposition, inline_is_safe, parse_disposition, served_content_type, EntityTag,
     CHUNK_BYTES, DOWNLOAD_CONCURRENCY, DOWNLOAD_IDLE_TIMEOUT, PRESIGN_TTL,
 };
+use super::preview::{
+    classify, PreviewKind, PreviewVerdict, TEXT_PREVIEW_CONTENT_TYPE, TEXT_PREVIEW_MAX_BYTES,
+    TEXT_PREVIEW_PREFIX_BYTES,
+};
 use super::stream::{ContentStream, DownloadPermits};
 use crate::domain::content_disposition::DispositionType;
 use crate::domain::error_code::ErrorCode;
@@ -351,6 +355,7 @@ fn unit_download_sources_never_materialise_a_whole_object() {
         ("stream.rs", include_str!("stream.rs")),
         ("routes.rs", include_str!("routes.rs")),
         ("model.rs", include_str!("model.rs")),
+        ("preview.rs", include_str!("preview.rs")),
     ] {
         for forbidden in [
             "tokio::fs::read",
@@ -683,4 +688,137 @@ async fn unit_download_blocked_producer_is_not_retained_after_the_client_leaves(
     );
     assert_eq!(pool.available(), 1);
     assert!(!alive());
+}
+
+#[test]
+fn unit_preview_limits_match_the_documented_contract() {
+    assert_eq!(TEXT_PREVIEW_PREFIX_BYTES, 524_288);
+    assert_eq!(TEXT_PREVIEW_MAX_BYTES, 5 * 1024 * 1024);
+    assert_eq!(TEXT_PREVIEW_CONTENT_TYPE, "text/plain; charset=utf-8");
+}
+
+#[rstest]
+#[case::png("image/png", PreviewKind::Image, "image/png")]
+#[case::jpeg("image/jpeg", PreviewKind::Image, "image/jpeg")]
+#[case::webp("image/webp", PreviewKind::Image, "image/webp")]
+#[case::gif("image/gif", PreviewKind::Image, "image/gif")]
+#[case::avif("image/avif", PreviewKind::Image, "image/avif")]
+#[case::mp4("video/mp4", PreviewKind::Video, "video/mp4")]
+#[case::webm("video/webm", PreviewKind::Video, "video/webm")]
+#[case::mp3("audio/mpeg", PreviewKind::Audio, "audio/mpeg")]
+#[case::ogg("audio/ogg", PreviewKind::Audio, "audio/ogg")]
+#[case::wav("audio/wav", PreviewKind::Audio, "audio/wav")]
+#[case::pdf("application/pdf", PreviewKind::Pdf, "application/pdf")]
+#[case::plain("text/plain", PreviewKind::Text, TEXT_PREVIEW_CONTENT_TYPE)]
+#[case::plain_charset(
+    "text/plain; charset=iso-8859-1",
+    PreviewKind::Text,
+    TEXT_PREVIEW_CONTENT_TYPE
+)]
+#[case::upper("TEXT/Plain", PreviewKind::Text, TEXT_PREVIEW_CONTENT_TYPE)]
+#[case::json("application/json", PreviewKind::Text, TEXT_PREVIEW_CONTENT_TYPE)]
+#[case::json_suffix("application/ld+json", PreviewKind::Text, TEXT_PREVIEW_CONTENT_TYPE)]
+#[case::markdown("text/markdown", PreviewKind::Text, TEXT_PREVIEW_CONTENT_TYPE)]
+#[case::rust("text/x-rust", PreviewKind::Text, TEXT_PREVIEW_CONTENT_TYPE)]
+#[case::javascript("text/javascript", PreviewKind::Text, TEXT_PREVIEW_CONTENT_TYPE)]
+#[case::app_javascript("application/javascript", PreviewKind::Text, TEXT_PREVIEW_CONTENT_TYPE)]
+#[case::shell("application/x-sh", PreviewKind::Text, TEXT_PREVIEW_CONTENT_TYPE)]
+fn unit_preview_safe_types_are_served_inline_with_a_fixed_type(
+    #[case] stored: &str,
+    #[case] kind: PreviewKind,
+    #[case] served: &str,
+) {
+    assert_eq!(
+        classify(stored),
+        PreviewVerdict::Inline {
+            kind,
+            content_type: served.to_owned()
+        },
+        "{stored}"
+    );
+}
+
+#[rstest]
+#[case::svg("image/svg+xml")]
+#[case::svg_upper("IMAGE/SVG+XML")]
+#[case::html("text/html")]
+#[case::html_charset("text/html; charset=utf-8")]
+#[case::xhtml("application/xhtml+xml")]
+#[case::text_xml("text/xml")]
+#[case::app_xml("application/xml")]
+#[case::atom("application/atom+xml")]
+#[case::rss("application/rss+xml")]
+#[case::mathml("application/mathml+xml")]
+#[case::vendor_xml("application/vnd.custom+xml")]
+fn unit_preview_active_markup_is_refused_as_unsafe(#[case] stored: &str) {
+    assert_eq!(classify(stored), PreviewVerdict::Unsafe, "{stored}");
+}
+
+#[rstest]
+#[case::octet("application/octet-stream")]
+#[case::zip("application/zip")]
+#[case::garbage("not a mime")]
+#[case::empty("")]
+#[case::wildcard_image("image/*")]
+#[case::wildcard_text("text/*")]
+#[case::unknown_image("image/x-unknown")]
+#[case::unknown_text("text/x-unknown")]
+#[case::unknown_video("video/x-unknown")]
+#[case::cache_manifest("text/cache-manifest")]
+#[case::component("text/x-component")]
+#[case::injection("text/plain\r\nX-Evil: 1")]
+#[case::flash("application/x-shockwave-flash")]
+#[case::msdownload("application/x-msdownload")]
+fn unit_preview_unknown_and_binary_types_are_unsupported(#[case] stored: &str) {
+    assert_eq!(classify(stored), PreviewVerdict::Unsupported, "{stored:?}");
+}
+
+#[test]
+fn unit_preview_route_declares_its_byte_path_policy() {
+    use crate::app::auth_class::AuthClass;
+    use crate::app::router::{
+        application_routes, Deadline, RateLimitClass, ResponseEncoding, Transport,
+    };
+
+    let inventory = application_routes().build().unwrap().inventory;
+    let entry = inventory
+        .get(&http::Method::GET, "/api/v1/files/{id}/preview")
+        .expect("the preview route is registered");
+    let policy = entry.policy();
+    assert_eq!(policy.auth(), AuthClass::Authenticated);
+    assert_eq!(policy.rate_limit(), RateLimitClass::TransferData);
+    let Transport::BytePath(path) = policy.transport() else {
+        panic!("a preview is a byte path");
+    };
+    assert!(path.declares_opt_out());
+    assert_eq!(
+        policy.transport().response_encoding(),
+        ResponseEncoding::Identity
+    );
+    assert_eq!(policy.transport().deadline(), Deadline::IdleOnly);
+    let layers = entry.layers();
+    assert!(!layers.compresses_response());
+    assert_eq!(layers.deadline(), None);
+}
+
+#[test]
+fn unit_preview_errors_use_the_catalogue_with_structured_details() {
+    let unsupported = DownloadError::PreviewUnsupported {
+        reason: "unsafe_content",
+    }
+    .api_error();
+    assert_eq!(unsupported.code(), ErrorCode::PreviewUnsupported);
+    assert_eq!(
+        unsupported.status(),
+        http::StatusCode::UNSUPPORTED_MEDIA_TYPE
+    );
+    assert!(!unsupported.retryable());
+    let too_large = DownloadError::PreviewTooLarge {
+        limit: TEXT_PREVIEW_MAX_BYTES,
+    }
+    .api_error();
+    assert_eq!(too_large.code(), ErrorCode::PreviewTooLarge);
+    assert_eq!(too_large.status(), http::StatusCode::PAYLOAD_TOO_LARGE);
+    assert!(!too_large.retryable());
+    assert_eq!(too_large.details().len(), 2);
 }

@@ -55,6 +55,8 @@
     "folderDeleting": "此文件夹正在被删除。",
     "batchDeleteFailed": "所选项目均无法删除。",
     "rangeNotSatisfiable": "所请求的文件部分不可用。请重新开始下载。",
+    "previewUnsupported": "无法预览此类文件。请下载后打开。",
+    "previewTooLarge": "此文件太大，无法预览。请下载后查看完整内容。",
     "storageUnavailable": "文件存储暂时不可用。请稍后重试。",
     "storageFull": "服务器存储空间已满。请联系管理员。",
     "quotaExceeded": "此操作将超出您的存储配额。请释放空间，或请管理员提高配额。",

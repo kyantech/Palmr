@@ -92,6 +92,8 @@ export const RETRY_CLASS: Readonly<Record<ErrorCode, RetryClass>> = {
   FOLDER_CYCLE: "never",
   FOLDER_DELETING: "never",
   RANGE_NOT_SATISFIABLE: "never",
+  PREVIEW_UNSUPPORTED: "never",
+  PREVIEW_TOO_LARGE: "never",
   QUOTA_EXCEEDED: "never",
   FILE_TOO_LARGE: "never",
   TRANSFER_SESSION_NOT_FOUND: "never",

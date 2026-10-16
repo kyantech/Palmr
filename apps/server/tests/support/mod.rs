@@ -9,6 +9,7 @@ mod rng;
 pub mod schema;
 mod service;
 pub mod statements;
+pub mod tap;
 pub mod transfer_errors;
 pub mod tus;
 

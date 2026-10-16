@@ -157,6 +157,10 @@ pub fn content_path(file_id: &str) -> String {
     format!("/api/v1/files/{file_id}/content")
 }
 
+pub fn preview_path(file_id: &str) -> String {
+    format!("/api/v1/files/{file_id}/preview")
+}
+
 pub async fn upload_local(world: &TusWorld, name: &str, size: u64) -> Result<String> {
     let upload = world.upload(name, size).await?;
     let mut patch = world.open(&upload, 0, None).await?;
@@ -362,12 +366,15 @@ pub async fn read_head(stream: &mut TcpStream) -> Result<(Head, Vec<u8>)> {
 }
 
 pub async fn raw_get(base: &Url, file: &str, creds: &Creds, extra: &str) -> Result<TcpStream> {
+    raw_get_path(base, &content_path(file), creds, extra).await
+}
+
+pub async fn raw_get_path(base: &Url, path: &str, creds: &Creds, extra: &str) -> Result<TcpStream> {
     let host = base.host_str().context("host")?;
     let port = base.port().context("port")?;
     let mut stream = TcpStream::connect((host, port)).await?;
     let request = format!(
-        "GET {} HTTP/1.1\r\nHost: {host}:{port}\r\nCookie: palmr_session={}; palmr_csrf={}\r\n{extra}\r\n",
-        content_path(file),
+        "GET {path} HTTP/1.1\r\nHost: {host}:{port}\r\nCookie: palmr_session={}; palmr_csrf={}\r\n{extra}\r\n",
         creds.session,
         creds.csrf,
     );

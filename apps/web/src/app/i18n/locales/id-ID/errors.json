@@ -55,6 +55,8 @@
     "folderDeleting": "Folder ini sedang dihapus.",
     "batchDeleteFailed": "Tidak ada item terpilih yang dapat dihapus.",
     "rangeNotSatisfiable": "Bagian file yang diminta tidak tersedia. Mulai ulang unduhan.",
+    "previewUnsupported": "Jenis berkas ini tidak dapat dipratinjau. Unduh untuk membukanya.",
+    "previewTooLarge": "Berkas ini terlalu besar untuk dipratinjau. Unduh untuk melihat seluruhnya.",
     "storageUnavailable": "Penyimpanan file untuk sementara tidak tersedia. Coba lagi nanti.",
     "storageFull": "Penyimpanan server penuh. Hubungi administrator.",
     "quotaExceeded": "Ini akan melebihi kuota penyimpanan Anda. Kosongkan ruang atau minta administrator untuk menaikkannya.",

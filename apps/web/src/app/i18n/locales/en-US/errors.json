@@ -55,6 +55,8 @@
     "folderDeleting": "This folder is being deleted.",
     "batchDeleteFailed": "None of the selected items could be deleted.",
     "rangeNotSatisfiable": "The requested part of the file isn't available. Start the download again.",
+    "previewUnsupported": "This file type can't be previewed. Download it to open it.",
+    "previewTooLarge": "This file is too large to preview. Download it to see all of it.",
     "storageUnavailable": "File storage is temporarily unavailable. Try again later.",
     "storageFull": "The server's storage is full. Contact your administrator.",
     "quotaExceeded": "This would exceed your storage quota. Free up space or ask your administrator to raise it.",

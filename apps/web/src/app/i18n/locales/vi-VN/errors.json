@@ -55,6 +55,8 @@
     "folderDeleting": "Thư mục này đang được xóa.",
     "batchDeleteFailed": "Không thể xóa bất kỳ mục nào đã chọn.",
     "rangeNotSatisfiable": "Phần tệp được yêu cầu không khả dụng. Hãy bắt đầu tải xuống lại.",
+    "previewUnsupported": "Không thể xem trước loại tệp này. Hãy tải xuống để mở.",
+    "previewTooLarge": "Tệp này quá lớn để xem trước. Hãy tải xuống để xem toàn bộ.",
     "storageUnavailable": "Kho lưu trữ tệp tạm thời không khả dụng. Hãy thử lại sau.",
     "storageFull": "Bộ nhớ lưu trữ của máy chủ đã đầy. Hãy liên hệ quản trị viên.",
     "quotaExceeded": "Thao tác này sẽ vượt quá hạn mức lưu trữ của bạn. Hãy giải phóng dung lượng hoặc nhờ quản trị viên tăng hạn mức.",
