@@ -1,0 +1,79 @@
+---
+source: apps/server/src/features/downloads/zip/tests/names.rs
+---
+== segment sanitization
+"../secret.txt" -> ".._secret.txt"
+"../../etc/passwd" -> ".._.._etc_passwd"
+"/absolute/file.txt" -> "_absolute_file.txt"
+"C:\\windows\\file.txt" -> "C__windows_file.txt"
+"C:/windows/file.txt" -> "C__windows_file.txt"
+"\\\\server\\share\\file.txt" -> "__server_share_file.txt"
+"./report.txt" -> "._report.txt"
+"folder/../report.txt" -> "folder_.._report.txt"
+"folder//report.txt" -> "folder__report.txt"
+"folder\\report.txt" -> "folder_report.txt"
+"." -> "_"
+".." -> "_"
+"..." -> "_"
+"" -> "_"
+"   " -> "_"
+"report.pdf." -> "report.pdf"
+"  padded  " -> "padded"
+".hidden" -> ".hidden"
+"nul\0byte" -> "nul_byte"
+"cr\rlf\n" -> "cr_lf_"
+"tab\there" -> "tab_here"
+"\u{202e}gpj.exe" -> "_gpj.exe"
+"full／width" -> "full_width"
+"division∕slash" -> "division∕slash"
+"quote\"semi;comma," -> "quote\"semi;comma,"
+"Relatório.pdf" -> "Relatório.pdf"
+"Relato\u{301}rio.pdf" -> "Relatório.pdf"
+"年度報告書.pdf" -> "年度報告書.pdf"
+"تقرير.pdf" -> "تقرير.pdf"
+"📦 backup.zip" -> "📦 backup.zip"
+"e\u{301}\u{302}.txt" -> "é\u{302}.txt"
+== same name in different folders
+dir  parent=-  "alpha" -> "alpha" [6]
+dir  parent=-  "beta" -> "beta" [5]
+file parent=0  "report.pdf" -> "alpha/report.pdf" [16]
+file parent=1  "report.pdf" -> "beta/report.pdf" [15]
+== identical names in one folder
+file parent=-  "report.pdf" -> "report.pdf" [10]
+file parent=-  "report (1).pdf" -> "report (1).pdf" [14]
+file parent=-  "report.pdf" -> "report (2).pdf" [14]
+file parent=-  "report.pdf" -> "report (3).pdf" [14]
+file parent=-  "archive.tar.gz" -> "archive.tar.gz" [14]
+file parent=-  "archive.tar.gz" -> "archive.tar (1).gz" [18]
+file parent=-  "README" -> "README" [6]
+file parent=-  "README" -> "README (1)" [10]
+file parent=-  ".env" -> ".env" [4]
+file parent=-  ".env" -> ".env (1)" [8]
+== case and normalization
+file parent=-  "Report.pdf" -> "Report.pdf" [10]
+file parent=-  "report.PDF" -> "report (1).PDF" [14]
+file parent=-  "café.txt" -> "café.txt" [9]
+file parent=-  "cafe\u{301}.txt" -> "café (1).txt" [13]
+file parent=-  "ﬁle.txt" -> "ﬁle.txt" [9]
+file parent=-  "file.txt" -> "file (1).txt" [12]
+== files and directories share a namespace
+file parent=-  "docs" -> "docs" [4]
+dir  parent=-  "docs" -> "docs (1)" [9]
+file parent=1  "report.pdf" -> "docs (1)/report.pdf" [19]
+dir  parent=-  "Docs" -> "Docs (2)" [9]
+file parent=3  "report.pdf" -> "Docs (2)/report.pdf" [19]
+file parent=3  "report.pdf" -> "Docs (2)/report (1).pdf" [23]
+== collisions after sanitization
+file parent=-  "a/b" -> "a_b" [3]
+file parent=-  "a_b" -> "a_b (1)" [7]
+file parent=-  "a\\b" -> "a_b (2)" [7]
+file parent=-  "a:b" -> "a_b (3)" [7]
+file parent=-  "" -> "_" [1]
+file parent=-  ".." -> "_ (1)" [5]
+file parent=-  "report.pdf" -> "report.pdf" [10]
+file parent=-  "report.pdf." -> "report (1).pdf" [14]
+== long names
+file parent=-  <324 bytes> -> "longlonglonglonglonglong…glonglonglonglonglon.txt (255 bytes)" [255]
+file parent=-  <324 bytes> -> "longlonglonglonglonglong…glonglonglonglon (1).txt (255 bytes)" [255]
+file parent=-  <364 bytes> -> "年年年年年年年年年年年年年年年年年年年年年年年年…年年年年年年年年年年年年年年年年年年年年.txt (253 bytes)" [253]
+file parent=-  <364 bytes> -> "年年年年年年年年年年年年年年年年年年年年年年年年…年年年年年年年年年年年年年年年年 (1).txt (254 bytes)" [254]

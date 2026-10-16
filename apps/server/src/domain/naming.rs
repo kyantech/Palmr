@@ -113,7 +113,7 @@ impl NameSeries {
     }
 }
 
-fn split_extension(name: &str) -> (&str, &str) {
+pub(crate) fn split_extension(name: &str) -> (&str, &str) {
     match name.rfind('.') {
         Some(index) if index > 0 && index + 1 < name.len() => name.split_at(index),
         Some(index) if index > 0 => (&name[..index], ""),
@@ -121,7 +121,7 @@ fn split_extension(name: &str) -> (&str, &str) {
     }
 }
 
-fn truncate_to_boundary(text: &str, budget: usize) -> &str {
+pub(crate) fn truncate_to_boundary(text: &str, budget: usize) -> &str {
     let mut end = budget.min(text.len());
     while !text.is_char_boundary(end) {
         end -= 1;
