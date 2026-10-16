@@ -54,6 +54,15 @@ impl PresignStorage for S3Provider {
 }
 
 impl S3Provider {
+    #[cfg(feature = "e2e-fixture")]
+    #[must_use]
+    pub fn without_presigned_get(mut self) -> Self {
+        self.limits.supports_presigned_get = false;
+        self.caps = super::provider::capabilities(&self.limits);
+        self.verified_caps = std::sync::OnceLock::new();
+        self
+    }
+
     pub(super) async fn sign_upload_parts(
         &self,
         handle: &MultipartHandle,

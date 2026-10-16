@@ -47,6 +47,7 @@ use crate::features::auth::sessions::SessionService;
 use crate::features::auth::totp::TotpService;
 use crate::features::auth::AuthService;
 use crate::features::branding::BrandingService;
+use crate::features::downloads::DownloadService;
 use crate::features::email::{self, EmailService, SmtpTransport};
 use crate::features::files::FileService;
 use crate::features::folders::delete::{self as folder_deletion, DeleteTreeContext};
@@ -870,6 +871,7 @@ async fn initialize(
         Arc::clone(&email_keys),
         audit_service.clone(),
     );
+    let downloads = DownloadService::new(database.pools().clone(), Arc::clone(&provider));
     let uploads_stop = CancellationToken::new();
     let finalizer = Finalizer::new(FinalizerParts {
         pools: database.pools().clone(),
@@ -990,6 +992,7 @@ async fn initialize(
         admin_users,
         folders,
         files,
+        downloads,
         transfers,
         s3,
         tus,
@@ -1346,6 +1349,7 @@ struct RequestServices {
     admin_users: AdminUserService,
     folders: FolderService,
     files: FileService,
+    downloads: DownloadService,
     transfers: TransferService,
     s3: S3Service,
     tus: TusService,
@@ -1390,6 +1394,7 @@ fn composed_router(
             .layer(axum::Extension(services.admin_users))
             .layer(axum::Extension(services.folders))
             .layer(axum::Extension(services.files))
+            .layer(axum::Extension(services.downloads))
             .layer(axum::Extension(services.transfers))
             .layer(axum::Extension(services.s3))
             .layer(axum::Extension(services.tus))

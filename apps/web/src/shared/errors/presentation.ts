@@ -137,6 +137,7 @@ export const ERROR_PRESENTATION: Readonly<Record<ErrorCode, ErrorPresentation>> 
   TRANSFER_BACKPRESSURE: entry("message.transferBackpressure", toast("info", true)),
   STORAGE_UNAVAILABLE: entry("message.storageUnavailable", modal(true)),
   STORAGE_UPSTREAM_ERROR: entry("message.storageUnavailable", modal(true)),
+  STORAGE_OBJECT_MISSING: entry("message.storageUnavailable", modal(true)),
   STORAGE_FULL: entry("message.storageFull", modal(true)),
   STORAGE_WRITE_FAILED: entry("message.storageWriteFailed", modal(true)),
   TRANSFER_IDLE_TIMEOUT: entry("message.transferIdleTimeout", toast("warning", true)),

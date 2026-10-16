@@ -19,6 +19,7 @@ export const RETRY_CLASS: Readonly<Record<ErrorCode, RetryClass>> = {
   DATABASE_BUSY: "serverFault",
   STORAGE_UNAVAILABLE: "serverFault",
   STORAGE_UPSTREAM_ERROR: "serverFault",
+  STORAGE_OBJECT_MISSING: "serverFault",
   STORAGE_FULL: "serverFault",
   STORAGE_WRITE_FAILED: "serverFault",
   TRANSFER_IDLE_TIMEOUT: "transient",

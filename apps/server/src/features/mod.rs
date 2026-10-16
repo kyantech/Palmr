@@ -12,6 +12,7 @@ pub mod audit;
 )]
 pub mod auth;
 pub mod branding;
+pub mod downloads;
 #[allow(
     dead_code,
     reason = "the transport trait, producers and template seams are consumed as features request mail"

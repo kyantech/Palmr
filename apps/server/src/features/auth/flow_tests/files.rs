@@ -1140,6 +1140,12 @@ fn unit_file_routes_are_declared_with_their_classes() {
             AuthClass::Authenticated,
             RateLimitClass::Write,
         ),
+        (
+            Method::GET,
+            format!("{FILES}/{{id}}/content"),
+            AuthClass::Authenticated,
+            RateLimitClass::TransferData,
+        ),
     ];
     let order = |entry: &(Method, String, AuthClass, RateLimitClass)| {
         (entry.1.clone(), entry.0.to_string())
@@ -1148,7 +1154,7 @@ fn unit_file_routes_are_declared_with_their_classes() {
     declared.sort_by_key(order);
     assert_eq!(
         declared, expected,
-        "no content, preview or thumbnail route belongs to this task"
+        "no preview or thumbnail route belongs to this task"
     );
 }
 
@@ -1171,7 +1177,6 @@ async fn it_file_static_routes_are_not_swallowed_by_the_id_route() {
     assert_code(&batch, StatusCode::NOT_FOUND, "FILE_NOT_FOUND");
     assert!(batch.json()["error"]["code"] != "METHOD_NOT_ALLOWED");
     for (method, path) in [
-        (Method::GET, format!("{FILES}/{}/content", stack.fresh_id())),
         (Method::GET, format!("{FILES}/{}/preview", stack.fresh_id())),
         (
             Method::GET,

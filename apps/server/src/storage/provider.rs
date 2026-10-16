@@ -17,6 +17,8 @@ use super::key::ObjectKey;
 use super::staging::StagingStorage;
 use super::ProviderKind;
 
+mod grant;
+
 pub type ObjectBody = Pin<Box<dyn AsyncRead + Send>>;
 
 pub const MAX_LIST_PAGE_SIZE: u32 = 1_000;

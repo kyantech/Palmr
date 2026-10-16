@@ -176,6 +176,10 @@ impl ByteRangeSpec {
     }
 }
 
+pub fn format_http_date(at: OffsetDateTime) -> Option<String> {
+    at.to_offset(time::UtcOffset::UTC).format(IMF_FIXDATE).ok()
+}
+
 pub fn if_range_matches(validator: &[u8], current: CurrentValidators<'_>) -> bool {
     let Ok(validator) = std::str::from_utf8(trim_ows(validator)) else {
         return false;
@@ -479,6 +483,109 @@ mod tests {
             CurrentValidators::default()
         ));
         assert!(!if_range_matches(&[0xff, b'"'], CURRENT));
+    }
+
+    #[test]
+    fn unit_range_overflow_handling() {
+        let edges = [0, 1, 2, u64::MAX / 2, u64::MAX - 1, u64::MAX];
+        let mut resolved = 0_u32;
+        for &first in &edges {
+            for &last in &edges {
+                for &size in &edges {
+                    for header in [
+                        format!("bytes={first}-{last}"),
+                        format!("bytes={first}-"),
+                        format!("bytes=-{first}"),
+                    ] {
+                        match decide(Some(header.as_bytes()), None, CURRENT, size) {
+                            RangeDecision::Partial(range) => {
+                                resolved += 1;
+                                assert!(range.start() <= range.end_inclusive(), "{header}/{size}");
+                                assert!(range.end_inclusive() < size, "{header}/{size}");
+                                assert_eq!(
+                                    range.length(),
+                                    range.end_inclusive() - range.start() + 1,
+                                    "{header}/{size}"
+                                );
+                            }
+                            RangeDecision::Unsatisfiable(unsatisfied) => {
+                                assert_eq!(unsatisfied.size(), size, "{header}/{size}");
+                            }
+                            RangeDecision::Full => {}
+                        }
+                    }
+                }
+            }
+        }
+        assert!(resolved > 0);
+        for huge in [
+            "bytes=18446744073709551616-",
+            "bytes=0-99999999999999999999999",
+            "bytes=-18446744073709551616",
+            "bytes=99999999999999999999999999999999-1",
+        ] {
+            assert_eq!(
+                decide(Some(huge.as_bytes()), None, CURRENT, 10),
+                RangeDecision::Full
+            );
+        }
+    }
+
+    #[test]
+    fn unit_zero_length_range_handling() {
+        for header in [
+            "bytes=0-",
+            "bytes=0-0",
+            "bytes=0-10",
+            "bytes=5-",
+            "bytes=-0",
+        ] {
+            match decide(Some(header.as_bytes()), None, CURRENT, 0) {
+                RangeDecision::Unsatisfiable(unsatisfied) => {
+                    assert_eq!(unsatisfied.content_range(), "bytes */0", "{header}");
+                }
+                other => panic!("{header} on an empty object: {other:?}"),
+            }
+        }
+        assert_eq!(
+            decide(Some(b"bytes=-5"), None, CURRENT, 0),
+            RangeDecision::Full
+        );
+        assert_eq!(decide(None, None, CURRENT, 0), RangeDecision::Full);
+    }
+
+    #[test]
+    fn unit_if_range_validator_rules() {
+        let strong = CurrentValidators {
+            etag: Some("\"abc\""),
+            last_modified: Some(datetime!(2026-09-25 10:15:30 UTC)),
+        };
+        let honoured = |if_range: &str| {
+            matches!(
+                decide(Some(b"bytes=0-3"), Some(if_range.as_bytes()), strong, 100),
+                RangeDecision::Partial(_)
+            )
+        };
+        assert!(honoured("\"abc\""));
+        assert!(honoured("  \"abc\"  "));
+        assert!(!honoured("\"abd\""));
+        assert!(!honoured("W/\"abc\""));
+        assert!(!honoured("abc"));
+        assert!(!honoured(""));
+        assert!(honoured("Fri, 25 Sep 2026 10:15:30 GMT"));
+        assert!(!honoured("Fri, 25 Sep 2026 10:15:31 GMT"));
+        let weak_current = CurrentValidators {
+            etag: Some("W/\"abc\""),
+            last_modified: None,
+        };
+        assert_eq!(
+            decide(Some(b"bytes=0-3"), Some(b"\"abc\""), weak_current, 100),
+            RangeDecision::Full
+        );
+        assert_eq!(
+            decide(Some(b"bytes=0-3"), Some(b"W/\"abc\""), weak_current, 100),
+            RangeDecision::Full
+        );
     }
 
     #[test]

@@ -150,6 +150,14 @@ impl MinioServer {
         }
     }
 
+    #[allow(
+        dead_code,
+        reason = "only the download process tests delete objects through the container"
+    )]
+    pub async fn remove_object(&self, bucket: &str, key: &str) -> Result<()> {
+        self.mc(&["rm", &format!("palmr/{bucket}/{key}")]).await
+    }
+
     async fn mc(&self, args: &[&str]) -> Result<()> {
         let mut command = vec!["mc", "--quiet"];
         command.extend_from_slice(args);

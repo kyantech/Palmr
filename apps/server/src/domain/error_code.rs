@@ -244,6 +244,8 @@ error_catalog! {
         "The storage backend refused access; an operator must fix its permissions";
     StorageSizeMismatch = "STORAGE_SIZE_MISMATCH", INTERNAL_SERVER_ERROR, retryable: false,
         "The stored object size does not match the expected size";
+    StorageObjectMissing = "STORAGE_OBJECT_MISSING", BAD_GATEWAY, retryable: true,
+        "The storage backend no longer holds the object this file references";
     SettingUnknown = "SETTING_UNKNOWN", UNPROCESSABLE_ENTITY, retryable: false,
         "The settings group has no such setting";
     SettingValueInvalid = "SETTING_VALUE_INVALID", UNPROCESSABLE_ENTITY, retryable: false,
@@ -410,6 +412,7 @@ mod tests {
                 "RATE_LIMITED",
                 "SERVICE_UNAVAILABLE",
                 "STORAGE_FULL",
+                "STORAGE_OBJECT_MISSING",
                 "STORAGE_UNAVAILABLE",
                 "STORAGE_UPSTREAM_ERROR",
                 "STORAGE_WRITE_FAILED",

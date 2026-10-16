@@ -23,6 +23,7 @@ use crate::domain::clock::Clock;
 use crate::domain::error_code::ErrorCode;
 use crate::features::auth;
 use crate::features::branding;
+use crate::features::downloads;
 use crate::features::files;
 use crate::features::folders;
 use crate::features::{identity_providers, settings, setup, transfers, users};
@@ -672,6 +673,7 @@ pub fn application_routes() -> Routes<AppState> {
         .merge(auth::trusted_devices::routes::routes())
         .merge(branding::routes::routes())
         .merge(files::routes::routes())
+        .merge(downloads::routes::routes())
         .merge(folders::routes::routes())
         .merge(identity_providers::routes::routes())
         .merge(identity_providers::link_routes::routes())

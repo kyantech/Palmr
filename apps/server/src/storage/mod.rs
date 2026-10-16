@@ -88,6 +88,12 @@ pub fn build_provider(
             let s3 = S3Provider::new(clients, config.upload_buffer_bytes, config.base_url.url())
                 .map_err(ProviderBuildError::S3Build)?
                 .with_clock(clock);
+            #[cfg(feature = "e2e-fixture")]
+            let s3 = if std::env::var("PALMR_E2E_S3_PRESIGNED_GET").as_deref() == Ok("off") {
+                s3.without_presigned_get()
+            } else {
+                s3
+            };
             Ok(Arc::new(s3))
         }
     }

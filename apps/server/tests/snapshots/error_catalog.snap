@@ -453,6 +453,11 @@ source: apps/server/src/domain/error_code.rs
     "retryable": true
   },
   {
+    "code": "STORAGE_OBJECT_MISSING",
+    "status": 502,
+    "retryable": true
+  },
+  {
     "code": "STORAGE_PERMISSION_DENIED",
     "status": 500,
     "retryable": false

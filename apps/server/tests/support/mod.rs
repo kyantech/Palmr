@@ -1,6 +1,7 @@
 mod application;
 pub mod checksum_gate;
 pub mod client;
+pub mod download;
 pub mod minio;
 pub mod mock_idp;
 mod process;
