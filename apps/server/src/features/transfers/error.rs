@@ -12,6 +12,7 @@ use crate::infra::http::idempotency::IdempotencyError;
 use crate::storage::error::StorageError;
 use crate::storage::lifecycle::LifecycleError;
 
+use super::classify::{classify_storage, StorageSite};
 use super::model::MAX_FILES_PER_SESSION;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -60,6 +61,7 @@ pub enum TransferError {
     MultipartAlreadyCompleted,
     MultipartIncomplete { missing: Vec<u32> },
     MultipartPartInvalid { reason: &'static str },
+    MultipartPartRejected,
     PresignBatchTooLarge,
     Recorded(ErrorCode),
     CompletionBusy,
@@ -90,6 +92,7 @@ impl TransferError {
             Self::MultipartAlreadyCompleted => "multipart_already_completed",
             Self::MultipartIncomplete { .. } => "multipart_incomplete",
             Self::MultipartPartInvalid { .. } => "multipart_part_invalid",
+            Self::MultipartPartRejected => "multipart_part_rejected",
             Self::PresignBatchTooLarge => "presign_batch_too_large",
             Self::Recorded(_) => "transfer_item_failed",
             Self::CompletionBusy => "transfer_completion_busy",
@@ -144,11 +147,15 @@ impl TransferError {
             Self::MultipartPartInvalid { reason } => {
                 ApiError::new(ErrorCode::MultipartPartInvalid).with_detail("reason", *reason)
             }
+            Self::MultipartPartRejected => ApiError::new(ErrorCode::MultipartPartRejected)
+                .with_detail("reason", "provider_rejected_part"),
             Self::PresignBatchTooLarge => ApiError::new(ErrorCode::PresignBatchTooLarge)
                 .with_detail("maxItems", i64::from(super::model::MAX_PRESIGN_BATCH)),
             Self::Recorded(code) => ApiError::new(*code),
             Self::CompletionBusy => ApiError::new(ErrorCode::TransferBackpressure),
-            Self::Storage(error) => ApiError::new(upstream_code(error)),
+            Self::Storage(error) => {
+                ApiError::new(classify_storage(error, StorageSite::S3Control).code)
+            }
             Self::Db(error) => ApiError::new(error.api_code()),
             Self::Idempotency(error) => ApiError::new(error.api_code()),
             Self::Lifecycle(_) | Self::Invariant { .. } | Self::Time(_) => ApiError::internal(),
@@ -190,6 +197,9 @@ impl fmt::Display for TransferError {
             Self::MultipartPartInvalid { reason } => {
                 write!(f, "a multipart part is not valid ({reason})")
             }
+            Self::MultipartPartRejected => {
+                f.write_str("the storage provider rejected the listed parts")
+            }
             Self::PresignBatchTooLarge => f.write_str("too many part URLs were requested"),
             Self::Recorded(code) => write!(f, "the transfer item failed ({})", code.as_str()),
             Self::CompletionBusy => f.write_str("the transfer item is still being completed"),
@@ -206,16 +216,6 @@ impl fmt::Display for TransferError {
 }
 
 impl std::error::Error for TransferError {}
-
-pub fn upstream_code(error: &StorageError) -> ErrorCode {
-    match error {
-        StorageError::ProviderUnavailable(_) | StorageError::Io(_) => ErrorCode::StorageUnavailable,
-        StorageError::S3(_) | StorageError::PermissionDenied | StorageError::NotFound => {
-            ErrorCode::StorageUpstreamError
-        }
-        other => other.api_code(),
-    }
-}
 
 impl From<StorageError> for TransferError {
     fn from(error: StorageError) -> Self {

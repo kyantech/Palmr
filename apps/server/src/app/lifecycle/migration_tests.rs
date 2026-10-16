@@ -70,6 +70,14 @@ fn with_file(mut files: Vec<(String, String)>, name: &str, sql: &str) -> Vec<(St
     files
 }
 
+fn latest_version() -> i64 {
+    MIGRATOR
+        .iter()
+        .map(|migration| migration.version)
+        .max()
+        .unwrap()
+}
+
 fn failure_line(error: &StartupError) -> String {
     let mut out = Vec::new();
     write_startup_failure(&mut out, error).unwrap();
@@ -82,9 +90,11 @@ fn failure_line(error: &StartupError) -> String {
     reason = "regression test names keep the upper-case catalogue identifier"
 )]
 async fn regression_R093_versioned_migrations_gate_startup() {
+    let latest = latest_version();
+    let next = latest + 1;
     let (_broken_dir, broken) = fixture_migrator(&with_file(
         embedded_files(),
-        "0011_partial_then_broken.sql",
+        &format!("{next:04}_partial_then_broken.sql"),
         "CREATE TABLE r093_partial (id INTEGER PRIMARY KEY);\n\
          INSERT INTO r093_partial (id) VALUES (1);\n\
          INSERT INTO r093_missing_table (id) VALUES (1);\n",
@@ -96,7 +106,9 @@ async fn regression_R093_versioned_migrations_gate_startup() {
     assert_eq!(error.code(), Some(STARTUP_MIGRATION_FAILED));
     let text = error.to_string();
     assert!(
-        text.starts_with("STARTUP_MIGRATION_FAILED: schema migration 11 (partial then broken)"),
+        text.starts_with(&format!(
+            "STARTUP_MIGRATION_FAILED: schema migration {next} (partial then broken)"
+        )),
         "{text}"
     );
     assert!(text.contains("r093_missing_table"), "{text}");
@@ -107,7 +119,7 @@ async fn regression_R093_versioned_migrations_gate_startup() {
         .into_iter()
         .map(|migration| migration.version)
         .collect();
-    assert_eq!(recorded, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    assert_eq!(recorded, (1..=latest).collect::<Vec<i64>>());
     assert!(!schema_objects(&mut connection)
         .await
         .iter()
@@ -174,7 +186,7 @@ async fn regression_R093_versioned_migrations_gate_startup() {
 
     let (_future_dir, future) = fixture_migrator(&with_file(
         embedded_files(),
-        "0011_future_release.sql",
+        &format!("{next:04}_future_release.sql"),
         "CREATE TABLE r093_future (id INTEGER PRIMARY KEY);\n",
     ))
     .await;
@@ -185,7 +197,9 @@ async fn regression_R093_versioned_migrations_gate_startup() {
     let text = error.to_string();
     assert!(text.starts_with("DB_SCHEMA_AHEAD_OF_BINARY: "), "{text}");
     assert!(
-        text.contains("records schema migration 11, which this Palmr binary does not contain (its latest is 10)"),
+        text.contains(&format!(
+            "records schema migration {next}, which this Palmr binary does not contain (its latest is {latest})"
+        )),
         "{text}"
     );
     let mut connection = raw_connection(ahead.path()).await;
@@ -194,7 +208,7 @@ async fn regression_R093_versioned_migrations_gate_startup() {
         .into_iter()
         .map(|migration| migration.version)
         .collect();
-    assert_eq!(recorded, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+    assert_eq!(recorded, (1..=next).collect::<Vec<i64>>());
     assert!(schema_objects(&mut connection)
         .await
         .iter()

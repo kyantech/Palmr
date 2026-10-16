@@ -636,7 +636,7 @@ impl TusService {
             StreamEnd::Idle => Err(TusError::IdleTimeout),
             StreamEnd::LeaseLost => Err(TusError::Locked),
             StreamEnd::ChecksumMismatch => Err(TusError::ChecksumMismatch { offset: plan.start }),
-            StreamEnd::WriteFailed => Err(TusError::WriteFailed),
+            StreamEnd::WriteFailed(fault) => Err(TusError::WriteFailed(fault)),
             StreamEnd::Gone => Err(TusError::Gone),
             StreamEnd::Internal(error) => Err(error),
             StreamEnd::Overrun => {
@@ -671,10 +671,7 @@ impl TusService {
         code: ErrorCode,
         request_id: Option<String>,
     ) {
-        let failure = ErrorParts {
-            code: code.as_str().to_owned(),
-            request_id,
-        };
+        let failure = ErrorParts::of(code, request_id.as_deref());
         if let Err(error) = self
             .transfers
             .fail_item(owner, plan.session, plan.item, failure)

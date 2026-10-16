@@ -352,13 +352,46 @@ async fn it_reaper_settles_each_item_share_once_and_keeps_a_retryable_hold() {
             alice.id,
             session.parse().unwrap(),
             items[3].parse().unwrap(),
-            ErrorParts {
-                code: "STORAGE_UNAVAILABLE".to_owned(),
-                request_id: None,
-            },
+            ErrorParts::of(
+                crate::domain::error_code::ErrorCode::StorageUnavailable,
+                None,
+            ),
         )
         .await
         .unwrap();
+    let states_before = rig.stack.item_states(&session).await;
+    for negotiation in [
+        crate::domain::error_code::ErrorCode::UploadLocked,
+        crate::domain::error_code::ErrorCode::UploadOffsetMismatch,
+        crate::domain::error_code::ErrorCode::TransferBackpressure,
+    ] {
+        let recorded = rig
+            .stack
+            .transfers
+            .fail_item(
+                alice.id,
+                session.parse().unwrap(),
+                items[1].parse().unwrap(),
+                ErrorParts::of(negotiation, None),
+            )
+            .await;
+        assert!(
+            matches!(
+                recorded,
+                Err(
+                    crate::features::transfers::error::TransferError::Invariant {
+                        what: "failure_code"
+                    }
+                )
+            ),
+            "{negotiation:?} is a retry signal, never a failed upload: {recorded:?}"
+        );
+    }
+    assert_eq!(
+        rig.stack.item_states(&session).await,
+        states_before,
+        "the refused recordings changed no item"
+    );
 
     let refused = rig
         .stack

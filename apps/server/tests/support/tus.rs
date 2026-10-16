@@ -270,13 +270,14 @@ impl TusWorld {
     }
 
     pub async fn blob_digest(&self, upload: &Upload) -> Result<(u64, Vec<u8>)> {
-        let path = if self.blob(upload).exists() {
-            self.blob(upload)
-        } else {
-            self.wait_finalized(upload).await?;
-            self.final_path(upload).await?
+        let mut file = match std::fs::File::open(self.blob(upload)) {
+            Ok(file) => file,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                self.wait_finalized(upload).await?;
+                std::fs::File::open(self.final_path(upload).await?)?
+            }
+            Err(error) => return Err(error.into()),
         };
-        let mut file = std::fs::File::open(path)?;
         let mut hasher = Sha256::new();
         let mut buffer = vec![0_u8; MIB as usize];
         let mut total = 0_u64;

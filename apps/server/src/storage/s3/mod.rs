@@ -325,6 +325,29 @@ pub(crate) fn service_code(error: &StorageError) -> Option<&str> {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ProviderFault {
+    Unreachable,
+    Timeout,
+    Upstream,
+}
+
+pub fn provider_fault(error: &StorageError) -> Option<ProviderFault> {
+    let StorageError::ProviderUnavailable(retryable) = error else {
+        return None;
+    };
+    let failure = Error::source(retryable).and_then(|source| source.downcast_ref::<S3Failure>())?;
+    Some(match &failure.failure {
+        Failure::Timeout => ProviderFault::Timeout,
+        Failure::Service { .. } => ProviderFault::Upstream,
+        Failure::Dispatch
+        | Failure::Response { .. }
+        | Failure::Construction
+        | Failure::MalformedResponse(_)
+        | Failure::InvalidRequest(_) => ProviderFault::Unreachable,
+    })
+}
+
 pub(crate) fn is_checksum_rejection(error: &StorageError) -> bool {
     matches!(
         service_code(error),

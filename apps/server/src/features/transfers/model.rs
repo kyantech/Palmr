@@ -269,10 +269,14 @@ pub fn wire_bytes(size: ByteSize) -> WireBytes {
     WireBytes::clamped(size).0
 }
 
+/// A classified failure that the server recorded durably, so a reload shows why a transfer failed.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct TransferItemError {
+    /// The stable catalogue code a client branches on.
     pub code: ErrorCode,
+    /// The `X-Request-Id` of the request that observed the failure. `null` when a background job
+    /// observed it: the server never invents a request id for work that had no request.
     #[schema(required = true)]
     pub request_id: Option<String>,
 }
@@ -322,6 +326,8 @@ pub struct TransferFileView {
     /// The resulting file. Non-null only once the item is `completed` and its file row exists.
     #[schema(required = true)]
     pub file_id: Option<String>,
+    /// The item's own recorded failure while it is `failed`; `null` otherwise, and cleared again
+    /// when the item is retried.
     #[schema(required = true)]
     pub error: Option<TransferItemError>,
     #[schema(minimum = 0)]
@@ -346,6 +352,8 @@ pub struct TransferSessionView {
     pub uploaded_bytes: WireBytes,
     /// The quota currently held for the unfinished files; `0` once the reservation settles.
     pub reserved_bytes: WireBytes,
+    /// The failure of the most recently failed item that is still failed, or an observed
+    /// `TRANSFER_SESSION_EXPIRED`. `null` when no item is failed; a succeeding sibling never erases it.
     #[schema(required = true)]
     pub error: Option<TransferItemError>,
     pub files: Vec<TransferFileView>,
@@ -367,6 +375,7 @@ pub struct TransferSessionSummary {
     pub file_count: u32,
     #[schema(minimum = 0)]
     pub completed_file_count: u32,
+    /// The session's recorded failure, as on the session detail.
     #[schema(required = true)]
     pub error: Option<TransferItemError>,
 }

@@ -115,6 +115,42 @@ impl Http {
         self.dispatch(method, path, proof, body, headers).await
     }
 
+    pub async fn send_bytes(
+        &self,
+        method: Method,
+        path: &str,
+        creds: &Creds,
+        headers: &[(&str, &str)],
+        body: Vec<u8>,
+    ) -> Result<Reply> {
+        let url = self.base.join(path.trim_start_matches('/'))?;
+        let mut request = self
+            .client
+            .request(method, url)
+            .header(ORIGIN, &self.origin)
+            .header(
+                COOKIE,
+                format!(
+                    "{SESSION_COOKIE}={}; {CSRF_COOKIE}={}",
+                    creds.session, creds.csrf
+                ),
+            )
+            .header(CSRF_HEADER, &creds.csrf);
+        for (name, value) in headers {
+            request = request.header(*name, *value);
+        }
+        let response = request.body(body).send().await.context("send request")?;
+        let status = response.status();
+        let headers = response.headers().clone();
+        let body = response.text().await.context("read response body")?;
+        Ok(Reply {
+            status,
+            body,
+            headers,
+            cookies: Vec::new(),
+        })
+    }
+
     pub async fn send_with_anonymous_csrf(
         &self,
         method: Method,

@@ -31,6 +31,26 @@ fn invalid_part() -> StorageError {
     )
 }
 
+fn entity_too_small() -> StorageError {
+    crate::storage::s3::classify_failure(
+        crate::storage::s3::Operation::CompleteMultipartUpload,
+        crate::storage::s3::Failure::Service {
+            status: 400,
+            code: Some("EntityTooSmall".to_owned()),
+        },
+    )
+}
+
+fn access_denied() -> StorageError {
+    crate::storage::s3::classify_failure(
+        crate::storage::s3::Operation::CompleteMultipartUpload,
+        crate::storage::s3::Failure::Service {
+            status: 403,
+            code: Some("AccessDenied".to_owned()),
+        },
+    )
+}
+
 fn no_such_upload() -> StorageError {
     StorageError::NotFound
 }
@@ -264,13 +284,8 @@ async fn it_s3mp_provider_failures_are_classified_and_completion_recovers() {
         .unwrap()
         .push_back(CompleteFault::Before(timeout));
     let failed = rig.complete(&session, &item).await;
-    assert_eq!(
-        failed.status,
-        StatusCode::SERVICE_UNAVAILABLE,
-        "{}",
-        failed.text()
-    );
-    assert_eq!(failed.error_code(), "STORAGE_UNAVAILABLE");
+    assert_eq!(failed.status, StatusCode::BAD_GATEWAY, "{}", failed.text());
+    assert_eq!(failed.error_code(), "STORAGE_UPSTREAM_ERROR");
     let (state, stage, _) = rig.item_row(&item).await;
     assert_eq!((state.as_str(), stage.as_str()), ("finalizing", "placing"));
     assert_eq!(
@@ -296,12 +311,7 @@ async fn it_s3mp_provider_failures_are_classified_and_completion_recovers() {
         .unwrap()
         .push_back(CompleteFault::After(upstream));
     let lost = rig.complete(&session, &item).await;
-    assert_eq!(
-        lost.status,
-        StatusCode::SERVICE_UNAVAILABLE,
-        "{}",
-        lost.text()
-    );
+    assert_eq!(lost.status, StatusCode::BAD_GATEWAY, "{}", lost.text());
     assert_eq!(rig.files().await, 1);
     let adopted = rig.complete(&session, &item).await;
     assert_eq!(adopted.status, StatusCode::OK, "{}", adopted.text());
@@ -336,7 +346,7 @@ async fn it_s3mp_provider_failures_are_classified_and_completion_recovers() {
         "{}",
         refused.text()
     );
-    assert_eq!(refused.error_code(), "MULTIPART_PART_INVALID");
+    assert_eq!(refused.error_code(), "MULTIPART_PART_REJECTED");
     let (state, stage, _) = rig.item_row(&item).await;
     assert_eq!((state.as_str(), stage.as_str()), ("uploading", "none"));
     assert_eq!(
@@ -364,6 +374,29 @@ async fn it_s3mp_provider_failures_are_classified_and_completion_recovers() {
         (state.as_str(), code.as_deref()),
         ("failed", Some("MULTIPART_NOT_FOUND"))
     );
+    let correlated = lost.json()["error"]["requestId"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    assert!(!correlated.is_empty());
+    assert_eq!(
+        rig.stack
+            .scalar_text(&format!(
+                "SELECT error_request_id FROM transfer_session_files WHERE id = '{item}'"
+            ))
+            .await,
+        correlated,
+        "the durable failure carries the completing request's id"
+    );
+    assert_eq!(
+        rig.stack
+            .scalar_text(&format!(
+                "SELECT COALESCE(error_code, '-') || '|' || COALESCE(error_request_id, '-')
+                   FROM transfer_sessions WHERE id = '{session}'"
+            ))
+            .await,
+        format!("MULTIPART_NOT_FOUND|{correlated}")
+    );
     assert_eq!(rig.files().await, 4);
     assert_eq!(
         tombstones(&rig).await,
@@ -382,12 +415,7 @@ async fn it_s3mp_provider_failures_are_classified_and_completion_recovers() {
     rig.open(&session, &item, &bytes).await;
     rig.faults.list_parts.lock().unwrap().push_back(upstream);
     let down = rig.complete(&session, &item).await;
-    assert_eq!(
-        down.status,
-        StatusCode::SERVICE_UNAVAILABLE,
-        "{}",
-        down.text()
-    );
+    assert_eq!(down.status, StatusCode::BAD_GATEWAY, "{}", down.text());
     assert_eq!(rig.item_row(&item).await.0, "uploading");
     assert_eq!(
         rig.multipart_state(&item).await.as_deref(),
@@ -404,6 +432,100 @@ async fn it_s3mp_provider_failures_are_classified_and_completion_recovers() {
     let finished = rig.complete(&session, &item).await;
     assert_eq!(finished.status, StatusCode::OK, "{}", finished.text());
     assert_eq!(rig.files().await, 5);
+    rig.assert_no_overlap();
+}
+
+#[tokio::test]
+async fn it_s3mp_each_provider_refusal_has_one_code_with_one_retry_policy() {
+    use crate::features::transfers::classify::{Classification, RetryClass};
+
+    let rig = S3Rig::new().await;
+    let size = 20 * MIB + 3;
+    let bytes = data(size);
+    struct Refusal {
+        fault: fn() -> StorageError,
+        status: u16,
+        code: &'static str,
+        reason: Option<&'static str>,
+        class: RetryClass,
+    }
+    let cases = [
+        Refusal {
+            fault: invalid_part,
+            status: 422,
+            code: "MULTIPART_PART_REJECTED",
+            reason: Some("provider_rejected_part"),
+            class: RetryClass::NeedsReconciliation,
+        },
+        Refusal {
+            fault: entity_too_small,
+            status: 422,
+            code: "MULTIPART_PART_INVALID",
+            reason: Some("provider_part_too_small"),
+            class: RetryClass::Fatal,
+        },
+        Refusal {
+            fault: access_denied,
+            status: 500,
+            code: "STORAGE_PERMISSION_DENIED",
+            reason: None,
+            class: RetryClass::Fatal,
+        },
+        Refusal {
+            fault: upstream,
+            status: 502,
+            code: "STORAGE_UPSTREAM_ERROR",
+            reason: None,
+            class: RetryClass::Retryable,
+        },
+    ];
+    for Refusal {
+        fault,
+        status,
+        code,
+        reason,
+        class,
+    } in cases
+    {
+        let (session, item) = rig.one("refused.bin", size).await;
+        rig.open(&session, &item, &bytes).await;
+        rig.faults
+            .complete
+            .lock()
+            .unwrap()
+            .push_back(CompleteFault::Before(fault));
+        let refused = rig.complete(&session, &item).await;
+        assert_eq!(
+            refused.status.as_u16(),
+            status,
+            "{code}: {}",
+            refused.text()
+        );
+        assert_eq!(refused.error_code(), code);
+        assert_eq!(
+            refused.json()["error"]["details"]["reason"].as_str(),
+            reason,
+            "{code}"
+        );
+        let decoded = crate::ErrorCode::ALL
+            .iter()
+            .copied()
+            .find(|known| known.as_str() == refused.error_code())
+            .unwrap();
+        assert_eq!(
+            Classification::of(decoded).class(),
+            class,
+            "{code}: the code alone carries the retry policy"
+        );
+        let retried = rig.complete(&session, &item).await;
+        assert_eq!(
+            retried.status,
+            StatusCode::OK,
+            "every refusal here leaves the upload recoverable: {}",
+            retried.text()
+        );
+    }
+    assert_eq!(rig.files().await, 4);
     rig.assert_no_overlap();
 }
 

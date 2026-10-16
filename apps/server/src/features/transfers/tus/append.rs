@@ -16,6 +16,7 @@ use crate::features::users::model::UserId;
 use crate::infra::db::DbPools;
 use crate::storage::staging::StagingAppend;
 
+use super::super::classify::WriteFault;
 use super::super::error::TransferError;
 use super::super::model::{SessionItemId, TransferSessionId};
 use super::error::TusError;
@@ -85,7 +86,7 @@ pub enum StreamEnd {
     Disconnected,
     Idle,
     Shutdown,
-    WriteFailed,
+    WriteFailed(WriteFault),
     Gone,
     LeaseLost,
     ChecksumMismatch,
@@ -145,12 +146,16 @@ struct Progress {
     durable: u64,
     expires_at: Option<Timestamp>,
     hasher: Option<Sha256>,
-    write_failed: bool,
+    write_fault: Option<WriteFault>,
 }
 
 impl Progress {
     fn accepted(&self) -> u64 {
         self.written + self.buffer.len() as u64
+    }
+
+    fn fault(&self) -> WriteFault {
+        self.write_fault.unwrap_or(WriteFault::Io)
     }
 }
 
@@ -192,7 +197,7 @@ impl Streamer {
             durable: plan.start,
             expires_at: None,
             hasher: plan.checksum.map(|_| Sha256::new()),
-            write_failed: false,
+            write_fault: None,
         };
         let end = self
             .drive(&plan, writer.as_mut(), &mut body, &mut progress)
@@ -276,7 +281,7 @@ impl Streamer {
                             usize::try_from(room).map_or(rest.len(), |room| room.min(rest.len()));
                         let (head, tail) = rest.split_at(take);
                         if !self.buffer(writer, progress, head).await {
-                            return StreamEnd::WriteFailed;
+                            return StreamEnd::WriteFailed(progress.fault());
                         }
                         since_flush += head.len() as u64;
                         rest = tail;
@@ -349,7 +354,7 @@ impl Streamer {
                     "a write to upload staging failed"
                 );
                 progress.buffer.clear();
-                progress.write_failed = true;
+                progress.write_fault = Some(WriteFault::from(&error));
                 false
             }
         }
@@ -364,15 +369,15 @@ impl Streamer {
     ) -> Option<StreamEnd> {
         if dirty {
             if !self.drain(writer, progress).await {
-                return Some(StreamEnd::WriteFailed);
+                return Some(StreamEnd::WriteFailed(progress.fault()));
             }
             if let Err(error) = writer.flush().await {
                 tracing::warn!(
                     storage_error = error.kind(),
                     "upload staging could not be synced"
                 );
-                progress.write_failed = true;
-                return Some(StreamEnd::WriteFailed);
+                progress.write_fault = Some(WriteFault::from(&error));
+                return Some(StreamEnd::WriteFailed(progress.fault()));
             }
         }
         let acknowledged = if plan.checksum.is_some() {
@@ -405,8 +410,14 @@ impl Streamer {
                 end,
             };
         }
-        let drained = !progress.write_failed && self.drain(writer, progress).await;
-        let flushed = writer.flush().await.is_ok();
+        let drained = progress.write_fault.is_none() && self.drain(writer, progress).await;
+        let flushed = match writer.flush().await {
+            Ok(()) => true,
+            Err(error) => {
+                progress.write_fault.get_or_insert(WriteFault::from(&error));
+                false
+            }
+        };
         let (offset, end) = match plan.checksum {
             None => (
                 if flushed {
@@ -414,7 +425,11 @@ impl Streamer {
                 } else {
                     progress.durable
                 },
-                if drained { end } else { StreamEnd::WriteFailed },
+                if drained {
+                    end
+                } else {
+                    StreamEnd::WriteFailed(progress.fault())
+                },
             ),
             Some(expected) => {
                 self.verify(plan, writer, progress, end, expected, drained && flushed)
@@ -463,7 +478,7 @@ impl Streamer {
         }
         progress.written = plan.start;
         let end = if !intact {
-            StreamEnd::WriteFailed
+            StreamEnd::WriteFailed(progress.fault())
         } else if matches!(end, StreamEnd::Finished) {
             StreamEnd::ChecksumMismatch
         } else {

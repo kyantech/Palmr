@@ -93,7 +93,7 @@ async fn create_multipart(
     };
     match service.create(principal.user_id, id, item_id).await {
         Ok(view) => json_response(StatusCode::CREATED, &view, request_id.as_ref()),
-        Err(error) => transfer_error(&error, request_id.as_ref()),
+        Err(error) => failed(&service, principal.user_id, id, &error, request_id.as_ref()).await,
     }
 }
 
@@ -137,7 +137,7 @@ async fn presign_parts(
     };
     match service.presign(principal.user_id, id, item_id, body).await {
         Ok(view) => json_response(StatusCode::OK, &view, request_id.as_ref()),
-        Err(error) => transfer_error(&error, request_id.as_ref()),
+        Err(error) => failed(&service, principal.user_id, id, &error, request_id.as_ref()).await,
     }
 }
 
@@ -179,7 +179,7 @@ async fn report_parts(
     };
     match service.report(principal.user_id, id, item_id, body).await {
         Ok(()) => (StatusCode::NO_CONTENT, [(CACHE_CONTROL, NO_STORE)]).into_response(),
-        Err(error) => transfer_error(&error, request_id.as_ref()),
+        Err(error) => failed(&service, principal.user_id, id, &error, request_id.as_ref()).await,
     }
 }
 
@@ -215,7 +215,7 @@ async fn list_parts(
     };
     match service.list(principal.user_id, id, item_id).await {
         Ok(view) => json_response(StatusCode::OK, &view, request_id.as_ref()),
-        Err(error) => transfer_error(&error, request_id.as_ref()),
+        Err(error) => failed(&service, principal.user_id, id, &error, request_id.as_ref()).await,
     }
 }
 
@@ -235,8 +235,9 @@ async fn list_parts(
         (status = 409, description = "`MULTIPART_INCOMPLETE` with `details.missingPartNumbers`; `TRANSFER_SESSION_STATE_INVALID` for a canceled item or session; `FOLDER_DELETING`.", body = ApiErrorBody),
         (status = 410, description = "`TRANSFER_SESSION_EXPIRED`.", body = ApiErrorBody),
         (status = 413, description = "`FILE_TOO_LARGE`: the object exceeds the effective maximum file size. The object is tombstoned.", body = ApiErrorBody),
-        (status = 422, description = "`MULTIPART_PART_INVALID`: a part has the wrong size or the provider refused one; `UPLOAD_LENGTH_MISMATCH`: the measured object size differs from the declared size and the object is tombstoned.", body = ApiErrorBody),
+        (status = 422, description = "`MULTIPART_PART_INVALID`: a part has the wrong size or the provider reported `EntityTooSmall` (fatal); `MULTIPART_PART_REJECTED`: the provider rejected the listed parts (`InvalidPart`/`InvalidPartOrder`), list the parts and complete again; `UPLOAD_LENGTH_MISMATCH`: the measured object size differs from the declared size and the object is tombstoned.", body = ApiErrorBody),
         (status = 429, description = "Rate limited.", body = ApiErrorBody),
+        (status = 500, description = "`STORAGE_PERMISSION_DENIED`: the provider refused access (`AccessDenied`). Not retryable; an operator must fix the credentials or policy. The upload stays resumable.", body = ApiErrorBody),
         (status = 502, description = "`STORAGE_UPSTREAM_ERROR`. Completion is durable and resumes: ask again or let the server re-drive it.", body = ApiErrorBody),
         (status = 503, description = "`STORAGE_UNAVAILABLE`, or `TRANSFER_BACKPRESSURE` while another request is still completing this item. Retry.", body = ApiErrorBody),
         (status = 507, description = "`QUOTA_EXCEEDED`: the measured size passes the quota. The object is tombstoned and nothing is charged.", body = ApiErrorBody),
@@ -255,7 +256,7 @@ async fn complete_multipart(
     let tag = request_id.as_ref().map(|id| id.as_str().to_owned());
     match service.complete(principal.user_id, id, item_id, tag).await {
         Ok(view) => json_response(StatusCode::OK, &view, request_id.as_ref()),
-        Err(error) => transfer_error(&error, request_id.as_ref()),
+        Err(error) => failed(&service, principal.user_id, id, &error, request_id.as_ref()).await,
     }
 }
 
@@ -297,6 +298,21 @@ async fn abort_multipart(
         Ok(()) => (StatusCode::NO_CONTENT, [(CACHE_CONTROL, NO_STORE)]).into_response(),
         Err(error) => transfer_error(&error, request_id.as_ref()),
     }
+}
+
+async fn failed(
+    service: &S3Service,
+    owner: crate::features::users::model::UserId,
+    session: crate::features::transfers::model::TransferSessionId,
+    error: &TransferError,
+    request_id: Option<&RequestId>,
+) -> Response {
+    if matches!(error, TransferError::Expired) {
+        service
+            .observe_expiry(owner, session, request_id.map(RequestId::as_str))
+            .await;
+    }
+    transfer_error(error, request_id)
 }
 
 fn proxy_failure(error: &ProxyError, request_id: Option<&RequestId>) -> Response {

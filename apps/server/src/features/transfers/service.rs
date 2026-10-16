@@ -5,6 +5,7 @@ use sqlx::Connection;
 use utoipa::openapi::path::Parameter;
 
 use crate::domain::clock::Clock;
+use crate::domain::error_code::ErrorCode;
 use crate::domain::time::Timestamp;
 use crate::features::audit::actions::TransferScope;
 use crate::features::audit::service::AuditService;
@@ -26,6 +27,7 @@ use crate::storage::lifecycle::StorageObjectId;
 
 use super::admission::{plan_files, reservation, TransferStorage};
 use super::cancel::{self, Ended, Ending, TransferCaller};
+use super::classify::Classification;
 use super::error::TransferError;
 use super::finalize::Finalizer;
 use super::model::{
@@ -46,6 +48,7 @@ const COMPLETE_TRANSACTION: &str = "transfers.complete_session";
 const RETRY_TRANSACTION: &str = "transfers.retry_item";
 const CANCEL_ITEM_TRANSACTION: &str = "transfers.cancel_item";
 const FAIL_ITEM_TRANSACTION: &str = "transfers.fail_item";
+const OBSERVE_EXPIRY_TRANSACTION: &str = "transfers.observe_expiry";
 
 pub const STATE_PARAM: &str = "state";
 
@@ -552,6 +555,7 @@ impl TransferService {
                     } else {
                         repo::touch_session(tx.executor(), id, now).await?;
                     }
+                    repo::refresh_session_error(tx.executor(), id).await?;
                 }
                 let items = repo::session_items(tx.executor(), id).await?;
                 items
@@ -572,6 +576,15 @@ impl TransferService {
         item_id: SessionItemId,
         failure: ErrorParts,
     ) -> Result<(), TransferError> {
+        let recordable = ErrorCode::ALL
+            .iter()
+            .find(|code| code.as_str() == failure.code)
+            .is_some_and(|code| Classification::of(*code).records_item_failure());
+        if !recordable {
+            return Err(TransferError::Invariant {
+                what: "failure_code",
+            });
+        }
         let now = self.now()?;
         self.pools
             .write_tx(self.clock.as_ref(), FAIL_ITEM_TRANSACTION, async |tx| {
@@ -623,6 +636,34 @@ impl TransferService {
                 repo::record_session_error(tx.executor(), id, &failure).await
             })
             .await
+    }
+
+    pub async fn observe_expiry(
+        &self,
+        owner: UserId,
+        id: TransferSessionId,
+        request_id: Option<&str>,
+    ) {
+        let failure = ErrorParts::of(ErrorCode::TransferSessionExpired, request_id);
+        let outcome = async {
+            let now = self.now()?;
+            self.pools
+                .write_tx(
+                    self.clock.as_ref(),
+                    OBSERVE_EXPIRY_TRANSACTION,
+                    async |tx| {
+                        repo::observe_session_expiry(tx.executor(), owner, id, now, &failure).await
+                    },
+                )
+                .await
+        }
+        .await;
+        if let Err(error) = outcome {
+            tracing::error!(
+                kind = error.kind(),
+                "an observed session expiry could not be recorded"
+            );
+        }
     }
 
     pub async fn cancel_item(
@@ -677,6 +718,7 @@ impl TransferService {
                         repo::touch_session(tx.executor(), id, now).await?;
                     }
                 }
+                repo::refresh_session_error(tx.executor(), id).await?;
                 cancel::record_canceled(
                     tx,
                     &self.audit,

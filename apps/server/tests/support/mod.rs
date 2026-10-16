@@ -8,6 +8,7 @@ mod rng;
 pub mod schema;
 mod service;
 pub mod statements;
+pub mod transfer_errors;
 pub mod tus;
 
 pub use application::TestApplication;

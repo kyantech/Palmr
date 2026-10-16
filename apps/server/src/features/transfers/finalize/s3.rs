@@ -55,6 +55,15 @@ fn rejects_part(error: &StorageError) -> bool {
     )
 }
 
+fn part_rejection(error: &StorageError) -> TransferError {
+    match service_code(error) {
+        Some("EntityTooSmall") => TransferError::MultipartPartInvalid {
+            reason: "provider_part_too_small",
+        },
+        _ => TransferError::MultipartPartRejected,
+    }
+}
+
 async fn read_prefix(
     provider: &dyn StorageProvider,
     key: &ObjectKey,
@@ -369,10 +378,7 @@ impl Finalizer {
         }
         if rejects_part(&error) {
             self.s3_revert(ctx).await?;
-            return Err(TransferError::MultipartPartInvalid {
-                reason: "provider_rejected_part",
-            }
-            .into());
+            return Err(part_rejection(&error).into());
         }
         Err(FinalizeError::Storage(error))
     }

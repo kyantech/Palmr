@@ -248,6 +248,11 @@ source: apps/server/src/domain/error_code.rs
     "retryable": false
   },
   {
+    "code": "MULTIPART_PART_REJECTED",
+    "status": 422,
+    "retryable": false
+  },
+  {
     "code": "NAME_INVALID",
     "status": 422,
     "retryable": false
@@ -446,6 +451,11 @@ source: apps/server/src/domain/error_code.rs
     "code": "STORAGE_FULL",
     "status": 507,
     "retryable": true
+  },
+  {
+    "code": "STORAGE_PERMISSION_DENIED",
+    "status": 500,
+    "retryable": false
   },
   {
     "code": "STORAGE_PROVIDER_MISMATCH",

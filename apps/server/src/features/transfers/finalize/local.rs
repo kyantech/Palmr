@@ -16,6 +16,7 @@ use crate::storage::error::StorageError;
 use crate::storage::key::ObjectKey;
 use crate::storage::staging::{StagedObject, StagingStorage, UploadId};
 
+use super::super::classify::{classify_storage, Classification, StorageSite};
 use super::super::error::TransferError;
 use super::super::model::{SessionItemId, TransferProvider, UploadKind};
 use super::super::repo::{self as transfer_repo, FinalizeStage, SessionMove};
@@ -103,11 +104,8 @@ fn upload_hex(id: impl std::fmt::Display) -> Result<UploadId, StorageError> {
     UploadId::parse(&id.to_string().replace('-', "")).map_err(|_| StorageError::InvalidKey)
 }
 
-fn storage_code(error: &StorageError) -> ErrorCode {
-    match error {
-        StorageError::QuotaOnDevice => ErrorCode::StorageWriteFailed,
-        _ => ErrorCode::StorageUnavailable,
-    }
+fn storage_failure(error: &StorageError) -> Classification {
+    classify_storage(error, StorageSite::Place)
 }
 
 impl Finalizer {
@@ -348,7 +346,7 @@ impl Finalizer {
             Ok(located) => located,
             Err(FinalizeError::Storage(error)) => {
                 return self
-                    .fail_retryable(&ctx, owner, storage_code(&error), request_id)
+                    .fail_retryable(&ctx, owner, storage_failure(&error), request_id)
                     .await
             }
             Err(other) => return Err(other),
@@ -362,7 +360,12 @@ impl Finalizer {
             },
             Located::Conflict => {
                 return self
-                    .fail_retryable(&ctx, owner, ErrorCode::InternalError, request_id)
+                    .fail_retryable(
+                        &ctx,
+                        owner,
+                        Classification::of(ErrorCode::InternalError),
+                        request_id,
+                    )
                     .await
             }
         };
@@ -446,13 +449,18 @@ impl Finalizer {
                     let identical = staging.staged_matches(&hex, &key).await;
                     if !matches!(identical, Ok(true)) {
                         return self
-                            .fail_retryable(&ctx, owner, ErrorCode::InternalError, request_id)
+                            .fail_retryable(
+                                &ctx,
+                                owner,
+                                Classification::of(ErrorCode::InternalError),
+                                request_id,
+                            )
                             .await;
                     }
                 }
                 Err(error) => {
                     return self
-                        .fail_retryable(&ctx, owner, storage_code(&error), request_id)
+                        .fail_retryable(&ctx, owner, storage_failure(&error), request_id)
                         .await
                 }
             }
@@ -717,19 +725,19 @@ impl Finalizer {
         &self,
         ctx: &ItemContext,
         _owner: UserId,
-        code: ErrorCode,
+        failure: Classification,
         request_id: Option<&str>,
     ) -> Result<FinalizeOutcome, FinalizeError> {
         let target = self.target(ctx, None)?;
         let recorded = self
             .inner
             .committer
-            .reject(&target, code, Disposition::Retryable, request_id)
+            .reject(&target, failure.code, Disposition::Retryable, request_id)
             .await?;
         match recorded {
             Recorded::Failed => Ok(FinalizeOutcome::Failed {
-                code: code.as_str().to_owned(),
-                retryable: true,
+                code: failure.code.as_str().to_owned(),
+                retryable: failure.class().backs_off(),
             }),
             Recorded::AlreadyCommitted(file_id) => Ok(FinalizeOutcome::Committed {
                 file_id,

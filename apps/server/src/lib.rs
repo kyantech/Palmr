@@ -49,4 +49,5 @@ pub use config::{EnvironmentSource, OperatorConfig};
 pub use domain::clock::{Clock, TestClock};
 pub use domain::error_code::ErrorCode;
 pub use features::identity_providers;
+pub use features::transfers::classify::{Classification, RetryClass};
 pub use infra::telemetry::write_startup_failure;

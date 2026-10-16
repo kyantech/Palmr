@@ -7,6 +7,9 @@ use crate::infra::db::DbError;
 use crate::infra::http::error::ApiError;
 use crate::storage::error::StorageError;
 
+use super::super::classify::{
+    classify_storage, classify_write, Classification, StorageSite, WriteFault,
+};
 use super::super::error::TransferError;
 use super::headers::PROTOCOL_VERSION;
 
@@ -46,7 +49,7 @@ pub enum TusError {
     Gone,
     MethodNotAllowed,
     Storage(StorageError),
-    WriteFailed,
+    WriteFailed(WriteFault),
     Transfer(TransferError),
 }
 
@@ -72,7 +75,7 @@ impl TusError {
             Self::Gone => "tus_upload_gone",
             Self::MethodNotAllowed => "tus_method_not_allowed",
             Self::Storage(error) => error.kind(),
-            Self::WriteFailed => "tus_write_failed",
+            Self::WriteFailed(_) => "tus_write_failed",
             Self::Transfer(error) => error.kind(),
         }
     }
@@ -125,9 +128,23 @@ impl TusError {
             Self::NotAvailable | Self::NotFound => ApiError::new(ErrorCode::NotFound),
             Self::Gone => ApiError::new(ErrorCode::UploadSessionExpired),
             Self::MethodNotAllowed => ApiError::new(ErrorCode::MethodNotAllowed),
-            Self::Storage(error) => ApiError::new(error.api_code()),
-            Self::WriteFailed => ApiError::new(ErrorCode::StorageWriteFailed),
+            Self::Storage(error) => {
+                ApiError::new(classify_storage(error, StorageSite::Stream).code)
+            }
+            Self::WriteFailed(fault) => ApiError::new(classify_write(*fault).code),
             Self::Transfer(error) => error.api_error(),
+        }
+    }
+}
+
+impl TusError {
+    pub fn classification(&self) -> Classification {
+        match self {
+            Self::Storage(error) => classify_storage(error, StorageSite::Stream),
+            Self::WriteFailed(fault) => classify_write(*fault),
+            Self::Transfer(error) => error.classification(),
+            Self::ShuttingDown => Classification::of(ErrorCode::ServiceUnavailable),
+            other => Classification::of(other.api_error().code()),
         }
     }
 }
@@ -164,7 +181,7 @@ impl fmt::Display for TusError {
             Self::Gone => f.write_str("the upload expired or was terminated"),
             Self::MethodNotAllowed => f.write_str("the method is not allowed for this upload"),
             Self::Storage(error) => write!(f, "upload staging failed: {error}"),
-            Self::WriteFailed => f.write_str("a write to upload staging failed"),
+            Self::WriteFailed(_) => f.write_str("a write to upload staging failed"),
             Self::Transfer(error) => write!(f, "{error}"),
         }
     }

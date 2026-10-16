@@ -2034,6 +2034,7 @@ mod s3_reapers_orphans;
 mod totp;
 mod transfer_audit;
 mod transfer_cleanup;
+mod transfer_error_durability;
 mod transfer_flows;
 mod transfer_limits;
 mod transfer_reads;

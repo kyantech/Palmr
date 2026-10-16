@@ -228,6 +228,8 @@ error_catalog! {
         "The multipart upload is missing parts";
     MultipartPartInvalid = "MULTIPART_PART_INVALID", UNPROCESSABLE_ENTITY, retryable: false,
         "A multipart part number or part size is not valid";
+    MultipartPartRejected = "MULTIPART_PART_REJECTED", UNPROCESSABLE_ENTITY, retryable: false,
+        "The storage provider rejected the listed parts; list the parts and complete again";
     PresignBatchTooLarge = "PRESIGN_BATCH_TOO_LARGE", UNPROCESSABLE_ENTITY, retryable: false,
         "More part URLs were requested than one batch allows";
     StorageUpstreamError = "STORAGE_UPSTREAM_ERROR", BAD_GATEWAY, retryable: true,
@@ -238,6 +240,8 @@ error_catalog! {
         "No upload data arrived within the idle timeout";
     StorageProviderMismatch = "STORAGE_PROVIDER_MISMATCH", INTERNAL_SERVER_ERROR, retryable: false,
         "The stored object belongs to a different storage provider";
+    StoragePermissionDenied = "STORAGE_PERMISSION_DENIED", INTERNAL_SERVER_ERROR, retryable: false,
+        "The storage backend refused access; an operator must fix its permissions";
     StorageSizeMismatch = "STORAGE_SIZE_MISMATCH", INTERNAL_SERVER_ERROR, retryable: false,
         "The stored object size does not match the expected size";
     SettingUnknown = "SETTING_UNKNOWN", UNPROCESSABLE_ENTITY, retryable: false,

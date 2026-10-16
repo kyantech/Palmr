@@ -93,4 +93,6 @@ A failed item no longer strands the rest of the tree. The item keeps its own `fa
 
 `transfer_session_files.relative_path` is checked for a `..` segment (exactly `..`), not a `..` substring, since migration `0010`: `versions..old/file.txt` and `project...backup/readme.md` are valid, `../x`, `a/../b` and `a/..` are refused at the schema as well as by the parser (`it_directory_tree_double_dot_components_are_valid_and_persisted`, `it_migrate_relative_path_exact_dot_segments_rebuilds_transfer_tables_without_loss`).
 
+Failure classification, the durable `error` of items and sessions, the request-id rules and the retry classes live in [transfer-errors.md](transfer-errors.md).
+
 The folder picker, directory drag-and-drop and Transfer Center UI are frontend milestones.

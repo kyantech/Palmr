@@ -1,5 +1,6 @@
 pub mod admission;
 pub mod cancel;
+pub mod classify;
 pub mod cleanup;
 pub mod error;
 pub mod finalize;

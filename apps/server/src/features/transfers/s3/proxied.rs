@@ -295,9 +295,8 @@ impl From<crate::domain::time::InvalidTimestamp> for ProxyError {
 
 fn provider_failure(error: StorageError) -> ProxyError {
     match error {
-        StorageError::NotFound => ProxyError::Transfer(TransferError::MultipartNotFound),
         error if is_checksum_rejection(&error) => ProxyError::ChecksumRejected,
-        error => ProxyError::Transfer(TransferError::Storage(error)),
+        error => ProxyError::Transfer(TransferError::from_multipart_storage(error)),
     }
 }
 

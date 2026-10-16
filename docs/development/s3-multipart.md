@@ -78,7 +78,8 @@ The intent transaction is the durable ownership record: once it commits, a resta
 | Provider outcome | Result |
 |---|---|
 | success | `HeadObject`, MIME, commit |
-| `InvalidPart`, `InvalidPartOrder`, `EntityTooSmall` | the intent is reverted (item back to `uploading`, multipart `in_progress`), `422 MULTIPART_PART_INVALID`; nothing was placed |
+| `InvalidPart`, `InvalidPartOrder` | the intent is reverted (item back to `uploading`, multipart `in_progress`), `422 MULTIPART_PART_REJECTED` (reconcile with `GET …/parts`, then complete again); nothing was placed |
+| `EntityTooSmall` | the intent is reverted as above, `422 MULTIPART_PART_INVALID` with `details.reason = provider_part_too_small` (a plan defect, fatal); nothing was placed |
 | `NoSuchUpload` and the final key **exists** | the completion already happened; continue with `HeadObject` |
 | `NoSuchUpload` and no object | the item fails with `MULTIPART_NOT_FOUND`, the key is tombstone-inserted, the share released |
 | timeout, 5xx, connection error, an XML error inside `200` | `503 STORAGE_UNAVAILABLE` or `502 STORAGE_UPSTREAM_ERROR`; durable state is kept and a retry resumes |

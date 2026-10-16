@@ -766,8 +766,8 @@ async fn it_finalize_rechecks_account_and_expiry_under_the_writer() {
 #[tokio::test]
 async fn it_finalize_storage_faults_are_retryable_and_resume_without_retransmission() {
     for (fault, code) in [
-        (Fault::NoSpace, "STORAGE_WRITE_FAILED"),
-        (Fault::Denied, "STORAGE_UNAVAILABLE"),
+        (Fault::NoSpace, "STORAGE_FULL"),
+        (Fault::Denied, "STORAGE_PERMISSION_DENIED"),
         (Fault::Io, "STORAGE_UNAVAILABLE"),
     ] {
         let rig = Rig::new().await;

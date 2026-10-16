@@ -6,7 +6,8 @@ use crate::app::openapi::ApiDocs;
 use crate::app::router::{application_routes, RateLimitClass, Transport};
 use crate::config::{EnvironmentSource, OperatorConfig};
 use crate::domain::error_code::ErrorCode;
-use crate::features::transfers::error::{upstream_code, TransferError};
+use crate::features::transfers::classify::{classify_storage, StorageSite};
+use crate::features::transfers::error::TransferError;
 use crate::infra::http::json::{parse, JsonRequest};
 use crate::storage::error::{Retryable, StorageError};
 
@@ -216,14 +217,23 @@ fn unit_s3_error_mapping_is_stable_and_never_leaks_storage_detail() {
         StorageError::Io(std::io::Error::other("io")),
     ];
     for error in &unavailable {
-        assert_eq!(upstream_code(error), ErrorCode::StorageUnavailable);
+        assert_eq!(
+            classify_storage(error, StorageSite::S3Control).code,
+            ErrorCode::StorageUnavailable
+        );
     }
+    assert_eq!(
+        classify_storage(&StorageError::PermissionDenied, StorageSite::S3Control).code,
+        ErrorCode::StoragePermissionDenied
+    );
     for error in [
         StorageError::S3(Box::new(std::io::Error::other("rejected"))),
-        StorageError::PermissionDenied,
         StorageError::NotFound,
     ] {
-        assert_eq!(upstream_code(&error), ErrorCode::StorageUpstreamError);
+        assert_eq!(
+            classify_storage(&error, StorageSite::S3Control).code,
+            ErrorCode::StorageUpstreamError
+        );
     }
     let missing = TransferError::MultipartIncomplete {
         missing: vec![2, 5],

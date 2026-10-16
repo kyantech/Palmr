@@ -601,6 +601,21 @@ async fn it_reconcile_marks_a_vanished_upload_lost_and_fails_the_item() {
         "the share is released once"
     );
     assert_eq!(rig.stack.session_row(&session).await.0, "failed");
+    for (table, id) in [
+        ("transfer_session_files", item.as_str()),
+        ("transfer_sessions", session.as_str()),
+    ] {
+        assert_eq!(
+            rig.stack
+                .scalar_text(&format!(
+                    "SELECT COALESCE(error_code, '-') || '|' || COALESCE(error_request_id, '-')
+                       FROM {table} WHERE id = '{id}'"
+                ))
+                .await,
+            "MULTIPART_NOT_FOUND|-",
+            "{table}: a job-originated failure keeps its code and invents no request id"
+        );
+    }
     let retried = rig.stack.retry_item(&rig.alice, &session, &item).await;
     assert_eq!(retried.status, StatusCode::CONFLICT, "{}", retried.text());
     let completed = rig.complete(&session, &item).await;

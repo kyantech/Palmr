@@ -6,6 +6,8 @@ mod s3;
 mod service;
 
 pub(in crate::features::transfers) use commit::destination_of;
+#[cfg(test)]
+pub(in crate::features::transfers) use commit::RejectCause;
 pub use hooks::FinalizeHooks;
 #[cfg(feature = "e2e-fixture")]
 pub use hooks::PauseHook;

@@ -434,20 +434,15 @@ async fn it_s3_proxied_part_memory_bounded() {
         .unwrap()
         .push_back(PartFault::Before(upstream));
     let failed = rig.put_bytes(&session, &items[8], "1", &body).await;
-    assert_eq!(
-        failed.status,
-        StatusCode::SERVICE_UNAVAILABLE,
-        "{}",
-        failed.text()
-    );
-    assert_eq!(failed.error_code(), "STORAGE_UNAVAILABLE");
+    assert_eq!(failed.status, StatusCode::BAD_GATEWAY, "{}", failed.text());
+    assert_eq!(failed.error_code(), "STORAGE_UPSTREAM_ERROR");
     rig.faults
         .part
         .lock()
         .unwrap()
         .push_back(PartFault::Before(timeout));
     let timed_out = rig.put_bytes(&session, &items[8], "1", &body).await;
-    assert_eq!(timed_out.error_code(), "STORAGE_UNAVAILABLE");
+    assert_eq!(timed_out.error_code(), "STORAGE_UPSTREAM_ERROR");
 
     let end = rig.proxy_snapshot();
     assert_eq!(
@@ -696,11 +691,11 @@ async fn it_s3_proxied_part_http_semantics() {
     let provider_timeout = rig.put_bytes(&session, &item, "3", &final_part).await;
     assert_eq!(
         provider_timeout.status,
-        StatusCode::SERVICE_UNAVAILABLE,
+        StatusCode::BAD_GATEWAY,
         "{}",
         provider_timeout.text()
     );
-    assert_eq!(provider_timeout.error_code(), "STORAGE_UNAVAILABLE");
+    assert_eq!(provider_timeout.error_code(), "STORAGE_UPSTREAM_ERROR");
     assert_eq!(rig.uploaded_parts(&item).await, 3, "parts 1, 2 and 3 stand");
 
     let listed = rig.parts(&session, &item).await;
@@ -934,12 +929,7 @@ async fn it_s3_proxied_parts_retry_and_reconcile_with_provider_truth() {
         .unwrap()
         .push_back(PartFault::After(timeout));
     let lost = rig.put_bytes(&session, &item, "1", &slice(1)).await;
-    assert_eq!(
-        lost.status,
-        StatusCode::SERVICE_UNAVAILABLE,
-        "{}",
-        lost.text()
-    );
+    assert_eq!(lost.status, StatusCode::BAD_GATEWAY, "{}", lost.text());
     assert_eq!(
         rig.part_row(&item, 1).await.0,
         "planned",
@@ -1440,12 +1430,7 @@ async fn it_s3_proxied_slow_connection_recovers_by_retry_without_duplicates() {
         .push_back(PartFault::Before(timeout));
     let second = slice(2);
     let failed = rig.put_bytes(&session, &item, "2", &second).await;
-    assert_eq!(
-        failed.status,
-        StatusCode::SERVICE_UNAVAILABLE,
-        "{}",
-        failed.text()
-    );
+    assert_eq!(failed.status, StatusCode::BAD_GATEWAY, "{}", failed.text());
     assert_ne!(rig.part_row(&item, 2).await.0, "uploaded");
     let again = rig.put_bytes(&session, &item, "2", &second).await;
     assert_eq!(again.status, StatusCode::OK, "{}", again.text());

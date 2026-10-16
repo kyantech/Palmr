@@ -9,6 +9,7 @@ use crate::app::openapi::with_query_parameters;
 use crate::app::router::{IdempotencyMode, RateLimitClass, RoutePolicy, Routes, Transport};
 use crate::app::state::AppState;
 use crate::features::auth::sessions::routes::client_metadata;
+use crate::features::users::model::UserId;
 use crate::infra::http::error::{ApiError, ApiErrorBody, JSON_CONTENT_TYPE};
 use crate::infra::http::extractors::Authenticated;
 use crate::infra::http::idempotency::{Admission, Claim, IdempotencyRequest};
@@ -251,7 +252,7 @@ async fn complete_session(
     };
     match service.complete(principal.user_id, id).await {
         Ok(view) => json_response(StatusCode::OK, &view, request_id.as_ref()),
-        Err(error) => transfer_error(&error, request_id.as_ref()),
+        Err(error) => failed(&service, principal.user_id, id, &error, request_id.as_ref()).await,
     }
 }
 
@@ -264,7 +265,7 @@ async fn complete_session(
         ("itemId" = String, Path, description = "Transfer item UUIDv7")
     ),
     responses(
-        (status = 200, description = "The item, moved from `failed` back to `uploading` with its attempt count incremented. The declared set is unchanged, so quota is not admitted again. Only an item whose upload resource still exists can be retried. When all bytes were already stored (an item that failed with `STORAGE_WRITE_FAILED` or `STORAGE_UNAVAILABLE` while being finalized) the retry restarts finalization without retransmitting anything.", body = TransferFileView),
+        (status = 200, description = "The item, moved from `failed` back to `uploading` with its attempt count incremented. The declared set is unchanged, so quota is not admitted again. Only an item whose upload resource still exists can be retried. When all bytes were already stored (an item that failed with `STORAGE_FULL`, `STORAGE_WRITE_FAILED` or `STORAGE_UNAVAILABLE` while being finalized) the retry restarts finalization without retransmitting anything.", body = TransferFileView),
         (status = 401, description = "Authentication required.", body = ApiErrorBody),
         (status = 403, description = "The CSRF proof or origin is missing or not allowed, or the session is restricted.", body = ApiErrorBody),
         (status = 404, description = "`TRANSFER_SESSION_NOT_FOUND` for an unknown session or item, including another user's.", body = ApiErrorBody),
@@ -288,7 +289,7 @@ async fn retry_item(
     };
     match service.retry_item(principal.user_id, id, item_id).await {
         Ok(view) => json_response(StatusCode::OK, &view, request_id.as_ref()),
-        Err(error) => transfer_error(&error, request_id.as_ref()),
+        Err(error) => failed(&service, principal.user_id, id, &error, request_id.as_ref()).await,
     }
 }
 
@@ -340,6 +341,21 @@ async fn release(service: &TransferService, claim: Claim) {
             "transfer idempotency claim could not be released"
         );
     }
+}
+
+pub(super) async fn failed(
+    service: &TransferService,
+    owner: UserId,
+    session: TransferSessionId,
+    error: &TransferError,
+    request_id: Option<&RequestId>,
+) -> Response {
+    if matches!(error, TransferError::Expired) {
+        service
+            .observe_expiry(owner, session, request_id.map(RequestId::as_str))
+            .await;
+    }
+    transfer_error(error, request_id)
 }
 
 pub(super) fn transfer_error(error: &TransferError, request_id: Option<&RequestId>) -> Response {

@@ -117,6 +117,45 @@ describe("retry classification", () => {
     }
   });
 
+  test("final transfer failures never enter automatic retry or backoff", () => {
+    const final: ErrorCode[] = [
+      "QUOTA_EXCEEDED",
+      "FILE_TOO_LARGE",
+      "UPLOAD_METADATA_INVALID",
+      "UPLOAD_LENGTH_MISMATCH",
+      "TUS_EXTENSION_UNSUPPORTED",
+      "TUS_VERSION_UNSUPPORTED",
+      "UNSUPPORTED_MEDIA_TYPE",
+      "MULTIPART_NOT_FOUND",
+      "MULTIPART_ALREADY_COMPLETED",
+      "STORAGE_SIZE_MISMATCH",
+      "IDEMPOTENCY_KEY_CONFLICT",
+      "BATCH_TOO_LARGE",
+      "FOLDER_NOT_FOUND",
+      "FOLDER_DEPTH_EXCEEDED",
+      "NAME_INVALID",
+      "FILE_NAME_CONFLICT",
+      "VALIDATION_ERROR",
+      "TRANSFER_SESSION_NOT_FOUND",
+      "TRANSFER_SESSION_STATE_INVALID",
+      "TRANSFER_SESSION_EXPIRED",
+      "UPLOAD_SESSION_EXPIRED",
+    ];
+    for (const code of final) {
+      expect(RETRY_CLASS[code], code).toBe("never");
+      for (const operation of ["query", "idempotentMutation", "mutation"] as const) {
+        expect(shouldRetry(operation, 0, apiError({ code })), `${code} ${operation}`).toBe(false);
+      }
+    }
+  });
+
+  test("backpressure is a wait that honors Retry-After, not a failure", () => {
+    expect(RETRY_CLASS.TRANSFER_BACKPRESSURE).toBe("rateLimited");
+    expect(
+      retryDelay(0, apiError({ code: "TRANSFER_BACKPRESSURE", status: 503, retryAfterSeconds: 3 })),
+    ).toBe(3_000);
+  });
+
   test("codes unknown to this build and non-API errors never retry", () => {
     expect(retryClassOf(apiError({ code: "GONE" as ErrorCode, status: 410 }))).toBe("never");
     expect(retryClassOf(apiError({ code: "toString" as ErrorCode }))).toBe("never");

@@ -510,10 +510,7 @@ impl Committer {
         request_id: Option<&str>,
     ) -> Result<Recorded, TransferError> {
         let now = self.now()?;
-        let failure = ErrorParts {
-            code: code.as_str().to_owned(),
-            request_id: request_id.map(str::to_owned),
-        };
+        let failure = ErrorParts::of(code, request_id);
         let outcome = self
             .pools
             .write_tx(

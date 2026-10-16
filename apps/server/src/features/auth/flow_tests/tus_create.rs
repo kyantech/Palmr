@@ -775,8 +775,8 @@ async fn it_tus_create_recovers_from_staging_and_database_failures() {
     let unavailable = stack.tus_create(&alice, &planned, Some(10)).await;
     assert_tus_error(
         &unavailable,
-        StatusCode::SERVICE_UNAVAILABLE,
-        "STORAGE_UNAVAILABLE",
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "STORAGE_PERMISSION_DENIED",
     );
     assert_eq!(
         stack.tus_count().await,

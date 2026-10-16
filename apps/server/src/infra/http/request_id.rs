@@ -38,6 +38,10 @@ impl RequestId {
         &self.0
     }
 
+    pub fn is_valid_text(text: &str) -> bool {
+        (1..=MAX_LEN).contains(&text.len()) && text.bytes().all(is_id_byte)
+    }
+
     fn header_value(&self) -> Option<HeaderValue> {
         HeaderValue::from_str(&self.0).ok()
     }

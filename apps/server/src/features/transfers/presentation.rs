@@ -232,6 +232,51 @@ mod tests {
     }
 
     #[test]
+    fn unit_error_view_keeps_the_code_and_marks_job_originated_failures_with_a_null_request_id() {
+        let http_originated = super::error_view(&super::ErrorParts::of(
+            crate::domain::error_code::ErrorCode::QuotaExceeded,
+            Some("0192f3a7-5c4b-7e21-9a02-3f8c1d6e4b90"),
+        ));
+        assert_eq!(
+            serde_json::to_value(&http_originated).unwrap(),
+            json!({ "code": "QUOTA_EXCEEDED", "requestId": "0192f3a7-5c4b-7e21-9a02-3f8c1d6e4b90" })
+        );
+        let job_originated = super::error_view(&super::ErrorParts::of(
+            crate::domain::error_code::ErrorCode::MultipartNotFound,
+            None,
+        ));
+        assert_eq!(
+            serde_json::to_value(&job_originated).unwrap(),
+            json!({ "code": "MULTIPART_NOT_FOUND", "requestId": null })
+        );
+        let unusable = super::ErrorParts::of(
+            crate::domain::error_code::ErrorCode::FileTooLarge,
+            Some("not a valid id;\r\n"),
+        );
+        assert_eq!(
+            unusable.request_id, None,
+            "an untrusted id is never persisted"
+        );
+        assert_eq!(
+            super::ErrorParts::of(
+                crate::domain::error_code::ErrorCode::FileTooLarge,
+                Some(&"a".repeat(129))
+            )
+            .request_id,
+            None
+        );
+        let legacy = super::ErrorParts {
+            code: "NO_LONGER_IN_THE_CATALOGUE".to_owned(),
+            request_id: Some("r-1".to_owned()),
+        };
+        assert_eq!(
+            super::error_view(&legacy).code,
+            crate::domain::error_code::ErrorCode::InternalError,
+            "a persisted code the catalogue no longer knows degrades to the one fallback"
+        );
+    }
+
+    #[test]
     fn unit_session_and_item_rows_render_without_storage_identity() {
         fn assert_sendable<T: Send>() {}
         assert_sendable::<SessionRow>();

@@ -13,7 +13,6 @@ use crate::domain::time::Timestamp;
 use crate::features::settings::SettingsHandle;
 use crate::features::users::model::UserId;
 use crate::infra::db::{DbError, DbErrorKind, DbPools};
-use crate::storage::error::StorageError;
 use crate::storage::key::ObjectKey;
 use crate::storage::provider::{MultipartHandle, PartPlanEntry, PutHint};
 
@@ -145,6 +144,17 @@ impl S3Service {
 
     pub fn proxy_uploads(&self) -> ProxyUploads {
         self.proxy.clone()
+    }
+
+    pub async fn observe_expiry(
+        &self,
+        owner: UserId,
+        session: TransferSessionId,
+        request_id: Option<&str>,
+    ) {
+        self.transfers
+            .observe_expiry(owner, session, request_id)
+            .await;
     }
 
     fn now(&self) -> Result<Timestamp, TransferError> {
@@ -632,8 +642,7 @@ impl S3Service {
         let started = self.now()?;
         let listed = match multipart.list_parts(&open.handle).await {
             Ok(listed) => listed,
-            Err(StorageError::NotFound) => return Err(TransferError::MultipartNotFound),
-            Err(error) => return Err(TransferError::Storage(error)),
+            Err(error) => return Err(TransferError::from_multipart_storage(error)),
         };
         let analysis = analyze(&open.layout, &listed);
         let applied = persist_snapshot(

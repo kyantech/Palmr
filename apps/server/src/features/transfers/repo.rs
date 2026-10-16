@@ -4,10 +4,12 @@ use sqlx::sqlite::SqliteRow;
 use sqlx::{QueryBuilder, Row, Sqlite, SqliteConnection};
 
 use crate::domain::bytes::ByteSize;
+use crate::domain::error_code::ErrorCode;
 use crate::domain::time::Timestamp;
 use crate::features::folders::FolderId;
 use crate::features::users::model::UserId;
 use crate::infra::http::pagination::{Conjunction, PageRequest};
+use crate::infra::http::request_id::RequestId;
 use crate::storage::lifecycle::StorageObjectId;
 
 use super::cancel::Ending;
@@ -133,6 +135,24 @@ const FAIL_ITEM: &str = "UPDATE transfer_session_files
 const RECORD_SESSION_ERROR: &str =
     "UPDATE transfer_sessions SET error_code = ?2, error_request_id = ?3 WHERE id = ?1";
 
+const REFRESH_SESSION_ERROR: &str = "UPDATE transfer_sessions
+      SET error_code = (SELECT t.error_code FROM transfer_session_files t
+                         WHERE t.transfer_session_id = ?1 AND t.state = 'failed'
+                           AND t.error_code IS NOT NULL
+                         ORDER BY t.updated_at DESC, t.ordinal DESC LIMIT 1),
+          error_request_id = (SELECT t.error_request_id FROM transfer_session_files t
+                               WHERE t.transfer_session_id = ?1 AND t.state = 'failed'
+                                 AND t.error_code IS NOT NULL
+                               ORDER BY t.updated_at DESC, t.ordinal DESC LIMIT 1)
+    WHERE id = ?1 AND (error_code IS NULL OR error_code <> 'TRANSFER_SESSION_EXPIRED')";
+
+const OBSERVE_SESSION_EXPIRY: &str = "UPDATE transfer_sessions
+      SET error_code = 'TRANSFER_SESSION_EXPIRED', error_request_id = ?4
+    WHERE id = ?1 AND user_id = ?2
+      AND state NOT IN ('completed', 'canceled', 'expired')
+      AND expires_at <= ?3
+      AND (error_code IS NULL OR error_code <> 'TRANSFER_SESSION_EXPIRED')";
+
 const COUNT_IN_FLIGHT: &str = "SELECT COUNT(*) FROM transfer_session_files
     WHERE transfer_session_id = ?1 AND state IN ('pending', 'uploading', 'finalizing')";
 
@@ -146,6 +166,17 @@ const COUNT_REMAINING: &str = "SELECT COUNT(*) FROM transfer_session_files
 pub struct ErrorParts {
     pub code: String,
     pub request_id: Option<String>,
+}
+
+impl ErrorParts {
+    pub fn of(code: ErrorCode, request_id: Option<&str>) -> Self {
+        Self {
+            code: code.as_str().to_owned(),
+            request_id: request_id
+                .filter(|id| RequestId::is_valid_text(id))
+                .map(str::to_owned),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -669,6 +700,35 @@ pub async fn record_session_error(
         .execute(connection)
         .await?;
     Ok(())
+}
+
+pub async fn refresh_session_error(
+    connection: &mut SqliteConnection,
+    session: TransferSessionId,
+) -> Result<(), TransferError> {
+    sqlx::query(REFRESH_SESSION_ERROR)
+        .bind(session.to_string())
+        .execute(connection)
+        .await?;
+    Ok(())
+}
+
+pub async fn observe_session_expiry(
+    connection: &mut SqliteConnection,
+    owner: UserId,
+    session: TransferSessionId,
+    now: Timestamp,
+    failure: &ErrorParts,
+) -> Result<bool, TransferError> {
+    let affected = sqlx::query(OBSERVE_SESSION_EXPIRY)
+        .bind(session.to_string())
+        .bind(owner.to_string())
+        .bind(now.to_string())
+        .bind(failure.request_id.as_deref())
+        .execute(connection)
+        .await?
+        .rows_affected();
+    Ok(affected == 1)
 }
 
 pub async fn protocol_resource_present(
